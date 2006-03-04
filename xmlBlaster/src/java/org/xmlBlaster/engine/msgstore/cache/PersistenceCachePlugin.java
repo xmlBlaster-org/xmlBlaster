@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore.cache;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.context.ContextNode;
@@ -42,7 +43,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    private String ME;
    private ContextNode contextNode;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PersistenceCachePlugin.class.getName());
 
 //   private java.util.Properties pluginProperties; // properties via I_Plugin
    private QueuePropertyBase property;            // properties via I_Map
@@ -68,7 +69,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see org.xmlBlaster.util.queue.jdbc.I_ConnectionListener#disconnected()
     */
    public void storageUnavailable(int oldStatus) {
-      this.log.call(ME, "storageUnavailable");
+      log.finer("storageUnavailable");
       this.isConnected = false;
    }
 
@@ -82,7 +83,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     */
    public void storageAvailable(int oldStatus) {
       if (oldStatus == I_StorageProblemListener.UNDEF) return;
-      this.log.call(ME, "storageAvailable");
+      log.finer("storageAvailable");
      /* remove all obsolete entries from the persistence. Obsolete are the
       * entries which are lower (lower priority and older) than the lowest
       * entry in the transient storage.
@@ -91,7 +92,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       if (this.persistentStore == null) return; // should never happen
 
       //try {
-         log.warn(ME, "Persistent store has reconnected, we may have a memory leak as send messsages are not cleaned up. Current persistent messages are handled transient only, new ones will be handled persistent");
+         log.warning("Persistent store has reconnected, we may have a memory leak as send messsages are not cleaned up. Current persistent messages are handled transient only, new ones will be handled persistent");
          /*
          // TODO: Implement an arraylist to remember the sent messages and destroy them
          // Happens for persistent messages and swapped messages (if JDBC connection lost)
@@ -117,7 +118,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          this.isConnected = true;
       //}
       //catch (XmlBlasterException ex) {
-      //   this.log.error(ME, "exception occured when reconnecting. " + ex.getMessage());
+      //   log.error(ME, "exception occured when reconnecting. " + ex.getMessage());
       //}
    }
 
@@ -142,7 +143,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          catch(Throwable e) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't configure queue, your properties are invalid", e);
          }
-         if (log.CALL) log.call(ME, "Entering initialize(" + getType() + ", " + getVersion() + ")");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering initialize(" + getType() + ", " + getVersion() + ")");
 
          // For JMX instanceName may not contain ","
          String instanceName = this.glob.validateJmxValue(this.storageId.getId());
@@ -158,16 +159,16 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
          String defaultTransient = pluginProperties.getProperty("transientMap", "RAM,1.0").trim();
          if (defaultTransient.startsWith(getType())) {
-            log.error(ME,"Cache storage configured with transientMap=CACHE, to prevent recursion we set it to 'RAM,1.0'");
+            log.severe("Cache storage configured with transientMap=CACHE, to prevent recursion we set it to 'RAM,1.0'");
             defaultTransient = "RAM,1.0";
          }
          this.transientStore = pluginManager.getPlugin(defaultTransient, uniqueQueueId, createRamCopy(queuePropertyBase));
-         if (log.TRACE) log.trace(ME, "Created transient part:" + this.transientStore.toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine("Created transient part:" + this.transientStore.toXml(""));
          
          try {
             String defaultPersistent = pluginProperties.getProperty("persistentMap", "JDBC,1.0").trim();
             if (defaultPersistent.startsWith(getType())) {
-               log.error(ME,"Cache storage configured with persistentMap=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
+               log.severe("Cache storage configured with persistentMap=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
                defaultPersistent = "JDBC,1.0";
             }
             this.persistentStore = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
@@ -177,10 +178,10 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 //            this.glob.getJdbcQueueManager(this.storageId).registerStorageProblemListener(this);
             this.persistentStore.registerStorageProblemListener(this);
 
-            if (log.TRACE) log.trace(ME, "Created persistent part:" + this.persistentStore.toXml(""));
+            if (log.isLoggable(Level.FINE)) log.fine("Created persistent part:" + this.persistentStore.toXml(""));
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "could not initialize the persistent queue. Is the JDBC Driver jar file in the CLASSPATH ? Is the DB up and running ?" + ex.getMessage());
+            log.severe("could not initialize the persistent queue. Is the JDBC Driver jar file in the CLASSPATH ? Is the DB up and running ?" + ex.getMessage());
             // start a polling thread to see if the connection can be established later 
 
          }
@@ -189,16 +190,16 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          // the persistent queue
          if (this.persistentStore != null) {
             try {
-               if (log.TRACE) log.trace(ME, "Initialize: Removing swapped entries from persistent store, numEntries=" + this.persistentStore.getNumOfEntries() + " numPersistentEntries=" + this.persistentStore.getNumOfPersistentEntries());
+               if (log.isLoggable(Level.FINE)) log.fine("Initialize: Removing swapped entries from persistent store, numEntries=" + this.persistentStore.getNumOfEntries() + " numPersistentEntries=" + this.persistentStore.getNumOfPersistentEntries());
                this.persistentStore.removeTransient();
             }
             catch (XmlBlasterException ex) {
-               this.log.error(ME, "could not remove transient entries (swapped entries) probably due to no connection to the DB, or the DB is down" + ex.getMessage());
+               log.severe("could not remove transient entries (swapped entries) probably due to no connection to the DB, or the DB is down" + ex.getMessage());
             }
 
             // prefill cache (hack: works only for our JDBC queue which implements I_Queue as well)
             if (this.persistentStore instanceof org.xmlBlaster.util.queue.I_Queue) {
-               if (log.TRACE) log.trace(ME, "Initialize: Prefilling cache storage with entries");
+               if (log.isLoggable(Level.FINE)) log.fine("Initialize: Prefilling cache storage with entries");
                if (this.persistentStore.getNumOfEntries() > 0) {
                   // initial fill of RAM queue ...
                   long maxBytes = this.transientStore.getMaxNumOfBytes();
@@ -209,7 +210,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                   try {
                      entries = ((org.xmlBlaster.util.queue.I_Queue)this.persistentStore).peek((int)maxEntries, maxBytes);
                      int n = entries.size();
-                     log.info(ME, "Prefilling cache with " + n + " entries");
+                     log.info("Prefilling cache with " + n + " entries");
                      synchronized(this) {
                         for(int i=0; i<n; i++) {
                            I_MapEntry cleanEntry = (I_MapEntry)entries.get(i);
@@ -218,14 +219,14 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                      }
                   }
                   catch (XmlBlasterException ex) {
-                     this.log.error(ME, "could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running: " + ex.getMessage());
+                     log.severe("could not reload data from persistence probably due to a broken connection to the DB or the DB is not up and running: " + ex.getMessage());
                   }
                }
             }
 
          }
          this.isDown = false;
-         if (log.TRACE) log.trace(ME, "Successful initialized: " + toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine("Successful initialized: " + toXml(""));
       } // isDown?
    }
 
@@ -280,7 +281,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     */
    public synchronized void setProperties(Object userData) throws XmlBlasterException {
       if (userData == null) return;
-      if (log.CALL) log.call(ME, "Entering setProperties()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering setProperties()");
       QueuePropertyBase newProp;
       try {
          newProp = (QueuePropertyBase)userData;
@@ -327,7 +328,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       if (mapEntry == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "put(I_MapEntry="+mapEntry+")");
 
-      if (log.CALL) this.log.call(ME, "put(" + mapEntry.getLogId() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("put(" + mapEntry.getLogId() + ")");
       int numPersistentPut = 0;
       int numTransientPut = 0;
 
@@ -335,7 +336,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
          XmlBlasterException exceptionReturned = spaceLeftException(mapEntry, this);
          if (exceptionReturned != null) {
-            if (log.TRACE) log.trace(ME, exceptionReturned.getMessage());
+            if (log.isLoggable(Level.FINE)) log.fine(exceptionReturned.getMessage());
             exceptionReturned.setLocation(ME+"-put("+mapEntry.getLogId()+")");
             throw exceptionReturned;
          }
@@ -345,7 +346,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             if (mapEntry.isPersistent()) {
                XmlBlasterException exceptionReturned2 = spaceLeftException(mapEntry, this.persistentStore);
                if (exceptionReturned2 != null) {
-                  if (log.TRACE) log.trace(ME, exceptionReturned2.getMessage());
+                  if (log.isLoggable(Level.FINE)) log.fine(exceptionReturned2.getMessage());
                   exceptionReturned2.setLocation(ME+"-put("+mapEntry.getLogId()+")");
                   throw exceptionReturned2;
                }
@@ -353,7 +354,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                   numPersistentPut = this.persistentStore.put(mapEntry);
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occurred when writing to the persistent queue, the persistent entry " + mapEntry.getLogId() +
+                  log.severe("put: an error occurred when writing to the persistent queue, the persistent entry " + mapEntry.getLogId() +
                                 " will temporarily be handled as transient. Is the DB up and running ? " + ex.getMessage() + "state "  + this.toXml(""));
                }
             }
@@ -389,14 +390,14 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
          I_MapEntry oldest = this.transientStore.removeOldest();
          if (oldest == null) {
-            if (log.TRACE) log.trace(ME + ".assureTransientSpace", "The RAM queue is full, new entry '" + mapEntry.getUniqueId() + "' seems to be the first and only one, so we accept it");
+            if (log.isLoggable(Level.FINE)) log.fine("The RAM queue is full, new entry '" + mapEntry.getUniqueId() + "' seems to be the first and only one, so we accept it");
             break;
          }
-         if (log.CALL) log.call(ME+".assureTransientSpace", "Swapping '" + oldest.getLogId() + "' to HD ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Swapping '" + oldest.getLogId() + "' to HD ...");
          try {
             if (!oldest.isPersistent()) { // if entry is marked as persistent it is already in persistentStore (see code above)
                // swap away the oldest cache entry to harddisk ...
-               if (this.log.TRACE) this.log.trace(ME+"-assureTransientSpace("+mapEntry.getLogId()+")", "Swapping '" + oldest.getLogId() + " size=" + oldest.getSizeInBytes() + "'. Exceeding size state after removing from transient before entering persistent: " + toXml(""));
+               if (log.isLoggable(Level.FINE)) this.log.fine("Swapping '" + oldest.getLogId() + " size=" + oldest.getSizeInBytes() + "'. Exceeding size state after removing from transient before entering persistent: " + toXml(""));
                if (this.persistentStore == null)
                   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
                         "assureTransientSpace: no persistent queue configured, needed for swapping, entry " + mapEntry.getLogId() + " is not handled");
@@ -409,7 +410,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                      this.persistentStore.put(oldest);
                   }
                   catch (XmlBlasterException ex) {
-                     this.log.error(ME, "assureTransientSpace: an error occured when writing to the persistent queue, transient entry " +  oldest.getLogId() + 
+                     log.severe("assureTransientSpace: an error occured when writing to the persistent queue, transient entry " +  oldest.getLogId() + 
                            " is not swapped, new entry '" + mapEntry.getLogId() + "' is rejected. Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
                      throw ex;
                   }
@@ -484,7 +485,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#get(long)
     */
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering get(" + uniqueId + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering get(" + uniqueId + ")");
 
       I_MapEntry mapEntry = null;
       synchronized(this) {
@@ -523,7 +524,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#getAll()
     */
    public I_MapEntry[] getAll(I_EntryFilter entryFilter) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering getAll()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering getAll()");
       synchronized (this) {
          //log.error(ME, "getAll() DEBUG ONLY: numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries() + " persistentStore=" + this.persistentStore.getNumOfEntries());
          //log.error(ME, "getAll() DEBUG ONLY: " + toXml(""));
@@ -566,7 +567,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#remove(I_MapEntry)
     */
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
-      if (log.CALL) this.log.call(ME, "remove(" + mapEntry.getLogId() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("remove(" + mapEntry.getLogId() + ")");
       synchronized (this) {
          // search in RAM storage
          int num = this.transientStore.remove(mapEntry);
@@ -583,7 +584,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#remove(long)
     */
    public int remove(final long uniqueId) throws XmlBlasterException {
-      if (log.CALL) this.log.call(ME, "remove(" + uniqueId + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("remove(" + uniqueId + ")");
       synchronized (this) {
          I_MapEntry mapEntry = get(uniqueId);
          if (mapEntry == null) {
@@ -698,7 +699,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          ret = this.transientStore.clear();
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not clear transient storage. Cause: " + ex.getMessage());
+         log.severe("could not clear transient storage. Cause: " + ex.getMessage());
       }
 
       try {
@@ -706,7 +707,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             ret += this.persistentStore.clear();
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not clear persistent storage. Cause: " + ex.getMessage());
+         log.severe("could not clear persistent storage. Cause: " + ex.getMessage());
       }
 
       /*
@@ -715,7 +716,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          this.glob.getJdbcQueueManager(this.storageId).unregisterListener(this);
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+         log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
       }
       */
 
@@ -729,12 +730,12 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * Shutdown the implementation, sync with data store
     */
    public void shutdown() {
-      if (log.CALL) log.call(ME, "shutdown()");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown()");
       this.isDown = true;
       this.glob.unregisterMBean(this.mbeanHandle);
       long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
       if (numTransients > 0) {
-         log.warn(ME, "Shutting down persistence cache which contains " + numTransients + " transient messages");
+         log.warning("Shutting down persistence cache which contains " + numTransients + " transient messages");
       }
       this.transientStore.shutdown();
       if (this.persistentStore != null && this.isConnected)
@@ -746,7 +747,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             this.persistentStore.unRegisterStorageProblemListener(this);
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not unregister listener. Cause: " + ex.toString());
+         log.severe("could not unregister listener. Cause: " + ex.toString());
       }
    }
 
@@ -805,7 +806,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
 //      this.pluginProperties = pluginInfo.getParameters();
       this.glob = (org.xmlBlaster.engine.Global)glob;
-      this.log = this.glob.getLog("persistence");
+
       this.pluginInfo = pluginInfo;
    }
 
@@ -841,7 +842,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             this.persistentStore.unRegisterStorageProblemListener(this);
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not unregister listener. Cause: " + ex.toString());
+         log.severe("could not unregister listener. Cause: " + ex.toString());
       }
 
       try {
@@ -903,7 +904,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                retEntry = this.persistentStore.change(newEntry, null);
             }
             else {
-               if (log.TRACE) log.trace(ME, "Can't update entry '" + entry.getLogId() + "' on persistence");
+               if (log.isLoggable(Level.FINE)) log.fine("Can't update entry '" + entry.getLogId() + "' on persistence");
                //throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "Can't update entry '" + entry.getLogId() + "' on persistence");
             }
          }
@@ -930,7 +931,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       if (ps != null) {
          return ps.embeddedObjectsToXml(out, null);
       }
-      log.warn(ME, "Sorry, dumping transient entries to '" + out + "' is not implemented");
+      log.warning("Sorry, dumping transient entries to '" + out + "' is not implemented");
       return 0;
    }
    

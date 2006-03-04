@@ -6,7 +6,8 @@ Comment:   Holding callback queue properties
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.storage;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -20,7 +21,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 public class CbQueueProperty extends QueuePropertyBase
 {
    private static final String ME = "CbQueueProperty";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(CbQueueProperty.class.getName());
 
    /**
     * @param relating  To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT
@@ -28,11 +29,11 @@ public class CbQueueProperty extends QueuePropertyBase
     */
    public CbQueueProperty(Global glob, String relating, String nodeId) {
       super(glob, nodeId);
-      this.log = glob.getLog("dispatch");
+
       String rel = (relating == null) ? Constants.RELATING_CALLBACK : relating;
       setRelating(rel);
       super.initialize(rel);
-      if (log.TRACE) log.trace(ME, "Created CbQueueProperty " + rel + " " + super.nodeId);
+      if (log.isLoggable(Level.FINE)) log.fine("Created CbQueueProperty " + rel + " " + super.nodeId);
    }
 
    /**
@@ -60,7 +61,7 @@ public class CbQueueProperty extends QueuePropertyBase
       else if (Constants.RELATING_SUBJECT.equals(relating))
          this.relating = Constants.RELATING_SUBJECT;
       else {
-         log.warn(ME, "setRelating: The queue relating attribute is invalid '" + relating + "', setting to session scope");
+         log.warning("setRelating: The queue relating attribute is invalid '" + relating + "', setting to session scope");
          this.relating = Constants.RELATING_CALLBACK;
       }
    }
@@ -114,7 +115,7 @@ public class CbQueueProperty extends QueuePropertyBase
     */
    public CallbackAddress getCurrentCallbackAddress() {
       if (this.addressArr.length > 1)
-         log.error(ME, "We have " + this.addressArr.length + " callback addresses, using the first only");
+         log.severe("We have " + this.addressArr.length + " callback addresses, using the first only");
       if (this.addressArr.length > 0)
          return (CallbackAddress)this.addressArr[0];
       CallbackAddress addr = new CallbackAddress(glob);

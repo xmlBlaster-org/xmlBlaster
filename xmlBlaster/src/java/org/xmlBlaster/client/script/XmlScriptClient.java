@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.script;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -47,7 +48,7 @@ import java.util.HashMap;
 public class XmlScriptClient extends XmlScriptInterpreter {
    
    private final String ME = "XmlScriptClient";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlScriptClient.class.getName());
    private I_XmlBlasterAccess access;
    
    private boolean isConnected;
@@ -71,7 +72,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
    public XmlScriptClient(Global glob, I_XmlBlasterAccess access, I_Callback callback, HashMap attachments, OutputStream out) {
       super(glob, attachments, out);
       this.glob = glob;
-      this.log = glob.getLog("script");
+
       this.access = access;
       this.callback = callback;
       this.connectQosFactory = new ConnectQosSaxFactory(this.glob);
@@ -125,20 +126,20 @@ public class XmlScriptClient extends XmlScriptInterpreter {
    public boolean fireMethod(MethodName methodName,
          String sessionId, String requestId, byte type)
          throws XmlBlasterException {
-      if (this.log.TRACE) this.log.trace(ME, "fireMethod "
+      if (log.isLoggable(Level.FINE)) this.log.fine("fireMethod "
             + MsgInfo.getTypeStr(type)
             + ": " + methodName.toString()
             + ": " + this.key.toString()
             + " " + this.qos.toString());
       if (type != MsgInfo.INVOKE_BYTE)
-         log.warn(ME, "Unexpected message of type '" + MsgInfo.getTypeStr(type) + "'");
+         log.warning("Unexpected message of type '" + MsgInfo.getTypeStr(type) + "'");
       try {
          if (MethodName.CONNECT.equals(methodName) || !this.isConnected) {
             boolean implicitConnect = !MethodName.CONNECT.equals(methodName);
             // if (this.qos.length() < 1) this.qos.append("<qos />");
             String ret = null;
             if (implicitConnect || this.qos.length() < 1) {
-               this.log.warn(ME, "Doing implicit xmlBlaster.connect() as no valid <connect/> markup is in the script");
+               log.warning("Doing implicit xmlBlaster.connect() as no valid <connect/> markup is in the script");
                ConnectQos connectQos = new ConnectQos(this.glob);
                ret = this.access.connect(connectQos, this.callback).toXml();
             }
@@ -171,7 +172,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
             if (this.msgUnitCb != null) {
                this.msgUnitCb.intercept(msgUnit);
             }
-            if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
+            if (log.isLoggable(Level.FINE)) this.log.fine("appendEndOfElement publish: " + msgUnit.toXml());
             PublishReturnQos ret = this.access.publish(msgUnit);
             writeResponse(methodName, (ret != null)?ret.toXml("  "):null);
             return true;
@@ -180,7 +181,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
             int size = this.messageList.size();
             MsgUnit[] msgs = new MsgUnit[size];
             for (int i=0; i < size; i++) {
-               if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
+               if (log.isLoggable(Level.FINE)) this.log.fine("appendEndOfElement publishArr: " + msgs[i].toXml());
                msgs[i] = (MsgUnit)this.messageList.get(i);
             }
             PublishReturnQos[] ret = this.access.publishArr(msgs);
@@ -193,7 +194,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
             int size = this.messageList.size();
             MsgUnit[] msgs = new MsgUnit[size];
             for (int i=0; i < size; i++) {
-               if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publishArr: " + msgs[i].toXml());
+               if (log.isLoggable(Level.FINE)) this.log.fine("appendEndOfElement publishArr: " + msgs[i].toXml());
                msgs[i] = (MsgUnit)this.messageList.get(i);
             }
             this.access.publishOneway(msgs);
@@ -227,7 +228,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
          }
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, e.getMessage());
+         log.warning(e.getMessage());
          
          // The exception has already a <exception> root tag
          writeResponse(null/*MethodName.EXCEPTION*/, e.toXml("    "));
@@ -239,11 +240,11 @@ public class XmlScriptClient extends XmlScriptInterpreter {
          return true;
       }
       catch (Throwable e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, "", e);
       }
       
-      this.log.warn(ME, "fireMethod with methodName=" + methodName.toString() + " is not implemented: " + this.key.toString() + " " + this.qos.toString());
+      log.warning("fireMethod with methodName=" + methodName.toString() + " is not implemented: " + this.key.toString() + " " + this.qos.toString());
       return false;
    }
 

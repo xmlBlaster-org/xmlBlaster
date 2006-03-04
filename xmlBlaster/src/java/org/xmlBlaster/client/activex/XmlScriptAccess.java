@@ -15,7 +15,8 @@ import java.beans.SimpleBeanInfo;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch; // http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent/intro.html
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -79,7 +80,7 @@ import org.xmlBlaster.util.MsgUnit;
 public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    private static String ME = "XmlScriptAccess";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlScriptAccess.class.getName());
    private XmlScriptInterpreter interpreter;
    private Reader reader;
    private OutputStream outStream;
@@ -98,11 +99,11 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    public XmlScriptAccess() {
       this.glob = new Global();  // Reads xmlBlaster.properties
-      this.log = glob.getLog("XmlScriptAccess");
+
 
       // Wait max 10 minutes for update() method in C#/VB to return:
       this.responseWaitTime = this.glob.getProperty().get("client/activex/responseWaitTime", 1000L * 60L * 10L);
-      if (log.CALL) log.call(ME, "Calling ctor of XmlScriptAccess, responseWaitTime=" + this.responseWaitTime);
+      if (log.isLoggable(Level.FINER)) log.finer("Calling ctor of XmlScriptAccess, responseWaitTime=" + this.responseWaitTime);
 
       // Use socket protocol as default setting
       String protocol = this.glob.getProperty().get("protocol", "");
@@ -111,7 +112,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
             this.glob.getProperty().set("protocol", "SOCKET");
          }
          catch (org.jutils.JUtilsException e) {
-            log.error(ME, "Failed setting SOCKET protocol, we continue nevertheless: " + e.toString());
+            log.severe("Failed setting SOCKET protocol, we continue nevertheless: " + e.toString());
          }
       }
    }
@@ -121,8 +122,8 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     * This method is called automatically when activating the bridge
     */
    public void addUpdateListener(UpdateListener updateListener) /* throws java.util.TooManyListenersException */ {
-      log.info(ME, "Registering update listener");
-      if (log.DUMP) Thread.dumpStack();
+      log.info("Registering update listener");
+      if (log.isLoggable(Level.FINEST)) Thread.dumpStack();
       this.updateListener = updateListener;
    }
 
@@ -131,8 +132,8 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     * This method is called automatically when deactivating the bridge
     */
    public void removeUpdateListener(UpdateListener updateListener) {
-      log.info(ME, "Removing update listener");
-      if (log.DUMP) Thread.dumpStack();
+      log.info("Removing update listener");
+      if (log.isLoggable(Level.FINEST)) Thread.dumpStack();
       this.updateListener = null;
    }
 
@@ -146,11 +147,11 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    protected synchronized String notifyUpdateEvent(String cbSessionId, UpdateKey key, byte[] content, UpdateQos qos) throws XmlBlasterException {
       if (this.updateListener == null) {
-         log.warn(ME, "No updateListener is registered, ignoring " + key.toXml());
+         log.warning("No updateListener is registered, ignoring " + key.toXml());
          return "<qos><state id='WARNING'/></qos>";
       }
       UpdateEvent ev = new UpdateEvent(this, cbSessionId, key, content, qos);
-      if (log.TRACE) log.trace(ME, "Notifying updateListener with new message " + key.toXml());
+      if (log.isLoggable(Level.FINE)) log.fine("Notifying updateListener with new message " + key.toXml());
       this.updateReturnLatch = new Latch();
 
       this.updateListener.update(ev);
@@ -158,33 +159,33 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
       boolean awaikened = false;
       while (true) {
          try {
-            if (log.TRACE) log.trace(ME, "notifyUpdateEvent() Entering wait ...");
+            if (log.isLoggable(Level.FINE)) log.fine("notifyUpdateEvent() Entering wait ...");
             awaikened = this.updateReturnLatch.attempt(this.responseWaitTime); // block max. milliseconds
             break;
          }
          catch (InterruptedException e) {
-            log.warn(ME, "Waking up (waited on " + key.getOid() + " update response): " + e.toString());
+            log.warning("Waking up (waited on " + key.getOid() + " update response): " + e.toString());
             // try again
          }
       }
       try {
          if (awaikened) {
             if (this.updateReturnQos != null) {
-               if (log.TRACE) log.trace(ME, "Notifying updateListener done: returned '" + this.updateReturnQos + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("Notifying updateListener done: returned '" + this.updateReturnQos + "'");
                return this.updateReturnQos;
             }
             else if (this.updateReturnException != null) {
-               log.warn(ME, "Update failed: " + this.updateReturnException.getMessage());
+               log.warning("Update failed: " + this.updateReturnException.getMessage());
                throw this.updateReturnException;
             }
             else {
-               log.error(ME, "Update failed, no return available");
+               log.severe("Update failed, no return available");
                throw new XmlBlasterException(this.glob, ErrorCode.USER_UPDATE_ERROR, ME, "Update to ActiveX failed, no return available");
             }
          }
          else {
             String str = "Timeout of " + this.responseWaitTime + " milliseconds occured when waiting on " + key.getOid() + " return value";
-            log.warn(ME, str);
+            log.warning(str);
             throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, str);
          }
       }
@@ -207,13 +208,13 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    public void setUpdateReturn(String updateReturnQos) {
       if (this.updateReturnLatch == null) {
-         log.warn(ME, "Ignoring setUpdateReturn(), updateReturnLatch == null, probably a timeout occurred");
+         log.warning("Ignoring setUpdateReturn(), updateReturnLatch == null, probably a timeout occurred");
          return;
       }
       this.updateReturnQos = updateReturnQos;
       this.updateReturnException = null;
       this.updateReturnLatch.release();
-      if (log.CALL) log.call(ME, "setUpdateReturn() called");
+      if (log.isLoggable(Level.FINER)) log.finer("setUpdateReturn() called");
    }
 
    /**
@@ -224,7 +225,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    public void setUpdateException(String errorCode, String message) {
       if (this.updateReturnLatch == null) {
-         log.warn(ME, "Ignoring setUpdateException(), updateReturnLatch == null, probably a timeout occurred");
+         log.warning("Ignoring setUpdateException(), updateReturnLatch == null, probably a timeout occurred");
          return;
       }
       this.updateReturnQos = null;
@@ -233,14 +234,14 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          code = ErrorCode.toErrorCode(errorCode);
       }
       catch (IllegalArgumentException e) {
-         log.warn(ME, "Don't know error code '" + errorCode + "', changing it to " + ErrorCode.USER_UPDATE_ERROR.toString());
+         log.warning("Don't know error code '" + errorCode + "', changing it to " + ErrorCode.USER_UPDATE_ERROR.toString());
          message += ": original errorCode=" + errorCode;
          code = ErrorCode.USER_UPDATE_ERROR;
       }
 
       this.updateReturnException = new XmlBlasterException(this.glob, code, ME, message);
       this.updateReturnLatch.release();
-      if (log.CALL) log.call(ME, "setUpdateException() called");
+      if (log.isLoggable(Level.FINER)) log.finer("setUpdateException() called");
    }
 
    /**
@@ -290,11 +291,11 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          return this.outStream.toString();
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "sendRequest failed: " + e.getMessage());
+         log.warning("sendRequest failed: " + e.getMessage());
          throw new RuntimeException(e.getMessage());
       }
       catch (Exception e) {
-         log.error(ME, "sendRequest failed: " + e.toString());
+         log.severe("sendRequest failed: " + e.toString());
          e.printStackTrace();
          throw new RuntimeException(e.toString());
       }
@@ -462,7 +463,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     * Enforced by I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Callback update arrived: " + updateKey.getOid());
+      if (log.isLoggable(Level.FINER)) log.finer("Callback update arrived: " + updateKey.getOid());
       return notifyUpdateEvent(cbSessionId, updateKey, content, updateQos);
    }
 

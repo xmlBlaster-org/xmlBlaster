@@ -10,7 +10,8 @@ package org.xmlBlaster.util.recorder.ram;
 
 import org.jutils.collection.Queue;
 import org.jutils.JUtilsException;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -50,7 +51,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
 {
    private String ME = "RamRecorder";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(RamRecorder.class.getName());
 
    /**
     * The queue to hold the method invocations
@@ -86,7 +87,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
                              //I_CallbackRaw clientCallback)
    {
       this.glob = glob;
-      this.log = glob.getLog("recorder");
+
       StatusQosData statRetQos = new StatusQosData(glob, MethodName.UNKNOWN);
       statRetQos.setStateInfo(Constants.INFO_QUEUED);
       this.dummyPubRet = new PublishReturnQos(glob, statRetQos);
@@ -94,15 +95,15 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       subQos.setStateInfo(Constants.INFO_QUEUED);
       this.dummySubRet = new SubscribeReturnQos(glob, subQos);
 
-      if (log.CALL) log.call(ME, "Initializing new RamRecorder(" + maxEntries + ") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Initializing new RamRecorder(" + maxEntries + ") ...");
       if (maxEntries >= Integer.MAX_VALUE) {
-         log.warn(ME, "Stripping queue size to Integer.MAX_VALUE");
+         log.warning("Stripping queue size to Integer.MAX_VALUE");
          maxEntries = Integer.MAX_VALUE;
       }
       this.queue = new Queue(ME, (int)maxEntries);
       this.serverCallback = serverCallback;
       //this.clientCallback = clientCallback;
-      log.info(ME, "Invocation recorder is initialized to queue max=" + maxEntries + " tail back messages on failure");
+      log.info("Invocation recorder is initialized to queue max=" + maxEntries + " tail back messages on failure");
    }
 
    /** Returns the name of the database file or null if RAM based */
@@ -147,9 +148,9 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       else if (mode.equals(Constants.ONOVERFLOW_DISCARD))
          this.queue.setModeToDiscard();
       else if (mode.equals(Constants.ONOVERFLOW_EXCEPTION))
-         log.trace(ME, "Setting onOverflow mode to exception"); // default
+         log.fine("Setting onOverflow mode to exception"); // default
       else
-         log.warn(ME, "Ignoring unknown onOverflow mode '" + mode + "', using default mode 'exception'."); // default
+         log.warning("Ignoring unknown onOverflow mode '" + mode + "', using default mode 'exception'."); // default
    }
 
    /**
@@ -186,7 +187,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
     */
    public void pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
-      log.info(ME, "Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ") queue.size=" + queue.size());
+      log.info("Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ") queue.size=" + queue.size());
 
       InvocationContainer cont = null;
       while(queue.size() > 0) { // find the start node ...
@@ -195,7 +196,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
             break;
       }
       if (cont == null) {
-         log.warn(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
+         log.warning("Sorry, no invocations found, queue is empty or your start date is to late");
          throw new XmlBlasterException(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
       }
 
@@ -215,7 +216,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
                try {
                   Thread.currentThread().sleep(originalElapsed - actualElapsed);
                } catch(InterruptedException e) {
-                  log.warn(ME, "Thread sleep got interrupted, this invocation is not in sync");
+                  log.warning("Thread sleep got interrupted, this invocation is not in sync");
                }
             }
             callback(cont);
@@ -234,7 +235,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
     * @param msgPerSec 20. is 20 msg/sec, 0.1 is one message every 10 seconds
     */
    public void pullback(float msgPerSec) throws XmlBlasterException {
-      log.warn(ME, "Sorry, pullback(msgPerSec) is not implemented, we switch to full speed mode");
+      log.warning("Sorry, pullback(msgPerSec) is not implemented, we switch to full speed mode");
       pullback(0L, 0L, 0.);
    }
 
@@ -266,7 +267,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
    public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
       // !!! implement similar to pullback() but using the iterator to process the queue
-      log.error(ME + "." + ErrorCode.INTERNAL_NOTIMPLEMENTED.getErrorCode(), "Sorry, playback() is not implemented, use pullback() or implement it");
+      log.severe("Sorry, playback() is not implemented, use pullback() or implement it");
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Sorry, only pullback is implemented");
    }
 
@@ -322,7 +323,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       }
       */
 
-      log.error(ME, "Internal error: Method '" + cont.method + "' is unknown");
+      log.severe("Internal error: Method '" + cont.method + "' is unknown");
       throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
    }
 
@@ -405,7 +406,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
          queue.push(cont);
       }
       catch (JUtilsException e) {
-         log.error(ME+".publishOneway", e.toString());
+         log.severe(e.toString());
       }
    }
 
@@ -517,7 +518,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       try {
          queue.push(cont);
       } catch (JUtilsException e) {
-         log.error(ME, "Can't push updateOneway(): " + e.getMessage());
+         log.severe("Can't push updateOneway(): " + e.getMessage());
       }
    }
 

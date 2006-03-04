@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.key;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
@@ -49,7 +50,7 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
 {
    private String ME = "QueryKeySaxFactory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(QueryKeySaxFactory.class.getName());
 
    private QueryKeyData queryKeyData;
 
@@ -69,7 +70,7 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
    public QueryKeySaxFactory(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
+
    }
 
    /**
@@ -119,7 +120,7 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
                if (tmp != null) queryKeyData.setQueryType(tmp.trim());
             }
             catch (XmlBlasterException e) {
-               log.error(ME, e.toString());
+               log.severe(e.toString());
             }
          }
          character.setLength(0);

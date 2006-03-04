@@ -10,7 +10,9 @@
 package org.xmlBlaster.protocol.jdbc;
 
 import java.sql.*;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -23,6 +25,7 @@ import org.w3c.dom.Text;
  * Class declaration
  */
 public class DBAdapterUtils {
+   private static Logger log = Logger.getLogger(DBAdapterUtils.class.getName());
    private static final String ME = "DBAdapterUtils";
    private final static String NULL_STR = "NULL";
 
@@ -50,7 +53,7 @@ public class DBAdapterUtils {
    public static Document createDocument(String rootnode, String rownode,
                     int rowlimit, ResultSet rs) throws XmlBlasterException {
 
-      LogChannel log = Global.instance().getLog("jdbc");
+
       String columnName = null;
       try {
          int rows = 0;
@@ -88,7 +91,7 @@ public class DBAdapterUtils {
          desc.appendChild(columnNames);
 
          while (rs.next()) {
-            if (log.TRACE) log.trace(ME, "Scanning SQL result with rowlimit=" + rowlimit + ", rows=" + rows);
+            if (log.isLoggable(Level.FINE)) log.fine("Scanning SQL result with rowlimit=" + rowlimit + ", rows=" + rows);
             if (rowlimit < 0) {
                continue;
             }
@@ -174,13 +177,13 @@ public class DBAdapterUtils {
                   break;
 
                default:
-                  if (log.TRACE) log.warn(ME, "Datatype '" + cType + "' of column '" + columnName + "' is not implemented, plase add a case statement in DBAdapterUtils.java");
+                  if (log.isLoggable(Level.FINE)) log.warning("Datatype '" + cType + "' of column '" + columnName + "' is not implemented, plase add a case statement in DBAdapterUtils.java");
                   Object o2 = rs.getObject(i);
                   columnValue = (o2==null) ? NULL_STR : o2.toString();
                   break;
                }
 
-               if (log.TRACE) log.trace(ME, "row="+ rows + ", columnName=" + columnName + ", type=" + cType + " columnValue='" + columnValue + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("row="+ rows + ", columnName=" + columnName + ", type=" + cType + " columnValue='" + columnValue + "'");
                Element col = doc.createElement(columnName);
                CDATASection cvalue = doc.createCDATASection(columnValue);
 
@@ -202,7 +205,7 @@ public class DBAdapterUtils {
 
       }
       catch (Exception e) {
-         log.warn(ME, "Error in scanning result set for '" + columnName + "': " + e.toString());
+         log.warning("Error in scanning result set for '" + columnName + "': " + e.toString());
          throw new XmlBlasterException(Global.instance(),
                     ErrorCode.INTERNAL_UNKNOWN, ME,
                     "Error in scanning result set for '" + columnName + "'", e);

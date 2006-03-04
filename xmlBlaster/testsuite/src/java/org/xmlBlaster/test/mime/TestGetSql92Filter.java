@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.PublishKey;
@@ -45,7 +46,7 @@ public class TestGetSql92Filter extends TestCase
 {
    private static String ME = "TestGetSql92Filter";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestGetSql92Filter.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -63,7 +64,7 @@ public class TestGetSql92Filter extends TestCase
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.name = name;
    }
 
@@ -92,17 +93,17 @@ public class TestGetSql92Filter extends TestCase
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
-      log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
+      log.info("XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.dumpStack();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
    }
 
@@ -139,7 +140,7 @@ public class TestGetSql92Filter extends TestCase
    {
       String filter = "posX BETWEEN 0 AND 200 AND posY BETWEEN 0 AND 200";
       String content = "space-shuttle";
-      log.info(ME, "TEST 2: The published message does match the pattern");
+      log.info("TEST 2: The published message does match the pattern");
       try {
          PublishQos pubQos = new PublishQos(this.glob);
          pubQos.addClientProperty("posX", 50);
@@ -147,7 +148,7 @@ public class TestGetSql92Filter extends TestCase
          MsgUnit msgUnit = new MsgUnit(new PublishKey(this.glob, "MSG"), content, pubQos);
          con.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -160,14 +161,14 @@ public class TestGetSql92Filter extends TestCase
          assertTrue("Expected exactly one returned message", msgUnits.length==1);
          assertTrue("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
                 msgUnits[0].getContent().length == content.length());
-         log.info(ME, "Success: Got one message.");
+         log.info("Success: Got one message.");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("get - XmlBlasterException: " + e.getMessage(), false);
       }
 
 
-      log.info(ME, "TEST 2: The published message does NOT match the pattern");
+      log.info("TEST 2: The published message does NOT match the pattern");
       try {
          PublishQos pubQos = new PublishQos(this.glob);
          pubQos.addClientProperty("posX", 250);
@@ -175,7 +176,7 @@ public class TestGetSql92Filter extends TestCase
          MsgUnit msgUnit = new MsgUnit(new PublishKey(this.glob, "MSG"), content, pubQos);
          con.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -184,16 +185,16 @@ public class TestGetSql92Filter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "Sql92Filter", "1.0", filter));
 
          MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         if (msgUnits.length > 0) log.info(ME, msgUnits[0].toXml());
+         if (msgUnits.length > 0) log.info(msgUnits[0].toXml());
          assertTrue("Expected zero returned message", msgUnits!=null);
          assertEquals("Expected zero returned message", 0, msgUnits.length);
-         log.info(ME, "Success: Got no message.");
+         log.info("Success: Got no message.");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("get - XmlBlasterException: " + e.getMessage(), false);
       }
 
-      log.info(ME, "Success in testFilter()");
+      log.info("Success in testFilter()");
    }
 
    /**

@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.msgstore;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -29,13 +30,13 @@ import junit.framework.*;
 public class MsgUnitWrapperTest extends TestCase {
    private String ME = "MsgUnitWrapperTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(MsgUnitWrapperTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
    public MsgUnitWrapperTest(String name) {
       super(name);
       this.glob = new Global();
-      this.log = this.glob.getLog("test");
+
    }
 
    protected void setUp() {
@@ -142,7 +143,7 @@ public class MsgUnitWrapperTest extends TestCase {
 
          assertTrue("Not different instances", msgUnitWrapper != newWrapper);
 
-         log.info(ME, "*** [SUCCESS]");
+         log.info("*** [SUCCESS]");
       }
       catch(XmlBlasterException e) {
          fail(ME + ": Exception thrown: " + e.getMessage());

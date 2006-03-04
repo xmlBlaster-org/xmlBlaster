@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -32,7 +33,7 @@ import junit.framework.*;
 public class MsgQosFactoryTest extends TestCase {
    private final String ME = "MsgQosFactoryTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(MsgQosFactoryTest.class.getName());
    int counter = 0;
 
    public MsgQosFactoryTest(String name) {
@@ -41,7 +42,7 @@ public class MsgQosFactoryTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = glob.getLog("test");
+
    }
 
    /**
@@ -174,8 +175,8 @@ public class MsgQosFactoryTest extends TestCase {
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
          MsgQosData qos = factory.readObject(xml);
          String newXml = qos.toXml();
-         log.info(ME, "lifeTime=" + qos.getLifeTimeProp().toXml());
-         log.info(ME, "New XML=" + newXml);
+         log.info("lifeTime=" + qos.getLifeTimeProp().toXml());
+         log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
 
          assertEquals("", "AA", qos.getState());
@@ -487,7 +488,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   <administrative/>\n" +
             "</qos>\n";
          */
-         log.info(ME, "Created administrative publish" + xml);
+         log.info("Created administrative publish" + xml);
          assertTrue("Missing administrative in " + xml, xml.indexOf("<administrative/>") > -1);
          assertTrue("Wrong priority in " + xml, xml.indexOf("9") > -1 || xml.indexOf("MAX") > -1 );
 

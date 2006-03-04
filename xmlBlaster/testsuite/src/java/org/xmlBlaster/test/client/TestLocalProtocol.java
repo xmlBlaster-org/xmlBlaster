@@ -18,7 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.xmlBlaster.test.client;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -52,7 +53,7 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
    private static String ME = "TestLocalProtocol";
    private final Global glob;
    private GlobalUtil globalUtil;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestLocalProtocol.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -74,7 +75,7 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
    public TestLocalProtocol (Global glob, String testName, String name){
       super(testName);
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("test");
+
       this.name = name;
 
    }
@@ -120,17 +121,17 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
       globalUtil = new GlobalUtil( serverThread.getMain().getGlobal() );
       Global runglob = globalUtil.getClone( glob );
 
-      log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
+      log.info("XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con = runglob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(runglob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
 
       // Subscribe to a message with a supplied filter
@@ -141,7 +142,7 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
          String qos = "<qos><notify>false</notify></qos>"; // send no erase events
     
          subscribeOid = con.subscribe(xmlKey, qos).getSubscriptionId() ;
-         log.info(ME, "Success: Subscribe on subscriptionId=" + subscribeOid + " done");
+         log.info("Success: Subscribe on subscriptionId=" + subscribeOid + " done");
          assertTrue("returned null subscriptionId", subscribeOid != null);
          
          subscriberTable.put(subscribeOid, new Integer(0));
@@ -151,13 +152,13 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
             "</key>";
 
          subscribeOid2 = con.subscribe(xmlKey, qos).getSubscriptionId() ;
-         log.info(ME, "Success: Subscribe on subscriptionId=" + subscribeOid2 + " done");
+         log.info("Success: Subscribe on subscriptionId=" + subscribeOid2 + " done");
          assertTrue("returned null subscriptionId", subscribeOid2 != null);
          
          subscriberTable.put(subscribeOid2, new Integer(1));
 
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -169,7 +170,7 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
     */
    protected void tearDown()
    {
-      log.info(ME, "TEST: tearing down");
+      log.info("TEST: tearing down");
       try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
       
       try {
@@ -196,9 +197,9 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
 
    public void testPublish()
    {
-      log.info(ME, "testPublish...");
+      log.info("testPublish...");
 
-      log.info(ME, "TEST 1");
+      log.info("TEST 1");
       try {
          // Publish 5 messages
          // 5 for first sub
@@ -206,11 +207,11 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
          for ( int i = 0; i<5;i++) {
             String c = "<content>"+i+"</content>";
             String k = "<key oid='"+i+"' contentMime='text/xml'><TestLocalProtocol-AGENT id='"+i+"' type='generic'/></key>";
-            log.info(ME,"Key: " +k);
+            log.info("Key: " +k);
             con.publish(new MsgUnit(k, c.getBytes(), null));
          }
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(subscribeOid,10000L, 5);
@@ -225,9 +226,9 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
+      log.info("Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
       int ii = ((Integer)subscriberTable.get(updateQos.getSubscriptionId())).intValue();
-      log.trace(ME,"Got message " + new String(content));
+      log.fine("Got message " + new String(content));
       subRec[ii]++;
       numReceived++;
       return "";
@@ -256,7 +257,7 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
       // check if too many are arriving
       try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, subRec[ii]);
-      log.info(ME,"Found correct rec messages for: " + subId);
+      log.info("Found correct rec messages for: " + subId);
       subRec[ii]= 0;
    }
 

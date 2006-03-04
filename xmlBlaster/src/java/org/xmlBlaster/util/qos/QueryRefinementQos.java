@@ -6,7 +6,8 @@ Comment:   Holding filter address string and protocol string
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.mime.Query;
 import org.xml.sax.Attributes;
@@ -32,7 +33,7 @@ public abstract class QueryRefinementQos
 {
    protected String ME = "QueryRefinementQos";
    protected final Global glob;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(QueryRefinementQos.class.getName());
 
    /** The filter/query rule string and an object to hold the prepared query on demand  */
    protected Query query;
@@ -61,7 +62,7 @@ public abstract class QueryRefinementQos
       this.logName = logName;
       this.versionProp = versionProp;
       this.glob = glob;
-      this.log = this.glob.getLog(this.logName);
+
       setVersion(glob.getProperty().get(this.versionProp, DEFAULT_version));
    }
 
@@ -77,7 +78,7 @@ public abstract class QueryRefinementQos
       this.logName = logName;
       this.versionProp = versionProp;
       this.glob = glob;
-      this.log = this.glob.getLog(this.logName);
+
       setType(type);
       setVersion(version);
       setQuery(new Query(glob, query));
@@ -95,7 +96,7 @@ public abstract class QueryRefinementQos
       this.logName = logName;
       this.versionProp = versionProp;
       this.glob = glob;
-      this.log = this.glob.getLog(this.logName);
+
       setType(type);
       setVersion(version);
       setQuery(query);
@@ -177,12 +178,12 @@ public abstract class QueryRefinementQos
                   setVersion(attrs.getValue(i).trim());
                }
                else {
-                  log.warn(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in " + this.tagName + " section.");
+                  log.warning("Ignoring unknown attribute " + attrs.getQName(i) + " in " + this.tagName + " section.");
                }
             }
          }
          if (getType() == null) {
-            log.warn(ME, "Missing '" + this.tagName + "' attribute 'type' in QoS, ignoring the " + this.tagName + " request");
+            log.warning("Missing '" + this.tagName + "' attribute 'type' in QoS, ignoring the " + this.tagName + " request");
             setType(null);
             return false;
          }
@@ -203,7 +204,7 @@ public abstract class QueryRefinementQos
          if (tmp.length() > 0)
             setQuery(new Query(glob, tmp));
          else if (getQuery() == null)
-            log.error(ME, this.tagName + " QoS contains no query data");
+            log.severe(this.tagName + " QoS contains no query data");
       }
       character.setLength(0);
    }

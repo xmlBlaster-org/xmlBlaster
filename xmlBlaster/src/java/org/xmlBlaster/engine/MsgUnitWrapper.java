@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -49,7 +50,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    private static final long serialVersionUID = -3883804885824516337L;
    private transient final static String ME = "MsgUnitWrapper-";
    private transient final Global glob;
-   private transient final LogChannel log;
+   private static Logger log = Logger.getLogger(MsgUnitWrapper.class.getName());
    private transient int historyReferenceCounter; // if is in historyQueue, is swapped to persistence as well
    private transient int referenceCounter;        // total number of references, is swapped to persistence as well
    private transient final long uniqueId;
@@ -116,7 +117,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    public MsgUnitWrapper(Global glob, MsgUnit msgUnit, I_Map ownerCache, StorageId storageId, int referenceCounter,
                          int historyReferenceCounter, String embeddedType, long sizeInBytes) throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "MsgUnitWrapper", "Invalid constructor parameter msgUnit==null");
       }
@@ -176,11 +177,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       */
       this.immutableSizeInBytes = (sizeInBytes >= 0) ? sizeInBytes : (3200 + this.msgUnit.size());
 
-      if (log.TRACE) log.trace(ME+getLogId(), "Created new MsgUnitWrapper instance '" + this + "' " + ((this.ownerCache==null) ? " from persistence store" : ""));
+      if (log.isLoggable(Level.FINE)) log.fine("Created new MsgUnitWrapper instance '" + this + "' " + ((this.ownerCache==null) ? " from persistence store" : ""));
 
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
       if (this.historyReferenceCounter > this.referenceCounter) { // assert
-         log.error(ME + getLogId(), "PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
+         log.severe("PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
       }
    }
 
@@ -189,7 +190,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     */
    public void finalize() {
       if (this.destroyTimer != null && this.timerKey != null) {
-         if (log.TRACE) log.trace(ME, "finalize timerKey=" + this.timerKey);
+         if (log.isLoggable(Level.FINE)) log.fine("finalize timerKey=" + this.timerKey);
          this.destroyTimer.removeTimeoutListener(this.timerKey);
       }
    }
@@ -217,7 +218,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 
    private I_Map getOwnerCache() throws XmlBlasterException {
       if (this.ownerCache == null) {
-         if (log.TRACE) log.trace(ME+getLogId(), "Creating ownerCache from topicHandler");
+         if (log.isLoggable(Level.FINE)) log.fine("Creating ownerCache from topicHandler");
          this.ownerCache = getTopicHandler().getMsgUnitCache();
       }
       return this.ownerCache;
@@ -249,8 +250,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       synchronized (getTopicHandler()) {
          synchronized (cache) {
             if (isSwapped()) {
-               if (this.log.TRACE) 
-                  this.log.trace(ME+this.getLogId(), "incrementReferenceCounter: unexpected swapped message");
+               if (log.isLoggable(Level.FINE)) 
+                  log.fine("incrementReferenceCounter: unexpected swapped message");
                return false;
             }
             boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
@@ -262,8 +263,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
             }
 
             // TODO: Remove the logging
-            if (log.TRACE && !isInternal()) {
-               log.trace(ME+getLogId(), "Reference count changed from " +
+            if (log.isLoggable(Level.FINE) && !isInternal()) {
+               log.fine("Reference count changed from " +
                    (this.referenceCounter-count) + " to " + this.referenceCounter + 
                    ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "'");
             }
@@ -275,7 +276,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
                      I_MapEntry ret = cache.change(this, null);
                      //I_MapEntry ret = getOwnerCache().change(this.getUniqueId(), this);  // I_ChangeCallback
                      if (ret != this) {
-                        log.error(ME+getLogId(), "Expected to be identical in change(): old=" + this + " new=" + ret);
+                        log.severe("Expected to be identical in change(): old=" + this + " new=" + ret);
                      }
                   }
                }
@@ -298,8 +299,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          this.referenceCounter += count;
       }
 
-      if (log.TRACE && !isInternal()) {
-         log.trace(ME+getLogId(), "Reference count changed from " +
+      if (log.isLoggable(Level.FINE) && !isInternal()) {
+         log.fine("Reference count changed from " +
              (this.referenceCounter-count) + " to " + this.referenceCounter + ", this='" + this + "'");
       }
 
@@ -315,7 +316,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     * @throws XmlBlasterException if something has gone wrong and the change must be rolled back.
     */                             
    public I_MapEntry changeEntry(I_MapEntry entry) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME+getLogId(), "Entring changeEntry(), referecenceCounter=" + this.referenceCounter + 
+      if (log.isLoggable(Level.FINE)) log.fine("Entring changeEntry(), referecenceCounter=" + this.referenceCounter + 
                                ", historyReferenceCounter=" + this.historyReferenceCounter );
       return this;
    }
@@ -479,7 +480,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) {
-      this.glob.getLog("core").error(ME + getLogId(), "added("+storageId.getId()+") invocation not expected");
+      log.severe("added("+storageId.getId()+") invocation not expected");
    }
 
    /**
@@ -487,7 +488,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) {
-      this.glob.getLog("core").error(ME + getLogId(), "removed("+storageId.getId()+") invocation not expected");
+      log.severe("removed("+storageId.getId()+") invocation not expected");
    }
 
    /**
@@ -514,11 +515,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    public void startExpiryTimer() {
       synchronized (this) {
          if (this.state != ALIVE) {
-            log.error(ME + getLogId(), "Unexpected startExpiryTimer in state " + getStateStr());
+            log.severe("Unexpected startExpiryTimer in state " + getStateStr());
             return;
          }
          if (this.timerKey != null) {
-            log.error(ME + getLogId(), "Unexpected expiry timer in state " + getStateStr());
+            log.severe("Unexpected expiry timer in state " + getStateStr());
             return;
             //this.destroyTimer.removeTimeoutListener(this.timerKey);
             //this.timerKey = null;
@@ -616,7 +617,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
             toExpired();
          }
          catch (XmlBlasterException e) {
-            this.glob.getLog("core").error(ME + getLogId(), "Unexpected exception from toExpired() which we can't handle: " + e.getMessage());
+            log.severe("Unexpected exception from toExpired() which we can't handle: " + e.getMessage());
          }
       }
    }

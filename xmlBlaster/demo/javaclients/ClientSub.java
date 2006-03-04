@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -47,14 +48,14 @@ public class ClientSub implements I_Callback
 {
    private static String ME = "ClientSub";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientSub.class.getName());
    private int numReceived = 0;         // error checking
    public static long startTime;
    public static long elapsed;
 
    public ClientSub(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(null);
+
       try {
          I_XmlBlasterAccess blasterConnection = glob.getXmlBlasterAccess();
          blasterConnection.connect(null, this);
@@ -67,14 +68,14 @@ public class ClientSub implements I_Callback
          /* // Run forever
          while (true) {
             try { Thread.currentThread().sleep(100000000L);
-            } catch(InterruptedException e) { log.warn(ME, "Caught exception: " + e.toString()); }
+            } catch(InterruptedException e) { log.warning("Caught exception: " + e.toString()); }
          }
          */
 
          blasterConnection.disconnect(null);
       }
       catch (Exception e) {
-         log.error(ME, "Client failed: " + e.toString());
+         log.severe("Client failed: " + e.toString());
          // e.printStackTrace();
       }
    }
@@ -85,7 +86,7 @@ public class ClientSub implements I_Callback
       try {
          // Subscribe to messages with XPATH using some helper classes
          {
-            log.info(ME, "Subscribing using XPath syntax ...");
+            log.info("Subscribing using XPath syntax ...");
 
             // SubscribeKey helps us to create this string:
             //   "<key oid='' queryType='XPATH'>" +
@@ -98,18 +99,18 @@ public class ClientSub implements I_Callback
 
             try {
                subscriptionId = blasterConnection.subscribe(key.toXml(), qos.toXml()).getSubscriptionId();
-               log.info(ME, "Subscribe done, there should be no Callback, subcriptionId=" + subscriptionId);
+               log.info("Subscribe done, there should be no Callback, subcriptionId=" + subscriptionId);
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
          }
 
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          if (numReceived == 0)
-            log.info(ME, "Success, no Callback for a simple subscribe without a publish");
+            log.info("Success, no Callback for a simple subscribe without a publish");
          else
-            log.error(ME, "Got Callback, but didn't expect one after a simple subscribe without a publish");
+            log.severe("Got Callback, but didn't expect one after a simple subscribe without a publish");
          numReceived = 0;
 
 
@@ -127,13 +128,13 @@ public class ClientSub implements I_Callback
                             "</key>";
             String content = "Yeahh, i'm the new content";
             MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
-            log.info(ME, "Publishing ...");
+            log.info("Publishing ...");
             try {
                startTime = System.currentTimeMillis();
                pubRetQos = blasterConnection.publish(msgUnit);
-               log.info(ME, "Publishing done, returned oid=" + pubRetQos.getKeyOid());
+               log.info("Publishing done, returned oid=" + pubRetQos.getKeyOid());
             } catch(XmlBlasterException e) {
-               log.error(ME, "XmlBlasterException: " + e.getMessage());
+               log.severe("XmlBlasterException: " + e.getMessage());
                System.exit(1);
             }
          }
@@ -141,12 +142,12 @@ public class ClientSub implements I_Callback
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          if (numReceived == 1)
-            log.info(ME, "Success, got Callback after publishing");
+            log.info("Success, got Callback after publishing");
          else
-            log.error(ME, numReceived + " callbacks arrived, did expect one after a simple subscribe with a publish");
+            log.severe(numReceived + " callbacks arrived, did expect one after a simple subscribe with a publish");
          numReceived = 0;
 
-         log.info(ME, "Hit a key to exit");
+         log.info("Hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
 
          //----------- cleaning up .... unSubscribe() the previous message OID -------
@@ -156,9 +157,9 @@ public class ClientSub implements I_Callback
             numReceived = 0;
             try {
                blasterConnection.unSubscribe(xmlKey, qos);
-               log.info(ME, "Success: UnSubscribe with " + subscriptionId + " done");
+               log.info("Success: UnSubscribe with " + subscriptionId + " done");
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
          }
 
@@ -168,12 +169,12 @@ public class ClientSub implements I_Callback
             String xmlKey = "<key oid='" + pubRetQos.getKeyOid() + "' queryType='EXACT'/>";
             try {
                EraseReturnQos[] strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
-               if (strArr.length != 1) log.error(ME, "Erased " + strArr.length + " messages:");
-            } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
+               if (strArr.length != 1) log.severe("Erased " + strArr.length + " messages:");
+            } catch(XmlBlasterException e) { log.severe("XmlBlasterException: " + e.getMessage()); }
          }
       }
       catch (Exception e) {
-         log.error(ME, "Client failed: " + e.toString());
+         log.severe("Client failed: " + e.toString());
          //e.printStackTrace();
       }
    }
@@ -194,10 +195,10 @@ public class ClientSub implements I_Callback
    {
       elapsed = System.currentTimeMillis() - startTime;
       numReceived++;
-      log.info(ME, "Received asynchronous callback-update " + numReceived + " with cbSessionId='" + cbSessionId + "' from xmlBlaster from publisher " + updateQos.getSender() + " (latency=" + elapsed + " milli seconds):");
-      log.plain("UpdateKey", updateKey.toXml());
-      log.plain("content", (new String(content)).toString());
-      log.plain("UpdateQos", updateQos.toXml());
+      log.info("Received asynchronous callback-update " + numReceived + " with cbSessionId='" + cbSessionId + "' from xmlBlaster from publisher " + updateQos.getSender() + " (latency=" + elapsed + " milli seconds):");
+      System.out.println(updateKey.toXml());
+      System.out.println((new String(content)).toString());
+      System.out.println(updateQos.toXml());
       return "";
    }
 

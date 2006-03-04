@@ -21,7 +21,8 @@ import com.jclark.xsl.sax.ServletDestination;
 import com.jclark.xsl.sax.OutputMethodHandlerImpl;
 import com.jclark.xsl.sax.XSLProcessorImpl;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 
 /*
@@ -34,14 +35,14 @@ abstract public class ReqBaseServlet extends HttpServlet
 {
    private static final String ME               = "ReqBaseServlet";
    private static final String DEFAULT_PARSER   = "com.jclark.xml.sax.CommentDriver";
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(ReqBaseServlet.class.getName());
 
 
   /**
    */
    public void init(ServletConfig conf) throws ServletException {
       super.init(conf);
-      log = org.xmlBlaster.util.Global.instance().getLog("http");
+
    }
 
 
@@ -86,7 +87,7 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       }
       catch(Exception e) {
-         log.warn(ME, "servlet output broken:"+e.toString());
+         log.warning("servlet output broken:"+e.toString());
          throw new ServletException(e.toString());
       }
 
@@ -111,7 +112,7 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       }
       catch(Exception e) {
-         log.warn(ME, "servlet output broken:"+e.toString());
+         log.warning("servlet output broken:"+e.toString());
          throw new ServletException(e.toString());
       }
 
@@ -133,12 +134,12 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       try {
          String url = new URL("file", "", xslPath).toString();
-         log.info(ME, "Reading from "+url);
+         log.info("Reading from "+url);
          xsl.loadStylesheet( new InputSource( new URL("file", "", xslPath).toString() ) );
-         log.info(ME, "Successfully read from "+url);
+         log.info("Successfully read from "+url);
       }
       catch ( Exception e) {
-         log.error(ME,e.toString());
+         log.severe(e.toString());
          throw new XmlBlasterException(ME,"Could not read XSL file.");
       }
 

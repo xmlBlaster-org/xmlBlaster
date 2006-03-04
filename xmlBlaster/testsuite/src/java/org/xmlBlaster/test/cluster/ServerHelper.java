@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.cluster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
@@ -31,7 +32,7 @@ import junit.framework.*;
 public class ServerHelper {
    private String ME = "ServerHelper";
    private Global glob_;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(ServerHelper.class.getName());
    public static int heronPort = 7600;
    public static int avalonPort = 7601;
    public static int golanPort = 7602;
@@ -42,7 +43,7 @@ public class ServerHelper {
 
    private Global heronGlob, avalonGlob, golanGlob, frodoGlob, bilboGlob;
 
-   public ServerHelper(Global glob, LogChannel log, String name) {
+   public ServerHelper(Global glob, Logger log, String name) {
       ME = "ServerHelper-"+name;
       this.glob_ = glob;
       this.log = log;
@@ -61,7 +62,7 @@ public class ServerHelper {
       f = new File("cluster" + File.separatorChar + fn);
       if (f.canRead())
          return f.getPath();
-      log.error(ME, "Can't locate property file " + fn + ". Please check your current directory or cluster directory");
+      log.severe("Can't locate property file " + fn + ". Please check your current directory or cluster directory");
       throw new IllegalArgumentException("Can't locate property file " + fn + ". Please check your current directory or cluster directory");
    }
 
@@ -111,34 +112,34 @@ public class ServerHelper {
       if (!"bilbo".equals(bilboGlob.getId())) {
          String tmp = "Invalid cluster node id, check biblo.properties or" +
                    " change to the directory where the property files are!";
-         log.error(ME, tmp);
+         log.severe(tmp);
          throw new IllegalArgumentException(tmp); // just to be shure
       }
    }
 
    public void startHeron() {
       heronThread = EmbeddedXmlBlaster.startXmlBlaster(heronGlob);
-      log.info(ME, "'heron' is ready for testing on bootstrapPort " + heronPort);
+      log.info("'heron' is ready for testing on bootstrapPort " + heronPort);
    }
 
    public void startAvalon() {
       avalonThread = EmbeddedXmlBlaster.startXmlBlaster(avalonGlob);
-      log.info(ME, "'avalon' is ready for testing on bootstrapPort " + avalonPort);
+      log.info("'avalon' is ready for testing on bootstrapPort " + avalonPort);
    }
 
    public void startGolan() {
       golanThread = EmbeddedXmlBlaster.startXmlBlaster(golanGlob);
-      log.info(ME, "'golan' is ready for testing on bootstrapPort " + golanPort);
+      log.info("'golan' is ready for testing on bootstrapPort " + golanPort);
    }
 
    public void startFrodo() {
       frodoThread = EmbeddedXmlBlaster.startXmlBlaster(frodoGlob);
-      log.info(ME, "'frodo' is ready for testing on bootstrapPort " + frodoPort);
+      log.info("'frodo' is ready for testing on bootstrapPort " + frodoPort);
    }
 
    public void startBilbo() {
       bilboThread = EmbeddedXmlBlaster.startXmlBlaster(bilboGlob);
-      log.info(ME, "'bilbo' is ready for testing on bootstrapPort " + bilboPort);
+      log.info("'bilbo' is ready for testing on bootstrapPort " + bilboPort);
    }
 
    public void stopHeron() {
@@ -164,22 +165,22 @@ public class ServerHelper {
    /** Connect in fail save mode to a server node (as given in glob.getId()) */
    public I_XmlBlasterAccess connect(final Global glob, I_Callback cb) throws XmlBlasterException {
       final String clientName = "ClientTo[" + glob.getId() + "]";
-      if (glob.getId() == null || glob.getId().length() < 1) log.error(ME, "glob.getId() is not set");
+      if (glob.getId() == null || glob.getId().length() < 1) log.severe("glob.getId() is not set");
       I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
       con.registerConnectionListener(new I_ConnectionStateListener() {
             public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.info(clientName, "Changed from connection state " + oldState +
+               log.info("Changed from connection state " + oldState +
                                      " to " + ConnectionStateEnum.ALIVE + " with " +
                                      connection.getQueue().getNumOfEntries() + " queue entries pending" +
                                      ": We were lucky, reconnected to " + connection.getGlobal().getId());
             }
             public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.warn(clientName, "DEBUG ONLY: Changed from connection state " + oldState + " to " +
+               log.warning("DEBUG ONLY: Changed from connection state " + oldState + " to " +
                                     ConnectionStateEnum.POLLING + ": Lost connection to " + connection.getGlobal().getId());
             }
             public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.error(clientName, "DEBUG ONLY: Changed from connection state " + oldState + " to " +
+               log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " +
                                      ConnectionStateEnum.DEAD + ": Lost connection to " + connection.getGlobal().getId());
             }
          });
@@ -187,7 +188,7 @@ public class ServerHelper {
       ConnectQos qos = new ConnectQos(glob, clientName, "secret");
       ConnectReturnQos conRetQos = con.connect(qos, cb);
 
-      log.info(clientName, "Connected to xmlBlaster.");
+      log.info("Connected to xmlBlaster.");
       return con;
    }
 
@@ -197,7 +198,7 @@ public class ServerHelper {
     * Is done automatically in constructor
     */
    private void setUp() {
-      log.info(ME, "Entering setUp(), test starts");
+      log.info("Entering setUp(), test starts");
 
       // The init is used for server nodes but used for client connections as well
       initHeron();
@@ -221,7 +222,7 @@ public class ServerHelper {
     * You have to call this when you are done.
     */
    public void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
 
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {} // Wait some time
 

@@ -12,13 +12,14 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Wraps an publish() message into an entry for a sorted queue.
@@ -27,6 +28,11 @@ import java.util.ArrayList;
  */
 public final class MsgQueuePublishEntry extends MsgQueueEntry
 {
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
+   private static Logger log = Logger.getLogger(MsgQueuePublishEntry.class.getName());
    private final static String ME = "PublishQueueEntry";
    private final MsgQosData msgQosData;
    private SessionName receiver;
@@ -48,11 +54,11 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
       super(glob, oneway ? MethodName.PUBLISH_ONEWAY : MethodName.PUBLISH,
             ((MsgQosData)msgUnit.getQosData()).getPriority(), storageId, ((MsgQosData)msgUnit.getQosData()).isPersistent());
       if (msgUnit == null) {
-         glob.getLog("dispatch").error(ME, "Invalid constructor parameter");
-         Thread.currentThread().dumpStack();
+         log.severe("Invalid constructor parameter");
+         Thread.dumpStack();
          throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
       }
-      if (log.CALL) log.call(ME, "Created: " + getUniqueId());
+      if (log.isLoggable(Level.FINER)) log.finer("Created: " + getUniqueId());
       this.msgUnit = msgUnit;
       this.msgQosData = (MsgQosData)msgUnit.getQosData();
 
@@ -79,14 +85,14 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
       super(glob, entryType.toString(), ((MsgQosData)msgUnit.getQosData()).getPriority(),
             publishEntryTimestamp, storageId, ((MsgQosData)msgUnit.getQosData()).isPersistent());
       if (msgUnit == null) {
-         glob.getLog("queue").error(ME, "Invalid constructor parameter");
-         Thread.currentThread().dumpStack();
+         log.severe("Invalid constructor parameter");
+         Thread.dumpStack();
          throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
       }
       this.msgUnit = msgUnit;
       this.msgQosData = (MsgQosData)msgUnit.getQosData();
       this.immutableSizeInBytes = sizeInBytes;
-      if (log.CALL) log.call(ME, "Created from persistence: " + getUniqueId());
+      if (log.isLoggable(Level.FINER)) log.finer("Created from persistence: " + getUniqueId());
    }
 
    /**
@@ -158,7 +164,7 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
          if (list != null && list.size() >0) {
             this.receiver = (SessionName)list.get(0);
             if (list.size() > 1)
-               log.warn(ME, "Ignoring other receivers with getReceiver()");
+               log.warning("Ignoring other receivers with getReceiver()");
          }
       }
       return this.receiver;

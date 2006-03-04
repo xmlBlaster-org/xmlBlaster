@@ -9,6 +9,7 @@ package org.xmlBlaster.util;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -27,7 +28,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  */
 public class XmlQoSBase extends SaxHandlerBase
 {
-   private String ME = "XmlQoSBase";
+   private static Logger log = Logger.getLogger(XmlQoSBase.class.getName());
    protected boolean inQos = false;     // parsing inside <qos> ? </qos>
    protected ClientProperty clientProperty;
    protected final Set clientPropertyTagNames = new TreeSet();
@@ -98,7 +99,7 @@ public class XmlQoSBase extends SaxHandlerBase
          return true;
       }
       if (!inQos) {
-         org.xmlBlaster.util.Global.instance().getLog("core").warn(ME, "Ignoring unknown element '" + name + "'.");
+         log.warning("Ignoring unknown element '" + name + "'.");
          character.setLength(0);
          Thread.dumpStack();
          return true;

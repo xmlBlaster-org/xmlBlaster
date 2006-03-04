@@ -1,7 +1,8 @@
 // xmlBlaster/demo/javaclients/HelloWorldMime.java
 package javaclients;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
@@ -51,10 +52,10 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  */
 public class HelloWorldMime implements I_Callback
 {
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorldMime.class.getName());
 
    public HelloWorldMime(Global glob) {
-      log = glob.getLog(null);
+
       try {
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
@@ -74,7 +75,7 @@ public class HelloWorldMime implements I_Callback
          gq.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport']"));
          MsgUnit[] msgs = con.get(gk, gq);
 
-         log.info("", "Accessed xmlBlaster message synchronous with get() with content '" + new String(msgs[0].getContent()) + "'");
+         log.info("Accessed xmlBlaster message synchronous with get() with content '" + new String(msgs[0].getContent()) + "'");
 
 
          SubscribeKey sk = new SubscribeKey(glob, "HelloWorldMime");
@@ -103,7 +104,7 @@ public class HelloWorldMime implements I_Callback
          con.disconnect(dq);
       }
       catch (Exception e) {
-         log.error("", e.getMessage());
+         log.severe(e.getMessage());
       }
    }
 
@@ -111,12 +112,12 @@ public class HelloWorldMime implements I_Callback
                         UpdateQos updateQos)
    {
       if (updateKey.isInternal()) {
-         log.info("", "Received unexpected internal message '" +
+         log.info("Received unexpected internal message '" +
               updateKey.getOid() + " from xmlBlaster");
          return "";
       }
 
-      log.info("", "Received asynchronous message '" + updateKey.getOid() +
+      log.info("Received asynchronous message '" + updateKey.getOid() +
                    "' state=" + updateQos.getState() +
                    " content=" + new String(content) + " from xmlBlaster");
       return "";

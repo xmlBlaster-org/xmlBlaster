@@ -9,7 +9,8 @@ package org.xmlBlaster.engine;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.authentication.SubjectInfo;
 
 import EDU.oswego.cs.dl.util.concurrent.Channel;
@@ -25,7 +26,7 @@ public class SubjectEntryShuffler implements Runnable {
 
    private final static String ME = "SubjectEntryShuffler";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(SubjectEntryShuffler.class.getName());
    
    private Channel channel;
    private Set set;
@@ -36,8 +37,8 @@ public class SubjectEntryShuffler implements Runnable {
     */
    SubjectEntryShuffler(Global global) {
       this.global = global;
-      this.log = this.global.getLog("core");
-      if (this.log.CALL) this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
       this.channel = new LinkedQueue();
       this.set = new HashSet();
       Thread thread = new Thread(this, "XmlBlaster."+ME);
@@ -51,22 +52,22 @@ public class SubjectEntryShuffler implements Runnable {
     * @param info
     */
    public void shuffle(SubjectInfo info) {
-      if (this.log.CALL) this.log.call(ME, "shuffle SubjectInfo '" + info.getId() + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("shuffle SubjectInfo '" + info.getId() + "'");
       try {
          synchronized(this.set) {
             if (this.set.contains(info)) return;
             this.set.add(info);
             this.channel.put(info);
          }
-         if (this.log.CALL) this.log.call(ME, "shuffle SubjectInfo '" + info.getId() + "' put has returned");
+         if (log.isLoggable(Level.FINER)) this.log.finer("shuffle SubjectInfo '" + info.getId() + "' put has returned");
       }
       catch (InterruptedException ex) {
          // Is OK on shutdown
-         this.log.warn(ME, "shuffle InterruptedException occured " + ex.getMessage());
+         log.warning("shuffle InterruptedException occured " + ex.getMessage());
          ex.printStackTrace();
       }
       catch (Throwable ex) {
-         this.log.error(ME, "shuffle a Throwable occured " + ex.getMessage());
+         log.severe("shuffle a Throwable occured " + ex.getMessage());
          ex.printStackTrace();
       }
    }
@@ -75,7 +76,7 @@ public class SubjectEntryShuffler implements Runnable {
     * @see java.lang.Runnable#run()
     */
    public void run() {
-      this.log.info(ME, "run: shuffling Thread started");
+      log.info("run: shuffling Thread started");
       while (true) {
          try {
             SubjectInfo info = (SubjectInfo)this.channel.take();
@@ -83,16 +84,16 @@ public class SubjectEntryShuffler implements Runnable {
                this.set.remove(info);
             }
 
-            if (this.log.TRACE) this.log.trace(ME, "run: shuffling for subject '" + info.getId() + "' starts");
+            if (log.isLoggable(Level.FINE)) this.log.fine("run: shuffling for subject '" + info.getId() + "' starts");
             info.forwardToSessionQueue();
-            if (this.log.TRACE) this.log.trace(ME, "run: shuffling for subject '" + info.getId() + "' completed");
+            if (log.isLoggable(Level.FINE)) this.log.fine("run: shuffling for subject '" + info.getId() + "' completed");
          }
          catch (InterruptedException ex) {
-            this.log.error(ME, "run InterruptedException occured " + ex.getMessage());
+            log.severe("run InterruptedException occured " + ex.getMessage());
             ex.printStackTrace();
          }
          catch (Throwable ex) {
-            this.log.error(ME, "run a Throwable occured " + ex.getMessage());
+            log.severe("run a Throwable occured " + ex.getMessage());
             ex.printStackTrace();
          }
          

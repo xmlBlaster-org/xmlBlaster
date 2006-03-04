@@ -6,7 +6,8 @@ Comment:   Testing some topic state transitions
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.topic;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -57,7 +58,7 @@ import junit.framework.*;
 public class TestTopicHistory extends TestCase implements I_Callback {
    private String ME = "TestTopicHistory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestTopicHistory.class.getName());
 
    private final String senderName = "Gesa";
    private I_XmlBlasterAccess con = null;
@@ -81,7 +82,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
    public TestTopicHistory(Global glob, String testName) {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
    }
 
    /**
@@ -97,7 +98,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          String[] args = { };
          glob.init(args);
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-         log.info(ME, "XmlBlaster is ready for testing the priority dispatch plugin");
+         log.info("XmlBlaster is ready for testing the priority dispatch plugin");
       }
 
       try {
@@ -107,7 +108,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          con.connect(qos, this);
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -125,7 +126,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
          if (arr.length != 0) {
-            log.error(ME, "Erased " + arr.length + " messages instead of 0");
+            log.severe("Erased " + arr.length + " messages instead of 0");
          }
          assertEquals("Erase", 0, arr.length);   // The volatile message schould not exist !!
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
@@ -143,7 +144,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
    }
 
    public EraseReturnQos[] sendErase(boolean forceDestroy) {
-      log.info(ME, "Erasing a topic forceDestroy=" + forceDestroy);
+      log.info("Erasing a topic forceDestroy=" + forceDestroy);
       try {
          EraseQos eq = new EraseQos(glob);
          eq.setForceDestroy(forceDestroy);
@@ -160,7 +161,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
     * Create a topic. 
     */
    public void createTopic(String keyOid, TopicProperty topicProperty) {
-      log.info(ME, "Creating topic " + keyOid);
+      log.info("Creating topic " + keyOid);
       try {
          PublishKey pk = new PublishKey(glob, publishOid, "text/xml", "1.0");
          PublishQos pq = new PublishQos(glob);
@@ -168,9 +169,9 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          MsgUnit msgUnit = new MsgUnit(pk, senderContent, pq);
          PublishReturnQos publishReturnQos = con.publish(msgUnit);
          assertEquals("Retunred oid is invalid", publishOid, publishReturnQos.getKeyOid());
-         log.info(ME, "Topic oid=" + publishOid + " created: " + msgUnit.toXml());
+         log.info("Topic oid=" + publishOid + " created: " + msgUnit.toXml());
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         log.severe("publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -179,7 +180,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
     * Publish an almost volatile message.
     */
    public void sendExpiringMsg(boolean initializeTopic, long topicDestroyDelay, long msgLifeTime) {
-      log.info(ME, "Sending a message initializeTopic=" + initializeTopic + " topicDestroyDelay=" + topicDestroyDelay + " msgLifeTime=" + msgLifeTime);
+      log.info("Sending a message initializeTopic=" + initializeTopic + " topicDestroyDelay=" + topicDestroyDelay + " msgLifeTime=" + msgLifeTime);
       try {
          // Publish a volatile message
          PublishKey pk = new PublishKey(glob, publishOid, "text/xml", "1.0");
@@ -196,9 +197,9 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          MsgUnit msgUnit = new MsgUnit(pk, senderContent, pq);
          PublishReturnQos publishReturnQos = con.publish(msgUnit);
          assertEquals("Retunred oid is invalid", publishOid, publishReturnQos.getKeyOid());
-         log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid + " " + msgUnit.toXml());
+         log.info("Sending of '" + senderContent + "' done, returned oid=" + publishOid + " " + msgUnit.toXml());
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         log.severe("publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -207,15 +208,15 @@ public class TestTopicHistory extends TestCase implements I_Callback {
     * Subscribe a volatile message.
     */
    public void subscribeMsg() {
-      log.info(ME, "Subscribing message '" + publishOid + "'...");
+      log.info("Subscribing message '" + publishOid + "'...");
       try {
          // Subscribe for the volatile message
          SubscribeKey sk = new SubscribeKey(glob, publishOid);
          SubscribeQos sq = new SubscribeQos(glob);
          subscribeReturnQos = con.subscribe(sk.toXml(), sq.toXml());
-         log.info(ME, "Subscribing of '" + publishOid + "' done");
+         log.info("Subscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
-         log.error(ME, "subscribe() XmlBlasterException: " + e.getMessage());
+         log.severe("subscribe() XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -224,15 +225,15 @@ public class TestTopicHistory extends TestCase implements I_Callback {
     * unSubscribe a message.
     */
    public void unSubscribeMsg() {
-      log.info(ME, "unSubscribing a volatile message ...");
+      log.info("unSubscribing a volatile message ...");
       try {
          // Subscribe for the volatile message
          UnSubscribeKey sk = new UnSubscribeKey(glob, subscribeReturnQos.getSubscriptionId());
          UnSubscribeQos sq = new UnSubscribeQos(glob);
          con.unSubscribe(sk.toXml(), sq.toXml());
-         log.info(ME, "UnSubscribing of '" + publishOid + "' done");
+         log.info("UnSubscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
-         log.error(ME, "unSubscribe() XmlBlasterException: " + e.getMessage());
+         log.severe("unSubscribe() XmlBlasterException: " + e.getMessage());
          assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -263,7 +264,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
     */
    public void testHistory() {
       this.ME = "TestTopicHistory-testHistory";
-      log.info(ME, "Entering testHistory ...");
+      log.info("Entering testHistory ...");
       numReceived = 0;
 
       String keyOid = "smallTopic";
@@ -280,7 +281,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          waitOnUpdate(1000L, 0);
          assertEquals("numReceived after sending", 0, numReceived); // no message arrived?
          String dump = getDump();
-         log.trace(ME, dump);
+         log.fine(dump);
          // Expecting something like:
          // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicHistoryMsg' state='ALIVE'>
          //  <uniqueKey>TestTopicHistoryMsg</uniqueKey>
@@ -300,16 +301,16 @@ public class TestTopicHistory extends TestCase implements I_Callback {
       }
 
       {  // topic transition from UNREFERENCED -> [11] -> DEAD
-         log.info(ME, "Sleeping for another 5 sec, the topic (with destroyDelay=6sec) should be dead then");
+         log.info("Sleeping for another 5 sec, the topic (with destroyDelay=6sec) should be dead then");
          try { Thread.currentThread().sleep(6000); } catch( InterruptedException i) {}
          // Topic should be destroyed now
 
          String dump = getDump();
-         log.trace(ME, "IS DEAD?"+dump);
+         log.fine("IS DEAD?"+dump);
          assertTrue("Not expected a dead topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
       */
-      log.info(ME, "SUCCESS testHistory");
+      log.info("SUCCESS testHistory");
    }
 
    /**
@@ -318,7 +319,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " " + updateQos.getState());
+      log.info("Receiving update of a message " + updateKey.getOid() + " " + updateQos.getState());
 
       numReceived += 1;
 
@@ -328,10 +329,10 @@ public class TestTopicHistory extends TestCase implements I_Callback {
       }
 
       if (this.blockUpdateTime > 0L) {
-         log.info(ME, "Blocking the update callback for " + this.blockUpdateTime + " millis");
+         log.info("Blocking the update callback for " + this.blockUpdateTime + " millis");
          try { Thread.currentThread().sleep(this.blockUpdateTime); } catch( InterruptedException i) {}
          this.blockUpdateTime = 0L;
-         log.info(ME, "Block released, reset blockTimer");
+         log.info("Block released, reset blockTimer");
       }
       return "";
    }
@@ -355,7 +356,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

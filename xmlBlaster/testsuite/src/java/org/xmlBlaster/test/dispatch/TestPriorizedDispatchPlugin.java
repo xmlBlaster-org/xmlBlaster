@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.dispatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -55,7 +56,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
 {
    private static String ME = "TestPriorizedDispatchPlugin";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestPriorizedDispatchPlugin.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -90,7 +91,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
    public TestPriorizedDispatchPlugin(Global glob, String testName, String name) {
       super(testName);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
       this.name = name;
    }
 
@@ -131,11 +132,11 @@ public class TestPriorizedDispatchPlugin extends TestCase
       if (this.startEmbedded) {
          glob.init(Util.getOtherServerPorts(serverPort));
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-         log.info(ME, "XmlBlaster is ready for testing the priority dispatch plugin");
+         log.info("XmlBlaster is ready for testing the priority dispatch plugin");
       }
 
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          this.con = glob.getXmlBlasterAccess();
 
          // Activate plugin for callback only:
@@ -149,7 +150,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
 
       this.update.clear();
@@ -160,14 +161,14 @@ public class TestPriorizedDispatchPlugin extends TestCase
     * @param state Choose one of "2M" or "64k"
     */
    private void changeStatus(String oid, String state) {
-      log.info(ME, "Changing band width state to '" + state + "'");
+      log.info("Changing band width state to '" + state + "'");
       try {
          PublishReturnQos rq = con.publish(new MsgUnit(glob, "<key oid='" + oid + "'/>", state, null));
-         log.info(ME, "SUCCESS for state change to '" + state + "', " + rq.getState());
+         log.info("SUCCESS for state change to '" + state + "', " + rq.getState());
          // Sleep to be shure the plugin has got and processed the message
          try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish bandwidth state - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -180,11 +181,11 @@ public class TestPriorizedDispatchPlugin extends TestCase
          PublishQos pq = new PublishQos(glob);
          pq.setPriority(prio);
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml()));
-         log.info(ME, "SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " content=" + content + " returned state=" + rq.getState());
+         log.info("SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " content=" + content + " returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish prio=" + prio.toString() + " - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -194,9 +195,9 @@ public class TestPriorizedDispatchPlugin extends TestCase
          SubscribeKey sk = new SubscribeKey(glob, oid);
          SubscribeQos sq = new SubscribeQos(glob);
          SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.toXml());
-         log.info(ME, "SUCCESS subscribe to '" + oid + "' returned state=" + srq.getState());
+         log.info("SUCCESS subscribe to '" + oid + "' returned state=" + srq.getState());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -205,7 +206,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
     * Test all tuples of possibilities
     */
    public void testPriorizedDispatchPlugin() {
-      log.info(ME, "testPriorizedDispatchPlugin() ...");
+      log.info("testPriorizedDispatchPlugin() ...");
       long sleep = 1000L;
       String text;
 
@@ -217,16 +218,16 @@ public class TestPriorizedDispatchPlugin extends TestCase
       try {
          for (int i=0; i<states.length; i++) {
             changeStatus(statusOid, states[i]);
-            log.info(ME, "========================state=" + states[i]);
+            log.info("========================state=" + states[i]);
             for (int priority=0; priority<expectedActions[i].length; priority++) {
                String action = expectedActions[i][priority];
                text = "state=" + states[i] + " action=" + action;
-               log.info(ME, "Doing " + text + " queueCounter=" + queueCounter);
+               log.info("Doing " + text + " queueCounter=" + queueCounter);
 
                boolean expectsNotify = false;
                if (action.indexOf("notifySender") >= 0) {
                   expectsNotify = true;
-                  log.info(ME, text + ": Expecting notify");
+                  log.info(text + ": Expecting notify");
                }
 
                if (action.startsWith("send")) {
@@ -261,7 +262,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
                   }
                }
                else {
-                  log.error(ME, text + ": Action is not supported");
+                  log.severe(text + ": Action is not supported");
                   fail(text + ": Action is not supported");
                }
 
@@ -279,7 +280,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
          int lastNum = -1;
          int lastPrio = PriorityEnum.MAX_PRIORITY.getInt() + 1;
          for (int i=0; i<msgArr.length; i++) {
-            log.info(ME, "Received flushed hold back message " + msgArr[i].getUpdateKey().getOid() + 
+            log.info("Received flushed hold back message " + msgArr[i].getUpdateKey().getOid() + 
                          " priority=" + msgArr[i].getUpdateQos().getPriority() +
                          " content=" + msgArr[i].getContentStr() +
                          " state=" + msgArr[i].getUpdateQos().getState());
@@ -297,14 +298,14 @@ public class TestPriorizedDispatchPlugin extends TestCase
       catch (XmlBlasterException e) {
          fail(e.toString());
       }
-      log.info(ME, "Success in testPriorizedDispatchPlugin()");
+      log.info("Success in testPriorizedDispatchPlugin()");
    }
 
    /**
     * Tests to change the plugin configuration and different status message oids. 
     */
    public void testPriorizedDispatchPluginReconfigure() {
-      log.info(ME, "testPriorizedDispatchPluginReconfigure() ...");
+      log.info("testPriorizedDispatchPluginReconfigure() ...");
       String statusOid2 = statusOid+"-2";
       String config = 
             "<msgDispatch defaultStatus='GO' defaultAction='send'>\n"+
@@ -333,7 +334,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
             publish(msgOid, priority);
          }
          assertEquals(text, maxPrio, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-         log.info(ME, "SUCCESS, state=GO");
+         log.info("SUCCESS, state=GO");
          this.update.clear();
 
          // queue messages
@@ -342,13 +343,13 @@ public class TestPriorizedDispatchPlugin extends TestCase
             publish(msgOid, priority);
          }
          assertEquals(text, 0, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-         log.info(ME, "SUCCESS, state=" + BACKUP_LINE);
+         log.info("SUCCESS, state=" + BACKUP_LINE);
          this.update.clear();
 
          // flush the before queued messages
          changeStatus(statusOid, "GO");
          assertEquals(text, maxPrio, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-         log.info(ME, "SUCCESS, state=GO");
+         log.info("SUCCESS, state=GO");
          this.update.clear();
 
          // check unkown message content
@@ -357,14 +358,14 @@ public class TestPriorizedDispatchPlugin extends TestCase
             publish(msgOid, priority);
          }
          assertEquals(text, maxPrio, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-         log.info(ME, "SUCCESS, state=GO");
+         log.info("SUCCESS, state=GO");
          this.update.clear();
          /*
       }
       catch (XmlBlasterException e) {
          fail(e.toString());
       }    */
-      log.info(ME, "Success in testPriorizedDispatchPluginReconfigure()");
+      log.info("Success in testPriorizedDispatchPluginReconfigure()");
    }
 
    /**
@@ -377,11 +378,11 @@ public class TestPriorizedDispatchPlugin extends TestCase
          String contentStr = config;
          PublishQos pq = new PublishQos(glob);
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.toXml()));
-         log.info(ME, "SUCCESS publish new configuration '" + oid + "' returned state=" + rq.getState());
+         log.info("SUCCESS publish new configuration '" + oid + "' returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.toString());
+         log.warning("XmlBlasterException: " + e.toString());
          fail("publish of configuration data - XmlBlasterException: " + e.getMessage());
       }
 
@@ -402,7 +403,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
     * 3. send a message with prio 6 which should trigger a notify PtP message
     */
    public void testPriorizedDispatchPluginOne() {
-      log.info(ME, "testPriorizedDispatchPluginOne() ...");
+      log.info("testPriorizedDispatchPluginOne() ...");
 
       long sleep = 2000L;
       String text = "state=" + BACKUP_LINE + " action=queue,notifySender";
@@ -415,7 +416,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Wait some time
 
       int priority = 6;
-      log.info(ME, text + ": Expecting notify");
+      log.info(text + ": Expecting notify");
 
       this.update.clear();
       publish(msgOid, priority);
@@ -426,10 +427,10 @@ public class TestPriorizedDispatchPlugin extends TestCase
       this.update.clear();
 
       changeStatus(statusOid, NORMAL_LINE);
-      log.info(ME, text + ": Expecting queued message");
+      log.info(text + ": Expecting queued message");
       assertEquals(text, 1, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
 
-      log.info(ME, "Success in testPriorizedDispatchPluginOne()");
+      log.info("Success in testPriorizedDispatchPluginOne()");
    }
 
    /**

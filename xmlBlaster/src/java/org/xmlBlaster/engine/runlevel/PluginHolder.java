@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 
@@ -31,7 +32,7 @@ import java.util.TreeSet;
 public class PluginHolder {
    private String ME = "PluginHolder";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginHolder.class.getName());
 
    private Hashtable pluginConfigsDefault;
 
@@ -47,8 +48,8 @@ public class PluginHolder {
     */
    public PluginHolder(Global glob, Hashtable pluginConfigsDefault, Hashtable pluginConfigsNodes) {
       this.glob = glob;
-      this.log = this.glob.getLog("runlevel");
-      if (this.log.CALL) this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
       if (pluginConfigsDefault != null )
          this.pluginConfigsDefault = pluginConfigsDefault;
       else this.pluginConfigsDefault = new Hashtable();
@@ -76,7 +77,7 @@ public class PluginHolder {
     */
    public void addPluginConfig(String node, PluginConfig pluginConfig) {
       // check first if the node already exists ...
-      if (this.log.CALL) this.log.call(ME, "addPluginConfig for node '" + node + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("addPluginConfig for node '" + node + "'");
       Hashtable tmp = (Hashtable)this.pluginConfigsNodes.get(node);
       if (tmp == null) { // then it does not exist (add one empty table)
          tmp = new Hashtable();
@@ -95,7 +96,7 @@ public class PluginHolder {
     * @param id the unique string identifying the plugin
     */
    public PluginConfig getPluginConfig(String node, String id) {
-      if (this.log.CALL) this.log.call(ME, "getPluginConfig for node '" + node + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("getPluginConfig for node '" + node + "'");
       Hashtable nodeTable = (Hashtable)this.pluginConfigsNodes.get(node);
       if (nodeTable != null) {
          Object tmp = nodeTable.get(id);
@@ -110,7 +111,7 @@ public class PluginHolder {
     * @param node the node for which to search.
     */
    public PluginConfig[] getAllPluginConfig(String node) {
-      if (this.log.CALL) this.log.call(ME, "getAllPluginConfig for node '" + node + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("getAllPluginConfig for node '" + node + "'");
       Hashtable tmp = (Hashtable)this.pluginConfigsDefault.clone();
       if (this.pluginConfigsNodes!=null && node!=null) {
          Hashtable nodeTable = (Hashtable)this.pluginConfigsNodes.get(node);
@@ -123,7 +124,7 @@ public class PluginHolder {
          }
       }
       else {
-         log.warn(ME, "No cluster node id given, checking only default plugins");
+         log.warning("No cluster node id given, checking only default plugins");
       }
       // prepare the return array ...
       int size = tmp.size();
@@ -187,10 +188,10 @@ public class PluginHolder {
     * @param highRunlevel the runlevel to which to retrieve (inclusive)
     */
    public TreeSet getStartupSequence(String nodeId, int lowRunlevel, int highRunlevel) {
-      if (this.log.CALL) this.log.call(ME, "getStartupSequence for node '" + nodeId + 
+      if (log.isLoggable(Level.FINER)) this.log.finer("getStartupSequence for node '" + nodeId + 
                          "' and runlevel '" + lowRunlevel + "' to '" + highRunlevel + "'");
       if (lowRunlevel > highRunlevel) {
-         this.log.error(ME, ".getStartupSequence: the low run level '" + lowRunlevel + "' is higher than the high run level '" + highRunlevel + "'");
+         log.severe(".getStartupSequence: the low run level '" + lowRunlevel + "' is higher than the high run level '" + highRunlevel + "'");
       }
       TreeSet startupSet = new TreeSet(new PluginConfigComparator(this.glob, true));
       PluginConfig[] plugins = getAllPluginConfig(nodeId);
@@ -213,10 +214,10 @@ public class PluginHolder {
     * @param highRunlevel the runlevel to which to retrieve (inclusive)
     */
    public TreeSet getShutdownSequence(String nodeId, int lowRunlevel, int highRunlevel) {
-      if (this.log.CALL) this.log.call(ME, "getShutdownSequence for node '" + nodeId + 
+      if (log.isLoggable(Level.FINER)) this.log.finer("getShutdownSequence for node '" + nodeId + 
                         "' and runlevel '" + lowRunlevel + "' to '" + highRunlevel + "'");
       if (lowRunlevel > highRunlevel) {
-         this.log.error(ME, ".getShutdownSequence: the low run level '" + lowRunlevel + "' is higher than the high run level '" + highRunlevel + "'");
+         log.severe(".getShutdownSequence: the low run level '" + lowRunlevel + "' is higher than the high run level '" + highRunlevel + "'");
       }
       TreeSet shutdownSet = new TreeSet(new PluginConfigComparator(this.glob, false));
       PluginConfig[] plugins = getAllPluginConfig(nodeId);

@@ -9,7 +9,8 @@ package org.xmlBlaster.test.qos;
 
 import org.jutils.time.StopWatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -52,7 +53,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
 {
    private static String ME = "TestSubManyClients";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubManyClients.class.getName());
 
    private boolean messageArrived = false;
 
@@ -86,7 +87,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.oneName = loginName;
       numClients = glob.getProperty().get("numClients", 10);
    }
@@ -99,7 +100,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      log.info(ME, "Setting up test ...");
+      log.info("Setting up test ...");
       numReceived = 0;
       try {
          Global globOne = glob.getClone(null);
@@ -109,7 +110,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          oneConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -124,18 +125,18 @@ public class TestSubManyClients extends TestCase implements I_Callback
    protected void tearDown()
    {
       if (numReceived != numClients) {
-         log.error(ME, "numClients=" + numClients + " but numReceived=" + numReceived);
+         log.severe("numClients=" + numClients + " but numReceived=" + numReceived);
          assertEquals("numClients=" + numClients + " but numReceived=" + numReceived, numClients, numReceived);
       }
 
-      log.removeLogLevel("INFO");
+
       if (manyClients != null) {
          for (int ii=0; ii<numClients; ii++) {
             Client sub = manyClients[ii];
             sub.connection.disconnect(null);
          }
       }
-      log.addLogLevel("INFO");
+
 
       {
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -160,7 +161,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       }
 
       oneConnection.disconnect(null);
-      log.info(ME, "Logout done");
+      log.info("Logout done");
    }
 
 
@@ -169,7 +170,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void subcribeMany()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing ...");
 
       String passwd = "secret";
 
@@ -183,8 +184,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       long usedBefore = getUsedServerMemory();
 
-      log.info(ME, "Setting up " + numClients + " subscriber clients ...");
-      log.removeLogLevel("INFO");
+      log.info("Setting up " + numClients + " subscriber clients ...");
+
       stopWatch = new StopWatch();
       for (int ii=0; ii<numClients; ii++) {
          Client sub = new Client();
@@ -197,29 +198,29 @@ public class TestSubManyClients extends TestCase implements I_Callback
             sub.connection.connect(loginQosW, this);
          }
          catch (Exception e) {
-             log.error(ME, "Login failed: " + e.toString());
+             log.severe("Login failed: " + e.toString());
              assertTrue("Login failed: " + e.toString(), false);
          }
 
          try {
             sub.subscribeOid = sub.connection.subscribe(subKey, subQos).getSubscriptionId();
-            log.info(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
+            log.info("Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
             assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
          }
 
          manyClients[ii] = sub;
       }
       double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
-      log.addLogLevel("INFO");
+
 
       long usedAfter = getUsedServerMemory();
       long memPerLogin = (usedAfter - usedBefore)/numClients;
 
-      log.info(ME, numClients + " subscriber clients are ready.");
-      log.info(ME, "Server memory per login consumed=" + memPerLogin);
-      log.info(ME, "Time " + (long)(numClients/timeForLogins) + " logins/sec");
+      log.info(numClients + " subscriber clients are ready.");
+      log.info("Server memory per login consumed=" + memPerLogin);
+      log.info("Time " + (long)(numClients/timeForLogins) + " logins/sec");
    }
 
 
@@ -234,7 +235,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          String mem = new String(msgArr[0].getContent());
          return new Long(mem).longValue();
       } catch (XmlBlasterException e) {
-         log.warn(ME, e.toString());
+         log.warning(e.toString());
          return 0L;
       }
    }
@@ -247,7 +248,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void publishOne()
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -259,9 +260,9 @@ public class TestSubManyClients extends TestCase implements I_Callback
          stopWatch = new StopWatch();
          String tmp = oneConnection.publish(msgUnit).getKeyOid();
          assertEquals("Wrong publishOid1", publishOid1, tmp);
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
+         log.info("Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -273,28 +274,28 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void testManyClients()
    {
-      log.plain(ME, "");
-      log.info(ME, "TEST 1, many publishers, one subscriber ...");
+      System.out.println("");
+      log.info("TEST 1, many publishers, one subscriber ...");
 
       subcribeMany();
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       publishOne();
-      log.info(ME, "Waiting long enough for updates ...");
+      log.info("Waiting long enough for updates ...");
       Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
       assertEquals("Wrong number of updates", numClients, numReceived);
 
 
-      log.plain(ME, "");
-      log.info(ME, "TEST 2, many publishers, one subscriber ...");
+      System.out.println("");
+      log.info("TEST 2, many publishers, one subscriber ...");
 
       subcribeOne();
       try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}                                             // Wait some time ...
 
       numReceived = 0;
       publishMany();
-      log.info(ME, "Waiting long enough for updates ...");
+      log.info("Waiting long enough for updates ...");
       Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
       assertEquals("Wrong number of updates", numClients, numReceived);
    }
@@ -305,7 +306,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void subcribeOne()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing ...");
 
       SubscribeKey subKeyW = new SubscribeKey(glob, publishOid2);
       String subKey = subKeyW.toXml(); // "<key oid='" + publishOid2 + "' queryType='EXACT'></key>";
@@ -315,9 +316,9 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       try {
          SubscribeReturnQos subscribeOid = oneConnection.subscribe(subKey, subQos);
-         log.info(ME, "Client " + oneName + " subscribed to " + subKeyW.getOid());
+         log.info("Client " + oneName + " subscribed to " + subKeyW.getOid());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -330,7 +331,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public void publishMany()
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       PublishKey pubKeyW = new PublishKey(glob, publishOid2, contentMime, contentMimeExtended);
       String pubKey = pubKeyW.toXml(); // "<key oid='" + publishOid2 + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'></key>"
@@ -340,8 +341,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       long usedBefore = getUsedServerMemory();
 
-      log.info(ME, numClients + " clients are publishing one message each ...");
-      log.removeLogLevel("INFO");
+      log.info(numClients + " clients are publishing one message each ...");
+
       stopWatch = new StopWatch();
 
       for (int ii=0; ii<numClients; ii++) {
@@ -353,20 +354,20 @@ public class TestSubManyClients extends TestCase implements I_Callback
             PublishReturnQos tmp = oneConnection.publish(msgUnit);
             assertEquals("Wrong publishOid2", publishOid2, tmp.getKeyOid());
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
             assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
          }
       }
 
       double timeToPublish = (double)stopWatch.elapsed()/1000.; // msec -> sec
-      log.addLogLevel("INFO");
+
 
       long usedAfter = getUsedServerMemory();
       long memPerLogin = (usedAfter - usedBefore)/numClients;
 
-      log.info(ME, numClients + " have published their messages.");
-      log.info(ME, "Server memory consumed=" + memPerLogin + " bytes.");
-      log.info(ME, "Time " + (long)(numClients/timeToPublish) + " publish/sec");
+      log.info(numClients + " have published their messages.");
+      log.info("Server memory consumed=" + memPerLogin + " bytes.");
+      log.info("Time " + (long)(numClients/timeToPublish) + " publish/sec");
    }
 
    /**
@@ -376,7 +377,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      //log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getOid() + "...");
+      //log.info("Client " + loginName + " receiving update of message oid=" + updateKey.getOid() + "...");
       numReceived++;
 
       if (numReceived == numClients) {
@@ -384,7 +385,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numReceived / elapsed);
-         log.info(ME, numReceived + " messages updated, average messages/second = " + avg + stopWatch.nice());
+         log.info(numReceived + " messages updated, average messages/second = " + avg + stopWatch.nice());
       }
       return "";
    }

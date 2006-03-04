@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.classloader;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -23,7 +24,7 @@ import java.net.MalformedURLException;
 public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
    public String ME;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(StandaloneClassLoaderFactory.class.getName());
    private ArrayList classPath = null; // array containig all URL for the new classpath
    private int instanceCounter = 0;
 
@@ -41,8 +42,8 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
      ++instanceCounter;
      this.ME = "ClassLoaderFactory-" + instanceCounter;
      this.glob = glob;
-     this.log = glob.getLog("classloader");
-     if (log.CALL) log.call(ME, "ClassLoaderFactory constructor #" + instanceCounter);
+
+     if (log.isLoggable(Level.FINER)) log.finer("ClassLoaderFactory constructor #" + instanceCounter);
    }
 
    /**
@@ -50,49 +51,49 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
     * callers related additional classes which may exist in a specified path.
     */
    public URLClassLoader getPluginClassLoader(PluginInfo pluginInfo) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering getPluginClassLoader for plugin=" + pluginInfo.getClassName());
+      if (log.isLoggable(Level.FINER)) log.finer("Entering getPluginClassLoader for plugin=" + pluginInfo.getClassName());
 
       java.util.Properties pluginParams = pluginInfo.getParameters();
       LoaderInfo loaderInfo = getLoaderInfo(this, pluginInfo.getClassName());
-      if (log.TRACE) log.trace(ME, loaderInfo.toString());
+      if (log.isLoggable(Level.FINE)) log.fine(loaderInfo.toString());
 
       // In xmlBlaster.properties e.g.
       // ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.soap.SoapDriver,classpath=soap.jar:xerces.jar
       String classPathStr = (String)pluginParams.get("classpath");
       ArrayList classPath = new ArrayList();
       if (classPathStr != null) {
-         log.info(ME, "Analyzing classpath=" + classPathStr + " for plugin " + pluginInfo.getClassName());
+         log.info("Analyzing classpath=" + classPathStr + " for plugin " + pluginInfo.getClassName());
          StringTokenizer st = new StringTokenizer(classPathStr, ";:");
          while (st.hasMoreElements()) {
             String jar = (String)st.nextElement();  // e.g. "soap/soap.jar"
-            if (log.TRACE) log.trace(ME, "Looking for jar '" + jar + "' ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Looking for jar '" + jar + "' ...");
             File f = new File(jar); // 1. check absolute path
             if (f.canRead()) {
                classPath.add(jar);
                continue;
             }
             String jarStripped = f.getName();      // e.g. "soap.jar"
-            if (log.TRACE) log.trace(ME, "Looking for jarStripped '" + jarStripped + "' ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Looking for jarStripped '" + jarStripped + "' ...");
             f = new File(jarStripped);      // 2. check local directory
             if (f.canRead()) {
                classPath.add(jarStripped);
                continue;
             }
             String resourceJar = loaderInfo.rootPath +jar; // e.g. "/home/xmlblast/xmlBlaster/lib/soap/soap.jar"
-            if (log.TRACE) log.trace(ME, "Looking for resourceJar=" + resourceJar + " ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Looking for resourceJar=" + resourceJar + " ...");
             f = new File(resourceJar);      // 3. check resource path of this instance
             if (f.canRead()) {
                classPath.add(resourceJar);
                continue;
             }
             String resourceJarStripped = loaderInfo.rootPath +jar;   // e.g. "/home/xmlblast/xmlBlaster/lib/soap.jar"
-            if (log.TRACE) log.trace(ME, "Looking for resourceJarStripped=" + resourceJarStripped + " ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Looking for resourceJarStripped=" + resourceJarStripped + " ...");
             f = new File(resourceJarStripped);      // 3. check resource path of this instance
             if (f.canRead()) {
                classPath.add(resourceJarStripped);
                continue;
             }
-            log.info(ME, "Plugin '" + pluginInfo.getClassName() + "' specific jar file '" + jar + "' not found, using JVM default CLASSPATH");
+            log.info("Plugin '" + pluginInfo.getClassName() + "' specific jar file '" + jar + "' not found, using JVM default CLASSPATH");
 
                                     // 4. check JVM classpath
             URL[] urls = ((URLClassLoader)this.getClass().getClassLoader()).getURLs();
@@ -114,7 +115,7 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
             classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
       }
 
-      if (log.TRACE) log.trace(ME, "Found " + classPath.size() + " plugin specific jar files");
+      if (log.isLoggable(Level.FINE)) log.fine("Found " + classPath.size() + " plugin specific jar files");
       return new PluginClassLoader(glob, stringToUrl(classPath), pluginInfo );
    }
 
@@ -124,10 +125,10 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
     * callers related additional classes which may exist in a specified path.
     */
    public URLClassLoader getXmlBlasterClassLoader() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering getXmlBlasterClassLoader ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering getXmlBlasterClassLoader ...");
 
       LoaderInfo loaderInfo = getLoaderInfo(this, "org.xmlBlaster.Main");
-      if (log.TRACE) log.trace(ME, loaderInfo.toString());
+      if (log.isLoggable(Level.FINE)) log.fine(loaderInfo.toString());
 
       ArrayList classPath = new ArrayList();
 
@@ -144,14 +145,14 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
          }
       }
 
-      if (log.TRACE) {
+      if (log.isLoggable(Level.FINE)) {
          String text = "Build new classpath with " + classPath.size() + " entries:";
          for(int i = 0; i < classPath.size(); i++ ) {
             text += (String)classPath.get(i);
             if(i < (classPath.size() - 1) )
                text += ":";
          }
-         log.trace(ME, text);
+         log.fine(text);
       }
       return new XmlBlasterClassLoader(this.glob, stringToUrl(classPath) );
    }
@@ -170,7 +171,7 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
     */
    public static LoaderInfo getLoaderInfo(Object caller, String plugin) throws XmlBlasterException {
       String ME = "ClassLoaderFactory";
-      //if (log.CALL) log.call(ME, "Entering getLoaderInfo");
+      //if (log.isLoggable(Level.FINER)) log.call(ME, "Entering getLoaderInfo");
       if (plugin == null || plugin.length() < 1) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "getLoaderInfo() with plugin=null");
@@ -179,10 +180,10 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
       String classResource = which(caller, plugin); // e.g. "/home/xmlblast/xmlBlaster/classes/org/xmlBlaster/protocol/corba/CorbaDriver.class"
       if (classResource == null) {
          String text = "Can't find class " + plugin + ", please check your plugin name and your CLASSPATH";
-         //if (log.TRACE) log.trace(ME, text);
+         //if (log.isLoggable(Level.FINE)) log.trace(ME, text);
          throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, text);
       }
-      //if (log.TRACE) log.trace(ME, "plugin '" + plugin + "' has resource path " + classResource );
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "plugin '" + plugin + "' has resource path " + classResource );
 
       String pluginSlashed = StringHelper.replaceAll(plugin, ".", "/"); // replace '.' by fileSeperator (windows wants "/" as well)
       // plugin.replaceAll("\\.", "/"); // since JDK 1.4 :-(
@@ -206,7 +207,7 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
       }
 
       LoaderInfo loaderInfo = new LoaderInfo(plugin, rootPath, jarPath, jarName, pluginSlashed);
-      //if (log.TRACE) log.trace(ME, loaderInfo.toString());
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, loaderInfo.toString());
       return loaderInfo;
    }
 
@@ -229,10 +230,10 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Malformed Url Exception occured: ", e);
       }
 
-      if (log.TRACE) {
-         log.trace(ME, "New Classpath as URL before creating classloader:");
+      if (log.isLoggable(Level.FINE)) {
+         log.fine("New Classpath as URL before creating classloader:");
          for (int ii = 0; ii < url.length; ii++) {
-              log.trace(ME, ">>" + ii +": " + url[ii].toString() + "<<");
+              log.fine(">>" + ii +": " + url[ii].toString() + "<<");
         }
       }
 
@@ -264,11 +265,11 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
       java.net.URL classUrl = caller.getClass().getResource(className);
 
       if (classUrl != null) {
-         //if (log.TRACE) log.trace(ME, "Class '" + className + "' found in '" + classUrl.getFile() + "'");
+         //if (log.isLoggable(Level.FINE)) log.trace(ME, "Class '" + className + "' found in '" + classUrl.getFile() + "'");
          return classUrl.getFile().toString();
       }
       else {
-         //if (log.TRACE) log.trace(ME, "Class '" + className + "' not found in '" + System.getProperty("java.class.path") + "'");
+         //if (log.isLoggable(Level.FINE)) log.trace(ME, "Class '" + className + "' not found in '" + System.getProperty("java.class.path") + "'");
          return null;
       }
    }

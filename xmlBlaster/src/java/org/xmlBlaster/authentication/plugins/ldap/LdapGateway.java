@@ -5,7 +5,8 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import javax.naming.*;
 import javax.naming.directory.*;
@@ -57,7 +58,7 @@ import java.util.Enumeration;
 public class LdapGateway
 {
    private static final String ME = "LdapGateway";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(LdapGateway.class.getName());
 
    /**
     * Specify the initial context implementation to use.
@@ -97,7 +98,7 @@ public class LdapGateway
    public LdapGateway(Global glob, String serverUrl, String rootDN, String rootPwd,
                      String loginFieldName) throws XmlBlasterException
    {
-      this.log = glob.getLog("ldap");
+
       this.serverUrl = serverUrl;
       this.rootDN = rootDN;
       this.rootPwd = rootPwd;
@@ -117,7 +118,7 @@ public class LdapGateway
             rootCtx.close();
          }
          catch (javax.naming.NamingException e) {
-            if (log.TRACE) log.trace(ME, "Closing DirContext faild: " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Closing DirContext faild: " + e.toString());
          }
       }
       rootCtx = null;
@@ -132,11 +133,11 @@ public class LdapGateway
    {
       try {
          Hashtable env = new Hashtable(7, 0.75f);
-         if (log.TRACE) log.trace(ME, "Using the factory " + CONTEXT_FACTORY);
+         if (log.isLoggable(Level.FINE)) log.fine("Using the factory " + CONTEXT_FACTORY);
          env.put(Context.INITIAL_CONTEXT_FACTORY, CONTEXT_FACTORY);
 
          // Specify host and port to use for directory service
-         if (log.TRACE) log.trace(ME, "Using ldap server " + serverUrl + "??sub   (You can try this URL with your netscape browser)");
+         if (log.isLoggable(Level.FINE)) log.fine("Using ldap server " + serverUrl + "??sub   (You can try this URL with your netscape browser)");
          env.put(Context.PROVIDER_URL, serverUrl);
 
          // specify authentication information
@@ -144,14 +145,14 @@ public class LdapGateway
          env.put(Context.SECURITY_PRINCIPAL, rootDN);
          env.put(Context.SECURITY_CREDENTIALS, rootPwd);
 
-         if (log.TRACE) log.trace(ME, "rootDN=" + rootDN + " rootPwd=" + rootPwd);
-         if (log.TRACE) log.trace(ME, "Getting master context handle with master password from xmlBlaster.org ...");
+         if (log.isLoggable(Level.FINE)) log.fine("rootDN=" + rootDN + " rootPwd=" + rootPwd);
+         if (log.isLoggable(Level.FINE)) log.fine("Getting master context handle with master password from xmlBlaster.org ...");
          DirContext ctx = new InitialDirContext(env);
-         if (log.TRACE) log.trace(ME, "Connected to ldap server '" + serverUrl + "' as '" + rootDN + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Connected to ldap server '" + serverUrl + "' as '" + rootDN + "'");
          return ctx;
       }
       catch (NamingException e) {
-         log.error(ME, "Can't access root context, check your settings ldap.serverUrl='" + serverUrl + "', ldap.rootDN='" + rootDN + "' and ldap.rootPwd='***'");
+         log.severe("Can't access root context, check your settings ldap.serverUrl='" + serverUrl + "', ldap.rootDN='" + rootDN + "' and ldap.rootPwd='***'");
          throw new XmlBlasterException(ME, e.toString());
       }
    }
@@ -171,16 +172,16 @@ public class LdapGateway
          NamingEnumeration answer = search(rootCtx, filter);
 
          String baseName = getBaseName();
-         if (log.TRACE) log.trace(ME, "DN access for user=" + loginName + ". Trying basename = '" + baseName + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("DN access for user=" + loginName + ". Trying basename = '" + baseName + "'");
 
          if (answer.hasMore()) {
             SearchResult sr = (SearchResult)answer.next();
             String userDN = sr.getName() + "," + baseName;
-            if (log.TRACE) log.trace(ME, "Successful accessed DN='" + userDN + "' for user " + loginName);
+            if (log.isLoggable(Level.FINE)) log.fine("Successful accessed DN='" + userDN + "' for user " + loginName);
             return userDN;
          }
          else {
-            log.error(ME, "Can't access root context, check your setting of ldap.loginFieldName='" + loginFieldName + "'");
+            log.severe("Can't access root context, check your setting of ldap.loginFieldName='" + loginFieldName + "'");
             throw new XmlBlasterException(ME, serverUrl + " is not valid");
          }
       }
@@ -200,15 +201,15 @@ public class LdapGateway
     */
    private DirContext getUserContext(String loginName, String userPassword) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "Getting user=" + loginName + " context handle");
-      //if (log.TRACE) log.trace(ME, "Getting user=" + loginName + " context handle with passwd=" + userPassword + " ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Getting user=" + loginName + " context handle");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "Getting user=" + loginName + " context handle with passwd=" + userPassword + " ...");
       try {
          Hashtable env = new Hashtable(7, 0.75f);
-         if (log.TRACE) log.trace(ME, "Using the factory " + CONTEXT_FACTORY);
+         if (log.isLoggable(Level.FINE)) log.fine("Using the factory " + CONTEXT_FACTORY);
          env.put(Context.INITIAL_CONTEXT_FACTORY, CONTEXT_FACTORY);
 
          // Specify host and port to use for directory service
-         if (log.TRACE) log.trace(ME, "Using ldap server " + serverUrl + "??sub   (You can try this URL with your browser)");
+         if (log.isLoggable(Level.FINE)) log.fine("Using ldap server " + serverUrl + "??sub   (You can try this URL with your browser)");
          env.put(Context.PROVIDER_URL, serverUrl);
 
          String userDN = getUserDN(loginName);
@@ -218,9 +219,9 @@ public class LdapGateway
          env.put(Context.SECURITY_PRINCIPAL, userDN);
          env.put(Context.SECURITY_CREDENTIALS, userPassword);
 
-         if (log.TRACE) log.trace(ME, "  Getting context handle ...");
+         if (log.isLoggable(Level.FINE)) log.fine("  Getting context handle ...");
          DirContext userCtx = new InitialDirContext(env);
-         if (log.TRACE) log.trace(ME, "  Connected to ldap server url='" + serverUrl + "' with DN='" + userDN + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("  Connected to ldap server url='" + serverUrl + "' with DN='" + userDN + "'");
          return userCtx;
       }
       catch (NamingException e) {
@@ -283,7 +284,7 @@ public class LdapGateway
             Attributes attributeSet = nextEntry.getAttributes();
             if (attributeSet.size() == 0)
             {
-               log.error(ME, "No attributes returned for cn=" + loginName + " in " + serverUrl);
+               log.severe("No attributes returned for cn=" + loginName + " in " + serverUrl);
             }
             else
             {
@@ -297,15 +298,15 @@ public class LdapGateway
                   int ii=0;
                   while (values.hasMoreElements())
                   {
-                     if (ii>0) if (log.TRACE) log.trace(ME, "WARN: Ignoring multiple values for " + attributeId);
+                     if (ii>0) if (log.isLoggable(Level.FINE)) log.fine("WARN: Ignoring multiple values for " + attributeId);
                      Object val = values.nextElement();
                      // userPassword:
                      // http://developer.netscape.com/tech/overview/index.html?content=/docs/technote/ldap/pass_sha.html
                      // http://www.openldap.org/lists/openldap-software/200002/msg00038.html
                      /*
-                     if (log.TRACE) log.trace(ME, attributeId + ": " + val + " <" + val.getClass().getName() + ">");
+                     if (log.isLoggable(Level.FINE)) log.trace(ME, attributeId + ": " + val + " <" + val.getClass().getName() + ">");
                      if (val instanceof Byte)
-                        if (log.TRACE) log.trace(ME, "Byte found");
+                        if (log.isLoggable(Level.FINE)) log.trace(ME, "Byte found");
                      */
                      attrHash.put(attributeId, val);
                      ii++;
@@ -322,7 +323,7 @@ public class LdapGateway
             if (userCtx != null) userCtx.close();
          }
          catch (NamingException e) {
-            log.warn(ME, "Problems closng the user context: " + e.toString());
+            log.warning("Problems closng the user context: " + e.toString());
          }
       }
       return attrHash;
@@ -382,12 +383,12 @@ public class LdapGateway
             searchResults = search(userCtx, filter);
          }
          catch(XmlBlasterException e) {
-            log.error(ME, "The cn=" + loginNameToCheck + " is unknown in " + serverUrl);
+            log.severe("The cn=" + loginNameToCheck + " is unknown in " + serverUrl);
             return false;
          }
 
          if (searchResults.hasMore()) {
-            if (log.TRACE) log.trace(ME, "The cn=" + loginNameToCheck + " (dieser Pappenheimer) is well known in " + serverUrl);
+            if (log.isLoggable(Level.FINE)) log.fine("The cn=" + loginNameToCheck + " (dieser Pappenheimer) is well known in " + serverUrl);
             return true;
          }
       }
@@ -399,7 +400,7 @@ public class LdapGateway
             if (userCtx != null) userCtx.close();
          }
          catch (NamingException e) {
-            log.warn(ME, "Problems closng the user context: " + e.toString());
+            log.warning("Problems closng the user context: " + e.toString());
          }
       }
 
@@ -456,14 +457,14 @@ public class LdapGateway
       */
 
       try {
-         if (log.TRACE) log.trace(ME, "Calling SearchControl constructor to set search constraints...");
+         if (log.isLoggable(Level.FINE)) log.fine("Calling SearchControl constructor to set search constraints...");
          SearchControls searchControls = new SearchControls(SearchControls.SUBTREE_SCOPE, 0,0,null,true,false);
 
          final String MY_SEARCHBASE = "";  // Subtree to search: "ou=Extern, ou=096"; -> finds "tim"
          
-         if (log.TRACE) log.trace(ME, "Searching " + filter);
+         if (log.isLoggable(Level.FINE)) log.fine("Searching " + filter);
          NamingEnumeration searchResults = ctx.search(MY_SEARCHBASE, filter, searchControls);
-         if (log.TRACE) log.trace(ME, "Searching successful done\n");
+         if (log.isLoggable(Level.FINE)) log.fine("Searching successful done\n");
 
          return searchResults;
       }

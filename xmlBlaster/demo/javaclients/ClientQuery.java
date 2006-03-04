@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.init.Args;
 
 import org.xmlBlaster.util.Global;
@@ -31,7 +32,7 @@ import org.xmlBlaster.util.MsgUnit;
 public class ClientQuery
 {
    private static String ME = "ClientQuery";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientQuery.class.getName());
    private String queryString;
    private String queryType = "XPATH";
 
@@ -39,7 +40,7 @@ public class ClientQuery
    {
       // Initialize command line argument handling (this is optional)
       Global glob = new Global();
-      log = glob.getLog(null);
+
       if (glob.init(args) != 0) usage("Aborted");
 
       try {
@@ -62,35 +63,35 @@ public class ClientQuery
          MsgUnit[] msgArr = null;
          try {
             msgArr = con.get(xmlKey, "<qos></qos>");
-            log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "':");
+            log.info("Got " + msgArr.length + " messages for query '" + queryString + "':");
             for (int ii=0; ii<msgArr.length; ii++) {
                UpdateKey updateKey = new UpdateKey(glob, msgArr[ii].getKey());
-               log.info("UpdateKey", "\n" + updateKey.toXml());
-               log.info("content", "\n" + new String(msgArr[ii].getContent()) + "\n");
+               log.info("\n" + updateKey.toXml());
+               log.info("\n" + new String(msgArr[ii].getContent()) + "\n");
             }
          } catch(XmlBlasterException e) {
-            log.error(ME, "XmlBlasterException: " + e.getMessage());
+            log.severe("XmlBlasterException: " + e.getMessage());
          }
 
          con.disconnect(null);
       }
       catch (org.jutils.JUtilsException e) {
-          log.error(ME, "Error occurred: " + e.toString());
+          log.severe("Error occurred: " + e.toString());
           e.printStackTrace();
       }
       catch (XmlBlasterException e) {
-          log.error(ME, "Error occurred: " + e.toString());
+          log.severe("Error occurred: " + e.toString());
           e.printStackTrace();
       }
    }
 
    private void usage(String text)
    {
-      log.plain(ME, "\nAvailable options:");
-      log.plain(ME, "   -queryXpath         \"//key\"");
+      System.out.println("\nAvailable options:");
+      System.out.println("   -queryXpath         \"//key\"");
       System.out.println(Global.instance().usage());
-      log.plain(ME, "Example: java javaclients.ClientQuery -queryXpath //key\n");
-      log.plain(ME, text);
+      System.out.println("Example: java javaclients.ClientQuery -queryXpath //key\n");
+      System.out.println(text);
       System.exit(1);
    }
 

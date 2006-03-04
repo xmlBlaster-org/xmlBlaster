@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
@@ -47,7 +48,7 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
 {
    private String ME = "XmlRpcDriver";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlRpcDriver.class.getName());
    /** The singleton handle for this xmlBlaster server */
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
@@ -152,15 +153,15 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
    {
       this.glob = glob;
       this.ME = "XmlRpcDriver" + this.glob.getLogPrefixDashed();
-      this.log = glob.getLog("xmlrpc");
+
       this.addressServer = addressServer;
-      if (log.CALL) log.call(ME, "Entering init()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering init()");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
       this.xmlRpcUrl = new XmlRpcUrl(glob, this.addressServer); // e.g. "http://127.168.1.1:8080/"
       if (this.xmlRpcUrl.getPort() < 1) {
-         log.info(ME, "Option plugin/xmlrpc/port set to " + this.xmlRpcUrl.getPort() + ", xmlRpc server not started");
+         log.info("Option plugin/xmlrpc/port set to " + this.xmlRpcUrl.getPort() + ", xmlRpc server not started");
          return;
       }
 
@@ -180,15 +181,15 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
     * Activate xmlBlaster access through this protocol.
     */
    public synchronized void activate() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering activate");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering activate");
       try {
          webServer = new WebServer(this.xmlRpcUrl.getPort(), this.xmlRpcUrl.getInetAddress());
          // publish the public methods to the XmlRpc web server:
          webServer.addHandler("authenticate", new AuthenticateImpl(glob, this, authenticate));
          webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, this, xmlBlasterImpl));
-         log.info(ME, "Started successfully XMLRPC driver, access url=" + this.xmlRpcUrl.getUrl());
+         log.info("Started successfully XMLRPC driver, access url=" + this.xmlRpcUrl.getUrl());
       } catch (IOException e) {
-         log.error(ME, "Error creating webServer on '" + this.xmlRpcUrl.getUrl() + "': " + e.toString());
+         log.severe("Error creating webServer on '" + this.xmlRpcUrl.getUrl() + "': " + e.toString());
          //e.printStackTrace();
       }
       this.isActive = true;
@@ -198,7 +199,7 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
     * Deactivate xmlBlaster access (standby), no clients can connect. 
     */
    public synchronized void deActivate() {
-      if (log.CALL) log.call(ME, "Entering deActivate");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering deActivate");
       this.isActive = false;
       if (webServer != null) {
          try {
@@ -207,13 +208,13 @@ public class XmlRpcDriver implements I_Driver, XmlRpcDriverMBean
             webServer.shutdown();
          }
          catch(Throwable e) {
-            log.warn(ME, "Problems during shutdown of xmlrpc web server: " + e.toString());
+            log.warning("Problems during shutdown of xmlrpc web server: " + e.toString());
          }
          webServer = null;
-         log.info(ME, "XMLRPC driver stopped, handler released.");
+         log.info("XMLRPC driver stopped, handler released.");
       }
       else
-         log.info(ME, "XMLRPC shutdown, nothing to do.");
+         log.info("XMLRPC shutdown, nothing to do.");
    }
 
    /**

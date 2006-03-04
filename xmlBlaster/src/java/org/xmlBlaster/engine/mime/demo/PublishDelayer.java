@@ -8,7 +8,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -34,7 +35,7 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
 {
    private final String ME = "PublishDelayer";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PublishDelayer.class.getName());
    /** How long to delay an incoming publish message */
    private long delayMillis = 0;
 
@@ -44,8 +45,8 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("mime");
-      log.info(ME, "Filter is initialized, we check all mime types if content is not too long");
+
+      log.info("Filter is initialized, we check all mime types if content is not too long");
    }
 
    /**
@@ -53,14 +54,14 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
-      this.log = glob.getLog("mime");
+
 
       java.util.Properties props = pluginInfo.getParameters();
 
       String lenStr = (String)props.get("delayMillis");
       if (lenStr != null) {
          delayMillis = (new Long(lenStr)).longValue();
-         log.info(ME, "Setting delayMillis=" + delayMillis + " as configured in xmlBlaster.properties");
+         log.info("Setting delayMillis=" + delayMillis + " as configured in xmlBlaster.properties");
       }
    }
 
@@ -124,13 +125,13 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
       try {
          if (delayMillis > 0) {
             Thread.sleep(delayMillis);
-            log.info(ME, "Waking up after delaying message for " + delayMillis + " milli seconds");
+            log.info("Waking up after delaying message for " + delayMillis + " milli seconds");
          }
          return Constants.STATE_OK; // "OK" message is accepted
       }
       catch (Throwable e) {
          String tmp = "Can't delay message because of an unexpected problem: " + e.toString();
-         log.error(ME, tmp);
+         log.severe(tmp);
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, tmp);
       }
    }

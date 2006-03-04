@@ -6,7 +6,8 @@ Comment:   Demo code for a client using xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -40,7 +41,7 @@ public class TestSubGet extends TestCase implements I_Callback
 {
    private static String ME = "TestSubGet";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubGet.class.getName());
 
    private boolean messageArrived = false;
 
@@ -66,7 +67,7 @@ public class TestSubGet extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.senderName = loginName;
       this.receiverName = loginName;
    }
@@ -86,7 +87,7 @@ public class TestSubGet extends TestCase implements I_Callback
          senderConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -118,7 +119,7 @@ public class TestSubGet extends TestCase implements I_Callback
     */
    public void subscribeExact()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'>\n" +
                       "</key>";
@@ -127,9 +128,9 @@ public class TestSubGet extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -144,7 +145,7 @@ public class TestSubGet extends TestCase implements I_Callback
     */
    public void testPublish()
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -153,9 +154,9 @@ public class TestSubGet extends TestCase implements I_Callback
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          publishOid = senderConnection.publish(msgUnit).getKeyOid();
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -189,7 +190,7 @@ public class TestSubGet extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (log.CALL) log.call(ME, "Receiving update of a message from sender = " + updateQos.getSender() + " ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message from sender = " + updateQos.getSender() + " ...");
 
       numReceived += 1;
 
@@ -210,7 +211,7 @@ public class TestSubGet extends TestCase implements I_Callback
       }
       catch (RuntimeException e) { // TODO: pass problem to junit
          e.printStackTrace();
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          throw e;
       }
 
@@ -237,7 +238,7 @@ public class TestSubGet extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -252,23 +253,23 @@ public class TestSubGet extends TestCase implements I_Callback
     */
    public void testGet()
    {
-      if (log.TRACE) log.trace(ME, "3. Get an existing message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("3. Get an existing message ...");
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
          MsgUnit[] msgArr = senderConnection.get(xmlKey, qos);
 
          assertEquals("Got wrong number of messages", 1, msgArr.length);
-         log.info(ME, "Success, got the message '" + msgArr[0].getKey() + "'");
-         if (log.DUMP) log.dump(ME, msgArr[0].toXml());
+         log.info("Success, got the message '" + msgArr[0].getKey() + "'");
+         if (log.isLoggable(Level.FINEST)) log.finest(msgArr[0].toXml());
 
          GetReturnQos getQos = new GetReturnQos(glob, msgArr[0].getQos());
          assertEquals("Sender is corrupted", senderName, getQos.getSender().getLoginName());
-         log.info(ME, "Get success from sender " + getQos.getSender());
+         log.info("Get success from sender " + getQos.getSender());
 
          assertEquals("Corrupted content", senderContent, new String(msgArr[0].getContent()));
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException for trying to get a message: " + e.getMessage());
+         log.severe("XmlBlasterException for trying to get a message: " + e.getMessage());
          assertTrue("Couldn't get() an existing message", false);
       }
    }

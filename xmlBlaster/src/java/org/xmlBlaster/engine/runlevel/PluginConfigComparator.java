@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import java.util.Comparator;
 
@@ -18,7 +19,7 @@ public class PluginConfigComparator implements Comparator
 {
    private String ME = "PluginConfigComparator";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginConfigComparator.class.getName());
    private boolean isAscending = true;
 
    /**
@@ -30,8 +31,8 @@ public class PluginConfigComparator implements Comparator
    public PluginConfigComparator(Global glob, boolean isAscending) {
       this.isAscending = isAscending;
       this.glob = glob;
-      this.log = this.glob.getLog("runlevel");
-      if (this.log.CALL) this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
    }
 
 

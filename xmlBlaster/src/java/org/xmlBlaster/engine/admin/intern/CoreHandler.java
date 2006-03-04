@@ -6,7 +6,8 @@ Comment:   Implementation for administrative property access
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin.intern;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
@@ -40,7 +41,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
    private String ME = "CoreHandler";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(CoreHandler.class.getName());
    private CommandManager commandManager = null;
    private String listSeparator = "\n";
 
@@ -51,7 +52,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     */
    public void initialize(Global glob, CommandManager commandManager) {
       this.glob = glob;
-      this.log = this.glob.getLog("admin");
+
       this.commandManager = commandManager;
       this.ME = "CoreHandler" + this.glob.getLogPrefixDashed();
       this.listSeparator = this.glob.getProperty().get("xmlBlaster/admin/listSeparator", this.listSeparator);
@@ -60,7 +61,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       this.commandManager.register(ContextNode.SUBSCRIPTION_MARKER_TAG, this); // "subscription"
       // "topic" was handled by MsgHandler.java, changed 2006-02-028, marcel
       this.commandManager.register(ContextNode.TOPIC_MARKER_TAG, this); // "topic"
-      log.info(ME, "Core administration plugin is initialized");
+      log.info("Core administration plugin is initialized");
    }
 
    /**
@@ -135,7 +136,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       try {
          Object tmp = method.invoke (impl, argValues);
-         log.info(ME, "Successful invoked set method '" + property + "'");
+         log.info("Successful invoked set method '" + property + "'");
          
          //Object tmp = getInvoke(property, impl, clazz, cmd.getQueryKeyData(), cmd.getQueryQosData());
          String ret = "";
@@ -150,8 +151,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          else {
             ret = ""+ tmp;
          }
-         if (log.TRACE) log.trace(ME, "Retrieved " + cmd.getCommand());
-         if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
+         if (log.isLoggable(Level.FINE)) log.fine("Retrieved " + cmd.getCommand());
+         if (log.isLoggable(Level.FINEST)) log.finest("Retrieved " + cmd.getCommand() + "=" + ret);
    
          MsgUnit[] msgs = null;
          if (tmp instanceof MsgUnit[]) msgs = (MsgUnit[])tmp;
@@ -262,7 +263,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          }
       }
 
-      log.info(ME, cmd.getCommand() + " not implemented");
+      log.info(cmd.getCommand() + " not implemented");
       return new MsgUnit[0];
    }
 
@@ -280,7 +281,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (client.startsWith("?")) {
          // for example "/node/heron/?freeMem"
          /*String ret = ""+*/setInvoke(cmd.getKey(), glob.getRequestBroker(), I_AdminNode.class, cmd.getValue());
-         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
+         log.info("Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
          return cmd.getArgsString();
       }
 
@@ -299,7 +300,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (pubSessionId.startsWith("?")) {
          // for example "/node/heron/joe/?uptime"
          /*String ret = ""+*/setInvoke(cmd.getKey(), subjectInfo, I_AdminSubject.class, cmd.getValue());
-         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
+         log.info("Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
          return cmd.getArgsString();
       }
 
@@ -313,11 +314,11 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          if (sessionInfo == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
          /*String ret = ""+*/setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());
-         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
+         log.info("Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
          return cmd.getArgsString();
       }
 
-      log.info(ME, cmd.getCommand() + " not implemented");
+      log.info(cmd.getCommand() + " not implemented");
       return null;
    }
 
@@ -337,7 +338,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          Invoker invoker = new Invoker(glob, impl, aInterface);
          methodName = "get" + property.substring(0,1).toUpperCase() + property.substring(1);
          Object obj = invoker.execute(methodName, qosData, keyData);
-         if (log.TRACE) log.trace(ME, "Return for '" + methodName + "' is '" + obj + "'");
+         if (log.isLoggable(Level.FINE)) log.trace(ME, "Return for '" + methodName + "' is '" + obj + "'");
          return obj;
          // This code worked only when a corresponding setXXX() was specified:
          //PropertyDescriptor desc = new PropertyDescriptor(property, aClass);
@@ -458,9 +459,9 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          Object[] argValues = convertMethodArguments(method.getParameterTypes(), argValuesAsStrings);
 
          Object obj = method.invoke (impl, argValues);
-         log.info(ME, "Successful invoked set method '" + property + "'");
+         log.info("Successful invoked set method '" + property + "'");
          if (obj != null) {
-            log.trace(ME, "Ignoring returned value of set method '" + property + "'");
+            log.fine("Ignoring returned value of set method '" + property + "'");
             if (obj instanceof String[]) {
                String[] tmpArr = (String[])obj;
                String ret = "";
@@ -478,12 +479,12 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          if (e instanceof XmlBlasterException) throw (XmlBlasterException)e;
          if (log != null && aClass != null && argValuesAsStrings != null && argValuesAsStrings.length > 0 &&
              argValuesAsStrings[0] != null) {
-            log.error(ME, "Invoke for property '" + property + "' with " + argValuesAsStrings.length + " arguments of type " +
+            log.severe("Invoke for property '" + property + "' with " + argValuesAsStrings.length + " arguments of type " +
                argValuesAsStrings[0].getClass().toString() +
                " on interface " + aClass.toString() + " failed: " + e.toString());
          }
          else {
-            log.error(ME, "Invoke for property '" + property + "' on interface " + ((aClass!=null)?aClass.toString():"") + " failed: " + e.toString());
+            log.severe("Invoke for property '" + property + "' on interface " + ((aClass!=null)?aClass.toString():"") + " failed: " + e.toString());
          }
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: " + e.toString());
       }
@@ -504,7 +505,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    }
 
    public void shutdown() {
-      if (log.TRACE) log.trace(ME, "Shutdown ignored, nothing to do");
+      if (log.isLoggable(Level.FINE)) log.fine("Shutdown ignored, nothing to do");
    }
 
 } // end of class CoreHandler

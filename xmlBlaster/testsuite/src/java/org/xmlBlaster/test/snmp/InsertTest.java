@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.snmp;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -20,7 +21,7 @@ import junit.framework.*;
  */
 public class InsertTest extends TestCase {
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(InsertTest.class.getName());
 
    public InsertTest(String name) {
       super(name);
@@ -28,7 +29,7 @@ public class InsertTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = glob.getLog(null);
+
    }
 
    public void testInsert() {

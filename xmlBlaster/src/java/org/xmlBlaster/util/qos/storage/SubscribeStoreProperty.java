@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.storage;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 
@@ -17,7 +18,7 @@ import org.xmlBlaster.util.def.Constants;
 public class SubscribeStoreProperty extends QueuePropertyBase
 {
    private static final String ME = "SubscribeStoreProperty";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(SubscribeStoreProperty.class.getName());
 
    /**
     * Increases the default bytes in the storage to 25 MB for each topic
@@ -25,7 +26,7 @@ public class SubscribeStoreProperty extends QueuePropertyBase
     */
    public SubscribeStoreProperty(Global glob, String nodeId) {
       super(glob, nodeId);
-      this.log = glob.getLog("core");
+
       relating = Constants.RELATING_SUBSCRIBE;
 
       super.initialize(Constants.RELATING_SUBSCRIBE);

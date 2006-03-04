@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.cluster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 // for client connections:
@@ -42,7 +43,7 @@ import junit.framework.*;
 public class SubscribeTest extends TestCase {
    private String ME = "SubscribeTest";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(SubscribeTest.class.getName());
    private ServerHelper serverHelper;
 
    private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon, bilboCon2;
@@ -66,8 +67,8 @@ public class SubscribeTest extends TestCase {
     * Initialize the test ...
     */
    protected void setUp() {
-      log = glob.getLog(ME);
-      log.info(ME, "Entering setUp(), test starts");
+
+      log.info("Entering setUp(), test starts");
 
       updateCounterHeron = 0;
       updateCounterFrodo = 0;
@@ -89,7 +90,7 @@ public class SubscribeTest extends TestCase {
     * cleaning up ...
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (bilboCon != null) { bilboCon.disconnect(null); bilboCon = null; }
@@ -121,11 +122,11 @@ public class SubscribeTest extends TestCase {
             bilboCon = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                      if (updateQos.isErased()) {
-                        log.info(ME, "Ignoring erase message");
+                        log.info("Ignoring erase message");
                         return "";
                      }
                      updateCounterBilbo++;
-                     log.info(ME+":"+serverHelper.getBilboGlob().getId(),
+                     log.info(
                               "Receiving update '" + updateKey.getOid() + "' " + updateCounterBilbo + " ...");
                      assertEquals("Wrong message updated", oid, updateKey.getOid());
                      return "";
@@ -145,11 +146,11 @@ public class SubscribeTest extends TestCase {
             bilboCon2 = serverHelper.connect(bilboGlob2, new I_Callback() {  // Login to xmlBlaster, register for updates
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                      if (updateQos.isErased()) {
-                        log.info(ME, "Ignoring erase message");
+                        log.info("Ignoring erase message");
                         return "";
                      }
                      updateCounterBilbo2++;
-                     log.info(ME+":"+bilboGlob2.getId() + "#2",
+                     log.info(
                               "Receiving update '" + updateKey.getOid() + "' " + updateCounterBilbo2 + " ...");
                      assertEquals("#2 Wrong message updated", oid, updateKey.getOid());
                      return "";
@@ -174,9 +175,9 @@ public class SubscribeTest extends TestCase {
 
 
             try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
-            if (1 != updateCounterBilbo) log.error(ME, "Did not expect " + updateCounterBilbo + " updates");
+            if (1 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
             assertEquals("message from avalon", 1, updateCounterBilbo);
-            if (1 != updateCounterBilbo2) log.error(ME, "Did not expect " + updateCounterBilbo2 + " updates");
+            if (1 != updateCounterBilbo2) log.severe("Did not expect " + updateCounterBilbo2 + " updates");
             assertEquals("message from avalon #2", 1, updateCounterBilbo2);
             updateCounterBilbo = 0;
             updateCounterBilbo2 = 0;
@@ -202,9 +203,9 @@ public class SubscribeTest extends TestCase {
 
 
             try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
-            if (0 != updateCounterBilbo) log.error(ME, "Did not expect " + updateCounterBilbo + " updates");
+            if (0 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
             assertEquals("message from avalon", 0, updateCounterBilbo);
-            if (1 != updateCounterBilbo2) log.error(ME, "Did not expect " + updateCounterBilbo2 + " updates");
+            if (1 != updateCounterBilbo2) log.severe("Did not expect " + updateCounterBilbo2 + " updates");
             assertEquals("message from avalon #2", 1, updateCounterBilbo2);
             updateCounterBilbo = 0;
             updateCounterBilbo2 = 0;
@@ -265,14 +266,14 @@ public class SubscribeTest extends TestCase {
             bilboCons[ii] = serverHelper.connect(bilboGlobii, new I_Callback() {  // Login to xmlBlaster, register for updates
                   int bilboConInstanceCounter = counter; 
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                     log.info(ME+":"+bilboGlobii.getId() + "#" + bilboConInstanceCounter,
+                     log.info(
                               "Receiving update '" + updateKey.getOid() + "' state=" + updateQos.getState() + ", " + updateCounterBilbo + " ...");
                      if (updateQos.isErased()) {
-                        log.info(ME, "Ignoring erase message");
+                        log.info("Ignoring erase message");
                         return "";
                      }
                      updateCounterBilbo++;
-                     log.info(ME+":"+bilboGlobii.getId() + "#" + bilboConInstanceCounter,
+                     log.info(
                               "Receiving update '" + updateKey.getOid() + "' " + updateCounterBilbo + " ...");
                      assertEquals("Wrong message updated", oid, updateKey.getOid());
                      return "";
@@ -296,7 +297,7 @@ public class SubscribeTest extends TestCase {
 
             waitOnUpdate(2000L, 1);
             try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // wait longer to check if too many arrive
-            if (1 != updateCounterBilbo) log.error(ME, "Did not expect " + updateCounterBilbo + " updates");
+            if (1 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
             assertEquals("message from avalon", 1, updateCounterBilbo);
             updateCounterBilbo = 0;
 
@@ -351,7 +352,7 @@ public class SubscribeTest extends TestCase {
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

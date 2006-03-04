@@ -15,7 +15,8 @@ import org.xmlBlaster.util.Global;
 import java.util.Properties;
 import org.xmlBlaster.util.qos.address.Address;
 import javax.swing.JPanel;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io. *;
 import org.xmlBlaster.jmxgui.JmxPlugin;
 
@@ -26,7 +27,7 @@ import org.xmlBlaster.jmxgui.JmxPlugin;
  * Update is called, whenever a Notification-event is sent back from the server
  */
 public class NotificationHandler implements I_Callback {
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(NotificationHandler.class.getName());
    private static int port = 3424;
    private I_XmlBlasterAccess returnCon;
    private Global glob;
@@ -44,9 +45,9 @@ public class NotificationHandler implements I_Callback {
       this.beanSource = strObjectName;
       try {
          this.glob = Global.instance();
-         log = this.glob.getLog("jmxGUI");
-         if (this.log.CALL)
-            this.log.error(ME, "Constructor for '" + strObjectName + "' of class '" + className + "'");
+
+         if (log.isLoggable(Level.FINER))
+            log.severe("Constructor for '" + strObjectName + "' of class '" + className + "'");
 
          this.objectName = new ObjectName(strObjectName);
 //      this.glob = Global.instance().getClone(null);
@@ -66,7 +67,7 @@ public class NotificationHandler implements I_Callback {
 //      glob.setBootstrapAddress(addr);
          returnCon = glob.getXmlBlasterAccess();
          SubscribeKey subKey = new SubscribeKey(this.glob, "xmlBlasterMBeans_Notification");
-         log.info(ME, "NotificationHandler... Trying to connect to service...");
+         log.info("NotificationHandler... Trying to connect to service...");
          SubscribeQos	 sQos = new SubscribeQos(this.glob);
 
          sQos.setWantLocal(false);
@@ -83,7 +84,7 @@ public class NotificationHandler implements I_Callback {
          server.addNotificationListener(objectName, className, filter);
       }
       catch (Exception ex) {
-         log.error(ME, "Error when invoking internal Server for Connector: " + ex.toString());
+         log.severe("Error when invoking internal Server for Connector: " + ex.toString());
          ex.printStackTrace();
       }
    }
@@ -94,14 +95,14 @@ public class NotificationHandler implements I_Callback {
    {
       Notification    notif = null;
 
-      log.info(ME, "Received Notification....");
+      log.info("Received Notification....");
       try {
          notif = (Notification) serHelp.deserializeObject(content);
       }
       catch (IOException ex) {
       }
       if (this.beanSource.equals(notif.getSource().toString())) {
-         log.info(ME, "sending update to panel: " + notif.getSource());
+         log.info("sending update to panel: " + notif.getSource());
          panel.update();
       }
       return "";

@@ -6,7 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
@@ -61,7 +62,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    private static final String ME = "JdbcManagerCommonTable";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(JdbcManagerCommonTable.class.getName());
    private final JdbcConnectionPool pool;
    private final I_EntryFactory factory;
    private final WeakHashMap listener;
@@ -124,9 +125,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    //   this.managerName = managerName;
       this.pool = pool;
       this.glob = this.pool.getGlobal();
-      this.log = glob.getLog("jdbc");
+
       this.storage = storage;
-      if (this.log.CALL) this.log.call(ME, "Constructor called");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Constructor called");
 
       this.factory = factory;
 
@@ -141,20 +142,20 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.maxStatementLength < 1) {
             this.maxStatementLength = glob.getProperty().get("queue.persistent.maxStatementLength", 2048);
             if (first) {
-               this.log.info(ME, "The maximum SQL statement length is not defined in JDBC meta data, we set it to " + this.maxStatementLength);
+               log.info("The maximum SQL statement length is not defined in JDBC meta data, we set it to " + this.maxStatementLength);
                first = false;
             }
          }
 
          if (!conn.getMetaData().supportsTransactions()) {
             String dbName = conn.getMetaData().getDatabaseProductName();
-            this.log.error(ME, "the database '" + dbName + "' does not support transactions, unpredicted results may happen");
+            log.severe("the database '" + dbName + "' does not support transactions, unpredicted results may happen");
          }
 
          if (!conn.getMetaData().supportsBatchUpdates()) {
             String dbName = conn.getMetaData().getDatabaseProductName();
             this.supportsBatch = false;
-            this.log.trace(ME, "the database '" + dbName + "' does not support batch mode. No problem I will work whitout it");
+            log.fine("the database '" + dbName + "' does not support batch mode. No problem I will work whitout it");
          }
       }
       catch (XmlBlasterException ex) {
@@ -221,7 +222,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (XmlBlasterException ex) {
-         this.log.warn(ME, "ping failed due to problems with the pool. Check the jdbc pool size in 'xmlBlaster.properties'. Reason :" + ex.getMessage());
+         log.warning("ping failed due to problems with the pool. Check the jdbc pool size in 'xmlBlaster.properties'. Reason :" + ex.getMessage());
          return false;
       }
       finally {
@@ -229,7 +230,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (conn != null) this.pool.releaseConnection(conn);
          }
          catch (XmlBlasterException e) {
-            this.log.error(ME, "ping: releaseConnection failed: " + e.getMessage());
+            log.severe("ping: releaseConnection failed: " + e.getMessage());
          }
       }
    }
@@ -241,14 +242,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
 // isClosed() does not work
    private boolean ping(Connection conn) {
-      if (this.log.CALL) this.log.call(ME, "ping");
+      if (log.isLoggable(Level.FINER)) this.log.finer("ping");
       if (conn == null) return false; // this could occur if it was not possible to create the connection
 
 //      Statement st = null;
       try {
          // conn.isClosed();
 
-         if (this.log.TRACE) this.log.trace(ME, "Trying ping ...");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Trying ping ...");
          conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
 
          /*
@@ -280,11 +281,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             log.info(ME, "ping null elapsed=" + stopWatchToBlob.nice());
          }
          */
-         if (this.log.TRACE) this.log.trace(ME, "ping successful");
+         if (log.isLoggable(Level.FINE)) this.log.fine("ping successful");
          return true;
       }
       catch (Throwable ex) {
-         if (log.TRACE) this.log.trace(ME, "ping to DB failed. DB may be down. Reason " + ex.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("ping to DB failed. DB may be down. Reason " + ex.toString());
          return false;
       }
 /*
@@ -293,7 +294,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (st != null) st.close();
          }
          catch (Throwable e) {
-            this.log.warn(ME, "ping exception when closing the statement " + e.toString());
+            log.warn(ME, "ping exception when closing the statement " + e.toString());
          }
       }
 */
@@ -324,7 +325,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @see I_StorageProblemListener#storageUnavailable(int)
     */
    public void storageUnavailable(int oldStatus) {
-      if (this.log.CALL) this.log.call(ME, "storageUnavailable (old status '" + oldStatus + "')");
+      if (log.isLoggable(Level.FINER)) this.log.finer("storageUnavailable (old status '" + oldStatus + "')");
       this.isConnected = false;
 
       I_StorageProblemListener[] listenerArr = getStorageProblemListenerArr();
@@ -339,7 +340,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @see I_StorageProblemListener#storageAvailable(int)
     */
    public void storageAvailable(int oldStatus) {
-      if (this.log.CALL) this.log.call(ME, "storageAvailable (old status '" + oldStatus + "')");
+      if (log.isLoggable(Level.FINER)) this.log.finer("storageAvailable (old status '" + oldStatus + "')");
       this.isConnected = true;
       //change this once this class implements I_StorageProblemNotifier
       if (oldStatus == I_StorageProblemListener.UNDEF) return;
@@ -385,7 +386,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       else ret = !ping();
 
       if (ret) {
-         this.log.error(ME, location + ": the connection to the DB has been lost. Going in polling modus");
+         log.severe(location + ": the connection to the DB has been lost. Going in polling modus");
          this.pool.setConnectionLost();
       }
       return ret;
@@ -405,7 +406,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          String table = rs.getString(3).toUpperCase();
          // if (table.startsWith(this.tablePrefix))
          // we currently add everything since I don't know what's better: speed here or when searching
-         if (this.log.TRACE) this.log.trace(ME, "getXbTableNames found table '" + table + "': adding to the set of found tables"); 
+         if (log.isLoggable(Level.FINE)) this.log.fine("getXbTableNames found table '" + table + "': adding to the set of found tables"); 
          ret.add(table);
       }
       return ret;
@@ -421,7 +422,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public final boolean tablesCheckAndSetup(boolean createTables)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "tablesCheckAndSetup");
+      if (log.isLoggable(Level.FINER)) this.log.finer("tablesCheckAndSetup");
 
       if (!this.isConnected)
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "tablesCheckAndSetup: the DB disconnected. Handling is currently not possible");
@@ -436,12 +437,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          HashSet set = getXbTableNames(conn);
 
          if (set.contains(this.entriesTableName.toUpperCase())) entriesTableExists = true;
-         if (this.log.TRACE) this.log.trace(getLogId(null, "tablesCheckAndSetup"), "entries table exists : " + entriesTableExists);
+         if (log.isLoggable(Level.FINE)) this.log.fine("entries table exists : " + entriesTableExists);
 
          if (!createTables) return entriesTableExists;
 
          if (!entriesTableExists) {
-            log.info(getLogId(null, "tablesCheckAndSetup"), "adding table '" + this.entriesTableName + "' as the 'entries' table");
+            log.info("adding table '" + this.entriesTableName + "' as the 'entries' table");
             req = "CREATE TABLE " + this.entriesTableName.toUpperCase() + 
                   " (" + this.dataIdColName + " " + this.longintTxt + " " + this.keyAttr +
                   //", nodeId " + this.stringTxt + " " + this.keyAttr +
@@ -454,8 +455,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                   ", PRIMARY KEY (" + this.dataIdColName + ", queueName)";
             if (this.pool.isCascadeDeleteSuppported()) req  += " ON DELETE CASCADE)";
             else req += ")";
-            if (this.log.TRACE) 
-               this.log.trace(getLogId(null, "tablesCheckAndSetup"), "Request: '" + req + "'");
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("Request: '" + req + "'");
             update(req, conn);
          }
          if (!conn.getAutoCommit()) conn.commit();
@@ -466,7 +467,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (!conn.getAutoCommit()) conn.rollback();
          }
          catch (Throwable e) {
-            this.log.error(ME, "tablesCheckAndSetup: exception occured when rolling back: " + e.toString());
+            log.severe("tablesCheckAndSetup: exception occured when rolling back: " + e.toString());
          }
          throw ex;
       }
@@ -475,7 +476,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (conn != null && !conn.getAutoCommit()) conn.rollback();
          }
          catch (Throwable e) {
-            this.log.error(ME, "tablesCheckAndSetup: exception occured when rolling back: " + e.toString());
+            log.severe("tablesCheckAndSetup: exception occured when rolling back: " + e.toString());
          }
 
          if (checkIfDBLoss(conn, getLogId(null, "tablesCheckAndSetup"), ex, "SQL request giving problems: " + req))
@@ -488,7 +489,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                conn.setAutoCommit(true);
             }
             catch (Throwable e) {
-               this.log.error(ME, "tablesCheckAndSetup: exception occured when setting back autocommit flag, reason: " + e.toString());
+               log.severe("tablesCheckAndSetup: exception occured when setting back autocommit flag, reason: " + e.toString());
             }
             this.pool.releaseConnection(conn);
          }
@@ -508,10 +509,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public final boolean modifyEntry(String queueName, I_Entry entry)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(queueName, "modifyEntry"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "modifyEntry"), "For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".modifyEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
       }
 
@@ -527,8 +528,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       boolean persistent = entry.isPersistent();
       long sizeInBytes = entry.getSizeInBytes();
       
-      if (this.log.DUMP)
-         this.log.dump(ME, "modification dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
+      if (log.isLoggable(Level.FINEST))
+         log.finest("modification dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
 
       try {
          conn = this.pool.getConnection();
@@ -536,7 +537,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                       this.byteSizeColName + " = ? , " + this.blobVarName + " = ? WHERE  " + this.dataIdColName +
                       " = ? AND queueName = ?";
 
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "modifyEntry"), req);
+         if (log.isLoggable(Level.FINE)) this.log.fine(req);
          preStatement = conn.prepareStatement(req);
          preStatement.setQueryTimeout(this.pool.getQueryTimeout());
          preStatement.setInt(1, prio);
@@ -552,19 +553,19 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          preStatement.setLong(6, dataId);
          preStatement.setString(7, queueName);
 
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "modifyEntry"), preStatement.toString());
+         if (log.isLoggable(Level.FINE)) this.log.fine(preStatement.toString());
 
          int num = preStatement.executeUpdate();
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "modifyEntry"), "Modified " + num + " entries, entryId='" + entry.getUniqueId() + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Modified " + num + " entries, entryId='" + entry.getUniqueId() + "'");
          ret = true;
       }
       catch (Throwable ex) {
-         if (this.log.TRACE) {
+         if (log.isLoggable(Level.FINE)) {
             if (ex instanceof SQLException) {
-               this.log.trace(ME, "modifyEntry: sql exception, the sql state: '" + ((SQLException)ex).getSQLState() );
-               this.log.trace(ME, "modifyEntry: sql exception, the error code: '" + ((SQLException)ex).getErrorCode() );
+               log.fine("modifyEntry: sql exception, the sql state: '" + ((SQLException)ex).getSQLState() );
+               log.fine("modifyEntry: sql exception, the error code: '" + ((SQLException)ex).getErrorCode() );
             }
-            else this.log.trace(ME, "modifyEntry: exception, the error reason: '" + ex.toString());
+            else log.fine("modifyEntry: exception, the error reason: '" + ex.toString());
          }
 
          try {
@@ -572,10 +573,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             preStatement = null;
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "modifyEntry: Exception when closing the statement: " + ex1.toString());
+            log.severe("modifyEntry: Exception when closing the statement: " + ex1.toString());
          }
 //         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET 
-         this.log.warn(getLogId(queueName, "modifyEntry"), "Could not update entry '" +
+         log.warning("Could not update entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(queueName, "modifyEntry"), ex)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".modifyEntry", "", ex); 
@@ -589,13 +590,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (exStatement != null) exStatement.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "modifyEntry: throwable when closing the connection: " + ex.toString());
+            log.warning("modifyEntry: throwable when closing the connection: " + ex.toString());
          }
          try {
             if (preStatement != null) preStatement.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "modifyEntry: throwable when closing the connection: " + ex.toString());
+            log.warning("modifyEntry: throwable when closing the connection: " + ex.toString());
          }
          if (conn != null) this.pool.releaseConnection(conn);
       }
@@ -616,10 +617,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    private final boolean addSingleEntry(String queueName, I_Entry entry, Connection conn)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(queueName, "addSingleEntry"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "addSingleEntry"), "For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addSingleEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
       }
 
@@ -635,12 +636,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       boolean persistent = entry.isPersistent();
       long sizeInBytes = entry.getSizeInBytes();
       
-      if (this.log.DUMP)
-         this.log.dump(ME, "addition. dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
+      if (log.isLoggable(Level.FINEST))
+         log.finest("addition. dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
       
       try {
          String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?)";
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "addEntry"), req);
+         if (log.isLoggable(Level.FINE)) this.log.fine(req);
 
          preStatement = conn.prepareStatement(req);
          preStatement.setQueryTimeout(this.pool.getQueryTimeout());
@@ -654,16 +655,16 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
          preStatement.setBinaryStream(BLOB, blob_stream, blob.length); //(int)sizeInBytes);
          // preStatement.setBytes(BLOB, blob);
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "addEntry"), preStatement.toString());
+         if (log.isLoggable(Level.FINE)) this.log.fine(preStatement.toString());
          int num = preStatement.executeUpdate();
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "addEntry"), "Added " + num + " entries, entryId='" + entry.getUniqueId() + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Added " + num + " entries, entryId='" + entry.getUniqueId() + "'");
          ret = true;
       }
       catch (Throwable ex) {
-         if (this.log.TRACE) {
+         if (log.isLoggable(Level.FINE)) {
             if (ex instanceof SQLException) {
-               this.log.trace(ME, "addEntry: sql exception, the sql state: '" + ((SQLException)ex).getSQLState() );
-               this.log.trace(ME, "addEntry: sql exception, the error code: '" + ((SQLException)ex).getErrorCode() );
+               log.fine("addEntry: sql exception, the sql state: '" + ((SQLException)ex).getSQLState() );
+               log.fine("addEntry: sql exception, the error code: '" + ((SQLException)ex).getErrorCode() );
             }
          }
          try {
@@ -673,11 +674,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing statement: " + ex1.toString());
+            log.severe("exception when closing statement: " + ex1.toString());
             ex1.printStackTrace();
          }
 //         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET
-         this.log.warn(getLogId(queueName, "addEntry"), "Could not insert entry '" +
+         log.warning("Could not insert entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(queueName, "addEntry"), ex)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex); 
@@ -685,7 +686,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          // check if the exception was due to an existing entry. If yes, no exception will be thrown
          try {
             String req = "SELECT count(*) from " + this.entriesTableName + " where (" + this.dataIdColName + "='" + dataId + "')";
-            if (this.log.TRACE) this.log.trace(ME, "addEntry: checking if entry already in db: request='" + req + "'");
+            if (log.isLoggable(Level.FINE)) this.log.fine("addEntry: checking if entry already in db: request='" + req + "'");
             exStatement = conn.createStatement();
 //            exStatement.setQueryTimeout(this.pool.getQueryTimeout());
             ResultSet rs = exStatement.executeQuery(req);
@@ -694,7 +695,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (size < 1) throw ex;
          }
          catch (Throwable ex1) {
-            if (this.log.TRACE) this.log.trace(ME, "addEntry: checking if entry already in db: exception in select: '" + ex.toString() + "'");
+            if (log.isLoggable(Level.FINE)) this.log.fine("addEntry: checking if entry already in db: exception in select: '" + ex.toString() + "'");
             if (checkIfDBLoss(conn, getLogId(queueName, "addEntry"), ex1))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex1); 
             else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntry", "", ex1); 
@@ -706,13 +707,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (exStatement != null) exStatement.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "addEntry: throwable when closing the connection: " + ex.toString());
+            log.warning("addEntry: throwable when closing the connection: " + ex.toString());
          }
          try {
             if (preStatement != null) preStatement.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "addEntry: throwable when closing the connection: " + ex.toString());
+            log.warning("addEntry: throwable when closing the connection: " + ex.toString());
          }
       }
       return ret;
@@ -751,11 +752,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       int i = 0;
       int[] ret = new int[entries.length];
       try {
-         if (this.log.TRACE) this.log.trace(ME, "addEntriesSingleMode adding each entry in single mode since an exception occured when using 'batch mode'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("addEntriesSingleMode adding each entry in single mode since an exception occured when using 'batch mode'");
          for (i=0; i < entries.length; i++) {
             if (addSingleEntry(queueName, entries[i], conn)) ret[i] = 1; 
             else ret[i] = 0;
-            if (this.log.TRACE) this.log.trace(ME, "addEntriesSingleMode adding entry '" + i + "' in single mode succeeded");
+            if (log.isLoggable(Level.FINE)) this.log.fine("addEntriesSingleMode adding entry '" + i + "' in single mode succeeded");
          }
          if (!conn.getAutoCommit()) conn.commit();
          return ret;
@@ -768,7 +769,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex2) {
-            this.log.error(ME, "addEntriesSingleMode exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+            log.severe("addEntriesSingleMode exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
          }
          throw ex1;
       }
@@ -780,7 +781,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex2) {
-            this.log.error(ME, "addEntriesSingleMode exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
+            log.severe("addEntriesSingleMode exception occured when rolling back (this could generate inconsistencies in the data) : " + ex2.toString());
          }
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addEntriesSingleMode", "", ex1); 
       }
@@ -800,10 +801,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    public int[] addEntries(String queueName, I_Entry[] entries)
       throws XmlBlasterException {
 
-      if (this.log.CALL) this.log.call(getLogId(queueName, "addEntries"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "addEnties"), " for '" + entries.length + "' currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine(" for '" + entries.length + "' currently not possible. No connection to the DB");
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", " the connection to the DB is unavailable already before trying to add entries"); 
       }
 
@@ -815,7 +816,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             return addEntriesSingleMode(conn, queueName, entries);
          if (conn.getAutoCommit()) conn.setAutoCommit(false);
          String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?)";
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "addEntries"), req);
+         if (log.isLoggable(Level.FINE)) this.log.fine(req);
 
          preStatement = conn.prepareStatement(req);
          preStatement.setQueryTimeout(this.pool.getQueryTimeout());
@@ -839,7 +840,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
             preStatement.setBinaryStream(BLOB, blob_stream, blob.length); //(int)sizeInBytes);
             //preStatement.setBytes(7, blob);
-            if (this.log.TRACE) this.log.trace(getLogId(queueName, "addEntries"), preStatement.toString());
+            if (log.isLoggable(Level.FINE)) this.log.fine(preStatement.toString());
             preStatement.addBatch();
          }
          int[] ret = preStatement.executeBatch();
@@ -854,10 +855,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "error occured when trying to rollback after exception: reason: " + ex1.toString() + " original reason:" + ex.toString());
+            log.severe("error occured when trying to rollback after exception: reason: " + ex1.toString() + " original reason:" + ex.toString());
             ex.printStackTrace(); // original stack trace
          }
-         if (log.TRACE) this.log.trace(getLogId(queueName, "addEntries"), "Could not insert entries: " + ex.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("Could not insert entries: " + ex.toString());
          if ((!this.supportsBatch || !this.enableBatchMode) ||
             checkIfDBLoss(conn, getLogId(queueName, "addEntries"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
@@ -870,7 +871,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (preStatement != null) preStatement.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "addEntries: throwable when closing the statement: " + ex.toString());
+            log.warning("addEntries: throwable when closing the statement: " + ex.toString());
          }
          try {
             if (conn != null) {
@@ -878,7 +879,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "addEntries: throwable when closing the connection: " + ex.toString());
+            log.warning("addEntries: throwable when closing the connection: " + ex.toString());
          }
 
          if (conn != null) this.pool.releaseConnection(conn);
@@ -891,18 +892,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public final int cleanUp(String queueName) throws XmlBlasterException {
 
-      if (this.log.CALL) this.log.call(getLogId(queueName, "cleanUp"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(getLogId(queueName, "cleanUp"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE))
+            log.fine("Currently not possible. No connection to the DB");
          return 0;
       }
 
       try {
          String req = "delete from " + this.entriesTableName + " where queueName='" + queueName + "'";
-         if (this.log.TRACE)
-            this.log.trace(getLogId(queueName, "cleanUp"), " request is '" + req + "'");
+         if (log.isLoggable(Level.FINE))
+            log.fine(" request is '" + req + "'");
          int num = update(req);
          return (num > 0) ? 1 : 0;
       }
@@ -931,14 +932,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public int wipeOutDB(boolean doSetupNewTables) throws XmlBlasterException {
       // retrieve all tables to delete
-      if (this.log.CALL)  log.call(ME, "wipeOutDB");
+      if (log.isLoggable(Level.FINER))  log.finer("wipeOutDB");
 
       int count = 0;
       Connection conn = null;
       try {
         try {
            String req = "DROP TABLE " + this.entriesTableName;
-            if (log.CALL)  log.call(ME, "wipeOutDB " + req + " will be invoked on the DB");
+            if (log.isLoggable(Level.FINER))  log.finer("wipeOutDB " + req + " will be invoked on the DB");
             conn = this.pool.getConnection();
             if (conn.getAutoCommit()) conn.setAutoCommit(false);
             this.update(req, conn);
@@ -948,7 +949,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (checkIfDBLoss(conn, getLogId(null, "wipeOutDB"), ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
-               this.log.warn(ME, "Exception occurred when trying to drop the table '" + this.entriesTableName + "', it probably is already dropped. Reason: " + ex.toString());
+               log.warning("Exception occurred when trying to drop the table '" + this.entriesTableName + "', it probably is already dropped. Reason: " + ex.toString());
             }
          }
 
@@ -959,7 +960,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (conn != null) conn.rollback();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "wipeOutDB: exception occurred when rolling back: " + ex1.toString());
+            log.severe("wipeOutDB: exception occurred when rolling back: " + ex1.toString());
          }
          if (ex instanceof XmlBlasterException) throw (XmlBlasterException)ex;
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(null, "wipeOutDB"), "wipeOutDB: exception ", ex);
@@ -982,7 +983,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (doSetupNewTables) setUp();
       }
       catch (Throwable ex) {
-         this.log.error(ME, "SQLException occured when cleaning up the table. Reason " + ex.toString()); 
+         log.severe("SQLException occured when cleaning up the table. Reason " + ex.toString()); 
       }
       return count;
    }
@@ -1031,7 +1032,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             st = null;
          }
          catch (Throwable ex1) {
-            this.log.warn(ME, ".getNumOfBytes: exception when closing statement: " + ex1.toString());
+            log.warning(".getNumOfBytes: exception when closing statement: " + ex1.toString());
          }
          if (checkIfDBLoss(conn, getLogId(queueName, "getNumOfBytes"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfBytes", "", ex); 
@@ -1042,7 +1043,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (st != null) st.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, ".getNumOfBytes: exception when closing statement: " + ex.toString());
+            log.warning(".getNumOfBytes: exception when closing statement: " + ex.toString());
          }
          if (conn != null) this.pool.releaseConnection(conn);
       }
@@ -1055,8 +1056,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * table name is returned.
     */
    public final void setUp() throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "setUp");
-      if (this.log.TRACE) this.log.trace(getLogId(null, "setUp"), "Initializing the first time the pool");
+      if (log.isLoggable(Level.FINER)) this.log.finer("setUp");
+      if (log.isLoggable(Level.FINE)) this.log.fine("Initializing the first time the pool");
       tablesCheckAndSetup(this.pool.isDbAdmin());
    }
 
@@ -1065,7 +1066,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                              I_EntryFilter entryFilter)
       throws SQLException, XmlBlasterException {
 
-      if (this.log.CALL) this.log.call(getLogId(storageId.getStrippedId(), "processResultSet"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       ArrayList entries = new ArrayList();
       int count = 0;
@@ -1094,8 +1095,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             // byte[] blob = rs.getBytes(7); // preStatement.setObject(5, blob);
 
             if ( (numOfBytes < 0) || (sizeInBytes+amount < numOfBytes) || (count == 0)) {
-               if (this.log.DUMP)
-                  this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
+               if (log.isLoggable(Level.FINEST))
+                  log.finest("processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
 //               entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
                I_Entry entry = this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId);
                if (entryFilter != null)
@@ -1120,7 +1121,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private final ReturnDataHolder processResultSetForDeleting(ResultSet rs, int numOfEntries, long numOfBytes)
       throws SQLException, XmlBlasterException {
 
-      if (this.log.CALL) this.log.call(ME,"processResultSetForDeleting invoked");
+      if (log.isLoggable(Level.FINER)) this.log.finer("processResultSetForDeleting invoked");
       ReturnDataHolder ret = new ReturnDataHolder();
       long currentAmount = 0L;
       while ( (rs.next()) && ((ret.countEntries < numOfEntries) || (numOfEntries < 0)) &&
@@ -1152,7 +1153,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    private final int update(String request)
       throws SQLException, XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(null, "update"), "Entering request=" + request);
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering request=" + request);
 
       Connection conn = null;
       Statement  statement = null;
@@ -1163,14 +1164,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          statement = conn.createStatement();
          statement.setQueryTimeout(this.pool.getQueryTimeout());
          ret = statement.executeUpdate(request);
-         if (this.log.TRACE) this.log.trace(getLogId(null, "update"), "Executed statement '" + request + "', number of changed entries=" + ret);
+         if (log.isLoggable(Level.FINE)) this.log.fine("Executed statement '" + request + "', number of changed entries=" + ret);
       }
       finally {
          try {
             if (statement !=null) statement.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "update: throwable when closing statement: " + ex.toString());
+            log.warning("update: throwable when closing statement: " + ex.toString());
          }
          if (conn != null) this.pool.releaseConnection(conn);
       }
@@ -1191,7 +1192,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private final int update(String request, Connection conn)
       throws SQLException {
 
-      if (this.log.CALL) this.log.call(getLogId(null, "update"), "Request=" + request + " and connection " + conn);
+      if (log.isLoggable(Level.FINER)) this.log.finer("Request=" + request + " and connection " + conn);
 
       Statement  statement = null;
       int ret = 0;
@@ -1200,7 +1201,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          statement = conn.createStatement();
          statement.setQueryTimeout(this.pool.getQueryTimeout());
          ret = statement.executeUpdate(request);
-         if (this.log.TRACE) this.log.trace(getLogId(null, "update"), "Executed statement '" + request + "', number of changed entries=" + ret);
+         if (log.isLoggable(Level.FINE)) this.log.fine("Executed statement '" + request + "', number of changed entries=" + ret);
       }
 
       finally {
@@ -1208,7 +1209,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (statement !=null) statement.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "update: throwable when closing statement: " + ex.toString());
+            log.warning("update: throwable when closing statement: " + ex.toString());
          }
       }
       return ret;
@@ -1220,10 +1221,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public int deleteAllTransient(String queueName) throws XmlBlasterException {
       try {
-         if (this.log.CALL) 
-            this.log.call(getLogId(queueName, "deleteAllTransient"), "deleteAllTransient");
+         if (log.isLoggable(Level.FINER)) 
+            log.finer("deleteAllTransient");
          if (!this.isConnected) {
-            if (this.log.TRACE) this.log.trace(getLogId(queueName, "deleteAllTransient"), "Currently not possible. No connection to the DB");
+            if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
             return 0;
          }
 
@@ -1255,7 +1256,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * "delete from tableName where dataId in(";
     */
    private final ArrayList whereInStatement(String reqPrefix, long[] uniqueIds) {
-      if (this.log.CALL) this.log.call(ME, "whereInStatement");
+      if (log.isLoggable(Level.FINER)) this.log.finer("whereInStatement");
       final String reqPostfix = ")";
       boolean isFirst = true;
       int initialLength = reqPrefix.length() + reqPostfix.length() + 2;
@@ -1323,12 +1324,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       int maxPriority, long minUniqueId, boolean leaveOne, boolean doDelete) throws XmlBlasterException {
 
       String queueName = storageId.getStrippedId();
-      if (this.log.CALL) this.log.call(getLogId(queueName, "getAndDeleteLowest"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
       ReturnDataHolder ret = new ReturnDataHolder();
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(getLogId(queueName, "getAndDeleteLowest"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE))
+            log.fine("Currently not possible. No connection to the DB");
          return ret;
       }
 
@@ -1365,7 +1366,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
             // check if allowed or already outside the range ...
             if ((prio<maxPriority) || ((prio==maxPriority)&&(dataId>minUniqueId)) ) {
-               if (this.log.DUMP) this.log.dump(getLogId(queueName, "getAndDeleteLowest"), "dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
+               if (log.isLoggable(Level.FINEST)) this.log.finest("dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
 //               ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
                ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId));
                amount += sizeInBytes;
@@ -1386,7 +1387,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                ret.countEntries--;
                I_Entry entryToDelete = (I_Entry)ret.list.remove(ret.list.size()-1);
                ret.countBytes -= entryToDelete.getSizeInBytes();
-               if (this.log.TRACE) this.log.trace(ME, "takeLowest size to delete: "  + entryToDelete.getSizeInBytes());
+               if (log.isLoggable(Level.FINE)) this.log.fine("takeLowest size to delete: "  + entryToDelete.getSizeInBytes());
             }
          }
 
@@ -1399,8 +1400,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
             for (int i=0; i < reqList.size(); i++) {
                req = (String)reqList.get(i);
-               if (this.log.TRACE)
-                  this.log.trace(getLogId(queueName, "getAndDeleteLowest"), "'delete from " + req + "'");
+               if (log.isLoggable(Level.FINE))
+                  log.fine("'delete from " + req + "'");
                update(req, query.conn);
             }
          }
@@ -1419,13 +1420,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception occured when closing query: " + ex1.toString());
+            log.severe("exception occured when closing query: " + ex1.toString());
          }
          try {
             if (query != null && query.conn != null) query.conn.rollback();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "could not rollback: " + ex.toString());
+            log.severe("could not rollback: " + ex.toString());
             ex1.printStackTrace();
          }
 
@@ -1443,7 +1444,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -1462,11 +1463,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public boolean[] deleteEntries(String queueName, long[] uniqueIds)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(queueName, "deleteEntries"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(getLogId(queueName, "deleteEntries"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE))
+            log.fine("Currently not possible. No connection to the DB");
          return new boolean[uniqueIds.length];
       }
 
@@ -1481,8 +1482,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          for (int i=0; i < reqList.size(); i++) {
             String req = (String)reqList.get(i);
-            if (this.log.TRACE)
-               this.log.trace(getLogId(queueName, "deleteEntries"), "' " + req + "'");
+            if (log.isLoggable(Level.FINE))
+               log.fine("' " + req + "'");
             count +=  update(req, conn);
          }
          if (count != uniqueIds.length) conn.rollback(); // not all entries have been deleted: 
@@ -1509,7 +1510,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                if (!conn.getAutoCommit()) conn.setAutoCommit(true);
             }
             catch (Throwable ex) {
-               this.log.error(ME, "error when setting autocommit to 'true'. reason: " + ex.toString());
+               log.severe("error when setting autocommit to 'true'. reason: " + ex.toString());
                ex.printStackTrace();
             }
             this.pool.releaseConnection(conn);
@@ -1534,11 +1535,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 /*   
    public int[] deleteEntriesBatch(String queueName, long[] uniqueIds)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(queueName, "deleteEntriesBatch"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.call(getLogId(queueName, "deleteEntriesBatch"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(getLogId(queueName, "deleteEntry"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE))
+            log.trace(getLogId(queueName, "deleteEntry"), "Currently not possible. No connection to the DB");
          int[] ret = new int[uniqueIds.length];
          for (int i=0; i < ret.length; i++) ret[i] = 0;
          return ret;
@@ -1566,7 +1567,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (!conn.getAutoCommit()) conn.commit();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "could not commit correclty: " + ex1.toString());
+            log.error(ME, "could not commit correclty: " + ex1.toString());
             ex1.printStackTrace();
          }
          return ex.getUpdateCounts();
@@ -1579,7 +1580,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (!conn.getAutoCommit()) conn.commit();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "could not rollback correclty: " + ex1.toString());
+            log.error(ME, "could not rollback correclty: " + ex1.toString());
             ex1.printStackTrace();
          }
          if (checkIfDBLoss(conn, getLogId(queueName, "deleteEntry"), ex))
@@ -1591,14 +1592,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (st != null) st.close();
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "deleteEntry: throwable when closing the connection: " + ex.toString());
+            log.warn(ME, "deleteEntry: throwable when closing the connection: " + ex.toString());
          }
          if (conn != null) {
             try {
                if (!conn.getAutoCommit()) conn.setAutoCommit(true);
             }
             catch (Throwable ex1) {
-               this.log.error(ME, "could not rollback correclty: " + ex1.toString());
+               log.error(ME, "could not rollback correclty: " + ex1.toString());
                ex1.printStackTrace();
             }
             this.pool.releaseConnection(conn);
@@ -1615,11 +1616,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public int deleteEntry(String queueName, long uniqueId)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(queueName, "deleteEntry"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(getLogId(queueName, "deleteEntry"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE))
+            log.fine("Currently not possible. No connection to the DB");
          return 0;
       }
 
@@ -1657,12 +1658,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public ReturnDataHolder deleteFirstEntries(String queueName, long numOfEntries, long amount)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(queueName, "deleteFirstEntries called"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       ReturnDataHolder ret = new ReturnDataHolder();
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(getLogId(queueName, "deleteFirstEntries"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE))
+            log.fine("Currently not possible. No connection to the DB");
          return ret;
       }
 
@@ -1690,7 +1691,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          // everything in the same transaction (just in case)
          for (int i=0; i < reqList.size(); i++) {
             req = (String)reqList.get(i);
-            if (this.log.TRACE) this.log.trace(getLogId(queueName, "deleteFirstEntries"), "'" + req + "'");
+            if (log.isLoggable(Level.FINE)) this.log.fine("'" + req + "'");
 
             ret.countEntries +=  update(req, query.conn);
          }
@@ -1712,7 +1713,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -1738,23 +1739,23 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       String queueName = storageId.getStrippedId();
 
-      if (this.log.CALL) this.log.call(getLogId(queueName, "getEntriesByPriority"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesByPriority"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' AND prio >= " + minPrio + " and prio <= " + maxPrio +
             " ORDER BY prio DESC, " + this.dataIdColName + " ASC";
                                                                  
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesByPriority"), "Request: '" + req + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
 
       PreparedQuery query =null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false, entryFilter);
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesByPriority"), "Found " + ret.size() + " entries");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Found " + ret.size() + " entries");
          return ret;
       }
       catch (XmlBlasterException ex) {
@@ -1771,7 +1772,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -1790,11 +1791,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
       // 65 ms (for 10000 msg)
-      if (this.log.CALL) this.log.call(getLogId(queueName, "getEntriesBySamePriority"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(getLogId(queueName, "getEntriesBySamePriority"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE))
+            log.fine("Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
@@ -1808,7 +1809,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             query = new PreparedQuery(pool, req, this.log, numOfEntries);
             query.rs.next();
             prio = query.rs.getInt(1);
-            if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesBySamePriority"), "Max prio " + new Integer(prio).toString());
+            if (log.isLoggable(Level.FINE)) this.log.fine("Max prio " + new Integer(prio).toString());
             query.close();
             query = null;
             req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + 
@@ -1819,12 +1820,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                   "' and prio=(select max(prio) from " + this.entriesTableName + " where queueName='" + queueName + 
                   "')  ORDER BY " + this.dataIdColName + " ASC";
          }
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesBySamePriority"), "Request: '" + req + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
 
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          I_EntryFilter entryFilter = null;
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false, entryFilter);
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesBySamePriority"), "Found " + ret.size() + " entries");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Found " + ret.size() + " entries");
          return ret;
       }
       catch (XmlBlasterException ex) {
@@ -1841,7 +1842,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -1859,20 +1860,20 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    public ArrayList getEntries(StorageId storageId, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter)
       throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
-      if (this.log.CALL) this.log.call(getLogId(queueName, "getEntries"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
+      if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false, entryFilter);
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
+         if (log.isLoggable(Level.FINE)) this.log.fine("Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
          return ret;
       }
       catch (SQLException ex) {
@@ -1886,7 +1887,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -1902,23 +1903,23 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    public ArrayList getEntriesWithLimit(StorageId storageId, I_Entry limitEntry)
       throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
-      if (this.log.CALL) this.log.call(getLogId(queueName, "getEntriesWithLimit"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesWithLimit"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       int limitPrio = limitEntry.getPriority();
       long limitId = limitEntry.getUniqueId();
       String req = "SELECT * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND " + this.dataIdColName + " < "  + limitId + ") ) ORDER BY prio DESC, " + this.dataIdColName + " ASC";
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesWithLimit"), "Request: '" + req + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
          I_EntryFilter entryFilter = null;
          ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false, entryFilter);
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntriesWithLimit"), "Found " + ret.size() + " entries");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Found " + ret.size() + " entries");
          return ret;
       }
       catch (XmlBlasterException ex) {
@@ -1935,7 +1936,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -1949,10 +1950,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       throws XmlBlasterException {
       try {
          String queueName = storageId.getStrippedId();
-         if (this.log.CALL) this.log.call(getLogId(queueName, "removeEntriesWithLimit"), "Entering");
+         if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
         
          if (!this.isConnected) {
-            if (this.log.TRACE) this.log.trace(getLogId(queueName, "removeEntriesWithLimit"), "Currently not possible. No connection to the DB");
+            if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
             return 0L;
          }
         
@@ -1964,9 +1965,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND " + this.dataIdColName + " <= "  + limitId + ") )";
          else
             req = "DELETE from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND " + this.dataIdColName + " < "  + limitId + ") )";
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "removeEntriesWithLimit"), "Request: '" + req + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
          int ret = update(req);
-         if (this.log.TRACE) this.log.trace(ME, "removeEntriesWithLimit the result of the request '" + req + "' is : '" + ret + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("removeEntriesWithLimit the result of the request '" + req + "' is : '" + ret + "'");
          return ret;
       }
       catch (SQLException ex) {
@@ -1982,9 +1983,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    public ArrayList getEntries(StorageId storageId, long[] dataids)
       throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
-      if (this.log.CALL) this.log.call(getLogId(queueName, "getEntries"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
@@ -1998,18 +1999,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedQuery query = null;
       try {
          req = (String)requests.get(0);
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Request: '" + req + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
          query = new PreparedQuery(pool, req, this.log, -1);
 
          ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false, null);
 
          for (int i=1; i < requests.size(); i++) {
             req = (String)requests.get(i);
-            if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Request: '" + req + "'");
+            if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
             query.inTransactionRequest(req /*, -1 */);
             ret.addAll(processResultSet(query.rs, storageId, -1, -1L, false, null));
          }
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getEntries"), "Found " + ret.size() + " entries");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Found " + ret.size() + " entries");
          return ret;
 
       }
@@ -2027,7 +2028,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -2043,19 +2044,19 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    public final long getNumOfEntries(String queueName)
       throws XmlBlasterException {
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getNumOfEntries"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
          return 0L;
       }
 
       String req = "select count(*) from " + this.entriesTableName + " WHERE queueName='" + queueName + "'";
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, "getNumOfEntries"), "Request: '" + req + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
       PreparedQuery query = null;
 
       try {
          query = new PreparedQuery(pool, req, true, this.log, -1);
          query.rs.next();
          long ret = query.rs.getLong(1);
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getNumOfEntries"), "Num=" + ret);
+         if (log.isLoggable(Level.FINE)) this.log.fine("Num=" + ret);
          return ret;
       }
       catch (XmlBlasterException ex) {
@@ -2072,7 +2073,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -2088,12 +2089,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       throws XmlBlasterException {
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getNumOfPersistents"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
          return 0L;
       }
 
       String req = "select count(*) from " + this.entriesTableName + " where queueName='" + queueName + "' AND durable='T'";
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, "getNumOfPersistent"), "Request: '" + req + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, true, this.log, -1);
@@ -2115,7 +2116,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -2131,15 +2132,15 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public final long getSizeOfPersistents(String queueName)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(queueName, "getSizeOfPersistent"), "Entering");
+      if (log.isLoggable(Level.FINER)) this.log.finer("Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, "getSizeOfPersistent"), "Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) this.log.fine("Currently not possible. No connection to the DB");
          return 0L;
       }
 
       String req = "select sum(" + this.byteSizeColName + ") from " + this.entriesTableName + " where queueName='" + queueName + "' AND durable='T'";
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, "getSizeOfPersistents"), "Request: '" + req + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, true, this.log, -1);
@@ -2161,7 +2162,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            log.severe("exception when closing query: " + ex1.toString());
             ex1.printStackTrace();
          }
       }
@@ -2201,7 +2202,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
    public static void wipeOutDB(Global glob, String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
       throws XmlBlasterException {
-      LogChannel log = glob.getLog("jdbc");
+
       if (confType == null) confType = "JDBC";
       if (confVersion == null) confVersion = "1.0";
       QueuePluginManager pluginManager = new QueuePluginManager(glob);
@@ -2222,7 +2223,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          pool.initialize(glob, pluginInfo.getParameters());
       }
       catch (ClassNotFoundException ex) {
-         log.error(ME, "wipOutDB class not found: " + ex.getMessage());
+         log.severe("wipOutDB class not found: " + ex.getMessage());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB class not found", ex);
       }
       catch (SQLException ex) {
@@ -2232,7 +2233,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       // determine which jdbc manager class to use
       String queueClassName = pluginInfo.getClassName();
       if ("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin".equals(queueClassName)) {
-         log.error(ME, "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin is not supported anymore");
+         log.severe("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin is not supported anymore");
       }
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
          // then it is a JdbcManagerCommontTable
@@ -2276,20 +2277,20 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    synchronized public void shutdown() {
 //      if (this.pool != null) this.pool.shutdown();
-      if (this.log.CALL) this.log.call(ME, "shutdown");
+      if (log.isLoggable(Level.FINER)) this.log.finer("shutdown");
       if (this.pool != null) {
          this.pool.unregisterManager(this);
       }
    }
 
    synchronized public void registerQueue(I_Queue queue) {
-      if (this.log.CALL) this.log.call(ME, "registerQueue, number of queues registered (before registering this one): '" + this.queueCounter + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("registerQueue, number of queues registered (before registering this one): '" + this.queueCounter + "'");
       if (queue == null) return;
       this.queueCounter++;
    }
 
    synchronized public void unregisterQueue(I_Queue queue) {
-      if (this.log.CALL) this.log.call(ME, "unregisterQueue, number of queues registered (still including this one): '" + this.queueCounter + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("unregisterQueue, number of queues registered (still including this one): '" + this.queueCounter + "'");
       if (queue == null) return;
       this.queueCounter--;
       if (this.queueCounter == 0) {

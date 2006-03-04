@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue.jdbc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
@@ -47,7 +48,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    private StorageId storageId;
    private boolean notifiedAboutAddOrRemove = false;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(JdbcQueueCommonTablePlugin.class.getName());
    private QueuePropertyBase property;
    private JdbcManagerCommonTable manager = null;
    private I_QueuePutListener putListener;
@@ -88,7 +89,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.numOfEntries = getNumOfEntries_();
       }
       catch (XmlBlasterException ex) {
-         if (log.TRACE) this.log.trace(ME, "resetCounters exception occured: " + ex.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("resetCounters exception occured: " + ex.getMessage());
       }
    }
 
@@ -161,7 +162,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                  manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName, this);
                  pool.registerStorageProblemListener(manager);
                  manager.setUp();
-                 if (log.TRACE) log.trace(ME, "Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");
+                 if (log.isLoggable(Level.FINE)) log.fine("Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");
       
                  this.glob.addObjectEntry(managerName, manager);
               }
@@ -172,11 +173,11 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
          if (!manager.getPool().isInitialized()) {
             manager.getPool().initialize(this.glob, pluginInfo.getParameters());
-            if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("Initialized JdbcManager pool for storage class '" + managerName + "'");
          }
       }
       catch (ClassNotFoundException ex) {
-         this.log.error(location, "getJdbcCommonTableQueueManager class not found: " + ex.getMessage());
+         log.severe("getJdbcCommonTableQueueManager class not found: " + ex.getMessage());
          ex.printStackTrace();
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueCommonTableManager: class not found when initializing the connection pool", ex);
       }
@@ -184,8 +185,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager: sql exception when initializing the connection pool", ex);
       }
       catch (Throwable ex) {
-         if (this.log.TRACE) {
-            this.log.trace(location, "getJdbcQueueCommonTableManager internal exception: " + ex.toString());
+         if (log.isLoggable(Level.FINE)) {
+            log.fine("getJdbcQueueCommonTableManager internal exception: " + ex.toString());
             ex.printStackTrace();
          }
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, location, "getJdbcQueueManager: throwable when initializing the connection pool", ex);
@@ -214,10 +215,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.property = null;
          setProperties(userData);
          this.glob = this.property.getGlobal();
-         this.log = this.glob.getLog("jdbc");
+
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.storageId = uniqueQueueId;
-         if (this.log.CALL) this.log.call(ME, "initialize '" + this.storageId + "'");
+         if (log.isLoggable(Level.FINER)) this.log.finer("initialize '" + this.storageId + "'");
 
          this.manager = getJdbcQueueManagerCommonTable(this.pluginInfo);
 
@@ -228,14 +229,14 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
          this.isDown = false;
          this.manager.registerQueue(this);
-         if (log.TRACE) log.trace(ME, "Successful initialized");
+         if (log.isLoggable(Level.FINE)) log.fine("Successful initialized");
       }
 
       boolean dbg = this.glob.getProperty().get("queue/debug", false);
       if (dbg == true) this.property.setDebug(true);
       this.debug = this.property.getDebug();
       if (this.debug) {
-         this.log.warn(ME, "initialize: debugging is enabled");
+         log.warning("initialize: debugging is enabled");
       }
    }
 
@@ -249,7 +250,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          newProp = (QueuePropertyBase)userData;
       }
       catch(Throwable e) {
-         log.error(ME, "Can't configure queue, your properties are invalid: " + e.toString());
+         log.severe("Can't configure queue, your properties are invalid: " + e.toString());
          e.printStackTrace();
          return;
       }
@@ -402,8 +403,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             for (int i=0; i < queueEntries.length; i++) {
             // boolean isProcessed = this.manager.addEntry(this.storageId.getStrippedId(), queueEntries[i]);
                boolean isProcessed = help[i] > 0 || help[i] == -2; // !!! JDK 1.4 only: Statement.SUCCESS_NO_INFO = -2;
-               if (this.log.TRACE) {
-                  this.log.trace(ME, "put(I_Entry[]) the entry nr. " + i + " returned '" + help[i] + "'");
+               if (log.isLoggable(Level.FINE)) {
+                  log.fine("put(I_Entry[]) the entry nr. " + i + " returned '" + help[i] + "'");
                }
                if (isProcessed) {
                   this.numOfEntries++;
@@ -601,7 +602,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @deprecated
     */
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "peekWithLimitEntry called");
+      if (log.isLoggable(Level.FINER)) this.log.finer("peekWithLimitEntry called");
       if (limitEntry == null) return new ArrayList();
       return this.manager.getEntriesWithLimit(getStorageId(), limitEntry);
    }
@@ -610,7 +611,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see I_Queue#removeWithLimitEntry(I_QueueEntry, boolean)
     */
    public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "removeWithLimitEntry called");
+      if (log.isLoggable(Level.FINER)) this.log.finer("removeWithLimitEntry called");
       if (limitEntry == null) return 0L;
       long ret = 0L;
       synchronized(this.modificationMonitor) {
@@ -773,7 +774,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             int[] tmp = this.manager.deleteEntriesBatch(getStorageId().getStrippedId(), ids);
             long sum = 0;
             for (int i=0; i < tmp.length; i++) {
-               if (this.log.TRACE) this.log.trace(ME, "removeRandom: entry '" + i + "' is '" + tmp[i]);
+               if (log.isLoggable(Level.FINE)) this.log.trace(ME, "removeRandom: entry '" + i + "' is '" + tmp[i]);
                ret[i] = tmp[i] > 0 || tmp[i] == -2; // !!! JDK 1.4 only: Statement.SUCCESS_NO_INFO = -2;
                if (ret[i]) sum++;
             }
@@ -783,8 +784,8 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             for (int i=0; i < tmp.length; i++) {
                if (tmp[i]) sum++;
             }
-            if (this.log.TRACE) 
-               this.log.trace(ME, "randomRemove: the number of removed entries is '" + sum + "'");
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("randomRemove: the number of removed entries is '" + sum + "'");
             this.numOfEntries -= sum;
 
             if ((int)sum != queueEntries.length) { // then we need to retrieve the values
@@ -865,7 +866,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
          }
-         else if (this.log.TRACE) this.log.trace(ME, "getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
+         else if (log.isLoggable(Level.FINE)) this.log.fine("getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
          return this.numOfEntries;
       }
    }
@@ -885,7 +886,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          return getNumOfEntries_();
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "getNumOfEntries, exception: " + ex.getMessage());
+         log.severe("getNumOfEntries, exception: " + ex.getMessage());
          return this.numOfEntries;
       }
    }
@@ -912,7 +913,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                   throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
-            else if (this.log.TRACE) this.log.trace(ME, "getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
+            else if (log.isLoggable(Level.FINE)) this.log.fine("getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
             return this.numOfPersistentEntries;
          }
          catch (XmlBlasterException ex) {
@@ -938,7 +939,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          return getNumOfPersistentEntries_(true);
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "getNumOfEntries, exception: " + ex.getMessage());
+         log.severe("getNumOfEntries, exception: " + ex.getMessage());
          return this.numOfPersistentEntries;
       }
    }
@@ -972,7 +973,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
          }
-         else if (this.log.TRACE) this.log.trace(ME, "getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
+         else if (log.isLoggable(Level.FINE)) this.log.fine("getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
          return this.numOfBytes;
       }
    }
@@ -992,7 +993,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          return getNumOfBytes_();
       }
       catch (XmlBlasterException ex) {
-         this.log.trace(ME, "getNumOfBytes, exception: " + ex.getMessage());
+         log.fine("getNumOfBytes, exception: " + ex.getMessage());
          return this.numOfBytes;
       }
    }
@@ -1019,7 +1020,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                   throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
-            else if (this.log.TRACE) this.log.warn(ME, "getNumOfPersistentBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");
+            else if (log.isLoggable(Level.FINE)) this.log.warning("getNumOfPersistentBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");
             return this.numOfPersistentBytes;
          }
          catch (XmlBlasterException ex) {
@@ -1045,7 +1046,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          return getNumOfPersistentBytes_(true);
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "getNumOfPersistentBytes, exception: " + ex.getMessage());
+         log.severe("getNumOfPersistentBytes, exception: " + ex.getMessage());
          return this.numOfPersistentBytes;
       }
    }
@@ -1088,7 +1089,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          return ret.countEntries;
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "exception: " + ex.getMessage());
+         log.severe("exception: " + ex.getMessage());
          return 0;
       }
    }
@@ -1104,7 +1105,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * Shutdown the implementation, sync with data store
     */
    synchronized public void shutdown() {
-      if (this.log.CALL) this.log.call(ME, "shutdown '" + this.storageId + "' (currently the value of 'isDown' is '" + this.isDown + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("shutdown '" + this.storageId + "' (currently the value of 'isDown' is '" + this.isDown + "'");
       if (this.isDown) return;
       this.isDown = true;
       this.manager.unregisterQueue(this);
@@ -1327,7 +1328,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          if (listener == null) this.queueSizeListeners = null;
          else {
             if (!this.queueSizeListeners.remove(listener))
-               this.log.warn(ME, "removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
+               log.warning("removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
             if (this.queueSizeListeners.size() == 0) this.queueSizeListeners = null;
          }
       }
@@ -1344,7 +1345,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes());
             }
             catch (NullPointerException e) {
-               if (log.TRACE) log.trace(ME, "invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
+               if (log.isLoggable(Level.FINE)) log.fine("invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
             }
          }
       }
@@ -1373,7 +1374,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                entry.embeddedObjectToXml(out, null);
             }
             catch (IOException e) {
-               log.warn(ME, "Ignoring dumpToFile() problem: "+e.toString());
+               log.warning("Ignoring dumpToFile() problem: "+e.toString());
             }
             return null;
          }

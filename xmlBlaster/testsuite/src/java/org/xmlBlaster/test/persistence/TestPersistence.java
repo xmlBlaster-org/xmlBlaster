@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
@@ -39,7 +40,7 @@ public class TestPersistence extends TestCase implements I_Callback
 {
    private final static String ME = "TestPersistence";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(TestPersistence.class.getName());
 
    private final String senderName = "Gesa";
    private String publishOid = "HelloPersistent";
@@ -70,7 +71,7 @@ public class TestPersistence extends TestCase implements I_Callback
    protected void setUp()
    {
       if (this.glob == null) this.glob = new Global();
-      this.log = this.glob.getLog("test");
+
       try {
          String passwd = "secret";
          senderConnection = glob.getXmlBlasterAccess();
@@ -78,7 +79,7 @@ public class TestPersistence extends TestCase implements I_Callback
          senderConnection.connect(qos, this);
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -111,7 +112,7 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    public void sendPersistent()
    {
-      if (log.TRACE) log.trace(ME, "Testing a persistent message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Testing a persistent message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain' contentMimeExtended='2.0' domain='RUGBY'>\n" +
                       "</key>";
@@ -124,9 +125,9 @@ public class TestPersistence extends TestCase implements I_Callback
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          String returnedOid = senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
-         log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
+         log.info("Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         log.severe("publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -157,13 +158,13 @@ public class TestPersistence extends TestCase implements I_Callback
    {
       String driverType = glob.getProperty().get("Persistence.Driver.Type", (String)null);
       if (driverType == null || !driverType.equals("filestore")) {
-         log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
+         log.info("Sorry, can't check persistence store, only checks for FileDriver is implemented");
          return;
       }
 
       String path = glob.getProperty().get("Persistence.Path", (String)null);
       if (path == null) {
-         log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
+         log.info("Sorry, xmlBlaster is running memory based only, no checks possible");
          return;
       }
 
@@ -190,7 +191,7 @@ public class TestPersistence extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message, checking ...");
+      log.info("Receiving update of a message, checking ...");
 
       numReceived += 1;
 
@@ -223,7 +224,7 @@ public class TestPersistence extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

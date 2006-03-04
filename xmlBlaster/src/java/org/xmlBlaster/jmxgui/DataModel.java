@@ -12,7 +12,8 @@ import javax.swing.ImageIcon;
 import java.awt.Image;
 
 import org.w3c.dom.Document;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -33,7 +34,7 @@ public class DataModel {
   private DefaultMutableTreeNode top = null;
   private DefaultMutableTreeNode parent = null;
   private Global glob = null;
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(DataModel.class.getName());
   private final String ME = "DataModel";
   private Document config = null;
   private Vector vSubNodes;
@@ -43,8 +44,8 @@ public class DataModel {
     //get Globals and Log
 //    if (glob == null) glob = Global.instance();
     this.glob = glob;
-    log = this.glob.getLog("jmxGUI");
-    log.info(ME, "building new tree...");
+
+    log.info("building new tree...");
     addServerNodes();
     buildTree();
   }
@@ -56,12 +57,12 @@ public class DataModel {
 
   public void buildTree() {
     vSubNodes = new Vector();
-    log.info(ME,"Trying to retrieve config from file");
+    log.info("Trying to retrieve config from file");
     try {
       config = xmlUtil.loadConfig();
     }
     catch (Exception ex) {
-      log.error(ME,"Error when loading plugin config " + ex.toString());
+      log.severe("Error when loading plugin config " + ex.toString());
       ex.printStackTrace();
     }
 
@@ -134,7 +135,7 @@ public ImageIcon loadIcon(String filename){
   }
   else
   {
-    log.warn(ME, filename +" not found");
+    log.warning(filename +" not found");
   }
   return icon;
 }

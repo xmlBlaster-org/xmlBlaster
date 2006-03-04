@@ -6,7 +6,8 @@ Comment:   Demo code for a client using xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -42,7 +43,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
 {
    private static String ME = "TestSubNoDup";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubNoDup.class.getName());
 
    private String subscribeId1;
    private String subscribeId2;
@@ -65,7 +66,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
    public TestSubNoDup(Global glob, String testName) {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -102,7 +103,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
     * The returned subscribeId1 is checked
     */
    public void subscribe() {
-      if (log.TRACE) log.trace(ME, "Subscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing ...");
 
       String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'/>";
       String qos = "<qos/>";
@@ -116,7 +117,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
          subscribeId1 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          assertTrue("returned null subscribeId1", subscribeId1 != null);
          assertTrue("returned subscribeId1 is empty", 0 != subscribeId1.length());
-         log.info(ME, "Success: Subscribe 1 on " + subscribeId1 + " done");
+         log.info("Success: Subscribe 1 on " + subscribeId1 + " done");
 
          subscribeId2 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          assertTrue("returned subscribeId2 is empty", 0 != subscribeId2.length());
@@ -124,7 +125,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
             assertTrue("Wrong subscriptionId", !subscribeId1.equals(subscribeId2));
          else
             assertEquals("Wrong subscriptionId", subscribeId1, subscribeId2);
-         log.info(ME, "Success: Subscribe 2 on " + subscribeId2 + " done");
+         log.info("Success: Subscribe 2 on " + subscribeId2 + " done");
 
          subscribeId3 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          assertTrue("returned subscribeId3 is empty", 0 != subscribeId3.length());
@@ -132,10 +133,10 @@ public class TestSubNoDup extends TestCase implements I_Callback
             assertTrue("Wrong subscriptionId", !subscribeId1.equals(subscribeId2));
          else
             assertEquals("Wrong subscriptionId", subscribeId1, subscribeId3);
-         log.info(ME, "Success: Subscribe 3 on " + subscribeId3 + " done");
+         log.info("Success: Subscribe 3 on " + subscribeId3 + " done");
 
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -146,7 +147,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
     * The returned publishOid is checked
     */
    public void publish() {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "'/>";
@@ -154,9 +155,9 @@ public class TestSubNoDup extends TestCase implements I_Callback
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos/>");
          publishOid = senderConnection.publish(msgUnit).getKeyOid();
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -169,21 +170,21 @@ public class TestSubNoDup extends TestCase implements I_Callback
     * unSubscribe three times to same message. 
     */
    public void unSubscribe() {
-      if (log.TRACE) log.trace(ME, "unSubscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("unSubscribing ...");
 
       String qos = "<qos/>";
       numReceived = 0;
       try {
          senderConnection.unSubscribe("<key oid='" + subscribeId1 + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 1 on " + subscribeId1 + " done");
+         log.info("Success: unSubscribe 1 on " + subscribeId1 + " done");
 
          senderConnection.unSubscribe("<key oid='" + subscribeId2 + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 2 on " + subscribeId2 + " done");
+         log.info("Success: unSubscribe 2 on " + subscribeId2 + " done");
 
          senderConnection.unSubscribe("<key oid='" + subscribeId3 + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 3 on " + subscribeId3 + " done");
+         log.info("Success: unSubscribe 3 on " + subscribeId3 + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -196,7 +197,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
          senderConnection.connect(qos, this);
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -207,7 +208,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
     * the previous XPath subscription should match and send an update.
     */
    public void testPublishAfterMultiSubscribeNoDup() {
-      log.info(ME, "testPublishAfterMultiSubscribeNoDup ...");
+      log.info("testPublishAfterMultiSubscribeNoDup ...");
       numReceived = 0;
       duplicates = false; // suppress multi update
       
@@ -234,7 +235,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
     * the previous XPath subscription should match and send an update.
     */
    public void testPublishAfterMultiSubscribe() {
-      log.info(ME, "testPublishAfterMultiSubscribe ...");
+      log.info("testPublishAfterMultiSubscribe ...");
       numReceived = 0;
       duplicates = true; // allow multi update (default)
       
@@ -262,7 +263,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " state=" + updateQos.getState());
+      log.info("Receiving update of a message " + updateKey.getOid() + " state=" + updateQos.getState());
 
       numReceived += 1;
 

@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.key;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.QueryKeyData;
@@ -28,7 +29,7 @@ import junit.framework.*;
 public class QueryKeyFactoryTest extends TestCase {
    private String ME = "QueryKeyFactoryTest";
    protected final Global glob;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(QueryKeyFactoryTest.class.getName());
    private String currImpl;
    private I_QueryKeyFactory factory;
    static I_QueryKeyFactory[] IMPL = { 
@@ -38,12 +39,12 @@ public class QueryKeyFactoryTest extends TestCase {
    public QueryKeyFactoryTest(Global glob, String name, int currImpl) {
       super(name);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
       this.factory = IMPL[currImpl];
    }
 
    protected void setUp() {
-      log.info(ME, "Testing parser factory " + factory.getName());
+      log.info("Testing parser factory " + factory.getName());
    }
 
    /**
@@ -112,7 +113,7 @@ public class QueryKeyFactoryTest extends TestCase {
          assertEquals("queryData expected:\n'"+queryData.trim()+"'\n but is\n'"+key.getQueryString().trim()+"'\n",
                       queryData.trim(), key.getQueryString().trim());
 
-         log.info(ME, "Parsed and recreated successfully CDATA section:\n" + key.getQueryString().trim() + "");
+         log.info("Parsed and recreated successfully CDATA section:\n" + key.getQueryString().trim() + "");
       }
       catch (XmlBlasterException e) {
          fail("testCdata failed: " + e.toString());
@@ -160,7 +161,7 @@ public class QueryKeyFactoryTest extends TestCase {
            "</key>\n";
          QueryKeyData key = factory.readObject(xml);
          String newXml = key.toXml();
-         log.info(ME, "New XML=" + newXml);
+         log.info("New XML=" + newXml);
          key = factory.readObject(newXml);
 
          assertEquals("", "HELLO", key.getOid());

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
@@ -31,7 +32,7 @@ public class RunLevelAction
 
    private String ME = "RunLevelAction";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(RunLevelAction.class.getName());
 
    /* the action to trigger (either LOAD or STOP) */
    private String action;
@@ -54,8 +55,8 @@ public class RunLevelAction
     */
    public RunLevelAction(Global glob, String action, int upLevel, int downLevel,
       ErrorCode errorCode, int sequence) {
-      this.log = glob.getLog("runlevel");
-      if (this.log.CALL) this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
       this.glob = glob;
       this.action = action;
       this.upLevel  = upLevel;

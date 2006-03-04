@@ -6,9 +6,9 @@ Comment:   Implementing the xmlBlaster interface for xml-rpc.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.qos.AddressServer;
@@ -28,9 +28,8 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
  */
 public class AuthenticateImpl
 {
-   private final String ME = "XmlRpc.AuthenticateImpl";
    private final Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(AuthenticateImpl.class.getName());
    private final I_Authenticate authenticate;
    private final AddressServer addressServer;
 
@@ -42,8 +41,8 @@ public class AuthenticateImpl
       throws XmlBlasterException
    {
       this.glob = glob;
-      this.log = glob.getLog("xmlrpc");
-      if (log.CALL) log.call(ME, "Entering constructor ...");
+
+      if (log.isLoggable(Level.FINER)) log.finer("Entering constructor ...");
       this.authenticate = authenticate;
       this.addressServer = driver.getAddressServer();
    }
@@ -59,15 +58,13 @@ public class AuthenticateImpl
                        String qos_literal, String sessionId)
                           throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering login() ...");
-      if (log.DUMP) log.dump(ME, qos_literal);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering login() ...");
+      if (log.isLoggable(Level.FINEST)) log.finest(qos_literal);
 
       if (loginName==null || passwd==null || qos_literal==null) {
-         log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
+         log.severe("login failed: please use no null arguments for login()");
          throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
       }
-
-      StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
       ConnectQosServer connectQos = new ConnectQosServer(glob, qos_literal);
       connectQos.setAddressServer(this.addressServer);
@@ -79,12 +76,11 @@ public class AuthenticateImpl
       else {
          securityQos.setUserId(loginName);
          securityQos.setCredential(passwd);
-         if (log.TRACE) log.trace(ME, "login() method uses supplied loginName=" + loginName + " and password");
+         if (log.isLoggable(Level.FINE)) log.fine("login() method uses supplied loginName=" + loginName + " and password");
       }
          
 
       ConnectReturnQosServer returnQos = authenticate.connect(this.addressServer, connectQos);
-      if (log.TIME) log.time(ME, "Elapsed time in login()" + stop.nice());
       return returnQos.getSecretSessionId();
    }
 
@@ -99,7 +95,7 @@ public class AuthenticateImpl
     */
    public String logout(String sessionId) throws XmlBlasterException
    {
-   if (log.CALL) log.call(ME, "Entering logout(sessionId=" + sessionId + ")");
+   if (log.isLoggable(Level.FINER)) log.finer("Entering logout(sessionId=" + sessionId + ")");
       authenticate.disconnect(this.addressServer, sessionId, (new DisconnectQosServer(glob)).toXml());
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
@@ -115,19 +111,16 @@ public class AuthenticateImpl
    {
       try {
       String returnValue = null, returnValueStripped = null;
-      if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering connect(qos=" + qos_literal + ")");
 
-      StopWatch stop=null; if (log.TIME) stop = new StopWatch();
       returnValue = authenticate.connect(this.addressServer, qos_literal);
 
       returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
       returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
       if (!returnValueStripped.equals(returnValue)) {
-         log.trace(ME, "Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
+         log.fine("Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
                         "This shouldn't be a problem as long as your credentials doesn't contain '<'");
       }
-      if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
-
       return returnValueStripped;
       }
       catch (XmlBlasterException e) {
@@ -137,9 +130,9 @@ public class AuthenticateImpl
 
    public String disconnect(final String sessionId, String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering logout()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering logout()");
       authenticate.disconnect(this.addressServer, sessionId, qos_literal);
-      if (log.CALL) log.call(ME, "Exiting logout()");
+      if (log.isLoggable(Level.FINER)) log.finer("Exiting logout()");
       return Constants.RET_OK;
    }
 

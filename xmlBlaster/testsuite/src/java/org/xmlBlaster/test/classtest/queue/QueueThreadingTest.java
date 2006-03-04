@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -82,7 +83,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class QueueThreadingTest extends TestCase {
    private String ME = "QueueThreadingTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(QueueThreadingTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
    private int numOfQueues = 10;
@@ -110,13 +111,13 @@ public class QueueThreadingTest extends TestCase {
    }
 
    protected void setUp() {
-      log = glob.getLog("test");
+
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
          ME = "QueueThreadingTest with class: " + PLUGIN_TYPES[this.count];
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
       }
 
       // cleaning up the database from previous runs ...
@@ -142,7 +143,7 @@ public class QueueThreadingTest extends TestCase {
 */
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
+         log.severe("could not propertly set up the database: " + ex.getMessage());
       }
 
    }
@@ -155,7 +156,7 @@ public class QueueThreadingTest extends TestCase {
             this.queues[i].shutdown();
          }
          catch (Exception ex) {
-            this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+            log.warning("error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
          }
       }
    }
@@ -185,7 +186,7 @@ public class QueueThreadingTest extends TestCase {
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       prop.setMaxEntries(numOfMsg*threadsPerQueue + 1);
 
-      this.log.info(ME, "starting setting up " + numOfQueues + " queues");
+      log.info("starting setting up " + numOfQueues + " queues");
       long t0 = System.currentTimeMillis();
 
       for (int i=0; i < numOfQueues; i++) {
@@ -202,12 +203,12 @@ public class QueueThreadingTest extends TestCase {
                queueThreads[i*threadsPerQueue+j] = new QueueThread(glob, "queue"+i, queues[i], this.log, numOfMsg, sizeOfMsg);
          }
          catch (Exception ex) {
-            this.log.error(ME, "Exception when instantiating the thread " + i + " " + ex.getMessage());
+            log.severe("Exception when instantiating the thread " + i + " " + ex.getMessage());
          }
       }
 
       long t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "setting up " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("setting up " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
 
       t0 = System.currentTimeMillis();
 
@@ -222,7 +223,7 @@ public class QueueThreadingTest extends TestCase {
       }
 
       t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "performacePutMultiThread putting " + numOfMsg + " messages in " + numOfQueues + " queues with " + threadsPerQueue + " threads per queue took " + (1.0*t1/1000) + " seconds");
+      log.info("performacePutMultiThread putting " + numOfMsg + " messages in " + numOfQueues + " queues with " + threadsPerQueue + " threads per queue took " + (1.0*t1/1000) + " seconds");
    }
 
    /**
@@ -255,7 +256,7 @@ public class QueueThreadingTest extends TestCase {
          testSub.tearDown();
 
          long usedTime = System.currentTimeMillis() - startTime;
-         testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+         testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
       }
    }
 }

@@ -7,7 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.def.Constants;
@@ -22,7 +23,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
 {
    public final String ME = "DispatchWorkerPool";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(DispatchWorkerPool.class.getName());
    private PooledExecutor pool;
    private PropInt threadPrio = new PropInt(Thread.NORM_PRIORITY);
    private PropInt maximumPoolSize = new PropInt(200);
@@ -55,7 +56,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
     */
    public DispatchWorkerPool(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(this.poolId);
+
       initialize();
       // Currently not used - on client side there is no RunlevelManager
       //glob.getRunlevelManager().addRunlevelListener(this);
@@ -77,7 +78,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
       this.maximumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "maximumPoolSize");
       this.minimumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "minimumPoolSize");
       this.createThreads.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "createThreads");
-      if (log.TRACE) log.trace(ME, "maximumPoolSize=" + this.maximumPoolSize.getValue() + " minimumPoolSize=" +
+      if (log.isLoggable(Level.FINE)) log.fine("maximumPoolSize=" + this.maximumPoolSize.getValue() + " minimumPoolSize=" +
                     this.minimumPoolSize.getValue() + " createThreads=" + this.createThreads.getValue());
 
       this.pool.setMaximumPoolSize(this.maximumPoolSize.getValue());
@@ -93,7 +94,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
 
    final public synchronized void execute(java.lang.Runnable command) throws java.lang.InterruptedException {
       if (this.isShutdown) {
-         log.trace(ME, "The pool is shudown, ignoring execute()");
+         log.fine("The pool is shudown, ignoring execute()");
          return;
       }
       this.pool.execute(command);
@@ -111,7 +112,7 @@ public class DispatchWorkerPool //implements I_RunlevelListener
    }
 
    public synchronized void shutdown() {
-      if (log.CALL) log.call(ME, "shutdown()");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown()");
       if (!this.isShutdown) {
          this.isShutdown = true;
          this.pool.shutdownNow();

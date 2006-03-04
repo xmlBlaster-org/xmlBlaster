@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.storage;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 
@@ -20,7 +21,7 @@ import org.xmlBlaster.util.def.Constants;
 public class MsgUnitStoreProperty extends QueuePropertyBase
 {
    private static final String ME = "MsgUnitStoreProperty";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(MsgUnitStoreProperty.class.getName());
 
    /**
     * Increases the default bytes in the storage to 25 MB for each topic
@@ -28,7 +29,7 @@ public class MsgUnitStoreProperty extends QueuePropertyBase
     */
    public MsgUnitStoreProperty(Global glob, String nodeId) {
       super(glob, nodeId);
-      this.log = glob.getLog("core");
+
       relating = Constants.RELATING_MSGUNITSTORE;
 
       super.initialize(Constants.RELATING_MSGUNITSTORE);

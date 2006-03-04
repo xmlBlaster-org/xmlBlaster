@@ -19,7 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -31,7 +32,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 public class DirectoryManager {
    private String ME = "DirectoryManager";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(DirectoryManager.class.getName());
    private long delaySinceLastFileChange;
 
    private String directoryName;
@@ -58,7 +59,7 @@ public class DirectoryManager {
       this.global = global;
       if (filter != null)
          this.fileFilter = new FilenameFilter(filter, trueRegex);
-      this.log = this.global.getLog("filepoller");
+
       this.delaySinceLastFileChange = delaySinceLastFileChange;
       this.directoryEntries = new HashMap();
       this.directoryName = directoryName;
@@ -104,7 +105,7 @@ public class DirectoryManager {
             catch (IOException ex) {
                absDirName = dir.getAbsolutePath();
             }
-            this.log.info(ME, "Constructor: directory '" + absDirName + "' does not yet exist. I will create it");
+            log.info("Constructor: directory '" + absDirName + "' does not yet exist. I will create it");
             boolean ret = dir.mkdir();
             if (!ret)
                throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME, "could not create directory '" + absDirName + "'");
@@ -118,7 +119,7 @@ public class DirectoryManager {
             throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".constructor", "no rights to write to the directory '" + dir.getAbsolutePath() + "'");
       }
       else {
-         this.log.info(ME, "Constructor: the '" + propNameForLogging + "' property is not set. Instead of moving concerned entries they will be deleted");
+         log.info("Constructor: the '" + propNameForLogging + "' property is not set. Instead of moving concerned entries they will be deleted");
       }
       return dir;
    }
@@ -195,20 +196,20 @@ public class DirectoryManager {
          return !this.lockFiles.contains(info.getName());
       }
       long delta = currentTime - info.getLastChange();
-      if (this.log.DUMP) {
-         this.log.dump(ME, "isReady '" + info.getName() + "' delta='" + delta + "' constant='" + this.delaySinceLastFileChange + "'");
+      if (log.isLoggable(Level.FINEST)) {
+         log.finest("isReady '" + info.getName() + "' delta='" + delta + "' constant='" + this.delaySinceLastFileChange + "'");
       }
       return delta > this.delaySinceLastFileChange;
    }
    
    private TreeSet prepareEntries(File directory, Map existingFiles) {
-      if (this.log.CALL)
-         this.log.call(ME, "prepareEntries");
+      if (log.isLoggable(Level.FINER))
+         log.finer("prepareEntries");
       
       TreeSet chronologicalSet = new TreeSet(new FileComparator());
       if (existingFiles == null || existingFiles.size() < 1) {
-         if (this.log.DUMP) {
-            this.log.dump(ME, "prepareEntries: nothing to do");
+         if (log.isLoggable(Level.FINEST)) {
+            log.finest("prepareEntries: nothing to do");
          }
       }
       Iterator iter = existingFiles.values().iterator();
@@ -257,7 +258,7 @@ public class DirectoryManager {
       if (toRemove != null && toRemove.size() > 0) {
          String[] keys = (String[])toRemove.toArray(new String[toRemove.size()]);
          for (int i=0; i < keys.length; i++) {
-            this.log.warn(ME, "the file '" + keys[i] + "' has apparently been removed from the outside: will not send it. No further action required");
+            log.warning("the file '" + keys[i] + "' has apparently been removed from the outside: will not send it. No further action required");
             existingFiles.remove(keys[i]);
          }
       }
@@ -280,8 +281,8 @@ public class DirectoryManager {
     * rights on the directory 
     */
    Set getEntries() throws XmlBlasterException {
-      if (this.log.CALL)
-         this.log.call(ME, "getEntries");
+      if (log.isLoggable(Level.FINER))
+         log.finer("getEntries");
       Map newFiles = getNewFiles(this.directory);
       updateExistingFiles(this.directoryEntries, newFiles);
       return prepareEntries(this.directory, this.directoryEntries);
@@ -299,11 +300,11 @@ public class DirectoryManager {
     */
    void deleteOrMoveEntry(String entryName, boolean success) throws XmlBlasterException {
       try {
-         if (this.log.CALL)
-            this.log.call(ME, "removeEntry '" + entryName + "'");
+         if (log.isLoggable(Level.FINER))
+            log.finer("removeEntry '" + entryName + "'");
          File file = new File(entryName);
          if (!file.exists()) {
-            this.log.warn(ME, "removeEntry: '" + entryName + "' does not exist on the file system: I will only remove it from my list");
+            log.warning("removeEntry: '" + entryName + "' does not exist on the file system: I will only remove it from my list");
             this.directoryEntries.remove(entryName);
             return;
          }
@@ -395,11 +396,11 @@ public class DirectoryManager {
     */
    public byte[] getContent(FileInfo info) throws XmlBlasterException {
       String entryName = info.getName();
-      if (this.log.CALL)
-         this.log.call(ME, "getContent '" + entryName + "'");
+      if (log.isLoggable(Level.FINER))
+         log.finer("getContent '" + entryName + "'");
       File file = new File(entryName);
       if (!file.exists()) {
-         this.log.warn(ME, "getContent: '" + entryName + "' does not exist on the file system: not sending anything");
+         log.warning("getContent: '" + entryName + "' does not exist on the file system: not sending anything");
          this.directoryEntries.remove(entryName);
          return null;
       }

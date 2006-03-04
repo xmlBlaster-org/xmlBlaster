@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins.prio;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -48,7 +49,7 @@ public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
 {
    private String ME = "ConfigurationParser";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ConfigurationParser.class.getName());
 
    // helper flags for SAX parsing
    private boolean inMsgDispatch = false; // parsing inside <msgDispatch> ?
@@ -71,9 +72,9 @@ public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
     */
    public ConfigurationParser(Global glob, String xmlLiteral) throws XmlBlasterException {
       super(glob);
-      // if (log.TRACE) log.trace(ME, "\n"+xmlLiteral);
+      // if (log.isLoggable(Level.FINE)) log.trace(ME, "\n"+xmlLiteral);
       this.glob = glob;
-      this.log = glob.getLog("dispatch");
+
       this.defaultAction = new DispatchAction(glob, DispatchAction.SEND);
       parseIt(xmlLiteral);
    }
@@ -117,23 +118,23 @@ public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
       if (currStatus == null) currStatus = this.defaultStatus;
 
       if (currStatus == null) {
-         if (log.TRACE) log.trace(ME, "Current status is null, using default action '" + this.defaultAction.toString() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Current status is null, using default action '" + this.defaultAction.toString() + "'");
          return new StatusConfiguration(this.glob, null, null, null, this.defaultAction);
       }
       StatusConfiguration conf = null;
       synchronized (configurationContentMap) {
          conf = (StatusConfiguration)configurationContentMap.get(currStatus);
          if (conf == null && this.defaultStatus != null && !this.defaultStatus.equals(currStatus)) { // try again with default
-            log.warn(ME, "Can't find '" + currStatus + "' configuration, using default status '" + this.defaultStatus + "'");
+            log.warning("Can't find '" + currStatus + "' configuration, using default status '" + this.defaultStatus + "'");
             currStatus = this.defaultStatus;
             conf = (StatusConfiguration)configurationContentMap.get(currStatus);
          }
       }
       if (conf == null) {
-         log.warn(ME, "Can't find '" + currStatus + "' configuration, using default action '" + this.defaultAction + "'");
+         log.warning("Can't find '" + currStatus + "' configuration, using default action '" + this.defaultAction + "'");
          return new StatusConfiguration(this.glob, null, null, null, this.defaultAction);
       }
-      if (log.TRACE) log.trace(ME, "Current status '" + currStatus + "' with configuration: " + conf.toXml(""));
+      if (log.isLoggable(Level.FINE)) log.fine("Current status '" + currStatus + "' with configuration: " + conf.toXml(""));
       return conf;
    }
 
@@ -144,7 +145,7 @@ public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
     */
    public final StatusConfiguration getStatusConfiguration(ConnectionStateEnum currConnectionState) {
       if (currConnectionState == null) {
-         if (log.TRACE) log.trace(ME, "Current connection state is null, returning null");
+         if (log.isLoggable(Level.FINE)) log.fine("Current connection state is null, returning null");
          return null;
       }
       synchronized (configurationContentMap) {
@@ -152,12 +153,12 @@ public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
          while (it.hasNext()) {
             StatusConfiguration conf = (StatusConfiguration)it.next();
             if (conf.getConnectionState() == currConnectionState) {
-               if (log.TRACE) log.trace(ME, "Found configuration for connection state '" + currConnectionState + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("Found configuration for connection state '" + currConnectionState + "'");
                return conf;
             }
          }
       }
-      if (log.TRACE) log.trace(ME, "Can't find '" + currConnectionState + "' configuration, returning null");
+      if (log.isLoggable(Level.FINE)) log.fine("Can't find '" + currConnectionState + "' configuration, returning null");
       return null;
    }
 
@@ -197,7 +198,7 @@ public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
                   this.defaultAction = new DispatchAction(glob, attrs.getValue(i).trim());
                }
                else {
-                  log.warn(ME, "Ignoring unknown attribute <msgDispatch " + attrs.getQName(i) + "='" + attrs.getValue(i) + "'>");
+                  log.warning("Ignoring unknown attribute <msgDispatch " + attrs.getQName(i) + "='" + attrs.getValue(i) + "'>");
                }
             }
          }
@@ -228,7 +229,7 @@ public class ConfigurationParser extends org.xmlBlaster.util.SaxHandlerBase
                   defAct = new DispatchAction(glob, attrs.getValue(i).trim());
                }
                else {
-                  log.warn(ME, "Ignoring unknown attribute <onStatus " + attrs.getQName(i) + "='" + attrs.getValue(i) + "'>");
+                  log.warning("Ignoring unknown attribute <onStatus " + attrs.getQName(i) + "='" + attrs.getValue(i) + "'>");
                }
             }
          }

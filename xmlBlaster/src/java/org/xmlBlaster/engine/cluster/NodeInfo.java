@@ -7,7 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
@@ -36,7 +37,7 @@ public final class NodeInfo
     * uses the specific settings from NodeInfo to connect to the remote node
     */
    private final org.xmlBlaster.util.Global remoteGlob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(NodeInfo.class.getName());
 
    private NodeId nodeId;
    private long counter = 0L;
@@ -65,7 +66,7 @@ public final class NodeInfo
     */
    public NodeInfo(Global remoteGlob, NodeId nodeId) throws XmlBlasterException {
       this.remoteGlob = remoteGlob;
-      this.log = this.remoteGlob.getLog("cluster");
+
       this.setNodeId(nodeId);
       this.ME = "NodeInfo." + getId();
       this.connectQosData = new ConnectQosData(this.remoteGlob, this.nodeId);
@@ -191,7 +192,7 @@ public final class NodeInfo
          this.cbSessionId = callback.getSecretSessionId();
       }
       else {
-         log.error(ME, "Internal problem: Expected a callback address setup but none was delivered");
+         log.severe("Internal problem: Expected a callback address setup but none was delivered");
       }
 
       // As we forward many subscribes probably accessing the
@@ -305,7 +306,7 @@ public final class NodeInfo
          if (inInfo && name.equalsIgnoreCase("info")) {
             ConnectQosData data = getConnectQosData();
             if (!data.hasAddress()) {
-               log.error(ME, "Can't connect to node '" + getId() + "', address is null");
+               log.severe("Can't connect to node '" + getId() + "', address is null");
                throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_CONFIGURATION, ME,
                          "Can't connect to node '" + getId() + "', address is null");
             }
@@ -337,12 +338,12 @@ public final class NodeInfo
          buf.append(Constants.SESSIONID_PREFIX).append(ip).append("-").append(this.remoteGlob.getId()).append("-");
          buf.append(System.currentTimeMillis()).append("-").append(ran.nextInt()).append("-").append((counter++));
          String sessionId = buf.toString();
-         if (log.TRACE) log.trace(ME, "Created callback sessionId='" + sessionId + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Created callback sessionId='" + sessionId + "'");
          return sessionId;
       }
       catch (Exception e) {
          String text = "Can't generate a unique callback sessionId: " + e.toString();
-         log.error(ME, text);
+         log.severe(text);
          throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, text);
       }
    }

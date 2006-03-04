@@ -7,7 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.engine.Global;
@@ -45,7 +46,7 @@ public final class NodeDomainInfo implements Comparable
    /** Unique name for logging */
    private String ME = "NodeDomainInfo";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(NodeDomainInfo.class.getName());
    private final ClusterNode clusterNode;
 
    private static int counter=0;
@@ -83,7 +84,7 @@ public final class NodeDomainInfo implements Comparable
     */
    public NodeDomainInfo(Global glob, ClusterNode clusterNode) {
       this.glob = glob;
-      this.log = this.glob.getLog("cluster");
+
       this.clusterNode = clusterNode;
       this.ME = this.ME + "-" + this.glob.getId();
 
@@ -266,7 +267,7 @@ public final class NodeDomainInfo implements Comparable
          if (inMaster > 1) return false; // ignore nested master tags
          if (attrs != null) {
             String tmp = attrs.getValue("stratum");
-            if (tmp != null) { try { setStratum(Integer.parseInt(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid <master stratum='" + tmp + "'"); }; }
+            if (tmp != null) { try { setStratum(Integer.parseInt(tmp.trim())); } catch(NumberFormatException e) { log.severe("Invalid <master stratum='" + tmp + "'"); }; }
             tmp = attrs.getValue("refid");
             if (tmp != null) setRefId(tmp.trim());
             tmp = attrs.getValue("type");
@@ -274,15 +275,15 @@ public final class NodeDomainInfo implements Comparable
             tmp = attrs.getValue("version");
             if (tmp != null) setVersion(tmp.trim());
             tmp = attrs.getValue("acceptDefault");
-            if (tmp != null) { try { setAcceptDefault(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.error(ME, "Invalid <master acceptDefault='" + tmp + "'"); }; }
+            if (tmp != null) { try { setAcceptDefault(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.severe("Invalid <master acceptDefault='" + tmp + "'"); }; }
             tmp = attrs.getValue("acceptOtherDefault");
-            if (tmp != null) { try { setAcceptOtherDefault(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.error(ME, "Invalid <master acceptOtherDefault='" + tmp + "'"); }; }
+            if (tmp != null) { try { setAcceptOtherDefault(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.severe("Invalid <master acceptOtherDefault='" + tmp + "'"); }; }
             tmp = attrs.getValue("dirtyRead");
-            if (tmp != null) { try { setDirtyRead(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.error(ME, "Invalid <master dirtyRead='" + tmp + "'"); }; }
+            if (tmp != null) { try { setDirtyRead(Boolean.valueOf(tmp.trim()).booleanValue()); } catch(NumberFormatException e) { log.severe("Invalid <master dirtyRead='" + tmp + "'"); }; }
          }
          character.setLength(0);
          if (getType() == null) {
-            log.warn(ME, "Missing 'master' attribute 'type', ignoring the master request");
+            log.warning("Missing 'master' attribute 'type', ignoring the master request");
             setType(null);
             return false;
          }
@@ -340,14 +341,14 @@ public final class NodeDomainInfo implements Comparable
 
       if (inMaster == 1 && name.equalsIgnoreCase("key")) {
          inKey = false;
-         if (log.TRACE) log.trace(ME, "Parsing filter xmlKey=" + character.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("Parsing filter xmlKey=" + character.toString());
          try {
             tmpKey = glob.getQueryKeyFactory().readObject(character.toString()); // Parse it
             if (keyList == null) keyList = new ArrayList();
             keyList.add(tmpKey);
          }
          catch (XmlBlasterException e) {
-            log.warn(ME, "Parsing <master>" + character.toString() + " failed, ignoring this rule: " + e.toString());
+            log.warning("Parsing <master>" + character.toString() + " failed, ignoring this rule: " + e.toString());
          }
          character.setLength(0);
          return;
@@ -421,7 +422,7 @@ public final class NodeDomainInfo implements Comparable
             return getClusterNode().getConnectionState() - a.getClusterNode().getConnectionState();
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Unexpected exception in compareTo(), no sorting for connection state possible: " + e.toString());
+         log.severe("Unexpected exception in compareTo(), no sorting for connection state possible: " + e.toString());
       }
 
       if (getStratum() != a.getStratum())

@@ -21,7 +21,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 
@@ -45,7 +46,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
 {
    private String ME = "HttpServer";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HttpIORServer.class.getName());
    private String ip_addr = null;
    private final int HTTP_PORT;
    private ServerSocket listen = null;
@@ -71,19 +72,19 @@ public class HttpIORServer extends Thread implements I_HttpRequest
    {
       super("XmlBlaster.HttpIORServer");
       this.glob = glob;
-      this.log = glob.getLog("protocol");
+
       this.ip_addr = ip_addr;
       this.HTTP_PORT = port;
       this.ME +=  this.glob.getLogPrefixDashed();
       if (this.HTTP_PORT <= 0) {
-         if (log.CALL) log.call(ME, "Internal HttpServer not started, as -bootstrapPort is " + this.HTTP_PORT);
+         if (log.isLoggable(Level.FINER)) log.finer("Internal HttpServer not started, as -bootstrapPort is " + this.HTTP_PORT);
          return;
       }
 
       registerRequest(icoRequestUrlPath, this);
       registerRequest(fishRequestUrlPath, this);
 
-      if (log.CALL) log.call(ME, "Creating new HttpServer on IP=" + this.ip_addr + " bootstrap port=" + this.HTTP_PORT);
+      if (log.isLoggable(Level.FINER)) log.finer("Creating new HttpServer on IP=" + this.ip_addr + " bootstrap port=" + this.HTTP_PORT);
       setDaemon(true);
       start();
    }
@@ -95,7 +96,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
     */
    public void registerRequest(String urlPath, String data)
    {
-      if (log.TRACE) log.trace(ME, "Registering urlPath: " + urlPath + "=" + data);
+      if (log.isLoggable(Level.FINE)) log.fine("Registering urlPath: " + urlPath + "=" + data);
       knownRequests.put(urlPath.trim(), data);
    }
 
@@ -107,7 +108,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
     */
    public void registerRequest(String urlPath, I_HttpRequest cb)
    {
-      if (log.TRACE) log.trace(ME, "Registering urlPath: " + urlPath);
+      if (log.isLoggable(Level.FINE)) log.fine("Registering urlPath: " + urlPath);
       knownRequests.put(urlPath.trim(), cb);
    }
    
@@ -154,29 +155,29 @@ public class HttpIORServer extends Thread implements I_HttpRequest
          this.listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
          while (running) {
             Socket accept = this.listen.accept();
-            log.trace(ME, "New incoming request on bootstrapPort=" + HTTP_PORT + " ...");
+            log.fine("New incoming request on bootstrapPort=" + HTTP_PORT + " ...");
             if (!running) {
-               log.info(ME, "Closing http server bootstrapPort=" + HTTP_PORT + ".");
+               log.info("Closing http server bootstrapPort=" + HTTP_PORT + ".");
                break;
             }
             new HandleRequest(glob, log, accept, knownRequests);
          }
       }
       catch (java.net.UnknownHostException e) {
-         log.error(ME, "HTTP server problem, IP address '" + ip_addr + "' is invalid: " + e.toString());
+         log.severe("HTTP server problem, IP address '" + ip_addr + "' is invalid: " + e.toString());
       }
       catch (java.net.BindException e) {
-         log.error(ME, "HTTP server problem, bootstrapPort " + ip_addr + ":" + HTTP_PORT + " is not available: " + e.toString());
+         log.severe("HTTP server problem, bootstrapPort " + ip_addr + ":" + HTTP_PORT + " is not available: " + e.toString());
       }
       catch (java.net.SocketException e) {
-         log.info(ME, "Socket " + ip_addr + ":" + HTTP_PORT + " closed successfully: " + e.toString());
+         log.info("Socket " + ip_addr + ":" + HTTP_PORT + " closed successfully: " + e.toString());
       }
       catch (IOException e) {
-         log.error(ME, "HTTP server problem on " + ip_addr + ":" + HTTP_PORT + ": " + e.toString());
+         log.severe("HTTP server problem on " + ip_addr + ":" + HTTP_PORT + ": " + e.toString());
       }
 
       if (this.listen != null) {
-         try { this.listen.close(); } catch (java.io.IOException e) { log.warn(ME, "this.listen.close()" + e.toString()); }
+         try { this.listen.close(); } catch (java.io.IOException e) { log.warning("this.listen.close()" + e.toString()); }
          this.listen = null;
       }
    }
@@ -187,7 +188,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
     */
    public void shutdown()// throws IOException
    {
-      if (log.CALL) log.call(ME, "Entering shutdown");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown");
       running = false;
       removeRequest(icoRequestUrlPath);
       boolean closeHack = true;
@@ -198,7 +199,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
             java.net.Socket socket = new Socket(this.listen.getInetAddress(), HTTP_PORT);
             socket.close();
          } catch (java.io.IOException e) {
-            log.warn(ME, "shutdown problem: " + e.toString());
+            log.warning("shutdown problem: " + e.toString());
          }
       }
 
@@ -208,7 +209,7 @@ public class HttpIORServer extends Thread implements I_HttpRequest
             this.listen = null;
          }
       } catch (java.io.IOException e) {
-         log.warn(ME, "shutdown problem: " + e.toString());
+         log.warning("shutdown problem: " + e.toString());
       }
    }
 
@@ -222,12 +223,12 @@ public class HttpIORServer extends Thread implements I_HttpRequest
       if (urlPath.indexOf(icoRequestFile) != -1) {
          // set the application icon "favicon.ico"
          byte[] img = Global.getFromClasspath(icoRequestFile, this);
-         if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Serving urlPath '" + urlPath + "'");
          return new HttpResponse(img, icoMimeType);
       }
       else if (urlPath.indexOf(fishRequestFile) != -1) {
          byte[] img = Global.getFromClasspath(fishRequestFile, this);
-         if (log.TRACE) log.trace(ME, "Serving urlPath '" + urlPath + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Serving urlPath '" + urlPath + "'");
          return new HttpResponse(img, fishMimeType);
       }
       throw new IllegalArgumentException("Can't handle unknown " + urlPath);
@@ -267,7 +268,7 @@ class HandleRequest extends Thread
 {
    private final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HttpIORServer.class.getName());
    private final Socket sock;
    private final Hashtable knownRequests;
    private final String CRLF = "\r\n";
@@ -276,7 +277,7 @@ class HandleRequest extends Thread
 
    /**
     */
-   public HandleRequest(Global glob, LogChannel log, Socket sock, Hashtable knownRequests)
+   public HandleRequest(Global glob, Logger log, Socket sock, Hashtable knownRequests)
    {
       this.glob = glob;
       this.ME = "HandleRequest" + this.glob.getLogPrefixDashed();
@@ -294,7 +295,7 @@ class HandleRequest extends Thread
     */
    public void run()
    {
-      if (log.CALL) log.call(ME, "Handling client request, accessing AuthServer IOR ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Handling client request, accessing AuthServer IOR ...");
       BufferedReader iStream = null;
       DataOutputStream oStream = null;
       String clientRequest = "";
@@ -307,29 +308,29 @@ class HandleRequest extends Thread
          String headerLine; // "\r\n"   carriage return and line feed terminate the http header section
          while (true /*!sock.isClosed() JDK 1.4 only*/) {
             headerLine = iStream.readLine();
-            if (log.TRACE) log.trace(ME, "Receiving header '" + headerLine + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("Receiving header '" + headerLine + "'");
             if (headerLine == null || headerLine.trim().length() < 1) {
                break;
             }
          }
 
-         if (log.CALL) log.call(ME, "Request from client " + getSocketInfo());
+         if (log.isLoggable(Level.FINER)) log.finer("Request from client " + getSocketInfo());
 
          if (clientRequest == null) {
             String info = "Empty request ignored " + getSocketInfo();
             errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true, info);
-            log.warn(ME, info);
+            log.warning(info);
             return;
          }
 
          first = false;
-         if (log.TRACE) log.trace(ME, "Handling client request '" + clientRequest + "' ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Handling client request '" + clientRequest + "' ...");
 
          StringTokenizer toks = new StringTokenizer(clientRequest);
          if (toks.countTokens() != 3) {
             String info = "Wrong syntax in client request: '" + clientRequest + "', closing " + getSocketInfo() + " connection.";
             errorResponse(oStream, "HTTP/1.1 400 Bad Request", null, true, info);
-            log.warn(ME, info);
+            log.warning(info);
             return;
          }
 
@@ -351,7 +352,7 @@ class HandleRequest extends Thread
                // !! From browser we only get "/admin/?key=XX" -> 'joe:mypasswd' is not delivered!!
 
                uri = new Uri(glob, resource);
-               if (log.CALL) log.call(ME, "Request is" + uri.toXml());
+               if (log.isLoggable(Level.FINER)) log.call(ME, "Request is" + uri.toXml());
             }
             catch (XmlBlasterException e) {
                String info = getSocketInfo() + ": " + e.toString();
@@ -360,12 +361,12 @@ class HandleRequest extends Thread
                return;
             }
             finally {
-               if (log.CALL) {
+               if (log.isLoggable(Level.FINER)) {
                   while (true) {
                      String req = iStream.readLine();
                      if (req == null)
                         break;
-                     if (log.CALL) log.call(ME, req);
+                     if (log.isLoggable(Level.FINER)) log.call(ME, req);
                   }
                }
             }
@@ -376,7 +377,7 @@ class HandleRequest extends Thread
          if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("HEAD")) {
             String info = "Invalid method in client " + getSocketInfo() + " request: '" + clientRequest + "'";
             errorResponse(oStream, "HTTP/1.1 501 Method Not Implemented", "Allow: GET", true, info);
-            log.warn(ME, info);
+            log.warning(info);
             return;
          }
 
@@ -385,7 +386,7 @@ class HandleRequest extends Thread
 
          
          Object obj = knownRequests.get(resource);
-         if(log.TRACE) log.trace(ME, "1. Resource: " + resource + " => " + obj);
+         if(log.isLoggable(Level.FINE)) log.fine("1. Resource: " + resource + " => " + obj);
          if (obj == null) {
             Iterator it = knownRequests.keySet().iterator();
             while (it.hasNext()) {
@@ -398,11 +399,11 @@ class HandleRequest extends Thread
             if (obj == null) {
                String info = "Ignoring unknown data '" + resource + "' from client " + getSocketInfo() + " request: '" + clientRequest + "'";
                errorResponse(oStream, "HTTP/1.1 404 Not Found", null, true, info);
-               log.warn(ME, info);
+               log.warning(info);
                return;
             }
          }
-         if(log.TRACE) log.trace(ME, "2. Resource: " + resource + " => " + obj);
+         if(log.isLoggable(Level.FINE)) log.fine("2. Resource: " + resource + " => " + obj);
 
          HttpResponse httpResponse;
          if (obj instanceof String) {
@@ -427,9 +428,9 @@ class HandleRequest extends Thread
       }
       catch (Throwable e) {
          if (clientRequest == null && first) {
-            if (log.TRACE) log.trace(ME, "Ignoring connect/disconnect attempt, probably a xmlBlaster client detecting its IP to use");
+            if (log.isLoggable(Level.FINE)) log.fine("Ignoring connect/disconnect attempt, probably a xmlBlaster client detecting its IP to use");
          } else {
-            log.warn(ME, "Problems with sending response for '" + clientRequest + "' to client " + getSocketInfo() + ": " + e.toString());
+            log.warning("Problems with sending response for '" + clientRequest + "' to client " + getSocketInfo() + ": " + e.toString());
          }
          // throw new XmlBlasterException(ME, "Problems with sending IOR to client: " + e.toString());
       }

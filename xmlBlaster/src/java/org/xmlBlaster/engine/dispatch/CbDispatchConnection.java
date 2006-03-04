@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.dispatch;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -38,6 +40,8 @@ import org.xmlBlaster.util.def.MethodName;
  */
 public final class CbDispatchConnection extends DispatchConnection
 {
+   private static Logger log = Logger.getLogger(CbDispatchConnection.class.getName());
+   
    public final String ME;
    private I_CallbackDriver cbDriver = null;
    private String cbKey = null;
@@ -86,10 +90,10 @@ public final class CbDispatchConnection extends DispatchConnection
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, callback protocol type='" + address.getType() + "' is not supported");
             
          // glob.addNativeCallbackDriver(this.cbKey, this.cbDriver);
-         if (log.TRACE) log.trace(ME, "Created callback plugin '" + this.address.getType() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Created callback plugin '" + this.address.getType() + "'");
       }
       else {
-         if (log.TRACE) log.trace(ME, "Created native callback driver for protocol '" + address.getType() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Created native callback driver for protocol '" + address.getType() + "'");
       }
    }
 
@@ -110,7 +114,7 @@ public final class CbDispatchConnection extends DispatchConnection
          this.cbDriver.ping("<qos><state info='"+Constants.INFO_INITIAL+"'/></qos>");
       }
 
-      if (log.TRACE) log.trace(ME, "Connected low level to callback '" + this.address.getType() + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Connected low level to callback '" + this.address.getType() + "'");
    }
 
    /**
@@ -141,7 +145,7 @@ public final class CbDispatchConnection extends DispatchConnection
 
             MsgUnitWrapper msgUnitWrapper = entry.getMsgUnitWrapper();
             if (msgUnitWrapper == null) {
-               if (log.TRACE) log.trace(ME, "doSend("+entry.getLogId()+") ignoring callback message as no meat is available (assume expired)");
+               if (log.isLoggable(Level.FINE)) log.fine("doSend("+entry.getLogId()+") ignoring callback message as no meat is available (assume expired)");
                entry.setReturnObj(new UpdateReturnQosServer(this.glob, Constants.RET_EXPIRED)); //"<qos><state id='EXPIRED'/></qos>";
                continue;
             }
@@ -167,7 +171,7 @@ public final class CbDispatchConnection extends DispatchConnection
                      ((org.xmlBlaster.util.qos.MsgQosData)mu.getQosData()).setSubscriptionId(mu.getQosData().getClientProperty("__subscriptionId", (String)null));
                   }
                   catch (Throwable e) {
-                     log.error(ME, "Failed to set subscriptionId: " + e.toString());
+                     log.severe("Failed to set subscriptionId: " + e.toString());
                   }
                   mu.getQosData().getClientProperties().remove("__oid");
                   mu.getQosData().getClientProperties().remove("__subscriptionId");
@@ -196,34 +200,34 @@ public final class CbDispatchConnection extends DispatchConnection
             for (int i=0; i<responders.size(); i++) {
                ((Holder)responders.get(i)).msgUnitRaw = securityInterceptor.exportMessage(((Holder)responders.get(i)).msgUnitRaw, MethodName.UPDATE);
             }
-            if (log.TRACE) log.trace(ME, "Exported/encrypted " + responders.size() + " messages.");
+            if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted " + responders.size() + " messages.");
          }
          if (oneways != null) {
             for (int i=0; i<oneways.size(); i++) {
                oneways.set(i, securityInterceptor.exportMessage((MsgUnitRaw)oneways.get(i), MethodName.UPDATE_ONEWAY));
             }
-            if (log.TRACE) log.trace(ME, "Exported/encrypted " + oneways.size() + " oneway messages.");
+            if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted " + oneways.size() + " oneway messages.");
          }
       }
       else {
-         log.warn(ME+".accessDenied", "No session security context, sending " + msgArr_.length + " messages without encryption");
+         log.warning("No session security context, sending " + msgArr_.length + " messages without encryption");
       }
 
       if (oneways != null) {
          cbDriver.sendUpdateOneway((MsgUnitRaw[])oneways.toArray(new MsgUnitRaw[oneways.size()]));
          connectionsHandler.getDispatchStatistic().incrNumUpdate(oneways.size());
-         if (log.TRACE) log.trace(ME, "Success, sent " + oneways.size() + " oneway messages.");
+         if (log.isLoggable(Level.FINE)) log.fine("Success, sent " + oneways.size() + " oneway messages.");
       }
 
       if (responders != null) {
-         if (log.TRACE) log.trace(ME, "Before update " + responders.size() + " acknowledged messages ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Before update " + responders.size() + " acknowledged messages ...");
          MsgUnitRaw[] raws = new MsgUnitRaw[responders.size()];
          for (int i=0; i<responders.size(); i++) {
             raws[i] = ((Holder)responders.get(i)).msgUnitRaw;
          }
          String[] rawReturnVal = cbDriver.sendUpdate(raws);
          connectionsHandler.getDispatchStatistic().incrNumUpdate(raws.length);
-         if (log.TRACE) log.trace(ME, "Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
 
          if (rawReturnVal != null && rawReturnVal.length == raws.length) {
             for (int i=0; i<rawReturnVal.length; i++) {
@@ -243,17 +247,17 @@ public final class CbDispatchConnection extends DispatchConnection
                   if (postSendListener != null) postSendListener.postSend(entry);
                }
                catch (Throwable e) {
-                  log.warn(ME, "Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
+                  log.warning("Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
                   //e.printStackTrace();
                   UpdateReturnQosServer updateRetQos = new UpdateReturnQosServer(glob, "<qos/>");
                   updateRetQos.setException(e);
                   entry.setReturnObj(updateRetQos);
                }
             }
-            if (log.TRACE) log.trace(ME, "Imported/decrypted " + rawReturnVal.length + " message return values.");
+            if (log.isLoggable(Level.FINE)) log.fine("Imported/decrypted " + rawReturnVal.length + " message return values.");
          }
          else 
-            log.error(ME, "Unexpected UpdateReturnQos '" + (rawReturnVal==null?"null":""+rawReturnVal.length)+ "', expected " + raws.length);
+            log.severe("Unexpected UpdateReturnQos '" + (rawReturnVal==null?"null":""+rawReturnVal.length)+ "', expected " + raws.length);
       }
    }
 

@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -46,7 +47,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
 {
    private static String ME = "TestInvocationRecorder";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestInvocationRecorder.class.getName());
 
    private RamRecorder recorder = null;
 
@@ -73,7 +74,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
    }
 
 
@@ -84,7 +85,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    protected void setUp()
    {
-      log.info(ME, "setup test");
+      log.info("setup test");
       numSubscribe = numUnSubscribe = numPublish = numPublishArr = numErase = numGet = numUpdate = 0;
       recorder = new RamRecorder();
       recorder.initialize(glob, (String)null, 1000, this);//, this);
@@ -98,7 +99,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    protected void tearDown()
    {
-      log.info(ME, "testing done");
+      log.info("testing done");
    }
 
 
@@ -126,7 +127,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
          //recorder.update(clientName, msgUnitArr);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "problems feeding the recorder: " + e.getMessage());
+         log.severe("problems feeding the recorder: " + e.getMessage());
          assertTrue("problems feeding the recorder: " + e.getMessage(), false);
       }
 
@@ -134,7 +135,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
          recorder.pullback(0L, 0L, (float)1.0);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "problems with recorder.pullback: " + e.getMessage());
+         log.severe("problems with recorder.pullback: " + e.getMessage());
          assertTrue("problems recorder pullback: " + e.getMessage(), false);
       }
 
@@ -153,7 +154,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    public SubscribeReturnQos subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "subscribe() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("subscribe() ...");
       numSubscribe++;
       assertEquals("subscribe(xmlKey): ", xmlKey_subscribe, xmlKey_literal);
       assertEquals("subscribe(xmlKey): ", qos_subscribe, qos_literal);
@@ -167,7 +168,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    public UnSubscribeReturnQos[] unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "unSubscribe() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("unSubscribe() ...");
       numUnSubscribe++;
       return null;
    }
@@ -179,7 +180,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    public PublishReturnQos publish(MsgUnit msgUnit) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "publish() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("publish() ...");
       numPublish++;
       return null;
    }
@@ -191,7 +192,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    public void publishOneway(MsgUnit [] msgUnitArr)
    {
-      if (log.CALL) log.call(ME, "publishOneway() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("publishOneway() ...");
       numPublishArr++;
    }
 
@@ -202,7 +203,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    public PublishReturnQos[] publishArr(MsgUnit [] msgUnitArr) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "publishArr() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("publishArr() ...");
       numPublishArr++;
       return new PublishReturnQos[0];
    }
@@ -214,7 +215,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    public EraseReturnQos[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "erase() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("erase() ...");
       numErase++;
       return new EraseReturnQos[0];
    }
@@ -226,7 +227,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     */
    public MsgUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "get() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("get() ...");
       numGet++;
       assertEquals("get(xmlKey): ", xmlKey_get, xmlKey_literal);
       assertEquals("get(xmlKey): ", qos_get, qos_literal);
@@ -240,7 +241,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
     * @param MsgUnit Container for the Message
    public String[] update(String cbSessionId, org.xmlBlaster.util.MsgUnit[] msgUnitArr)
    {
-      if (log.CALL) log.call(ME, "update(" + cbSessionId + ") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("update(" + cbSessionId + ") ...");
       numUpdate++;
       String[] retArr = new String[msgUnitArr.length];
       for (int ii=0; ii<retArr.length; ii++) retArr[ii] = "";
@@ -249,7 +250,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
 
    public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnit[] msgUnitArr)
    {
-      if (log.CALL) log.call(ME, "update(" + cbSessionId + ") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("update(" + cbSessionId + ") ...");
       numUpdate++;
    }
     */

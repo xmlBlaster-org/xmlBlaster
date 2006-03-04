@@ -5,7 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 import org.xmlBlaster.util.Global;
 //import org.xmlBlaster.util.JdkCompatible;
 import java.util.Properties;
@@ -36,9 +38,9 @@ import org.xmlBlaster.util.qos.address.AddressBase;
  */
 public final class OrbInstanceFactory
 {
+   private static Logger log = Logger.getLogger(OrbInstanceFactory.class.getName());
    private static boolean first=true;
    private static String origORBClass;
-   private static String origORBSingletonClass;
    private static boolean nameServiceStarted;
 
    /**
@@ -61,8 +63,7 @@ public final class OrbInstanceFactory
    private synchronized static Properties initializeOrbEnv(Global glob, AddressBase address)
    {
       glob = (glob == null) ? Global.instance() : glob;
-      LogChannel log = glob.getLog("corba");
-      final String ME = "OrbInstanceFactory";
+
       Properties props = new Properties();
       //props.put("org.omg.CORBA.ORBClass", "SomeORBImplementation");
  
@@ -70,7 +71,7 @@ public final class OrbInstanceFactory
          first = false;
          origORBClass = System.getProperty("org.omg.CORBA.ORBClass");
       //   if (origORBClass==null) origORBClass=""; // System.setProperties does not like null values
-         origORBSingletonClass = System.getProperty("org.omg.CORBA.ORBSingletonClass");
+      //   origORBSingletonClass = System.getProperty("org.omg.CORBA.ORBSingletonClass");
       //   if (origORBSingletonClass==null) origORBSingletonClass="";
       }
       /*
@@ -112,7 +113,7 @@ public final class OrbInstanceFactory
       
       // -dispatch/connection/plugin/ior/hostname   
       String hostname = address.getEnv("hostname", (String)null).getValue();
-      if (log.TRACE) log.trace(ME, "initializeOrbEnv(" + address.getEnvLookupKey("hostname") + "=" + hostname);
+      if (log.isLoggable(Level.FINE)) log.fine("initializeOrbEnv(" + address.getEnvLookupKey("hostname") + "=" + hostname);
 
       String orbClass = (String)props.get("org.omg.CORBA.ORBClass");
       if (orbClass != null && orbClass.indexOf("jacorb") >= 0) {
@@ -120,21 +121,21 @@ public final class OrbInstanceFactory
          if (hostname != null) {
             //JdkCompatible.setSystemProperty("OAIAddr", hostname);
             props.put("OAIAddr", hostname);
-            if (log.TRACE) log.trace(ME, "Using OAIAddr=" + address.getEnvLookupKey("hostname") + "=" + props.getProperty("OAIAddr"));
+            if (log.isLoggable(Level.FINE)) log.fine("Using OAIAddr=" + address.getEnvLookupKey("hostname") + "=" + props.getProperty("OAIAddr"));
          }
          
          int port = address.getEnv("port", 0).getValue();
          if (port > 0) {
             //JdkCompatible.setSystemProperty("OAPort", ""+port);
             props.put("OAPort", ""+port);
-            if (log.TRACE) log.trace(ME, "Using OAPort=" + address.getEnvLookupKey("port") + "=" + props.getProperty("OAPort"));
+            if (log.isLoggable(Level.FINE)) log.fine("Using OAPort=" + address.getEnvLookupKey("port") + "=" + props.getProperty("OAPort"));
          }
 
          int verbose = glob.getProperty().get("jacorb.log.default.verbosity", -1);
          if (verbose >= 0) {
             //JdkCompatible.setSystemProperty("jacorb.log.default.verbosity", ""+verbose);
             props.put("jacorb.log.default.verbosity", ""+verbose);
-            if (log.TRACE) log.trace(ME, "Using jacorb.log.default.verbosity=" + props.getProperty("jacorb.log.default.verbosity"));
+            if (log.isLoggable(Level.FINE)) log.fine("Using jacorb.log.default.verbosity=" + props.getProperty("jacorb.log.default.verbosity"));
          }
 
          // Bug workaround: with JacORB 2.1 we get logging from POA,
@@ -142,11 +143,11 @@ public final class OrbInstanceFactory
          // setting ' java -Djacorb.poa.log.verbosity=0 ... ' helps:
          int verbosePoa = glob.getProperty().get("jacorb.poa.log.verbosity", 0);
          props.put("jacorb.poa.log.verbosity", ""+verbosePoa);
-         if (log.TRACE) log.trace(ME, "Using jacorb.poa.log.verbosity=" + verbosePoa);
+         if (log.isLoggable(Level.FINE)) log.fine("Using jacorb.poa.log.verbosity=" + verbosePoa);
       }
 
-      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBClass=" + props.getProperty("org.omg.CORBA.ORBClass"));
-      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + props.getProperty("org.omg.CORBA.ORBSingletonClass"));
+      if (log.isLoggable(Level.FINE)) log.fine("Using org.omg.CORBA.ORBClass=" + props.getProperty("org.omg.CORBA.ORBClass"));
+      if (log.isLoggable(Level.FINE)) log.fine("Using org.omg.CORBA.ORBSingletonClass=" + props.getProperty("org.omg.CORBA.ORBSingletonClass"));
 
       /*
       CHANGED 2003-02-27 Marcel:
@@ -161,7 +162,7 @@ public final class OrbInstanceFactory
          // -ORBInitRef "NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"
          //JdkCompatible.setSystemProperty("ORBInitRef", tmp);
          props.put("ORBInitRef", tmp);
-         if (log.TRACE) log.trace(ME, "Using corbaloc -ORBInitRef NameService="+glob.getProperty().get("ORBInitRef",(String)null)+" to find a naming service");
+         if (log.isLoggable(Level.FINE)) log.fine("Using corbaloc -ORBInitRef NameService="+glob.getProperty().get("ORBInitRef",(String)null)+" to find a naming service");
       }
 
       return props;
@@ -265,7 +266,7 @@ public final class OrbInstanceFactory
                }
             }
             org.omg.CORBA.portable.InputStream in = out.create_input_stream();
-            boolean littleEndian = in.read_boolean();
+            /*boolean littleEndian =*/ in.read_boolean();
             org.omg.IOP.IOR ior = org.omg.IOP.IORHelper.read(in);
             org.omg.IIOP.ProfileBody_1_1 body;
             for (int i=0; host==null && i<ior.profiles.length; i++)
@@ -300,10 +301,9 @@ public final class OrbInstanceFactory
       if (nameServiceStarted)
          return;
       final String[] s = new String[0]; // new String[]{"-p","1077"}; // See OAPort discussion below
-      final Global glob = (glob_ == null) ? Global.instance() : glob_;
       new Thread() {
          public void run() {
-            glob.getLog("corba").info("OrbInstanceFactory", "Starting embedded Jacorb namingService");
+            log.info("Starting embedded Jacorb namingService");
             org.xmlBlaster.util.JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB");
             org.xmlBlaster.util.JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton");
             // This does not work as the name service will collide with our ORB:
@@ -315,6 +315,6 @@ public final class OrbInstanceFactory
          }
       }.start();
       nameServiceStarted = true;
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(2000L); } catch( InterruptedException i) {}
    }
 }

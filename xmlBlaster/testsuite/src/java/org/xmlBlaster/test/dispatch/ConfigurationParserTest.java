@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.dispatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.dispatch.plugins.prio.*;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -26,7 +27,7 @@ import junit.framework.*;
  */
 public class ConfigurationParserTest extends TestCase {
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(ConfigurationParserTest.class.getName());
    int counter = 0;
 
    public ConfigurationParserTest(String name) {
@@ -35,7 +36,7 @@ public class ConfigurationParserTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = glob.getLog(null);
+
    }
 
    protected void tearDown() {

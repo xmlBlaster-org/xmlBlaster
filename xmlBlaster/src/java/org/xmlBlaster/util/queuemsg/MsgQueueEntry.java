@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queuemsg;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -26,7 +27,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    private final static String ME = "MsgQueueEntry";
 
    protected transient Global glob;
-   protected transient LogChannel log;
+   private static Logger log = Logger.getLogger(MsgQueueEntry.class.getName());
 
    // Three helpers to transport the return value back to the caller
    protected transient boolean wantReturnObj = true;
@@ -86,13 +87,13 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       this.uniqueIdString = "" + this.uniqueIdTimestamp.getTimestamp();
 
       if (entryType == null || priority == null || glob == null || storageId ==null) {
-         glob.getLog("dispatch").error(ME, "Invalid constructor parameter");
+         log.severe("Invalid constructor parameter");
          Thread.dumpStack();
          throw new IllegalArgumentException(ME + ": Invalid constructor parameter");
       }
 
       this.glob = glob;
-      this.log = glob.getLog("dispatch");
+
       this.entryType = entryType;
       this.priority = priority;
       this.storageId = storageId;
@@ -101,12 +102,12 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 
    public final void setGlobal(Global global) {
       this.glob = global;
-      this.log = glob.getLog("dispatch");
+
    }
 
 
    public void finalize() {
-      if (log.TRACE) log.trace(ME, "finalize - garbage collect");
+      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collect");
    }
 
    /**
@@ -332,7 +333,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) {
-      log.info(ME, getLogId() + " is added to queue: REFERENCE COUNTER IMPL MISSING");
+      log.info(getLogId() + " is added to queue: REFERENCE COUNTER IMPL MISSING");
    }
 
    /**
@@ -340,7 +341,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) {
-      log.info(ME, getLogId() + " is removed from queue: REFERENCE COUNTER IMPL MISSING");
+      log.info(getLogId() + " is removed from queue: REFERENCE COUNTER IMPL MISSING");
    }
 
    /**
@@ -408,7 +409,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
          }
       }
       catch(CloneNotSupportedException e) {
-         log.error(ME, "Internal clone problem: " + e.toString());
+         log.severe("Internal clone problem: " + e.toString());
       }
       return entry;
    }

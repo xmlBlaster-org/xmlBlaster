@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.msgstore;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
@@ -30,7 +31,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class I_MapTest extends TestCase {
    private String ME = "I_MapTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(I_MapTest.class.getName());
 
    private final boolean IS_DURABLE = true;
    private final boolean IS_TRANSIENT = false;
@@ -57,7 +58,7 @@ public class I_MapTest extends TestCase {
          "-persistence.transientQueue", "RAM,1.0" };
 
       this.glob = new Global(args);
-      this.log = glob.getLog(null);
+
       //this.ME = "I_MapTest[" + this.currMap.getClass().getName() + "]";
    }
 
@@ -82,7 +83,7 @@ public class I_MapTest extends TestCase {
          this.currMap.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'topic.queue.persistent.tableNamePrefix' to 'TEST': " + ex.getMessage());
+         log.severe("setUp: error when setting the property 'topic.queue.persistent.tableNamePrefix' to 'TEST': " + ex.getMessage());
       }
 
       // cleaning up the database from previous runs ...
@@ -97,7 +98,7 @@ public class I_MapTest extends TestCase {
          jdbcMap.destroy();
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
+         log.severe("could not propertly set up the database: " + ex.getMessage());
       }
 */
    }
@@ -194,17 +195,17 @@ public class I_MapTest extends TestCase {
             fail("Did expect an exception on overflow getMaxNumOfEntries=" + i_map.getMaxNumOfEntries() + " size=" + i_map.getNumOfEntries());
          }
          catch(XmlBlasterException e) {
-            log.info(ME, "SUCCESS the exception is OK: " + e.getMessage());
+            log.info("SUCCESS the exception is OK: " + e.getMessage());
          }
 
-         log.info(ME, "toXml() test:" + i_map.toXml(""));
-         log.info(ME, "usage() test:" + i_map.usage());
+         log.info("toXml() test:" + i_map.toXml(""));
+         log.info("usage() test:" + i_map.usage());
 
          assertEquals(ME+": should not be shutdown", false, i_map.isShutdown());
          i_map.shutdown();
          assertEquals(ME+": should be shutdown", true, i_map.isShutdown());
 
-         log.info(ME, "#2 Success, filled " + i_map.getNumOfEntries() + " messages into queue");
+         log.info("#2 Success, filled " + i_map.getNumOfEntries() + " messages into queue");
          System.out.println("***" + ME + " [SUCCESS]");
          i_map.shutdown();
       }
@@ -256,7 +257,7 @@ public class I_MapTest extends TestCase {
          }
          int total = numLoop*3;
          assertEquals(ME+": Wrong total size", total, i_map.getNumOfEntries());
-         log.info(ME, "#1 Success, filled " + i_map.getNumOfEntries() + " messages into queue");
+         log.info("#1 Success, filled " + i_map.getNumOfEntries() + " messages into queue");
 
 
          //========== Test 2: put(I_MapEntry)
@@ -267,7 +268,7 @@ public class I_MapTest extends TestCase {
          }
          assertEquals(ME+": Wrong total size", numLoop+total, i_map.getNumOfEntries());
          this.checkSizeAndEntries(" put(I_MapEntry) ", list, i_map);
-         log.info(ME, "#2 Success, filled " + i_map.getNumOfEntries() + " messages into queue");
+         log.info("#2 Success, filled " + i_map.getNumOfEntries() + " messages into queue");
 
          i_map.clear();
          checkSizeAndEntries("Test 2 put()", new I_MapEntry[0], i_map);
@@ -328,7 +329,7 @@ public class I_MapTest extends TestCase {
          i_map.shutdown();
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "Exception thrown: " + e.getMessage());
+         log.severe("Exception thrown: " + e.getMessage());
          fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }
@@ -348,7 +349,7 @@ public class I_MapTest extends TestCase {
          getMsg(this.currMap);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing getMsg probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
+         log.severe("Exception when testing getMsg probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
       }
 
    }
@@ -370,9 +371,9 @@ public class I_MapTest extends TestCase {
                                         };
             for(int i=0; i<queueEntries.length; i++) {
                i_map.put(queueEntries[i]);
-               log.info(ME, "#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
+               log.info("#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
             }
-            log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
+            log.info("storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
 
             assertEquals("", 3, i_map.getNumOfEntries());
             assertEquals("", 2, i_map.getNumOfPersistentEntries());
@@ -393,9 +394,9 @@ public class I_MapTest extends TestCase {
             assertEquals("", 3, i_map.getNumOfEntries());
             assertEquals("", 2, i_map.getNumOfPersistentEntries());
 
-            log.info(ME, "storage before remove [0], bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
+            log.info("storage before remove [0], bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
             i_map.remove(queueEntries[0]); // Remove one
-            log.info(ME, "storage after remove [0], bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
+            log.info("storage after remove [0], bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
             ArrayList list = new ArrayList();
             list.add(queueEntries[1]);
             list.add(queueEntries[2]);
@@ -422,7 +423,7 @@ public class I_MapTest extends TestCase {
             }
             assertEquals("", 0, i_map.getNumOfEntries());
             assertEquals("", 0, i_map.getNumOfPersistentEntries());
-            log.info(ME, "#1 Success, get()");
+            log.info("#1 Success, get()");
          }
 
          System.out.println("***" + ME + " [SUCCESS]");
@@ -451,7 +452,7 @@ public class I_MapTest extends TestCase {
          getAllMsgs(this.currMap);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing getAllMsgs probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
+         log.severe("Exception when testing getAllMsgs probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
       }
 
    }
@@ -476,9 +477,9 @@ public class I_MapTest extends TestCase {
                                         };
             for(int i=0; i<queueEntries.length; i++) {
                i_map.put(queueEntries[i]);
-               log.info(ME, "#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
+               log.info("#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
             }
-            log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
+            log.info("storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
 
             assertEquals("", 3, i_map.getNumOfEntries());
             assertEquals("", 2, i_map.getNumOfPersistentEntries());
@@ -508,7 +509,7 @@ public class I_MapTest extends TestCase {
             assertEquals(ME+": Wrong result", queueEntries[2].getUniqueId(), results[1].getUniqueId());
             */
             i_map.clear();
-            log.info(ME, "#1 Success, getAll()");
+            log.info("#1 Success, getAll()");
          }
 
          System.out.println("***" + ME + " [SUCCESS]");
@@ -546,7 +547,7 @@ public class I_MapTest extends TestCase {
          getAllSwappedMsgs(this.currMap);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing getAllSwappedMsgs probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
+         log.severe("Exception when testing getAllSwappedMsgs probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
       }
 
    }
@@ -562,7 +563,7 @@ public class I_MapTest extends TestCase {
       QueuePropertyBase prop = (QueuePropertyBase)i_map.getProperties();
       assertEquals(ME+": Wrong capacity", 10, prop.getMaxEntries());
       assertEquals(ME+": Wrong cache capacity", 2, prop.getMaxEntriesCache());
-      log.info(ME, "Current settings: " + prop.toXml());
+      log.info("Current settings: " + prop.toXml());
 
       try {
          //========== Test 1: getAllSwapped()
@@ -575,17 +576,17 @@ public class I_MapTest extends TestCase {
                                         };
             for(int i=0; i<queueEntries.length; i++) {
                i_map.put(queueEntries[i]);
-               log.info(ME, "#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
+               log.info("#" + i + " id=" + queueEntries[i].getUniqueId() + " numSizeBytes()=" + queueEntries[i].getSizeInBytes());
             }
-            //log.info(ME, "storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
-            log.info(ME, "storage state=" + i_map.toXml(""));
+            //log.info("storage bytes sum=" + i_map.getNumOfBytes() + " with persistent bytes=" + i_map.getNumOfPersistentBytes());
+            log.info("storage state=" + i_map.toXml(""));
 
             assertEquals("", queueEntries.length, i_map.getNumOfEntries());
 
             for (int ii=0; ii<10; ii++) {
                I_MapEntry[] results = i_map.getAll(null);
                for(int jj=0; jj<results.length; jj++) {
-                  log.info(ME, "#" + jj + ": " + results[jj].getUniqueId());
+                  log.info("#" + jj + ": " + results[jj].getUniqueId());
                }
                assertEquals("Missing entry", queueEntries.length, results.length);
                assertEquals(ME+": Wrong result", queueEntries[0].getUniqueId(), results[0].getUniqueId());
@@ -595,7 +596,7 @@ public class I_MapTest extends TestCase {
             }
             assertEquals("", 4, i_map.getNumOfEntries());
             assertEquals("", 0, i_map.getNumOfPersistentEntries());
-            log.info(ME, "#1 Success, getAllSwapped()");
+            log.info("#1 Success, getAllSwapped()");
          }
 
          System.out.println("***" + ME + " [SUCCESS]");
@@ -630,7 +631,7 @@ public class I_MapTest extends TestCase {
          putEntriesTwice(this.currMap);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing putEntriesTwice probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
+         log.severe("Exception when testing putEntriesTwice probably due to failed initialization of the queue " + queueType + ": " + ex.getMessage());
       }
    }
 
@@ -641,7 +642,7 @@ public class I_MapTest extends TestCase {
          //========== Test 1: checks if entries are returned in the correct
          // order even if they are inserted in the wrong order
          {
-            this.log.trace(ME, "putEntriesTwice test 1");
+            log.fine("putEntriesTwice test 1");
             int imax = 5;
             long size = 0L;
 
@@ -676,7 +677,7 @@ public class I_MapTest extends TestCase {
       }
       catch (Exception ex) {
          ex.printStackTrace();
-         this.log.error(ME, "error when tearing down " + ex.getMessage());
+         log.severe("error when tearing down " + ex.getMessage());
       }
    }
 
@@ -756,7 +757,7 @@ public class I_MapTest extends TestCase {
       testSub.testGetAllMsgs();
       testSub.tearDown();
       long usedTime = System.currentTimeMillis() - startTime;
-      testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+      testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
 
       /*
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
@@ -788,7 +789,7 @@ public class I_MapTest extends TestCase {
          testSub.tearDown();
 
          usedTime = System.currentTimeMillis() - startTime;
-         testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+         testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
       }
       */
    }

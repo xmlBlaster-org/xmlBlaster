@@ -10,7 +10,8 @@ package org.xmlBlaster;
 import com.silveregg.wrapper.WrapperManager;
 import com.silveregg.wrapper.WrapperListener;
 
-//import org.jutils.log.LogChannel;
+//import java.util.logging.Logger;
+import java.util.logging.Level;
 //import org.jutils.JUtilsException;
 //import org.jutils.io.FileUtil;
 //import org.jutils.runtime.Memory;

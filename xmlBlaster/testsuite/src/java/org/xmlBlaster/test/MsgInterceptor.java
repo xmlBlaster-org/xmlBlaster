@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.UpdateReturnQos;
@@ -26,7 +26,6 @@ import java.lang.ref.WeakReference;
  */
 public class MsgInterceptor extends Assert implements I_Callback 
 {
-   private String ME = "Testsuite.MsgInterceptor";
    private final WeakReference weakglob;
    private final WeakReference weaklog;
    private I_Callback testsuite = null;
@@ -37,7 +36,7 @@ public class MsgInterceptor extends Assert implements I_Callback
    /**
     * @param testsuite If != null your update() variant will be called as well
     */
-   public MsgInterceptor(Global glob, LogChannel log, I_Callback testsuite) {
+   public MsgInterceptor(Global glob, Logger log, I_Callback testsuite) {
       this.weakglob = new WeakReference(glob);
       this.weaklog = new WeakReference(log);
       this.testsuite = testsuite;
@@ -48,12 +47,11 @@ public class MsgInterceptor extends Assert implements I_Callback
       return (Global)this.weakglob.get();
    }
 
-   public final LogChannel getLog() {
-      return (LogChannel)this.weaklog.get();
+   public final Logger getLog() {
+      return (Logger)this.weaklog.get();
    }
 
    public void setLogPrefix(String prefix) {
-      this.ME = "Testsuite.MsgInterceptor-" + prefix;
    }
 
    /**
@@ -88,13 +86,13 @@ public class MsgInterceptor extends Assert implements I_Callback
       
       if (this.verbosity == 1) {
          String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
-         getLog().info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+         getLog().info("Receiving update of a message oid=" + updateKey.getOid() +
                    " priority=" + updateQos.getPriority() +
                    " state=" + updateQos.getState() +
                    " content=" + cont);
       }
       else if (this.verbosity == 2) {
-         getLog().info(ME, "Receiving update #" + (count()+1) + " of a message cbSessionId=" + cbSessionId +
+         getLog().info("Receiving update #" + (count()+1) + " of a message cbSessionId=" + cbSessionId +
                       updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
       }
 
@@ -151,7 +149,7 @@ public class MsgInterceptor extends Assert implements I_Callback
 
          sum += pollingInterval;
          if (sum > timeout) {
-            getLog().error(ME, "timeout=" + timeout + " occurred for " + oid + " state=" + state + " countExpected=" + countExpected + " countArrived=" + countArrived);
+            getLog().severe("timeout=" + timeout + " occurred for " + oid + " state=" + state + " countExpected=" + countExpected + " countArrived=" + countArrived);
             return countArrived; // Timeout occurred
          }
       }

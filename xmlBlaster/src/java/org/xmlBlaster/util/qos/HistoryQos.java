@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 
@@ -39,7 +40,7 @@ public final class HistoryQos
 {
    private static final String ME = "HistoryQos";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HistoryQos.class.getName());
 
    public static final int DEFAULT_numEntries = 1;
    private int numEntries = DEFAULT_numEntries;
@@ -52,7 +53,7 @@ public final class HistoryQos
     */
    public HistoryQos(Global glob) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("core");
+
       setNumEntries(this.glob.getProperty().get("history.numEntries", DEFAULT_numEntries));
    }
 
@@ -62,7 +63,7 @@ public final class HistoryQos
     */
    public HistoryQos(Global glob, int numEntries) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("core");
+
       setNumEntries(numEntries);
    }
 
@@ -109,7 +110,7 @@ public final class HistoryQos
    public boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
       String tmp = character.toString().trim(); // The query
       if (tmp.length() > 0) {
-         log.warn(ME, "Ignoring history QoS query data '" + tmp + "'");
+         log.warning("Ignoring history QoS query data '" + tmp + "'");
       }
       character.setLength(0);
 
@@ -119,13 +120,13 @@ public final class HistoryQos
             for (int i = 0; i < len; i++) {
                if (attrs.getQName(i).equalsIgnoreCase("numEntries") ) {
                   String entryStr = attrs.getValue(i).trim();
-                  try { setNumEntries(Integer.parseInt(entryStr)); } catch(NumberFormatException e) { log.error(ME, "Invalid history - numEntries =" + entryStr); };
+                  try { setNumEntries(Integer.parseInt(entryStr)); } catch(NumberFormatException e) { log.severe("Invalid history - numEntries =" + entryStr); };
                }
                else if (attrs.getQName(i).equalsIgnoreCase("newestFirst") ) {
                   setNewestFirst((new Boolean(attrs.getValue(i).trim())).booleanValue());
                }
                else {
-                  log.warn(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in history section.");
+                  log.warning("Ignoring unknown attribute " + attrs.getQName(i) + " in history section.");
                }
             }
          }
@@ -143,7 +144,7 @@ public final class HistoryQos
       if (name.equalsIgnoreCase("history")) {
          String tmp = character.toString().trim();
          if (tmp.length() > 0) {
-            log.warn(ME, "Ignoring history QoS query data '" + tmp + "'");
+            log.warning("Ignoring history QoS query data '" + tmp + "'");
          }
       }
       character.setLength(0);

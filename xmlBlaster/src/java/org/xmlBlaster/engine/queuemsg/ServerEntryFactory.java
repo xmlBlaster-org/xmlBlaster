@@ -20,7 +20,8 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.key.MsgKeyData;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 
 import org.xmlBlaster.engine.qos.PublishQosServer; // for main only
@@ -48,7 +49,7 @@ public class ServerEntryFactory implements I_EntryFactory
 {
    private final static String ME = "ServerEntryFactory";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(ServerEntryFactory.class.getName());
 
    public static final String ENTRY_TYPE_MSG_SERIAL = "MSG_SER"; // msgUnit was serialized with java.io.Serializable
    public static final String ENTRY_TYPE_MSG_XML = "MSG_XML"; // msgUnit is dumped as XML ASCII string
@@ -78,7 +79,7 @@ public class ServerEntryFactory implements I_EntryFactory
          return baos.toByteArray();
       }
       catch (IOException ex) {
-         this.log.error(ME, "toBlob: " + ex.getMessage());
+         log.severe("toBlob: " + ex.getMessage());
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "toBlob()", ex);
       }
    }
@@ -122,7 +123,7 @@ public class ServerEntryFactory implements I_EntryFactory
                }
             }
 
-            if (log.TRACE) log.trace(ME, "storageId=" + storageId + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
+            if (log.isLoggable(Level.FINE)) log.fine("storageId=" + storageId + ": Read timestamp=" + timestamp + " topic keyOid=" + keyOid +
                          " msgUnitWrapperUniqueId=" + msgUnitWrapperUniqueId + " receiverStr=" + receiverStr +
                          " subscriptionId=" + subscriptionId + " flag=" + flag + " redeliverCount=" + redeliverCount);
             SessionName receiver = new SessionName(glob, receiverStr);
@@ -312,8 +313,8 @@ public class ServerEntryFactory implements I_EntryFactory
     */
    public void initialize(org.xmlBlaster.util.Global glob) {
       this.glob = (org.xmlBlaster.engine.Global)glob;
-      this.log = glob.getLog("queue");
-      if (this.log.TRACE) this.log.trace(ME, "Successfully initialized");
+
+      if (log.isLoggable(Level.FINE)) this.log.fine("Successfully initialized");
    }
 
    /**
@@ -338,7 +339,7 @@ public class ServerEntryFactory implements I_EntryFactory
     */
    public static void main(String[] args) {
       Global glob = new Global(args);
-      LogChannel log = glob.getLog("test");
+
       try {
          String[] persistType = new String[] { ENTRY_TYPE_MSG_SERIAL, ENTRY_TYPE_MSG_XML };
 
@@ -369,7 +370,7 @@ public class ServerEntryFactory implements I_EntryFactory
                   /*byte[] blob =*/ factory.toBlob(msgUnitWrapper);
                }
                double elapsed = stopWatchToBlob.elapsed();
-               log.info(ME, "num toBlob=" + numTransform + " elapsed=" + elapsed + stopWatchToBlob.nice());
+               log.info("num toBlob=" + numTransform + " elapsed=" + elapsed + stopWatchToBlob.nice());
 
                byte[] blob = factory.toBlob(msgUnitWrapper);
                MsgUnitWrapper newWrapper = null;
@@ -379,10 +380,10 @@ public class ServerEntryFactory implements I_EntryFactory
                                               timestamp, type, persistent, sizeInBytes, new ByteArrayInputStream(blob), storageId);
                }
                elapsed = stopWatchToObj.elapsed();
-               log.info(ME, "num toObj=" + numTransform + " elapsed=" + elapsed + stopWatchToObj.nice());
+               log.info("num toObj=" + numTransform + " elapsed=" + elapsed + stopWatchToObj.nice());
        
-               log.trace(ME, "SUCESS BEFORE: " + msgUnitWrapper.toXml());
-               log.trace(ME, "SUCESS AFTER: " + newWrapper.toXml());
+               log.fine("SUCESS BEFORE: " + msgUnitWrapper.toXml());
+               log.fine("SUCESS AFTER: " + newWrapper.toXml());
             }
          }
       }

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
@@ -24,7 +25,7 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
 {
    private final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientErrorHandler.class.getName());
    private final I_XmlBlasterAccess xmlBlasterAccess;
 
    /**
@@ -32,7 +33,7 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
    public ClientErrorHandler(Global glob, I_XmlBlasterAccess xmlBlasterAccess) {
       this.ME = "ClientErrorHandler-" + xmlBlasterAccess.getId();
       this.glob = glob;
-      this.log = glob.getLog("dispatch");
+
       this.xmlBlasterAccess = xmlBlasterAccess;
    }
 
@@ -42,7 +43,7 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
     */
    public void handleError(I_MsgErrorInfo msgErrorInfo) {
       if (msgErrorInfo == null) return;
-      if (log.CALL) log.call(ME, "Entering handleError for " + msgErrorInfo.getMsgQueueEntries().length + " messages");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering handleError for " + msgErrorInfo.getMsgQueueEntries().length + " messages");
 
       boolean shutdown = false;
       XmlBlasterException ex = msgErrorInfo.getXmlBlasterException();
@@ -56,14 +57,14 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
             shutdown = true;
          }
          else {
-            log.warn(ME, "Default error handling: Message '" + entries[i].getEmbeddedType() + "' '" +
+            log.warning("Default error handling: Message '" + entries[i].getEmbeddedType() + "' '" +
                        entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage() +
                        ". You can add your own client side error handler with I_XmlBlasterAccess.setClientErrorHandler() if desired.");
          }
       }
 
       if (shutdown) {
-         log.error(ME, "Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
+         log.severe("Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
          if (msgErrorInfo.getDispatchManager() != null) {
             msgErrorInfo.getDispatchManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
             //if (xmlBlasterAccess.getQueue() != null)

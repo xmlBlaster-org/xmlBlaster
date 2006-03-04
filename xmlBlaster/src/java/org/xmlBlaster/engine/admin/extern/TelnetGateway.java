@@ -6,7 +6,8 @@ Comment:   Main manager class for administrative commands
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin.extern;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.admin.CommandManager;
@@ -44,7 +45,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 {
    private String ME;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TelnetGateway.class.getName());
    private CommandManager commandManager;
    private int port;
    private RemoteServer rs;
@@ -93,7 +94,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
     */
    private boolean initializeVariables(Global glob, CommandManager commandManager, boolean isBootstrap) {
       this.glob = glob;
-      this.log = this.glob.getLog("admin");
+
       this.ME = "TelnetGateway" + instanceCounter + this.glob.getLogPrefixDashed();
       this.telnetInstancesSet = new HashSet();
       this.commandManager = commandManager;
@@ -102,17 +103,17 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       this.port = glob.getProperty().get("admin.remoteconsole.port", TELNET_PORT); // 0 == off
       this.port = glob.getProperty().get("admin.remoteconsole.port[" + glob.getId() + "]", this.port);
       if (this.port <= 1000) {
-         if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port " + TELNET_PORT + "' if you want one");
+         if (log.isLoggable(Level.FINE)) log.fine("No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port " + TELNET_PORT + "' if you want one");
          return false;
       }
 
       if (!isBootstrap) { // Ignore the first bootstrap instance
          if (sessionTimeout > 0L) {
-            log.info(ME, "New connection from telnet client accepted, session timeout is " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
+            log.info("New connection from telnet client accepted, session timeout is " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
             timerKey = glob.getTelnetSessionTimer().addTimeoutListener(this, sessionTimeout, null);
          }
          else
-            log.info(ME, "Session for " + loginName + " lasts forever, requested expiry timer was 0");
+            log.info("Session for " + loginName + " lasts forever, requested expiry timer was 0");
       }
       return true;
    }
@@ -144,9 +145,9 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       synchronized (this) {
          timerKey = null;
          if (isLogin)
-            log.warn(ME, "Session timeout " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + " for telnet client " + loginName + " occurred, autologout.");
+            log.warning("Session timeout " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + " for telnet client " + loginName + " occurred, autologout.");
          else
-            log.warn(ME, "Session timeout " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + " for not authorized telnet client occurred, autologout.");
+            log.warning("Session timeout " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + " for not authorized telnet client occurred, autologout.");
       }
       //disconnect(); This happens automatically in Authenticate.java at the same time
       connectRetQos = null;
@@ -161,13 +162,13 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
                glob.getAuthenticate().disconnect(this.addressServer, connectRetQos.getSecretSessionId(), null);
             }
             catch (org.xmlBlaster.util.XmlBlasterException e) {
-               log.warn(ME, e.getMessage());
+               log.warning(e.getMessage());
             }
-            log.info(ME, "Logout of '" + loginName + "', telnet connection destroyed");
+            log.info("Logout of '" + loginName + "', telnet connection destroyed");
             connectRetQos = null;
          }
          else
-            log.info(ME, "Connection from not authorized telnet client destroyed");
+            log.info("Connection from not authorized telnet client destroyed");
       }
       isLogin = false;
    }
@@ -175,11 +176,11 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    private boolean initListener() throws XmlBlasterException { 
       if (this.port > 1000) {
          createRemoteConsole(port);
-         log.info(ME, "Started remote console server for administration, try 'telnet " + glob.getLocalIP() + " " + port + "' to access it and type 'help'.");
+         log.info("Started remote console server for administration, try 'telnet " + glob.getLocalIP() + " " + port + "' to access it and type 'help'.");
          return true;
       }
 
-      if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port " + TELNET_PORT + "' if you want one");
+      if (log.isLoggable(Level.FINE)) log.fine("No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port " + TELNET_PORT + "' if you want one");
       return false;
    }
 
@@ -203,7 +204,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
            rs.initialize(ll);
          } catch (IOException e) {
            //e.printStackTrace();
-           if (log.TRACE) log.trace(ME, "Initializing of remote console on port=" + port + " failed:" + e.toString());
+           if (log.isLoggable(Level.FINE)) log.fine("Initializing of remote console on port=" + port + " failed:" + e.toString());
            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Initializing of remote telnet console on port=" + port + " failed:" + e.toString());
          }
       }
@@ -279,7 +280,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             }
             String passwd = st.nextToken();
             connect(loginName, passwd); // throws Exception or sets isLogin=true  
-            log.info(ME, "Successful login for telnet client '" + loginName + "', session timeout is " +
+            log.info("Successful login for telnet client '" + loginName + "', session timeout is " +
                      org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
             lastCommand = cmd;
             return "Successful login for user " + loginName + ", session timeout is " +
@@ -321,7 +322,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
          lastCommand = "";
 
-         if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
          if (cmdType.equalsIgnoreCase("GET")) {
             QueryKeyData keyData = new QueryKeyData(this.glob);
@@ -349,7 +350,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          }
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME+".telnet", e.toString());
+         if (log.isLoggable(Level.FINE)) log.fine(e.toString());
          return CRLF + e.toString() + CRLF + CRLF;
       }
    }
@@ -362,7 +363,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       else {
          text += "Try 'help'" + CRLF + CRLF;
       }
-      log.info(ME, error);
+      log.info(error);
       return text;
    }
 
@@ -414,10 +415,10 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
     * Login to xmlBlaster server. 
     */
    public void connect(String loginName, String passwd) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
 
       if (loginName==null || passwd==null) {
-         log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
+         log.severe("login failed: please use no null arguments for login()");
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".connect", "login failed: please use 'connect loginName password'");
       }
 
@@ -433,16 +434,16 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
       if (connectQos.getSessionTimeout() > 0L) {
          stopTimer();
-         if (log.TRACE) log.trace(ME, "Setting expiry timer for " + loginName + " to " + connectQos.getSessionTimeout() + " msec");
+         if (log.isLoggable(Level.FINE)) log.fine("Setting expiry timer for " + loginName + " to " + connectQos.getSessionTimeout() + " msec");
          timerKey = this.glob.getTelnetSessionTimer().addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
       else
-         log.info(ME, "Session for " + loginName + " lasts forever, requested expiry timer was 0");
+         log.info("Session for " + loginName + " lasts forever, requested expiry timer was 0");
    }
 
    public void shutdown() {
       //Thread.currentThread().dumpStack();
-      if (log.CALL) log.call(ME, "Invoking shutdown()");
+      if (log.isLoggable(Level.FINER)) log.finer("Invoking shutdown()");
       isLogin = false;
       if (this.glob.hasTelnetSessionTimer()) {
          stopTimer();
@@ -461,7 +462,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       if (rs != null) {
          rs.disable();
          rs = null;
-         if (log.TRACE) log.trace(ME, "Shutdown done, telnet disabled.");
+         if (log.isLoggable(Level.FINE)) log.fine("Shutdown done, telnet disabled.");
       }
       isShutdown = true;
    }

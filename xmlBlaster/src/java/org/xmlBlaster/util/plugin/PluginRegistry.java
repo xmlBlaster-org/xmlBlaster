@@ -6,7 +6,8 @@ Comment:   Baseclass to load plugins.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.plugin;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.util.Global;
 
@@ -22,13 +23,13 @@ import java.util.Enumeration;
  */
 public class PluginRegistry {
    private static String ME = "PluginRegistry";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginRegistry.class.getName());
    /** key=pluginId String, value=I_Plugin */
    private Hashtable plugins;
 
 
    public PluginRegistry(Global glob) {
-      this.log = glob.getLog("core");
+
       this.plugins = new Hashtable();
    }
 
@@ -83,7 +84,7 @@ public class PluginRegistry {
     * protocol:IOR
     * type is 'protocol', then the plugin is found.
    public Vector getPluginsOfGroup(String type) {
-      if (this.log.CALL) this.log.call(ME, "getPluginsOfGroup '" + type + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("getPluginsOfGroup '" + type + "'");
       Vector ret = new Vector();
       synchronized(this) {
          Enumeration enumer = this.plugins.keys();
@@ -92,7 +93,7 @@ public class PluginRegistry {
             StringTokenizer tokenizer = new StringTokenizer(key, ":");
             if (tokenizer.hasMoreTokens()) {
                String token = tokenizer.nextToken();
-               if (this.log.TRACE) this.log.trace(ME, "getPluginsOfGroup: token '" + token + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("getPluginsOfGroup: token '" + token + "'");
                if (type.equalsIgnoreCase(token))
                   ret.add(this.plugins.get(key));
             }
@@ -108,15 +109,15 @@ public class PluginRegistry {
     * @return Vector with matching I_Driver entries
     */
    public I_Driver[] getPluginsOfInterfaceI_Driver() {
-      if (this.log.CALL) this.log.call(ME, "getPluginsOfInterfaceI_Driver()");
+      if (log.isLoggable(Level.FINER)) log.finer("getPluginsOfInterfaceI_Driver()");
       synchronized(this) {
          ArrayList ret = new ArrayList();
          Enumeration enumer = this.plugins.elements();
          while (enumer.hasMoreElements()) {
             Object next = enumer.nextElement();
-            //log.error(ME, "Compare I_Driver: " + next.getClass().getName());
+            //log.severe("Compare I_Driver: " + next.getClass().getName());
             if (next instanceof org.xmlBlaster.protocol.I_Driver) {
-               if (log.TRACE) log.trace(ME, "Added I_Driver implementation " + next.getClass().getName());
+               if (log.isLoggable(Level.FINE)) log.fine("Added I_Driver implementation " + next.getClass().getName());
                ret.add(next);
             }
          }
@@ -129,15 +130,15 @@ public class PluginRegistry {
     * @return Vector with matching I_Queue entries
     */
    public Vector getPluginsOfInterfaceI_Queue() {
-      if (this.log.CALL) this.log.call(ME, "getPluginsOfInterfaceI_Queue()");
+      if (log.isLoggable(Level.FINER)) log.finer("getPluginsOfInterfaceI_Queue()");
       Vector ret = new Vector();
       synchronized(this) {
          Enumeration enumer = this.plugins.elements();
          while (enumer.hasMoreElements()) {
             Object next = enumer.nextElement();
-            //log.error(ME, "Compare I_Queue: " + next.getClass().getName());
+            //log.severe("Compare I_Queue: " + next.getClass().getName());
             if (next instanceof org.xmlBlaster.util.queue.I_Queue) {
-               if (log.TRACE) log.trace(ME, "Added I_Queue implementation " + next.getClass().getName());
+               if (log.isLoggable(Level.FINE)) log.fine("Added I_Queue implementation " + next.getClass().getName());
                ret.add(next);
             }
          }

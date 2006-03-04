@@ -6,7 +6,8 @@ Comment:   Demo code for a client using xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
@@ -37,7 +38,7 @@ public class TestSubId extends TestCase implements I_Callback
 {
    private static String ME = "TestSubId";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubId.class.getName());
 
    private boolean messageArrived = false;
 
@@ -67,7 +68,7 @@ public class TestSubId extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.senderName = loginName;
       this.receiverName = loginName;
    }
@@ -87,7 +88,7 @@ public class TestSubId extends TestCase implements I_Callback
          connectReturnQos = senderConnection.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           fail("Login failed: " + e.toString());
       }
@@ -119,7 +120,7 @@ public class TestSubId extends TestCase implements I_Callback
     */
    public void subscribeExact()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'>\n" +
                       "</key>";
@@ -135,10 +136,10 @@ public class TestSubId extends TestCase implements I_Callback
          this.subscribeId = null;
          this.subscribeId = senderConnection.subscribe(xmlKey, sq.toXml()).getSubscriptionId();
          assertEquals("Sent sentSubscribeId= " + sentSubscribeId + " The returned subscriptionId=" + subscribeId + " is wrong", sentSubscribeId, subscribeId);
-         log.info(ME, "Success: Subscribe on " + subscribeId + " done");
+         log.info("Success: Subscribe on " + subscribeId + " done");
          
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
       assertTrue("returned null subscribeId", subscribeId != null);
@@ -153,7 +154,7 @@ public class TestSubId extends TestCase implements I_Callback
     */
    public void testPublish()
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -162,9 +163,9 @@ public class TestSubId extends TestCase implements I_Callback
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          publishOid = senderConnection.publish(msgUnit).getKeyOid();
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -199,8 +200,8 @@ public class TestSubId extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
-      log.info(ME, "sentSubscribeId=" + sentSubscribeId + ":" + updateQos.toXml());
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
+      log.info("sentSubscribeId=" + sentSubscribeId + ":" + updateQos.toXml());
 
       if (updateQos.isErased()) {
          return "";
@@ -241,7 +242,7 @@ public class TestSubId extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

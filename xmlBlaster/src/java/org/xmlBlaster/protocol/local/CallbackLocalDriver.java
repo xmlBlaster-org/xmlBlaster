@@ -18,7 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.xmlBlaster.protocol.local;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -41,7 +42,7 @@ import org.xmlBlaster.util.xbformat.I_ProgressListener;
 public class CallbackLocalDriver implements I_CallbackDriver {
    private String ME = "CallbackLocalDriver";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(CallbackLocalDriver.class.getName());
    private I_CallbackExtended callback;
    private CallbackAddress callbackAddress;
    
@@ -120,7 +121,7 @@ public class CallbackLocalDriver implements I_CallbackDriver {
     */
    public final synchronized void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("local");
+
       this.callbackAddress = callbackAddress;
    }
    
@@ -131,8 +132,8 @@ public class CallbackLocalDriver implements I_CallbackDriver {
    public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
-      if (log.TRACE) 
-         log.trace(ME, "xmlBlaster.update() to " + callbackAddress.getSecretSessionId());
+      if (log.isLoggable(Level.FINE)) 
+         log.fine("xmlBlaster.update() to " + callbackAddress.getSecretSessionId());
       
       try {
          return getCallback().update(callbackAddress.getSecretSessionId(), msgArr);
@@ -151,7 +152,7 @@ public class CallbackLocalDriver implements I_CallbackDriver {
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
       
-      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getSecretSessionId());
+      if (log.isLoggable(Level.FINE)) log.fine("xmlBlaster.updateOneway() to " + callbackAddress.getSecretSessionId());
       
       try {
          getCallback().updateOneway(callbackAddress.getSecretSessionId(), msgArr);
@@ -178,7 +179,7 @@ public class CallbackLocalDriver implements I_CallbackDriver {
    }
 
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
-      if (log.TRACE) log.trace(ME, "Registering I_ProgressListener is not supported with this protocol plugin");
+      if (log.isLoggable(Level.FINE)) log.fine("Registering I_ProgressListener is not supported with this protocol plugin");
       return null;
    }
 
@@ -189,7 +190,7 @@ public class CallbackLocalDriver implements I_CallbackDriver {
    public synchronized void shutdown() {
       this.callback = null;
       this.callbackAddress = null;
-      if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
+      if (log.isLoggable(Level.FINE)) log.fine("Shutdown implementation is missing");
    }
 
    /**

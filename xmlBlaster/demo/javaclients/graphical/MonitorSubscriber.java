@@ -3,7 +3,8 @@ package javaclients.graphical;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
@@ -29,7 +30,7 @@ public class MonitorSubscriber implements I_Callback {
    
    private final static String ME = "MonitorSubscriber";
    private Global  global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(MonitorSubscriber.class.getName());
    private boolean isRunning;
    
    private HashMap cmdInstances;
@@ -44,7 +45,7 @@ public class MonitorSubscriber implements I_Callback {
    public MonitorSubscriber(Global glob, DrawingView view) {
       global = glob.getClone(null);
       this.isRunning = false;
-      this.log = this.global.getLog("monitor");
+
       this.cmdInstances = new HashMap();
       this.cmdTemplates = new HashMap();
       this.dynamicInstances = new HashMap(); 
@@ -95,7 +96,7 @@ public class MonitorSubscriber implements I_Callback {
                   ret = true;
                }   
                catch (Exception ex) {
-                  this.log.warn(ME, ex.getMessage());
+                  log.warning(ex.getMessage());
                }
             }
          }

@@ -6,7 +6,8 @@ Comment:   Send/receive messages over outStream and inStream.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -48,7 +49,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 {
    private String ME = RequestReplyExecutor.class.getName();
    protected Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(RequestReplyExecutor.class.getName());
    /** The prefix to create a unique requestId namspace (is set to the loginName) */
    protected String prefix = null;
    /** How long to block on remote call waiting on response */
@@ -103,7 +104,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     */
    protected void initialize(Global glob, AddressBase addressConfig) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog(getType().toLowerCase());
+
       this.addressConfig = addressConfig;
       this.ME = RequestReplyExecutor.class.getName() + ":" + addressConfig.getRawAddress();
 
@@ -111,11 +112,11 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 
       if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressConfig.getCompressType())) { // Statically configured for server side protocol plugin
          this.compressZlibStream = true;
-         log.info(ME, "Full stream compression enabled with '" + Constants.COMPRESS_ZLIB_STREAM + "'");
+         log.info("Full stream compression enabled with '" + Constants.COMPRESS_ZLIB_STREAM + "'");
       }
       else if (Constants.COMPRESS_ZLIB.equals(this.addressConfig.getCompressType())) { // Compress each message indiviually
          this.compressZlib = true;
-         log.info(ME, "Message compression enabled with  '" + Constants.COMPRESS_ZLIB + "', minimum size for compression is " + getMinSizeForCompression() + " bytes");
+         log.info("Message compression enabled with  '" + Constants.COMPRESS_ZLIB + "', minimum size for compression is " + getMinSizeForCompression() + " bytes");
       }
       else {
          this.compressZlibStream = false;
@@ -127,17 +128,17 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       setUseEmailExpiryTimestamp(addressConfig.getEnv("useEmailExpiryTimestamp", true).getValue());
       
       setResponseTimeout(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
-      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseTimeout);
+      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseTimeout);
       // the responseTimeout is used later to wait on a return value
       // additionally we protect against blocking on socket level during invocation
       // JacORB CORBA allows similar setting with "jacorb.connection.client_idle_timeout"
       //        and with "jacorb.client.pending_reply_timeout"
 
       setPingResponseTimeout(addressConfig.getEnv("pingResponseTimeout", getDefaultPingResponseTimeout()).getValue());
-      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + this.pingResponseTimeout);
+      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + this.pingResponseTimeout);
 
       setUpdateResponseTimeout(addressConfig.getEnv("updateResponseTimeout", getDefaultUpdateResponseTimeout()).getValue());
-      if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + this.updateResponseTimeout);
+      if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + this.updateResponseTimeout);
    }
 
    /**
@@ -192,7 +193,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     */
    public final void setResponseTimeout(long millis) {
       if (millis <= 0L) {
-         log.warn(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + millis +
+         log.warning(this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + millis +
                       " is invalid, setting it to " + getDefaultResponseTimeout() + " millis");
          this.responseTimeout = getDefaultResponseTimeout();
       }
@@ -207,7 +208,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     */
    public final void setPingResponseTimeout(long millis) {
       if (millis <= 0L) {
-         log.warn(ME, this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + millis +
+         log.warning(this.addressConfig.getEnvLookupKey("pingResponseTimeout") + "=" + millis +
                       " is invalid, setting it to " + getDefaultPingResponseTimeout() + " millis");
          this.pingResponseTimeout = getDefaultPingResponseTimeout();
       }
@@ -222,7 +223,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     */
    public final void setUpdateResponseTimeout(long millis) {
       if (millis <= 0L) {
-         log.warn(ME, this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + millis +
+         log.warning(this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + millis +
                       " is invalid, setting it to " + getDefaultUpdateResponseTimeout() + " millis");
          this.updateResponseTimeout = getDefaultUpdateResponseTimeout();
       }
@@ -291,7 +292,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    public void finalize() {
-      if (log.TRACE) log.trace(ME, "Garbage Collected");
+      if (log.isLoggable(Level.FINE)) log.fine("Garbage Collected");
    }
 
    /**
@@ -313,10 +314,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       }
       Object o = this.responseListenerMap.put(requestId, l);
       if (o == null) {
-         if (log.TRACE) log.trace(ME, "Added addResponseListener requestId=" + requestId);
+         if (log.isLoggable(Level.FINE)) log.fine("Added addResponseListener requestId=" + requestId);
       }
       else {
-         log.warn(ME, "Added addResponseListener requestId=" + requestId + " but there was already one");
+         log.warning("Added addResponseListener requestId=" + requestId + " but there was already one");
       }
    }
 
@@ -330,14 +331,14 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       Object o = this.responseListenerMap.remove(requestId);
       if (o == null) {
          if (this.responseListenerMapWasCleared) {
-            if (log.TRACE) log.trace(ME, "removeResponseListener(" + requestId + ") entry not found, size is " + this.responseListenerMap.size());
+            if (log.isLoggable(Level.FINE)) log.fine("removeResponseListener(" + requestId + ") entry not found, size is " + this.responseListenerMap.size());
          }
          else {
-            log.error(ME, "removeResponseListener(" + requestId + ") entry not found, size is " + this.responseListenerMap.size());
+            log.severe("removeResponseListener(" + requestId + ") entry not found, size is " + this.responseListenerMap.size());
          }
       }
       else {
-         if (log.TRACE) log.trace(ME, "removeResponseListener(" + requestId + ") done");
+         if (log.isLoggable(Level.FINE)) log.fine("removeResponseListener(" + requestId + ") done");
       }
    }
 
@@ -369,7 +370,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          }
          if (size > 0) {
             if (buf != null)
-               log.warn(ME, "There are " + size + " messages pending without a response, request IDs are '" + buf.toString() + "', we remove them now.");
+               log.warning("There are " + size + " messages pending without a response, request IDs are '" + buf.toString() + "', we remove them now.");
             this.responseListenerMap.clear();
             this.responseListenerMapWasCleared = true;
          }
@@ -384,7 +385,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     * @return false: for connect() and disconnect() which must be handled by the base class
     */
    public boolean receiveReply(MsgInfo receiver, boolean udp) throws XmlBlasterException, IOException {
-      if (log.TRACE) log.trace(ME, "Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+      if (log.isLoggable(Level.FINE)) log.fine("Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
       if (receiver.isInvoke()) {
          // handling invocations ...
@@ -392,7 +393,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          if (MethodName.PUBLISH_ONEWAY == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1) {
-               log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+               log.severe("Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
                return true;
             }
             xmlBlasterImpl.publishOneway((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr);
@@ -412,7 +413,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                }
                MsgUnitRaw[] arr = receiver.getMessageArr();
                if (arr == null || arr.length < 1) {
-                  log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+                  log.severe("Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
                   return true;
                }
                cbClientTmp.updateOneway(receiver.getSecretSessionId(), arr);
@@ -500,8 +501,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             return false;
          }
          else {
-            log.warn(ME, "Ignoring received invocation message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it: " + receiver.toLiteral());
-            if (log.DUMP) log.dump(ME, "Ignoring received message, nobody is interested in it:\n>" + receiver.toLiteral() + "<");
+            log.warning("Ignoring received invocation message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it: " + receiver.toLiteral());
+            if (log.isLoggable(Level.FINEST)) log.finest("Ignoring received message, nobody is interested in it:\n>" + receiver.toLiteral() + "<");
          }
 
          return true;
@@ -510,8 +511,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       // Handling response or exception ...
       I_ResponseListener listener = getResponseListener(receiver.getRequestId());
       if (listener == null) {
-         log.warn(ME, "Ignoring received '" + receiver.getMethodName() + "' response message, requestId=" + receiver.getRequestId() + ", nobody is interested in it");
-         if (log.DUMP) log.dump(ME, "Ignoring received message, nobody is interested in it: >" + receiver.toLiteral() + "<");
+         log.warning("Ignoring received '" + receiver.getMethodName() + "' response message, requestId=" + receiver.getRequestId() + ", nobody is interested in it");
+         if (log.isLoggable(Level.FINEST)) log.finest("Ignoring received message, nobody is interested in it: >" + receiver.toLiteral() + "<");
          return true;
       }
       removeResponseListener(receiver.getRequestId());
@@ -534,7 +535,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          listener.incomingMessage(receiver.getRequestId(), receiver.getException());
       }
       else {
-         log.error(ME, "PANIC: Invalid response message for " + receiver.getMethodName());
+         log.severe("PANIC: Invalid response message for " + receiver.getMethodName());
          listener.incomingMessage(receiver.getRequestId(), new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response message '" + receiver.getMethodName()));
       }
 
@@ -563,7 +564,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    public Object requestAndBlockForReply(MsgInfo msgInfo, boolean expectingResponse, boolean udp) throws XmlBlasterException, IOException {
 
       String requestId = msgInfo.createRequestId(prefix);
-      if (log.TRACE) log.trace(ME, "Invoking  msgInfo type='" + msgInfo.getTypeStr() + "' message " + msgInfo.getMethodName() + "(requestId=" + requestId + ") oneway=" + !expectingResponse + " udp=" + udp);
+      if (log.isLoggable(Level.FINE)) log.fine("Invoking  msgInfo type='" + msgInfo.getTypeStr() + "' message " + msgInfo.getMethodName() + "(requestId=" + requestId + ") oneway=" + !expectingResponse + " udp=" + udp);
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
       response[0] = null;
@@ -576,7 +577,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          if (!hasConnection()) return null;
          addResponseListener(requestId, new I_ResponseListener() {
             public void incomingMessage(String reqId, Object responseObj) {
-               if (log.TRACE) log.trace(ME+".responseEvent()", "RequestId=" + reqId + ": return value arrived ...");
+               if (log.isLoggable(Level.FINE)) log.fine("RequestId=" + reqId + ": return value arrived ...");
                response[0] = responseObj;
                startSignal.latch.release(); // wake up
             }
@@ -586,10 +587,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          startSignal = null;
 
       // Send the message / method invocation ...
-      if (log.DUMP) log.dump(ME, "Sending now : >" + msgInfo.toLiteral() + "<");
+      if (log.isLoggable(Level.FINEST)) log.finest("Sending now : >" + msgInfo.toLiteral() + "<");
       try {
          sendMessage(msgInfo, msgInfo.getRequestId(), msgInfo.getMethodName(), udp);
-         // if (log.TRACE) log.trace(ME, "Successfully sent " + msgInfo.getNumMessages() + " messages");
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Successfully sent " + msgInfo.getNumMessages() + " messages");
       }
       catch (Throwable e) {
          if (startSignal != null) {
@@ -598,7 +599,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          String tmp = (msgInfo==null) ? "" : msgInfo.getMethodNameStr();
          String str = "Request blocked and timedout, giving up now waiting on " + tmp + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
          if (e instanceof XmlBlasterException) {
-            if (log.TRACE) log.trace(ME, str + ": " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine(str + ": " + e.toString());
             throw (XmlBlasterException)e;
          }
          if (e instanceof NullPointerException)
@@ -606,7 +607,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT, ME, str, e);
       }
 
-      if (log.DUMP) log.dump(ME, "Successful sent message: >" + msgInfo.toLiteral() + "<");
+      if (log.isLoggable(Level.FINEST)) log.finest("Successful sent message: >" + msgInfo.toLiteral() + "<");
 
       if (!expectingResponse) {
          return null;
@@ -626,16 +627,16 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                break;
             }
             catch (InterruptedException e) {
-               log.warn(ME, "Waking up (waited on " + msgInfo.getMethodName() + "(" + requestId + ") response): " + e.toString());
+               log.warning("Waking up (waited on " + msgInfo.getMethodName() + "(" + requestId + ") response): " + e.toString());
                // try again
             }
          }
          if (awakened) {
-            if (log.TRACE) log.trace(ME, "Waking up, got response for " + msgInfo.getMethodName() + "(requestId=" + requestId + ")");
+            if (log.isLoggable(Level.FINE)) log.fine("Waking up, got response for " + msgInfo.getMethodName() + "(requestId=" + requestId + ")");
             if (response[0]==null) // Caused by freePendingThreads()
                throw new IOException(ME + ": Lost " + getType() + " connection for " + msgInfo.getMethodName() + "(requestId=" + requestId + ")");
 
-            if (log.DUMP) log.dump(ME, "Response for " + msgInfo.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
+            if (log.isLoggable(Level.FINEST)) log.finest("Response for " + msgInfo.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
             if (response[0] instanceof XmlBlasterException)
                throw (XmlBlasterException)response[0];
             return response[0];
@@ -672,7 +673,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       for (int i=0; i<latches.length; i++) {
          latches[i].latchIsInterrupted = true;
          latches[i].latch.release(); // wake up
-         log.error(ME, "DEBUG ONLY: Forced release of latch");
+         log.severe("DEBUG ONLY: Forced release of latch");
       }
       return latches.length;
    }
@@ -704,7 +705,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     * use this method to free blocking threads which wait on responses
     */
    public final void freePendingThreads() {
-      if (log != null && log.TRACE && this.latchSet.size()>0) log.trace(ME, "Freeing " + this.latchSet.size() + " pending threads (waiting on responses) from their ugly blocking situation");
+      if (log != null && log.isLoggable(Level.FINE) && this.latchSet.size()>0) log.fine("Freeing " + this.latchSet.size() + " pending threads (waiting on responses) from their ugly blocking situation");
       LatchHolder[] latches = getLatches();
       for (int i=0; i<latches.length; i++) {
          latches[i].latchIsInterrupted = true;
@@ -732,8 +733,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       else
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response data type " + response.toString());
       sendMessage(returner, receiver.getRequestId(), receiver.getMethodName(), udp);
-      if (log.TRACE) log.trace(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-      if (log.DUMP) log.dump(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + returner.toLiteral() + "<");
+      if (log.isLoggable(Level.FINE)) log.fine("Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+      if (log.isLoggable(Level.FINEST)) log.finest("Successful sent response for " + receiver.getMethodName() + "() >" + returner.toLiteral() + "<");
    }
 
    /**
@@ -746,8 +747,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       returner.setCompressed(false);
       returner.addException(e);
       sendMessage(returner, receiver.getRequestId(), receiver.getMethodName(), udp);
-      if (log.TRACE) log.trace(ME, "Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
-      if (log.DUMP) log.dump(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + returner.toLiteral() + "<");
+      if (log.isLoggable(Level.FINE)) log.fine("Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+      if (log.isLoggable(Level.FINEST)) log.finest("Successful sent exception for " + receiver.getMethodName() + "() >" + returner.toLiteral() + "<");
    }
 
    /**

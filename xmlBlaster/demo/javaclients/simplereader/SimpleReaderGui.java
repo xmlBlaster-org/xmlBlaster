@@ -12,7 +12,6 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -21,7 +20,6 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import java.util.*;
 
 public class SimpleReaderGui extends JFrame implements I_Callback {
    private static final String ME = "SimpleReaderGui";
@@ -208,7 +206,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
          xmlBlaster.subscribe(key.toXml(), qos.toXml());
       }
       catch( Exception ex ) {
-         log_error(ME, "error-error-error-error >>>"+ex.toString(), "");
+         System.err.println("error-error-error-error >>>"+ex.toString());
          System.out.println(ME + " " + ex.getMessage());
          ex.printStackTrace();
       }
@@ -219,7 +217,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       try {
          listModel.clear();
       } catch (Exception e) {
-         log_error(ME, "error-error-error-error >>>"+e.toString(), "");
+         System.err.println("error-error-error-error >>>"+e.toString());
          System.out.println(ME + " " + e.getMessage());
          e.printStackTrace();
       }
@@ -238,7 +236,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
          image = new ImageIcon( img );
       }
       catch (Exception ex) {
-         log_error(ME, "error-error-error-error >>>"+ex.toString(), "");
+         System.err.println("error-error-error-error >>>"+ex.toString());
          System.out.println(ME + " " + ex.getMessage());
          ex.printStackTrace();
       }

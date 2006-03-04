@@ -5,6 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.dispatch;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DispatchManager;
@@ -38,6 +41,7 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
  */
 public final class ClientDispatchConnectionsHandler extends DispatchConnectionsHandler
 {
+   private static Logger log = Logger.getLogger(ClientDispatchConnectionsHandler.class.getName());
    public final String ME;
    
    /**
@@ -64,7 +68,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
     * @param state e.g. Constants.STATE_OK
     */
    public void createFakedReturnObjects(I_QueueEntry[] entries, String state, String stateInfo) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering createFakedReturnObjects() for " + entries.length + " entries");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering createFakedReturnObjects() for " + entries.length + " entries");
 
       for (int ii=0; ii<entries.length; ii++) {
          MsgQueueEntry msgQueueEntry = (MsgQueueEntry)entries[ii];
@@ -73,7 +77,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          StatusQosData statRetQos = new StatusQosData(glob, MethodName.UNKNOWN);
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
-         if (log.TRACE) log.trace(ME, "Creating faked return for '" + msgQueueEntry.getMethodName() + "' invocation");
+         if (log.isLoggable(Level.FINE)) log.fine("Creating faked return for '" + msgQueueEntry.getMethodName() + "' invocation");
 
          if (MethodName.PUBLISH_ONEWAY == msgQueueEntry.getMethodName()) {
             MsgQueuePublishEntry entry = (MsgQueuePublishEntry)msgQueueEntry;
@@ -89,7 +93,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
             PublishReturnQos publishReturnQos = new PublishReturnQos(glob, statRetQos);
             //TODO: How to fake the RcvTimestamp -> it must be unique for an OID in the server
             //publishReturnQos.getData().setRcvTimestamp(new org.xmlBlaster.util.RcvTimestamp());
-            entry.setReturnObj(new PublishReturnQos(glob, statRetQos));
+            entry.setReturnObj(publishReturnQos);
          }
 
          else if (MethodName.SUBSCRIBE == msgQueueEntry.getMethodName()) {
@@ -145,7 +149,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          }
 
          else if (MethodName.DISCONNECT == msgQueueEntry.getMethodName()) {
-            if (log.TRACE) log.trace(ME, "disconnect returns void, nothing to do");
+            if (log.isLoggable(Level.FINE)) log.fine("disconnect returns void, nothing to do");
          }
 
          else if (MethodName.GET == msgQueueEntry.getMethodName()) {
@@ -156,7 +160,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          }
 
          else {
-            log.error(ME, "Internal problem, MsgQueueEntry '" + msgQueueEntry.getEmbeddedType() + "' not expected here");
+            log.severe("Internal problem, MsgQueueEntry '" + msgQueueEntry.getEmbeddedType() + "' not expected here");
          }
       }
    }

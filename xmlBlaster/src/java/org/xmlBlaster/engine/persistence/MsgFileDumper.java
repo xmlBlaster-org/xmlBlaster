@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
@@ -43,7 +44,7 @@ public final class MsgFileDumper
 {
    private static final String ME = "MsgFileDumper";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(MsgFileDumper.class.getName());
    private String path = null;
    private final String XMLKEY_TOKEN = "-XmlKey.xml";
    private final String XMLQOS_TOKEN = "-XmlQos.xml";
@@ -65,8 +66,8 @@ public final class MsgFileDumper
     */
    public void init(org.xmlBlaster.util.Global glob, String path_) throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("persistence");
-      if (log.CALL) log.call(ME, "Entering init()");
+
+      if (log.isLoggable(Level.FINER)) log.finer("Entering init()");
 
       if (path_ != null && path_.length() > 0) {
          this.path = path_;
@@ -82,15 +83,15 @@ public final class MsgFileDumper
 
       File pp = new File(this.path);
       if (!pp.exists()) {
-         log.info(ME, "Creating new directory " + this.path + " for persistence of messages");
+         log.info("Creating new directory " + this.path + " for persistence of messages");
          pp.mkdirs();
       }
       if (!pp.isDirectory()) {
-         log.error(ME, this.path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
+         log.severe(this.path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
          throw new XmlBlasterException(ME, this.path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
       if (!pp.canWrite()) {
-         log.error(ME, "Sorry, no access permissions to " + this.path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
+         log.severe("Sorry, no access permissions to " + this.path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
          throw new XmlBlasterException(ME, "Sorry, no access permissions to " + this.path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
    }
@@ -100,7 +101,7 @@ public final class MsgFileDumper
     * <p />
     */
    public void shutdown() throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Not neccessary!");
+      if (log.isLoggable(Level.FINE)) log.fine("Not neccessary!");
    }
 
    /**
@@ -142,7 +143,7 @@ public final class MsgFileDumper
          }
          FileUtil.writeFile(this.path, fileName, msgUnitWrapper.getMsgUnit().getContent());
          FileUtil.writeFile(this.path, fileName + this.XMLQOS_TOKEN, msgUnitWrapper.getMsgQosData().toXml());
-         if (log.TRACE) log.trace(ME, "Successfully stored " + fileName);
+         if (log.isLoggable(Level.FINE)) log.fine("Successfully stored " + fileName);
          return getPersistenceFileName(fileName);
       } catch (JUtilsException e) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Storage of message " + msgUnitWrapper.getLogId() + " failed", e);
@@ -179,8 +180,8 @@ public final class MsgFileDumper
 
          msgUnit = new MsgUnit(glob, xmlKey_literal, content, xmlQos_literal);
 
-         if (log.TRACE) log.trace(ME, "Successfully fetched message " + fileName);
-         if (log.DUMP) log.dump(ME, "Successfully fetched message\n" + msgUnit.toXml());
+         if (log.isLoggable(Level.FINE)) log.fine("Successfully fetched message " + fileName);
+         if (log.isLoggable(Level.FINEST)) log.finest("Successfully fetched message\n" + msgUnit.toXml());
       } catch (JUtilsException e) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Fetching message " + 
                        getPersistenceFileName(fileName) + " failed", e);

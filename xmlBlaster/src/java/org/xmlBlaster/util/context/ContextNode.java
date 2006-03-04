@@ -11,6 +11,8 @@ import org.xmlBlaster.util.def.Constants;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.logging.Logger;
+
 import javax.management.ObjectName;
 
 /**
@@ -22,8 +24,8 @@ import javax.management.ObjectName;
  */
 public final class ContextNode
 {
+   private static Logger log = Logger.getLogger(ContextNode.class.getName());
    /** Name for logging output */
-   private static String ME = "ContextNode";
    public final static String SEP = "/";
    public final static String ROOT_MARKER_TAG = SEP+"xmlBlaster";
    /** Use to mark a cluster node name */
@@ -537,7 +539,7 @@ public final class ContextNode
                else {
                   // For example "/xmlBlaster/node/heron/logging"
                   instanceValue = null;
-                  Global.instance().getLog("core").trace(ME, "Unexpected syntax in '" + url + "', missing value for class, we assume a 'null' value.");
+                  log.fine("Unexpected syntax in '" + url + "', missing value for class, we assume a 'null' value.");
                }
             }
             else {

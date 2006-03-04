@@ -14,7 +14,8 @@ import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.protocol.rmi.RmiUrl;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -61,7 +62,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
 {
    private String ME;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(RmiCallbackServer.class.getName());
    private I_CallbackExtended client;
    private String loginName;
    /** The name for the RMI registry */
@@ -100,12 +101,12 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    {
       this.ME = "RmiCallbackServer-" + name;
       this.glob = glob;
-      this.log = glob.getLog("rmi");
+
       this.client = client;
       this.loginName = name;
       this.callbackAddress = callbackAddress;
       createCallbackServer(this);
-      if (log.TRACE) log.trace(ME, "Success, created RMI callback server for " + loginName);
+      if (log.isLoggable(Level.FINE)) log.fine("Success, created RMI callback server for " + loginName);
    }
 
    /**
@@ -129,7 +130,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
     */
    private void bindToRegistry(I_XmlBlasterCallback callbackRmiServer) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "bindToRegistry() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("bindToRegistry() ...");
 
       // -dispatch/callback/plugin/rmi/registryPort 1099
       this.rmiUrl = new RmiUrl(glob, this.callbackAddress);
@@ -139,17 +140,17 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
             // Start a 'rmiregistry' if desired
             try {
                java.rmi.registry.LocateRegistry.createRegistry(this.rmiUrl.getRegistryPort());
-               log.info(ME, "Started RMI registry on port " + this.rmiUrl.getRegistryPort());
+               log.info("Started RMI registry on port " + this.rmiUrl.getRegistryPort());
             } catch (java.rmi.server.ExportException e) {
                // Try to bind to an already running registry:
                try {
                   java.rmi.registry.LocateRegistry.getRegistry(this.rmiUrl.getHostname(), this.rmiUrl.getRegistryPort());
-                  log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
+                  log.info("Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
                                " we will use this one. You could change the port with e.g. '-dispatch/callback/plugin/rmi/registryPort 1122' to run your own rmiregistry.");
                }
                catch (RemoteException e2) {
                   String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -dispatch/callback/plugin/rmi/registryPort 1122 : " + e.toString();
-                  log.error(ME, text);
+                  log.severe(text);
                   throw new XmlBlasterException(ME, text);
                }
             }
@@ -161,14 +162,14 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
          // Publish RMI based xmlBlaster server ...
          try {
             Naming.bind(callbackRmiServerBindName, callbackRmiServer);
-            log.info(ME, "Bound RMI callback server to registry with name '" + callbackRmiServerBindName + "'");
+            log.info("Bound RMI callback server to registry with name '" + callbackRmiServerBindName + "'");
             this.callbackAddress.setRawAddress(callbackRmiServerBindName);
          } catch (AlreadyBoundException e) {
             try {
                Naming.rebind(callbackRmiServerBindName, callbackRmiServer);
-               log.warn(ME, "Removed another entry while binding authentication RMI callback server to registry with name '" + callbackRmiServerBindName + "'");
+               log.warning("Removed another entry while binding authentication RMI callback server to registry with name '" + callbackRmiServerBindName + "'");
             } catch (Exception e2) {
-               log.error(ME+".RmiRegistryFailed", "RMI registry of '" + callbackRmiServerBindName + "' failed: " + e2.toString());
+               log.severe("RMI registry of '" + callbackRmiServerBindName + "' failed: " + e2.toString());
                throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + callbackRmiServerBindName + "' failed: " + e2.toString());
             }
          }
@@ -208,7 +209,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
       } catch (Exception e) {
          ;
       }
-      log.info(ME, "The RMI callback server is shutdown.");
+      log.info("The RMI callback server is shutdown.");
    }
 
    /**
@@ -226,7 +227,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    public String[] update(String cbSessionId, MsgUnitRaw[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
       if (msgUnitArr == null) throw new XmlBlasterException(ME, "Received update of null message");
-      if (log.CALL) log.call(ME, "Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
 
       return client.update(cbSessionId, msgUnitArr);
    }
@@ -237,12 +238,12 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) throws RemoteException
    {
       if (msgUnitArr == null) return;
-      if (log.CALL) log.call(ME, "Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
       try {
          client.updateOneway(cbSessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         log.error(ME, "Caught exception which can't be delivered to xmlBlaster because of 'oneway' mode: " + e.toString());
+         log.severe("Caught exception which can't be delivered to xmlBlaster because of 'oneway' mode: " + e.toString());
       }
    }
 
@@ -252,7 +253,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
     */
    public String ping(String qos) throws RemoteException
    {
-      if (log.CALL) log.call(ME, "Entering ping("+qos+") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering ping("+qos+") ...");
       return Constants.RET_OK;
    }
 } // class RmiCallbackServer

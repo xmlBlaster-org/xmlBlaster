@@ -6,7 +6,8 @@ Comment:   Test XPath.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -46,7 +47,7 @@ public class TestSubXPathMany extends TestCase
 {
    private static String ME = "TestSubXPathMany";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubXPathMany.class.getName());
 
    private String publishOid = "";
    private I_XmlBlasterAccess con1, con2, con3;
@@ -64,7 +65,7 @@ public class TestSubXPathMany extends TestCase
    public TestSubXPathMany(String name) {
        super(name);
        this.glob = new Global();
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -73,7 +74,7 @@ public class TestSubXPathMany extends TestCase
    public TestSubXPathMany(Global glob) {
        super("TestSubXPathMany");
        this.glob = glob;
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -87,7 +88,7 @@ public class TestSubXPathMany extends TestCase
          connectQos = new ConnectQos(glob1, "con1", "secret");
          con1.connect(connectQos,  new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info("con1", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
+               log.info("Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
                numReceived1++;
                assertEquals("Message not expected", "command-navigation", updateKey.getOid());
                messageArrived1.append("OK");
@@ -100,7 +101,7 @@ public class TestSubXPathMany extends TestCase
          connectQos = new ConnectQos(glob2, "con2", "secret");
          con2.connect(connectQos,  new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info("con2", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
+               log.info("Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
                numReceived2++;
                assertEquals("Message not expected", "command-radar-1", updateKey.getOid());
                messageArrived2.append("OK");
@@ -113,7 +114,7 @@ public class TestSubXPathMany extends TestCase
          connectQos = new ConnectQos(glob3, "con3", "secret");
          con3.connect(connectQos,  new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info("con3", "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
+               log.info("Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
                numReceived3++;
                assertEquals("Message not expected", "command-radar-1", updateKey.getOid());
                messageArrived3.append("OK");
@@ -123,7 +124,7 @@ public class TestSubXPathMany extends TestCase
 
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "login failed: " + e.toString());
+         log.severe("login failed: " + e.toString());
          fail("Login failed: " + e.toString());
       }
    }
@@ -160,7 +161,7 @@ public class TestSubXPathMany extends TestCase
     * Subscribe with XPATH.
     */
    public void doSubscribe() {
-      log.info(ME, "*****Subscribing using XPath syntax ...");
+      log.info("*****Subscribing using XPath syntax ...");
 
       try {
          SubscribeKey sk = new SubscribeKey(glob, "//key[@oid = 'command-navigation']", Constants.XPATH);
@@ -185,26 +186,26 @@ public class TestSubXPathMany extends TestCase
     * Publish some messages. 
     */
    public void doPublish() {
-      log.info(ME, "*****Publishing messages ...");
+      log.info("*****Publishing messages ...");
 
       try {
          PublishKey pk = new PublishKey(glob, "command-navigation", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          PublishReturnQos retQos = con1.publish(msgUnit);
-         log.info(ME, "Published message '" + pk.getOid() + "'");
+         log.info("Published message '" + pk.getOid() + "'");
 
          pk = new PublishKey(glob, "command-radar-1", "text/plain", "1.0");
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          retQos = con1.publish(msgUnit);
-         log.info(ME, "Published message '" + pk.getOid() + "'");
+         log.info("Published message '" + pk.getOid() + "'");
 
          pk = new PublishKey(glob, "dummyTestSubXPathMany", "text/plain", "1.0");
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          retQos = con1.publish(msgUnit);
-         log.info(ME, "Published message '" + pk.getOid() + "'");
+         log.info("Published message '" + pk.getOid() + "'");
       }
       catch (XmlBlasterException e) {
          fail("doPublish failed: " + e.toString());
@@ -270,7 +271,7 @@ public class TestSubXPathMany extends TestCase
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             //fail("Timeout of " + timeout + " occurred");
             break;
          }

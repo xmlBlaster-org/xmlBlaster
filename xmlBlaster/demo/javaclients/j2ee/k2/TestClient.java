@@ -43,7 +43,6 @@ public class TestClient {
             BlasterManagedConnectionFactory f = new BlasterManagedConnectionFactory();
             f.setClientProtocol("IOR");
             f.setRmiRegistryPort("1199");
-            f.setLogging("true");
             BlasterConnectionFactory cf = (BlasterConnectionFactory)f.createConnectionFactory();
 
 

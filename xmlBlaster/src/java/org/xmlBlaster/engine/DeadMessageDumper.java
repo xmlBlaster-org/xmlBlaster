@@ -9,7 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EncodableData;
@@ -71,7 +72,7 @@ public class DeadMessageDumper implements I_Plugin {
    
    private PluginInfo pluginInfo;
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(DeadMessageDumper.class.getName());
 
    private I_XmlBlasterAccess connection;
    private String directoryName;
@@ -89,16 +90,16 @@ public class DeadMessageDumper implements I_Plugin {
       this.pluginInfo = pluginInfo;
       this.global = glob.getClone(glob.getNativeConnectArgs());
       this.global.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
-      this.log = this.global.getLog("core");
 
-      if (this.log.CALL) this.log.call(ME, "init");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("init");
 
       String defaultPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tmp";
 
       this.directoryName = this.global.get("directoryName", defaultPath, null, this.pluginInfo);
       initDirectory(null, "directoryName", this.directoryName);
       
-      log.info(ME, "Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' to directory " + this.directoryName);
+      log.info("Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' to directory " + this.directoryName);
 
       this.loginName = this.global.get("loginName", ME, null, this.pluginInfo);
       this.password = this.global.get("password", this.password, null, this.pluginInfo);
@@ -130,7 +131,7 @@ public class DeadMessageDumper implements I_Plugin {
     * @see org.xmlBlaster.util.plugin.I_Plugin#shutdown()
     */
    public void shutdown() throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "shutdown");
+      if (log.isLoggable(Level.FINER)) this.log.finer("shutdown");
       if (connection != null) connection.disconnect(null);
    }
 
@@ -151,10 +152,10 @@ public class DeadMessageDumper implements I_Plugin {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                
                if (!secretCbSessionId.equals(cbSessionId)) {
-                  log.warn(ME, "Ignoring received message '" + updateKey.getOid() + "' because of wrong credentials '" + cbSessionId + "'");
+                  log.warning("Ignoring received message '" + updateKey.getOid() + "' because of wrong credentials '" + cbSessionId + "'");
                   return Constants.RET_OK;
                }
-               log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() + "'" );
+               log.info("Receiving asynchronous message '" + updateKey.getOid() + "'" );
 
                if (Constants.OID_DEAD_LETTER.equals(updateKey.getOid())) {
                   dumpMessage(updateKey, content, updateQos);
@@ -168,10 +169,10 @@ public class DeadMessageDumper implements I_Plugin {
          sq.setWantInitialUpdate(false);
          this.connection.subscribe(sk, sq);
 
-         log.info(ME, "Subscribed to topic '" + Constants.OID_DEAD_LETTER + "'");
+         log.info("Subscribed to topic '" + Constants.OID_DEAD_LETTER + "'");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Can't dump '" + Constants.OID_DEAD_LETTER + "': " + e.getMessage());
+         log.severe("Can't dump '" + Constants.OID_DEAD_LETTER + "': " + e.getMessage());
       }
    }
 
@@ -195,7 +196,7 @@ public class DeadMessageDumper implements I_Plugin {
          File to_file = new File(this.directoryName, fn);
 
          FileOutputStream to = new FileOutputStream(to_file);
-         log.info(ME, "Dumping dead message to  '" + to_file.toString() + "'" );
+         log.info("Dumping dead message to  '" + to_file.toString() + "'" );
 
          StringBuffer sb = new StringBuffer(qos.length() + key.length() + 1024);
          //sb.append("<?xml version='1.0' encoding='iso-8859-1'?>");
@@ -253,7 +254,7 @@ public class DeadMessageDumper implements I_Plugin {
          to.close();
       }
       catch (Throwable e) {
-         log.error(ME, "Dumping of message failed: " + updateQos.toXml() + updateKey.toXml() + new String(content));
+         log.severe("Dumping of message failed: " + updateQos.toXml() + updateKey.toXml() + new String(content));
       }
    }
 
@@ -283,7 +284,7 @@ public class DeadMessageDumper implements I_Plugin {
             catch (IOException ex) {
                absDirName = dir.getAbsolutePath();
             }
-            this.log.info(ME, "Constructor: directory '" + absDirName + "' does not yet exist. I will create it");
+            log.info("Constructor: directory '" + absDirName + "' does not yet exist. I will create it");
             boolean ret = dir.mkdir();
             if (!ret)
                throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME, "could not create directory '" + absDirName + "'");
@@ -297,7 +298,7 @@ public class DeadMessageDumper implements I_Plugin {
             throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".constructor", "no rights to write to the directory '" + dir.getAbsolutePath() + "'");
       }
       else {
-         this.log.info(ME, "Constructor: the '" + propName + "' property is not set. Instead of moving concerned entries they will be deleted");
+         log.info("Constructor: the '" + propName + "' property is not set. Instead of moving concerned entries they will be deleted");
       }
       return dir;
    }

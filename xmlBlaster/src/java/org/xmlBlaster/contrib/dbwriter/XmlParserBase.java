@@ -9,6 +9,7 @@ package org.xmlBlaster.contrib.dbwriter;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.Global;
@@ -29,7 +30,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  */
 public class XmlParserBase extends SaxHandlerBase {
    
-   private String ME = "XmlParserBase";
+   private static Logger log = Logger.getLogger(XmlParserBase.class.getName());
    protected boolean inRootTag = false;     // parsing inside <qos> ? </qos>
    protected ClientProperty clientProperty;
    protected Set allowedTagNames;
@@ -105,7 +106,7 @@ public class XmlParserBase extends SaxHandlerBase {
          return true;
       }
       if (!this.inRootTag) {
-         org.xmlBlaster.util.Global.instance().getLog("core").warn(ME, "Ignoring unknown element '" + name + "'.");
+         log.warning("Ignoring unknown element '" + name + "'.");
          character.setLength(0);
          Thread.dumpStack();
          return true;

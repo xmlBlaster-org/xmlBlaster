@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.cluster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 // for client connections:
@@ -39,7 +40,7 @@ import junit.framework.*;
 public class PtPTest extends TestCase {
    private String ME = "PtPTest";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PtPTest.class.getName());
    private ServerHelper serverHelper;
 
    private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon;
@@ -63,8 +64,8 @@ public class PtPTest extends TestCase {
     * Initialize the test ...
     */
    protected void setUp() {
-      log = glob.getLog(ME);
-      log.info(ME, "Entering setUp(), test starts");
+
+      log.info("Entering setUp(), test starts");
 
       serverHelper = new ServerHelper(glob, log, ME);
 
@@ -80,7 +81,7 @@ public class PtPTest extends TestCase {
     * cleaning up ...
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (bilboCon != null) { bilboCon.disconnect(null); bilboCon = null; }
@@ -101,10 +102,10 @@ public class PtPTest extends TestCase {
    public void testPublishPtP() {
       System.err.println("***PtPTest: Publish a message to a cluster slave ...");
       try {
-         log.info(ME, "Login to heron and wait for PtP message ...");
+         log.info("Login to heron and wait for PtP message ...");
          heronCon = serverHelper.connect(serverHelper.getHeronGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(ME+":"+serverHelper.getHeronGlob().getId(), "Received message '" + updateKey.getOid() + "' state=" +
+                  log.info("Received message '" + updateKey.getOid() + "' state=" +
                            updateQos.getState() + " from '" + updateQos.getSender() + "'");
                   if (!updateQos.getSender().equalsAbsolute(bilboCon.getConnectReturnQos().getSessionName())) {
                      assertInUpdateHeron = serverHelper.getHeronGlob().getId() + ": Did not expect message update in default handler";
@@ -117,7 +118,7 @@ public class PtPTest extends TestCase {
          assertTrue(assertInUpdateHeron, assertInUpdateHeron == null);
          assertInUpdateHeron = null;
 
-         log.info(ME, "Login to bilbo to send PtP message ...");
+         log.info("Login to bilbo to send PtP message ...");
          bilboCon = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   assertInUpdateBilbo = serverHelper.getBilboGlob().getId() + ": Should not receive the message '" + updateKey.getOid() + "'";
@@ -138,10 +139,10 @@ public class PtPTest extends TestCase {
             Destination destination = new Destination(sessionName);
             destination.forceQueuing(true);
             pq.addDestination(destination);
-            log.info(ME, "Sending PtP message '" + oid + "' from bilbo to '" + sessionName + "' :" + pq.toXml());
+            log.info("Sending PtP message '" + oid + "' from bilbo to '" + sessionName + "' :" + pq.toXml());
             MsgUnit msgUnit = new MsgUnit(pk, (contentStr+"-"+i).getBytes(), pq);
             PublishReturnQos prq = bilboCon.publish(msgUnit);
-            log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message to destination='" + sessionName +
+            log.info("Published message to destination='" + sessionName +
                                        "' content='" + (contentStr+"-"+i) +
                                        "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("bootstrapPort",0) +
                                        ", the returned QoS is: " + prq.getKeyOid());

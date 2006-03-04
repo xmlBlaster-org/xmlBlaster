@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.memoryleak;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -24,7 +25,7 @@ import java.io.*;
 public class PublishSame
 {
    private final String ME = "PublishSame";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PublishSame.class.getName());
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
@@ -33,7 +34,7 @@ public class PublishSame
 
    public PublishSame(final Global glob) {
       
-      log = glob.getLog(null);
+
       long lCount = 0L;
       bulkSize = glob.getProperty().get("bulkSize", bulkSize);
       interactive = glob.getProperty().get("interactive", interactive);
@@ -44,7 +45,7 @@ public class PublishSame
          conRetQos = con.connect(qos, new I_Callback() {
 
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
+               log.info("Receiving asynchronous message '" + updateKey.getOid() +
                                "' state=" + updateQos.getState() + " in default handler");
                return "";
             }
@@ -63,7 +64,7 @@ public class PublishSame
             if ((lCount % bulkSize) == 0) {
                try {
                   if (interactive) {
-                     log.info(ME, "Sent " + lCount + " identical messages, enter return to continue, enter 'q' to quit");
+                     log.info("Sent " + lCount + " identical messages, enter return to continue, enter 'q' to quit");
                      BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
                      String line = in.readLine(); // Blocking in I/O
                      if (line == null) continue;
@@ -73,12 +74,12 @@ public class PublishSame
                      }
                   }
                   else {
-                     log.info(ME, "Sent " + lCount + " identical messages, sleeping 10 sec");
+                     log.info("Sent " + lCount + " identical messages, sleeping 10 sec");
                      Thread.currentThread().sleep(10000);
                   }
                }
                catch(Exception e) {
-                  log.error(ME, e.toString());
+                  log.severe(e.toString());
                   break;
                }
             }
@@ -87,10 +88,10 @@ public class PublishSame
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Houston, we have a problem count=" + lCount + ": " + e.toString());
+         log.severe("Houston, we have a problem count=" + lCount + ": " + e.toString());
       }
       finally {
-         log.info(ME, "Success, hit a key to logout and exit");
+         log.info("Success, hit a key to logout and exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          con.disconnect(new DisconnectQos(glob));
       }

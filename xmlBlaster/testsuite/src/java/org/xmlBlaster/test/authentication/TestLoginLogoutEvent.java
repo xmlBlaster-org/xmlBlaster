@@ -6,7 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.authentication;
 
 import java.util.StringTokenizer;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -49,7 +50,7 @@ public class TestLoginLogoutEvent extends TestCase
 {
    private static String ME = "TestLoginLogoutEvent";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestLoginLogoutEvent.class.getName());
 
    private I_XmlBlasterAccess firstConnection;
    private String firstName;
@@ -79,7 +80,7 @@ public class TestLoginLogoutEvent extends TestCase
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.firstName = firstName;
       this.secondName = secondName;
    }
@@ -100,7 +101,7 @@ public class TestLoginLogoutEvent extends TestCase
          firstConnection.connect(qos, this.updateInterceptFirst); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
 
@@ -122,7 +123,7 @@ public class TestLoginLogoutEvent extends TestCase
          try {
             this.firstConnection.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
-            log.warn(ME+"-subscribe", "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
             assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
          }
 
@@ -145,16 +146,16 @@ public class TestLoginLogoutEvent extends TestCase
     */
    public void subscribe(String oid)
    {
-      if (log.TRACE) log.trace(ME, "Subscribing to login events ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing to login events ...");
       String xmlKey = "<key oid='" + oid + "' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
       numReceived = 0;
       try {
          String subscribeOid = firstConnection.subscribe(xmlKey, qos).getSubscriptionId();
          assertTrue("returned null subscribeOid", subscribeOid != null);
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-subscribe", "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -174,7 +175,7 @@ public class TestLoginLogoutEvent extends TestCase
       assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
       {
          String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
-         log.info(ME, "Received login event for " + content);
+         log.info("Received login event for " + content);
          assertEquals("Wrong login name", expectedName, content);
          this.updateInterceptFirst.clear();
       }
@@ -197,7 +198,7 @@ public class TestLoginLogoutEvent extends TestCase
          // login event arrived?
          assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
          String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
-         log.info(ME, "Received login event for " + content);
+         log.info("Received login event for " + content);
          assertEquals("Wrong login name", expectedName, content);
          this.updateInterceptFirst.clear();
 
@@ -210,12 +211,12 @@ public class TestLoginLogoutEvent extends TestCase
                           "<qos></qos>");
          assertTrue("Expected on __sys__UserList", msgArr.length == 1);
          String clients = new String(msgArr[0].getContent());
-         log.info(ME, "Current '__sys__UserList' is\n" + clients);
+         log.info("Current '__sys__UserList' is\n" + clients);
          StringTokenizer st = new StringTokenizer(clients, ",");  // joe,jack,averell,...
          int found = 0;
          while (st.hasMoreTokens()) {
             String client = (String)st.nextToken();
-            log.info(ME, "Parsing name=" + client);
+            log.info("Parsing name=" + client);
             SessionName sessionName = new SessionName(glob, client);
             if (sessionName.getLoginName().equals(this.firstName))
                found++;
@@ -225,7 +226,7 @@ public class TestLoginLogoutEvent extends TestCase
          assertTrue("Check of '__sys__UserList' failed", found==2);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
          assertTrue("Second login failed", false);
       }
 
@@ -239,7 +240,7 @@ public class TestLoginLogoutEvent extends TestCase
       {
          assertEquals("Missing my logout event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Logout", Constants.STATE_OK));
          String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
-         log.info(ME, "Received logout event for " + content);
+         log.info("Received logout event for " + content);
          assertEquals("Wrong logout name", expectedName, content);
          this.updateInterceptFirst.clear();
       }
@@ -258,7 +259,7 @@ public class TestLoginLogoutEvent extends TestCase
       if (name.startsWith("_"))
          return "";  // Ignore internal logins from plugins
       numReceived++;
-      log.info(ME, cbSessionId + " - Receiving update of a message " + updateKey.getOid() + ", event for client " + name);
+      log.info(cbSessionId + " - Receiving update of a message " + updateKey.getOid() + ", event for client " + name);
 
       if (expectedName != null)
          assertEquals("Wrong login name returned", expectedName, name);

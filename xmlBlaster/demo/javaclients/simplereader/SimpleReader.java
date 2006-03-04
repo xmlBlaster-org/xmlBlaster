@@ -93,7 +93,7 @@ public class SimpleReader implements I_Callback  {
          xmlBlaster.subscribe(key.toXml(), qos.toXml());
       }
       catch( Exception ex ) {
-         log_error(ME, "error-error-error-error >>>"+ex.toString(), "");
+         System.err.println("error-error-error-error >>>"+ex.toString());
       }
    }
 

@@ -14,7 +14,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.naming.NamingService;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -36,7 +37,7 @@ public class TestJmsAdmin extends XMLTestCase {
    private final static String CONNECTION_FACTORY = "connectionFactory";
    private final static String TOPIC = "jmsAdmin";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(TestJmsAdmin.class.getName());
    
    private String[] args;
    private NamingService namingService;
@@ -72,12 +73,11 @@ public class TestJmsAdmin extends XMLTestCase {
    public void prepare(String[] args) {
       //this.args = args;
       this.glob = new Global(args);
-      this.glob.getLog("test");
    }
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
       adminJmsStart();
    }
 
@@ -122,12 +122,12 @@ public class TestJmsAdmin extends XMLTestCase {
          XBConnectionFactory factory = (XBConnectionFactory)ctx.lookup(CONNECTION_FACTORY);
          ConnectQos qos1 = factory.getConnectQos();
 
-         if (this.log.TRACE) {
-            this.log.plain("", "--------------------------------------");
-            this.log.plain("", qos.toXml());
-            this.log.plain("", "--------------------------------------");
-            this.log.plain("", qos1.toXml());
-            this.log.plain("", "--------------------------------------");
+         if (log.isLoggable(Level.FINE)) {
+            System.out.println("--------------------------------------");
+            System.out.println(qos.toXml());
+            System.out.println("--------------------------------------");
+            System.out.println(qos1.toXml());
+            System.out.println("--------------------------------------");
          }
          
          assertXMLEqual(qos.toXml(), qos1.toXml());

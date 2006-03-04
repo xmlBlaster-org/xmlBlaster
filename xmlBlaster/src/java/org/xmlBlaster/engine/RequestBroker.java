@@ -7,7 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -65,7 +66,7 @@ import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
-import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
+// import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 import java.util.*;
@@ -90,7 +91,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 {
    private String ME = "RequestBroker";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(RequestBroker.class.getName());
 
    /**
     * Contains total count of published messages and get() invocations. 
@@ -199,18 +200,20 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    {
       this.authenticate = authenticate;
       this.glob = this.authenticate.getGlobal();
-      this.log = glob.getLog("core");
+
       glob.setRequestBroker(this);
       this.startupTime = System.currentTimeMillis();
       this.mbeanHandle = this.glob.registerMBean(this.glob.getContextNode(), this);
 
       // We want to be notified if a log.error() is called, this will notify our LogableDevice.log() method
-      LogNotifierDeviceFactory lf = this.glob.getLogNotifierDeviceFactory();
-      lf.register(LogChannel.LOG_ERROR|LogChannel.LOG_WARN, this);
+      
+      // FIXME TODO
+      //LogNotifierDeviceFactory lf = this.glob.getLogNotifierDeviceFactory();
+      //lf.register(Logger.LOG_ERROR|LogChannel.LOG_WARN, this);
 
       this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", false);
       if (this.useOldStylePersistence) {
-         log.warn(ME, "Old style fielstorage is switched on which is deprecated (-useOldStylePersistence true).");
+         log.warning("Old style fielstorage is switched on which is deprecated (-useOldStylePersistence true).");
       }
 
       glob.getRunlevelManager().addRunlevelListener(this);
@@ -231,7 +234,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          glob.getCommandManager(this.unsecureSessionInfo);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
 
       this.ME = "RequestBroker" + glob.getLogPrefixDashed();
@@ -248,7 +251,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
       this.state = ALIVE;
 
-      if (log.CALL) log.call(ME, "Server " + glob.getInstanceId() + " instance is created");
+      if (log.isLoggable(Level.FINER)) log.finer("Server " + glob.getInstanceId() + " instance is created");
    }
 
    Authenticate getAuthenticate() {
@@ -323,7 +326,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      //if (log.isLoggable(Level.FINER)) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
          return;
 
@@ -353,10 +356,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    }
 
    /**
-    * Access the "core" LogChannel.
+    * Access the "core" Logger.
     * @return The log channel for core xmlBlaster classes
     */
-   public final LogChannel getLog() {
+   public final Logger getLog() {
       return this.log;
    }
 
@@ -372,7 +375,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * This stores the topics configuration (the publish administrative message - the MsgUnit data struct)
     */
    private void startupTopicStore() throws XmlBlasterException   {
-      if (log.CALL) log.call(ME, "Entering startupTopicStore(), looking for persisted topics");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering startupTopicStore(), looking for persisted topics");
 
       boolean wipeOutJdbcDB = glob.getProperty().get("wipeOutJdbcDB", false);
       if (wipeOutJdbcDB) {
@@ -396,7 +399,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
       boolean useTopicStore = glob.getProperty().get("useTopicStore", true);
       if (!useTopicStore) {
-         log.warn(ME, "Persistent and recoverable topics are switched off with '-useTopicStore false', topics are handled RAM based only.");
+         log.warning("Persistent and recoverable topics are switched off with '-useTopicStore false', topics are handled RAM based only.");
          return;
       }
 
@@ -412,7 +415,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             StorageId topicStoreId = new StorageId("topicStore", glob.getStrippedId());
             this.topicStore = glob.getStoragePluginManager().getPlugin(type, version, topicStoreId, topicStoreProperty);
             //this.topicStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
-            log.info(ME, "Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");
+            log.info("Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");
 
             I_MapEntry[] mapEntryArr = this.topicStore.getAll(null);
             boolean fromPersistenceStore = true;
@@ -425,12 +428,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   publish(unsecureSessionInfo, topicEntry.getMsgUnit(), publishQosServer);
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "Restoring topic '" + topicEntry.getMsgUnit().getKeyOid() + "' from persistency failed: " + e.getMessage());
+                  log.severe("Restoring topic '" + topicEntry.getMsgUnit().getKeyOid() + "' from persistency failed: " + e.getMessage());
                }
             }
          }
          else {
-            log.info(ME, "Reconfiguring topics store.");
+            log.info("Reconfiguring topics store.");
             this.topicStore.setProperties(topicStoreProperty);
          }
       }
@@ -491,22 +494,22 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    public String[] deadMessage(MsgQueueEntry[] entries, I_Queue queue, String reason)
    {
-      if (log.CALL) log.call(ME, "Publishing " + entries.length + " dead messages.");
+      if (log.isLoggable(Level.FINER)) log.finer("Publishing " + entries.length + " dead messages.");
       if (entries == null) {
-         log.error(ME, "deadMessage() with null argument");
+         log.severe("deadMessage() with null argument");
          Thread.dumpStack();
          return new String[0];
       }
 
       try {
-         if (log.TRACE) log.trace(ME, "Publishing " + entries.length + " volatile dead messages");
+         if (log.isLoggable(Level.FINE)) log.fine("Publishing " + entries.length + " volatile dead messages");
          String[] retArr = new String[entries.length];
          PublishQos pubQos = new PublishQos(glob);
          pubQos.setVolatile(true);
          for (int ii=0; ii<entries.length; ii++) {
             MsgQueueEntry entry = entries[ii];
             if (entry == null) {
-               log.error(ME, "Didn't expect null element in MsgQueueEntry[], ignoring it");
+               log.severe("Didn't expect null element in MsgQueueEntry[], ignoring it");
                continue;
             }
             MsgUnit origMsgUnit = null;
@@ -514,18 +517,18 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                ReferenceEntry referenceEntry = (ReferenceEntry)entry;
                origMsgUnit = ((ReferenceEntry)entry).getMsgUnitOrNull();
                if (origMsgUnit == null) {
-                  if (log.TRACE) log.trace(ME, "Ignoring dead message for destroyed callback queue entry " + referenceEntry.getLogId());
+                  if (log.isLoggable(Level.FINE)) log.fine("Ignoring dead message for destroyed callback queue entry " + referenceEntry.getLogId());
                   continue;
                }
             }
             else {
-               log.error(ME, "PANIC: Internal error in deadMessage data type");
+               log.severe("PANIC: Internal error in deadMessage data type");
                retArr[ii] = "PANIC";
                continue;
             }
             try {
                if (entry.getKeyOid().equals(Constants.OID_DEAD_LETTER)) {  // Check for recursion of dead letters
-                  log.error(ME, "PANIC: Recursive dead message is lost, no recovery possible - dumping to file not yet coded: " +
+                  log.severe("PANIC: Recursive dead message is lost, no recovery possible - dumping to file not yet coded: " +
                                 origMsgUnit.toXml() + ": " +
                                 ((reason != null) ? (": " + reason) : "") );
                   retArr[ii] = entry.getKeyOid();
@@ -533,7 +536,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   continue;
                }
                if (origMsgUnit.getQosData().getClientProperties().get("__isErrorHandled") != null) {  // Check for recursion of dead letters
-                  log.warn(ME, "Recursive message '" + entry.getLogId() + "' is error handled already (sent as dead letter), we ignore it.");
+                  log.warning("Recursive message '" + entry.getLogId() + "' is error handled already (sent as dead letter), we ignore it.");
                   retArr[ii] = entry.getKeyOid();
                   continue;
                }
@@ -543,7 +546,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                             " because delivery with queue '" +            // entry.getReceiver() is recognized in queueId
                             ((queue == null) ? "null" : queue.getStorageId().toString()) + "' failed" +
                             ((reason != null) ? (": " + reason) : "");
-               log.warn(ME, text);
+               log.warning(text);
                PublishKey publishKey = new PublishKey(glob, Constants.OID_DEAD_LETTER);
                publishKey.setClientTags("<oid>"+entry.getKeyOid()+"</oid>");
                // null: use the content from origMsgUnit:
@@ -556,7 +559,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                retArr[ii] = publish(unsecureSessionInfo, msgUnit);
             }
             catch(Throwable e) {
-               log.error(ME, "PANIC: " + entry.getKeyOid() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + origMsgUnit.toXml());
+               log.severe("PANIC: " + entry.getKeyOid() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + origMsgUnit.toXml());
                e.printStackTrace();
                retArr[ii] = entry.getKeyOid();
             }
@@ -564,7 +567,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          return retArr;
       }
       catch (Throwable e) {
-         log.error(ME, "PANIC: " + entries.length + " dead letters are lost, no recovery possible:" + e.getMessage());
+         log.severe("PANIC: " + entries.length + " dead letters are lost, no recovery possible:" + e.getMessage());
          for (int ii=0; ii<entries.length; ii++) {
             MsgQueueEntry entry = entries[ii];
             try {
@@ -579,23 +582,23 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                }
                */
                else if (entry instanceof MsgQueueHistoryEntry) {
-                  log.warn(ME, "History entry is lost: " + entry.toXml());
+                  log.warning("History entry is lost: " + entry.toXml());
                }
                else if (entry instanceof MsgQueueUpdateEntry) {
                   ReferenceEntry referenceEntry = (ReferenceEntry)entry;
                   if (referenceEntry.isDestroyed()) {
-                     if (log.TRACE) log.trace(ME, "Ignoring detroyed callback message " + entry.getLogId());
+                     if (log.isLoggable(Level.FINE)) log.fine("Ignoring detroyed callback message " + entry.getLogId());
                   }
                   else {
-                     log.warn(ME, "Callback of message failed unrecoverably: " + entry.toXml());
+                     log.warning("Callback of message failed unrecoverably: " + entry.toXml());
                   }
                }
                else {
-                  log.error(ME, "PANIC: Unrecoverable lost message " + entry.toXml());
+                  log.severe("PANIC: Unrecoverable lost message " + entry.toXml());
                }
             }
             catch (Throwable th) {
-               log.error(ME, "PANIC: Unrecoverable lost message " + entry.toXml() + ": " + th.getMessage());
+               log.severe("PANIC: Unrecoverable lost message " + entry.toXml() + ": " + th.getMessage());
             }
          }
       }
@@ -611,13 +614,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    {
       if (this.useOldStylePersistence == false) return;
 
-      if(log.CALL) log.call(ME,"Loading messages from persistence to Memory ...");
+      if(log.isLoggable(Level.FINER)) log.call(ME,"Loading messages from persistence to Memory ...");
       this.persistenceDriver = getPersistenceDriver(); // Load persistence driver
       if (this.persistenceDriver == null) return;
       int num=0;
       try {
          boolean lazyRecovery = glob.getProperty().get("Persistence.LazyRecovery", true);
-         if(log.TRACE) log.trace(ME,"LazyRecovery is switched="+lazyRecovery);
+         if(log.isLoggable(Level.FINE)) log.trace(ME,"LazyRecovery is switched="+lazyRecovery);
 
          if (lazyRecovery)
          {
@@ -715,7 +718,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                             String qos_literal) throws XmlBlasterException
    {
       // !!! TODO
-      log.warn(ME, "setting client attributes is not yet supported: " + xmlAttr_literal);
+      log.warning("setting client attributes is not yet supported: " + xmlAttr_literal);
    }
 
 
@@ -761,7 +764,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
       try {
-         if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' ...");
          String returnOid = "";
 
          if (subscribeQos.getMultiSubscribe() == false) {
@@ -771,7 +774,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   SubscriptionInfo sub = (SubscriptionInfo)vec.elementAt(i);
                   sub.update(subscribeQos);
                }
-               log.info(ME, "Ignoring duplicate subscription '" + 
+               log.info("Ignoring duplicate subscription '" + 
                        ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid()) +
                         "' as you have set multiSubscribe to false");
                StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
@@ -805,12 +808,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                if (vec != null) {
                   if (vec.size() > 0) {
                      subs = (SubscriptionInfo)vec.firstElement();
-                     if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() +
+                     if (log.isLoggable(Level.FINE)) log.fine("Session '" + sessionInfo.getId() +
                                     "', message '" + xmlKeyExact.getOid() + "' is subscribed " +
                                     vec.size() + " times with duplicateUpdates==false");
                   }
                   if (vec.size() > 1)
-                     log.error(ME, "Internal problem for session '" + sessionInfo.getId() + "', message '" + xmlKeyExact.getOid() + "' is subscribed " + vec.size() + " times but duplicateUpdates==false!");
+                     log.severe("Internal problem for session '" + sessionInfo.getId() + "', message '" + xmlKeyExact.getOid() + "' is subscribed " + vec.size() + " times but duplicateUpdates==false!");
                }
             }
 
@@ -854,7 +857,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             if (qos == null) qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
             qos.setSubscriptionId(returnOid);
          }
-         if (log.CALL) log.call(ME, "Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");
+         if (log.isLoggable(Level.FINER)) log.finer("Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");
          return qos.toXml();
       }
       catch (XmlBlasterException e) {
@@ -888,7 +891,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    public MsgUnit[] get(SessionInfo sessionInfo, QueryKeyData xmlKey, GetQosServer getQos) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering get(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "') ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering get(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "') ...");
 
          if ("__refresh".equals(xmlKey.getOid())) {
             return new MsgUnit[0]; // get() with oid="__refresh" do only refresh the login session
@@ -918,7 +921,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          KeyData[] keyDataArr = queryMatchingKeys(sessionInfo, xmlKey, getQos.getData());
          ArrayList msgUnitList = new ArrayList(keyDataArr.length);
 
-         if (log.TRACE) log.trace(ME, "get(): " + ((keyDataArr!=null&&keyDataArr.length>0&&keyDataArr[0]!=null)?"Found local match "+keyDataArr[0].toXml():"No local match"));
+         if (log.isLoggable(Level.FINE)) log.fine("get(): " + ((keyDataArr!=null&&keyDataArr.length>0&&keyDataArr[0]!=null)?"Found local match "+keyDataArr[0].toXml():"No local match"));
          
          // Always forward the get request to the master
          // even if there are no matching keys
@@ -928,7 +931,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
            try {
                MsgUnit tmp[] = glob.getClusterManager().forwardGet(sessionInfo, xmlKey, getQos);
                if (tmp != null && tmp.length > 0) {
-                   log.info(ME, "get() access of " + tmp.length + " messages from cluster master");
+                   log.info("get() access of " + tmp.length + " messages from cluster master");
                    for (int jj=0; jj<tmp.length; jj++) {
                        msgUnitList.add(tmp[jj]);
                        // We currently don' cache the message here in the slave !!!
@@ -945,7 +948,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                    throw e;
                }
            }
-           if (log.TRACE) log.trace(ME, "get(): Found " + msgUnitList.size() + " remote matches for " + xmlKey.toXml());
+           if (log.isLoggable(Level.FINE)) log.fine("get(): Found " + msgUnitList.size() + " remote matches for " + xmlKey.toXml());
          }
 
          NEXT_MSG: for (int ii=0; ii<keyDataArr.length; ii++) {
@@ -981,7 +984,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   }
                }
                */
-               if (log.TRACE) log.trace(ME, "get(): The key '"+xmlKeyExact.getOid()+"' is not available.");
+               if (log.isLoggable(Level.FINE)) log.fine("get(): The key '"+xmlKeyExact.getOid()+"' is not available.");
                continue NEXT_MSG;
 
             } // topicHandler==null
@@ -1000,20 +1003,20 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   }
 
                   if (this.glob.useCluster() && !msgUnitWrapper.getMsgQosData().isAtMaster()) {
-                     if (log.TRACE) log.trace(ME, "get(): Ignore message as we are not the master: " + msgUnitWrapper.toXml());
+                     if (log.isLoggable(Level.FINE)) log.fine("get(): Ignore message as we are not the master: " + msgUnitWrapper.toXml());
                      continue NEXT_HISTORY;
                   }
 
                   AccessFilterQos[] filterQos = getQos.getAccessFilterArr();
                   if (filterQos != null) {
-                     if (log.TRACE) log.trace(ME, "Checking " + filterQos.length + " filters");
+                     if (log.isLoggable(Level.FINE)) log.fine("Checking " + filterQos.length + " filters");
                      for (int jj=0; jj<filterQos.length; jj++) {
                         I_AccessFilter filter = getAccessPluginManager().getAccessFilter(
                                                      filterQos[jj].getType(),
                                                      filterQos[jj].getVersion(),
                                                      msgUnitWrapper.getContentMime(),
                                                      msgUnitWrapper.getContentMimeExtended());
-                        if (log.TRACE) log.trace(ME, "get("+xmlKeyExact.getOid()+") filter=" + filter + " qos=" + getQos.toXml());
+                        if (log.isLoggable(Level.FINE)) log.fine("get("+xmlKeyExact.getOid()+") filter=" + filter + " qos=" + getQos.toXml());
                         if (filter != null && filter.match(sessionInfo,
                                                      msgUnitWrapper.getMsgUnit(),
                                                      filterQos[jj].getQuery()) == false)
@@ -1042,7 +1045,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
          MsgUnit[] msgUnitArr = (MsgUnit[])msgUnitList.toArray(new MsgUnit[msgUnitList.size()]);
          this.dispatchStatistic.incrNumGet(msgUnitArr.length);
-         if (log.TRACE) log.trace(ME, "Returning for get() " + msgUnitArr.length + " messages");
+         if (log.isLoggable(Level.FINE)) log.fine("Returning for get() " + msgUnitArr.length + " messages");
          return msgUnitArr;
       }
       catch (XmlBlasterException e) {
@@ -1065,7 +1068,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                                  publishQosUserListEvent.getData());
          publish(this.unsecureSessionInfo, msgUnit);
          publishQosUserListEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
-         if (log.TRACE) log.trace(ME, "Refreshed internal state for '" + this.xmlKeyUserListEvent.getOid() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Refreshed internal state for '" + this.xmlKeyUserListEvent.getOid() + "'");
       }
    }
 
@@ -1098,7 +1101,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       }
 
       else if (queryKeyData.isExact()) { // subscription with a given oid
-         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
          TopicHandler topicHandler = getMessageHandlerFromOid(queryKeyData.getOid());
          if (topicHandler == null || topicHandler.getMsgKeyData() == null) {
             return new KeyData[] { null }; // add arr[0]=null as a place holder
@@ -1109,9 +1112,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
       else if (queryKeyData.isDomain()) { // a domain attribute is given
          String domain = queryKeyData.getDomain();
-         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with DOMAIN domain='" + domain + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Access Client " + clientName + " with DOMAIN domain='" + domain + "'");
          if (domain == null) {
-            log.warn(ME, "The DOMAIN query has a domain=null, no topics found");
+            log.warning("The DOMAIN query has a domain=null, no topics found");
             return new KeyData[0];
          }
          TopicHandler[] topics = getTopicHandlerArr();
@@ -1122,12 +1125,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                 domain.equals(topicHandler.getMsgKeyData().getDomain()))
                strippedList.add(topicHandler.getMsgKeyData());
          }
-         if (log.TRACE) log.trace(ME + ".queryMatchingKeys(domain)", "Found " + strippedList.size() + " domain matches for '" + domain + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Found " + strippedList.size() + " domain matches for '" + domain + "'");
          return (KeyData[])strippedList.toArray(new KeyData[strippedList.size()]);
       }
 
       else {
-         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
+         log.warning("Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
          throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
       }
    }
@@ -1158,7 +1161,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       }
 
       else if (queryKeyData.isExact()) { // subscription with a given oid
-         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
          TopicHandler topicHandler = getMessageHandlerFromOid(queryKeyData.getOid());
          if (topicHandler == null) {
             return new TopicHandler[] { null }; // add arr[0]=null as a place holder
@@ -1168,9 +1171,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
       else if (queryKeyData.isDomain()) { // a domain attribute is given
          String domain = queryKeyData.getDomain();
-         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with DOMAIN domain='" + domain + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Access Client " + clientName + " with DOMAIN domain='" + domain + "'");
          if (domain == null) {
-            log.warn(ME, "The DOMAIN query has a domain=null, no topics found");
+            log.warning("The DOMAIN query has a domain=null, no topics found");
             return new TopicHandler[0];
          }
          TopicHandler[] topics = getTopicHandlerArr();
@@ -1180,12 +1183,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             if (domain.equals(topicHandler.getMsgKeyData().getDomain()))
                strippedList.add(topicHandler);
          }
-         if (log.TRACE) log.trace(ME + ".queryMatchingTopics(domain)", "Found " + strippedList.size() + " domain matches for '" + domain + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Found " + strippedList.size() + " domain matches for '" + domain + "'");
          return (TopicHandler[])strippedList.toArray(new TopicHandler[strippedList.size()]);
       }
 
       else {
-         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
+         log.warning("Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
          throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
       }
    }
@@ -1203,7 +1206,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       synchronized(this.topicHandlerMap) {
          Object obj = this.topicHandlerMap.get(oid);
          if (obj == null) {
-            if (log.TRACE) log.trace(ME, "getMessageHandlerFromOid(): key oid " + oid + " is unknown, topicHandler == null");
+            if (log.isLoggable(Level.FINE)) log.fine("getMessageHandlerFromOid(): key oid " + oid + " is unknown, topicHandler == null");
             return null;
          }
          return (TopicHandler)obj;
@@ -1225,7 +1228,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    public final int addPersistentTopicHandler(TopicEntry topicEntry) throws XmlBlasterException {
       if (this.topicStore != null) {
-         if (log.TRACE) log.trace(ME, "Persisting topicEntry");
+         if (log.isLoggable(Level.FINE)) log.fine("Persisting topicEntry");
          return this.topicStore.put(topicEntry);
       }
       return 0;
@@ -1237,7 +1240,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    public final int removePersistentTopicHandler(TopicEntry topicEntry) throws XmlBlasterException {
       if (this.topicStore != null) {
-         if (log.TRACE) log.trace(ME, "Removing persisting topicEntry");
+         if (log.isLoggable(Level.FINE)) log.fine("Removing persisting topicEntry");
          return this.topicStore.remove(topicEntry);
       }
       return 0;
@@ -1259,14 +1262,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    void topicErase(TopicHandler topicHandler) throws XmlBlasterException {
       if (topicHandler.hasExactSubscribers()) {
-         log.warn(ME, "Erase event occured for oid=" + topicHandler.getUniqueKey() + ", " + topicHandler.numSubscribers() + " subscribers exist ...");
+         log.warning("Erase event occured for oid=" + topicHandler.getUniqueKey() + ", " + topicHandler.numSubscribers() + " subscribers exist ...");
       }
       String uniqueKey = topicHandler.getUniqueKey();
-      if (log.TRACE) log.trace(ME, "Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
       synchronized(topicHandlerMap) {
          Object obj = topicHandlerMap.remove(uniqueKey);
          if (obj == null) {
-            log.warn(ME + ".NotRemoved", "Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
+            log.warning("Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
             throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Sorry, can't remove message unit, because oid=" + uniqueKey + " doesn't exist");
          }
          fireTopicEvent(topicHandler);
@@ -1282,7 +1285,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     *        false The callee is a subscribe() thread from a client
     */
    private void subscribeToOid(SubscriptionInfo subs, boolean calleeIsXPathMatchCheck) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
       String uniqueKey = subs.getKeyData().getOid();
       TopicHandler topicHandler = null;
       synchronized(topicHandlerMap) {
@@ -1344,13 +1347,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    public String[] unSubscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, UnSubscribeQosServer unSubscribeQos) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering unSubscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') ...");
 
          if (this.glob.isClusterManagerReady()) { // cluster support - forward message to master
             try {
                UnSubscribeReturnQos[] ret = glob.getClusterManager().forwardUnSubscribe(sessionInfo, xmlKey, unSubscribeQos);
                if (ret != null) {
-                  log.info(ME, "unSubscribe of '" + xmlKey.getNiceString() + "' matched " + ret.length + " entries in remote cluster");
+                  log.info("unSubscribe of '" + xmlKey.getNiceString() + "' matched " + ret.length + " entries in remote cluster");
                   // Currently we only return the local matched subscriptions,
                   // we need to discuss how they can differ from the remote cluster
                   // unSubscribes ...
@@ -1358,11 +1361,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             }
             catch (XmlBlasterException e) {
                if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
-                  log.warn(ME, "unSubscribe of '" + xmlKey.getNiceString() + "' entries in remote cluster: " + e.getMessage());
+                  log.warning("unSubscribe of '" + xmlKey.getNiceString() + "' entries in remote cluster: " + e.getMessage());
                   this.glob.setUseCluster(false);
                }
                else {
-                  log.warn(ME, "unSubscribe of '" + xmlKey.getNiceString() + "' in remote cluster: " + e.getMessage());
+                  log.warning("unSubscribe of '" + xmlKey.getNiceString() + "' in remote cluster: " + e.getMessage());
                   e.printStackTrace();
                   throw e;
                }
@@ -1370,7 +1373,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          }
          else {
             if (this.glob.useCluster())
-               log.warn(ME, "unSubscribe not forwarded to cluster as ClusterManager is not ready");
+               log.warning("unSubscribe not forwarded to cluster as ClusterManager is not ready");
          }
 
          Set subscriptionIdSet = new HashSet();
@@ -1382,7 +1385,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             if (subs != null) {
                SubscriptionInfo[] childs = subs.getChildrenSubscriptions();
                if (childs != null) {
-                  if (log.TRACE) log.trace(ME, "unSubscribe() Traversing " + childs.length + " childs");
+                  if (log.isLoggable(Level.FINE)) log.fine("unSubscribe() Traversing " + childs.length + " childs");
                   for (int ii=0; ii<childs.length; ii++) {
                      SubscriptionInfo so = childs[ii];
                      fireUnSubscribeEvent(so);
@@ -1395,8 +1398,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                subs = null;
             }
             else {
-               log.warn(ME, "UnSubscribe of " + xmlKey.getOid() + " by session " + sessionInfo.getId() + " failed");
-               if (log.DUMP) log.dump(ME, toXml());
+               log.warning("UnSubscribe of " + xmlKey.getOid() + " by session " + sessionInfo.getId() + " failed");
+               if (log.isLoggable(Level.FINEST)) log.finest(toXml());
             }
          }
          else { // Try to unSubscribe with topic oid instead of subscribe id:
@@ -1407,7 +1410,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             for (int ii=0; ii<topicHandlerArr.length; ii++) {
                TopicHandler topicHandler = topicHandlerArr[ii];
                if (topicHandler == null) { // unSubscribe on a unknown message ...
-                  log.warn(ME, "UnSubscribe on unknown topic [" + xmlKey.getOid() + "] is ignored");
+                  log.warning("UnSubscribe on unknown topic [" + xmlKey.getOid() + "] is ignored");
                   continue;
                }
 
@@ -1419,12 +1422,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                      subscriptionIdSet.add(sub.getSubscriptionId());
                   }
                   else
-                     log.warn(ME, "UnSubscribe of " + topicHandler.getId() + " by session " + sessionInfo.getId() + " failed");
+                     log.warning("UnSubscribe of " + topicHandler.getId() + " by session " + sessionInfo.getId() + " failed");
                }
             }
 
             if (topicHandlerArr.length < 1) {
-               log.error(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
+               log.severe("Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
                throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
             }
          }
@@ -1526,15 +1529,15 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    {
       try {
          if (msgUnit == null) {
-            log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
+            log.severe("The arguments of method publish() are invalid (null)");
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The arguments of method publish() are invalid (null)");
          }
 
          MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
 
 
-         if (log.CALL) log.call(ME, "Entering " + (publishQos.isClusterUpdate()?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getId() + "' ...");
-         if (log.DUMP) log.dump(ME, "Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgUnit.toXml("",80) + "\n" + publishQos.toXml() + "\nfrom\n" + sessionInfo.toXml());
+         if (log.isLoggable(Level.FINER)) log.finer("Entering " + (publishQos.isClusterUpdate()?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getId() + "' ...");
+         if (log.isLoggable(Level.FINEST)) log.finest("Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgUnit.toXml("",80) + "\n" + publishQos.toXml() + "\nfrom\n" + sessionInfo.toXml());
 
          PublishReturnQos publishReturnQos = null;
 
@@ -1555,7 +1558,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   if (publishQos.isPtp() && publishQos.getDestinationArr().length > 0) {
                      text += ", does the destination cluster node '" + publishQos.getDestinationArr()[0].getDestination() + "' exist?";
                   }
-                  log.warn(ME, text);
+                  log.warning(text);
                   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CLUSTER_CIRCULARLOOP, ME, text + " Your QoS:" + publishQos.toXml(""));
                }
                int stratum = -1; // not known yet, addRouteInfo() sets my stratum to one closer to the master,
@@ -1587,12 +1590,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                Iterator iterator = mimePlugins.values().iterator();
                while (iterator.hasNext()) {
                   I_PublishFilter plugin = (I_PublishFilter)iterator.next();
-                  if (log.TRACE) log.trace(ME, "Message " + msgKeyData.getOid() + " is forwarded to publish plugin");
+                  if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " is forwarded to publish plugin");
                   String ret = plugin.intercept(sessionInfo.getSubjectInfo(), msgUnit);
                   if (ret == null || ret.length() == 0 || ret.equals(Constants.STATE_OK))
                      continue;
                   else {
-                     if (log.TRACE) log.trace(ME, "Message " + msgKeyData.getOid() + " is rejected by PublishPlugin");
+                     if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " is rejected by PublishPlugin");
                      return "<qos><state id='" + ret + "'/></qos>";  // Message is rejected by PublishPlugin
                   }
                }
@@ -1608,13 +1611,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                   if (publishQos.isPtp()) {  // is PtP message
                      Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
                      for (int ii = 0; ii<destinationArr.length; ii++) {
-                        if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
+                        if (log.isLoggable(Level.FINE)) log.fine("Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
                         publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, publishQos.isClusterUpdate(), destinationArr[ii]);
                         if (publishReturnQos != null) {
                            if (destinationArr.length > 1) {
                               // TODO: cluster forwarding with multiple destinations:
                               String txt = "Messages with more than one destinations in a cluster environment is not implemented, only destination '" + destinationArr[ii].toXml() + "' of '" + msgUnit.getLogId() + "' was delivered";
-                              log.warn(ME, txt);
+                              log.warning(txt);
                               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, txt);
                            }
                            return publishReturnQos.toXml();
@@ -1640,7 +1643,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                         if (ret != null) { // Message was forwarded to master cluster
                            publishReturnQos = ret.getPublishReturnQos();
                            if (ret.getNodeDomainInfo().getDirtyRead() == false) {
-                              if (log.TRACE) log.trace(ME, "Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeDomainInfo().getId() + ", dirtyRead==false nothing more to do");
+                              if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeDomainInfo().getId() + ", dirtyRead==false nothing more to do");
                               return publishReturnQos.toXml();
                            }
                            // else we publish it locally as well (dirty read!)
@@ -1660,10 +1663,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                else {
                   if (! publishQos.isFromPersistenceStore()) {
                      if (msgKeyData.isInternal()) {
-                        if (log.TRACE) log.trace(ME, "Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
+                        if (log.isLoggable(Level.FINE)) log.fine("Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
                      }
                      else {
-                        log.warn(ME, "Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
+                        log.warning("Cluster manager is not ready, handling message '" + msgKeyData.getOid() + "' locally");
                      }
                   }
                }
@@ -1693,14 +1696,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
             qos.setState(Constants.STATE_OK);
             publishReturnQos = new PublishReturnQos(glob, qos);
             publishReturnQos.getData().setRcvTimestamp(publishQos.getRcvTimestamp());
-            log.error(ME, "Internal: did not excpect to build a PublishReturnQos, but message '" + msgKeyData.getOid() + "' is processed correctly");
+            log.severe("Internal: did not excpect to build a PublishReturnQos, but message '" + msgKeyData.getOid() + "' is processed correctly");
             Thread.dumpStack();
          }
 
          return publishReturnQos.toXml(); // Use the return value of the cluster master node
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "Throwing exception in publish: " + e.toXml()); // Remove again
+         if (log.isLoggable(Level.FINE)) log.fine("Throwing exception in publish: " + e.toXml()); // Remove again
          throw e;
       }
       catch (Throwable e) {
@@ -1738,12 +1741,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                                   TopicHandler topicHandler, PublishQosServer xmlQoS)
                                   throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "checkExistingSubscriptions(" + topicHandler.getUniqueKey() + "), should happen only once for each topic.");
+      if (log.isLoggable(Level.FINER)) log.finer("checkExistingSubscriptions(" + topicHandler.getUniqueKey() + "), should happen only once for each topic.");
 
       if (topicHandler.hasDomTree()) {  // A topic may suppress XPATH visibility
          XmlKey keyDom = topicHandler.getXmlKey();  // This is DOM parsed already
 
-         if (log.TRACE) log.trace(ME, "Checking existing query subscriptions if they match with this new one");
+         if (log.isLoggable(Level.FINE)) log.fine("Checking existing query subscriptions if they match with this new one");
 
          Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
          Vector matchingSubsVec = new Vector();
@@ -1755,7 +1758,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
                KeyData queryXmlKey = existingQuerySubscription.getKeyData();
                if (!queryXmlKey.isXPath()) { // query: subscription without a given oid
-                  log.warn(ME,"Only XPath queries are supported, ignoring subscription.");
+                  log.warning("Only XPath queries are supported, ignoring subscription.");
                   continue;
                }
                String xpath = ((QueryKeyData)queryXmlKey).getQueryString();
@@ -1811,10 +1814,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    private String[] erase(SessionInfo sessionInfo, QueryKeyData xmlKey, EraseQosServer eraseQos, boolean isClusterUpdate) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") +
+         if (log.isLoggable(Level.FINER)) log.finer("Entering " + (isClusterUpdate?"cluster update message ":"") +
                 "erase(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
                 "', query='" + xmlKey.getQueryString() + "') client '" + sessionInfo.getLoginName() + "' ...");
-         if (log.DUMP) log.dump(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + xmlKey.toXml() + eraseQos.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest("Entering " + (isClusterUpdate?"cluster update message ":"") + xmlKey.toXml() + eraseQos.toXml());
 
          TopicHandler[] topicHandlerArr = queryMatchingTopics(sessionInfo, xmlKey, eraseQos.getData());
          Set oidSet = new HashSet(topicHandlerArr.length);  // for return values (TODO: change to TreeSet to maintain order)
@@ -1840,35 +1843,35 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
                }
             }
             if (this.glob.useCluster() && !this.glob.isClusterManagerReady()) {
-               log.warn(ME, "erase not forwarded to cluster as ClusterManager is not ready");
+               log.warning("erase not forwarded to cluster as ClusterManager is not ready");
             }
             
             if (topicHandler == null) { // unSubscribe on a unknown message ...
                if (clusterRetArr != null && clusterRetArr.length > 0) {
-                  log.info(ME, "Erase for topic [" + xmlKey.getOid() + "] successfully forwarded to cluster master");
+                  log.info("Erase for topic [" + xmlKey.getOid() + "] successfully forwarded to cluster master");
                   oidSet.add(xmlKey.getOid());
                }
                else {
-                  log.warn(ME, "Erase on unknown topic [" + xmlKey.getOid() + "] is ignored");
+                  log.warning("Erase on unknown topic [" + xmlKey.getOid() + "] is ignored");
                }
                // !!! how to delete XPath subscriptions, still MISSING ???
                continue;
             }
 
-            if (log.TRACE) log.trace(ME, "erase oid='" + topicHandler.getUniqueKey() + "' of total " + topicHandlerArr.length + " ...");
+            if (log.isLoggable(Level.FINE)) log.fine("erase oid='" + topicHandler.getUniqueKey() + "' of total " + topicHandlerArr.length + " ...");
 
             //log.info(ME, "Erasing " + topicHandler.toXml());
 
             oidSet.add(topicHandler.getUniqueKey());
             if (eraseQos.getData().containsHistoryQos()) {
-               if (log.TRACE) log.trace(ME, "Erasing history instances only, the topic '" + topicHandler.getId() + "' remains");
+               if (log.isLoggable(Level.FINE)) log.fine("Erasing history instances only, the topic '" + topicHandler.getId() + "' remains");
                topicHandler.eraseFromHistoryQueue(sessionInfo, eraseQos.getData().getHistoryQos());
             }
             else { // erase the complete topic
                try {
                   topicHandler.fireMessageEraseEvent(sessionInfo, xmlKey, eraseQos);
                } catch (XmlBlasterException e) {
-                  if (log.TRACE) log.error(ME, "Unexpected exception: " + e.toString());
+                  if (log.isLoggable(Level.FINE)) log.severe("Unexpected exception: " + e.toString());
                }
             }
          }
@@ -1908,7 +1911,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    public void sessionAdded(ClientEvent e) throws XmlBlasterException
    {
       SessionInfo sessionInfo = e.getSessionInfo();
-      if (log.TRACE) log.trace(ME, "Login event for client " + sessionInfo.toString());
+      if (log.isLoggable(Level.FINE)) log.fine("Login event for client " + sessionInfo.toString());
 
       this.glob.sendNotification(this, "Client '" + sessionInfo.getSessionName().getAbsoluteName() + "' logged in",
          "clientNew", "java.lang.String", "", sessionInfo.getSessionName().getAbsoluteName());
@@ -1928,7 +1931,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          this.publishQosLoginEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
       }
 
-      if (log.TRACE) log.trace(ME, " client added:"+sessionInfo.getLoginName());
+      if (log.isLoggable(Level.FINE)) log.fine(" client added:"+sessionInfo.getLoginName());
    }
 
 
@@ -1949,7 +1952,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          "clientRemoved", "java.lang.String", sessionInfo.getSessionName().getAbsoluteName(), "");
 
       if (this.publishLogoutEvent) {
-         if (log.TRACE) log.trace(ME, "Logout event for client " + sessionInfo.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("Logout event for client " + sessionInfo.toString());
          this.publishQosLogoutEvent.clearRoutes();
          
          MsgQosData msgQosData = (MsgQosData)this.publishQosLogoutEvent.getData().clone();
@@ -1963,7 +1966,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
          this.publishQosLogoutEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
       }
 
-      if (log.TRACE) log.trace(ME, "Client session '" + sessionInfo.getId() + "' removed");
+      if (log.isLoggable(Level.FINE)) log.fine("Client session '" + sessionInfo.getId() + "' removed");
    }
 
    public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {
@@ -1974,7 +1977,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    public void subjectAdded(ClientEvent e) throws XmlBlasterException
    {
-      log.warn(ME, "Ignoring SubjectInfo added event for client " + e.getSubjectInfo().toString());
+      log.warning("Ignoring SubjectInfo added event for client " + e.getSubjectInfo().toString());
    }
 
 
@@ -1983,7 +1986,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    public void subjectRemoved(ClientEvent e) throws XmlBlasterException
    {
-      log.warn(ME, "Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
+      log.warning("Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
    }
    
    /**
@@ -2039,7 +2042,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    private final void fireTopicEvent(TopicHandler topicHandler)
    {
-      if (log.TRACE) log.trace(ME, "Going to fire fireTopicEvent() ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Going to fire fireTopicEvent() ...");
 
       synchronized (this.topicListenerSet) {
          Iterator it = this.topicListenerSet.iterator();
@@ -2109,7 +2112,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    private final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "Going to fire fireSubscriptionEvent(" + subscribe + ") ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Going to fire fireSubscriptionEvent(" + subscribe + ") ...");
 
       synchronized (subscriptionListenerMap) {
          if (subscriptionListenerMap.size() == 0)
@@ -2234,7 +2237,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    public void setDump(String fn) throws XmlBlasterException{
       try {
          org.jutils.io.FileUtil.writeFile(fn, glob.getDump());
-         log.info(ME, "Dumped internal state to " + fn);
+         log.info("Dumped internal state to " + fn);
       }
       catch (org.jutils.JUtilsException e) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_FILEIO, e.id, e.getMessage());
@@ -2307,12 +2310,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       return Global.byteString(getUsedMem());
    }
    public String getGc() {
-      if (log.TRACE) log.trace(ME, "Garbage collector is activated");
+      if (log.isLoggable(Level.FINE)) log.fine("Garbage collector is activated");
       System.gc();
       return "OK";
    }
    public void setGc(String dummy) {
-      if (log.TRACE) log.trace(ME, "Garbage collector is activated");
+      if (log.isLoggable(Level.FINE)) log.fine("Garbage collector is activated");
       System.gc();
    }
 
@@ -2321,11 +2324,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    }
    public void setExit(String exitValue) throws XmlBlasterException {
       int val = 0;
-      try { val = Integer.parseInt(exitValue.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid exit value=" + exitValue + ", expected an integer"); };
+      try { val = Integer.parseInt(exitValue.trim()); } catch(NumberFormatException e) { log.severe("Invalid exit value=" + exitValue + ", expected an integer"); };
       final int exitVal = val;
 
       if (glob.isEmbedded()) {
-         log.warn(ME, "Ignoring exit(" + exitVal + ") request in embeded mode ('xmlBlaster.isEmbeded' is set true).");
+         log.warning("Ignoring exit(" + exitVal + ") request in embeded mode ('xmlBlaster.isEmbeded' is set true).");
          return;
       }
 
@@ -2333,18 +2336,18 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       Timeout exitTimeout = new Timeout("XmlBlaster ExitTimer");
       exitTimeout.addTimeoutListener(new I_Timeout() {
             public void timeout(Object userData) {
-               log.info(ME, "Administrative exit(" + exitVal + ") after exit-timeout of " + exitSleep + " millis.");
+               log.info("Administrative exit(" + exitVal + ") after exit-timeout of " + exitSleep + " millis.");
                try {
                   glob.getRunlevelManager().changeRunlevel(RunlevelManager.RUNLEVEL_HALTED, true);
                }
                catch(Throwable e) {
-                  log.warn(ME, "Administrative exit(" + exitVal + ") problems: " + e.toString());
+                  log.warning("Administrative exit(" + exitVal + ") problems: " + e.toString());
                }
                System.exit(exitVal);
             }
          },
          exitSleep, null);
-      log.info(ME, "Administrative exit request, scheduled exit in " + exitSleep + " millis with exit value=" + exitVal + ".");
+      log.info("Administrative exit request, scheduled exit in " + exitSleep + " millis with exit value=" + exitVal + ".");
    }
 
    public String getHostname() {
@@ -2462,18 +2465,20 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     */
    public void log(int level, String source, String str) {
       // We may not do any log.xxx() call here because of recursion!!
+      /* FIXME (TODO)
       String newLog = "[" + source + "] " + str;
 
       // Remember error text
-      if (LogChannel.LOG_WARN == level) {
+      if (Logger.LOG_WARN == level) {
          this.lastWarning = newLog;
       }
-      else if (LogChannel.LOG_ERROR == level) {
+      else if (Logger.LOG_ERROR == level) {
          // Emit JMX notification
-         this.glob.sendNotification(this, "New " + LogChannel.bitToLogLevel(level) + " logging occurred",
+         this.glob.sendNotification(this, "New " + Logger.bitToLogLevel(level) + " logging occurred",
             "lastError", "java.lang.String", this.lastError, newLog);
          this.lastError = newLog;
       }
+      */
    }
    /**
     * Declare available notification event types. 

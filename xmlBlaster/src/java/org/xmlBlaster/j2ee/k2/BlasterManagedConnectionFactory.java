@@ -20,6 +20,7 @@ package org.xmlBlaster.j2ee.k2;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.logging.Logger;
 import java.io.PrintWriter;
 
 import javax.naming.InitialContext;
@@ -49,6 +50,7 @@ import javax.resource.spi.IllegalStateException;
  */
 
 public class BlasterManagedConnectionFactory implements ManagedConnectionFactory {
+   private static Logger log = Logger.getLogger(BlasterManagedConnectionFactory.class.getName());
    private static final long serialVersionUID = 1L;
    // Id from my global instance.
    public String myName ="Blaster";
@@ -59,8 +61,6 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    private String jndiName;
    private PrintWriter logWriter = null;
    private Properties props;
-   private BlasterLogger logger;
-   private boolean isLogging;
    
    public BlasterManagedConnectionFactory() throws ResourceException{
       props = new Properties();
@@ -139,15 +139,17 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    }
 
    /**
-    * 
+    * FIXME
     */
    public void setLogWriter(PrintWriter out)
       throws ResourceException {
+      log.severe("NOT IMPLEMENTED");
+      /*
       this.logWriter = out;
       if ( logger != null) {
          logger.setLogWriter(out);
       } // end of if ()
- 
+      */
    }
    /**
     * 
@@ -384,25 +386,6 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    public String getJNDIName() {
       return jndiName;
    }
-   /**
-      <p>
-      Decides if logging should be done at al. Cant set log levels for now.
-      </p>
-      <p>
-      If ConnectionManager does not set a printWriter and the loggin is on,
-      logging will be done to the console.
-      </p>
-
-     
-   */
-   public void setLogging(String loggingOn) {
-      isLogging = new Boolean(loggingOn).booleanValue();
-      if ( logger != null) {
-         logger.setLogging(isLogging);
-      } // end of if ()
-
-   }
-
 
    private void loadPropertyFile() throws IllegalStateException{
       globalUtil = new GlobalUtil();
@@ -429,16 +412,6 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
          
       } // end of if ()
       
-      try {
-         logger = new BlasterLogger(glob);
-         logger.setLogWriter(logWriter);
-         logger.setLogging(isLogging);
-      } catch (ResourceException e) {
-         IllegalStateException x = new IllegalStateException("Could not load properties into Property: " + e);
-         x.setLinkedException(e);
-         throw x;
-      } // end of try-catch
-
    }
 
    

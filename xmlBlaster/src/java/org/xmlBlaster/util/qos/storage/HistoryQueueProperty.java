@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.storage;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 
@@ -18,7 +19,7 @@ import org.xmlBlaster.util.def.Constants;
 public class HistoryQueueProperty extends QueuePropertyBase
 {
    private static final String ME = "HistoryQueueProperty";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HistoryQueueProperty.class.getName());
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
@@ -26,7 +27,7 @@ public class HistoryQueueProperty extends QueuePropertyBase
     */
    public HistoryQueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);
-      this.log = glob.getLog("core");
+
       this.maxEntries.setDefaultValue(10);
       this.maxEntriesCache.setDefaultValue(10);
       setRelating(Constants.RELATING_HISTORY);

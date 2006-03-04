@@ -8,7 +8,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.def.MethodName;
 
 
@@ -22,7 +23,7 @@ public class Session implements I_Session, I_Subject {
    private static final String ME = "Session";
 
    protected final Manager secMgr;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(Session.class.getName());
    protected String sessionId;
    protected boolean authenticated = false;
 
@@ -32,14 +33,14 @@ public class Session implements I_Session, I_Subject {
 
    public Session(Manager sm, String sessionId) throws XmlBlasterException {
       this.secMgr = sm;
-      this.log = this.secMgr.getGlobal().getLog("ldap");
+
       this.sessionId = sessionId;
       final String serverUrl = sm.getGlobal().getProperty().get("ldap.serverUrl", "ldap://localhost:389/o=xmlBlaster,c=ORG");
       final String rootDN = sm.getGlobal().getProperty().get("ldap.rootDN", "cn=Manager,o=xmlBlaster,c=ORG");
       final String rootPwd =  sm.getGlobal().getProperty().get("ldap.rootPwd", "secret");
       final String loginFieldName = sm.getGlobal().getProperty().get("ldap.loginFieldName", "cn");
 
-      log.info(ME, "Initializing LDAP access on ldap.serverUrl='" + serverUrl + "' with rootdn='" + rootDN  + "'. The unique uid field name in ldap should be '" + loginFieldName + "'.");
+      log.info("Initializing LDAP access on ldap.serverUrl='" + serverUrl + "' with rootdn='" + rootDN  + "'. The unique uid field name in ldap should be '" + loginFieldName + "'.");
       ldap = new LdapGateway(this.secMgr.getGlobal(), serverUrl, rootDN, rootPwd, loginFieldName);
    }
 
@@ -70,9 +71,9 @@ public class Session implements I_Session, I_Subject {
       this.loginName = securityQos.getUserId();
       String passwd = ((SecurityQos)securityQos).getCredential();
 
-      if (log.TRACE) log.trace(ME, "Checking password ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Checking password ...");
       authenticated = ldap.checkPassword(this.loginName, passwd);
-      if (log.TRACE) log.trace(ME, "The password" /*+ passwd */+ " for cn=" + this.loginName + " is " + ((authenticated)?"":" NOT ") + " valid.");
+      if (log.isLoggable(Level.FINE)) log.fine("The password" /*+ passwd */+ " for cn=" + this.loginName + " is " + ((authenticated)?"":" NOT ") + " valid.");
 
       if (authenticated == false)
          throw new XmlBlasterException(this.secMgr.getGlobal(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
@@ -122,11 +123,11 @@ public class Session implements I_Session, I_Subject {
     */
    public boolean isAuthorized(MethodName actionKey, String key) {
       if (authenticated == false) {
-         log.warn(ME+".AccessDenied", "Authentication of user " + getName() + " failed");
+         log.warning("Authentication of user " + getName() + " failed");
          return false;
       }
 
-      log.warn(ME, "No authorization check for action='" + actionKey + "' on key='" +key + "' is implemented, access generously granted.");
+      log.warning("No authorization check for action='" + actionKey + "' on key='" +key + "' is implemented, access generously granted.");
       return true;
    }
 

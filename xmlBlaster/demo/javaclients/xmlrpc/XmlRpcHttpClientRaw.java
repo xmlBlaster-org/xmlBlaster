@@ -15,7 +15,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
@@ -47,7 +48,7 @@ public class XmlRpcHttpClientRaw
 {
    private static final String ME = "XmlRpcHttpClientRaw";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlRpcHttpClientRaw.class.getName());
 
    /**
     * Constructor.
@@ -55,7 +56,7 @@ public class XmlRpcHttpClientRaw
    public XmlRpcHttpClientRaw (Global glob)
    {
       this.glob = glob;
-      this.log = this.glob.getLog("xmlrpc");
+
    }
 
 
@@ -97,11 +98,11 @@ public class XmlRpcHttpClientRaw
       }
 
       catch (MalformedURLException ex1) {
-         log.error(ME, ex1.toString());
+         log.severe(ex1.toString());
          throw new XmlBlasterException(ME, ex1.toString());
       }
       catch (IOException ex2) {
-         log.error(ME, ex2.toString());
+         log.severe(ex2.toString());
          throw new XmlBlasterException(ME, ex2.toString());
       }
 
@@ -120,7 +121,7 @@ public class XmlRpcHttpClientRaw
          int cb_port = glob.getProperty().get("dispatch/callback/plugin/xmlrpc/port", 8081);
          String urlStr = "http://" + host + ":" + port;
 
-         log.info(ME, "Connected to xmlBlaster using XMLRPC");
+         log.info("Connected to xmlBlaster using XMLRPC");
 
          // reads from the standard input stream. Ignores the lines until the
          // first comment line containing the word COMMAND
@@ -130,7 +131,7 @@ public class XmlRpcHttpClientRaw
 
          String cmd = "";
          boolean hasStarted = false;
-         log.info(ME, "Processing data from stdin ...");
+         log.info("Processing data from stdin ...");
          while ( (line = reader.readLine()) != null) {
             if (line.indexOf("COMMAND") == -1) {
                if (hasStarted) cmd += line + "\n";
@@ -148,10 +149,10 @@ public class XmlRpcHttpClientRaw
          }
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "exception: " + ex);
+         log.severe("exception: " + ex);
       }
       catch (IOException ex1) {
-         log.error(ME, "exception:"  + ex1);
+         log.severe("exception:"  + ex1);
       }
    }
 

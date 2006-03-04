@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
@@ -46,7 +47,7 @@ public class TestUnSub extends TestCase implements I_Callback
 {
    private static String ME = "TestUnSub";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestUnSub.class.getName());
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -71,7 +72,7 @@ public class TestUnSub extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.senderName = loginName;
       this.receiverName = loginName;
    }
@@ -91,7 +92,7 @@ public class TestUnSub extends TestCase implements I_Callback
          senderConnection.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -125,7 +126,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public void subscribeXPath()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using XPath syntax ...");
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='' queryType='XPATH'>\n" +
@@ -136,9 +137,9 @@ public class TestUnSub extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -152,7 +153,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public void unSubscribeXPath()
    {
-      if (log.TRACE) log.trace(ME, "UnSubscribing using XPath syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("UnSubscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   " + xpath +
@@ -161,9 +162,9 @@ public class TestUnSub extends TestCase implements I_Callback
       numReceived = 0;
       try {
          senderConnection.unSubscribe(xmlKey, qos);
-         log.info(ME, "Success: UnSubscribe with " + xpath + " done");
+         log.info("Success: UnSubscribe with " + xpath + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -175,7 +176,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public void unSubscribeExact()
    {
-      if (log.TRACE) log.trace(ME, "UnSubscribing using EXACT syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("UnSubscribing using EXACT syntax ...");
 
       String xmlKey = "<key oid='" + subscribeOid + "' queryType='EXACT'>\n" +
                       "</key>";
@@ -183,9 +184,9 @@ public class TestUnSub extends TestCase implements I_Callback
       numReceived = 0;
       try {
          senderConnection.unSubscribe(xmlKey, qos);
-         log.info(ME, "Success: UnSubscribe on " + subscribeOid + " done");
+         log.info("Success: UnSubscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -198,7 +199,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public void doPublish()
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -214,9 +215,9 @@ public class TestUnSub extends TestCase implements I_Callback
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
          publishReturnQos = senderConnection.publish(msgUnit);
          publishOid = publishReturnQos.getKeyOid();
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -230,7 +231,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public void testSubscribeUnSubscribeOid()
    {
-      log.info(ME, "Starting testSubscribeUnSubscribeOid()");
+      log.info("Starting testSubscribeUnSubscribeOid()");
       publishOid = "";
 
       String oid = "SomeDummySubscribe";
@@ -239,10 +240,10 @@ public class TestUnSub extends TestCase implements I_Callback
          SubscribeKey sk = new SubscribeKey(glob, oid);
          SubscribeQos sq = new SubscribeQos(glob);
          subRet = senderConnection.subscribe(sk.toXml(), sq.toXml());
-         log.info(ME, "testSubscribeUnSubscribeOid() subscribed to " + subRet.getSubscriptionId());
+         log.info("testSubscribeUnSubscribeOid() subscribed to " + subRet.getSubscriptionId());
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "testSubscribeUnSubscribeOid() subscribe failed: " + e.getMessage());
+         log.severe("testSubscribeUnSubscribeOid() subscribe failed: " + e.getMessage());
          fail("testSubscribeUnSubscribeOid() subscribe failed: " + e.getMessage());
       }
 
@@ -251,12 +252,12 @@ public class TestUnSub extends TestCase implements I_Callback
          UnSubscribeKey uk = new UnSubscribeKey(glob, oid);
          UnSubscribeQos uq = new UnSubscribeQos(glob);
          UnSubscribeReturnQos[] urq = senderConnection.unSubscribe(uk.toXml(), uq.toXml());
-         log.info(ME, "testSubscribeUnSubscribeOid() unSubscribed");
+         log.info("testSubscribeUnSubscribeOid() unSubscribed");
          assertEquals("Return wrong", 1, urq.length);
          assertEquals("SubId wrong", subRet.getSubscriptionId(), urq[0].getSubscriptionId());
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "testSubscribeUnSubscribeOid() unSubscribe failed: " + e.getMessage());
+         log.severe("testSubscribeUnSubscribeOid() unSubscribe failed: " + e.getMessage());
          fail("testSubscribeUnSubscribeOid() unSubscribe failed: " + e.getMessage());
       }
    }
@@ -266,7 +267,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public void testSubscribeUnSubscribeEmpty()
    {
-      log.info(ME, "Starting testSubscribeUnSubscribeEmpty()");
+      log.info("Starting testSubscribeUnSubscribeEmpty()");
       publishOid = "";
 
       SubscribeReturnQos subRet = null;
@@ -274,10 +275,10 @@ public class TestUnSub extends TestCase implements I_Callback
          SubscribeKey sk = new SubscribeKey(glob, "SomeDummySubscribe");
          SubscribeQos sq = new SubscribeQos(glob);
          subRet = senderConnection.subscribe(sk.toXml(), sq.toXml());
-         log.info(ME, "testSubscribeUnSubscribeEmpty() subscribed to " + subRet.getSubscriptionId());
+         log.info("testSubscribeUnSubscribeEmpty() subscribed to " + subRet.getSubscriptionId());
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "testSubscribeUnSubscribeEmpty() subscribe failed: " + e.getMessage());
+         log.severe("testSubscribeUnSubscribeEmpty() subscribe failed: " + e.getMessage());
          fail("testSubscribeUnSubscribeEmpty() subscribe failed: " + e.getMessage());
       }
 
@@ -285,12 +286,12 @@ public class TestUnSub extends TestCase implements I_Callback
          UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
          UnSubscribeQos uq = new UnSubscribeQos(glob);
          UnSubscribeReturnQos[] urq = senderConnection.unSubscribe(uk.toXml(), uq.toXml());
-         log.info(ME, "testSubscribeUnSubscribeEmpty() unSubscribed");
+         log.info("testSubscribeUnSubscribeEmpty() unSubscribed");
          assertEquals("Return wrong", 1, urq.length);
          assertEquals("SubId wrong", subRet.getSubscriptionId(), urq[0].getSubscriptionId());
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "testSubscribeUnSubscribeEmpty() unSubscribe failed: " + e.getMessage());
+         log.severe("testSubscribeUnSubscribeEmpty() unSubscribe failed: " + e.getMessage());
          fail("testSubscribeUnSubscribeEmpty() unSubscribe failed: " + e.getMessage());
       }
    }
@@ -302,7 +303,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public void testSubscribeUnSubscribeExact()
    {
-      log.info(ME, "Starting testSubscribeUnSubscribeExact()");
+      log.info("Starting testSubscribeUnSubscribeExact()");
       numReceived = 0;
       doPublish();           // Feed some data
       subscribeXPath();    // Subscribe to it
@@ -318,7 +319,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public void testSubscribeUnSubscribeXPath()
    {
-      log.info(ME, "Starting testSubscribeUnSubscribeXPath()");
+      log.info("Starting testSubscribeUnSubscribeXPath()");
       numReceived = 0;
       doPublish();           // Feed some data
       subscribeXPath();    // Subscribe to it
@@ -335,7 +336,7 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -368,7 +369,7 @@ public class TestUnSub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

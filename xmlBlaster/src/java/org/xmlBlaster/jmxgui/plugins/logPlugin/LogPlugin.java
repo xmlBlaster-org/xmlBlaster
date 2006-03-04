@@ -52,8 +52,8 @@ public class LogPlugin extends JmxPlugin {
 
     this.server = cc.getServer();
 
-    nh = new NotificationHandler(MBean, "org.xmlBlaster.util.admin.extern.JmxLogChannel", this, server);
-    JButton[] buttons = createButtonsForOperation(MBean, "org.xmlBlaster.util.admin.extern.JmxLogChannel");
+    nh = new NotificationHandler(MBean, "org.xmlBlaster.util.admin.extern.JmxLogger", this, server);
+    JButton[] buttons = createButtonsForOperation(MBean, "org.xmlBlaster.util.admin.extern.JmxLogger");
     GridBagLayout gbl = new GridBagLayout();
     GridBagConstraints gbc = new GridBagConstraints();
 
@@ -80,7 +80,7 @@ public class LogPlugin extends JmxPlugin {
 
   public void update() {
     try {
-      server.createMBean("org.xmlBlaster.util.admin.extern.JmxLogChannel",new ObjectName(MBean));
+      server.createMBean("org.xmlBlaster.util.admin.extern.JmxLogger",new ObjectName(MBean));
       str =  (String) server.getAttribute(new ObjectName(MBean), "LogText").get();
       text.append(str);
     }

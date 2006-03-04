@@ -4,7 +4,8 @@ package javaclients;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Random;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -78,11 +79,11 @@ public class HelloWorldPublish
 {
    private final String ME = "HelloWorldPublish";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorldPublish.class.getName());
 
    public HelloWorldPublish(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("HelloWorldPublish");
+
       try {
          boolean interactive = glob.getProperty().get("interactive", true);
          boolean oneway = glob.getProperty().get("oneway", false);
@@ -117,60 +118,60 @@ public class HelloWorldPublish
          if (historyMaxMsg < 1 && !glob.getProperty().propertyExists("destroyDelay"))
             destroyDelay = 24L*60L*60L*1000L; // Increase destroyDelay to one day if no history queue is used
 
-         log.info(ME, "Used settings are:");
-         log.info(ME, "   -interactive    " + interactive);
-         log.info(ME, "   -sleep          " + org.jutils.time.TimeHelper.millisToNice(sleep));
-         log.info(ME, "   -oneway         " + oneway);
-         log.info(ME, "   -erase          " + erase);
-         log.info(ME, "   -disconnect     " + disconnect);
-         log.info(ME, "   -eraseTailback  " + eraseTailback);
-         log.info(ME, " Pub/Sub settings");
-         log.info(ME, "   -numPublish     " + numPublish);
-         log.info(ME, "   -oid            " + oid);
-         log.info(ME, "   -clientTags     " + clientTags);
-         log.info(ME, "   -domain         " + ((domain==null)?"":domain));
+         log.info("Used settings are:");
+         log.info("   -interactive    " + interactive);
+         log.info("   -sleep          " + org.jutils.time.TimeHelper.millisToNice(sleep));
+         log.info("   -oneway         " + oneway);
+         log.info("   -erase          " + erase);
+         log.info("   -disconnect     " + disconnect);
+         log.info("   -eraseTailback  " + eraseTailback);
+         log.info(" Pub/Sub settings");
+         log.info("   -numPublish     " + numPublish);
+         log.info("   -oid            " + oid);
+         log.info("   -clientTags     " + clientTags);
+         log.info("   -domain         " + ((domain==null)?"":domain));
          if (contentSize >= 0) {
-            log.info(ME, "   -content        [generated]");
-            log.info(ME, "   -contentSize    " + contentSize);
+            log.info("   -content        [generated]");
+            log.info("   -contentSize    " + contentSize);
          }
          else if (contentFile != null && contentFile.length() > 0) {
-            log.info(ME, "   -contentFile    " + contentFile);
+            log.info("   -contentFile    " + contentFile);
          }
          else {
-            log.info(ME, "   -content        " + contentStr);
-            log.info(ME, "   -contentSize    " + contentStr.length());
+            log.info("   -content        " + contentStr);
+            log.info("   -contentSize    " + contentStr.length());
          }
-         log.info(ME, "   -priority       " + priority.toString());
-         log.info(ME, "   -persistent     " + persistent);
-         log.info(ME, "   -lifeTime       " + org.jutils.time.TimeHelper.millisToNice(lifeTime));
-         log.info(ME, "   -forceUpdate    " + forceUpdate);
-         log.info(ME, "   -forceDestroy   " + forceDestroy);
+         log.info("   -priority       " + priority.toString());
+         log.info("   -persistent     " + persistent);
+         log.info("   -lifeTime       " + org.jutils.time.TimeHelper.millisToNice(lifeTime));
+         log.info("   -forceUpdate    " + forceUpdate);
+         log.info("   -forceDestroy   " + forceDestroy);
          if (clientPropertyMap != null) {
             Iterator it = clientPropertyMap.keySet().iterator();
             while (it.hasNext()) {
                String key = (String)it.next();
-               log.info(ME, "   -clientProperty["+key+"]   " + clientPropertyMap.get(key).toString());
+               log.info("   -clientProperty["+key+"]   " + clientPropertyMap.get(key).toString());
             }
          }
          else {
-            log.info(ME, "   -clientProperty[]   ");
+            log.info("   -clientProperty[]   ");
          }
-         log.info(ME, " Topic settings");
-         log.info(ME, "   -readonly       " + readonly);
-         log.info(ME, "   -destroyDelay   " + org.jutils.time.TimeHelper.millisToNice(destroyDelay));
-         log.info(ME, "   -createDomEntry " + createDomEntry);
-         log.info(ME, "   -queue/history/maxEntries " + historyMaxMsg);
-         log.info(ME, " PtP settings");
-         log.info(ME, "   -subscribable   " + subscribable);
-         log.info(ME, "   -forceQueuing   " + forceQueuing);
-         log.info(ME, "   -destination    " + destination);
-         log.info(ME, " Erase settings");
-         log.info(ME, "   -erase.forceDestroy " + eraseForceDestroy);
-         log.info(ME, "   -erase.domain   " + ((domain==null)?"":domain));
-         log.info(ME, " ConnectQos settings");
-         log.info(ME, "   -connect/qos/persistent " + connectPersistent);
-         log.info(ME, "For more info please read:");
-         log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html");
+         log.info(" Topic settings");
+         log.info("   -readonly       " + readonly);
+         log.info("   -destroyDelay   " + org.jutils.time.TimeHelper.millisToNice(destroyDelay));
+         log.info("   -createDomEntry " + createDomEntry);
+         log.info("   -queue/history/maxEntries " + historyMaxMsg);
+         log.info(" PtP settings");
+         log.info("   -subscribable   " + subscribable);
+         log.info("   -forceQueuing   " + forceQueuing);
+         log.info("   -destination    " + destination);
+         log.info(" Erase settings");
+         log.info("   -erase.forceDestroy " + eraseForceDestroy);
+         log.info("   -erase.domain   " + ((domain==null)?"":domain));
+         log.info(" ConnectQos settings");
+         log.info("   -connect/qos/persistent " + connectPersistent);
+         log.info("For more info please read:");
+         log.info("   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html");
 
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
@@ -181,36 +182,36 @@ public class HelloWorldPublish
                                         I_XmlBlasterAccess connection) {
                   /*
                   ConnectReturnQos conRetQos = connection.getConnectReturnQos();
-                  log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " +
+                  log.info("I_ConnectionStateListener: We were lucky, connected to " +
                      connection.getGlobal().getId() + " as " + conRetQos.getSessionName());
                      */
                   if (eraseTailback) {
-                     log.info(ME, "Destroying " + connection.getQueue().getNumOfEntries() +
+                     log.info("Destroying " + connection.getQueue().getNumOfEntries() +
                                   " client side tailback messages");
                      connection.getQueue().clear();
                   }
                }
                public void reachedPolling(ConnectionStateEnum oldState,
                                           I_XmlBlasterAccess connection) {
-                  log.warn(ME, "I_ConnectionStateListener: No connection to xmlBlaster server, we are polling ...");
+                  log.warning("I_ConnectionStateListener: No connection to xmlBlaster server, we are polling ...");
                }
                public void reachedDead(ConnectionStateEnum oldState,
                                        I_XmlBlasterAccess connection) {
-                  log.warn(ME, "I_ConnectionStateListener: Connection from " +
+                  log.warning("I_ConnectionStateListener: Connection from " +
                           connection.getGlobal().getId() + " to xmlBlaster is DEAD, doing exit.");
                   System.exit(1);
                }
             });
    
          // ConnectQos checks -session.name and -passwd from command line
-         log.info(ME, "============= CreatingConnectQos");
+         log.info("============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
          if (connectPersistent) {
             qos.setPersistent(connectPersistent);
          }
-         log.info(ME, "ConnectQos is " + qos.toXml());
+         log.info("ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
-         log.info(ME, "Connect success as " + crq.toXml());
+         log.info("Connect success as " + crq.toXml());
 
          org.jutils.time.StopWatch stopWatch = new org.jutils.time.StopWatch();
          for(int i=0; i<numPublish; i++) {
@@ -224,7 +225,7 @@ public class HelloWorldPublish
                if (sleep > 0) {
                   try { Thread.sleep(sleep); } catch( InterruptedException e) {}
                }
-               log.info(ME, "Publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
+               log.info("Publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
             }
 
             PublishKey pk = new PublishKey(glob, currOid, "text/xml", "1.0");
@@ -258,11 +259,11 @@ public class HelloWorldPublish
                   topicProperty.setHistoryQueueProperty(prop);
                }
                pq.setTopicProperty(topicProperty);
-               log.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
+               log.info("Added TopicProperty on first publish: " + topicProperty.toXml());
             }
             
             if (destination != null) {
-               log.trace("", "Using destination: '" + destination + "'");
+               log.fine("Using destination: '" + destination + "'");
                Destination dest = new Destination(glob, new SessionName(glob, destination));
                dest.forceQueuing(forceQueuing);
                pq.addDestination(dest);
@@ -285,26 +286,26 @@ public class HelloWorldPublish
                content = org.jutils.text.StringHelper.replaceAll(contentStr, "%counter", ""+(i+1)).getBytes();
             }
 
-            if (log.DUMP) log.dump("", "Going to parse publish message: " + pk.toXml() + " : " + content + " : " + pq.toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest("Going to parse publish message: " + pk.toXml() + " : " + content + " : " + pq.toXml());
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
-            if (log.DUMP) log.dump("", "Going to publish message: " + msgUnit.toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest("Going to publish message: " + msgUnit.toXml());
 
             if (oneway) {
                MsgUnit msgUnitArr[] = { msgUnit };
                con.publishOneway(msgUnitArr);
-               log.info(ME, "#" + (i+1) + "/" + numPublish +
+               log.info("#" + (i+1) + "/" + numPublish +
                          ": Published oneway message '" + msgUnit.getKeyOid() + "'");
             }
             else {
                PublishReturnQos prq = con.publish(msgUnit);
-               if (log.DUMP) log.dump("", "Returned: " + prq.toXml());
+               if (log.isLoggable(Level.FINEST)) log.finest("Returned: " + prq.toXml());
 
-               log.info(ME, "#" + (i+1) + "/" + numPublish +
+               log.info("#" + (i+1) + "/" + numPublish +
                          ": Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp() +
                          " for published message '" + prq.getKeyOid() + "'");
             }
          }
-         log.info(ME, "Elapsed since starting to publish: " + stopWatch.nice(numPublish));
+         log.info("Elapsed since starting to publish: " + stopWatch.nice(numPublish));
 
          if (erase) {
             if (interactive) {
@@ -315,9 +316,9 @@ public class HelloWorldPublish
             if (domain != null) ek.setDomain(domain);
             EraseQos eq = new EraseQos(glob);
             eq.setForceDestroy(eraseForceDestroy);
-            if (log.DUMP) log.dump("", "Going to erase the topic: " + ek.toXml() + eq.toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest("Going to erase the topic: " + ek.toXml() + eq.toXml());
             EraseReturnQos[] eraseArr = con.erase(ek, eq);
-            log.info(ME, "Erase success");
+            log.info("Erase success");
          }
 
          Global.waitOnKeyboardHit("Hit a key to exit");
@@ -328,11 +329,11 @@ public class HelloWorldPublish
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
    }
 

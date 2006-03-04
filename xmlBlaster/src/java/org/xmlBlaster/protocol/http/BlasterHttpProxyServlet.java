@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.jutils.runtime.Memory;
 import org.jutils.time.TimeHelper;
@@ -57,7 +58,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
    private static boolean propertyRead = false;
    private final String header = "<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'>";
    private Global glob = null;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(BlasterHttpProxyServlet.class.getName());
    public final static String ENCODING = "UTF-8";
 
    /**
@@ -96,7 +97,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          glob = new Global();
          int ret = glob.init(args);
-         log = glob.getLog(null);
+
          if (ret != 0) {
             // init problems
          }
@@ -109,7 +110,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       // outcomment this line:
       //log.addLogableDevice(this);
 
-      log.trace("BlasterHttpProxyServlet", "Initialize ...");
+      log.fine("Initialize ...");
 
       initSystemProperties(conf); // Using JacORB and Suns XML parser as a default ...
    }
@@ -133,7 +134,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
    {
-      if (log.CALL) log.call("BlasterHttpProxyServlet", "Entering doGet() ... " + Memory.getStatistic());
+      if (log.isLoggable(Level.FINER)) log.finer("Entering doGet() ... " + Memory.getStatistic());
       res.setContentType("text/html");
       String errorText="";
       String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr();
@@ -141,7 +142,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       String actionType = Util.getParameter(req, "ActionType", "");
       if (actionType == null) {
          String str = "Please call servlet with some ActionType";
-         log.error(ME, str);
+         log.severe(str);
          htmlOutput(str, res);
          return;
       }
@@ -150,7 +151,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       if (actionType.equals("login")) {
          boolean invalidate = Util.getParameter(req, "xmlBlaster.invalidate", true);
          if (invalidate == true) {
-            log.info(ME, "Entering servlet doGet(), forcing a new sessionId");
+            log.info("Entering servlet doGet(), forcing a new sessionId");
             session.invalidate();   // force a new sessionId
          }
          session = req.getSession(true);
@@ -158,7 +159,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       String sessionId = session.getId();
 
       ME += "-" + sessionId;
-      if (log.TRACE) log.trace(ME, "Entering servlet doGet() ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering servlet doGet() ...");
 
       if (sessionId == null) {
          PrintWriter out = res.getWriter();
@@ -199,14 +200,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                pushHandler.startPing();
             }
             else {
-               log.info(ME, "Login action, browser has not yet joined this sessionId (cookie), so first pings pong may return an invalid sessionId");
+               log.info("Login action, browser has not yet joined this sessionId (cookie), so first pings pong may return an invalid sessionId");
                pushHandler.startPing(); // This is too early here, we need to start the ping thread later?
             }
 
             BlasterHttpProxy.addHttpPushHandler( sessionId, pushHandler );
 
             // Don't fall out of doGet() to keep the HTTP connection open
-            log.info(ME, "Waiting forever, permanent HTTP connection from " +
+            log.info("Waiting forever, permanent HTTP connection from " +
                            req.getRemoteHost() + "/" + req.getRemoteAddr() +
                            ", sessionName=" + connectQos.getSessionName().getRelativeName() + " sessionId=" + sessionId +
                            "', protocol='" + req.getProtocol() +
@@ -214,18 +215,17 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                            "', referer='" + req.getHeader("Referer") +
                            "'.");
 
-            if (log.TRACE) log.trace(ME,
-                           "user='" + req.getRemoteUser() +
-                           "', serverPort='" + req.getServerPort() +
-                           "', query='" + req.getQueryString() +
-                           "', pathInfo='" + req.getPathInfo() +
-                           "', pathTranslated='" + req.getPathTranslated() +
-                           "', servletPath='" + req.getServletPath() +
-                           "', documentRoot='" + getServletConfig().getServletContext().getRealPath("/") +
-                           "', accept='" + req.getHeader("Accept") +
-                           "', referer='" + req.getHeader("Referer") +
-                           "', authorization='" + req.getHeader("Authorization") +
-                           "'.");
+            if (log.isLoggable(Level.FINE)) log.fine("user='" + req.getRemoteUser() +
+            "', serverPort='" + req.getServerPort() +
+            "', query='" + req.getQueryString() +
+            "', pathInfo='" + req.getPathInfo() +
+            "', pathTranslated='" + req.getPathTranslated() +
+            "', servletPath='" + req.getServletPath() +
+            "', documentRoot='" + getServletConfig().getServletContext().getRealPath("/") +
+            "', accept='" + req.getHeader("Accept") +
+            "', referer='" + req.getHeader("Referer") +
+            "', authorization='" + req.getHeader("Authorization") +
+            "'.");
 
             pushHandler.setBrowserIsReady( true );
             pushHandler.ping("loginSucceeded");
@@ -235,13 +235,13 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                   Thread.currentThread().sleep(10000L);
                }
                catch (InterruptedException i) {
-                  log.error(ME,"Error in Thread handling, don't know what to do: "+i.toString());
+                  log.severe("Error in Thread handling, don't know what to do: "+i.toString());
                   pushHandler.cleanup();
                   break;
                }
             }
             pushHandler = null;
-            log.info(ME, "Persistent HTTP connection lost, leaving doGet() ....");
+            log.info("Persistent HTTP connection lost, leaving doGet() ....");
             /*
             System.out.println("Currently consumed threads:");
             System.out.println("===========================");
@@ -252,7 +252,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          //------------------ first request from applet --------------------------
          else if(actionType.equals("dummyToCreateASessionId")) {  // I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME
-            log.info(ME, "doGet: dummyToCreateASessionId");
+            log.info("doGet: dummyToCreateASessionId");
             PrintWriter out = res.getWriter();
             out.println(header+"<body text='white' bgcolor='white'>Empty response for your ActionType='dummyToCreateASessionId' " +
                         System.currentTimeMillis() + "</body></html>");
@@ -264,7 +264,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          else if(actionType.equals("browserReady")) {
             try {
                HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
-               if (log.TRACE) log.trace(ME, "Received 'browserReady'");
+               if (log.isLoggable(Level.FINE)) log.fine("Received 'browserReady'");
                pushHandler.setBrowserIsReady( true );
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
@@ -273,7 +273,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                return;
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.getMessage());
+               log.severe("Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.getMessage());
                return;
             }
          }
@@ -293,7 +293,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                pushHandler.pong();
 
                // state is only for debugging and to avoid internet proxies to discard this content (since it has not changed)
-               if (log.TRACE) log.trace(ME, "Received pong '" + Util.getParameter(req, "state", "noState") + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("Received pong '" + Util.getParameter(req, "state", "noState") + "'");
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
@@ -301,7 +301,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                return;
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.getMessage());
+               log.severe("Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.getMessage());
                return;
             }
          }
@@ -327,12 +327,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          //------------------ logout ---------------------------------------------------------
          else if (actionType.equals("logout")) {
-            log.info(ME, "Logout arrived ...");
+            log.info("Logout arrived ...");
             try {
                HttpPushHandler pc = BlasterHttpProxy.getHttpPushHandler(sessionId);
                pc.cleanup();
             } catch(XmlBlasterException e) {
-               log.error(ME, e.toString());
+               log.severe(e.toString());
             }
 
             // Otherwise the browser (controlFrame) complains 'document contained no data'
@@ -347,7 +347,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
 
       } catch (XmlBlasterException e) {
-         log.error(ME, "Caught XmlBlaster Exception: " + e.getMessage());
+         log.severe("Caught XmlBlaster Exception: " + e.getMessage());
          String codedText = Global.encode( e.getMessage(), ENCODING );
          try {
             HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
@@ -357,7 +357,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             out.println(HttpPushHandler.alert(e.getMessage()));
          }
       } catch (Exception e) {
-         log.error(ME, "Caught Exception: " + e.toString());
+         log.severe("Caught Exception: " + e.toString());
          e.printStackTrace();
          try {
             HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
@@ -411,7 +411,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       String sessionId = req.getRequestedSessionId();
 
       String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + sessionId;
-      log.info(ME, "Entering servlet doPost() ...");
+      log.info("Entering servlet doPost() ...");
 
       I_XmlBlasterAccess xmlBlaster = null;
       HttpPushHandler pushHandler = null;
@@ -422,7 +422,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          xmlBlaster = pushHandler.getXmlBlasterAccess();
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Caught XmlBlaster Exception: " + e.getMessage());
+         log.severe("Caught XmlBlaster Exception: " + e.getMessage());
          return;
       }
 
@@ -443,7 +443,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          String key = Util.getParameter(req, "key", null);
          if (key != null) {
             key = Global.decode(key, ENCODING);
-            if (log.DUMP) log.dump(ME, "key=\n'" + key + "'");
+            if (log.isLoggable(Level.FINEST)) log.finest("key=\n'" + key + "'");
          }
          
          String content = Util.getParameter(req, "content", null);
@@ -452,7 +452,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          }
          else
             content = "";
-         if (log.DUMP) log.dump(ME, "content=\n'" + content + "'");
+         if (log.isLoggable(Level.FINEST)) log.finest("content=\n'" + content + "'");
 
          String qos = Util.getParameter(req, "qos", null);
          if (qos != null) {
@@ -460,30 +460,30 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          }
          else
             qos = ""; 
-         if (log.DUMP) log.dump(ME, "qos=\n'" + qos + "'");
+         if (log.isLoggable(Level.FINEST)) log.finest("qos=\n'" + qos + "'");
 
          if (action.equals(MethodName.SUBSCRIBE)) { // "subscribe"
-            log.trace(ME, "subscribe arrived ...");
+            log.fine("subscribe arrived ...");
             
             if (oid != null) {
                SubscribeKey xmlKey = new SubscribeKey(glob, oid);
                SubscribeReturnQos ret = xmlBlaster.subscribe(xmlKey.toXml(), qos);
-               log.info(ME, "Subscribed to simple key.oid=" + oid + ": " + ret.getSubscriptionId());
+               log.info("Subscribed to simple key.oid=" + oid + ": " + ret.getSubscriptionId());
             }
             else if (key != null) {
                SubscribeReturnQos ret = xmlBlaster.subscribe(key, qos);
-               log.info(ME, "Subscribed to " + key + ": SubscriptionId=" + ret.getSubscriptionId() + " qos=" + qos);
+               log.info("Subscribed to " + key + ": SubscriptionId=" + ret.getSubscriptionId() + " qos=" + qos);
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";
-               log.error(ME, str);
+               log.severe(str);
                htmlOutput(str, res);
                return;
             }
          }
 
          else if (action.equals(MethodName.UNSUBSCRIBE)) { // "unSubscribe"
-            log.trace(ME, "unSubscribe arrived ...");
+            log.fine("unSubscribe arrived ...");
             UnSubscribeReturnQos[] ret;
 
             if (oid != null) {
@@ -495,7 +495,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when unsubscribing";
-               log.error(ME, str);
+               log.severe(str);
                htmlOutput(str, res);
                return;
             }
@@ -506,28 +506,28 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          }
 
          else if (action.equals(MethodName.PUBLISH)) { // "publish"
-            log.trace(ME, "publish arrived ...");
+            log.fine("publish arrived ...");
             if (key == null) {
                String str = "Please call servlet with some key when publishing";
-               log.error(ME, str);
+               log.severe(str);
                htmlOutput(str, res);
                return;
             }
             if (content == null)
                content = "";
 
-            log.info(ME, "Publishing '" + key + "'");
+            log.info("Publishing '" + key + "'");
             MsgUnit msgUnit = new MsgUnit(glob, key, content.getBytes(), qos);
             try {
                PublishReturnQos prq = xmlBlaster.publish(msgUnit);
-               log.trace(ME, "Success: Publishing done, returned oid=" + prq.getKeyOid());
+               log.fine("Success: Publishing done, returned oid=" + prq.getKeyOid());
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
          }
 
          else if (action.equals(MethodName.ERASE)) { // "erase"
-            log.trace(ME, "erase arrived ...");
+            log.fine("erase arrived ...");
             EraseReturnQos[] ret;
 
             if (oid != null) {
@@ -539,14 +539,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";
-               log.error(ME, str);
+               log.severe(str);
                htmlOutput(str, res);
                return;
             }
          }
 
          else if (action.equals(MethodName.PING)) { // "ping"
-            log.trace(ME, "ping arrived, doing nothing ...");
+            log.fine("ping arrived, doing nothing ...");
             //String ret = xmlBlaster.ping(qos);
          }
 
@@ -554,11 +554,11 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             throw new Exception("Unknown or missing 'ActionType=" + actionType + "' please choose 'subscribe' 'unSubscribe' 'erase' etc.");
          }
       } catch (XmlBlasterException e) {
-         log.error(ME, "Caught XmlBlaster Exception: " + e.getMessage());
+         log.severe("Caught XmlBlaster Exception: " + e.getMessage());
          String codedText = Global.encode( e.getMessage(), ENCODING );
          pushHandler.push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
       } catch (Exception e) {
-         log.error(ME, "RemoteException: " + e.getMessage());
+         log.severe("RemoteException: " + e.getMessage());
          e.printStackTrace();
          out.println("<body>http communication problem</body>");
       }
@@ -578,17 +578,17 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       String ME  = "BlasterHttpProxyServlet";
 
       Properties props = System.getProperties();
-      LogChannel log = Global.instance().getLog("http");
+
 
       // Check for orb configuration
       if (conf.getInitParameter("org.omg.CORBA.ORBClass") != null) { // "org.jacorb.orb.ORB"
          props.put( "org.omg.CORBA.ORBClass", conf.getInitParameter("org.omg.CORBA.ORBClass"));
-         log.info(ME, "Using servlet system parameter org.omg.CORBA.ORBClass=" + props.get("org.omg.CORBA.ORBClass"));
+         log.info("Using servlet system parameter org.omg.CORBA.ORBClass=" + props.get("org.omg.CORBA.ORBClass"));
       }
 
       if (conf.getInitParameter("org.omg.CORBA.ORBSingletonClass") != null) { // "org.jacorb.orb.ORBSingleton");
          props.put( "org.omg.CORBA.ORBSingletonClass", conf.getInitParameter("org.omg.CORBA.ORBSingletonClass"));
-         log.info(ME, "Using servlet system parameter org.omg.CORBA.ORBSingletonClass=" + props.get("org.omg.CORBA.ORBSingletonClass"));
+         log.info("Using servlet system parameter org.omg.CORBA.ORBSingletonClass=" + props.get("org.omg.CORBA.ORBSingletonClass"));
       }
 
       // xmlBlaster uses Suns XML parser as default
@@ -608,7 +608,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
 
    /**
-    * Event fired by LogChannel.java through interface LogableDevice.
+    * Event fired by Logger.java through interface LogableDevice.
     * <p />
     * Log output from log.info(); etc. into Servlet log file.
     * <p />
@@ -642,7 +642,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          pw.close();
       }
       catch(IOException e) {
-         log.warn(ME, "Could not deliver HTML page to browser:"+e.toString());
+         log.warning("Could not deliver HTML page to browser:"+e.toString());
          throw new ServletException(e.toString());
       }
    }
@@ -664,7 +664,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          pw.close();
       }
       catch(IOException e) {
-         log.error(ME, "Sending of error failed: " + error + "\n Reason=" + e.toString());
+         log.severe("Sending of error failed: " + error + "\n Reason=" + e.toString());
       }
    }
 
@@ -688,9 +688,9 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       }
       catch(IOException e) {
          String text = "Sending XML data to browser failed: " + e.toString();
-         log.warn(ME, text);
+         log.warning(text);
          PrintWriter pw;
-         try { pw = response.getWriter(); } catch(IOException e2) { log.error(ME, "2.xml send problem"); return; }
+         try { pw = response.getWriter(); } catch(IOException e2) { log.severe("2.xml send problem"); return; }
          pw.println("<html><body>Request Problems" + text + "</body></html>");
          pw.close();
       }

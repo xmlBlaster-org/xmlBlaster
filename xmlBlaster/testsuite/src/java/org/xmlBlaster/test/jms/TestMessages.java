@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 import javax.jms.JMSException;
 import javax.jms.MessageNotWriteableException;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
 import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.jms.XBTextMessage;
 import org.xmlBlaster.util.Global;
@@ -28,9 +28,8 @@ import junit.framework.*;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class TestMessages extends TestCase {
-   private final static String ME = "TestMessages";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(TestMessages.class.getName());
    int counter = 0, nmax;
 
    public TestMessages(String name) {
@@ -40,12 +39,11 @@ public class TestMessages extends TestCase {
    public void prepare(String[] args) {
       this.glob = new Global(args);
       // this.glob.init(args);
-      this.glob.getLog("test");
    }
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
    }
 
    protected void tearDown() {
@@ -59,7 +57,7 @@ public class TestMessages extends TestCase {
          Object[] args = new Object[] { setter };
          Method method = XBMessage.class.getMethod(methodName, argTypes);
          try {
-            this.log.info(ME, "checkIfAllowed: setter='" + setter + "', getter='" + getter + "' expected='" + allowed + "'");
+            log.info("checkIfAllowed: setter='" + setter + "', getter='" + getter + "' expected='" + allowed + "'");
             method.invoke(msg, args);
             assertTrue("the combination set" + setter + "Property / get" + getter + "Property should NOT be allowed", allowed);
          }

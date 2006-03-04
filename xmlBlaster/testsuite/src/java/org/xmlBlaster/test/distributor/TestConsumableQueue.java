@@ -8,7 +8,6 @@ package org.xmlBlaster.test.distributor;
 
 import java.util.ArrayList;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.test.util.Client;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -27,31 +26,22 @@ import junit.framework.*;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class TestConsumableQueue extends TestCase {
-   private final static String ME = "TestConsumableQueue";
    private Global global;
-   private LogChannel log;
-   private Object latch = new Object();
-   private String[] args;
    // as a container and as a latch
    static ArrayList responses = new ArrayList();
    private static long WAIT_DELAY = 1000L;
-   private static long FAIL_WAIT_DELAY = 1000L;
-   private Client client;
 
    public TestConsumableQueue(String name) {
       super(name);
    }
 
    public void prepare(String[] args) {
-      this.args = args;
       this.global = new Global(args);
-      // this.glob.init(args);
-      this.global.getLog("test");
    }
 
    protected void setUp() {
       this.global = Global.instance();
-      this.log = this.global.getLog("test");
+
       responses.clear();
    }
 

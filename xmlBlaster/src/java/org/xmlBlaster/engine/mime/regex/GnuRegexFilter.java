@@ -6,7 +6,8 @@ Comment:   Support check of message content with regular expressions.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.regex;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -54,7 +55,7 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "GnuRegexFilter";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(GnuRegexFilter.class.getName());
 
    /**
     * This is called after instantiation of the plugin 
@@ -62,8 +63,8 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("mime");
-      log.info(ME, "Filter is initialized, regular expression checks for all mime types");
+
+      log.info("Filter is initialized, regular expression checks for all mime types");
    }
 
    /**
@@ -136,7 +137,7 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
             expression = new RE(query.getQuery());
             query.setPreparedQuery(expression); // for better performance we remember the regex expression
          } catch (gnu.regexp.REException e) {
-            log.error(ME, "Can't compile regular filter expression '" + query + "':" + e.toString());
+            log.severe("Can't compile regular filter expression '" + query + "':" + e.toString());
             throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Can't compile regular filter expression '" + query + "':" + e.toString());
          }
       }

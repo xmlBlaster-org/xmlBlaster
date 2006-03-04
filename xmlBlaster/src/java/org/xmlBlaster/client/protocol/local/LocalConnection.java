@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.local;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -36,7 +37,7 @@ public class LocalConnection implements I_XmlBlasterConnection
 {
    private String ME = "LocalConnection";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(LocalConnection.class.getName());
    private String sessionId;
    protected ConnectReturnQos connectReturnQos;
    protected Address clientAddress;
@@ -69,7 +70,7 @@ public class LocalConnection implements I_XmlBlasterConnection
    public void init(org.xmlBlaster.util.Global glob_, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
       this.glob = (glob_ == null) ? Global.instance() : glob_;
-      this.log = this.glob.getLog("local");
+
       org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)this.glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
@@ -92,7 +93,7 @@ public class LocalConnection implements I_XmlBlasterConnection
 
       this.addressServer = new AddressServer(this.glob, getProtocol(), this.glob.getId(), pluginInfo.getParameters());
       
-      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
+      log.info("Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**
@@ -108,11 +109,11 @@ public class LocalConnection implements I_XmlBlasterConnection
     * @see I_XmlBlasterConnection#connectLowlevel(Address)
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Entering connectLowlevel("+address.getRawAddress()+")");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering connectLowlevel("+address.getRawAddress()+")");
    }
 
    public void resetConnection() {
-      if (log.TRACE) log.trace(ME, "LocalCLient is initialized, no connection available");
+      if (log.isLoggable(Level.FINE)) log.fine("LocalCLient is initialized, no connection available");
       this.sessionId = null;
    }
 
@@ -126,9 +127,9 @@ public class LocalConnection implements I_XmlBlasterConnection
       if (connectQos == null)
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Please specify a valid ConnectQoS");
 
-      if (log.CALL) log.call(ME, "Entering login");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering login");
       if (isLoggedIn()) {
-         log.warn(ME, "You are already logged in, no relogin possible.");
+         log.warning("You are already logged in, no relogin possible.");
          return "";
       }
       String retQos_literal = this.authenticate.connect(this.addressServer, connectQos);
@@ -136,7 +137,7 @@ public class LocalConnection implements I_XmlBlasterConnection
       this.connectReturnQos = new ConnectReturnQos(this.glob, retQos_literal);
       this.sessionId = this.connectReturnQos.getSecretSessionId();
 
-      if (log.TRACE) log.trace(ME, "connect("+this.connectReturnQos.getData().getAddress().getType()+")" + this.connectReturnQos.getSessionName().toString());
+      if (log.isLoggable(Level.FINE)) log.fine("connect("+this.connectReturnQos.getData().getAddress().getType()+")" + this.connectReturnQos.getSessionName().toString());
       return retQos_literal;
    }
 
@@ -154,20 +155,20 @@ public class LocalConnection implements I_XmlBlasterConnection
     * @param sessionId The client sessionId
     */
    public boolean disconnect(String disconnectQos) {
-      if (log.CALL) log.call(ME, "Entering logout");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering logout");
 
       if (!isLoggedIn()) {
-         log.warn(ME, "You are not logged in, no logout possible.");
+         log.warning("You are not logged in, no logout possible.");
       }
 
       try {
          this.authenticate.disconnect(this.addressServer, this.sessionId, disconnectQos);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
 
-      if (log.TRACE) log.trace(ME, "disconnect() done");
+      if (log.isLoggable(Level.FINE)) log.fine("disconnect() done");
       return true;
    }
 
@@ -193,7 +194,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     * <p />
     */
    public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering subscribe(id=" + this.sessionId + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(id=" + this.sessionId + ")");
       return this.xmlBlasterImpl.subscribe(this.addressServer, this.sessionId, xmlKey_literal, qos_literal);
    }
 
@@ -204,7 +205,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     */
    public final String[] unSubscribe (String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering unsubscribe(): id=" + this.sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering unsubscribe(): id=" + this.sessionId);
       return this.xmlBlasterImpl.unSubscribe(this.addressServer, this.sessionId, xmlKey_literal, qos_literal);
    }
 
@@ -212,7 +213,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     * Publish a message.
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering publish(): id=" + this.sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publish(): id=" + this.sessionId);
       return this.xmlBlasterImpl.publish(this.addressServer, this.sessionId, msgUnit);
    }
 
@@ -222,9 +223,9 @@ public class LocalConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final String[] publishArr(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering publishArr: id=" + this.sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr: id=" + this.sessionId);
       if (msgUnitArr == null) {
-         log.error(ME + ".InvalidArguments", "The argument of method publishArr() are invalid");
+         log.severe("The argument of method publishArr() are invalid");
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
                                        "The argument of method publishArr() are invalid");
       }
@@ -237,10 +238,10 @@ public class LocalConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final void publishOneway(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering publishOneway: id=" + this.sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishOneway: id=" + this.sessionId);
 
       if (msgUnitArr == null) {
-         log.error(ME + ".InvalidArguments", "The argument of method publishOneway() are invalid");
+         log.severe("The argument of method publishOneway() are invalid");
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
                                        "The argument of method publishOneway() are invalid");
       }
@@ -254,7 +255,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering erase() id=" + this.sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering erase() id=" + this.sessionId);
       return this.xmlBlasterImpl.erase(this.addressServer, this.sessionId, xmlKey_literal, qos_literal);
    }
 
@@ -265,7 +266,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     */
    public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering get() xmlKey=" + xmlKey_literal.trim() + ") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=" + xmlKey_literal.trim() + ") ...");
       return this.xmlBlasterImpl.get(this.addressServer, this.sessionId, xmlKey_literal, qos_literal);
    }
 

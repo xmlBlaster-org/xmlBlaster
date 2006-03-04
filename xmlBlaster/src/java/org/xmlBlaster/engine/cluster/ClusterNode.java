@@ -9,7 +9,8 @@ package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.engine.Global;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -43,7 +44,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * uses the specific settings from NodeInfo to connect to the remote node
     */
    private final org.xmlBlaster.util.Global remoteGlob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClusterNode.class.getName());
    private final SessionInfo sessionInfo;
    
    private I_XmlBlasterAccess xmlBlasterConnection = null;
@@ -71,7 +72,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    public ClusterNode(Global glob, NodeId nodeId, SessionInfo sessionInfo) throws XmlBlasterException {
       this.fatherGlob = glob;
       this.sessionInfo = sessionInfo;
-      this.log = this.fatherGlob.getLog("cluster");
+
       this.remoteGlob = this.fatherGlob.getClone(new String[0]);
       this.nodeInfo = new NodeInfo(this.remoteGlob, nodeId);
       this.state = new NodeStateInfo(this.remoteGlob);
@@ -136,24 +137,24 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          try {
             Address addr = qos.getAddress();
-            log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getRawAddress() + "' using protocol=" + addr.getType());
+            log.info("Trying to connect to node '" + getId() + "' on address '" + addr.getRawAddress() + "' using protocol=" + addr.getType());
 
             if (this.fatherGlob.getClusterManager().isLocalAddress(addr)) {
-               log.error(ME, "We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());
+               log.severe("We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());
                return null;
             }
-            if (log.DUMP) log.dump(ME, "Connecting to other cluster node, ConnectQos=" + qos.toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest("Connecting to other cluster node, ConnectQos=" + qos.toXml());
 
             /*ConnectReturnQos retQos = */this.xmlBlasterConnection.connect(new ConnectQos(this.remoteGlob, qos), this);
          }
          catch(XmlBlasterException e) {
             if (e.isInternal()) {
-               log.error(ME, "Connecting to " + getId() + " is currently not possible: " + e.getMessage());
+               log.severe("Connecting to " + getId() + " is currently not possible: " + e.getMessage());
             }
             else {
-               log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
+               log.warning("Connecting to " + getId() + " is currently not possible: " + e.toString());
             }
-            log.info(ME, "The connection is in failsafe mode and will queue messages until " + getId() + " is available");
+            log.info("The connection is in failsafe mode and will queue messages until " + getId() + " is available");
          }
       }
       return xmlBlasterConnection;
@@ -327,10 +328,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       this.available = true;
       if (connection.getQueue().getNumOfEntries() > 0) {
-         log.info(ME, "Connected to xmlBlaster node '" + getId() + "', sending " + connection.getQueue().getNumOfEntries() + " tailback messages ...");
+         log.info("Connected to xmlBlaster node '" + getId() + "', sending " + connection.getQueue().getNumOfEntries() + " tailback messages ...");
       }
       else {
-         log.info(ME, "Connected to " + getId() + ", no backup messages to flush");
+         log.info("Connected to " + getId() + ", no backup messages to flush");
       }
    }
 
@@ -342,7 +343,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       this.available = false;
-      log.warn(ME, "I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', we are polling ...");
+      log.warning("I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', we are polling ...");
    }
 
    /**
@@ -353,7 +354,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       this.available = false;
-      log.error(ME, "I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', state=DEAD, giving up.");
+      log.severe("I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', state=DEAD, giving up.");
    }
 
    /**
@@ -363,16 +364,16 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       if (isLocalNode()) {
-         log.error(ME, "Receiving unexpected update of message oid=" + updateKey.getOid() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
+         log.severe("Receiving unexpected update of message oid=" + updateKey.getOid() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
          Thread.dumpStack();
       }
       else {
-         if (log.CALL) log.call(ME, "Receiving update of message oid=" + updateKey.getOid() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
+         if (log.isLoggable(Level.FINER)) log.finer("Receiving update of message oid=" + updateKey.getOid() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
       }
 
       // Important: Do authentication of sender:
       if (!getNodeInfo().getCbSessionId().equals(cbSessionId)) {
-         log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + this.remoteGlob.getId());
+         log.warning("The callback sessionId '" + cbSessionId + "' is invalid, no access to " + this.remoteGlob.getId());
          throw new XmlBlasterException(updateKey.getGlobal(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
                      "Your callback sessionId is invalid, no access to " + this.remoteGlob.getId());
       }

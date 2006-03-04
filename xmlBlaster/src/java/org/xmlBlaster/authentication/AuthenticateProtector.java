@@ -6,7 +6,8 @@ Comment:   Secure layer for Authenticate.java
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -33,16 +34,16 @@ final public class AuthenticateProtector implements I_Authenticate
 {
    final private String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(AuthenticateProtector.class.getName());
    private final Authenticate authenticate;
    private final AvailabilityChecker availabilityChecker;
 
    public AuthenticateProtector(Global global, Authenticate authenticate) throws XmlBlasterException {
       this.glob = global;
-      this.log = this.glob.getLog("auth");
+
       this.ME = "AuthenticateProtector" + glob.getLogPrefixDashed();
       this.authenticate = authenticate;
-      if (log.CALL) log.call(ME, "Entering constructor");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering constructor");
       this.glob.setAuthenticate(this);
       this.availabilityChecker = new AvailabilityChecker(this.glob);
    }

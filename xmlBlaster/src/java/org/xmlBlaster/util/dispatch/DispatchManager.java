@@ -4,7 +4,8 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
@@ -40,7 +41,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 {
    public final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(DispatchManager.class.getName());
    private final I_Queue msgQueue;
    private final DispatchConnectionsHandler dispatchConnectionsHandler;
    private final I_MsgErrorHandler failureListener;
@@ -91,10 +92,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       this.ME = "DispatchManager-" + msgQueue.getStorageId().getId();
       this.glob = glob;
-      this.log = glob.getLog("dispatch");
+
       this.sessionName = sessionName;
 
-      if (log.TRACE) log.trace(ME, "Loading DispatchManager ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Loading DispatchManager ...");
 
       this.msgQueue = msgQueue;
       this.failureListener = failureListener;
@@ -116,10 +117,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          propString.setValue(addrArr[0].getDispatchPlugin());
       this.typeVersion = propString.getValue();
       this.msgInterceptor = glob.getDispatchPluginManager().getPlugin(this.typeVersion); // usually from cache
-      if (log.TRACE) log.trace(ME, "DispatchPlugin/defaultPlugin=" + propString.getValue() + " this.msgInterceptor="  + this.msgInterceptor);
+      if (log.isLoggable(Level.FINE)) log.fine("DispatchPlugin/defaultPlugin=" + propString.getValue() + " this.msgInterceptor="  + this.msgInterceptor);
       if (this.msgInterceptor != null) {
          this.msgInterceptor.addDispatchManager(this);
-         if (log.TRACE) log.trace(ME, "Activated dispatcher plugin '" + this.typeVersion + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Activated dispatcher plugin '" + this.typeVersion + "'");
       }
 
       this.msgQueue.addPutListener(this); // to get putPre() and putPost() events
@@ -158,7 +159,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
    public void finalize() {
       removeBurstModeTimer();
-      if (log.TRACE) log.trace(ME, "finalize - garbage collected");
+      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collected");
    }
 
    public I_Queue getQueue() {
@@ -250,12 +251,12 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    void toAlive(ConnectionStateEnum oldState) {
       
-      if (log.CALL) log.call(ME, "Switch from " + oldState + " to ALIVE");
+      if (log.isLoggable(Level.FINER)) log.finer("Switch from " + oldState + " to ALIVE");
 
       // Remember the current collectTime
       AddressBase addr = this.dispatchConnectionsHandler.getAliveAddress();
       if (addr == null) {
-         log.error(ME, "toAlive action has no alive address");
+         log.severe("toAlive action has no alive address");
          return;
       }
 
@@ -293,7 +294,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    /** Call by DispatchConnectionsHandler on state transition */
    void toPolling(ConnectionStateEnum oldState) {
 
-      if (log.CALL) log.call(ME, "Switch from " + oldState + " to POLLING");
+      if (log.isLoggable(Level.FINER)) log.finer("Switch from " + oldState + " to POLLING");
       if (this.toPollingTime <= this.toAliveTime) {
          this.toPollingTime = System.currentTimeMillis();
       }
@@ -312,7 +313,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
    /** Call by DispatchConnectionsHandler on state transition */
    public void toDead(ConnectionStateEnum oldState, XmlBlasterException ex) {
-      if (log.CALL) log.call(ME, "Switch from " + oldState + " to DEAD");
+      if (log.isLoggable(Level.FINER)) log.finer("Switch from " + oldState + " to DEAD");
       if (oldState == ConnectionStateEnum.DEAD) return;
       if (this.isShutdown) return;
       if (ex != null) {
@@ -338,7 +339,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    private void givingUpDelivery(XmlBlasterException ex) {
-      if (log.TRACE) log.trace(ME, "Entering givingUpDelivery(), state is " + this.dispatchConnectionsHandler.getState());
+      if (log.isLoggable(Level.FINE)) log.fine("Entering givingUpDelivery(), state is " + this.dispatchConnectionsHandler.getState());
       removeBurstModeTimer();
       // The error handler flushed the queue and does error handling with them
       getMsgErrorHandler().handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
@@ -350,7 +351,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    void handleSyncWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
 
-      if (log.CALL) log.call(ME, "Sync delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
+      if (log.isLoggable(Level.FINER)) log.finer("Sync delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
       
       XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,ME,null,throwable);
 
@@ -394,10 +395,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          getDispatchConnectionsHandler().createFakedReturnObjects(entries, Constants.STATE_OK, Constants.INFO_QUEUED);
          msgQueue.put(entries, I_Queue.IGNORE_PUT_INTERCEPTOR);
 
-         if (log.TRACE) log.trace(ME, "Delivery failed, pushed " + entries.length + " entries into tail back queue");
+         if (log.isLoggable(Level.FINE)) log.fine("Delivery failed, pushed " + entries.length + " entries into tail back queue");
       }
       else {
-         if (log.TRACE) log.trace(ME, "Invocation failed: " + xmlBlasterException.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("Invocation failed: " + xmlBlasterException.getMessage());
          throw xmlBlasterException;
       }
    }
@@ -408,11 +409,11 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    void handleWorkerException(ArrayList entryList, Throwable throwable) {
       // Note: The DispatchManager is notified about connection problems directly by its DispatchConnectionsHandler
       //       we don't need to take care of ErrorCode.COMMUNICATION*
-      if (log.CALL) log.call(ME, "Async delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
+      if (log.isLoggable(Level.FINER)) log.finer("Async delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
       //Thread.currentThread().dumpStack();
       if (entryList == null) {
          if (!this.isShutdown)
-            log.warn(ME, "Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage() + toXml(""));
+            log.warning("Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage() + toXml(""));
          return;
       }
 
@@ -421,7 +422,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       if (throwable instanceof XmlBlasterException) {
          XmlBlasterException ex = (XmlBlasterException)throwable;
-         if (log.TRACE) log.trace(ME, "Invocation or callback failed: " + ex.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("Invocation or callback failed: " + ex.getMessage());
          if (ex.isUser()) {
             // Exception from remote client from update(), pass it to error handler and carry on ...
             MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
@@ -481,10 +482,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          if (this.syncDispatchWorker == null) this.syncDispatchWorker = new DispatchWorker(glob, this);
 
          this.isSyncMode = true;
-         log.info(ME, "Switched to synchronous message delivery");
+         log.info("Switched to synchronous message delivery");
          
          if (this.timerKey != null)
-            log.error(ME, "Burst mode timer was activated and we switched to synchronous delivery" +
+            log.severe("Burst mode timer was activated and we switched to synchronous delivery" +
                           " - handling of this situation is not coded yet");
          removeBurstModeTimer();
       }
@@ -503,7 +504,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          //this.msgQueue.removePutListener(this);
          this.isSyncMode = false;
          activateDispatchWorker(); // just in case there are some messages pending in the queue
-         log.info(ME, "Switched to asynchronous message delivery");
+         log.info("Switched to asynchronous message delivery");
       }
    }
 
@@ -531,7 +532,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          return true; // Add entry to queue
       }
       
-      if (log.TRACE) log.trace(ME, "putPre() - Got " + queueEntries.length + " QueueEntries to deliver synchronously ...");
+      if (log.isLoggable(Level.FINE)) log.fine("putPre() - Got " + queueEntries.length + " QueueEntries to deliver synchronously ...");
       ArrayList entryList = new ArrayList(queueEntries.length);
       for (int ii=0; ii<queueEntries.length; ii++) {
          if (this.trySyncMode && !this.isSyncMode && queueEntries[ii] instanceof MsgQueueGetEntry) { // this.trySyncMode === isClientSide
@@ -586,13 +587,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public ArrayList prepareMsgsFromQueue(ArrayList entryList) {
 
       if (entryList == null || entryList.size() < 1) {
-         if (log.TRACE) log.trace(ME, "Got zero messages from queue, expected at least one, can happen if client disconnected in the mean time: " + toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine("Got zero messages from queue, expected at least one, can happen if client disconnected in the mean time: " + toXml(""));
          return null;
       }
       return prepareMsgsFromQueue(ME, this.log, this.msgQueue, entryList);
    }
 
-   public static ArrayList prepareMsgsFromQueue(String logId, LogChannel log, I_Queue queue, ArrayList entryList) {
+   public static ArrayList prepareMsgsFromQueue(String logId, Logger log, I_Queue queue, ArrayList entryList) {
       // Remove all expired messages and do a shallow copy
       int size = entryList.size();
       ArrayList result = new ArrayList(size);
@@ -601,13 +602,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          // Take care to remove the filtered away messages from the queue as well
          //log.error(ME, "DEBUG ONLY: Analyze msg " + entry.toXml());
          if (entry.isDestroyed()) {
-            log.info(logId, "Message " + entry.getLogId() + " is destroyed, ignoring it");
-            if (log.TRACE) log.trace(logId, "Message " + entry.getLogId() + " is destroyed, ignoring it: " + entry.toXml());
+            log.info("Message " + entry.getLogId() + " is destroyed, ignoring it");
+            if (log.isLoggable(Level.FINE)) log.fine("Message " + entry.getLogId() + " is destroyed, ignoring it: " + entry.toXml());
             try {
                queue.removeRandom(entry); // Probably change to use [] for better performance
             }
             catch (Throwable e) {
-               log.error(logId, "Internal error when removing expired message " + entry.getLogId() + " from queue, no recovery implemented, we continue: " + e.toString());
+               log.severe("Internal error when removing expired message " + entry.getLogId() + " from queue, no recovery implemented, we continue: " + e.toString());
             }
             continue;
          }
@@ -623,7 +624,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * Called by I_Queue.putPost()
     */
    public void notifyAboutNewEntry() {
-      if (log.CALL) log.call(ME, "Entering notifyAboutNewEntry("+this.notifyCounter+")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering notifyAboutNewEntry("+this.notifyCounter+")");
       this.notifyCounter++;
       //activateDispatchWorker();
 
@@ -666,11 +667,11 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       
       // Messages are sent delayed on timeout (burst mode)
 
-      if (log.TRACE) log.trace(ME, "Executing useBurstModeTimer() collectTime=" + collectTime + " dispatchWorkerIsActive=" + dispatchWorkerIsActive);
+      if (log.isLoggable(Level.FINE)) log.fine("Executing useBurstModeTimer() collectTime=" + collectTime + " dispatchWorkerIsActive=" + dispatchWorkerIsActive);
       synchronized (this) {
          if (this.isShutdown) return false;
          if (this.timerKey == null) {
-            if (log.TRACE) log.trace(ME, "Starting burstMode timer with " + collectTime + " msec");
+            if (log.isLoggable(Level.FINE)) log.fine("Starting burstMode timer with " + collectTime + " msec");
             this.timerKey = this.glob.getBurstModeTimer().addTimeoutListener(this, collectTime, null);
          }
       }
@@ -694,11 +695,11 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    private void startWorkerThread(boolean fromTimeout) {
       if (this.dispatchWorkerIsActive == false) {
-         //if (log.TRACE) log.trace(ME, "Doing startWorkerThread("+fromTimeout+")");
+         //if (log.isLoggable(Level.FINE)) log.trace(ME, "Doing startWorkerThread("+fromTimeout+")");
          synchronized (this) {
-            //if (log.TRACE) log.trace(ME, "Doing startWorkerThread(isShutdown="+this.isShutdown+", dispatchWorkerIsActive="+this.dispatchWorkerIsActive+") inside sync");
+            //if (log.isLoggable(Level.FINE)) log.trace(ME, "Doing startWorkerThread(isShutdown="+this.isShutdown+", dispatchWorkerIsActive="+this.dispatchWorkerIsActive+") inside sync");
             if (this.isShutdown) {
-               if (log.TRACE) log.trace(ME, "startWorkerThread() failed, we are shutdown: " + toXml(""));
+               if (log.isLoggable(Level.FINE)) log.fine("startWorkerThread() failed, we are shutdown: " + toXml(""));
                return;
             }
             if (this.dispatchWorkerIsActive == false) { // send message directly
@@ -709,7 +710,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
                }
                catch (Throwable e) {
                   this.dispatchWorkerIsActive = false;
-                  log.error(ME, "Unexpected error occurred: " + e.toString());
+                  log.severe("Unexpected error occurred: " + e.toString());
                   e.printStackTrace();
                }
             }
@@ -718,10 +719,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       }
 
       if (fromTimeout) {
-         if (log.TRACE) log.trace(ME, "Burst mode timeout occurred, last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
+         if (log.isLoggable(Level.FINE)) log.fine("Burst mode timeout occurred, last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
       }
       else {
-         if (log.TRACE) log.trace(ME, "Last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
+         if (log.isLoggable(Level.FINE)) log.fine("Last callback worker thread is not finished - we do nothing (the worker thread will give us a kick)");
       }
    }
 
@@ -740,7 +741,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    private boolean checkSending(boolean isPublisherThread) {
       if (this.isShutdown) {
-         if (log.TRACE) log.trace(ME, "The dispatcher is shutdown, can't activate callback worker thread" + toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine("The dispatcher is shutdown, can't activate callback worker thread" + toXml(""));
          return false; // assert
       }
 
@@ -753,7 +754,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       }
 
       if (msgQueue.isShutdown() && !isPublisherThread) { // assert
-         if (log.TRACE) log.trace(ME, "The queue is shutdown, can't activate callback worker thread.");
+         if (log.isLoggable(Level.FINE)) log.fine("The queue is shutdown, can't activate callback worker thread.");
          // e.g. client has disconnected on the mean time.
          //Thread.currentThread().dumpStack();
          shutdown();
@@ -761,25 +762,25 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       }
 
       if (this.dispatchConnectionsHandler.isUndef()) {
-         if (log.TRACE) log.trace(ME, "Not connected yet, state is UNDEF");
+         if (log.isLoggable(Level.FINE)) log.fine("Not connected yet, state is UNDEF");
          return false;
       }
 
       if (this.dispatchConnectionsHandler.isDead() && !isPublisherThread) {
          String text = "No recoverable remote connection available, giving up queue " + msgQueue.getStorageId() + ".";
-         if (log.TRACE) log.trace(ME, text);
+         if (log.isLoggable(Level.FINE)) log.fine(text);
          givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text)); 
          return false;
       }
 
       if (msgQueue.getNumOfEntries() == 0L) {
-         //if (log.TRACE) log.trace(ME, "numOfEntries==0");
+         //if (log.isLoggable(Level.FINE)) log.trace(ME, "numOfEntries==0");
          return false;
       }
 
       if (this.msgInterceptor != null) {
          if (this.msgInterceptor.doActivate(this) == false) {
-            if (log.TRACE) log.trace(ME, "this.msgInterceptor.doActivate==false");
+            if (log.isLoggable(Level.FINE)) log.fine("this.msgInterceptor.doActivate==false");
             return false; // A plugin told us to suppress sending the message
          }
          return true;
@@ -789,11 +790,11 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
        * The msgInterceptor plugin needs to have a chance to take care of this even in polling mode
        */
       if (this.dispatchConnectionsHandler.isPolling()) {
-         if (log.TRACE) log.trace(ME, "Can't send message as connection is lost and we are polling");
+         if (log.isLoggable(Level.FINE)) log.fine("Can't send message as connection is lost and we are polling");
          return false;
       }
 
-      //if (log.TRACE) log.trace(ME, "Check sending is OK");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "Check sending is OK");
       return true;
    }
 
@@ -804,7 +805,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    public void timeout(Object userData) {
       this.timerKey = null;
-      if (log.TRACE) log.trace(ME, "Burst mode timeout occurred, queue entries=" + msgQueue.getNumOfEntries() + ", starting callback worker thread ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Burst mode timeout occurred, queue entries=" + msgQueue.getNumOfEntries() + ", starting callback worker thread ...");
       startWorkerThread(true);
    }
 
@@ -842,17 +843,17 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.dispatchWorkerIsActive = val;
       if (val == false) {
          if (this.isShutdown) {
-            if (log.TRACE) log.trace(ME, "setDispatchWorkerIsActive(" + val + ") failed, we are shutdown: " + toXml(""));
+            if (log.isLoggable(Level.FINE)) log.fine("setDispatchWorkerIsActive(" + val + ") failed, we are shutdown: " + toXml(""));
             return;
          }
 
          if (msgQueue.getNumOfEntries() > 0) {
-            if (log.TRACE) log.trace(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.getNumOfEntries() + " messages.");
+            if (log.isLoggable(Level.FINE)) log.fine("Finished callback job. Giving a kick to send the remaining " + msgQueue.getNumOfEntries() + " messages.");
             try {
                activateDispatchWorker();
             }
             catch(Throwable e) {
-               log.error(ME, e.toString()); e.printStackTrace(); // Assure the queue is flushed with another worker
+               log.severe(e.toString()); e.printStackTrace(); // Assure the queue is flushed with another worker
             }
          }
          else {
@@ -869,7 +870,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public void internalError(Throwable throwable) {
       givingUpDelivery((throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
                        new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "", throwable));
-      log.error(ME, "PANIC: Internal error, doing shutdown: " + throwable.getMessage());
+      log.severe("PANIC: Internal error, doing shutdown: " + throwable.getMessage());
       shutdown();
    }
 
@@ -890,7 +891,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * We don't shutdown the corresponding queue.
     */
    public void shutdown() {
-      if (log.CALL) log.call(ME, "Entering shutdown ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown ...");
       if (this.isShutdown) return;
       synchronized (this) {
          if (this.isShutdown) return;
@@ -910,7 +911,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
                this.msgInterceptor.shutdown(this);
             }
             catch (XmlBlasterException e) {
-               log.warn(ME, "Ignoring problems during shutdown of plugin: " + e.getMessage());
+               log.warning("Ignoring problems during shutdown of plugin: " + e.getMessage());
             }
             //this.msgInterceptor = null;
          }

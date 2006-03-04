@@ -7,7 +7,8 @@ package org.xmlBlaster.jmxgui;
 
 import javax.management.*;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.client.jmx.AsyncMBeanServer;
@@ -21,7 +22,7 @@ import java.rmi.RemoteException;
  */
 public class ConnectorClient {
 
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(ConnectorClient.class.getName());
   private Global glob = null;
   private static AsyncMBeanServer aServer = null;
   private final static String ME = "ConnectorClient";
@@ -33,21 +34,21 @@ public class ConnectorClient {
     // If yes, then we should have a clear separation of the non-xmlBlaster code
     if (this.glob == null) this.glob = Global.instance();
 
-    log = this.glob.getLog("jmxGUI");
+
     //trying to establish connection to JmxServer
-    log.info(ME,"New Connector client - trying to establish connection to JmxServer....");
+    log.info("New Connector client - trying to establish connection to JmxServer....");
     try {
       this.connectorFactory = ConnectorFactory.getInstance(this.glob);
 //      aServer = connectorFactory.createAsyncConnector("xmlBlaster", serverName);
         aServer = connectorFactory.getMBeanServer(serverName);
     }
     catch (ConnectorException ex) {
-      log.error(ME,"Error when creating AsyncMBeanServerInstance " + ex.toString());
+      log.severe("Error when creating AsyncMBeanServerInstance " + ex.toString());
       ex.printStackTrace();
     }
 
-//    if ( aServer != null ) {log.info(ME,"Asynchron MBeanServer available: " + aServer.getDefaultDomain());}
-//    else {log.error(ME,"Error when creating AsyncMBeanServerInstance - Reference to Object Null");}
+//    if ( aServer != null ) {log.info("Asynchron MBeanServer available: " + aServer.getDefaultDomain());}
+//    else {log.severe("Error when creating AsyncMBeanServerInstance - Reference to Object Null");}
   }
 
   /**
@@ -75,8 +76,8 @@ public class ConnectorClient {
    * logout from Server
    */
   public void logout() {
-    if (this.log.CALL) this.log.call(ME, "logout");
-    if (this.log.DUMP) Thread.currentThread().dumpStack();
+    if (log.isLoggable(Level.FINER)) log.finer("logout");
+    if (log.isLoggable(Level.FINEST)) Thread.currentThread().dumpStack();
     aServer.close();
   }
 
@@ -87,7 +88,7 @@ public class ConnectorClient {
    * @return Array of MBeanAttributeInfo
    */
   public MBeanAttributeInfo[] exploreMBeansByObjectName(String name) {
-    if (this.log.CALL) this.log.call(ME, "exploreMBeansByObjectName '" + name + "'");
+    if (log.isLoggable(Level.FINER)) log.finer("exploreMBeansByObjectName '" + name + "'");
     MBeanInfo mbInfo = getMBeanInfo(name);
     return mbInfo.getAttributes();
 
@@ -99,7 +100,7 @@ public class ConnectorClient {
    * @return MBeanInfo
    */
   private MBeanInfo getMBeanInfo(String name) {
-    if (this.log.CALL) this.log.call(ME, "getMBeanInfo '" + name + "'");
+    if (log.isLoggable(Level.FINER)) log.finer("getMBeanInfo '" + name + "'");
     MBeanInfo mbInfo = null;
     ObjectName RequestBroker = null;
     if (aServer != null ) {
@@ -108,11 +109,11 @@ public class ConnectorClient {
       mbInfo = (MBeanInfo) aServer.getMBeanInfo(RequestBroker).get();
       }
       catch (Exception ex) {
-        log.error(ME,"Error when retrieving information about " + name  +" >> " + ex.toString());
+        log.severe("Error when retrieving information about " + name  +" >> " + ex.toString());
         ex.printStackTrace();
       }
     }
-    else log.error(ME,"Lost AsyncServer!");
+    else log.severe("Lost AsyncServer!");
     return mbInfo;
   }
 
@@ -122,7 +123,7 @@ public class ConnectorClient {
    * @return Array of MBeanOperationInfo
    */
   public MBeanOperationInfo[] exploreMBeanOperationsByObjectName(String name) {
-    if (this.log.CALL) this.log.call(ME, "exploreMBeanOperationsByObjectName '" + name + "'");
+    if (log.isLoggable(Level.FINER)) log.finer("exploreMBeanOperationsByObjectName '" + name + "'");
     MBeanInfo mbInfo = getMBeanInfo(name);
     return mbInfo.getOperations();
   }

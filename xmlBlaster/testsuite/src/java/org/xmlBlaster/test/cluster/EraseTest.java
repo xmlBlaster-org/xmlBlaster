@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.cluster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 // for client connections:
@@ -39,7 +40,7 @@ import junit.framework.*;
 public class EraseTest extends TestCase {
    private String ME = "EraseTest";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(EraseTest.class.getName());
    private ServerHelper serverHelper;
 
    private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon;
@@ -64,8 +65,8 @@ public class EraseTest extends TestCase {
     * Initialize the test ...
     */
    protected void setUp() {
-      log = glob.getLog(ME);
-      log.info(ME, "Entering setUp(), test starts");
+
+      log.info("Entering setUp(), test starts");
 
       updateCounterHeron = 0;
       updateCounterFrodo = 0;
@@ -86,7 +87,7 @@ public class EraseTest extends TestCase {
     * cleaning up ...
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (bilboCon != null) { bilboCon.disconnect(null); bilboCon = null; }
@@ -119,7 +120,7 @@ public class EraseTest extends TestCase {
             bilboCon = serverHelper.connect(serverHelper.getBilboGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                      updateCounterBilbo++;
-                     log.info(ME+":"+serverHelper.getBilboGlob().getId(),
+                     log.info(
                               "Receiving update '" + updateKey.getOid() + "' state=" + updateQos.getState() +
                               " #" + updateCounterBilbo + " ...");
                      if (isErase && !updateQos.isErased()) {
@@ -149,7 +150,7 @@ public class EraseTest extends TestCase {
 
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
-         if (1 != updateCounterBilbo) log.error(ME, "Did not expect " + updateCounterBilbo + " updates");
+         if (1 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
          assertEquals("message from avalon", 1, updateCounterBilbo);
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;

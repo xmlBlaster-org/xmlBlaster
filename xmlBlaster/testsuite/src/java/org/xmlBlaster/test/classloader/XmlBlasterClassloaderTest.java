@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classloader;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.*;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -24,7 +25,7 @@ import java.net.*;
  */
 public class XmlBlasterClassloaderTest extends TestCase {
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(XmlBlasterClassloaderTest.class.getName());
    private MsgUnit msgUnit;     // a message to play with
 
    public XmlBlasterClassloaderTest(String name) {
@@ -33,7 +34,7 @@ public class XmlBlasterClassloaderTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = glob.getLog(null);
+
       URLClassLoader cl = (URLClassLoader)this.getClass().getClassLoader();
       URL[] urls = cl.getURLs();
       String path = "";
@@ -54,7 +55,7 @@ public class XmlBlasterClassloaderTest extends TestCase {
          urls[1] = new URL(path+"xmlBlaster.jar");
       }
       catch (MalformedURLException ex) {
-         log.error("XmlBlasterClassloaderTest", "error. >>>"+ex.toString());
+         log.severe("error. >>>"+ex.toString());
       }
 
       cl = cl.newInstance(urls);

@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.SessionQos;
@@ -30,7 +31,7 @@ import junit.framework.*;
  */
 public class ConnectQosTest extends TestCase {
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(ConnectQosTest.class.getName());
    int counter = 0;
 
    public ConnectQosTest(String name) {
@@ -39,7 +40,7 @@ public class ConnectQosTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
    }
 
    public void testParse() {
@@ -115,7 +116,7 @@ public class ConnectQosTest extends TestCase {
          String newXml = qos.toXml();                  // dump
          qos = factory.readObject(newXml);             // parse again
 
-         if (log.TRACE) log.trace("ConnectQosTest", "ORIG=\n" + xml + "\n NEW=\n" + newXml);
+         if (log.isLoggable(Level.FINE)) log.fine("ORIG=\n" + xml + "\n NEW=\n" + newXml);
 
          SessionQos sessionQos = qos.getSessionQos();
          assertEquals("sessionTimeout failed", sessionTimeout, sessionQos.getSessionTimeout());
@@ -245,7 +246,7 @@ public class ConnectQosTest extends TestCase {
          String newXml = qos.toXml();                  // dump
          qos = factory.readObject(newXml);             // parse again
 
-         if (log.TRACE) log.trace("ConnectQosTest", "ORIG=\n" + xml + "\n NEW=\n" + newXml);
+         if (log.isLoggable(Level.FINE)) log.fine("ORIG=\n" + xml + "\n NEW=\n" + newXml);
          
          ClientQueueProperty prop = qos.getClientQueueProperty();
          assertEquals("", "RAM", prop.getType());

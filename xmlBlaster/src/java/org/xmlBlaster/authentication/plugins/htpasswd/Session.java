@@ -18,7 +18,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 
 /**
@@ -31,7 +32,7 @@ public class Session implements I_Session, I_Subject {
 
    private static final String ME = "Session";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(Session.class.getName());
 
    protected Manager secMgr = null;
    protected String secretSessionId = null;
@@ -47,8 +48,8 @@ public class Session implements I_Session, I_Subject {
 
    public Session( Manager sm, String sessionId ) throws XmlBlasterException {
       this.glob = (sm.getGlobal() == null) ? Global.instance() : sm.getGlobal();
-      this.log = this.glob.getLog("auth");
-      log.trace(ME, "Initializing HTACCESS Session sm="+sm+", sessionId="+sessionId+".");
+
+      log.fine("Initializing HTACCESS Session sm="+sm+", sessionId="+sessionId+".");
 
       this.secMgr = sm;
       this.secretSessionId = sessionId;
@@ -89,9 +90,9 @@ public class Session implements I_Session, I_Subject {
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Authentication of user " + getName() + " failed, you've passed an illegal login name or password");
       }
 
-      if (log.TRACE) log.trace( ME, "Checking password ...");
+      if (log.isLoggable(Level.FINE)) log.fine( "Checking password ...");
       this.authenticated = this.htpasswd.checkPassword(this.loginName, this.passwd);
-      if (log.TRACE) log.trace( ME, "The password" /*+ this.passwd */+ " for " + this.loginName + " is " + ((this.authenticated)?"":" NOT ") + " valid.");
+      if (log.isLoggable(Level.FINE)) log.fine( "The password" /*+ this.passwd */+ " for " + this.loginName + " is " + ((this.authenticated)?"":" NOT ") + " valid.");
 
       if (!this.authenticated)
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Authentication of user " + getName() + " failed");
@@ -139,7 +140,7 @@ public class Session implements I_Session, I_Subject {
     */
    public boolean isAuthorized(MethodName actionKey, String key) {
       if (this.authenticated == false) {
-         log.warn(ME+".AccessDenied", "Authentication of user " + getName() + " failed");
+         log.warning("Authentication of user " + getName() + " failed");
          return false;
       }
 

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.authentication;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -47,7 +48,7 @@ public class TestSessionCb extends TestCase
 {
    private static String ME = "TestSessionCb";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSessionCb.class.getName());
    private I_XmlBlasterAccess con1 = null;
    private I_XmlBlasterAccess con2 = null;
    private String assertInUpdate = null;
@@ -66,7 +67,7 @@ public class TestSessionCb extends TestCase
    public TestSessionCb(Global glob, String testName) {
       super(testName);
       this.glob = glob;
-      this.log = glob.getLog(null);
+
    }
 
    /**
@@ -77,7 +78,7 @@ public class TestSessionCb extends TestCase
          isSocket = true;
 
       if (isSocket) {
-         log.warn(ME, "callback test ignored for driverType=" + driverType + " as callback server uses same socket as invoce channel");
+         log.warning("callback test ignored for driverType=" + driverType + " as callback server uses same socket as invoce channel");
          return;
       }
    }
@@ -92,7 +93,7 @@ public class TestSessionCb extends TestCase
             EraseQos eq = new EraseQos(glob);
             con2.erase(ek.toXml(), eq.toXml());
          } catch (XmlBlasterException e) {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
          }
 
          con2.disconnect(null);
@@ -103,18 +104,18 @@ public class TestSessionCb extends TestCase
     */
    public void testSessionCb() {
       if (isSocket) return;
-      log.info(ME, "testSessionCb() ...");
+      log.info("testSessionCb() ...");
       final Global glob1 = glob.getClone(null);
       final Global glob2 = glob.getClone(null);
       String name1 = "NUMBER_ONE";
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con1 = glob1.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob1, name1, "secret");
          assertInUpdate = null;
          con1.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(ME, "****** Con1 update arrived" + updateKey.toXml() + updateQos.toXml());
+                  log.info("****** Con1 update arrived" + updateKey.toXml() + updateQos.toXml());
                   assertInUpdate = glob1.getId() + ": Did not expect message update in first handler";
                   fail(assertInUpdate); // This is routed to server, not to junit
                   return "";
@@ -129,16 +130,16 @@ public class TestSessionCb extends TestCase
          assertTrue(assertInUpdate, assertInUpdate == null);
          con1.getCbServer().shutdown();
 
-         log.info(ME, "############ Con1 is down");
+         log.info("############ Con1 is down");
 
          assertInUpdate = null;
          con2 = glob2.getXmlBlasterAccess();
          qos = new ConnectQos(glob2);  // force a new session
          con2.connect(qos, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(ME, "****** Con2 update arrived" + updateKey.toXml() + updateQos.toXml());
+                  log.info("****** Con2 update arrived" + updateKey.toXml() + updateQos.toXml());
                   assertInUpdate = glob2.getId() + "Reveiving asynchronous message '" + updateKey.getOid() + "' in second handler";
-                  log.info(ME, assertInUpdate);
+                  log.info(assertInUpdate);
                   return "";
                }
             });
@@ -152,31 +153,31 @@ public class TestSessionCb extends TestCase
          SubscribeReturnQos srDeadMessage = con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                deadMessageCounter++;
-               log.info(ME, "****** Reveiving asynchronous message '" + updateKey.getOid() + "' in deadMessage handler, content=" + new String(content));
+               log.info("****** Reveiving asynchronous message '" + updateKey.getOid() + "' in deadMessage handler, content=" + new String(content));
                assertEquals("No dead letter received", Constants.OID_DEAD_LETTER, updateKey.getOid());
                return "";
             }
          });  // subscribe with our specific update handler
 
-         log.info(ME, "############ Con2 subscribed for msg and for DEAD letter, publishing now msg");
+         log.info("############ Con2 subscribed for msg and for DEAD letter, publishing now msg");
 
          PublishKey pk = new PublishKey(glob2, oid, "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob2);
          MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          PublishReturnQos retQos = con2.publish(msgUnit);
-         log.info(ME, "Published message oid=" + oid);
+         log.info("Published message oid=" + oid);
 
-         log.info(ME, "############ Con2 is waiting for msg and for DEAD letter ...");
+         log.info("############ Con2 is waiting for msg and for DEAD letter ...");
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("DeadMessage is missing", 1, deadMessageCounter);
          assertTrue("Update is missing", assertInUpdate != null);
 
          try {
-            log.info(ME, "Check that session has dissapeared ...");
+            log.info("Check that session has dissapeared ...");
             MsgUnit[] msgs = Util.adminGet(glob, "__sys__UserList");
             assertEquals("Can't access __sys__UserList", 1, msgs.length);
-            log.info(ME, "Got userList=" + msgs[0].getContentStr() + " checking for " + name1);
+            log.info("Got userList=" + msgs[0].getContentStr() + " checking for " + name1);
             assertEquals("Session of " + name1 + " was not destroyed by failing callback",
                       -1, msgs[0].getContentStr().indexOf(name1));
          }
@@ -187,7 +188,7 @@ public class TestSessionCb extends TestCase
       catch (XmlBlasterException e) {
          fail("SessionCb test failed: " + e.toString());
       }
-      log.info(ME, "Success in testSessionCb()");
+      log.info("Success in testSessionCb()");
    }
 
    /**

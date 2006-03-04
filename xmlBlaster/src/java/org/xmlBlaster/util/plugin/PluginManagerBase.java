@@ -6,7 +6,8 @@ Comment:   Baseclass to load plugins.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.plugin;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -33,12 +34,12 @@ public class PluginManagerBase implements I_PluginManager {
    private static String ME = "PluginManagerBase";
    private Hashtable pluginCache; // currently loaded plugins  (REMOVE???)
    protected final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginManagerBase.class.getName());
    public final static String NO_PLUGIN_TYPE = "undef";
 
    public PluginManagerBase(org.xmlBlaster.util.Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("classloader");
+
    }
 
    protected Global getGlobal() {
@@ -89,7 +90,7 @@ public class PluginManagerBase implements I_PluginManager {
     * @exception XmlBlasterException Thrown if no suitable plugin has been found.
     */
    public I_Plugin getPluginObject(PluginInfo pluginInfo) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPluginObject()", "Loading plugin " + pluginInfo.toString());
+      if (log.isLoggable(Level.FINER)) log.finer("Loading plugin " + pluginInfo.toString());
       I_Plugin plug = null;
 
       if (pluginInfo.ignorePlugin()) return null;
@@ -202,20 +203,20 @@ public class PluginManagerBase implements I_PluginManager {
       I_Plugin plugin = null;
       String pluginName = pluginInfo.getClassName();
       if (pluginName == null) {
-         log.warn(ME, "The plugin class name is null, please check the property setting of '" + pluginInfo.toString() + "'");
+         log.warning("The plugin class name is null, please check the property setting of '" + pluginInfo.toString() + "'");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME,
                "The plugin class name is null, please check the property setting of '" + pluginInfo.toString() + "'");
       }
       try {
          ClassLoaderFactory factory = glob.getClassLoaderFactory();
          if (factory != null) {
-            if (log.TRACE) log.trace(ME, "useXmlBlasterClassloader=true: Trying Class.forName('" + pluginName + "') ...");
+            if (log.isLoggable(Level.FINE)) log.fine("useXmlBlasterClassloader=true: Trying Class.forName('" + pluginName + "') ...");
 
             URLClassLoader myLoader = factory.getPluginClassLoader(pluginInfo);
-            if (log.TRACE) log.trace(ME, "Found " + myLoader.getURLs().length + " plugin specific jar files for '" + pluginName + "' preferenced by xmlBlaster classLoader");
+            if (log.isLoggable(Level.FINE)) log.fine("Found " + myLoader.getURLs().length + " plugin specific jar files for '" + pluginName + "' preferenced by xmlBlaster classLoader");
 
             plugin = (I_Plugin)myLoader.loadClass(pluginName).newInstance();
-            if (log.TRACE) log.trace(ME, "Found I_Plugin '" + pluginName + "', loaded by PluginClassLoader");
+            if (log.isLoggable(Level.FINE)) log.fine("Found I_Plugin '" + pluginName + "', loaded by PluginClassLoader");
          }
          else { // Use JVM default class loader:
            Class cl = java.lang.Class.forName(pluginName);
@@ -227,15 +228,15 @@ public class PluginManagerBase implements I_PluginManager {
          return plugin;
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "instantiatePlugin for() '" + pluginName + "' failed: " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("instantiatePlugin for() '" + pluginName + "' failed: " + e.getMessage());
          throw e;
       }
       catch (IllegalAccessException e) {
-         log.error(ME, "The plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin: " + e.toString());
+         log.severe("The plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoClass", "The Plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin", e);
       }
       catch (SecurityException e) {
-         log.error(ME, "No right to access the plugin class or initializer '" + pluginName + "': " + e.toString());
+         log.severe("No right to access the plugin class or initializer '" + pluginName + "': " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".NoAccess", "No right to access the plugin class or initializer '" + pluginName + "'", e);
       }
       catch (InstantiationException e) {
@@ -244,7 +245,7 @@ public class PluginManagerBase implements I_PluginManager {
       }
       catch (Throwable e) {
          String text = "The plugin class or initializer '" + pluginName + "' is invalid, check the plugin name, check if the plugin has a default constructor and check the CLASSPATH to the plugin";
-         log.error(ME, text);
+         log.severe(text);
          //e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME+".Invalid", text, e);
       }
@@ -256,7 +257,7 @@ public class PluginManagerBase implements I_PluginManager {
       try {
          plugin.init(glob, pluginInfo);
          postInstantiate(plugin, pluginInfo);
-         if (log.TRACE) log.trace(ME, "Plugin '" + pluginInfo.getId() + " successfully initialized.");
+         if (log.isLoggable(Level.FINE)) log.fine("Plugin '" + pluginInfo.getId() + " successfully initialized.");
          //log.info(ME, "Plugin " + pluginInfo.toString() + "=" + pluginName + " successfully initialized.");
       } catch (XmlBlasterException e) {
          //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());

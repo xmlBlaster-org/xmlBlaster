@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.authentication;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -43,7 +44,7 @@ public class TestLogin extends TestCase implements I_Callback
 {
    private static String ME = "TestLogin";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestLogin.class.getName());
 
    private String publishOid = "";
    private String firstOid = "FirstOid";
@@ -75,7 +76,7 @@ public class TestLogin extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.senderName = senderName;
       this.secondName = secondName;
    }
@@ -88,7 +89,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      log.info(ME, "######## Entering setup");
+      log.info("######## Entering setup");
       try {
          String passwd = "secret";
 
@@ -107,7 +108,7 @@ public class TestLogin extends TestCase implements I_Callback
             // ignore
          }
          else {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
             fail(ME + ".setup failed: " + e.toString());
          }
       }
@@ -122,7 +123,7 @@ public class TestLogin extends TestCase implements I_Callback
          msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "setup() failed: " + e.getMessage());
+         log.severe("setup() failed: " + e.getMessage());
          fail(e.getMessage());
       }
    }
@@ -140,10 +141,10 @@ public class TestLogin extends TestCase implements I_Callback
          String qos = "<qos></qos>";
          try {
             EraseReturnQos[] arr = callbackConnection.erase(xmlKey, qos);
-            if (arr != null && arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
+            if (arr != null && arr.length != 1) log.severe("Erased " + arr.length + " messages:");
             assertEquals("Wrong number of messages erased", 1, arr.length);
          } catch(XmlBlasterException e) {
-            log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.getMessage());
+            log.severe("XmlBlasterException in erase(): " + e.getMessage());
             fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.getMessage());
          }
       }
@@ -154,10 +155,10 @@ public class TestLogin extends TestCase implements I_Callback
          try {
             EraseReturnQos[] arr = callbackConnection.erase(xmlKey, qos);
             if (arr.length != 1)
-               log.error(ME, "Erased " + arr.length + " messages of '" + secondOid + "'");
+               log.severe("Erased " + arr.length + " messages of '" + secondOid + "'");
             assertEquals("Wrong number of messages '" + secondOid + "' erased", 1, arr.length);
          } catch(XmlBlasterException e) { 
-            log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.getMessage());
+            log.severe("XmlBlasterException in erase(): " + e.getMessage());
             fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.getMessage());
          }
       }
@@ -176,7 +177,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public void doSubscribeXPath()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestLogin-AGENT" +
@@ -187,9 +188,9 @@ public class TestLogin extends TestCase implements I_Callback
          String subscribeOid = callbackConnection.subscribe(xmlKey, qos).getSubscriptionId();
          assertTrue("returned null subscribeOid", subscribeOid != null);
          assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-doSubscribeXPath", "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -203,7 +204,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public void doPublish(boolean ptp)
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       numReceived = 0;
       try {
@@ -216,11 +217,11 @@ public class TestLogin extends TestCase implements I_Callback
             msgUnit = new MsgUnit(msgUnit, pk.getData(), null, pq.getData());
          }
          publishOid = callbackConnection.publish(msgUnit).getKeyOid();
-         log.info(ME, "Success: Publish " + msgUnit.getKey() + " done");
+         log.info("Success: Publish " + msgUnit.getKey() + " done");
          if (!ptp)
             assertEquals("oid is different", firstOid, publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-doPublish", "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -235,29 +236,29 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public void testLoginLogout()
    {
-      log.info(ME, "TEST 1: Subscribe and publish -> Expecting one update");
+      log.info("TEST 1: Subscribe and publish -> Expecting one update");
       numReceived = 0;
       doSubscribeXPath();
       doPublish(IS_PUBSUB);
       waitOnUpdate(2000L, 1);              // message arrived?
 
-      log.info(ME, "TEST 2: Login again without logout and publish PtP -> Expecting one update");
+      log.info("TEST 2: Login again without logout and publish PtP -> Expecting one update");
       setUp();
       doPublish(IS_PTP);                 // sending directly PtP to 'receiver'
       waitOnUpdate(2000L, 1);              // 2 times logged in, 2 messages arrived?
 
-      log.info(ME, "TEST 3: Login again without logout and publish Pub/Sub -> Expecting no update");
+      log.info("TEST 3: Login again without logout and publish Pub/Sub -> Expecting no update");
       setUp();
       doPublish(IS_PUBSUB);
       waitOnUpdate(2000L, 1);              // 1 times subscribed (TEST 1), 1 messages arrived?
       numReceived = 0;
 
-      log.info(ME, "TEST 4: Now subscribe -> Expecting one update");
+      log.info("TEST 4: Now subscribe -> Expecting one update");
       numReceived = 0;
       doSubscribeXPath();
       waitOnUpdate(2000L, 1);              // message arrived?
 
-      log.info(ME, "TEST 5: Test publish from other user -> Expecting one update");
+      log.info("TEST 5: Test publish from other user -> Expecting one update");
       numReceived = 0;
       try {
          // a sample message unit
@@ -269,7 +270,7 @@ public class TestLogin extends TestCase implements I_Callback
          MsgUnit mu = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
          publishOid = secondConnection.publish(mu).getKeyOid();
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-secondPublish", "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("second - publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 2); // 2 messages (we have subscribed 2 times, and the old session remained on relogin)
@@ -277,19 +278,19 @@ public class TestLogin extends TestCase implements I_Callback
       assertTrue("returned publishOid == null", publishOid != null);
       assertTrue("returned publishOid", 0 != publishOid.length());
 
-      log.info(ME, "TEST 6: Test logout with following publish -> Should not be possible");
+      log.info("TEST 6: Test logout with following publish -> Should not be possible");
       // test logout with following subscribe()
       callbackConnection.disconnect(null);
       try {
          publishOid = callbackConnection.publish(msgUnit).getKeyOid();
          assertTrue("Didn't expect successful publish after logout", false);
       } catch(XmlBlasterException e) {
-         log.info(ME, "Success got exception for publishing after logout: " + e.toString());
+         log.info("Success got exception for publishing after logout: " + e.toString());
       }
       try { Thread.currentThread().sleep(1000L); } catch (Exception e) { } // wait a second
       assertEquals("Didn't expect an update", 0, numReceived);
 
-      log.info(ME, "SUCCESS in testLoginLogout()");
+      log.info("SUCCESS in testLoginLogout()");
 
       // login again
       setUp();
@@ -303,9 +304,9 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " state=" + updateQos.getState() +
+      log.info("Receiving update of a message " + updateKey.getOid() + " state=" + updateQos.getState() +
                " rcvTime=" + updateQos.getRcvTimestamp().toString());
-      log.info(ME, "Receiving update of a message " + updateKey.getOid() + updateQos.toXml());
+      log.info("Receiving update of a message " + updateKey.getOid() + updateQos.toXml());
       numReceived++;
       return "";
    }
@@ -328,7 +329,7 @@ public class TestLogin extends TestCase implements I_Callback
          try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.error(ME, "Timeout of " + timeout + " occurred without update");
+            log.severe("Timeout of " + timeout + " occurred without update");
             Thread.currentThread().dumpStack();
          }
          assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
@@ -337,7 +338,7 @@ public class TestLogin extends TestCase implements I_Callback
       // check if too many are arriving
       try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
       if (numWait != numReceived) {
-         log.error(ME, "Wrong number of messages arrived, expected numWait=" + numWait + " but got numReceived=" + numReceived);
+         log.severe("Wrong number of messages arrived, expected numWait=" + numWait + " but got numReceived=" + numReceived);
          Thread.currentThread().dumpStack();
       }
       assertEquals("Wrong number of messages arrived", numWait, numReceived);

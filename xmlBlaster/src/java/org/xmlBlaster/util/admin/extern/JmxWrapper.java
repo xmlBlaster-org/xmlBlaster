@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.admin.extern;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
@@ -88,7 +89,7 @@ import java.util.Iterator;
 public class JmxWrapper
 {
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(JmxWrapper.class.getName());
    private final String ME;
    private MBeanServer mbeanServer;
    private HtmlAdaptorServer html;
@@ -101,7 +102,7 @@ public class JmxWrapper
    /** Export Global.getProperty() to JMX */
    private JmxProperties jmxProperties;
    private JmxMBeanHandle jmxPropertiesHandle;
-   private JmxLogLevel jmxLogLevel;
+   // private JmxLogLevel jmxLogLevel;
    private JmxMBeanHandle jmxLogLevelHandle;
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
@@ -127,7 +128,7 @@ public class JmxWrapper
    public JmxWrapper(Global glob) throws XmlBlasterException
    {
       this.glob = glob;
-      this.log = glob.getLog("jmx");
+
       this.ME = "JmxWrapper" + this.glob.getLogPrefixDashed();
       getMBeanServer(); // Initialize this.mbeanServer
       init();
@@ -137,9 +138,9 @@ public class JmxWrapper
          ContextNode propNode = new ContextNode(ContextNode.SYSPROP_MARKER_TAG, null, this.glob.getContextNode());
          this.jmxPropertiesHandle = registerMBean(propNode, jmxProperties); // "sysprop"
 
-         this.jmxLogLevel = new JmxLogLevel(this.glob);
-         ContextNode logNode = new ContextNode(ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
-         this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
+         // this.jmxLogLevel = new JmxLogLevel(this.glob);
+         // ContextNode logNode = new ContextNode(ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
+         // this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
       }
 
       if (useJmx > 0 && this.mbeanServer != null) {
@@ -165,7 +166,7 @@ public class JmxWrapper
                Global.heapMemoryUsage = max.longValue();
             }
 
-            log.info(ME, "Physical RAM size is " + Global.byteString(Global.totalPhysicalMemorySize) + "," +
+            log.info("Physical RAM size is " + Global.byteString(Global.totalPhysicalMemorySize) + "," +
                          " this JVM may use max " + Global.byteString(Global.heapMemoryUsage) +
                          " and max " + Global.maxFileDescriptorCount + " file descriptors");
 
@@ -200,7 +201,7 @@ public class JmxWrapper
                   }
                }
                catch (Exception e) {
-                  log.trace(ME, "java.lang.management.ManagementFactory is not available for JMX monitoring");
+                  log.fine("java.lang.management.ManagementFactory is not available for JMX monitoring");
                }
                if (this.mbeanServer == null) {
                   // For JDK < 1.5 fall back to 
@@ -259,7 +260,7 @@ public class JmxWrapper
             supportsJconsole = false;
       }
       catch (Throwable e) {
-         log.trace(ME, e.toString());
+         log.fine(e.toString());
       }
 
       // In a cluster environment set for example jndiPath=="/"+${cluster.node.id}
@@ -278,14 +279,14 @@ public class JmxWrapper
          int port = new Integer(System.getProperty("com.sun.management.jmxremote.port")).intValue();
          if (supportsJconsole) {
             String loc = "service:jmx:rmi:///jndi/rmi://"+glob.getLocalIP()+":"+port+jndiPath;
-            log.info(ME, "'java -Dcom.sun.management.jmxremote.port=" + port +
+            log.info("'java -Dcom.sun.management.jmxremote.port=" + port +
                          "' is specified, JMX is switched on, try to start 'jconsole " + loc + "'");
             if (!isAuthenticated)
-               log.warn(ME, "Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
+               log.warning("Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
             useJmx++;
          }
          else {
-            log.info(ME, "'java -Dcom.sun.management.jmxremote.port="+port+"' is specified "+
+            log.info("'java -Dcom.sun.management.jmxremote.port="+port+"' is specified "+
                          " but is not supported in this runtime " + System.getProperty("java.runtime.version"));
          }
       }
@@ -295,13 +296,13 @@ public class JmxWrapper
          // JDK >= 1.5 automatically creates an RMI connector and start it for us
          String loc = "service:jmx:rmi:///jndi/rmi://"+glob.getLocalIP()+":"+DEFAULT_REGISTRY_PORT+jndiPath;
          if (supportsJconsole) {
-            log.info(ME, "'java -Dcom.sun.management.jmxremote' is specified, JMX is switched on, try to start 'jconsole' or 'jconsole "+loc+"'");
+            log.info("'java -Dcom.sun.management.jmxremote' is specified, JMX is switched on, try to start 'jconsole' or 'jconsole "+loc+"'");
             if (!isAuthenticated)
-               log.warn(ME, "Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
+               log.warning("Caution: Your JMX access is not protected with SSL or password, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
             useJmx++;
          }
          else {
-            log.info(ME, "'java -Dcom.sun.management.jmxremote' is specified "+
+            log.info("'java -Dcom.sun.management.jmxremote' is specified "+
                          " but is not supported in this runtime " + System.getProperty("java.runtime.version"));
          }
       }
@@ -316,7 +317,7 @@ public class JmxWrapper
          //   which tells the RMIConnectorServer to bind to the RMIRegistry running
          //   on port 9999 and to export the RMIServer and RMIConnection remote objects on port 3000.
          if (!supportsJconsole) {
-            log.warn(ME, "JMX setting '-xmlBlaster/jmx/rmi true' ignored in this JVM runtime, you need JDK 1.5 or higher.");
+            log.warning("JMX setting '-xmlBlaster/jmx/rmi true' ignored in this JVM runtime, you need JDK 1.5 or higher.");
          }
          else {
             try {
@@ -334,7 +335,7 @@ public class JmxWrapper
                try {  // If an external rmiregistry is running cleanup old entries:
                   Naming.unbind(bindName);
                } catch (Exception e) {
-                  log.trace(ME, "Can't unbind '" + bindName + "': " + e.toString());
+                  log.fine("Can't unbind '" + bindName + "': " + e.toString());
                }
 
                //String loc = "service:jmx:rmi://"+rmiRegistryHost+":"+rmiRegistryPort+"/jndi/" + bindName;
@@ -350,14 +351,14 @@ public class JmxWrapper
                if (storedUser != null) {
                   javax.management.remote.JMXAuthenticator auth = new javax.management.remote.JMXAuthenticator() {
                      public javax.security.auth.Subject authenticate(Object credentials) {
-                        if (log.CALL) log.call(ME, "Calling authenticate(" + ((credentials==null)?"null":credentials.toString()) + ")");
+                        if (log.isLoggable(Level.FINER)) log.finer("Calling authenticate(" + ((credentials==null)?"null":credentials.toString()) + ")");
                         if (!(credentials instanceof String[])) throw new SecurityException("xmlBlaster responds: Bad credentials, please pass user name and password");
                         String[] creds = (String[])credentials;
                         if (creds.length != 2) throw new SecurityException("xmlBlaster responds: Bad credentials, please pass user name and password");
 
                         String user = creds[0];
                         String password = creds[1];
-                        if (log.TRACE) log.trace(ME, "Calling authenticate(user=" + user + ", password=" + password + ")");
+                        if (log.isLoggable(Level.FINE)) log.fine("Calling authenticate(user=" + user + ", password=" + password + ")");
 
                         if (password == null) throw new SecurityException("xmlBlaster responds: Missing password");
                         if (!storedUser.equals(user)) throw new SecurityException("xmlBlaster responds: Unknown user " + user + ",  please try with user '" + storedUser + "'");
@@ -371,7 +372,7 @@ public class JmxWrapper
                   props.put("jmx.remote.authenticator", auth); // JMXConnectorServer.AUTHENTICATOR
                }
                else {
-                  log.warn(ME, "You should switch on authentication with '-xmlBlaster/jmx/rmi/user' and '-xmlBlaster/jmx/rmi/password'");
+                  log.warning("You should switch on authentication with '-xmlBlaster/jmx/rmi/user' and '-xmlBlaster/jmx/rmi/password'");
                }
 
                //since JDK 1.5 or with including jmxremote.jar for JDK 1.3/1.4
@@ -406,7 +407,7 @@ public class JmxWrapper
                method = clazz.getMethod("start", paramCls);
                method.invoke(jMXConnectorServer, params); // finally ... starts JMX
 
-               log.info(ME, "JMX is switched on because of 'xmlBlaster/jmx/rmi true' is set, try to start 'jconsole " + loc + "' and user=" + storedUser);
+               log.info("JMX is switched on because of 'xmlBlaster/jmx/rmi true' is set, try to start 'jconsole " + loc + "' and user=" + storedUser);
                useJmx++;
             }
             catch(Throwable ex) {
@@ -417,7 +418,7 @@ public class JmxWrapper
       }
       else {
          if (supportsJconsole) {
-            log.info(ME, "JMX over RMI is switched off, for details see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
+            log.info("JMX over RMI is switched off, for details see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.jmx.html#jconsole");
          }
       }
 
@@ -443,16 +444,16 @@ public class JmxWrapper
             this.mbeanMap.put(html_name.toString(), handle);
             
             if (loginName == null) {
-               log.info(ME, "Registered JMX HTML adaptor on http://"+hostname+":"+port +
+               log.info("Registered JMX HTML adaptor on http://"+hostname+":"+port +
                         ". No authentication is configured with 'xmlBlaster/jmx/HtmlAdaptor/loginName=...'");
             }
             else {
-               log.info(ME, "Registered JMX HTML adaptor on http://"+hostname+":"+port + " with login name '" + loginName + "'");
+               log.info("Registered JMX HTML adaptor on http://"+hostname+":"+port + " with login name '" + loginName + "'");
             }
             useJmx++;
          }
          catch(Exception ex) {
-            log.error(ME, " Could not create HtmlAdaptorServer: " + ex.toString());
+            log.severe(" Could not create HtmlAdaptorServer: " + ex.toString());
          }
          this.html.start();
       }
@@ -463,7 +464,7 @@ public class JmxWrapper
             useJmx++;
          }
          catch (XmlBlasterException ex) {
-            log.error(ME,"Error when starting xmlBlasterConnector " + ex.toString());
+            log.severe("Error when starting xmlBlasterConnector " + ex.toString());
             ex.printStackTrace();
          }
       }
@@ -484,7 +485,7 @@ public class JmxWrapper
                }
             }
             catch (Exception e) {
-               log.warn(ME, "org.xmlBlaster.util.admin.extern.LowMemoryDetector is not available for low memory detection");
+               log.warning("org.xmlBlaster.util.admin.extern.LowMemoryDetector is not available for low memory detection");
             }
          }
       }
@@ -504,12 +505,12 @@ public class JmxWrapper
             // Start a 'rmiregistry' if desired
             try {
                java.rmi.registry.LocateRegistry.createRegistry(registryPort);
-               log.info(ME, "Started RMI registry on port " + registryPort);
+               log.info("Started RMI registry on port " + registryPort);
             } catch (java.rmi.server.ExportException e) {
                // Try to bind to an already running registry:
                try {
                   java.rmi.registry.LocateRegistry.getRegistry(registryHost, registryPort);
-                  log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
+                  log.info("Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
                                " we will use this one. You could change the port with e.g. '-xmlBlaster/jmx/rmiregistry/port 1122' to run your own rmiregistry.");
                }
                catch (RemoteException e2) {
@@ -522,7 +523,7 @@ public class JmxWrapper
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, " could not initialize RMI registry", e);
       }
 
-      if (log.TRACE) log.trace(ME, "Initialized RMI registry");
+      if (log.isLoggable(Level.FINE)) log.fine("Initialized RMI registry");
    }
 
    /**
@@ -542,14 +543,14 @@ public class JmxWrapper
       if (oldName == null || newRootNode == null) return 0;
       String newRootName = newRootNode.getAbsoluteName(ContextNode.SCHEMA_JMX);
       int count = 0;
-      if (log.CALL) log.call(ME, "JMX rename registration from '" + oldName + "' to new root '" + newRootName + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("JMX rename registration from '" + oldName + "' to new root '" + newRootName + "'");
       try {
          // e.g. "org.xmlBlaster:nodeClass=node,node=clientSUB1,*"
          ObjectName query = new ObjectName(oldName+",*");
          QueryExp queryExp = null;
          Set mbeanSet = this.mbeanServer.queryMBeans(query, queryExp);
          if (mbeanSet.size() == 0) {
-            if (log.TRACE) log.trace(ME, "JMX rename registration from '" + oldName + "' to '" + newRootName + "', nothing found for '" + query + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("JMX rename registration from '" + oldName + "' to '" + newRootName + "', nothing found for '" + query + "'");
             return count;
          }
          Iterator it = mbeanSet.iterator();
@@ -558,7 +559,7 @@ public class JmxWrapper
             ObjectName tmp = instance.getObjectName();
             JmxMBeanHandle mbeanHandle = (JmxMBeanHandle)this.mbeanMap.get(tmp.toString());
             if (mbeanHandle == null) {
-               log.error(ME, "Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
+               log.severe("Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
                continue;
             }
             // /node/heron/connection/joe/session/2
@@ -581,21 +582,21 @@ public class JmxWrapper
 
             // take this leg and attach it to the newRoot
             ContextNode result = newRoot.mergeChildTree(childs[0]);
-            if (log.TRACE) log.trace(ME, "Renamed '" + oldName + "' to '" + result.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("Renamed '" + oldName + "' to '" + result.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
             if (result != null) {
                registerMBean(result, mbeanHandle.getMBean(), mbeanHandle);
                this.mbeanMap.put(mbeanHandle.getObjectInstance().getObjectName().toString(), mbeanHandle);
             }
             else {
                //Thread.dumpStack();
-               log.warn(ME, "Renamed '" + current.getAbsoluteName(ContextNode.SCHEMA_JMX) + "' to '" + newRoot.getAbsoluteName(ContextNode.SCHEMA_JMX) + "' failed, JMX bean is not registered");
+               log.warning("Renamed '" + current.getAbsoluteName(ContextNode.SCHEMA_JMX) + "' to '" + newRoot.getAbsoluteName(ContextNode.SCHEMA_JMX) + "' failed, JMX bean is not registered");
             }
             count++;
          }
          return count;
       }
       catch (Exception e) {
-         log.error(ME, "JMX rename registration problem from '" + oldName + "' to '" + newRootName + "': " + e.toString());
+         log.severe("JMX rename registration problem from '" + oldName + "' to '" + newRootName + "': " + e.toString());
          e.printStackTrace();
          return count;
       }
@@ -617,14 +618,14 @@ public class JmxWrapper
       if (useJmx == 0) return 0;
       if (oldName == null || classNameToChange == null) return 0;
       int count = 0;
-      if (log.CALL) log.call(ME, "JMX rename registration from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("JMX rename registration from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "'");
       try {
          // e.g. "org.xmlBlaster:nodeClass=node,node=clientSUB1,*"
          ObjectName query = new ObjectName(oldName+",*");
          QueryExp queryExp = null;
          Set mbeanSet = this.mbeanServer.queryMBeans(query, queryExp);
          if (mbeanSet.size() == 0) {
-            if (log.TRACE) log.trace(ME, "JMX rename registration from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "', nothing found for '" + query + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("JMX rename registration from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "', nothing found for '" + query + "'");
             return count;
          }
          Iterator it = mbeanSet.iterator();
@@ -633,14 +634,14 @@ public class JmxWrapper
             ObjectName tmp = instance.getObjectName();
             JmxMBeanHandle mbeanHandle = (JmxMBeanHandle)this.mbeanMap.get(tmp.toString());
             if (mbeanHandle == null) {
-               log.error(ME, "Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
+               log.severe("Internal problem: Can't find registration of MBean '" + tmp.toString() + "'");
                continue;
             }
             this.mbeanServer.unregisterMBean(tmp);
             this.mbeanMap.remove(tmp.toString());
             ContextNode renamed = ContextNode.valueOf(tmp.toString());
             renamed.changeParentName(classNameToChange, instanceName);
-            if (log.TRACE) log.trace(ME, "Renamed '" + oldName + "' to '" + renamed.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("Renamed '" + oldName + "' to '" + renamed.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
             registerMBean(renamed, mbeanHandle.getMBean(), mbeanHandle);
             this.mbeanMap.put(mbeanHandle.getObjectInstance().getObjectName().toString(), mbeanHandle);
             count++;
@@ -648,7 +649,7 @@ public class JmxWrapper
          return count;
       }
       catch (Exception e) {
-         log.error(ME, "JMX rename registration problem from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "': " + e.toString());
+         log.severe("JMX rename registration problem from '" + oldName + "' to '" + classNameToChange + "=" + instanceName + "': " + e.toString());
          e.printStackTrace();
          return count;
       }
@@ -684,7 +685,7 @@ public class JmxWrapper
       if (this.mbeanServer == null) return null;
       if (useJmx == 0) return null;
       if (contextNode == null) return null; // Remove? code below handles a null
-      if (log.CALL) log.call(ME, "registerMBean(" + contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX) + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("registerMBean(" + contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX) + ")");
 
       String hierarchy = getObjectNameLiteral(this.glob, contextNode);
       ObjectName objectName = null;
@@ -699,29 +700,29 @@ public class JmxWrapper
              // Update the mbeanHandle of the registrar wit the new ObjectName:
                  mbeanHandle.setObjectInstance(objectInstance);
          }
-         if (log.TRACE) log.trace(ME, "Registered MBean '" + objectName.toString() +
+         if (log.isLoggable(Level.FINE)) log.fine("Registered MBean '" + objectName.toString() +
                                       "' for JMX monitoring and control");
          return mbeanHandle;
       }
       catch (javax.management.InstanceAlreadyExistsException e) {
          if (objectName != null) {
-            log.warn(ME, "JMX entry exists already, we replace it with new one: " + e.toString());
+            log.warning("JMX entry exists already, we replace it with new one: " + e.toString());
             // this.mbeanMap.remove(objectName.toString()); is done in unregisterMBean
             unregisterMBean(objectName);
             return registerMBean(contextNode, mbean);
          }
-         log.warn(ME, "Ignoring JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
+         log.warning("Ignoring JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
          return null;
       }
       catch (Exception e) {
-         log.error(ME, "JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
+         log.severe("JMX registration problem for '" + ((objectName==null)?hierarchy:objectName.toString()) + "': " + e.toString());
          e.printStackTrace();
          return null;
       }
    }
    
    public Object invokeAction(final String args) {
-      if (log.CALL) log.call(ME, "invoke with: '" + args);
+      if (log.isLoggable(Level.FINER)) log.finer("invoke with: '" + args);
       if (this.mbeanServer == null) return null;
       if (useJmx == 0) return null;
       if (args == null || args.length() < 1) return null;
@@ -747,7 +748,7 @@ public class JmxWrapper
 //    for (Iterator mbeanIt = mbeanMap.entrySet().iterator() ; mbeanIt.hasNext();) {
 //    Object key = ((Entry)mbeanIt.next()).getKey();
 //    Object element = mbeanMap.get(key);
-//    if (log.TRACE) log.trace(ME, "key: " + key + " element: '" + element);
+//    if (log.isLoggable(Level.FINE)) log.trace(ME, "key: " + key + " element: '" + element);
 // }
  
       // scan for arguments, starting with '&'
@@ -764,16 +765,16 @@ public class JmxWrapper
       Object returnObject = null;
       
       try {
-         if (log.TRACE) log.trace(ME, "get object: '" + callString.substring(0, j));
+         if (log.isLoggable(Level.FINE)) log.fine("get object: '" + callString.substring(0, j));
          objectName = new ObjectName(callString.substring(0, j));
          Set set = mbeanServer.queryNames(objectName, null);
          if(set.size() <= 0)
          {
-             log.error("Unable to get MBean [" + callString.substring(0, j) + "]", "Instance Not Found");
+             log.severe("Instance Not Found");
              return returnObject;
          }
          
-         if (log.TRACE) log.trace(ME, "invoke: '" + action + "@" + objectName);
+         if (log.isLoggable(Level.FINE)) log.fine("invoke: '" + action + "@" + objectName);
 
 //         params = new Object[]{"arg1"};
 //         signature = new String[]{"java.lang.String"};
@@ -781,7 +782,7 @@ public class JmxWrapper
          returnObject = mbeanServer.invoke(objectName, action, params,
                signature);
       } catch (Throwable e) {
-         log.warn(ME, "args: '" + args + "' invoke: '" + action + "@" + objectName + " failed: " + e.toString());
+         log.warning("args: '" + args + "' invoke: '" + action + "@" + objectName + " failed: " + e.toString());
          e.printStackTrace();
       }
 
@@ -801,15 +802,15 @@ public class JmxWrapper
       if (objectName == null) return;
       if (this.mbeanServer == null) return;
       if (useJmx == 0) return;
-      if (log.CALL) log.call(ME, "Unregister MBean '" + objectName.toString() + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("Unregister MBean '" + objectName.toString() + "'");
       try {
          Object removed = this.mbeanMap.remove(objectName.toString());
          this.mbeanServer.unregisterMBean(objectName);
          if (removed == null)
-            log.error(ME, "No JMX MBean instance of " + objectName.toString() + " removed");
+            log.severe("No JMX MBean instance of " + objectName.toString() + " removed");
       }
       catch (Exception e) {
-         log.error(ME, "JMX unregistration problems: " + e.toString());
+         log.severe("JMX unregistration problems: " + e.toString());
       }
    }
 
@@ -824,12 +825,12 @@ public class JmxWrapper
     */
    public void startXmlBlasterConnector(MBeanServer mbeanServer) throws XmlBlasterException {
       try {
-         if (log.CALL) log.call(ME, "Registering embedded xmlBlasterConnector for JMX...");
+         if (log.isLoggable(Level.FINER)) log.finer("Registering embedded xmlBlasterConnector for JMX...");
 
          int port = glob.getProperty().get("xmlBlaster/jmx/XmlBlasterAdaptor/port", 3424);
          ObjectName xmlBlasterConnector_name = new ObjectName("Adaptor:transport=xmlBlaster,port="+port);
          mbeanServer.createMBean("org.xmlBlaster.util.admin.extern.XmlBlasterConnector", xmlBlasterConnector_name, null);
-         log.info(ME,"Registered JMX xmlBlaster adaptor on port " + port + ", try to start swing GUI 'org.xmlBlaster.jmxgui.Main'");
+         log.info("Registered JMX xmlBlaster adaptor on port " + port + ", try to start swing GUI 'org.xmlBlaster.jmxgui.Main'");
 
          // Start the adaptor:
          try {
@@ -841,7 +842,7 @@ public class JmxWrapper
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME,"Error when registering new Connector >>  " + e.toString() );
+         log.severe("Error when registering new Connector >>  " + e.toString() );
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, " could not start embedded xmlBlasterConnector", e);
       }
    }
@@ -873,9 +874,9 @@ public class JmxWrapper
    }
 
    private void getParams(ArrayList parms, ArrayList sigs, String callArgs) {
-      if (log.TRACE) log.trace(ME, "getParams from: '" + callArgs);
+      if (log.isLoggable(Level.FINE)) log.fine("getParams from: '" + callArgs);
       Map param = StringPairTokenizer.parseToStringStringPairs(callArgs, "&", "+");
-      if (log.TRACE) log.trace(ME, "params: '" + param);
+      if (log.isLoggable(Level.FINE)) log.fine("params: '" + param);
       
       for (int p = 1; p <= param.size(); p++) {
          String key = "p" + p;

@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.cluster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 // for client connections:
@@ -38,7 +39,7 @@ import junit.framework.*;
 public class DirtyReadTest extends TestCase {
    private String ME = "DirtyReadTest";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(DirtyReadTest.class.getName());
    private ServerHelper serverHelper;
 
    private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon;
@@ -57,8 +58,8 @@ public class DirtyReadTest extends TestCase {
     * Initialize the test ...
     */
    protected void setUp() {
-      log = glob.getLog(ME);
-      log.info(ME, "Entering setUp(), test starts");
+
+      log.info("Entering setUp(), test starts");
 
       assertInUpdate = null;
       updateCounterFrodo = 0;
@@ -73,7 +74,7 @@ public class DirtyReadTest extends TestCase {
     * cleaning up ...
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (frodoCon != null) { frodoCon.disconnect(null); frodoCon = null; }
@@ -131,7 +132,7 @@ public class DirtyReadTest extends TestCase {
          sq = new SubscribeQos(glob);
          srq = frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
+               log.info("Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
                updateCounterFrodo++;
                assertInUpdate = null;
                return "";
@@ -147,7 +148,7 @@ public class DirtyReadTest extends TestCase {
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(pk, contentStr.getBytes(), pq);
          prq = frodoCon.publish(msgUnit);
-         log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
+         log.info("Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
@@ -175,12 +176,12 @@ public class DirtyReadTest extends TestCase {
          if (isDirtyReadTest) {
             assertEquals("frodo has received updates from heron but should not because of dirty read",
                       "0", msgs[0].getContentStr());
-            log.info(ME, "Success, the update was a dirty read as heron did not send it!");
+            log.info("Success, the update was a dirty read as heron did not send it!");
          }
          else {
             assertEquals("frodo has not received updates from its master heron",
                       "1", msgs[0].getContentStr());
-            log.info(ME, "Success, the update was NO dirty read as heron did send it!");
+            log.info("Success, the update was NO dirty read as heron did send it!");
          }
 
          System.err.println(ME+"Check if heron has got the message ...");

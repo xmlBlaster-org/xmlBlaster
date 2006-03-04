@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -30,13 +31,13 @@ import org.xmlBlaster.client.key.SubscribeKey;
 public class EntrySize {
    private String ME = "EntrySize";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(EntrySize.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
    public EntrySize(Global glob) {
       this.glob = glob;
       this.ME = "EntrySize";
-      this.log = glob.getLog("test");
+
       String testcase = this.glob.getProperty().get("testcase", "subscribe");
       if ("update".equalsIgnoreCase(testcase)) {
          updateEntry();
@@ -57,7 +58,7 @@ public class EntrySize {
          connectEntry();
       }
       else {
-         log.error(ME, "Unkonwn testcase '" + testcase + "' please provide e.g. 'publish'");
+         log.severe("Unkonwn testcase '" + testcase + "' please provide e.g. 'publish'");
       }
    }
 
@@ -69,7 +70,7 @@ public class EntrySize {
     * - MsgQueueUpdateEntry
     */
    public void updateEntry() {
-      this.log.info(ME, "************ Starting updateEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
+      log.info("************ Starting updateEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       StorageId storageId = new StorageId(Constants.RELATING_CALLBACK, "updateEntry");
       try {
          SessionName receiver = new SessionName(glob, "receiver1");
@@ -86,19 +87,19 @@ public class EntrySize {
                                              receiver, "__subId", false);
             MsgUnitWrapper w = entryArr[i].getMsgUnitWrapper();
             if ((i % step) == 0) {
-               log.info(ME, "Overall created #" + i + ": Created " + step + " new MsgQueueUpdateEntry instances, hit a key to create more ...");
+               log.info("Overall created #" + i + ": Created " + step + " new MsgQueueUpdateEntry instances, hit a key to create more ...");
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
-            if (log.TRACE) log.trace(ME, "Dump meat: " + w.toXml());
+            if (log.isLoggable(Level.FINE)) log.fine("Dump meat: " + w.toXml());
          }
-         //log.info(ME, "entry=" + entryArr[0].toXml());
-         //log.info(ME, "sizeInBytes=" + entryArr[0].getSizeInBytes() + " msgUnit.size()=" + msgUnit.size());
-         //log.info(ME, "Created " + numCreate + " MsgQueueUpdateEntry instances, hit a key to create more ...");
+         //log.info("entry=" + entryArr[0].toXml());
+         //log.info("sizeInBytes=" + entryArr[0].getSizeInBytes() + " msgUnit.size()=" + msgUnit.size());
+         //log.info("Created " + numCreate + " MsgQueueUpdateEntry instances, hit a key to create more ...");
          //try { System.in.read(); } catch(java.io.IOException e) {}
       }
       catch (XmlBlasterException ex) {          
          ex.printStackTrace();
-         this.log.error(ME, "exception occured : " + ex.getMessage());
+         log.severe("exception occured : " + ex.getMessage());
       }
    }
 
@@ -113,7 +114,7 @@ public class EntrySize {
     * </pre>
     */
    public void historyEntry() {
-      this.log.info(ME, "************ Starting historyEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
+      log.info("************ Starting historyEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       StorageId storageId = new StorageId(Constants.RELATING_HISTORY, "historyEntry");
       try {
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
@@ -128,15 +129,15 @@ public class EntrySize {
             entryArr[i] = new MsgQueueHistoryEntry(global, msgWrapper, storageId);
             MsgUnitWrapper w = entryArr[i].getMsgUnitWrapper();
             if ((i % step) == 0) {
-               log.info(ME, "Overall created #" + i + ": Created " + step + " new MsgQueueHistoryEntry instances, hit a key to create more ...");
+               log.info("Overall created #" + i + ": Created " + step + " new MsgQueueHistoryEntry instances, hit a key to create more ...");
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
-            if (log.TRACE) log.trace(ME, "Dump meat: " + w.toXml());
+            if (log.isLoggable(Level.FINE)) log.fine("Dump meat: " + w.toXml());
          }
       }
       catch (XmlBlasterException ex) {          
          ex.printStackTrace();
-         this.log.error(ME, "exception occured : " + ex.getMessage());
+         log.severe("exception occured : " + ex.getMessage());
       }
    }
 
@@ -160,7 +161,7 @@ public class EntrySize {
     * </pre>
     */
    public void msgUnitWrapperEntry() {
-      this.log.info(ME, "************ Starting msgUnitWrapperEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
+      log.info("************ Starting msgUnitWrapperEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
          StorageId storageId = new StorageId(Constants.RELATING_MSGUNITSTORE, "msgUnitWrapperEntry");
@@ -168,20 +169,20 @@ public class EntrySize {
          int step = 1000;
          int numCreate = 1000000;
          MsgUnitWrapper entryArr[] = new MsgUnitWrapper[numCreate];
-         log.info(ME, "Hit a key for new MsgUnitWrapper RAM size test ...");
+         log.info("Hit a key for new MsgUnitWrapper RAM size test ...");
          try { System.in.read(); } catch(java.io.IOException e) {}
          for(int i=0; i<numCreate; i++) {
             MsgUnit msgUnit = new MsgUnit(glob, "<key oid='XX'/>", new byte[0], publishQosServer.toXml());
             entryArr[i] = new MsgUnitWrapper(glob, msgUnit, storageId);
             if (i > 0 && (i % step) == 0) {
-               log.info(ME, "Overall created #" + i + ": Created " + step + " new MsgUnitWrapper instances, msgUnitSize=" + msgUnit.size() + ", hit a key to create more ...");
+               log.info("Overall created #" + i + ": Created " + step + " new MsgUnitWrapper instances, msgUnitSize=" + msgUnit.size() + ", hit a key to create more ...");
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
          }
       }
       catch (XmlBlasterException ex) {          
          ex.printStackTrace();
-         this.log.error(ME, "exception occured : " + ex.getMessage());
+         log.severe("exception occured : " + ex.getMessage());
       }
    }
 
@@ -207,7 +208,7 @@ public class EntrySize {
     * </pre>
     */
    public void publishEntry() {
-      this.log.info(ME, "************ Starting publishEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
+      log.info("************ Starting publishEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
          PublishQos publishQos = new PublishQos(glob);
          StorageId storageId = new StorageId(Constants.RELATING_CLIENT, "publishEntry");
@@ -215,21 +216,21 @@ public class EntrySize {
          int step = 1000;
          int numCreate = 1000000;
          MsgQueuePublishEntry entryArr[] = new MsgQueuePublishEntry[numCreate];
-         log.info(ME, "Hit a key for new MsgQueuePublishEntry RAM size test ...");
+         log.info("Hit a key for new MsgQueuePublishEntry RAM size test ...");
          try { System.in.read(); } catch(java.io.IOException e) {}
          for(int i=0; i<numCreate; i++) {
             MsgUnit msgUnit = new MsgUnit(glob, "<key oid='XX'/>", new byte[0], publishQos.toXml());
             entryArr[i] = new MsgQueuePublishEntry(glob, msgUnit, storageId);
             if (i > 0 && (i % step) == 0) {
-               log.info(ME, "Overall created #" + i + ": Created " + step + " new MsgQueuePublishEntry instances, msgUnitSize=" + msgUnit.size() + ", hit a key to create more ...");
+               log.info("Overall created #" + i + ": Created " + step + " new MsgQueuePublishEntry instances, msgUnitSize=" + msgUnit.size() + ", hit a key to create more ...");
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
-            if (log.TRACE) log.trace(ME, "Dump publish meat: " + entryArr[i].toXml());
+            if (log.isLoggable(Level.FINE)) log.fine("Dump publish meat: " + entryArr[i].toXml());
          }
       }
       catch (XmlBlasterException ex) {          
          ex.printStackTrace();
-         this.log.error(ME, "exception occured : " + ex.getMessage());
+         log.severe("exception occured : " + ex.getMessage());
       }
    }
 
@@ -250,7 +251,7 @@ public class EntrySize {
     * </pre>
     */
    public void subscribeEntry() {
-      this.log.info(ME, "************ Starting subscribeEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
+      log.info("************ Starting subscribeEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
          SubscribeQos subscribeQos = new SubscribeQos(glob);
          StorageId storageId = new StorageId(Constants.RELATING_CLIENT, "subscribeEntry");
@@ -258,7 +259,7 @@ public class EntrySize {
          int step = 1000;
          int numCreate = 1000000;
          MsgQueueSubscribeEntry entryArr[] = new MsgQueueSubscribeEntry[numCreate];
-         log.info(ME, "Hit a key for new MsgQueueSubscribeEntry RAM size test ...");
+         log.info("Hit a key for new MsgQueueSubscribeEntry RAM size test ...");
          try { System.in.read(); } catch(java.io.IOException e) {}
          for(int i=0; i<numCreate; i++) {
             SubscribeKey sk = new SubscribeKey(glob, "XX");
@@ -266,15 +267,15 @@ public class EntrySize {
             entryArr[i] = new MsgQueueSubscribeEntry(glob, storageId, sk.getData(), sq.getData());
             if (i > 0 && (i % step) == 0) {
                int loadSize = sk.toXml().length() + sq.toXml().length();
-               log.info(ME, "Overall created #" + i + ": Created " + step + " new MsgQueueSubscribeEntry instances, key+qos size=" + loadSize + ", hit a key to create more ...");
+               log.info("Overall created #" + i + ": Created " + step + " new MsgQueueSubscribeEntry instances, key+qos size=" + loadSize + ", hit a key to create more ...");
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
-            if (log.TRACE) log.trace(ME, "Dump meat: " + entryArr[i].toXml());
+            if (log.isLoggable(Level.FINE)) log.fine("Dump meat: " + entryArr[i].toXml());
          }
       }
       catch (XmlBlasterException ex) {          
          ex.printStackTrace();
-         this.log.error(ME, "exception occured : " + ex.getMessage());
+         log.severe("exception occured : " + ex.getMessage());
       }
    }
 
@@ -302,28 +303,28 @@ public class EntrySize {
     * </pre>
     */
    public void connectEntry() {
-      this.log.info(ME, "************ Starting connectEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
+      log.info("************ Starting connectEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
          StorageId storageId = new StorageId(Constants.RELATING_CLIENT, "connectEntry");
 
          int step = 1000;
          int numCreate = 1000000;
          MsgQueueConnectEntry entryArr[] = new MsgQueueConnectEntry[numCreate];
-         log.info(ME, "Hit a key for new MsgQueueConnectEntry RAM size test ...");
+         log.info("Hit a key for new MsgQueueConnectEntry RAM size test ...");
          try { System.in.read(); } catch(java.io.IOException e) {}
          for(int i=0; i<numCreate; i++) {
             ConnectQos connectQos = new ConnectQos(glob);
             entryArr[i] = new MsgQueueConnectEntry(glob, storageId, connectQos.getData());
             if (i > 0 && (i % step) == 0) {
-               log.info(ME, "Overall created #" + i + ": Created " + step + " new MsgQueueConnectEntry instances, connectQosSize=" + connectQos.size() + ", hit a key to create more ...");
+               log.info("Overall created #" + i + ": Created " + step + " new MsgQueueConnectEntry instances, connectQosSize=" + connectQos.size() + ", hit a key to create more ...");
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
-            if (log.TRACE) log.trace(ME, "Dump publis meat: " + entryArr[i].toXml());
+            if (log.isLoggable(Level.FINE)) log.fine("Dump publis meat: " + entryArr[i].toXml());
          }
       }
       catch (XmlBlasterException ex) {          
          ex.printStackTrace();
-         this.log.error(ME, "exception occured : " + ex.getMessage());
+         log.severe("exception occured : " + ex.getMessage());
       }
    }
 
@@ -337,7 +338,7 @@ public class EntrySize {
       EntrySize testSub = new EntrySize(glob);
       //   long startTime = System.currentTimeMillis();
       //   long usedTime = System.currentTimeMillis() - startTime;
-      //   testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+      //   testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
    }
 }
 

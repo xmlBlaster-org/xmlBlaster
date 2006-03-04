@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -70,7 +71,7 @@ import junit.framework.*;
 public class XmlBlasterAccessTest extends TestCase {
    private String ME = "XmlBlasterAccessTest";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlBlasterAccessTest.class.getName());
 
    public XmlBlasterAccessTest() {
       this(null, "XmlBlasterAccessTest");
@@ -83,7 +84,7 @@ public class XmlBlasterAccessTest extends TestCase {
 
    protected void setUp() {
       this.glob = (this.glob == null) ? Global.instance() : this.glob;
-      this.log = this.glob.getLog("client");
+
    }
 
    /**
@@ -123,13 +124,13 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testDefaultConnectWithoutServer failed: " + e.getMessage());
          }
 
          if (xmlBlasterAccess.isAlive()) {
-            log.error(ME, "No testing possible when xmlBlaster is running - ignoring this test");
+            log.severe("No testing possible when xmlBlaster is running - ignoring this test");
             xmlBlasterAccess.disconnect(null);
             continue;
          }
@@ -138,7 +139,7 @@ public class XmlBlasterAccessTest extends TestCase {
          assertEquals("", false, xmlBlasterAccess.isAlive());
          assertEquals("", false, xmlBlasterAccess.isPolling());
          assertEquals("", false, xmlBlasterAccess.isDead());
-         log.info(ME, "SUCCESS: Check I_ConnectionHandler");
+         log.info("SUCCESS: Check I_ConnectionHandler");
 
          assertEquals("", false, xmlBlasterAccess.isConnected());
          xmlBlasterAccess.registerConnectionListener((I_ConnectionStateListener)null);
@@ -150,9 +151,9 @@ public class XmlBlasterAccessTest extends TestCase {
             assertTrue("", cbServer != null);
             assertTrue("", cbServer.getCbProtocol() != null);
             assertTrue("", cbServer.getCbAddress() != null);
-            log.info(ME, "SUCCESS: initCbServer protocol=" + cbServer.getCbProtocol() + " address=" + cbServer.getCbAddress());
+            log.info("SUCCESS: initCbServer protocol=" + cbServer.getCbProtocol() + " address=" + cbServer.getCbAddress());
             cbServer.shutdown();
-            log.info(ME, "SUCCESS: CbServer.shutdown()");
+            log.info("SUCCESS: CbServer.shutdown()");
             assertTrue("", xmlBlasterAccess.getCbServer() == null); // is not cached in xmlBlasterAccess
          }
          catch (XmlBlasterException e) {
@@ -171,7 +172,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -181,7 +182,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -191,7 +192,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -201,7 +202,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -211,7 +212,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -221,7 +222,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -231,7 +232,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -241,7 +242,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -251,7 +252,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -261,7 +262,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -271,7 +272,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -281,7 +282,7 @@ public class XmlBlasterAccessTest extends TestCase {
          }
          catch (XmlBlasterException e) {
             if (e.isUser())
-               log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+               log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testCreation failed: " + e.getMessage());
          }
@@ -289,7 +290,7 @@ public class XmlBlasterAccessTest extends TestCase {
          assertTrue("", xmlBlasterAccess.getGlobal() != null);
          assertTrue("", xmlBlasterAccess.toXml() != null);
 
-         log.info(ME, "SUCCESS: Check I_XmlBlasterAccess");
+         log.info("SUCCESS: Check I_XmlBlasterAccess");
       }
 
       System.out.println("***XmlBlasterAccessTest: testCreation [SUCCESS]");
@@ -303,7 +304,7 @@ public class XmlBlasterAccessTest extends TestCase {
       assertEquals("", false, xmlBlasterAccess.isConnected());
 
       ConnectQos q = new ConnectQos(null);
-      log.info(ME, "Default ConnectQos=" + q.toXml() + " retries=" + q.getAddress().getRetries() + " delay=" + q.getAddress().getDelay());
+      log.info("Default ConnectQos=" + q.toXml() + " retries=" + q.getAddress().getRetries() + " delay=" + q.getAddress().getDelay());
       assertEquals("", -1, q.getAddress().getRetries()); // retry forever
       assertEquals("", q.getAddress().getDefaultDelay(), q.getAddress().getDelay()); // 5000L
       assertTrue("", q.getAddress().getDelay() > 0);
@@ -314,13 +315,13 @@ public class XmlBlasterAccessTest extends TestCase {
       }
       catch (XmlBlasterException e) {
          if (e.isUser())
-            log.info(ME, "Exception is OK if not connected: " + e.getErrorCode());
+            log.info("Exception is OK if not connected: " + e.getErrorCode());
          else
             fail("testDefaultConnectWithoutServer failed: " + e.getMessage());
       }
-      log.info(ME, "SUCCESS: Check I_XmlBlasterAccess");
+      log.info("SUCCESS: Check I_XmlBlasterAccess");
       */
-      log.info(ME, "TEST MISSING");
+      log.info("TEST MISSING");
 
       System.out.println("***XmlBlasterAccessTest: testDefaultConnectWithoutServer [SUCCESS]");
    }

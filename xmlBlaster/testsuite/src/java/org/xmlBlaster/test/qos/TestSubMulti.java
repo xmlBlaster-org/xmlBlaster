@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
@@ -45,7 +46,7 @@ public class TestSubMulti extends TestCase implements I_Callback
 {
    private static String ME = "TestSubMulti";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubMulti.class.getName());
 
    private String publishOid = "";
    private I_XmlBlasterAccess con;
@@ -68,7 +69,7 @@ public class TestSubMulti extends TestCase implements I_Callback
    {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog("test");
+
        this.senderName = loginName;
        this.receiverName = loginName;
    }
@@ -88,7 +89,7 @@ public class TestSubMulti extends TestCase implements I_Callback
          con.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -116,7 +117,7 @@ public class TestSubMulti extends TestCase implements I_Callback
     */
    public void testSubscribeXPath()
    {
-      log.info(ME, "Subscribing using XPath syntax ...");
+      log.info("Subscribing using XPath syntax ...");
       try {
         {
           SubscribeKey key = new SubscribeKey(glob, "//key/location[@dest='agent-192.168.10.218']", "XPATH");
@@ -131,7 +132,7 @@ public class TestSubMulti extends TestCase implements I_Callback
         }
       }
       catch(XmlBlasterException e) {
-        log.warn(ME, "XmlBlasterException: " + e.getMessage());
+        log.warning("XmlBlasterException: " + e.getMessage());
         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -142,7 +143,7 @@ public class TestSubMulti extends TestCase implements I_Callback
     */
    public void testPublish()
    {
-      log.info(ME, "Publishing a message ...");
+      log.info("Publishing a message ...");
       numReceived = 0;
 
       PublishKey key = new PublishKey(glob, "", contentMime, contentMimeExtended);
@@ -153,9 +154,9 @@ public class TestSubMulti extends TestCase implements I_Callback
          MsgUnit msgUnit = new MsgUnit(key.toXml(), senderContent.getBytes(), qos.toXml());
          sentTimestamp = new Timestamp();
          publishOid = con.publish(msgUnit).getKeyOid();
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -182,7 +183,7 @@ public class TestSubMulti extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + "...");
+      log.info("Receiving update of message oid=" + updateKey.getOid() + "...");
 
       numReceived += 1;
 

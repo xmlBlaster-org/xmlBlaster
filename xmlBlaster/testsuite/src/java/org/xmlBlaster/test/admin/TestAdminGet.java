@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.admin;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -74,7 +75,7 @@ public class TestAdminGet extends TestCase implements I_Callback
    private static String ME = "TestAdminGet";
    
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestAdminGet.class.getName());
 
    private MsgInterceptor updateInterceptor;
    private String senderName;
@@ -99,7 +100,7 @@ public class TestAdminGet extends TestCase implements I_Callback
     */
    protected void setUp() {
       this.glob = (this.glob == null) ? Global.instance() : this.glob;
-      this.log = this.glob.getLog("test");
+
       this.updateInterceptor = new MsgInterceptor(this.glob, this.log, null);
       
       try {
@@ -111,11 +112,11 @@ public class TestAdminGet extends TestCase implements I_Callback
          con.connect(connectQos, this);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed: " + e.getMessage());
+          log.warning("setUp() - login failed: " + e.getMessage());
           fail("setUp() - login fail: " + e.getMessage());
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
           fail("setUp() - login fail: " + e.toString());
       }
@@ -127,7 +128,7 @@ public class TestAdminGet extends TestCase implements I_Callback
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestAdminGet-AGENT" +
                       "</key>";
@@ -139,10 +140,10 @@ public class TestAdminGet extends TestCase implements I_Callback
 
          PropString defaultPlugin = new PropString("CACHE,1.0");
          String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
-         log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+         log.info("Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
       }
       finally {
          con.disconnect(null);
@@ -165,10 +166,10 @@ public class TestAdminGet extends TestCase implements I_Callback
 
          SubscribeReturnQos subscriptionId = this.glob.getXmlBlasterAccess().subscribe(key, qos, this.updateInterceptor);
 
-         log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
+         log.info("Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -181,7 +182,7 @@ public class TestAdminGet extends TestCase implements I_Callback
          this.glob.getXmlBlasterAccess().unSubscribe(key, qos);
       } 
       catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -192,7 +193,7 @@ public class TestAdminGet extends TestCase implements I_Callback
     * <p />
     */
    public void doPublish(int counter, String oid) throws XmlBlasterException {
-      log.info(ME, "Publishing a message " + oid + " ...");
+      log.info("Publishing a message " + oid + " ...");
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'><test></test></key>";
       String content = "" + counter;
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
@@ -201,7 +202,7 @@ public class TestAdminGet extends TestCase implements I_Callback
       else  msgUnit = new MsgUnit(xmlKey, "", qosWrapper.toXml());
 
       this.glob.getXmlBlasterAccess().publish(msgUnit);
-      log.info(ME, "Success: Publishing of " + oid + " done");
+      log.info("Success: Publishing of " + oid + " done");
    }
 
    /**
@@ -211,7 +212,7 @@ public class TestAdminGet extends TestCase implements I_Callback
    public void testActivationFlag() {
       try {
          String oid = "TestActivationFlag";
-         log.info(ME, "Going to publish 3 times on message '" + oid + "' (first time before subscribing)");
+         log.info("Going to publish 3 times on message '" + oid + "' (first time before subscribing)");
          doPublish(1, oid);
          doSubscribe(oid);
          doPublish(2, oid);
@@ -223,7 +224,7 @@ public class TestAdminGet extends TestCase implements I_Callback
          MsgUnit[] msg = this.glob.getXmlBlasterAccess().get(new GetKey(this.glob, getOid), new GetQos(this.glob));
          assertEquals("wrong number of messages returned", 1, msg.length);
          for (int i=0; i < msg.length; i++) {
-            this.log.info(ME, "testActivationFlag: dispatcherActive: (" + i + ") : '" + msg[i].getContentStr() + "'");
+            log.info("testActivationFlag: dispatcherActive: (" + i + ") : '" + msg[i].getContentStr() + "'");
             assertEquals("wrong return value", "true", msg[i].getContentStr());
          }
       
@@ -234,7 +235,7 @@ public class TestAdminGet extends TestCase implements I_Callback
          msg = this.glob.getXmlBlasterAccess().get(new GetKey(this.glob, getOid), new GetQos(this.glob));
          assertEquals("wrong number of messages returned", 1, msg.length);
          for (int i=0; i < msg.length; i++) {
-            this.log.info(ME, "testActivationFlag: dispatcherActive (result): (" + i + ") : '" + msg[i].getContentStr() + "'");
+            log.info("testActivationFlag: dispatcherActive (result): (" + i + ") : '" + msg[i].getContentStr() + "'");
             assertEquals("wrong return value", "false", msg[i].getContentStr());
          }
 
@@ -250,7 +251,7 @@ public class TestAdminGet extends TestCase implements I_Callback
          msg = this.glob.getXmlBlasterAccess().get(new GetKey(this.glob, getOid), new GetQos(this.glob));
          assertEquals("wrong number of messages returned", 1, msg.length);
          for (int i=0; i < msg.length; i++) {
-            this.log.info(ME, "testActivationFlag: dispatcherActive (result): (" + i + ") : '" + msg[i].getContentStr() + "'");
+            log.info("testActivationFlag: dispatcherActive (result): (" + i + ") : '" + msg[i].getContentStr() + "'");
             assertEquals("wrong return value", "true", msg[i].getContentStr());
          }
          
@@ -267,13 +268,13 @@ public class TestAdminGet extends TestCase implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       String contentStr = new String(content);
       String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
-      this.log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+      log.info("Receiving update of a message oid=" + updateKey.getOid() +
                         " priority=" + updateQos.getPriority() +
                         " state=" + updateQos.getState() +
                         " content=" + cont);
-      this.log.info(ME, "further log for receiving update of a message cbSessionId=" + cbSessionId +
+      log.info("further log for receiving update of a message cbSessionId=" + cbSessionId +
                      updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
-      this.log.error(ME, "update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
+      log.severe("update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
       return "OK";
    }
 
@@ -293,7 +294,7 @@ public class TestAdminGet extends TestCase implements I_Callback
          doPublish(1, oid);
          doPublish(2, oid);
          doPublish(3, oid);
-         log.info(ME, "Going to publish 3 times on message '" + oid + "'");
+         log.info("Going to publish 3 times on message '" + oid + "'");
          // should not receive anything yet since the dispatcher is not active anymore 
          assertEquals("wrong number of updates received", 0, this.updateInterceptor.waitOnUpdate(500L));
          this.updateInterceptor.clear();
@@ -340,7 +341,7 @@ public class TestAdminGet extends TestCase implements I_Callback
          assertEquals("wrong prerequisite: entries have arrived before starting the test: probably coming from an inconsistency in the previous test", 0, this.updateInterceptor.count());
          this.updateInterceptor.clear();
          for (int i=0; i < initialEntries; i++) doPublish(i, oid);
-         log.info(ME, "In the callback queue there should now be '" + initialEntries + "' entries");
+         log.info("In the callback queue there should now be '" + initialEntries + "' entries");
          int ret = this.updateInterceptor.waitOnUpdate(200L);
          assertEquals("no update should arrive here ", 0, ret);
          

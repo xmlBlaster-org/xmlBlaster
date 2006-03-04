@@ -9,7 +9,8 @@ package javaclients;
 
 import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -39,16 +40,16 @@ import org.xmlBlaster.util.MsgUnit;
 public class ClientXml implements I_Callback
 {
    private static String ME = "ClientXml";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientXml.class.getName());
 
    public ClientXml(String args[])
    {
       // Initialize command line argument handling (this is optional)
       Global glob = new Global();
-      log = glob.getLog(null);
+
       if (glob.init(args) != 0) {
          System.out.println(glob.usage());
-         log.info(ME,"Example: java javaclients.ClientXml -loginName Jeff\n");
+         log.info("Example: java javaclients.ClientXml -loginName Jeff\n");
          System.exit(1);
       }
 
@@ -74,47 +75,47 @@ public class ClientXml implements I_Callback
          {
             String content = "<person><name>Ghandi</name></person>";
             MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "");
-            log.trace(ME, "Publishing ...");
+            log.fine("Publishing ...");
             stop.restart();
             try {
                publishOid = blasterConnection.publish(msgUnit).getKeyOid();
-               log.info(ME, "   Returned oid=" + publishOid);
-               log.trace(ME, "Publishing done" + stop.nice());
+               log.info("   Returned oid=" + publishOid);
+               log.fine("Publishing done" + stop.nice());
             } catch(XmlBlasterException e) {
-               log.error(ME, "Punlishing failed, XmlBlasterException: " + e.getMessage());
+               log.severe("Punlishing failed, XmlBlasterException: " + e.getMessage());
             }
          }
 
 
          //----------- Subscribe to the previous message OID -------
-         log.trace(ME, "Subscribing using the exact oid ...");
+         log.fine("Subscribing using the exact oid ...");
          xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                   "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                   "</key>";
          stop.restart();
          try {
             String subId = blasterConnection.subscribe(xmlKey, "<qos></qos>").getSubscriptionId();
-            log.trace(ME, "Subscribed to '" + subId + "' ..." + stop.nice());
+            log.fine("Subscribed to '" + subId + "' ..." + stop.nice());
          } catch(XmlBlasterException e) {
-            log.error(ME, "Subscribe failed, XmlBlasterException: " + e.getMessage());
+            log.severe("Subscribe failed, XmlBlasterException: " + e.getMessage());
          }
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait a second
 
 
          //----------- Unsubscribe from the previous message --------
-         log.trace(ME, "Unsubscribe ...");
+         log.fine("Unsubscribe ...");
          stop.restart();
          try {
             blasterConnection.unSubscribe(xmlKey, "<qos></qos>");
-            log.info(ME, "Unsubscribe done" + stop.nice());
+            log.info("Unsubscribe done" + stop.nice());
          } catch(XmlBlasterException e) {
-            log.error(ME, "Unsubscribe failed, XmlBlasterException: " + e.getMessage());
+            log.severe("Unsubscribe failed, XmlBlasterException: " + e.getMessage());
          }
 
 
          //----------- Subscribe to the previous message XPATH -------
-         log.trace(ME, "Subscribing using XPath syntax ...");
+         log.fine("Subscribing using XPath syntax ...");
          xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                   "<key oid='' queryType='XPATH'>\n" +
                   "/xmlBlaster/key/AGENT" +
@@ -122,27 +123,27 @@ public class ClientXml implements I_Callback
          stop.restart();
          try {
             blasterConnection.subscribe(xmlKey, "<qos></qos>");
-            log.trace(ME, "Subscribe done, there should be a Callback");
+            log.fine("Subscribe done, there should be a Callback");
          } catch(XmlBlasterException e) {
-            log.error(ME, "subscribe failed, XmlBlasterException: " + e.getMessage());
+            log.severe("subscribe failed, XmlBlasterException: " + e.getMessage());
          }
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait a second
 
-         log.trace(ME, "Publishing 10 times ...");
+         log.fine("Publishing 10 times ...");
          {
             for (int ii=0; ii<10; ii++) {
                //----------- Construct a message and publish it ---------
                String content = "<person><name>Castro</name><age>" + ii + "</age></person>";
                xmlKey = "<key oid='" + publishOid + "' contentMime='text/xml'>\n</key>";
                MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "");
-               log.trace(ME, "Publishing ...");
+               log.fine("Publishing ...");
                stop.restart();
                try {
                   String str = blasterConnection.publish(msgUnit).getKeyOid();
-                  log.trace(ME, "Publishing done" + stop.nice());
+                  log.fine("Publishing done" + stop.nice());
                } catch(XmlBlasterException e) {
-                  log.error(ME, "Publishing failed, XmlBlasterException: " + e.getMessage());
+                  log.severe("Publishing failed, XmlBlasterException: " + e.getMessage());
                }
             }
          }
@@ -164,7 +165,7 @@ public class ClientXml implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of message [" + updateKey.getOid() + "]");
+      log.info("Receiving update of message [" + updateKey.getOid() + "]");
       return "";
    }
 

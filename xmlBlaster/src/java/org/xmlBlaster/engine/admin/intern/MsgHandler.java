@@ -6,7 +6,8 @@ Comment:   Implementation for administrative message access
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin.intern;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.context.ContextNode;
@@ -30,7 +31,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
 
    private String ME = "MsgHandler";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(MsgHandler.class.getName());
    private CommandManager commandManager = null;
 
    /**
@@ -40,14 +41,14 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
     */
    public void initialize(Global glob, CommandManager commandManager) {
       this.glob = glob;
-      this.log = this.glob.getLog("admin");
+
       this.commandManager = commandManager;
       this.ME = "MsgHandler" + this.glob.getLogPrefixDashed();
       // "topic" now handled by CoreHandler.java to have all MBean accessors, changed 2006-02-028, marcel
       //this.commandManager.register(ContextNode.TOPIC_MARKER_TAG, this);
       // For old behavior we have no "_topic":
       this.commandManager.register("_"+ContextNode.TOPIC_MARKER_TAG, this);
-      log.trace(ME, "Message administration plugin is initialized for '_topic/?content' etc.");
+      log.fine("Message administration plugin is initialized for '_topic/?content' etc.");
    }
 
    /**
@@ -119,11 +120,11 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       for (int i=0; i < msgUnits.length; i++) {
          msgUnits[i] = new MsgUnit(this.glob, msgUnitArrRaw[i], method);
       }
-      log.info(ME, cmd.getCommand() + " returned " + msgUnitArrRaw.length + " messages");
+      log.info(cmd.getCommand() + " returned " + msgUnitArrRaw.length + " messages");
 
-      if (log.DUMP) {
+      if (log.isLoggable(Level.FINEST)) {
          for (int ii=0; ii<msgUnitArrRaw.length; ii++) {
-            log.dump(ME, msgUnitArrRaw[ii].toXml());
+            log.finest(msgUnitArrRaw[ii].toXml());
          }
       }
       return msgUnits;
@@ -167,7 +168,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(addressServer, sessionId, xmlKey, qos);
 
       if (msgUnitArrRaw.length < 1) {
-         log.info(ME, cmd.getCommand() + " Message oid=" + oid + " not found");
+         log.info(cmd.getCommand() + " Message oid=" + oid + " not found");
          return null;
       }
          
@@ -189,7 +190,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       */
       String[] retArr = xmlBlaster.publishArr(addressServer, sessionId, msgUnitArrRaw);
 
-      log.info(ME, cmd.getCommand() + " published " + msgUnitArrRaw.length + " messages");
+      log.info(cmd.getCommand() + " published " + msgUnitArrRaw.length + " messages");
       StringBuffer sb = new StringBuffer(retArr.length * 60);
       for (int ii=0; ii<retArr.length; ii++) {
          sb.append(retArr[ii]);
@@ -206,7 +207,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
    }
 
    public void shutdown() {
-      if (log.TRACE) log.trace(ME, "Shutdown ignored, nothing to do");
+      if (log.isLoggable(Level.FINE)) log.fine("Shutdown ignored, nothing to do");
    }
 
 } // end of class MsgHandler

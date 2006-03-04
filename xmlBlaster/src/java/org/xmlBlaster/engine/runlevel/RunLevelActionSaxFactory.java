@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
@@ -30,7 +31,7 @@ public class RunLevelActionSaxFactory extends SaxHandlerBase
 {
    private String ME = "RunLevelActionSaxFactory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(RunLevelActionSaxFactory.class.getName());
 
    private RunLevelAction runLevelAction;
    private boolean isAction = false; // to set when an 'action' tag has been found (to know when to throw an ex)
@@ -43,7 +44,7 @@ public class RunLevelActionSaxFactory extends SaxHandlerBase
       super(glob);
       setUseLexicalHandler(true); // to allow CDATA wrapped attributes 
       this.glob = glob;
-      this.log = glob.getLog("runlevel");
+
    }
 
    public void reset() {
@@ -69,7 +70,7 @@ public class RunLevelActionSaxFactory extends SaxHandlerBase
          this.init(xmlTxt);      // use SAX parser to parse it (is slow)
       }
       catch (Throwable thr) {
-         if (this.log.TRACE) {
+         if (log.isLoggable(Level.FINE)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readObject", "exception occured when parsing the <action> tag. In fact it was '" + xmlTxt + "'", thr);
          }
          else {
@@ -111,7 +112,7 @@ public class RunLevelActionSaxFactory extends SaxHandlerBase
                      this.runLevelAction.setOnStartupRunlevel(level);
                   }
                   catch (NumberFormatException ex) {
-                     this.log.warn(ME, "startElement onStartupRunlevel='" + value + "' is not an integer");
+                     log.warning("startElement onStartupRunlevel='" + value + "' is not an integer");
                   }
                   continue;
                }
@@ -121,7 +122,7 @@ public class RunLevelActionSaxFactory extends SaxHandlerBase
                      this.runLevelAction.setOnShutdownRunlevel(level);
                   }
                   catch (NumberFormatException ex) {
-                     this.log.warn(ME, "startElement onShutdownRunlevel='" + value + "' is not an integer");
+                     log.warning("startElement onShutdownRunlevel='" + value + "' is not an integer");
                   }
                   continue;
                }
@@ -131,31 +132,31 @@ public class RunLevelActionSaxFactory extends SaxHandlerBase
                      this.runLevelAction.setSequence(sequence);
                   }
                   catch (NumberFormatException ex) {
-                     this.log.warn(ME, "startElement sequence='" + value + "' is not an integer");
+                     log.warning("startElement sequence='" + value + "' is not an integer");
                   }
                   continue;
                }
                if ("onFail".equalsIgnoreCase(key)) {
                   if (value.length() > 1) { // if empty ignore it
-                     if (this.log.TRACE) this.log.trace(ME, "startElement: onFail : " + key + "='" + value +"'");
+                     if (log.isLoggable(Level.FINE)) this.log.fine("startElement: onFail : " + key + "='" + value +"'");
                      try {
                         ErrorCode code = ErrorCode.toErrorCode(value);
                         this.runLevelAction.setOnFail(code);
                      }
                      catch (IllegalArgumentException ex) {
-                        this.log.warn(ME, "startElement onFail='" + value + "' is an unknown error code");
+                        log.warning("startElement onFail='" + value + "' is an unknown error code");
                         this.ex = new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".startElement", "check the spelling of your error code, it is unknown and probably wrongly spelled", ex);
                      }
                   }
                   continue;
                }
-               this.log.warn(ME, "startElement: unknown attribute '" + key + "' with value '" + value + "' used");
+               log.warning("startElement: unknown attribute '" + key + "' with value '" + value + "' used");
             }
          }
          return;
       }
 
-      this.log.warn(ME, "startElement: unknown tag '" + name + "'");
+      log.warning("startElement: unknown tag '" + name + "'");
    }
 
    /**

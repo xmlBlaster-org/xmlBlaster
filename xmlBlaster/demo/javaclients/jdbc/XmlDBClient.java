@@ -1,6 +1,7 @@
 package javaclients.jdbc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
@@ -27,7 +28,7 @@ public class XmlDBClient implements I_Callback
 {
    private static String ME = "XmlDBClient";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlDBClient.class.getName());
    private I_XmlBlasterAccess con = null;
    private String results;
    private boolean done = false;
@@ -37,7 +38,7 @@ public class XmlDBClient implements I_Callback
     */
    public XmlDBClient(Global glob) {
       this.glob = glob;
-      this.log = this.glob.getLog("client");
+
       initBlaster();
       query();
       waitOnResults();
@@ -52,9 +53,9 @@ public class XmlDBClient implements I_Callback
             Thread.sleep(1000);
          }
          catch (InterruptedException e) {}
-         log.plain(ME, "Waiting...");
+         System.out.println("Waiting...");
       }
-      log.plain(ME, results);
+      System.out.println(results);
       logout();
    }
 
@@ -65,7 +66,7 @@ public class XmlDBClient implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey key, byte[] content, UpdateQos updateQos) {
       results = new String(content);
-      log.info(ME, "Receiving message oid=" + key.getOid() + " state=" + updateQos.getState());
+      log.info("Receiving message oid=" + key.getOid() + " state=" + updateQos.getState());
       done = true;
       return "";
    }
@@ -77,11 +78,11 @@ public class XmlDBClient implements I_Callback
       try {
          con = glob.getXmlBlasterAccess();
          con.connect(null, this);
-         log.info(ME, "Connected to xmlBlaster");
+         log.info("Connected to xmlBlaster");
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, "Login to xmlBlaster failed");
+         log.severe("Login to xmlBlaster failed");
          System.exit(1);
       }
    }
@@ -91,7 +92,7 @@ public class XmlDBClient implements I_Callback
     */
    public void logout() {
       if (con == null) return;
-      log.info(ME, "Logout ...");
+      log.info("Logout ...");
       con.disconnect(null);
    }
 
@@ -113,14 +114,14 @@ public class XmlDBClient implements I_Callback
 
       try {
          con.publish(wrap.toMessage());
-         log.info(ME, "Published query ...");
-         if (log.DUMP) log.dump(ME, wrap.toXml());
+         log.info("Published query ...");
+         if (log.isLoggable(Level.FINEST)) log.finest(wrap.toXml());
       }
-      catch (Exception e) { log.error(ME, e.getMessage()); }
+      catch (Exception e) { log.severe(e.getMessage()); }
 
       if (!queryStr.equalsIgnoreCase("query") && !confirm) {
          logout();
-         log.info(ME, "Done, no waiting on confirmation");
+         log.info("Done, no waiting on confirmation");
          System.exit(0);
       }
    }

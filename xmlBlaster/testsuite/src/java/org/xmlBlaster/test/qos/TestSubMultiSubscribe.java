@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -45,7 +46,7 @@ public class TestSubMultiSubscribe extends TestCase
 {
    private static String ME = "TestSubMultiSubscribe";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubMultiSubscribe.class.getName());
 
    private String subscribeId;
    private final String myDomain = "myDomain";
@@ -62,7 +63,7 @@ public class TestSubMultiSubscribe extends TestCase
    public TestSubMultiSubscribe(Global glob, String testName) {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -77,7 +78,7 @@ public class TestSubMultiSubscribe extends TestCase
          connection.connect(qos, this.updateInterceptor);
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           fail("Login failed: " + e.toString());
       }
@@ -107,7 +108,7 @@ public class TestSubMultiSubscribe extends TestCase
     * Subscribe multiple times to the same message with &lt;multiSubscribe>false&lt;/multiSubscribe>
     */
    public void subscribe(String queryString, String queryType, AccessFilterQos aq, int numSub) {
-      if (log.TRACE) log.trace(ME, "Subscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing ...");
       try {
          for(int i=0; i<numSub; i++) {
             SubscribeKey key = new SubscribeKey(glob, queryString, queryType);
@@ -117,7 +118,7 @@ public class TestSubMultiSubscribe extends TestCase
                qos.addAccessFilter(aq);
             }
             SubscribeReturnQos ret = this.connection.subscribe(key.toXml(), qos.toXml());
-            log.info(ME, "Subscribe #" + i + " state=" + ret.getState() + " subscriptionId=" + ret.getSubscriptionId());
+            log.info("Subscribe #" + i + " state=" + ret.getState() + " subscriptionId=" + ret.getSubscriptionId());
             if (subscribeId == null) {
                subscribeId = ret.getSubscriptionId();
                assertEquals("", Constants.STATE_OK, ret.getState());
@@ -127,7 +128,7 @@ public class TestSubMultiSubscribe extends TestCase
             assertEquals("", Constants.STATE_WARN, ret.getState());
          }
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -136,7 +137,7 @@ public class TestSubMultiSubscribe extends TestCase
     * Construct a message and publish it.
     */
    public void publish() {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' domain='"+myDomain+"'/>";
       String senderContent = "Yeahh, i'm the new content";
@@ -144,9 +145,9 @@ public class TestSubMultiSubscribe extends TestCase
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), xmlQos);
          publishOid = connection.publish(msgUnit).getKeyOid();
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish - XmlBlasterException: " + e.getMessage());
       }
 
@@ -158,14 +159,14 @@ public class TestSubMultiSubscribe extends TestCase
     * unSubscribe twice to same message. 
     */
    public void unSubscribe() {
-      if (log.TRACE) log.trace(ME, "unSubscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("unSubscribing ...");
 
       String qos = "<qos/>";
       try {
          connection.unSubscribe("<key oid='" + subscribeId + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 1 on " + subscribeId + " done");
+         log.info("Success: unSubscribe 1 on " + subscribeId + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("unSubscribe - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -175,7 +176,7 @@ public class TestSubMultiSubscribe extends TestCase
     * the first subscription shouldn't  receive the message as local==false
     */
    public void testMultiSubscribeOid() {
-      log.info(ME, "testMultiSubscribeOid ...");
+      log.info("testMultiSubscribeOid ...");
       
       subscribe(publishOid, Constants.EXACT, null, 10);   // there should be no Callback 
       assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
@@ -197,7 +198,7 @@ public class TestSubMultiSubscribe extends TestCase
     * the first subscription shouldn't  receive the message as local==false
     */
    public void testMultiSubscribeXPath() {
-      log.info(ME, "testMultiSubscribeXPath ...");
+      log.info("testMultiSubscribeXPath ...");
       
       subscribe("//key[@oid='"+publishOid+"']", Constants.XPATH, null, 10);   // there should be no Callback 
       assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
@@ -218,14 +219,14 @@ public class TestSubMultiSubscribe extends TestCase
     * TEST: Change AccessFilter of SubscribeQos and test if reconfiguration works. 
     */
    public void testSubscribeReconfigure() {
-      log.info(ME, "testSubscribeReconfigure ...");
+      log.info("testSubscribeReconfigure ...");
 
       final String filterType = "Sql92Filter";
       final String filterVersion = "1.0";
       String filterQuery = "phone LIKE '12%3'";
 
       {
-         log.info(ME, "Matching accessFilter");
+         log.info("Matching accessFilter");
          AccessFilterQos aq = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
          subscribe("//key[@oid='"+publishOid+"']", Constants.XPATH, aq, 1);
          assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
@@ -236,7 +237,7 @@ public class TestSubMultiSubscribe extends TestCase
       }
 
       {
-         log.info(ME, "NOT matching accessFilter");
+         log.info("NOT matching accessFilter");
          filterQuery = "phone LIKE '1XX%3'";
          AccessFilterQos aq = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
          subscribe("//key[@oid='"+publishOid+"']", Constants.XPATH, aq, 1);
@@ -248,7 +249,7 @@ public class TestSubMultiSubscribe extends TestCase
       }
 
       {
-         log.info(ME, "Matching accessFilter");
+         log.info("Matching accessFilter");
          filterQuery = "phone LIKE '12%3'";
          AccessFilterQos aq = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
          subscribe("//key[@oid='"+publishOid+"']", Constants.XPATH, aq, 1);
@@ -270,7 +271,7 @@ public class TestSubMultiSubscribe extends TestCase
     * the first subscription shouldn't  receive the message as local==false
     */
    public void testMultiSubscribeDomain() {
-      log.info(ME, "testMultiSubscribeDomain ...");
+      log.info("testMultiSubscribeDomain ...");
       
       // For domain queries the topic must exist: Therefor publish one message to create it!
       publish();     // We expect numPub updates only

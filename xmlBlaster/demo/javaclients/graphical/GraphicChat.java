@@ -19,7 +19,8 @@ import CH.ifa.draw.standard.CreationTool;
 import CH.ifa.draw.contrib.html.HTMLTextAreaFigure;
 import CH.ifa.draw.contrib.html.HTMLTextAreaTool;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -32,18 +33,18 @@ import org.xmlBlaster.util.Global;
 public class GraphicChat extends MDI_DrawApplication implements I_Callback {
 
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(GraphicChat.class.getName());
    private String ME = "GraphicChat";
    private I_XmlBlasterAccess accessor;
 
    public GraphicChat(Global global) {
       super("GraphicChat");
       this.global = global;
-      this.log = this.global.getLog("main");
+
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      this.log.info(ME, "update for '" + cbSessionId + "', '" + updateKey.getOid() + "' length of msg is '" + content.length + "'");
+      log.info("update for '" + cbSessionId + "', '" + updateKey.getOid() + "' length of msg is '" + content.length + "'");
       return "OK";
    }
 
@@ -95,7 +96,7 @@ public class GraphicChat extends MDI_DrawApplication implements I_Callback {
     * invoked on exit
     */
    protected void destroy() {
-      this.log.info(ME, "destroy invoked");
+      log.info("destroy invoked");
       DrawingView[] views = this.views();
       for (int i=0; i < views.length; i++) {
          views[i].drawing().release();
@@ -104,7 +105,7 @@ public class GraphicChat extends MDI_DrawApplication implements I_Callback {
    }
 
    protected void fireViewDestroyingEvent(DrawingView view) {
-      this.log.info(ME, "Destroying view '" + view.drawing().getTitle() + "'");
+      log.info("Destroying view '" + view.drawing().getTitle() + "'");
       Drawing drawing = view.drawing();
       super.fireViewDestroyingEvent(view);
       drawing.release();

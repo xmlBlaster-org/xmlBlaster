@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
@@ -41,7 +42,7 @@ public class TestCallbackConfig extends TestCase
 {
    private static String ME = "TestCallbackConfig";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestCallbackConfig.class.getName());
    private String name;
    private String passwd = "secret";
    private I_XmlBlasterAccess con = null;
@@ -58,7 +59,7 @@ public class TestCallbackConfig extends TestCase
    public TestCallbackConfig(Global glob, String testName, String name) {
        super(testName);
        this.glob = glob;
-       this.log = this.glob.getLog("test");
+
        this.name = name;
    }
 
@@ -89,7 +90,7 @@ public class TestCallbackConfig extends TestCase
          con.connect(qos, this.updateInterceptor); // Login to xmlBlaster and collect update messages with interceptor
       }
       catch (Exception e) {
-         log.error(ME, e.toString() + " \n" + glob.getProperty().toXml() + " GLOBAL.INSTANCE:\n" + Global.instance().getProperty().toXml());
+         log.severe(e.toString() + " \n" + glob.getProperty().toXml() + " GLOBAL.INSTANCE:\n" + Global.instance().getProperty().toXml());
          e.printStackTrace();
          assertTrue(e.toString(), false);
       }
@@ -105,12 +106,12 @@ public class TestCallbackConfig extends TestCase
       try {
          if (con != null) {
             EraseReturnQos[] strArr = con.erase("<key oid='" + publishOid + "'/>", null);
-            if (strArr.length != 1) log.error(ME, "ERROR: Erased " + strArr.length + " messages");
+            if (strArr.length != 1) log.severe("ERROR: Erased " + strArr.length + " messages");
             con.disconnect(new DisconnectQos(glob));
          }
       }
       catch (Exception e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          assertTrue(e.toString(), false);
       }
    }
@@ -118,13 +119,13 @@ public class TestCallbackConfig extends TestCase
    /**
     */
    public void testCbSessionId() {
-      log.info(ME, "testCbSessionId() ...");
+      log.info("testCbSessionId() ...");
       try {
          con.subscribe("<key oid='testCallbackMsg'/>", null);
 
          publishOid = con.publish(new MsgUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null)).getKeyOid();
 
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
 
          assertEquals("returned oid", "testCallbackMsg", publishOid);
          assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, publishOid, Constants.STATE_OK));
@@ -132,10 +133,10 @@ public class TestCallbackConfig extends TestCase
          assertEquals("", this.cbSessionId, this.updateInterceptor.getMsgs()[0].getCbSessionId());
       }
       catch (Exception e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          assertTrue(e.toString(), false);
       }
-      log.info(ME, "Success in testCbSessionId()");
+      log.info("Success in testCbSessionId()");
    }
 
    /**

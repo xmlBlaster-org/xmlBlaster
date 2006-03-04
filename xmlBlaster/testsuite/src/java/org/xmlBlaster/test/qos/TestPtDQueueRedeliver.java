@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.HistoryQos;
@@ -70,7 +71,7 @@ public class TestPtDQueueRedeliver extends TestCase
 {
    private static String ME = "TestPtDQueueRedeliver";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestPtDQueueRedeliver.class.getName());
    private String passwd = "secret";
    private int serverPort = 7615;
    private String oid = "TestPtDQueueRedeliver.Msg";
@@ -97,7 +98,7 @@ public class TestPtDQueueRedeliver extends TestCase
    public TestPtDQueueRedeliver(Global glob, String testName) {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -108,7 +109,7 @@ public class TestPtDQueueRedeliver extends TestCase
    protected void setUp() {
       glob.init(Util.getOtherServerPorts(serverPort));
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing");
+      log.info("XmlBlaster is ready for testing");
    }
 
    /**
@@ -134,18 +135,18 @@ public class TestPtDQueueRedeliver extends TestCase
     * </p>
     */
    public void testPersistentPtp() {
-      log.info(ME, "testPersistentPtp("+sessionNameRcv+") ...");
+      log.info("testPersistentPtp("+sessionNameRcv+") ...");
 
       try {
 
-         log.info(ME, "============ STEP 1: Start publisher");
+         log.info("============ STEP 1: Start publisher");
          conSnd = glob.getXmlBlasterAccess();
          ConnectQos qosPub = new ConnectQos(glob);
          ConnectReturnQos crqPub = conSnd.connect(qosPub, null);  // Login to xmlBlaster, no updates
-         log.info(ME, "Connect success as " + crqPub.getSessionName());
+         log.info("Connect success as " + crqPub.getSessionName());
 
          int numPub = 8;
-         log.info(ME, "============ STEP 2: Publish " + numPub + " PtP messages");
+         log.info("============ STEP 2: Publish " + numPub + " PtP messages");
          MsgUnit[] sentArr = new MsgUnit[numPub];
          PublishReturnQos[] sentQos = new PublishReturnQos[numPub];
          for(int i=0; i<numPub; i++) {
@@ -169,7 +170,7 @@ public class TestPtDQueueRedeliver extends TestCase
                topicProperty.setReadonly(false);
                topicProperty.getHistoryQueueProperty().setMaxEntries(numPub+5);
                pq.setTopicProperty(topicProperty);
-               log.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
+               log.info("Added TopicProperty on first publish: " + topicProperty.toXml());
             }
 
             byte[] content = "Hello".getBytes();
@@ -177,19 +178,19 @@ public class TestPtDQueueRedeliver extends TestCase
             sentArr[i] = msgUnit;
             PublishReturnQos prq = conSnd.publish(msgUnit);
             sentQos[i] = prq;
-            log.info(ME, "Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
+            log.info("Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
                         " for published message '" + prq.getKeyOid() + "'");
          }
 
-         log.info(ME, "============ STEP 3: Stop xmlBlaster");
+         log.info("============ STEP 3: Stop xmlBlaster");
          this.serverThread.stopServer(true);
 
-         log.info(ME, "============ STEP 4: Start xmlBlaster");
+         log.info("============ STEP 4: Start xmlBlaster");
          glob.init(Util.getOtherServerPorts(serverPort));
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-         log.info(ME, "XmlBlaster is ready for testing");
+         log.info("XmlBlaster is ready for testing");
 
-         log.info(ME, "============ STEP 5: Start subscriber");
+         log.info("============ STEP 5: Start subscriber");
          // A testsuite helper to collect update messages
          this.updateInterceptorRcv = new MsgInterceptor(glob, log, null);
 
@@ -205,7 +206,7 @@ public class TestPtDQueueRedeliver extends TestCase
          qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
 
          ConnectReturnQos crqSub = conRcv.connect(qosSub, this.updateInterceptorRcv); // Login to xmlBlaster
-         log.info(ME, "Connect as subscriber '" + crqSub.getSessionName() + "' success");
+         log.info("Connect as subscriber '" + crqSub.getSessionName() + "' success");
 
          SubscribeKey sk = new SubscribeKey(globRcv, oid);
          SubscribeQos sq = new SubscribeQos(globRcv);
@@ -218,9 +219,9 @@ public class TestPtDQueueRedeliver extends TestCase
          sq.setHistoryQos(historyQos);
 
          SubscribeReturnQos srq = conRcv.subscribe(sk.toXml(), sq.toXml());
-         log.info(ME, "Subscription to '" + oid + "' done");
+         log.info("Subscription to '" + oid + "' done");
 
-         log.info(ME, "============ STEP 6: Check if messages arrived");
+         log.info("============ STEP 6: Check if messages arrived");
          assertEquals("", numPub, this.updateInterceptorRcv.waitOnUpdate(4000L, oid, Constants.STATE_OK));
          this.updateInterceptorRcv.compareToReceived(sentArr, secretCbSessionId);
          this.updateInterceptorRcv.compareToReceived(sentQos);
@@ -228,15 +229,15 @@ public class TestPtDQueueRedeliver extends TestCase
          this.updateInterceptorRcv.clear();
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
          fail(e.toString());
       }
       finally { // clean up
-         log.info(ME, "Disconnecting '" + sessionNameRcv + "'");
+         log.info("Disconnecting '" + sessionNameRcv + "'");
          if (conRcv != null) conRcv.disconnect(null);
       }
-      log.info(ME, "Success in testPersistentPtp()");
+      log.info("Success in testPersistentPtp()");
    }
 
    /**

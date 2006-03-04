@@ -11,7 +11,8 @@ import gnu.regexp.REException;
 
 import java.util.StringTokenizer;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -27,7 +28,7 @@ public final class LikeOpWrapper {
    private String regexPattern;
    private RE expression;
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(LikeOpWrapper.class.getName());
 
    public LikeOpWrapper(Global global, String pattern) throws XmlBlasterException {
       this(global, pattern, (char)0);
@@ -41,14 +42,14 @@ public final class LikeOpWrapper {
    public LikeOpWrapper(Global global, String pattern, char escape, boolean doReducedSyntax) 
       throws XmlBlasterException {
       this.global = global;
-      this.log = this.global.getLog("lexical");
+
       
       String tmp = pattern;
       if (doReducedSyntax) {
          tmp = replace(tmp, escape, "_", ".");
-         if (this.log.TRACE) this.log.trace(ME, "constructor regexPattern (transitional)='" + tmp + "'");
+         if (log.isLoggable(Level.FINE)) this.log.trace(ME, "constructor regexPattern (transitional)='" + tmp + "'");
          tmp = replace(tmp, escape, "%", ".*");
-         if (this.log.TRACE) this.log.trace(ME, "constructor regexPattern='" + this.regexPattern + "'");
+         if (log.isLoggable(Level.FINE)) this.log.trace(ME, "constructor regexPattern='" + this.regexPattern + "'");
       }
 
       try {
@@ -56,7 +57,7 @@ public final class LikeOpWrapper {
          this.expression = new RE(tmp);
       }
       catch (REException ex) {
-         if (this.log.TRACE) this.log.trace(ME, "constructor " + Global.getStackTraceAsString());
+         if (log.isLoggable(Level.FINE)) this.log.trace(ME, "constructor " + Global.getStackTraceAsString());
          throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + " constructor: could not generate a Regex from the string '" + pattern + "' reason: " + ex.getMessage());
       }
    }
@@ -64,7 +65,7 @@ public final class LikeOpWrapper {
    public LikeOpWrapper(Global global, String pattern, char escape, boolean doReducedSyntax) 
    throws XmlBlasterException {
    this.global = global;
-   this.log = this.global.getLog("lexical");
+
    
    String tmp = pattern;
    if (doReducedSyntax) {
@@ -92,7 +93,7 @@ public final class LikeOpWrapper {
          }
       }
       tmp = buf.toString();
-      if (this.log.TRACE) this.log.trace(ME, "constructor regexPattern='" + tmp + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("constructor regexPattern='" + tmp + "'");
    }
 
    try {
@@ -100,7 +101,7 @@ public final class LikeOpWrapper {
       this.expression = new RE(tmp);
    }
    catch (REException ex) {
-      if (this.log.TRACE) this.log.trace(ME, "constructor " + Global.getStackTraceAsString(ex));
+      if (log.isLoggable(Level.FINE)) this.log.fine("constructor " + Global.getStackTraceAsString(ex));
       throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + " constructor: could not generate a Regex from the string '" + pattern + "' reason: " + ex.getMessage());
    }
 }

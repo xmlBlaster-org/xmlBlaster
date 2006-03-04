@@ -96,7 +96,7 @@ public class Util
          glob.init(getDefaultServerPorts()); // Restes bootstrap address which this call doesn't: glob.getProperty().addArgs2Props(getDefaultServerPorts());
          glob.shutdownHttpServer();
       //} catch(org.jutils.JUtilsException e) {
-      //   glob.getLog("test").error(ME, e.toString());
+      //   glob.getLog("test").severe(e.toString());
       //}
    }
 

@@ -1,5 +1,6 @@
 // xmlBlaster/demo/HelloWorld5.java
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -30,6 +31,8 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  */
 public class HelloWorld5
 {
+   private static Logger log = Logger.getLogger(HelloWorld5.class.getName());
+
    private final String ME = "HelloWorld5";
    private I_XmlBlasterAccess sender = null;
    private final String senderName = "sender";
@@ -38,8 +41,6 @@ public class HelloWorld5
 
    public HelloWorld5(final Global glob) {
       
-      final LogChannel log = glob.getLog(null);
-
       try {
 
          {  // setup the sender client ...
@@ -48,13 +49,13 @@ public class HelloWorld5
             ConnectQos qos = new ConnectQos(sender.getGlobal(), senderName, "secret");
             ConnectReturnQos conRetQos = sender.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(senderName, "Receiving asynchronous message '" + updateKey.getOid() + "' in sender default handler" );
-                  log.info(receiverName, "Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
+                  log.info("Receiving asynchronous message '" + updateKey.getOid() + "' in sender default handler" );
+                  log.info("Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
                   return "";
                }
             });  // Login to xmlBlaster, default handler for updates
 
-            log.info(senderName, "Sender connected to xmlBlaster.");
+            log.info("Sender connected to xmlBlaster.");
          }
 
 
@@ -65,8 +66,8 @@ public class HelloWorld5
             ConnectQos qos = new ConnectQos(receiver.getGlobal(), receiverName, "secret");
             ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(receiverName, "Receiving asynchronous message '" + updateKey.getOid() + "' in receiver default handler");
-                  log.info(receiverName, "Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
+                  log.info("Receiving asynchronous message '" + updateKey.getOid() + "' in receiver default handler");
+                  log.info("Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
 
                   if (updateKey.isInternal()) return "";
                   if (updateQos.isErased()) return "";
@@ -81,21 +82,21 @@ public class HelloWorld5
                         MsgUnit[] arr = new MsgUnit[1];
                         arr[0] = msgUnit;
                         receiver.publishOneway(arr);
-                        log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
+                        log.info("Published message '" + pk.getOid() + "' to " + updateQos.getSender());
                      }
                      else {
                         PublishReturnQos retQos = receiver.publish(msgUnit);
-                        log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
+                        log.info("Published message '" + pk.getOid() + "' to " + updateQos.getSender());
                      }
                   }
                   catch (XmlBlasterException e) {
-                     log.error(receiverName, "Sending ACK to " + updateQos.getSender() + " failed: " + e.getMessage());
+                     log.severe("Sending ACK to " + updateQos.getSender() + " failed: " + e.getMessage());
                   }
                   return "";
                }
             });  // Login to xmlBlaster, default handler for updates
 
-            log.info(receiverName, "Receiver connected to xmlBlaster.");
+            log.info("Receiver connected to xmlBlaster.");
          }
 
          // Send a message to 'receiver'
@@ -104,10 +105,10 @@ public class HelloWorld5
          pq.addDestination(new Destination(new SessionName(sender.getGlobal(), receiverName)));
          MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          PublishReturnQos retQos = sender.publish(msgUnit);
-         log.info(senderName, "Published message '" + retQos.getKeyOid() + "' to " + receiverName + ":\n" + msgUnit.toXml());
+         log.info("Published message '" + retQos.getKeyOid() + "' to " + receiverName + ":\n" + msgUnit.toXml());
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Houston, we have a problem: " + e.getMessage());
+         log.severe("Houston, we have a problem: " + e.getMessage());
       }
       finally {
          // Wait a second for messages to arrive before we logout
@@ -131,7 +132,7 @@ public class HelloWorld5
       
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
-         glob.getLog(null).info("HelloWorld5", "Example: java HelloWorld5\n");
+         System.out.println("HelloWorld5: Example: java HelloWorld5\n");
          System.exit(1);
       }
 

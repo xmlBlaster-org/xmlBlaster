@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -46,7 +47,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
 {
    private static String ME = "TestFailSafe";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestFailSafe.class.getName());
 
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
@@ -79,12 +80,12 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
     */
    protected void setUp() {
       this.glob = (this.glob == null) ? Global.instance() : this.glob;
-      this.log = this.glob.getLog("test");
+
 
       glob.init(Util.getOtherServerPorts(serverPort));
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+      log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
          con = glob.getXmlBlasterAccess(); // Find orb
 
@@ -105,11 +106,11 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
          con.connect(connectQos, this.updateInterceptor);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed: " + e.getMessage());
+          log.warning("setUp() - login failed: " + e.getMessage());
           fail("setUp() - login fail: " + e.getMessage());
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
           fail("setUp() - login fail: " + e.toString());
       }
@@ -121,7 +122,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSafe-AGENT" +
                       "</key>";
@@ -131,7 +132,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
 
          PropString defaultPlugin = new PropString("CACHE,1.0");
          String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
-         log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+         log.info("Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
          
          if (defaultPlugin.getValue().startsWith("RAM"))
             assertEquals("Wrong number of message erased", (numPublish - numStop), arr.length);
@@ -139,7 +140,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
             assertEquals("Wrong number of message erased", numPublish, arr.length);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
       }
       finally {
          con.disconnect(null);
@@ -160,7 +161,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
     * TEST: Subscribe to messages with XPATH.
     */
    public void doSubscribe() {
-      if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSafe-AGENT" +
@@ -168,10 +169,10 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
       String qos = "<qos></qos>";
       try {
          SubscribeReturnQos subscriptionId = con.subscribe(xmlKey, qos);
-         log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
+         log.info("Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -182,7 +183,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
     */
    public void doPublish(int counter) throws XmlBlasterException {
       String oid = "Message" + "-" + counter;
-      log.info(ME, "Publishing a message " + oid + " ...");
+      log.info("Publishing a message " + oid + " ...");
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
                       "   <TestFailSafe-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestFailSafe-AGENT>" +
@@ -192,7 +193,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
       MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
       con.publish(msgUnit);
-      log.info(ME, "Success: Publishing of " + oid + " done");
+      log.info("Success: Publishing of " + oid + " done");
    }
 
 
@@ -202,18 +203,18 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
    public void testFailSafe()
    {
       //doSubscribe(); -> see reachedAlive()
-      log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
+      log.info("Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
       for (int ii=0; ii<numPublish; ii++) {
          try {
             if (ii == numStop) { // 3
-               log.info(ME, "Stopping xmlBlaster, but continue with publishing ...");
+               log.info("Stopping xmlBlaster, but continue with publishing ...");
                EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
                this.serverThread = null;
             }
             if (ii == numStart) {
-               log.info(ME, "Starting xmlBlaster again, expecting the previous published two messages ...");
+               log.info("Starting xmlBlaster again, expecting the previous published two messages ...");
                serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
-               log.info(ME, "xmlBlaster started, waiting on tail back messsages");
+               log.info("xmlBlaster started, waiting on tail back messsages");
                
                // Message-4 We need to wait until the client reconnected (reconnect interval)
                // Message-5
@@ -228,7 +229,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
          }
          catch(XmlBlasterException e) {
             if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
-               log.warn(ME, "Lost connection, my connection layer is polling: " + e.getMessage());
+               log.warning("Lost connection, my connection layer is polling: " + e.getMessage());
             else if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_DEAD)
                assertTrue("Lost connection, my connection layer is NOT polling", false);
             else
@@ -244,16 +245,16 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
+      log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       doSubscribe();    // initialize on startup and on reconnect
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.warn(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
+      log.warning("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+      log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    /**

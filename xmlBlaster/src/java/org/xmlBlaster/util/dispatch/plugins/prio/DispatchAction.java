@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins.prio;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -20,7 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 public final class DispatchAction
 {
    private String ME = "DispatchAction";
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(DispatchAction.class.getName());
    private String action;
    public static final String SEND = "send";
    private boolean doSend = false;
@@ -36,7 +37,7 @@ public final class DispatchAction
     * @param action e.g. "send|queue"
     */
    public DispatchAction(Global glob, String action) {
-      log = glob.getLog("dispatch");
+
       if (action == null) {
          throw new IllegalArgumentException("The given dispatch action is null");
       }

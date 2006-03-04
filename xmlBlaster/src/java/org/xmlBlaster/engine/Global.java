@@ -36,6 +36,9 @@ import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.jutils.init.Property;
 
 /**
@@ -45,6 +48,8 @@ import org.jutils.init.Property;
  */
 public final class Global extends org.xmlBlaster.util.Global implements I_RunlevelListener
 {
+   private static Logger log = Logger.getLogger(Global.class.getName());
+   
    private RunlevelManager runlevelManager;
 
    /** the authentication service (a layer around it for security reasons) */
@@ -82,13 +87,13 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private SessionInfo internalSessionInfo;
 
    public void finalize() {
-      if (log.TRACE) log.trace(ME, "Entering finalize");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
       shutdown();
    }
 
    public void shutdown() {
       super.shutdown();
-      if (log.TRACE) log.trace(ME, "Destroying engine.Global handle");
+      if (log.isLoggable(Level.FINE)) log.fine("Destroying engine.Global handle");
 
       if (sessionTimer != null) {
          sessionTimer.shutdown();
@@ -143,7 +148,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       }
       if (myId == null) {
          if (useCluster()) {
-            log.error(ME, "Can't determine server instance name, try to add '-cluster.node.id <aUniqueId>' on startup.");
+            log.severe("Can't determine server instance name, try to add '-cluster.node.id <aUniqueId>' on startup.");
             System.exit(1);
          }
          else {
@@ -154,7 +159,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          setId(myId);
       }
       getRunlevelManager().addRunlevelListener(this);
-      log.info(ME, "Setting xmlBlaster instance name (-cluster.node.id) to '" + getId() + "'");
+      log.info("Setting xmlBlaster instance name (-cluster.node.id) to '" + getId() + "'");
    }
 
    /**
@@ -237,7 +242,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
              * "RMI TCP Connection(1)-127.0.0.2" daemon prio=1 tid=0x08602b10 nid=0x1ae1 waiting for monitor entry [0xa73b8000..0xa73b9040]
         at org.xmlBlaster.util.Global.initLog(Global.java:519)
         - waiting to lock <0xa8f06f40> (a org.xmlBlaster.engine.Global)
-        at org.xmlBlaster.util.Global.addLogChannel(Global.java:624)
+        at org.xmlBlaster.util.Global.addLogger(Global.java:624)
         at org.xmlBlaster.util.Global.getLog(Global.java:646)
         at org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler.publish(XmlBlasterJdk14LoggingHandler.java:86)
         at java.util.logging.Logger.log(Logger.java:428)
@@ -319,7 +324,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       if (this.clusterManager == null) {
          if (!useCluster())
             return null;
-         log.error(ME, "Internal problem: please intialize ClusterManager first");
+         log.severe("Internal problem: please intialize ClusterManager first");
          Thread.dumpStack();
          throw new XmlBlasterException(this, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Internal problem: please intialize ClusterManager first - Please ask on mailing list for support");
       }
@@ -541,7 +546,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       if (this.commandManager == null) {
          if (!useAdminManager())
             return null;
-         log.error(ME, "Internal problem: please intialize CommandManager first");
+         log.severe("Internal problem: please intialize CommandManager first");
          Thread.dumpStack();
          throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "please intialize CommandManager first - Please ask on mailing list for support");
       }
@@ -603,7 +608,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    public final boolean isAdministrationCommand(XmlKey xmlKey) throws XmlBlasterException {
       if (this.momClientGateway == null) return false;
       if (xmlKey == null) {
-         log.error(ME, "Illegal null argument in isAdministrationCommand()");
+         log.severe("Illegal null argument in isAdministrationCommand()");
          Thread.dumpStack();
          return false;
       }
@@ -668,7 +673,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      //if (log.isLoggable(Level.FINER)) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
          return;
 

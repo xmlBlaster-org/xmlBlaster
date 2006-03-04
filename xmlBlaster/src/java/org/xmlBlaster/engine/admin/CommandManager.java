@@ -6,7 +6,8 @@ Comment:   Main manager class for administrative commands
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -37,7 +38,7 @@ public final class CommandManager implements I_RunlevelListener
 
    // The following 3 declarations are 'final' but the SUN JDK 1.3.1 does not like it
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(CommandManager.class.getName());
    private final SessionInfo sessionInfo;
 
    /** Map to internal handlers like sysprop,client,msg etc */
@@ -55,7 +56,7 @@ public final class CommandManager implements I_RunlevelListener
     */
    public CommandManager(Global glob, SessionInfo sessionInfo) {
       this.glob = glob;
-      this.log = this.glob.getLog("admin");
+
       this.ME = "CommandManager" + this.glob.getLogPrefixDashed();
       this.sessionInfo = sessionInfo;
       glob.getRunlevelManager().addRunlevelListener(this);
@@ -91,11 +92,11 @@ public final class CommandManager implements I_RunlevelListener
             this.externMap.put(telnetGateway.getName(), telnetGateway);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
       catch(Throwable e) {
          e.printStackTrace();
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
 
       // Initialize SNMP access ...
@@ -106,11 +107,11 @@ public final class CommandManager implements I_RunlevelListener
             this.externMap.put(snmpGateway.getName(), snmpGateway);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
       catch(Throwable e) {
          e.printStackTrace();
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
 
       // Initialize MomClient access ...
@@ -123,11 +124,11 @@ public final class CommandManager implements I_RunlevelListener
          }
       }
       catch(XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
       catch(Throwable e) {
          e.printStackTrace();
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
    }
 
@@ -140,7 +141,7 @@ public final class CommandManager implements I_RunlevelListener
          throw new IllegalArgumentException(ME + ": Please pass a valid key and handler");
       }
       this.handlerMap.put(key, handler);
-      if (log.TRACE) log.trace(ME, "Registered '" + key + "' for handler=" + handler.getClass());
+      if (log.isLoggable(Level.FINE)) log.fine("Registered '" + key + "' for handler=" + handler.getClass());
    } 
 
    /**
@@ -153,7 +154,7 @@ public final class CommandManager implements I_RunlevelListener
     */
    public synchronized final MsgUnit[] get(AddressServer addressServer, String sessionId, QueryKeyData keyData, String querySpec) throws XmlBlasterException {
       String oid = keyData.getOid();
-      if (log.CALL) log.call(ME, "get(" + oid + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("get(" + oid + ")");
       if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null or too short");
       // TODO: Change to use clientProperties arg1=..., arg2=...
@@ -176,7 +177,7 @@ public final class CommandManager implements I_RunlevelListener
       if (sessionId == null) {
          sessionId = this.sessionInfo.getSecuritySession().getSecretSessionId();
       }
-      if (log.CALL) log.call(ME, "get(" + oid + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("get(" + oid + ")");
       if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null or too short");
       try {
@@ -218,7 +219,7 @@ public final class CommandManager implements I_RunlevelListener
       if (sessionId == null) {
          sessionId = this.sessionInfo.getSecuritySession().getSecretSessionId();
       }
-      if (log.CALL) log.call(ME, "set(" + cmd + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("set(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
       try {
@@ -288,7 +289,7 @@ public final class CommandManager implements I_RunlevelListener
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (log.isLoggable(Level.FINER)) log.finer("Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
          return;
 
@@ -296,7 +297,7 @@ public final class CommandManager implements I_RunlevelListener
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
             initializeInternal();
             initializeExternal();
-            log.info(ME, "Administration manager is ready");
+            log.info("Administration manager is ready");
          }
       }
 

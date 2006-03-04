@@ -11,7 +11,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.script.XmlScriptClient;
@@ -41,7 +42,7 @@ import org.xmlBlaster.util.MsgUnit;
 public class XmlScript {
    private static String ME = "XmlScript";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlScript.class.getName());
    private XmlScriptClient interpreter;
    private Reader reader;
    private OutputStream outStream;
@@ -50,7 +51,7 @@ public class XmlScript {
 
    public XmlScript(Global glob, String inFile, String outFile, String updFile) {
       this.glob = glob;
-      this.log = glob.getLog("demo");
+
       this.prepareForPublish = glob.getProperty().get("prepareForPublish", this.prepareForPublish);
 
       try {
@@ -79,10 +80,10 @@ public class XmlScript {
          this.interpreter.parse(this.reader);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Scripting failed: " + e.getMessage());
+         log.severe("Scripting failed: " + e.getMessage());
       }
       catch (Throwable e) {
-         log.error(ME, "Scripting to xmlBlaster failed: " + e.toString());
+         log.severe("Scripting to xmlBlaster failed: " + e.toString());
          e.printStackTrace();
       }
    }

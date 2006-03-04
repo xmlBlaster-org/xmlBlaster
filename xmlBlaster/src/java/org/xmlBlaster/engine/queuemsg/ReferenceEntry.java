@@ -22,6 +22,8 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Wraps an publish() message into an entry for a sorted queue.
@@ -30,6 +32,7 @@ import java.lang.ref.WeakReference;
  */
 public class ReferenceEntry extends MsgQueueEntry
 {
+   private static Logger log = Logger.getLogger(ReferenceEntry.class.getName());
    private static final long serialVersionUID = 1L;
    private final String ME; // for logging
    protected final transient Global glob; // engine.Global
@@ -177,7 +180,7 @@ public class ReferenceEntry extends MsgQueueEntry
       MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)referent;
       if (msgUnitWrapper == null) { 
          if (!isForceDestroy()) {
-            log.error(ME+"-"+getLogId(), "No meat found but forceDestroy=false");
+            log.severe("No meat found but forceDestroy=false");
          }
       }
       return msgUnitWrapper;
@@ -217,10 +220,10 @@ public class ReferenceEntry extends MsgQueueEntry
                }
                else {
                   if (isForceDestroy()) {
-                     if (log.TRACE) log.trace(ME+"-"+getLogId(), "No meat found, incr=" + incr);
+                     if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr);
                   }
                   else {
-                     log.error(ME+"-"+getLogId(), "No meat found, incr=" + incr);
+                     log.severe("No meat found, incr=" + incr);
                   }
                }
             }
@@ -231,7 +234,7 @@ public class ReferenceEntry extends MsgQueueEntry
          }
       }
       catch (Throwable ex) {
-         log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' raised an exception: " + ex.toString());
+         log.severe("incr="+incr+" to '" + storageId + "' raised an exception: " + ex.toString());
          //ex.printStackTrace();
       }
    }
@@ -382,7 +385,7 @@ public class ReferenceEntry extends MsgQueueEntry
          return topicHandler.getMsgUnitWrapper(this.msgUnitWrapperUniqueId);
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "lookup failed: " + e.getMessage());
+         log.warning("lookup failed: " + e.getMessage());
          return null;
       }
    }

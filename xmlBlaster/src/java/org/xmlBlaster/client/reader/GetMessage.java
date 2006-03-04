@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
@@ -41,7 +42,7 @@ public class GetMessage
 {
    private static final String ME = "GetMessage";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(GetMessage.class.getName());
    private I_XmlBlasterAccess xmlBlasterConnection;
 
    /**
@@ -53,7 +54,7 @@ public class GetMessage
     */
    public GetMessage(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(null);
+
    }
 
    /**
@@ -65,7 +66,7 @@ public class GetMessage
 
       if (oidString == null && xpathString == null) {
          usage();
-         log.error(ME, "Specify -oid <message-oid> or -xpath <query>");
+         log.severe("Specify -oid <message-oid> or -xpath <query>");
          System.exit(1);
       }
 
@@ -86,14 +87,14 @@ public class GetMessage
          xmlBlasterConnection.connect(qos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
       }
 
       GetKey xmlKeyWr = new GetKey(glob, xmlKey, queryType);
       GetQos xmlQos = new GetQos(glob);
       MsgUnit[] msgs = xmlBlasterConnection.get(xmlKeyWr.toXml(), xmlQos.toXml());
-      log.info(ME, "Got " + msgs.length + " messages for '" + xmlKey + "'");
+      log.info("Got " + msgs.length + " messages for '" + xmlKey + "'");
       for (int ii=0; ii<msgs.length; ii++) {
          System.out.println("\n" + msgs[ii].toXml());
       }
@@ -105,25 +106,25 @@ public class GetMessage
     * Command line usage.
     */
    private void usage() {
-      log.plain(ME, "----------------------------------------------------------");
-      log.plain(ME, "java org.xmlBlaster.client.reader.GetMessage <options>");
-      log.plain(ME, "----------------------------------------------------------");
-      log.plain(ME, "Options:");
-      log.plain(ME, "   -?                  Print this message.");
-      log.plain(ME, "");
-      log.plain(ME, "   -oid <XmlKeyOid>    The unique oid of the message");
-      log.plain(ME, "   -xpath <XPATH>      The XPATH query");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("java org.xmlBlaster.client.reader.GetMessage <options>");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("Options:");
+      System.out.println("   -?                  Print this message.");
+      System.out.println("");
+      System.out.println("   -oid <XmlKeyOid>    The unique oid of the message");
+      System.out.println("   -xpath <XPATH>      The XPATH query");
       //I_XmlBlasterAccess.usage();
       //log.usage();
-      log.plain(ME, "----------------------------------------------------------");
-      log.plain(ME, "Example:");
-      log.plain(ME, "java org.xmlBlaster.client.reader.GetMessage -oid mySpecialMessage");
-      log.plain(ME, "");
-      log.plain(ME, "java org.xmlBlaster.client.reader.GetMessage -oid __cmd:?freeMem");
-      log.plain(ME, "");
-      log.plain(ME, "java org.xmlBlaster.client.reader.GetMessage -xpath //key/CAR");
-      log.plain(ME, "----------------------------------------------------------");
-      log.plain(ME, "");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("Example:");
+      System.out.println("java org.xmlBlaster.client.reader.GetMessage -oid mySpecialMessage");
+      System.out.println("");
+      System.out.println("java org.xmlBlaster.client.reader.GetMessage -oid __cmd:?freeMem");
+      System.out.println("");
+      System.out.println("java org.xmlBlaster.client.reader.GetMessage -xpath //key/CAR");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("");
    }
 
 

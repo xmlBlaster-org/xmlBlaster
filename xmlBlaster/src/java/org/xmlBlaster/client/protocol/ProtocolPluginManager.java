@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -29,16 +30,16 @@ public class ProtocolPluginManager extends PluginManagerBase
 {
    private final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ProtocolPluginManager.class.getName());
    private static final String defaultPluginName = "org.xmlBlaster.client.protocol.corba.CorbaConnection";
    public static final String pluginPropertyName = "ClientProtocolPlugin";
 
    public ProtocolPluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("protocol");
+
       this.ME = "ProtocolPluginManager" + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "Constructor ProtocolPluginManager");
+      if (log.isLoggable(Level.FINER)) log.finer("Constructor ProtocolPluginManager");
    }
 
    /**
@@ -77,13 +78,13 @@ public class ProtocolPluginManager extends PluginManagerBase
     * @return The plugin for this type and version or null if none is specified
     */
    public I_XmlBlasterConnection getPlugin(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPlugin()", "Creating instance of " + createPluginPropertyKey(type, version));
+      if (log.isLoggable(Level.FINER)) log.finer("Creating instance of " + createPluginPropertyKey(type, version));
 
       // We need a new instance every time! (no caching in base class)
       PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
       I_XmlBlasterConnection driver = (I_XmlBlasterConnection)super.instantiatePlugin(pluginInfo, false);
       if (driver == null) {
-         log.warn(ME+".getPlugin()", "Creating instance of " + createPluginPropertyKey(type, version) + " failed, no such plugin found.");
+         log.warning("Creating instance of " + createPluginPropertyKey(type, version) + " failed, no such plugin found.");
       }
       return driver;
    }
@@ -91,14 +92,14 @@ public class ProtocolPluginManager extends PluginManagerBase
    public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {}
 
    public void activateDrivers() throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Don't know how to activate the protocol drivers, they are created for each client and session separately");
+      if (log.isLoggable(Level.FINE)) log.fine("Don't know how to activate the protocol drivers, they are created for each client and session separately");
    }
 
    public final void deactivateDrivers(boolean force) {
-      if (log.TRACE) log.trace(ME, "Don't know how to deactivate the protocol drivers, they are created for each client and session separately");
+      if (log.isLoggable(Level.FINE)) log.fine("Don't know how to deactivate the protocol drivers, they are created for each client and session separately");
    }
 
    public void shutdownDrivers(boolean force) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Don't know how to shutdown the protocol drivers, they are created for each client and session separately");
+      if (log.isLoggable(Level.FINE)) log.fine("Don't know how to shutdown the protocol drivers, they are created for each client and session separately");
    }
 }

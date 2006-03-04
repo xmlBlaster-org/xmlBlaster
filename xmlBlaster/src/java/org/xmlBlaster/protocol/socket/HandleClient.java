@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -42,7 +43,7 @@ import java.io.IOException;
 public class HandleClient extends SocketExecutor implements Runnable
 {
    private String ME = "HandleClient";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HandleClient.class.getName());
    private SocketDriver driver;
    /** The singleton handle for this authentication server */
    private I_Authenticate authenticate;
@@ -62,7 +63,7 @@ public class HandleClient extends SocketExecutor implements Runnable
     * Creates an instance which serves exactly one client.
     */
    public HandleClient(Global glob, SocketDriver driver, Socket sock, DatagramSocket sockUDP) throws IOException {
-      this.log = glob.getLog("socket");
+
       this.driver = driver;
       this.sock = sock;
       this.sockUDP = sockUDP;
@@ -78,10 +79,10 @@ public class HandleClient extends SocketExecutor implements Runnable
       // But we always block on input read() to receive update() messages.
       setSoTimeout(driver.getAddressServer().getEnv("SoTimeout", 0L).getValue()); // switch off
       this.sock.setSoTimeout((int)this.soTimeout);
-      if (log.TRACE) log.trace(ME, this.driver.getAddressServer().getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
+      if (log.isLoggable(Level.FINE)) log.fine(this.driver.getAddressServer().getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
 
       setSoLingerTimeout(driver.getAddressServer().getEnv("SoLingerTimeout", soLingerTimeout).getValue());
-      if (log.TRACE) log.trace(ME, this.driver.getAddressServer().getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
+      if (log.isLoggable(Level.FINE)) log.fine(this.driver.getAddressServer().getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
       if (getSoLingerTimeout() >= 0L) {
          // >0: Try to send any unsent data on close(socket) (The UNIX kernel waits very long and ignores the given time)
          // =0: Discard remaining data on close()  <-- CHOOSE THIS TO AVOID BLOCKING close() calls
@@ -94,10 +95,10 @@ public class HandleClient extends SocketExecutor implements Runnable
       int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
          t.setPriority(threadPrio);
-         if (log.TRACE) log.trace(ME, "-plugin/socket/threadPrio "+threadPrio);
+         if (log.isLoggable(Level.FINE)) log.fine("-plugin/socket/threadPrio "+threadPrio);
       }
       catch (IllegalArgumentException e) {
-         log.warn(ME, "Your -plugin/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
+         log.warning("Your -plugin/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
       }
       t.start();
    }
@@ -125,7 +126,7 @@ public class HandleClient extends SocketExecutor implements Runnable
       if (!running)
          return;
       synchronized (this) {
-         if (log.TRACE) log.trace(ME, "Shutdown cb connection to " + loginName + " ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Shutdown cb connection to " + loginName + " ...");
          if (cbKey != null)
             driver.getGlobal().removeNativeCallbackDriver(cbKey);
 
@@ -150,10 +151,10 @@ public class HandleClient extends SocketExecutor implements Runnable
    }
 
    private void closeSocket() {
-      try { if (iStream != null) { iStream.close(); /*iStream=null;*/ } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      try { if (oStream != null) { oStream.close(); /*oStream=null;*/ } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      if (log.TRACE) log.trace(ME, "Closed socket for '" + loginName + "'.");
+      try { if (iStream != null) { iStream.close(); /*iStream=null;*/ } } catch (IOException e) { log.warning(e.toString()); }
+      try { if (oStream != null) { oStream.close(); /*oStream=null;*/ } } catch (IOException e) { log.warning(e.toString()); }
+      try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warning(e.toString()); }
+      if (log.isLoggable(Level.FINE)) log.fine("Closed socket for '" + loginName + "'.");
    }
 
    /**
@@ -165,12 +166,12 @@ public class HandleClient extends SocketExecutor implements Runnable
     */
    public final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr, boolean expectingResponse) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId + " numSend=" + msgArr.length + " oneway=" + !expectingResponse);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering update: id=" + cbSessionId + " numSend=" + msgArr.length + " oneway=" + !expectingResponse);
       if (!running)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "update() invocation ignored, we are shutdown.");
 
       if (msgArr == null || msgArr.length < 1) {
-         log.error(ME + ".InvalidArguments", "The argument of method update() are invalid");
+         log.severe("The argument of method update() are invalid");
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
       }
       try {
@@ -178,7 +179,7 @@ public class HandleClient extends SocketExecutor implements Runnable
             MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener);
             parser.addMessage(msgArr);
             Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
-            if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
@@ -192,7 +193,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          throw XmlBlasterException.tranformCallbackException(e);
       }
       catch (IOException e1) {
-         if (log.TRACE) log.trace(ME+".update", "IO exception: " + e1.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("IO exception: " + e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                "Callback of " + msgArr.length + " messages failed", e1);
       }
@@ -214,7 +215,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
          parser.addMessage(qos);
          Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
-         if (log.TRACE) log.trace(ME, "Got ping response " + response.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + response.toString());
          return (String)response; // return the QoS
       } catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
@@ -225,7 +226,7 @@ public class HandleClient extends SocketExecutor implements Runnable
    public void handleMessage(MsgInfo receiver, boolean udp) {
       try {
 
-         if (log.TRACE) log.trace(ME, "Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
+         if (log.isLoggable(Level.FINE)) log.fine("Receiving message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
          // receive() processes all invocations, only connect()/disconnect() we do locally ...
          if (receiveReply(receiver, udp) == false) {
@@ -237,7 +238,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
 
                // getInetAddress().toString() does no reverse DNS lookup (no blocking danger) ...
-               log.info(ME, "Client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+               log.info("Client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
                CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
@@ -247,22 +248,22 @@ public class HandleClient extends SocketExecutor implements Runnable
                   if (driver.getAddressServer() != null) {
                      driver.getAddressServer().setRemoteAddress(remoteUrl);
                   }
-                  if (log.TRACE) log.trace(ME, "remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
+                  if (log.isLoggable(Level.FINE)) log.fine("remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
                   if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
-                     if (log.TRACE) log.trace(ME, "Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
+                     if (log.isLoggable(Level.FINE)) log.fine("Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
                      if (oldCallback != null) { // Remove old and lost login of client with same callback address
-                        log.warn(ME, "Destroying old callback driver '" + cbKey + "' ...");
+                        log.warning("Destroying old callback driver '" + cbKey + "' ...");
                         //oldCallback.shutdown(); don't destroy socket, is done by others
                         driver.getGlobal().removeNativeCallbackDriver(cbKey);
                         oldCallback = null;
                      }
-                     if (this.log.TRACE) this.log.trace(ME, "run: register new callback driver: '" + cbKey + "'");
+                     if (log.isLoggable(Level.FINE)) this.log.fine("run: register new callback driver: '" + cbKey + "'");
                      driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
                   }
                   else {
-                     log.error(ME, "Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
+                     log.severe("Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
                      this.callback = new CallbackSocketDriver(this.loginName);
                      // DispatchConnection.initialize() -> CbDispatchConnection.connectLowlevel()
                      // will later call callback.initialize(loginName, callbackAddress)
@@ -285,27 +286,27 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("Can't handle message, throwing exception back to client: " + e.toString());
          try {
             if (receiver.getMethodName() != MethodName.PUBLISH_ONEWAY)
                executeException(receiver, e, false);
             else
-               log.warn(ME, "Can't handle publishOneway message, ignoring exception: " + e.toString());
+               log.warning("Can't handle publishOneway message, ignoring exception: " + e.toString());
          }
          catch (Throwable e2) {
-            log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
+            log.severe("Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
             shutdown();
          }
       }
       catch (IOException e) {
          if (running != false) { // Only if not triggered by our shutdown:sock.close()
-            if (log.TRACE) log.trace(ME, "Lost connection to client: " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Lost connection to client: " + e.toString());
             shutdown();
          }
       }
       catch (Throwable e) {
          e.printStackTrace();
-         log.error(ME, "Lost connection to client: " + e.toString());
+         log.severe("Lost connection to client: " + e.toString());
          shutdown();
       }
    }
@@ -323,13 +324,13 @@ public class HandleClient extends SocketExecutor implements Runnable
          DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
          //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
          this.sockUDP.send(dp);
-         if (log.TRACE) log.trace(ME, "UDP datagram is send");
+         if (log.isLoggable(Level.FINE)) log.fine("UDP datagram is send");
       }
       else {
          synchronized (oStream) {
             oStream.write(msg);
             oStream.flush();
-            if (log.TRACE) log.trace(ME, "TCP data is send");
+            if (log.isLoggable(Level.FINE)) log.fine("TCP data is send");
          }
       }
       if (listener != null) {
@@ -341,10 +342,10 @@ public class HandleClient extends SocketExecutor implements Runnable
     * Serve a client, we block until a message arrives ...
     */
    public void run() {
-      if (log.CALL) log.call(ME, "Handling client request ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Handling client request ...");
       try {
-         if (log.TRACE)
-            log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+         if (log.isLoggable(Level.FINE))
+            log.fine("Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
          while (running) {
             try {
                // blocks until a message arrives
@@ -353,13 +354,13 @@ public class HandleClient extends SocketExecutor implements Runnable
             }
             catch (Throwable e) {
                if (e.toString().indexOf("closed") != -1) {
-                  if (log.TRACE) log.trace(ME, "TCP socket '" + remoteSocketStr + "' is shutdown: " + e.toString());
+                  if (log.isLoggable(Level.FINE)) log.fine("TCP socket '" + remoteSocketStr + "' is shutdown: " + e.toString());
                }
                else if (e.toString().indexOf("EOF") != -1) {
-                  log.warn(ME, "Lost TCP connection from '" + remoteSocketStr + "': " + e.toString());
+                  log.warning("Lost TCP connection from '" + remoteSocketStr + "': " + e.toString());
                }
                else {
-                  log.warn(ME, "Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
+                  log.warning("Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
                }
                shutdown();
                break;
@@ -369,7 +370,7 @@ public class HandleClient extends SocketExecutor implements Runnable
       finally {
          driver.removeClient(this);
          closeSocket();
-         if (log.TRACE) log.trace(ME, "Deleted thread for '" + loginName + "'.");
+         if (log.isLoggable(Level.FINE)) log.fine("Deleted thread for '" + loginName + "'.");
       }
    }
 

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -60,7 +61,7 @@ public final class UpdateQos
 {
    private String ME = "UpdateQos";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(UpdateQos.class.getName());
    private final MsgQosData msgQosData;
 
    /**
@@ -68,7 +69,7 @@ public final class UpdateQos
     */
    public UpdateQos(Global glob, MsgQosData msgQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.log = glob.getLog("client");
+
       this.msgQosData = msgQosData;
       this.msgQosData.setMethod(MethodName.UPDATE);
    }

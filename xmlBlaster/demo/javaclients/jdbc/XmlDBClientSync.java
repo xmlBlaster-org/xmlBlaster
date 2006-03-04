@@ -1,6 +1,7 @@
 package javaclients.jdbc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.GetKey;
@@ -25,7 +26,7 @@ public class XmlDBClientSync
 {
    private static String   ME = "XmlDBClientSync";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlDBClientSync.class.getName());
    private I_XmlBlasterAccess corbaConnection = null;
 
    /**
@@ -33,7 +34,7 @@ public class XmlDBClientSync
     */
    public XmlDBClientSync(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(null);
+
       initBlaster();
       query();
       logout();
@@ -47,11 +48,11 @@ public class XmlDBClientSync
       try {
          corbaConnection = glob.getXmlBlasterAccess();
          corbaConnection.connect(null, null);
-         log.info(ME, "Connected to xmlBlaster");
+         log.info("Connected to xmlBlaster");
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, "Login to xmlBlaster failed");
+         log.severe("Login to xmlBlaster failed");
          System.exit(1);
       }
    }
@@ -62,7 +63,7 @@ public class XmlDBClientSync
     */
    public void logout() {
       if (corbaConnection == null) return;
-      log.info(ME, "Logout ...");
+      log.info("Logout ...");
       corbaConnection.disconnect(null);
    }
 
@@ -83,18 +84,18 @@ public class XmlDBClientSync
       wrap.init(type, limit, confirm, queryStr);
 
       try {
-         log.info(ME, "Sending command string:\n" + wrap.toXml());
+         log.info("Sending command string:\n" + wrap.toXml());
          GetKey key = new GetKey(glob, "__sys__jdbc");
          key.wrap(wrap.toXml());
          GetQos qos = new GetQos(glob);
          // get() blocks until the query is finished ...
          MsgUnit[] msgUnitArr = corbaConnection.get(key.toXml(), qos.toXml());
          if (msgUnitArr.length > 0)
-            log.plain(ME, new String(msgUnitArr[0].getContent()));
+            System.out.println(new String(msgUnitArr[0].getContent()));
          else
-            log.info(ME, "No results for your query");
+            log.info("No results for your query");
       }
-      catch (Exception e) { log.error(ME, "Query failed: " + e.toString()); }
+      catch (Exception e) { log.severe("Query failed: " + e.toString()); }
    }
 
    /**

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.memoryleak;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.runtime.ThreadLister;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -22,7 +23,7 @@ public class Embedded
 {
    private static String ME = "Embedded";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(Embedded.class.getName());
    private int serverPort = 7615;
 
    /**
@@ -30,7 +31,7 @@ public class Embedded
     */
    public Embedded(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(null);
+
       Thread.currentThread().setName("EmbeddedTest.MainThread");
    }
 
@@ -45,45 +46,45 @@ public class Embedded
       for(int i=0; i<n; i++) {
 
          if (interactive) {
-            log.info(ME, "Hit a key to start embedded xmlBlaster #" + (i+1) + "/" + n);
+            log.info("Hit a key to start embedded xmlBlaster #" + (i+1) + "/" + n);
             try { System.in.read(); } catch(java.io.IOException e) {}
          }
          else {
-            log.info(ME, "********* Start embedded xmlBlaster #" + (i+1) + "/" + n);
+            log.info("********* Start embedded xmlBlaster #" + (i+1) + "/" + n);
          }
 
          if (i==0) {
             //System.gc();
-            log.info(ME, "Threads before starting #" + (i+1) + " num=" + ThreadLister.countThreads());
+            log.info("Threads before starting #" + (i+1) + " num=" + ThreadLister.countThreads());
             ThreadLister.listAllThreads(System.out);
          }
 
          //this.glob.init(Util.getOtherServerPorts(serverPort));
          EmbeddedXmlBlaster embeddedXmlBlaster = EmbeddedXmlBlaster.startXmlBlaster(this.glob);
          
-         log.info(ME, "Threads with alive server #" + (i+1) + " num=" + ThreadLister.countThreads());
+         log.info("Threads with alive server #" + (i+1) + " num=" + ThreadLister.countThreads());
          ThreadLister.listAllThreads(System.out);
 
          if (interactive) {
-            log.info(ME, "Hit a key to stop embedded xmlBlaster #" + (i+1) + "/" + n);
+            log.info("Hit a key to stop embedded xmlBlaster #" + (i+1) + "/" + n);
             try { System.in.read(); } catch(java.io.IOException e) {}
          }
          else {
-            log.info(ME, "********* Stop embedded xmlBlaster #" + (i+1) + "/" + n);
+            log.info("********* Stop embedded xmlBlaster #" + (i+1) + "/" + n);
          }
 
          embeddedXmlBlaster.stopServer(true);
          embeddedXmlBlaster = null;
          //Util.resetPorts();
 
-         log.info(ME, "Threads after stopping #" + (i+1) + " num=" + ThreadLister.countThreads());
+         log.info("Threads after stopping #" + (i+1) + " num=" + ThreadLister.countThreads());
          ThreadLister.listAllThreads(System.out);
 
          if (!interactive) {
             try { Thread.currentThread().sleep(sleep); } catch( InterruptedException e) {}
          }
       }
-      log.info(ME, "Done");
+      log.info("Done");
    }
    /**
     * Invoke: 

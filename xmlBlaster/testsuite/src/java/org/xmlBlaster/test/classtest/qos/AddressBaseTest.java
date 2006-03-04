@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.Address;
@@ -21,7 +22,7 @@ import junit.framework.*;
 public class AddressBaseTest extends TestCase {
    private final String ME = "AddressBaseTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(AddressBaseTest.class.getName());
    int counter = 0;
 
    public AddressBaseTest(String name) {
@@ -30,7 +31,7 @@ public class AddressBaseTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = glob.getLog("test");
+
    }
 
    /**

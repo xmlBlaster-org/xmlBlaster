@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
@@ -106,7 +107,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 {
    private String ME = "MsgQosSaxFactory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(MsgQosSaxFactory.class.getName());
 
    private  MsgQosData msgQosData;
 
@@ -141,7 +142,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    public MsgQosSaxFactory(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
+
    }
 
    /**
@@ -210,7 +211,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                   msgQosData.setStateInfo(attrs.getValue(i).trim());
                }
             }
-            // if (log.TRACE) log.trace(ME, "Found state tag");
+            // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found state tag");
          }
          return;
       }
@@ -222,9 +223,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <subscribable> tag " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <subscribable> tag " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (log.TRACE) log.trace(ME, "Found subscribable tag");
+            // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found subscribable tag");
          }
          msgQosData.setSubscribable(true);
          return;
@@ -247,7 +248,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                      this.destination.setQueryType(queryType);
                   }
                   else
-                     log.error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
+                     log.severe("Sorry, destination queryType='" + queryType + "' is not supported");
                }
                else if( attrs.getQName(i).equalsIgnoreCase("forceQueuing") ) {
                   String tmp = attrs.getValue(i).trim();
@@ -272,9 +273,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (log.TRACE) log.trace(ME, "Found sender tag");
+            // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found sender tag");
          }
          return;
       }
@@ -286,9 +287,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (log.TRACE) log.trace(ME, "Found priority tag");
+            // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found priority tag");
          }
          return;
       }
@@ -300,10 +301,10 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (attrs != null) {
             String tmp = attrs.getValue("lifeTime");
             if (tmp != null) {
-               try { msgQosData.setLifeTime(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid lifeTime - millis =" + tmp); };
+               try { msgQosData.setLifeTime(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.severe("Invalid lifeTime - millis =" + tmp); };
             }
             else {
-               log.warn(ME, "QoS <expiration> misses lifeTime attribute, setting default of " + MsgQosData.getMaxLifeTime());
+               log.warning("QoS <expiration> misses lifeTime attribute, setting default of " + MsgQosData.getMaxLifeTime());
                msgQosData.setLifeTime(MsgQosData.getMaxLifeTime());
             }
 
@@ -314,7 +315,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             
             tmp = attrs.getValue("remainingLife");
             if (tmp != null) {
-               try { msgQosData.setRemainingLifeStatic(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid remainingLife - millis =" + tmp); };
+               try { msgQosData.setRemainingLifeStatic(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.severe("Invalid remainingLife - millis =" + tmp); };
             }
          }
          return;
@@ -334,7 +335,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          
          tmp = attrs.getValue("destroyDelay");
          if (tmp != null) {
-            try { tmpProp.setDestroyDelay(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.warn(ME, "Invalid topic destroyDelay - millis =" + tmp); };
+            try { tmpProp.setDestroyDelay(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.warning("Invalid topic destroyDelay - millis =" + tmp); };
          }
          
          tmp = attrs.getValue("createDomEntry");
@@ -356,10 +357,10 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
             // UpdateQos contains queue informations
             if (indexVal != null) {
-               try { msgQosData.setQueueIndex(Integer.parseInt(indexVal)); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - index =" + indexVal); };
+               try { msgQosData.setQueueIndex(Integer.parseInt(indexVal)); } catch(NumberFormatException e) { log.severe("Invalid queue - index =" + indexVal); };
                String tmp = attrs.getValue("size");
                if (tmp != null) {
-                  try { msgQosData.setQueueSize(Integer.parseInt(tmp)); } catch(NumberFormatException e) { log.error(ME, "Invalid queue - index =" + tmp); };
+                  try { msgQosData.setQueueSize(Integer.parseInt(tmp)); } catch(NumberFormatException e) { log.severe("Invalid queue - index =" + tmp); };
                }
                return;
             }
@@ -383,7 +384,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                return;
             }
 
-            log.warn(ME, "Found queue tag but don't know how to handle it: " + xmlLiteral);
+            log.warning("Found queue tag but don't know how to handle it: " + xmlLiteral);
          }
          return;
       }
@@ -400,7 +401,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
                return;
             }
 
-            log.warn(ME, "Found msgUnitStore tag but don't know how to handle it: " + xmlLiteral);
+            log.warning("Found msgUnitStore tag but don't know how to handle it: " + xmlLiteral);
          }
          return;
       }
@@ -413,7 +414,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             for (int i = 0; i < len; i++) {
                if( attrs.getQName(i).equalsIgnoreCase("nanos") ) {
                  String tmp = attrs.getValue(i).trim();
-                 try { msgQosData.setRcvTimestamp(new RcvTimestamp(Long.parseLong(tmp))); } catch(NumberFormatException e) { log.error(ME, "Invalid rcvTimestamp - nanos =" + tmp); };
+                 try { msgQosData.setRcvTimestamp(new RcvTimestamp(Long.parseLong(tmp))); } catch(NumberFormatException e) { log.severe("Invalid rcvTimestamp - nanos =" + tmp); };
                }
             }
          }
@@ -428,7 +429,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <redeliver> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <redeliver> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -442,7 +443,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
       if (name.equalsIgnoreCase("node")) {
          if (!inRoute) {
-            log.error(ME, "Ignoring <node>, it is not inside <route>");
+            log.severe("Ignoring <node>, it is not inside <route>");
             return;
          }
 
@@ -450,7 +451,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
             String id = attrs.getValue("id");
             if (id == null || id.length() < 1) {
-               log.error(ME, "QoS <route><node> misses id attribute, ignoring node");
+               log.severe("QoS <route><node> misses id attribute, ignoring node");
                return;
             }
             NodeId nodeId = new NodeId(id);
@@ -458,27 +459,27 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             int stratum = 0;
             String tmp = attrs.getValue("stratum");
             if (tmp != null) {
-               try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid stratum =" + tmp); };
+               try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.severe("Invalid stratum =" + tmp); };
             }
             else {
-               log.warn(ME, "QoS <route><node> misses stratum attribute, setting to 0: " + xmlLiteral);
+               log.warning("QoS <route><node> misses stratum attribute, setting to 0: " + xmlLiteral);
                //Thread.currentThread().dumpStack();
             }
 
             Timestamp timestamp = null;
             tmp = attrs.getValue("timestamp");
             if (tmp != null) {
-               try { timestamp = new Timestamp(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid route Timestamp - nanos =" + tmp); };
+               try { timestamp = new Timestamp(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.severe("Invalid route Timestamp - nanos =" + tmp); };
             }
             else {
-               log.warn(ME, "QoS <route><node> misses receive timestamp attribute, setting to 0");
+               log.warning("QoS <route><node> misses receive timestamp attribute, setting to 0");
                timestamp = new Timestamp(0L);
             }
 
             String tmpDirty = attrs.getValue("dirtyRead");
             boolean dirtyRead = RouteInfo.DEFAULT_dirtyRead;
             if (tmpDirty != null) {
-               try { dirtyRead = new Boolean(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { log.error(ME, "Invalid dirtyRead =" + tmpDirty); };
+               try { dirtyRead = new Boolean(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { log.severe("Invalid dirtyRead =" + tmpDirty); };
             }
 
             routeInfo = new RouteInfo(nodeId, stratum, timestamp);
@@ -492,7 +493,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (name.equalsIgnoreCase("forceQueuing")) {
          if (!inDestination)
             return;
-         log.error(ME, "forceQueuing is an attribute of destination - change your code");
+         log.severe("forceQueuing is an attribute of destination - change your code");
          return;
       }
 
@@ -513,9 +514,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <isVolatile> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <isVolatile> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (log.TRACE) log.trace(ME, "Found isVolatile tag");
+            // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found isVolatile tag");
          }
          return;
       }
@@ -549,7 +550,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             return;
 //       this.inReadonly = true;
          msgQosData.setReadonly(true);
-         log.error(ME, "<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
+         log.severe("<qos><readonly/></qos> is deprecated, please use readonly as topic attribute <qos><topic readonly='true'></qos>");
          return;
       }
 
@@ -624,7 +625,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if(name.equalsIgnoreCase("sender")) {
 //       this.inSender = false;
          msgQosData.setSender(new SessionName(glob, character.toString().trim()));
-         // if (log.TRACE) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
          character.setLength(0);
          return;
       }
@@ -636,9 +637,9 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          }
          catch (IllegalArgumentException e) {
             msgQosData.setPriority(PriorityEnum.NORM_PRIORITY);
-            log.warn(ME, "Problems parsing priority, setting priority to " + msgQosData.getPriority().toString() + ": " + e.toString());
+            log.warning("Problems parsing priority, setting priority to " + msgQosData.getPriority().toString() + ": " + e.toString());
          }
-         // if (log.TRACE) log.trace(ME, "Found priority = " + msgQosData.getPriority());
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found priority = " + msgQosData.getPriority());
          character.setLength(0);
          return;
       }
@@ -685,7 +686,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (tmp.length() > 0) {
             msgQosData.setVolatile(new Boolean(tmp).booleanValue());
             if (msgQosData.isVolatile()) {
-               log.warn(ME, "Found 'isVolatile=" + msgQosData.isVolatile() + "' which is deprecated, use lifeTime==0&&forceDestroy==false instead");
+               log.warning("Found 'isVolatile=" + msgQosData.isVolatile() + "' which is deprecated, use lifeTime==0&&forceDestroy==false instead");
             }
          }
          character.setLength(0);
@@ -697,7 +698,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setAdministrative(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found administrative = " + msgQosData.isAdministrative());
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found administrative = " + msgQosData.isAdministrative());
          character.setLength(0);
          return;
       }
@@ -707,7 +708,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setPersistent(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
          character.setLength(0);
          return;
       }
@@ -717,7 +718,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setForceUpdate(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found forceUpdate = " + msgQosData.getForceUpdate());
          character.setLength(0);
          return;
       }
@@ -727,7 +728,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             msgQosData.setReadonly(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found readonly = " + msgQosData.readonly());
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found readonly = " + msgQosData.readonly());
          character.setLength(0);
          return;
       }
@@ -735,7 +736,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if(name.equalsIgnoreCase("redeliver")) {
 //       this.inRedeliver = false;
          String tmp = character.toString().trim();
-         try { msgQosData.setRedeliver(Integer.parseInt(tmp)); } catch(NumberFormatException e) { log.error(ME, "Invalid redeliver =" + tmp); };
+         try { msgQosData.setRedeliver(Integer.parseInt(tmp)); } catch(NumberFormatException e) { log.severe("Invalid redeliver =" + tmp); };
          character.setLength(0);
          return;
       }
@@ -815,7 +816,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          if (PriorityEnum.NORM_PRIORITY.toString().equals(msgQosData.getPriority().toString())) {
             int hash1 = PriorityEnum.NORM_PRIORITY.hashCode();
             int hash2 = msgQosData.getPriority().hashCode();
-            log.error(ME, "The strings should not equal: PriorityEnum.NORM_PRIORITY=" + PriorityEnum.NORM_PRIORITY + " hash1=" + hash1 +
+            log.severe("The strings should not equal: PriorityEnum.NORM_PRIORITY=" + PriorityEnum.NORM_PRIORITY + " hash1=" + hash1 +
                           " msgQosData.getPriority()=" + msgQosData.getPriority() + " hash2=" + hash2);
          }
          sb.append(offset).append(" <priority>").append(msgQosData.getPriority()).append("</priority>");

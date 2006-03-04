@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
@@ -33,7 +34,7 @@ public final class TopicProperty implements java.io.Serializable
    private static final long serialVersionUID = -8978046284014075499L;
    private String ME = "TopicProperty";
    private transient Global glob;
-   private transient LogChannel log;
+   private static Logger log = Logger.getLogger(TopicProperty.class.getName());
    private transient MsgUnitStoreProperty msgUnitStoreProperty;
    private transient HistoryQueueProperty historyQueueProperty;
 
@@ -258,6 +259,6 @@ public final class TopicProperty implements java.io.Serializable
     */
    public void setGlobal(Global glob) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("core");
+
    }
 }

@@ -7,7 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
@@ -39,7 +40,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    /** The global handle */
    private Global glob;
    /** Logging to channel "core" */
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(SubscriptionInfo.class.getName());
    /** The initiatior of this subscription */
    private SessionInfo sessionInfo;
    /** reference to keyData */
@@ -94,7 +95,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
 
    private void init(Global glob, SessionInfo sessionInfo, KeyData keyData, SubscribeQosServer qos) throws XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog("core");
+
       this.sessionInfo = sessionInfo;
       this.keyData = keyData;
       this.subscribeQos = qos;
@@ -116,7 +117,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
                            this.glob.getContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
-      if (log.TRACE) log.trace(ME, "Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getLoginName() + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getLoginName() + "'");
    }
 
    /**
@@ -176,12 +177,12 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       boolean found = this.childrenVec.remove(subs);
       
       if (!found) {
-         log.error(ME, "Failed to remove XPATH children subscription " + uniqueKey);
+         log.severe("Failed to remove XPATH children subscription " + uniqueKey);
          Thread.dumpStack();
          return;
       }
 
-      if (log.TRACE) log.trace(ME, "Removed XPATH " + uniqueKey + " children subscription "); // + subs.getSubscriptionId());
+      if (log.isLoggable(Level.FINE)) log.fine("Removed XPATH " + uniqueKey + " children subscription "); // + subs.getSubscriptionId());
    }
 
    /**
@@ -215,7 +216,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    }
 
    protected void finalize() {
-      if (log.TRACE) log.trace(ME, "finalize - garbage collect " + uniqueKey);
+      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collect " + uniqueKey);
    }
 
    public AccessFilterQos[] getAccessFilterArr() {
@@ -229,20 +230,20 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    public void addTopicHandler(TopicHandler topicHandler) {
       if (topicHandler == null) {
          Thread.dumpStack();
-         log.error(ME, "addTopicHandler with topicHandler==null seems to be strange");
+         log.severe("addTopicHandler with topicHandler==null seems to be strange");
       }
 
       this.topicHandler = topicHandler;
 
       if (this.topicHandler != null) {
-         if (log.TRACE) log.trace(ME, "Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + sessionInfo.getId() + "' message '" + this.topicHandler.getUniqueKey() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + sessionInfo.getId() + "' message '" + this.topicHandler.getUniqueKey() + "'");
       }
    }
 
    public TopicHandler getTopicHandler() {
       if (topicHandler == null) {
          Thread.dumpStack();
-         log.error(ME, "addTopicHandler with topicHandler==null seems to be strange");
+         log.severe("addTopicHandler with topicHandler==null seems to be strange");
       }
       return topicHandler;
    }
@@ -261,7 +262,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    void removeSubscribe() {
       if (topicHandler == null) {
          if (!isQuery()) {
-            log.warn(ME, "The id=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
+            log.warning("The id=" + uniqueKey + " has no TopicHandler which takes care of it: " + toXml());
             Thread.dumpStack();
          }
          return;
@@ -340,11 +341,11 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    public void update(SubscribeQosServer newQos) {
       if (this.subscribeQos == null) {
          this.subscribeQos = newQos;
-         if (log.TRACE) log.trace(ME, "Updated SubscribeQos for " + getId());
+         if (log.isLoggable(Level.FINE)) log.fine("Updated SubscribeQos for " + getId());
       }
       else {
          AccessFilterQos[] arr = newQos.getAccessFilterArr();
-         if (log.TRACE) log.trace(ME, "Updated SubscribeQos AccessFilterArr for " + getId());
+         if (log.isLoggable(Level.FINE)) log.fine("Updated SubscribeQos AccessFilterArr for " + getId());
          this.subscribeQos.getData().setFilters(arr);
       }
       /*
@@ -382,11 +383,11 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
             // Using prefix of my parent XPATH subscription object:
             buf.append(this.querySub.getSubscriptionId()).append(":").append(String.valueOf(tt.getTimestamp()));
             this.uniqueKey = buf.toString();
-            if (log.TRACE) log.trace(ME, "Generated child subscription ID=" + this.uniqueKey);
+            if (log.isLoggable(Level.FINE)) log.fine("Generated child subscription ID=" + this.uniqueKey);
          }
          else {
             this.uniqueKey = SubscriptionInfo.generateUniqueKey(keyData, subscribeQos.getData(), this.glob.useCluster());
-            if (log.TRACE) log.trace(ME, "Generated subscription ID=" + this.uniqueKey);
+            if (log.isLoggable(Level.FINE)) log.fine("Generated subscription ID=" + this.uniqueKey);
          }
       }
    }

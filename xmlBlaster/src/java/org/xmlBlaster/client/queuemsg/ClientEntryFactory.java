@@ -6,7 +6,8 @@ Comment:   Implementation for the I_EntryFactory
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.queuemsg;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -48,7 +49,7 @@ public class ClientEntryFactory implements I_EntryFactory
 {
    private final static String ME = "ClientEntryFactory";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(ClientEntryFactory.class.getName());
 
    /**
     * Parses the specified entry to a byte array (serializing).
@@ -62,7 +63,7 @@ public class ClientEntryFactory implements I_EntryFactory
          return baos.toByteArray();
       }
       catch (IOException ex) {
-         this.log.error(ME, "toBlob: " + ex.getMessage());
+         log.severe("toBlob: " + ex.getMessage());
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "toBlob()", ex);
       }
    }
@@ -178,8 +179,8 @@ public class ClientEntryFactory implements I_EntryFactory
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("queue");
-      this.log.info(ME, "successfully initialized");
+
+      log.info("successfully initialized");
    }
 
    /**

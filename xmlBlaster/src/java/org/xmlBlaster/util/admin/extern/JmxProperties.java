@@ -6,7 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.admin.extern;
 
 import org.xmlBlaster.util.Global;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import java.lang.reflect.Constructor;
 import java.util.Iterator;
@@ -43,7 +44,7 @@ import javax.management.*;
  */
 public class JmxProperties implements DynamicMBean {
    private Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(JmxProperties.class.getName());
    private final String ME = "JmxProperties";
    private String dClassName = this.getClass().getName();
    private MBeanAttributeInfo[] dAttributes;
@@ -56,7 +57,7 @@ public class JmxProperties implements DynamicMBean {
     */
    public JmxProperties() {
       this(Global.instance());
-      if (log.CALL) log.call(ME, "Default constructor");
+      if (log.isLoggable(Level.FINER)) log.finer("Default constructor");
    }
 
    /**
@@ -64,9 +65,9 @@ public class JmxProperties implements DynamicMBean {
     */
    public JmxProperties(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("jmx");
+
       buildDynamicMBeanInfo();
-      if (log.CALL) log.call(ME, "Constructor created");
+      if (log.isLoggable(Level.FINER)) log.finer("Constructor created");
    }
 
    /**
@@ -205,7 +206,7 @@ public class JmxProperties implements DynamicMBean {
             try {
                String retVal = this.glob.getProperty().set(key, value);
                String ret = "Operation set(key="+key+",value="+value+") returned '" + retVal + "'";
-               log.info(ME, ret);
+               log.info(ret);
                return ret;
             }
             catch (Exception e) {
@@ -231,7 +232,7 @@ public class JmxProperties implements DynamicMBean {
    public MBeanInfo getMBeanInfo() {
        // return the information we want to expose for management:
        // the dMBeanInfo private field has been built at instanciation time,
-       if (log.CALL) log.call(ME, "Access MBeanInfo");
+       if (log.isLoggable(Level.FINER)) log.finer("Access MBeanInfo");
        buildDynamicMBeanInfo();
        return dMBeanInfo;
    }
@@ -296,6 +297,6 @@ public class JmxProperties implements DynamicMBean {
                                  dConstructors,
                                  dOperations,
                                  new MBeanNotificationInfo[0]);
-      if (log.TRACE) log.trace(ME, "Created MBeanInfo with " + tmp.size() + " attributes");
+      if (log.isLoggable(Level.FINE)) log.fine("Created MBeanInfo with " + tmp.size() + " attributes");
    }
 }

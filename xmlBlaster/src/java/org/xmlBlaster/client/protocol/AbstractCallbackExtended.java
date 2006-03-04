@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -31,14 +32,14 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
 {
    private String ME = "AbstractCallbackExtended";
    protected final Global glob;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(AbstractCallbackExtended.class.getName());
 
    /**
     * @param glob If null we use Global.instance()
     */
    public AbstractCallbackExtended(Global glob) {
       this.glob = (glob==null) ? Global.instance() : glob;
-      this.log = glob.getLog("client");
+
    }
 
    public abstract I_ClientPlugin getSecurityPlugin();
@@ -86,7 +87,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          updateQos = new UpdateQos(glob, updateQosLiteral); // does the parsing
       }
       catch (XmlBlasterException e) {
-         log.error(ME + ".update", "Parsing error: " + e.toString());
+         log.severe("Parsing error: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ILLEGALARGUMENT, ME+".update", "Parsing error", e);
       }
 
@@ -94,11 +95,11 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
       try {
          // Now we know all about the received message, dump it or do some checks
          /*
-         if (log.DUMP) log.dump(ME+".UpdateKey", "\n" + updateKey.toXml());
-         if (log.DUMP) log.dump(ME+".content", "\n" + new String(content));
-         if (log.DUMP) log.dump(ME+".UpdateQos", "\n" + updateQos.toXml());
+         if (log.isLoggable(Level.FINEST)) log.dump(ME+".UpdateKey", "\n" + updateKey.toXml());
+         if (log.isLoggable(Level.FINEST)) log.dump(ME+".content", "\n" + new String(content));
+         if (log.isLoggable(Level.FINEST)) log.dump(ME+".UpdateQos", "\n" + updateQos.toXml());
          */
-         if (log.TRACE) log.trace(ME, "Received message [" + updateKey.getOid() + "] from publisher " + updateQos.getSender());
+         if (log.isLoggable(Level.FINE)) log.fine("Received message [" + updateKey.getOid() + "] from publisher " + updateQos.getSender());
 
          String ret = update(cbSessionId, updateKey, content, updateQos);
 
@@ -117,7 +118,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
       }
       catch (Throwable e) {
          e.printStackTrace();
-         log.warn(ME + ".update", "Error in client user code of update("+
+         log.warning("Error in client user code of update("+
                       ((updateKey!=null)?updateKey.getOid():"")+
                       ((updateQos!=null)?", "+updateQos.getRcvTime():"")+
                       "): " + e.toString());
@@ -142,7 +143,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
 
          UpdateKey updateKey = new UpdateKey(glob, updateKeyLiteral);
          UpdateQos updateQos = new UpdateQos(glob, updateQosLiteral);
-         if (log.TRACE) log.trace(ME, "Received message [" + updateKey.getOid() + "] from publisher " + updateQos.getSender());
+         if (log.isLoggable(Level.FINE)) log.fine("Received message [" + updateKey.getOid() + "] from publisher " + updateQos.getSender());
 
          update(cbSessionId, updateKey, content, updateQos);
 
@@ -150,7 +151,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          if (statistic != null) statistic.incrNumUpdateOneway(1);
       }
       catch (Throwable e) {
-         log.error(ME, "Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
+         log.severe("Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
       }
    }
 
@@ -170,14 +171,14 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    public String[] update(String cbSessionId, MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
       if (msgUnitArr == null) {
-         log.warn(ME, "Entering update() with null array.");
+         log.warning("Entering update() with null array.");
          return new String[0];
       }
       if (msgUnitArr.length == 0) {
-         log.warn(ME, "Entering update() with 0 messages.");
+         log.warning("Entering update() with 0 messages.");
          return new String[0];
       }
-      if (log.CALL) log.call(ME, "Receiving update of " + msgUnitArr.length + " messages ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of " + msgUnitArr.length + " messages ...");
 
       String[] retArr = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
@@ -193,14 +194,14 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr)
    {
       if (msgUnitArr == null) {
-         log.warn(ME, "Entering updateOneway() with null array.");
+         log.warning("Entering updateOneway() with null array.");
          return;
       }
       if (msgUnitArr.length == 0) {
-         log.warn(ME, "Entering updateOneway() with 0 messages.");
+         log.warning("Entering updateOneway() with 0 messages.");
          return;
       }
-      if (log.CALL) log.call(ME, "Receiving updateOneway of " + msgUnitArr.length + " messages ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving updateOneway of " + msgUnitArr.length + " messages ...");
 
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MsgUnitRaw msgUnit = msgUnitArr[ii];

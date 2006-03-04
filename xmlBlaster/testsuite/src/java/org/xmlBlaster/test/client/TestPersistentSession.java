@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -56,7 +57,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    private Global glob;
    private Global origGlobal;
    private Global serverGlobal;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestPersistentSession.class.getName());
 
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
@@ -101,7 +102,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    
    private void setup(boolean restrictedEntries) {
       this.origGlobal = (this.origGlobal == null) ? Global.instance() : this.origGlobal;
-      this.log = this.origGlobal.getLog("test");
+
       
       this.origGlobal.init(Util.getOtherServerPorts(serverPort));
       this.glob = this.origGlobal.getClone(null);
@@ -116,7 +117,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       }
       this.serverGlobal = this.origGlobal.getClone(args);
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+      log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
          I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess(); // Find orb
 
@@ -146,11 +147,11 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          con.connect(connectQos, this);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed: " + e.getMessage());
+          log.warning("setUp() - login failed: " + e.getMessage());
           fail("setUp() - login fail: " + e.getMessage());
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
           fail("setUp() - login fail: " + e.toString());
       }
@@ -162,7 +163,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestPersistentSession-AGENT" +
                       "</key>";
@@ -174,10 +175,10 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
 
          PropString defaultPlugin = new PropString("CACHE,1.0");
          String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
-         log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+         log.info("Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
       }
       finally {
          con.disconnect(null);
@@ -212,10 +213,10 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          this.updateInterceptors[num].setLogPrefix("interceptor-" + num);
          SubscribeReturnQos subscriptionId = this.glob.getXmlBlasterAccess().subscribe(key, qos, this.updateInterceptors[num]);
 
-         log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
+         log.info("Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -230,7 +231,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          this.glob.getXmlBlasterAccess().unSubscribe(key, qos);
       } 
       catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -241,7 +242,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     */
    public void doPublish(int counter) throws XmlBlasterException {
       String oid = "Message" + "-" + counter;
-      log.info(ME, "Publishing a message " + oid + " ...");
+      log.info("Publishing a message " + oid + " ...");
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
                       "   <TestPersistentSession-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestPersistentSession-AGENT>" +
@@ -251,7 +252,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
       this.glob.getXmlBlasterAccess().publish(msgUnit);
-      log.info(ME, "Success: Publishing of " + oid + " done");
+      log.info("Success: Publishing of " + oid + " done");
    }
 
    /**
@@ -259,7 +260,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     */
    public void persistentSession(boolean doStop) {
       //doSubscribe(); -> see reachedAlive()
-      log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
+      log.info("Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
       // 
       doSubscribe(0, this.exactSubscription, TRANSIENT);
       doSubscribe(1, this.exactSubscription, PERSISTENT);
@@ -268,26 +269,26 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          try {
             if (i == numStop) { // 3
                if (doStop) {
-                  log.info(ME, "Stopping xmlBlaster, but continue with publishing ...");
+                  log.info("Stopping xmlBlaster, but continue with publishing ...");
                   EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
                   this.serverThread = null;
                }
                else {
-                  log.info(ME, "changing run level but continue with publishing ...");
+                  log.info("changing run level but continue with publishing ...");
                   this.serverThread.changeRunlevel(0, true);
                }
             }
             if (i == numStart) {
                if (doStop) {
-                  log.info(ME, "Starting xmlBlaster again, expecting the previous published two messages ...");
+                  log.info("Starting xmlBlaster again, expecting the previous published two messages ...");
                   // serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
                   serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
-                  log.info(ME, "xmlBlaster started, waiting on tail back messsages");
+                  log.info("xmlBlaster started, waiting on tail back messsages");
                }
                else {
-                  log.info(ME, "changing runlevel again to runlevel 9. Expecting the previous published two messages ...");
+                  log.info("changing runlevel again to runlevel 9. Expecting the previous published two messages ...");
                   this.serverThread.changeRunlevel(9, true);
-                  log.info(ME, "xmlBlaster runlevel 9 reached, waiting on tail back messsages");
+                  log.info("xmlBlaster runlevel 9 reached, waiting on tail back messsages");
                }
                
                // Message-4 We need to wait until the client reconnected (reconnect interval)
@@ -313,7 +314,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          }
          catch(XmlBlasterException e) {
             if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
-               log.warn(ME, "Lost connection, my connection layer is polling: " + e.getMessage());
+               log.warning("Lost connection, my connection layer is polling: " + e.getMessage());
             else if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_DEAD)
                assertTrue("Lost connection, my connection layer is NOT polling", false);
             else
@@ -331,28 +332,28 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
+      log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       // doSubscribe();    // initialize on startup and on reconnect
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.warn(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
+      log.warning("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+      log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       String contentStr = new String(content);
       String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
-      this.log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+      log.info("Receiving update of a message oid=" + updateKey.getOid() +
                         " priority=" + updateQos.getPriority() +
                         " state=" + updateQos.getState() +
                         " content=" + cont);
-      this.log.info(ME, "further log for receiving update of a message cbSessionId=" + cbSessionId +
+      log.info("further log for receiving update of a message cbSessionId=" + cbSessionId +
                      updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
-      this.log.error(ME, "update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
+      log.severe("update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
 
       return "OK";
    }
@@ -407,7 +408,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          return ret;
       }
       catch (XmlBlasterException ex) {
-         if (expectEx) this.log.info(ME, "createConnection: exception was OK since overflow was expected");
+         if (expectEx) log.info("createConnection: exception was OK since overflow was expected");
          else assertTrue("an exception should not occur here", false);
       }
       return null; //to make compiler happy

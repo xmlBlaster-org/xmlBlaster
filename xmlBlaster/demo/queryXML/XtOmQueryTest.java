@@ -18,7 +18,8 @@ Version:   $Id$
 
 import com.jclark.xsl.om.*;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 
 import java.io.File;

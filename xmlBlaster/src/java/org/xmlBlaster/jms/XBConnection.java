@@ -23,7 +23,8 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -48,7 +49,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
 
    private final static String ME = "XBConnection";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XBConnection.class.getName());
    private ExceptionListener exceptionListener;
    private ConnectionMetaData metaData;
    private ConnectQos connectQos;
@@ -76,10 +77,10 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
          this.global = new Global();
          this.connectQos = new ConnectQos(this.global);
       }
-      this.log = this.global.getLog("jms");
+
       this.metaData = metaData;
       this.sessionMap = new HashMap();
-      if (this.log.CALL) this.log.call(ME, "constructor");
+      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
    }
    
    private ConnectQos cloneConnectQos(ConnectQos qos) throws XmlBlasterException {
@@ -92,7 +93,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    private synchronized void initSession(String methodName, XBSession session, boolean transacted, int ackMode) 
       throws JMSException {
       this.stillVirgin = false;
-      if (this.log.CALL) this.log.call(ME, methodName + " transacted='" + transacted + "' ackMode='" + ackMode + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer(methodName + " transacted='" + transacted + "' ackMode='" + ackMode + "'");
       if (transacted) 
          throw new XBException(ME, " '" + methodName + "' in transacted mode not implemented yet");
       try {
@@ -160,7 +161,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
     * @see javax.jms.Connection#close()
     */
    public synchronized void close() throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "close");
+      if (log.isLoggable(Level.FINER)) this.log.finer("close");
       JMSException ex = null;
       Object[] keys = this.sessionMap.keySet().toArray();
       for (int i=0; i < keys.length; i++) {
@@ -173,7 +174,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
             catch (JMSException e) {
                ex = e;
                if (this.exceptionListener != null) this.exceptionListener.onException(e);
-               if (this.log.TRACE) {
+               if (log.isLoggable(Level.FINE)) {
                   ex.printStackTrace();
                }
             }
@@ -181,7 +182,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
       }
       this.sessionMap.clear();
       if (ex != null) {
-         this.log.warn(ME, "close: exception occured when closing some of the sessions associated to this connection");
+         log.warning("close: exception occured when closing some of the sessions associated to this connection");
          throw ex;
       }
    }
@@ -199,7 +200,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    }
 
    public synchronized void setClientID(String loginName) throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "setClientID '" + loginName + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("setClientID '" + loginName + "'");
       if (!this.stillVirgin) {
          throw new IllegalStateException(ME + ".setClientID: the clientId cannot be set since you made already invocations on this connection");
       }
@@ -212,7 +213,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    }
 
    public synchronized void setExceptionListener(ExceptionListener exeptionListener) throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "setExceptionListener");
+      if (log.isLoggable(Level.FINER)) this.log.finer("setExceptionListener");
       this.exceptionListener = exeptionListener;
    }
 
@@ -226,7 +227,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    }       
     
    private synchronized void startStop(String txt, boolean isStart) throws JMSException {
-      if (this.log.CALL) this.log.call(ME, txt);
+      if (log.isLoggable(Level.FINER)) this.log.finer(txt);
       this.stillVirgin = false;
 
       JMSException ex = null;
@@ -240,7 +241,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
             catch (XmlBlasterException e) {
                ex = new XBException(e, ME + "." + txt);
                if (this.exceptionListener != null) this.exceptionListener.onException(ex);
-               if (this.log.TRACE) {
+               if (log.isLoggable(Level.FINE)) {
                   e.printStackTrace();
                }
             }
@@ -248,7 +249,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
       }
       this.running = isStart;
       if (ex != null) {
-         this.log.warn(ME, txt + ": exception occured when invoking activateDispatcher");
+         log.warning(txt + ": exception occured when invoking activateDispatcher");
          throw ex;
       }
    }
@@ -264,7 +265,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    // optional server side stuff not implemented here ...
 
    public void statusPostChanged(String id, int oldStatus, int newStatus) {
-      if (this.log.CALL) this.log.call(ME, "statusPostChanged");
+      if (log.isLoggable(Level.FINER)) this.log.finer("statusPostChanged");
    }
 
    /**
@@ -272,7 +273,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
     * when the session closes.
     */
    public void statusPreChanged(String id, int oldStatus, int newStatus) {
-      if (this.log.CALL) this.log.call(ME, "statusPreChanged");
+      if (log.isLoggable(Level.FINER)) this.log.finer("statusPreChanged");
       synchronized(this) {
          if (oldStatus == I_StatusChangeListener.RUNNING && newStatus == I_StatusChangeListener.CLOSED)
             this.sessionMap.remove(id);

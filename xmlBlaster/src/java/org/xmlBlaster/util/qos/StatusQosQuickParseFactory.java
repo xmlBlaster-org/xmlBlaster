@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.RcvTimestamp;
@@ -27,7 +29,7 @@ import org.xmlBlaster.util.def.MethodName;
  */
 public class StatusQosQuickParseFactory implements I_StatusQosFactory
 {
-   private String ME = "StatusQosQuickParseFactory";
+   private static Logger log = Logger.getLogger(StatusQosQuickParseFactory.class.getName());
    private final Global glob;
 
    private  StatusQosData statusQosData;
@@ -59,7 +61,7 @@ public class StatusQosQuickParseFactory implements I_StatusQosFactory
             }
             catch(NumberFormatException e) {
                e.printStackTrace();
-               this.glob.getLog(null).error(ME, "Invalid rcvTimestamp - nanos =" + tmp);
+               log.severe("Invalid rcvTimestamp - nanos =" + tmp);
             }
          }
       }

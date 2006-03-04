@@ -6,7 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.engine.distributor.plugins;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * ConsumableQueueWorker processes the distribution of messages on 
@@ -20,19 +21,19 @@ public class ConsumableQueueWorker implements Runnable {
 
    private final static String ME = "ConsumableQueueWorker";
    // private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(ConsumableQueueWorker.class.getName());
    private ConsumableQueuePlugin consumableQueuePlugin;
    
 
-   public ConsumableQueueWorker(LogChannel log, ConsumableQueuePlugin consumableQueuePlugin) {
+   public ConsumableQueueWorker(Logger log, ConsumableQueuePlugin consumableQueuePlugin) {
       this.log = log;
-      if (this.log.CALL) log.call(ME, "constructor");
+      if (log.isLoggable(Level.FINER)) log.finer("constructor");
       this.consumableQueuePlugin = consumableQueuePlugin;
    }
 
 
    public void run() {
-      if (this.log.CALL) log.call(ME, "run");
+      if (log.isLoggable(Level.FINER)) log.finer("run");
       this.consumableQueuePlugin.processHistoryQueue();
    }
 

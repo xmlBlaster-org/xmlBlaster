@@ -20,7 +20,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -123,16 +122,6 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       // else
       //    this.global = global_;
       // this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
-
-      boolean jdk14loggingCapture = this.global.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
-      if (jdk14loggingCapture) {
-         try {
-            XmlBlasterJdk14LoggingHandler.initLogManager(this.global);
-         }
-         catch (Throwable e) {
-            log.warning("Capturing JDK 1.4 logging output failed: " + e.toString());
-         }
-      }
 
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;

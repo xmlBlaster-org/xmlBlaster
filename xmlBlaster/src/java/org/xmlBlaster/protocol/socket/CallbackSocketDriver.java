@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -29,7 +30,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
 {
    private String ME = "CallbackSocketDriver";
    private Global glob = null;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(CallbackSocketDriver.class.getName());
    private String loginName;
    private HandleClient handler;
    private CallbackAddress callbackAddress;
@@ -93,12 +94,12 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
       if (log == null) {
          this.glob = glob;
-         this.log = glob.getLog("socket");
+
       }
       // This can happen when on xmlBlaster restart a session is recovered from persistency
       // and the client has not yet connected (so we can't reuse its socket for callbacks).
       // In such a case this callback driver is loaded as a dummy.
-      log.trace(ME, "init(PluginInfo) call not is expected, we are loaded dynamically if configured by ConnectQos");
+      log.fine("init(PluginInfo) call not is expected, we are loaded dynamically if configured by ConnectQos");
       this.pluginInfo = pluginInfo;
    }
 
@@ -113,9 +114,9 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    public void init(Global glob, CallbackAddress callbackAddress) 
       throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("socket");
+
       this.ME = "CallbackSocketDriver" + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "init()");
+      if (log.isLoggable(Level.FINER)) log.finer("init()");
       this.callbackAddress = callbackAddress;
    }
 
@@ -152,9 +153,8 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       // "<qos><state info='INITIAL'/></qos>"
       // Send from CbDispatchConnection.java on connect 
       if (qos != null && qos.indexOf(Constants.INFO_INITIAL) != -1) {
-         if (log.TRACE) log.trace(ME,
-               "Socket callback ping is suppressed as doing it before connect() may" +
-               " block the clients connect() if the callback is not functional");
+         if (log.isLoggable(Level.FINE)) log.fine("Socket callback ping is suppressed as doing it before connect() may" +
+         " block the clients connect() if the callback is not functional");
          return Constants.RET_OK;
       }
       /*
@@ -190,7 +190,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
 
    public void shutdown() {
       if (this.log != null) {
-         if (log.CALL) log.call(ME, "shutdown()");
+         if (log.isLoggable(Level.FINER)) log.finer("shutdown()");
       } 
       if (this.handler != null) {
          this.handler.shutdown();

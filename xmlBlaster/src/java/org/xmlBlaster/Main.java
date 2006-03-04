@@ -6,7 +6,8 @@ Comment:   Main class to invoke the xmlBlaster server
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.JUtilsException;
 import org.jutils.io.FileUtil;
 import org.jutils.runtime.Memory;
@@ -57,7 +58,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
 
    private Global glob = null;
 
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(Main.class.getName());
 
    /** Starts/stops xmlBlaster */
    private RunlevelManager runlevelManager = null;
@@ -136,7 +137,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
    public final void init(Global glob)
    {
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       this.ME = "Main" + glob.getLogPrefixDashed();
       //try { log.info(ME, glob.getDump()); } catch (Throwable e) { System.out.println(ME + ": " + e.toString()); e.printStackTrace(); }
 
@@ -147,7 +148,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          showUsage = true;
       else if (glob.getErrorText() != null) {
          usage();
-         log.error(ME, glob.getErrorText());
+         log.severe(glob.getErrorText());
          if (glob.isEmbedded())
             throw new IllegalArgumentException(glob.getErrorText());
          else
@@ -156,9 +157,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
 
       long sleepOnStartup = glob.getProperty().get("xmlBlaster/sleepOnStartup", 0L);
       if (sleepOnStartup > 0L) {
-        log.info(ME, "Going to sleep as configured xmlBlaster/sleepOnStartup=" + sleepOnStartup);
+        log.info("Going to sleep as configured xmlBlaster/sleepOnStartup=" + sleepOnStartup);
         try { Thread.sleep(sleepOnStartup);
-        } catch(InterruptedException e) { log.warn(ME, "Caught exception during xmlBlaster/sleepOnStartup=" + sleepOnStartup + ": " + e.toString()); }
+        } catch(InterruptedException e) { log.warning("Caught exception during xmlBlaster/sleepOnStartup=" + sleepOnStartup + ": " + e.toString()); }
       }
 
       int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
@@ -169,17 +170,17 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          runlevelManager.changeRunlevel(runlevel, false);
       } catch (Throwable e) {
          if (e instanceof XmlBlasterException) {
-            log.error(ME, e.getMessage());
+            log.severe(e.getMessage());
          }
          else {
             e.printStackTrace();
-            log.error(ME, e.toString());
+            log.severe(e.toString());
          }
          if (glob.isEmbedded()) {
             throw new IllegalArgumentException(e.toString());
          }
          else {
-            log.error(ME, "Changing runlevel to '" + RunlevelManager.toRunlevelStr(runlevel) + "' failed, good bye");
+            log.severe("Changing runlevel to '" + RunlevelManager.toRunlevelStr(runlevel) + "' failed, good bye");
             System.exit(1);
          }
       }
@@ -188,7 +189,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       if (!useKeyboard) {
          while (true) {
             try { Thread.sleep(100000000L);
-            } catch(InterruptedException e) { log.warn(ME, "Caught exception: " + e.toString()); }
+            } catch(InterruptedException e) { log.warning("Caught exception: " + e.toString()); }
          }
          /*
          //  Exception in thread "main" java.lang.IllegalMonitorStateException:
@@ -232,13 +233,13 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          errors = runlevelManager.changeRunlevel(RunlevelManager.RUNLEVEL_HALTED, true);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "Problem during shutdown: " + e.toString());
+         log.severe("Problem during shutdown: " + e.toString());
       }
       if (errors > 0) {
-         log.warn(ME, "There were " + errors + " errors during shutdown.");
+         log.warning("There were " + errors + " errors during shutdown.");
       }
       else {
-         if (log.TRACE) log.trace(ME, "shutdown() done");
+         if (log.isLoggable(Level.FINE)) log.fine("shutdown() done");
       }
    }
 
@@ -279,7 +280,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             line = line.trim();
             if (line.toLowerCase().equals("g")) {
                if (controlPanel == null) {
-                  log.info(ME, "Invoking control panel GUI ...");
+                  log.info("Invoking control panel GUI ...");
                   controlPanel = new MainGUI(glob, this); // the constructor sets the variable controlPanel
                   controlPanel.run();
                }
@@ -290,17 +291,17 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                long totalMem = Runtime.getRuntime().totalMemory();
                long freeMem = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
                System.gc();
-               log.info(ME, "Garbage collector has run, total/free bytes before="+totalMem+"/"+freeMem+", after="+Runtime.getRuntime().totalMemory()+"/"+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+               log.info("Garbage collector has run, total/free bytes before="+totalMem+"/"+freeMem+", after="+Runtime.getRuntime().totalMemory()+"/"+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
             }
             else if (line.toLowerCase().startsWith("r")) {
                if (line.length() > 1) {
                   String tmp = line.substring(1).trim();
                   int runlevel = -10;
-                  try { runlevel = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid run level '" + tmp + "', it should be a number."); };
-                  try { runlevelManager.changeRunlevel(runlevel, true); } catch(XmlBlasterException e) { log.error(ME, e.toString()); }
+                  try { runlevel = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.severe("Invalid run level '" + tmp + "', it should be a number."); };
+                  try { runlevelManager.changeRunlevel(runlevel, true); } catch(XmlBlasterException e) { log.severe(e.toString()); }
                }
                else
-                  log.info(ME, "Current runlevel is " + RunlevelManager.toRunlevelStr(runlevelManager.getCurrentRunlevel()) + "=" + runlevelManager.getCurrentRunlevel() + "");
+                  log.info("Current runlevel is " + RunlevelManager.toRunlevelStr(runlevelManager.getCurrentRunlevel()) + "=" + runlevelManager.getCurrentRunlevel() + "");
             }
             else if (line.toLowerCase().startsWith("d")) {
                try {
@@ -308,19 +309,19 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                   if (line.length() > 1) fileName = line.substring(1).trim();
 
                   if (fileName == null) {
-                     log.plain(ME, glob.getDump());
-                     log.info(ME, "Dump done");
+                     System.out.println(glob.getDump());
+                     log.info("Dump done");
                   }
                   else {
                      FileUtil.writeFile(fileName, glob.getDump());
-                     log.info(ME, "Dumped internal state to '" + fileName + "'");
+                     log.info("Dumped internal state to '" + fileName + "'");
                   }
                }
                catch(XmlBlasterException e) {
-                  log.error(ME, "Sorry, dump failed: " + e.getMessage());
+                  log.severe("Sorry, dump failed: " + e.getMessage());
                }
                catch(JUtilsException e) {
-                  log.error(ME, "Sorry, dump failed: " + e.getMessage());
+                  log.severe("Sorry, dump failed: " + e.getMessage());
                }
             }
             else if (line.toLowerCase().equals("q")) {
@@ -332,7 +333,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                keyboardUsage();
          }
          catch (IOException e) {
-            log.warn(ME, e.toString());
+            log.warning(e.toString());
          }
       }
    }
@@ -359,7 +360,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * @see org.xmlBlaster.engine.runlevel.I_RunlevelListener#runlevelChange(int, int, boolean)
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      //if (log.isLoggable(Level.FINER)) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
          return;
 
@@ -391,32 +392,32 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          if (to == RunlevelManager.RUNLEVEL_RUNNING) {
          }
          if (to == RunlevelManager.RUNLEVEL_RUNNING_POST) {
-            log.info(ME, Memory.getStatistic());
+            log.info(Memory.getStatistic());
             if (controlPanel == null) {
                int width = 48;
                org.jutils.text.StringHelper sh = new org.jutils.text.StringHelper();
                String line = sh.charChain('-', width-2);
                String bound = "|";
-               log.info(ME, " "+line+" ");
+               log.info(" "+line+" ");
                String ver = bound + " " + glob.getReleaseId() + " " + glob.getBuildTimestamp();
-               log.info(ME, ver + sh.charChain(' ', width-ver.length()-1) + bound);
+               log.info(ver + sh.charChain(' ', width-ver.length()-1) + bound);
                boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
                if (useKeyboard) {
                  String help = bound + " READY - press <?> and <enter> for options";
-                 log.info(ME, help + sh.charChain(' ', width-help.length()-1) + bound);
+                 log.info(help + sh.charChain(' ', width-help.length()-1) + bound);
                } else {
                  String help = bound + " READY - no keyboard input available";
-                 log.info(ME, help + sh.charChain(' ', width-help.length()-1) + bound);
+                 log.info(help + sh.charChain(' ', width-help.length()-1) + bound);
                }
-               log.info(ME, " "+line+" ");
+               log.info(" "+line+" ");
             }
             else
-               log.info(ME, "xmlBlaster is ready for requests");
+               log.info("xmlBlaster is ready for requests");
          }
       }
       if (to <= from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_RUNNING_PRE) {
-            if (log.TRACE) log.trace(ME, "Shutting down xmlBlaster to runlevel " + RunlevelManager.toRunlevelStr(to) + " ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Shutting down xmlBlaster to runlevel " + RunlevelManager.toRunlevelStr(to) + " ...");
          }
          if (to == RunlevelManager.RUNLEVEL_HALTED_PRE) {
             synchronized (this) {
@@ -424,7 +425,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                  this.glob.shutdown();
                }
             }
-            log.info(ME, "XmlBlaster halted.");
+            log.info("XmlBlaster halted.");
          }
 
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
@@ -450,69 +451,69 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * Keyboard input usage.
     */
    private void keyboardUsage() {
-      log.plain(ME, "----------------------------------------------------------");
-      log.plain(ME, "XmlBlaster " + ((glob != null) ? glob.getVersion() : "") +
+      System.out.println("----------------------------------------------------------");
+      System.out.println("XmlBlaster " + ((glob != null) ? glob.getVersion() : "") +
                     ((glob != null) ? (" build " + glob.getBuildTimestamp()) : ""));
-      log.plain(ME, "Following interactive keyboard input is recognized:");
-      log.plain(ME, "Key:");
-      log.plain(ME, "   g             Popup the control panel GUI.");
-      log.plain(ME, "   r <run level> Change to run level (0,3,6,9).");
-      log.plain(ME, "   d <file name> Dump internal state of xmlBlaster to file.");
-      log.plain(ME, "   q             Quit xmlBlaster.");
-      log.plain(ME, "----------------------------------------------------------");
+      System.out.println("Following interactive keyboard input is recognized:");
+      System.out.println("Key:");
+      System.out.println("   g             Popup the control panel GUI.");
+      System.out.println("   r <run level> Change to run level (0,3,6,9).");
+      System.out.println("   d <file name> Dump internal state of xmlBlaster to file.");
+      System.out.println("   q             Quit xmlBlaster.");
+      System.out.println("----------------------------------------------------------");
    }
 
    /**
     * Command line usage.
     */
    private void usage() {
-      log.plain(ME, "-----------------------" + glob.getVersion() + "-------------------------------");
-      log.plain(ME, "java org.xmlBlaster.Main <options>");
-      log.plain(ME, "----------------------------------------------------------");
-      log.plain(ME, "   -h                  Show the complete usage.");
-      log.plain(ME, "");
-//      try { log.plain(ME, glob.getProtocolManager().usage()); } catch (XmlBlasterException e) { log.warn(ME, "No usage: " + e.toString()); }
+      System.out.println("-----------------------" + glob.getVersion() + "-------------------------------");
+      System.out.println("java org.xmlBlaster.Main <options>");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("   -h                  Show the complete usage.");
+      System.out.println("");
+//      try { System.out.println(glob.getProtocolManager().usage()); } catch (XmlBlasterException e) { log.warn(ME, "No usage: " + e.toString()); }
       // Depending on the current run level not all drivers may be visible:
       I_Driver[] drivers = glob.getPluginRegistry().getPluginsOfInterfaceI_Driver(); // getPluginsOfGroup("protocol");
       for (int i=0; i < drivers.length; i++)
-         log.plain(ME, drivers[i].usage());
+         System.out.println(drivers[i].usage());
 
-      log.plain(ME, "");
-      log.plain(ME, org.xmlBlaster.engine.cluster.ClusterManager.staticUsage());
-      log.plain(ME, "");
-      log.plain(ME, glob.usage());
-      log.plain(ME, "");
-      log.plain(ME, "Other stuff:");
-      log.plain(ME, "   -xmlBlaster/acceptWrongSenderAddress/<subjectId>  <subjectId> is for example 'joe' [false]");
-      log.plain(ME, "                              true: Allows user 'joe' to send wrong sender address in PublishQos");
-      log.plain(ME, "   -xmlBlaster/sleepOnStartup Number of milli seconds to sleep before startup [0]");
-      log.plain(ME, "   -xmlBlaster/jdk14loggingCapture Capture JDK 1.4 logging into our jutils logging framework [true]");
-      log.plain(ME, "   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background [true]");
-      log.plain(ME, "   -doBlocking  false         Switch off blocking, the main method is by default never returning [true]");
-      log.plain(ME, "   -admin.remoteconsole.port  If port > 1000 a server is started which is available with telnet [2702]");
-      log.plain(ME, "   -xmlBlaster.isEmbedded     If set to true no System.exit() is possible [false]");
-      log.plain(ME, "   -wipeOutJdbcDB true        Destroy the complete JDBC persistence store entries of prefix=XMLBLASTER (DANGER)");
-      log.plain(ME, "   -xmlBlaster/jmx/HtmlAdaptor       Set to true to enable JMX HTTP access on 'http://localhost:8082' [false]");
-      log.plain(ME, "   -xmlBlaster/jmx/XmlBlasterAdaptor Set to true to enable JMX xmlBlaster adaptor access for swing GUI 'org.xmlBlaster.jmxgui.Main' [false].");
-      log.plain(ME, "   java -Dcom.sun.management.jmxremote ...  Switch on JMX support with jconsole (JDK >= 1.5).");
-      log.plain(ME, "   -xmlBlaster/jmx/observeLowMemory      Write a log error when 90% of the JVM memory is used (JDK >= 1.5) [true]");
-      log.plain(ME, "   -xmlBlaster/jmx/memoryThresholdFactor Configure the log error memory threshhold (defaults to 90%) (JDK >= 1.5) [0.9]");
-      log.plain(ME, "   -xmlBlaster/jmx/exitOnMemoryThreshold If true xmlBlaster stops if the memoryThresholdFactor is reached (JDK >= 1.5) [false]");
-      log.plain(ME, "----------------------------------------------------------");
-      log.plain(ME, "Example:");
-      log.plain(ME, "   java org.xmlBlaster.Main -cluster false");
-      log.plain(ME, "   java org.xmlBlaster.Main -cluster.node.id heron");
-      log.plain(ME, "   java org.xmlBlaster.Main -propertyFile somewhere/xmlblaster.properties -pluginsFile somewhere/plugins.xml");
-      log.plain(ME, "   java org.xmlBlaster.Main -bootstrapPort 3412");
-      log.plain(ME, "   java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/XmlBlaster_Ref.ior");
-      log.plain(ME, "   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
-      log.plain(ME, "   java org.xmlBlaster.Main -trace[mime] true -call[cluster] true -dump[corba] true");
-      log.plain(ME, "   java org.xmlBlaster.Main -logFile /tmp/xmlBlaster.log -logDevice file,console");
-      log.plain(ME, "   java org.xmlBlaster.Main -plugin/xmlrpc/hostname 102.24.64.60 -plugin/xmlrpc/port 8081");
-      log.plain(ME, "   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main");
-      log.plain(ME, "   java org.xmlBlaster.Main -?");
-      log.plain(ME, "See xmlBlaster.properties for more options");
-      log.plain(ME, "");
+      System.out.println("");
+      System.out.println(org.xmlBlaster.engine.cluster.ClusterManager.staticUsage());
+      System.out.println("");
+      System.out.println(glob.usage());
+      System.out.println("");
+      System.out.println("Other stuff:");
+      System.out.println("   -xmlBlaster/acceptWrongSenderAddress/<subjectId>  <subjectId> is for example 'joe' [false]");
+      System.out.println("                              true: Allows user 'joe' to send wrong sender address in PublishQos");
+      System.out.println("   -xmlBlaster/sleepOnStartup Number of milli seconds to sleep before startup [0]");
+      System.out.println("   -xmlBlaster/jdk14loggingCapture Capture JDK 1.4 logging into our jutils logging framework [true]");
+      System.out.println("   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background [true]");
+      System.out.println("   -doBlocking  false         Switch off blocking, the main method is by default never returning [true]");
+      System.out.println("   -admin.remoteconsole.port  If port > 1000 a server is started which is available with telnet [2702]");
+      System.out.println("   -xmlBlaster.isEmbedded     If set to true no System.exit() is possible [false]");
+      System.out.println("   -wipeOutJdbcDB true        Destroy the complete JDBC persistence store entries of prefix=XMLBLASTER (DANGER)");
+      System.out.println("   -xmlBlaster/jmx/HtmlAdaptor       Set to true to enable JMX HTTP access on 'http://localhost:8082' [false]");
+      System.out.println("   -xmlBlaster/jmx/XmlBlasterAdaptor Set to true to enable JMX xmlBlaster adaptor access for swing GUI 'org.xmlBlaster.jmxgui.Main' [false].");
+      System.out.println("   java -Dcom.sun.management.jmxremote ...  Switch on JMX support with jconsole (JDK >= 1.5).");
+      System.out.println("   -xmlBlaster/jmx/observeLowMemory      Write a log error when 90% of the JVM memory is used (JDK >= 1.5) [true]");
+      System.out.println("   -xmlBlaster/jmx/memoryThresholdFactor Configure the log error memory threshhold (defaults to 90%) (JDK >= 1.5) [0.9]");
+      System.out.println("   -xmlBlaster/jmx/exitOnMemoryThreshold If true xmlBlaster stops if the memoryThresholdFactor is reached (JDK >= 1.5) [false]");
+      System.out.println("----------------------------------------------------------");
+      System.out.println("Example:");
+      System.out.println("   java org.xmlBlaster.Main -cluster false");
+      System.out.println("   java org.xmlBlaster.Main -cluster.node.id heron");
+      System.out.println("   java org.xmlBlaster.Main -propertyFile somewhere/xmlblaster.properties -pluginsFile somewhere/plugins.xml");
+      System.out.println("   java org.xmlBlaster.Main -bootstrapPort 3412");
+      System.out.println("   java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/XmlBlaster_Ref.ior");
+      System.out.println("   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
+      System.out.println("   java org.xmlBlaster.Main -trace[mime] true -call[cluster] true -dump[corba] true");
+      System.out.println("   java org.xmlBlaster.Main -logFile /tmp/xmlBlaster.log -logDevice file,console");
+      System.out.println("   java org.xmlBlaster.Main -plugin/xmlrpc/hostname 102.24.64.60 -plugin/xmlrpc/port 8081");
+      System.out.println("   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main");
+      System.out.println("   java org.xmlBlaster.Main -?");
+      System.out.println("See xmlBlaster.properties for more options");
+      System.out.println("");
    }
 
 

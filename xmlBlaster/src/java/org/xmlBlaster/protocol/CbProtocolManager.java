@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.engine.*;
@@ -39,16 +40,16 @@ public class CbProtocolManager extends PluginManagerBase
 {
    private final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(CbProtocolManager.class.getName());
    private static final String defaultPluginName = "org.xmlBlaster.protocol.corba.CallbackCorbaDriver";
    public static final String pluginPropertyName = "CbProtocolPlugin";
 
    public CbProtocolManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("protocol");
+
       this.ME = "CbProtocolManager" + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "Constructor CbProtocolManager");
+      if (log.isLoggable(Level.FINER)) log.finer("Constructor CbProtocolManager");
    }
 
    /**
@@ -87,7 +88,7 @@ public class CbProtocolManager extends PluginManagerBase
     * @return The plugin for this type and version or null if none is specified
     */
    public I_CallbackDriver getPlugin(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPlugin()", "Creating instance of " + createPluginPropertyKey(type, version));
+      if (log.isLoggable(Level.FINER)) log.finer("Creating instance of " + createPluginPropertyKey(type, version));
 
       // We need a new instance every time! (no caching in base class)
       PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
@@ -98,14 +99,14 @@ public class CbProtocolManager extends PluginManagerBase
    public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {}
 
    public void activateCbDrivers() throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Don't know how to activate the callback drivers, they are created for each client and session separately");
+      if (log.isLoggable(Level.FINE)) log.fine("Don't know how to activate the callback drivers, they are created for each client and session separately");
    }
 
    public final void deactivateCbDrivers(boolean force) {
-      if (log.TRACE) log.trace(ME, "Don't know how to deactivate the callback drivers, they are created for each client and session separately");
+      if (log.isLoggable(Level.FINE)) log.fine("Don't know how to deactivate the callback drivers, they are created for each client and session separately");
    }
 
    public void shutdownCbDrivers(boolean force) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Don't know how to shutdown the callback drivers, they are created for each client and session separately");
+      if (log.isLoggable(Level.FINE)) log.fine("Don't know how to shutdown the callback drivers, they are created for each client and session separately");
    }
 }

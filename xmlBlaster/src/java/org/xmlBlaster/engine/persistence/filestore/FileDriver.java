@@ -7,7 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.filestore;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
@@ -57,7 +58,7 @@ public class FileDriver implements I_PersistenceDriver
 {
    private static final String ME = "FileDriver";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(FileDriver.class.getName());
    private String path = null;
    private final String XMLKEY_TOKEN = "-XmlKey.xml";
    private final String XMLQOS_TOKEN = "-XmlQos.xml";
@@ -83,8 +84,8 @@ public class FileDriver implements I_PersistenceDriver
     */
    public final void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("persistence");
-      if (log.CALL) log.call(ME, "Entering init()");
+
+      if (log.isLoggable(Level.FINER)) log.finer("Entering init()");
       
       String defaultPath = (String)System.getProperty("user.home") + (String)System.getProperty("file.separator") + "tmp";
       path = glob.getProperty().get("Persistence.Path", defaultPath);
@@ -93,15 +94,15 @@ public class FileDriver implements I_PersistenceDriver
       }
       File pp = new File(path);
       if (!pp.exists()) {
-         log.info(ME, "Creating new directory " + path + " for persitence of messages");
+         log.info("Creating new directory " + path + " for persitence of messages");
          pp.mkdirs();
       }
       if (!pp.isDirectory()) {
-         log.error(ME, path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
+         log.severe(path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
          throw new XmlBlasterException(ME, path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
       if (!pp.canWrite()) {
-         log.error(ME, "Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
+         log.severe("Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
          throw new XmlBlasterException(ME, "Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
    }
@@ -112,7 +113,7 @@ public class FileDriver implements I_PersistenceDriver
     * <p />
     */
    public final void shutdown() throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Not neccessary!");
+      if (log.isLoggable(Level.FINE)) log.fine("Not neccessary!");
    }
 
 
@@ -140,7 +141,7 @@ public class FileDriver implements I_PersistenceDriver
          throw new XmlBlasterException(e);
       }
 
-      if (log.TRACE) log.trace(ME, "Successfully stored " + oid);
+      if (log.isLoggable(Level.FINE)) log.fine("Successfully stored " + oid);
    }
 
 
@@ -164,7 +165,7 @@ public class FileDriver implements I_PersistenceDriver
          throw new XmlBlasterException(e);
       }
 
-      if (log.TRACE) log.trace(ME, "Successfully updated store " + messageWrapper.getKeyOid());
+      if (log.isLoggable(Level.FINE)) log.fine("Successfully updated store " + messageWrapper.getKeyOid());
    }
 
 
@@ -187,8 +188,8 @@ public class FileDriver implements I_PersistenceDriver
 
          msgUnit = new MsgUnit(glob, xmlKey_literal, content, xmlQos_literal);
 
-         if (log.TRACE) log.trace(ME, "Successfully fetched message " + oid);
-         if (log.DUMP) log.dump(ME, "Successfully fetched message\n" + msgUnit.toXml());
+         if (log.isLoggable(Level.FINE)) log.fine("Successfully fetched message " + oid);
+         if (log.isLoggable(Level.FINEST)) log.finest("Successfully fetched message\n" + msgUnit.toXml());
       } catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }
@@ -215,7 +216,7 @@ public class FileDriver implements I_PersistenceDriver
           // and load the messages in a vector ...
           oidContainer.addElement(oid);
        }
-       log.info(ME, "Successfully got " + oidContainer.size() + " stored message-oids from " + path);
+       log.info("Successfully got " + oidContainer.size() + " stored message-oids from " + path);
 
        return oidContainer.elements();
     }

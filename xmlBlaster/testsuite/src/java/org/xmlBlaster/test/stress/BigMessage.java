@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -41,7 +42,7 @@ public class BigMessage extends TestCase implements I_Callback
 {
    private static String ME = "BigMessage";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(BigMessage.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -65,7 +66,7 @@ public class BigMessage extends TestCase implements I_Callback
    public BigMessage(String testName) {
       super(testName);
       this.glob = Global.instance();
-      this.log = glob.getLog(null);
+
       this.name = testName; // name to login to xmlBlaster
    }
 
@@ -84,20 +85,20 @@ public class BigMessage extends TestCase implements I_Callback
       if (this.startEmbedded) {
          glob.init(Util.getOtherServerPorts(serverPort));
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-         log.info(ME, "XmlBlaster is ready for testing a big message");
+         log.info("XmlBlaster is ready for testing a big message");
       }
       else
-         log.warn(ME, "You need to start an external xmlBlaster server for this test or use option -startEmbedded true");
+         log.warning("You need to start an external xmlBlaster server for this test or use option -startEmbedded true");
 
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
    }
 
@@ -108,12 +109,12 @@ public class BigMessage extends TestCase implements I_Callback
     */
    protected void tearDown() {
       try {
-         log.info(ME, "Erasing message " + oid + " ...");
+         log.info("Erasing message " + oid + " ...");
          EraseReturnQos[] arr = con.erase("<key oid='" + oid + "'/>", "<qos/>");
-         log.info(ME, "Erasing of message " + oid + " done.");
+         log.info("Erasing of message " + oid + " done.");
          assertEquals("Wrong number of message erased", 1, arr.length);
          assertTrue(assertInUpdate, assertInUpdate == null);
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
+      } catch(XmlBlasterException e) { log.severe("XmlBlasterException: " + e.getMessage()); }
 
       con.disconnect(null);
       con=null;
@@ -131,7 +132,7 @@ public class BigMessage extends TestCase implements I_Callback
     * We use the tinySQL dBase BigMessage driver for testing.
     */
    public void testBigMessage() {
-      log.info(ME, "######## Start testBigMessage()");
+      log.info("######## Start testBigMessage()");
       StopWatch stopWatch = null;
 
       stopWatch = new StopWatch();
@@ -139,7 +140,7 @@ public class BigMessage extends TestCase implements I_Callback
       for (int i=0; i<content.length; i++) {
          content[i] = (byte)(i % 255);
       }
-      log.info(ME, "Allocated message content with size=" + content.length/1000000 + " MB");
+      log.info("Allocated message content with size=" + content.length/1000000 + " MB");
       try {
          PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
          MsgUnit msgUnit = new MsgUnit("<key oid='" + oid + "'/>", content, "<qos/>");
@@ -153,9 +154,9 @@ public class BigMessage extends TestCase implements I_Callback
          if (elapsed > 0L)
             avg = ((long)(contentSize)) / elapsed; // byte/milli == kbyte/sec
 
-         log.info(ME, "Success: Publishing of " + oid + " with size=" + contentSize/1000000 + " MB done, avg=" + avg + " KB/sec " + stopWatch.nice());
+         log.info("Success: Publishing of " + oid + " with size=" + contentSize/1000000 + " MB done, avg=" + avg + " KB/sec " + stopWatch.nice());
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
          fail("Can't publish huge message: " + e.getMessage()); 
       }
 
@@ -163,9 +164,9 @@ public class BigMessage extends TestCase implements I_Callback
 
       try {
          SubscribeReturnQos subscriptionId = con.subscribe("<key oid='" + oid + "'/>", "<qos/>");
-         log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
+         log.info("Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
 
@@ -175,7 +176,7 @@ public class BigMessage extends TestCase implements I_Callback
 
       // Allow the update to return to xmlBlaster ...
       try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}
-      log.info(ME, "######## End testBigMessage()");
+      log.info("######## End testBigMessage()");
    }
 
    /**
@@ -185,10 +186,10 @@ public class BigMessage extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message state=" + updateQos.getState());
+      log.info("Receiving update of a message state=" + updateQos.getState());
 
       if (updateQos.isErased()) {
-         log.info(ME, "Ignore erase event");
+         log.info("Ignore erase event");
          return ""; // We ignore the erase event on tearDown
       }
 
@@ -198,10 +199,10 @@ public class BigMessage extends TestCase implements I_Callback
             avg = ((long)(contentSize)) / elapsed; // byte/milli == kbyte/sec
 
 
-      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + 
+      log.info("Receiving update of message oid=" + updateKey.getOid() + 
                    " size=" + content.length + " ...");
 
-      log.info(ME, "Success: Publish+Update of " + oid + " with size=" + contentSize/1000000 + " MB done, roundtrip avg=" +
+      log.info("Success: Publish+Update of " + oid + " with size=" + contentSize/1000000 + " MB done, roundtrip avg=" +
                avg + " KB/sec " + stopWatchRoundTrip.nice());
 
       assertInUpdate = "Wrong sender, expected:" + name + " but was:" + updateQos.getSender().getLoginName();
@@ -236,7 +237,7 @@ public class BigMessage extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.info(ME, "Timeout of " + timeout + " occurred");
+            log.info("Timeout of " + timeout + " occurred");
             fail("Timeout of " + timeout + " occurred");
          }
       }

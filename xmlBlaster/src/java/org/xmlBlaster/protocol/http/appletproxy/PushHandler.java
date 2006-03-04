@@ -6,7 +6,8 @@ Comment:   Handling callback over http
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http.appletproxy;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -47,7 +48,7 @@ public class PushHandler implements I_Callback, I_Timeout
 {
    private String ME  = "PushHandler";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PushHandler.class.getName());
 
    /**
     * Ping the applet every 10 seconds. 
@@ -81,8 +82,8 @@ public class PushHandler implements I_Callback, I_Timeout
    public PushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId,
                           String loginName, I_XmlBlasterAccess xmlBlasterAccess, Timeout timeout)
                                throws ServletException, IOException {
-      // this.log = org.xmlBlaster.util.Global.instance().getLog("http");
-      this.log = org.xmlBlaster.util.Global.instance().getLog("servlet");
+
+
       this.res = res;
       this.sessionId = sessionId;
       this.xmlBlasterAccess = xmlBlasterAccess;
@@ -109,24 +110,24 @@ public class PushHandler implements I_Callback, I_Timeout
     * @see org.xmlBlaster.util.I_Timeout
     */
    public void timeout(Object userData) {
-      if (log.CALL) log.call(ME, "Pinging applet ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Pinging applet ...");
       this.pingCounter++;
       try {
          if (this.missingPongs > 2) {
             // Allow three pongs delay over slow connections
-            log.warn(ME, "Applet seems to have disappeared, no response for my ping=" + pingCounter +
+            log.warning("Applet seems to have disappeared, no response for my ping=" + pingCounter +
                          ", missing " + this.missingPongs + " responses. Closing connection.");
             cleanup();
          }
          else {
             String text = "refresh-" + pingCounter;
-            if (log.TRACE) log.trace(ME,"Sending ping '" + text + "'  to applet, missingPongs=" + this.missingPongs + " ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Sending ping '" + text + "'  to applet, missingPongs=" + this.missingPongs + " ...");
             ping(text);
             this.missingPongs++;
          }
       } catch(Exception e) {
          //error handling: applet closed connection.
-         log.warn(ME,"We tried to ping=" + pingCounter + " an applet who is not interested. Close PushHandler.");
+         log.warning("We tried to ping=" + pingCounter + " an applet who is not interested. Close PushHandler.");
          cleanup();
       }
 
@@ -137,13 +138,13 @@ public class PushHandler implements I_Callback, I_Timeout
    }
 
    public void startPing() throws XmlBlasterException {
-      log.trace(ME,"startPing ...");
+      log.fine("startPing ...");
       setPingInterval(this.pingInterval);
       ping("refresh");
    }
 
    public void stopPing() throws XmlBlasterException {
-      log.trace(ME,"stopPing ...");
+      log.fine("stopPing ...");
       setPingInterval(0L);
    }
 
@@ -190,11 +191,11 @@ public class PushHandler implements I_Callback, I_Timeout
          this.closed = true;
          stopPing();
          if (this.outMulti != null) this.outMulti.close();
-         log.info(ME, "Closed push connection to applet");
+         log.info("Closed push connection to applet");
       }
       catch(Exception e) {
          e.printStackTrace();
-         log.error(ME,"Error occurred while de-initializing the push handler :"+e.toString());
+         log.severe("Error occurred while de-initializing the push handler :"+e.toString());
       }
    }
 
@@ -212,17 +213,17 @@ public class PushHandler implements I_Callback, I_Timeout
     * Shutdown applet connection and xmlBlaster connection. 
     */
    public void cleanup() {
-      if (log.CALL) log.call(ME, "Entering cleanup() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering cleanup() ...");
       
       if (this.xmlBlasterAccess != null) {
          try {
             this.xmlBlasterAccess.disconnect(null);
-            log.info(ME, "XmlBlaster connection removed");
+            log.info("XmlBlaster connection removed");
             this.xmlBlasterAccess = null;
          }
          catch (Exception e) {
             e.printStackTrace();
-            log.error(ME, "Can't destroy http connection: " + e.toString());
+            log.severe("Can't destroy http connection: " + e.toString());
          }
       }
 
@@ -233,7 +234,7 @@ public class PushHandler implements I_Callback, I_Timeout
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, "Can't destroy http connection: " + e.toString());
+         log.severe("Can't destroy http connection: " + e.toString());
       }
    }
 
@@ -242,16 +243,16 @@ public class PushHandler implements I_Callback, I_Timeout
     * @param chunk The raw data, we encode it with base64, the applet must know how to handle it.
     */
    private void pushToApplet(byte[] chunk) throws IOException {
-      if (log.TRACE) log.trace(ME, "Pushing multipart for applet, size=" + chunk.length);
-      if (log.TRACE) log.trace(ME, "Pushing multipart for applet, content='" + new String(chunk) + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Pushing multipart for applet, size=" + chunk.length);
+      if (log.isLoggable(Level.FINE)) log.fine("Pushing multipart for applet, content='" + new String(chunk) + "'");
       
       byte[] base64 = Base64.encodeBase64(chunk, isChunked);
-      if (log.TRACE) log.trace(ME, "Pushing multipart for applet, content (encoded)='" + new String(base64) + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Pushing multipart for applet, content (encoded)='" + new String(base64) + "'");
       synchronized(outMulti) {
          outMulti.println(new String(base64));
          outMulti.println("--End");
          outMulti.flush();
-         log.trace(ME,"Pushed data successfully as multipart to applet.");
+         log.fine("Pushed data successfully as multipart to applet.");
       }
    }
 
@@ -268,7 +269,7 @@ public class PushHandler implements I_Callback, I_Timeout
     */
    public String update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       try {
-         if (log.TRACE) log.trace(ME,"update '" + updateKey.getOid() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("update '" + updateKey.getOid() + "'");
 
          if(callbackInterceptor != null) {
             callbackInterceptor.update(sessionId, updateKey, content, updateQos);
@@ -289,11 +290,11 @@ public class PushHandler implements I_Callback, I_Timeout
          out.writeObject(new String(Base64.encodeBase64(content, isChunked)));
 
          pushToApplet(dump.toByteArray());
-         if (log.TRACE) log.trace(ME, "Sent update message '" + updateKey.getOid() + "' content='" + new String(content) + "' to applet");
+         if (log.isLoggable(Level.FINE)) log.fine("Sent update message '" + updateKey.getOid() + "' content='" + new String(content) + "' to applet");
       }
       catch(Exception e) {
          e.printStackTrace();
-         log.error(ME,e.toString());
+         log.severe(e.toString());
       }
       return "<qos/>"; // TODO: Async wait on return value from browser/applet
    }
@@ -314,7 +315,7 @@ public class PushHandler implements I_Callback, I_Timeout
          out.writeObject("<qos id='"+state+"'/>");
 
          pushToApplet(dump.toByteArray());
-         if (log.TRACE) log.trace(ME, "Sent ping '" + state + "' to applet");
+         if (log.isLoggable(Level.FINE)) log.fine("Sent ping '" + state + "' to applet");
       }
       catch (IOException e) {
          throw XmlBlasterException.convert(glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "ping(" + state + ") failed", e);

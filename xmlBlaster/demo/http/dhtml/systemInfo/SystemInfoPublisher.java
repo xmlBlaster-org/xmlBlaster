@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -33,7 +34,7 @@ public class SystemInfoPublisher
 {
    private static final String ME = "SystemInfoPublisher";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(SystemInfoPublisher.class.getName());
    private I_XmlBlasterAccess con;
    private Random random = new Random();
 
@@ -44,11 +45,11 @@ public class SystemInfoPublisher
     */
    public SystemInfoPublisher(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("client");
+
       /*
       String osName = System.getProperty("os.name");     // "Linux" "Windows NT" ...
       if (!osName.startsWith("Linux")) {
-         log.error(ME, "This system load publisher runs only on Linux, sorry about that\n" +
+         log.severe("This system load publisher runs only on Linux, sorry about that\n" +
                    "Note that you can use own Perl or C++ or Java publishers to do this task");
          System.exit(1);
       }
@@ -70,7 +71,7 @@ public class SystemInfoPublisher
             publish("meminfo", mem);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, e.getMessage());
+            log.severe(e.getMessage());
          }
       }
 
@@ -84,7 +85,7 @@ public class SystemInfoPublisher
     */
    private int getCpuload() throws XmlBlasterException {
       // String text = FileUtil.readAsciiFile("/proc/cpuinfo");
-      // log.info(ME, "cpuinfo=\n" + text);
+      // log.info("cpuinfo=\n" + text);
       return random.nextInt(100); // hack!
    }
 
@@ -95,7 +96,7 @@ public class SystemInfoPublisher
     */
    private int getMeminfo() throws XmlBlasterException {
       // String text = FileUtil.readAsciiFile("/proc/meminfo");
-      // log.info(ME, "meminfo=\n" + text);
+      // log.info("meminfo=\n" + text);
       int val = random.nextInt(100); // hack!
       if (val < 11) val = 11;
       if (val > 96) val = 96;
@@ -111,7 +112,7 @@ public class SystemInfoPublisher
          con.connect(null, null); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -145,10 +146,10 @@ public class SystemInfoPublisher
       try {
          con.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
       }
 
-      log.info(ME, "Published message " + oid + " with value " + content);
+      log.info("Published message " + oid + " with value " + content);
    }
 
    /**

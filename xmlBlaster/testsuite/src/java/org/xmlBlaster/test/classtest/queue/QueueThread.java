@@ -4,7 +4,8 @@ package org.xmlBlaster.test.classtest.queue;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.sql.SQLException;
 import org.xmlBlaster.util.def.PriorityEnum;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ class QueueThread extends Thread {
 
    private I_Queue queue = null;
    private int  sweeps = 5;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(QueueThread.class.getName());
    private String name = null;
    private int sizeOfMsg = 0;
    private Global glob = null;
@@ -24,11 +25,11 @@ class QueueThread extends Thread {
    public static int counter = 0;
    private ArrayList entryList;
 
-   public QueueThread(Global glob, String name, I_Queue queue, LogChannel log, int sweeps, int sizeOfMsg)
+   public QueueThread(Global glob, String name, I_Queue queue, Logger log, int sweeps, int sizeOfMsg)
    throws XmlBlasterException, SQLException {
       super();
       this.glob = glob;
-      this.log = this.glob.getLog("queuethread");
+
       this.name = name;
       this.queue = queue;
       this.sweeps = sweeps;
@@ -40,16 +41,16 @@ class QueueThread extends Thread {
    protected void runPut() {
       this.entryList = new ArrayList(this.sweeps);
       for (int i=0; i < this.sweeps; i++) {
-         log.trace(this.name, "runPut sweep " + i + " entered");
+         log.fine("runPut sweep " + i + " entered");
          try {
-            this.log.trace(this.name, "runPut sweep: " + i + " still running: " + this.counter);
+            log.fine("runPut sweep: " + i + " still running: " + this.counter);
             DummyEntry entry = new DummyEntry(this.glob, PriorityEnum.NORM_PRIORITY, this.queue.getStorageId(), this.sizeOfMsg, true);
             this.entryList.add(entry);
             this.queue.put(entry, false);
-            this.log.trace(this.name, "after invocation");
+            log.fine("after invocation");
          }
          catch (Exception ex) {
-            log.error(this.name, "exception in thread " + ex.getMessage());
+            log.severe("exception in thread " + ex.getMessage());
             ex.printStackTrace();
          }
       }
@@ -67,7 +68,7 @@ class QueueThread extends Thread {
          }
       }
       catch (Exception ex) {
-         log.error(this.name, "exception in thread " + ex.getMessage());
+         log.severe("exception in thread " + ex.getMessage());
          ex.printStackTrace();
       }
 
@@ -76,7 +77,7 @@ class QueueThread extends Thread {
 
 
    public void run() {
-      log.call(ME, "run method entered");
+      log.finer("run method entered");
       runPut();
       this.counter--;
    }

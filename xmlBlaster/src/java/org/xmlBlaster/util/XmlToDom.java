@@ -8,7 +8,8 @@ Version:   $Id$
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.def.ErrorCode;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -26,7 +27,7 @@ public class XmlToDom
 {
    private String ME = "XmlToDom";
    protected Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlToDom.class.getName());
 
    protected String xmlKey_literal;
    protected org.w3c.dom.Node rootNode;    // this is always the <key ...>
@@ -40,7 +41,7 @@ public class XmlToDom
    public XmlToDom(Global glob, String xmlKey_literal) throws XmlBlasterException
    {
       this.glob = glob;
-      this.log = this.glob.getLog("core");
+
       create(xmlKey_literal);
    }
 
@@ -52,7 +53,7 @@ public class XmlToDom
     */
    public final void create(String xmlKey_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.trace(ME, "Creating DOM tree");
+      if (log.isLoggable(Level.FINER)) log.fine("Creating DOM tree");
 
       if (this.xmlKey_literal != null) {
          this.rootNode = null;
@@ -61,7 +62,7 @@ public class XmlToDom
       this.xmlKey_literal = xmlKey_literal.trim();
 
       if (!this.xmlKey_literal.startsWith("<")) {
-         log.error(ME+".XML", "Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
+         log.severe("Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Invalid XML syntax, only XML syntax beginning with \"<\" is supported");
 
       }
@@ -134,13 +135,13 @@ public class XmlToDom
          DocumentBuilder db = dbf.newDocumentBuilder();
          return db.parse(input);
       } catch (javax.xml.parsers.ParserConfigurationException e) {
-         glob.getLog("core").error(ME+".IO", "Problems when building DOM parser: " + e.toString() + "\n" + xmlKey_literal);
+         log.severe("Problems when building DOM parser: " + e.toString() + "\n" + xmlKey_literal);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string\n" + xmlKey_literal, e);
       } catch (java.io.IOException e) {
-         glob.getLog("core").error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         log.severe("Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string:\n" + xmlKey_literal, e);
       } catch (org.xml.sax.SAXException e) {
-         glob.getLog("core").warn(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         log.warning("Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string:\n" + xmlKey_literal, e);
       }
    }
@@ -151,7 +152,7 @@ public class XmlToDom
     */
    public final void mergeRootNode(I_MergeDomNode merger) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "Entering mergeRootNode() ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering mergeRootNode() ...");
       this.rootNode = merger.mergeNode(this.rootNode);
    }
 
@@ -172,7 +173,7 @@ public class XmlToDom
          while (st.hasMoreTokens()) {
             sb.append(offset).append("   ").append(st.nextToken());
          }
-      } catch (Exception e) { log.error(ME, "Problems in writing DOM"); return ""; }
+      } catch (Exception e) { log.severe("Problems in writing DOM"); return ""; }
       String nice = sb.toString();
       int index = nice.indexOf("?>");   // Remove header line "<?xml version="1.0" encoding="UTF-8"?>"
       if (index > 0)

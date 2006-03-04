@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
@@ -36,7 +37,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
 {
    private String ME = "PluginHolderSaxFactory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginHolderSaxFactory.class.getName());
 
    private PluginHolder pluginHolder;
    private XmlBlasterException ex;
@@ -53,7 +54,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
       super(glob);
       setUseLexicalHandler(true); // to allow CDATA wrapped attributes 
       this.glob = glob;
-      this.log = glob.getLog("runlevel");
+
       this.pluginFactory = new PluginConfigSaxFactory(this.glob);
    }
 
@@ -88,7 +89,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
          this.init(xmlTxt);      // use SAX parser to parse it (is slow)
       }
       catch (Throwable thr) {
-         if (this.log.TRACE) {
+         if (log.isLoggable(Level.FINE)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readObject", "exception occured when parsing the <xmlBlaster> tag. In fact it was '" + xmlTxt + "'", thr);
          }
          else {
@@ -136,7 +137,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
          return;
       }
 
-      this.log.warn(ME, "startElement: unknown tag '" + name + "'");
+      log.warning("startElement: unknown tag '" + name + "'");
    }
 
    /**
@@ -201,7 +202,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
     */
    public PluginHolder readConfigFile() throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "readConfigFile");
+      if (log.isLoggable(Level.FINER)) this.log.finer("readConfigFile");
       FileLocator fileLocator = new FileLocator(this.glob);
       URL url = fileLocator.findFileInXmlBlasterSearchPath("pluginsFile", "xmlBlasterPlugins.xml");
 
@@ -211,14 +212,14 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
          "the file 'xmlBlasterPlugins.xml' has not been found in the search path nor in the property 'pluginsFile'");
       }
 
-      if (this.log.TRACE) this.log.trace(ME, "readConfigFile: the file is '" + url.getFile() + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("readConfigFile: the file is '" + url.getFile() + "'");
       try {
          InputStream fis = url.openStream();
          InputSource inSource = new InputSource(fis);
          reset();
          init(url.toString(), inSource);
          PluginHolder ret = getObject();
-         if (this.log.DUMP) this.log.dump(ME, ".readConfigFile. The content: \n" + ret.toXml());
+         if (log.isLoggable(Level.FINEST)) this.log.finest(".readConfigFile. The content: \n" + ret.toXml());
          return ret;
       }
       catch(java.io.IOException ex) {
@@ -229,14 +230,14 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
    public static void main(String[] args) {
       Global glob = Global.instance();
       glob.init(args);
-      LogChannel log = glob.getLog("main");
+
       try {
          PluginHolderSaxFactory factory = new PluginHolderSaxFactory(glob);
          PluginHolder holder = factory.readConfigFile();
-         log.info("main", holder.toXml());
+         log.info(holder.toXml());
       }
       catch (XmlBlasterException ex) {
-         log.error("main", ex.getMessage());
+         log.severe(ex.getMessage());
       }
    }
 

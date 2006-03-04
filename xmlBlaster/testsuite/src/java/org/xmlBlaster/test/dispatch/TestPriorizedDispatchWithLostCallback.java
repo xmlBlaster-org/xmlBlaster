@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.dispatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -67,7 +68,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
 {
    private static String ME = "TestPriorizedDispatchWithLostCallback";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestPriorizedDispatchWithLostCallback.class.getName());
 
    private ConnectQos connectQos;
    private ConnectReturnQos connectReturnQos;
@@ -99,7 +100,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
    public TestPriorizedDispatchWithLostCallback(Global glob, String testName, String name) {
       super(testName);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
       this.name = name;
    }
 
@@ -131,14 +132,14 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
       glob.init(args);
 
       this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing the priority dispatch plugin");
+      log.info("XmlBlaster is ready for testing the priority dispatch plugin");
 
       try {
          // A testsuite helper to collect update messages
          this.updateInterceptor = new MsgInterceptor(glob, log, null);
 
          // Connecting to server
-         log.info(ME, "Connecting with XmlRpc ...");
+         log.info("Connecting with XmlRpc ...");
          this.con = glob.getXmlBlasterAccess();
          this.connectQos = new ConnectQos(glob, name, passwd);
 
@@ -153,7 +154,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.getMessage());
+         log.severe("Can't connect to xmlBlaster: " + e.getMessage());
       }
 
       this.updateInterceptor.clear();
@@ -164,14 +165,14 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
     * @param state Choose one of "2M" or "64k"
     */
    private void changeStatus(String oid, String state) {
-      log.info(ME, "Changing band width state to '" + state + "'");
+      log.info("Changing band width state to '" + state + "'");
       try {
          PublishReturnQos rq = con.publish(new MsgUnit(glob, "<key oid='" + oid + "'/>", state, null));
-         log.info(ME, "SUCCESS for state change to '" + state + "', " + rq.getState());
+         log.info("SUCCESS for state change to '" + state + "', " + rq.getState());
          // Sleep to be shure the plugin has got and processed the message
          try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish bandwidth state - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -184,11 +185,11 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          PublishQos pq = new PublishQos(glob);
          pq.setPriority(prio);
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", content.getBytes(), pq.toXml()));
-         log.info(ME, "SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " returned state=" + rq.getState());
+         log.info("SUCCESS publish '" + oid + "' with prio=" + prio.toString() + " returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish prio=" + prio.toString() + " - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -203,11 +204,11 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          String contentStr = config;
          PublishQos pq = new PublishQos(glob);
          PublishReturnQos rq = con.publish(new MsgUnit("<key oid='"+oid+"'/>", contentStr.getBytes(), pq.toXml()));
-         log.info(ME, "SUCCESS publish '" + oid + "' " + pq.toXml() + ", returned state=" + rq.getState());
+         log.info("SUCCESS publish '" + oid + "' " + pq.toXml() + ", returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          e.printStackTrace();
          fail("publish of configuration data - XmlBlasterException: " + e.getMessage());
       }
@@ -227,9 +228,9 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          SubscribeKey sk = new SubscribeKey(glob, oid);
          SubscribeQos sq = new SubscribeQos(glob);
          SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.toXml());
-         log.info(ME, "SUCCESS subscribe to '" + oid + "' returned state=" + srq.getState());
+         log.info("SUCCESS subscribe to '" + oid + "' returned state=" + srq.getState());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -239,7 +240,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
     * and starts polling
     */
    public void testPriorizedDispatchPluginConnectionState() {
-      log.info(ME, "testPriorizedDispatchPluginConnectionState() ...");
+      log.info("testPriorizedDispatchPluginConnectionState() ...");
       String config = 
             "<msgDispatch defaultStatus='" + NORMAL_LINE + "' defaultAction='send'>\n"+
             "  <onStatus oid='" + statusOid + "' content='" + NORMAL_LINE + "' defaultAction='send'>\n" +
@@ -269,7 +270,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
       this.updateInterceptor.clear();
 
       // Now kill our callback server
-      log.info(ME, "Shutdown callback, expecting messages to be queued or destroyed depending on the priority");
+      log.info("Shutdown callback, expecting messages to be queued or destroyed depending on the priority");
       try {
          con.getCbServer().shutdown();
       }
@@ -300,7 +301,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
                   try {
                      String contentStr = new String(content);
                      String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
-                     this.log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+                     log.info("Receiving update of a message oid=" + updateKey.getOid() +
                          " priority=" + updateQos.getPriority() +
                          " state=" + updateQos.getState() +
                          " content=" + cont);
@@ -309,7 +310,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
                      }
                   }
                   catch (Throwable e) {
-                     this.log.error(ME, "Error in update method: " + e.toString());
+                     log.severe("Error in update method: " + e.toString());
                      e.printStackTrace();
                   }
                   return "";
@@ -318,11 +319,11 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
             }); // Establish new callback server
          }
          catch (Throwable e) {
-            log.error(ME, "Can't restart callback server: " + e.toString());
+            log.severe("Can't restart callback server: " + e.toString());
             fail("Can't restart callback server: " + e.toString());
          }
 
-         log.info(ME, "Waiting long enough that xmlBlaster reconnected to us and expecting the 6 queued messages ...");
+         log.info("Waiting long enough that xmlBlaster reconnected to us and expecting the 6 queued messages ...");
          try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}
          assertEquals(text, 0, this.updateInterceptor.getMsgs().length);
          assertEquals(text, 6, updateMsgs.getMsgs(msgOid, Constants.STATE_OK).length);
@@ -345,11 +346,11 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
       }
       finally {
          if (cbServer != null) {
-            try { cbServer.shutdown(); } catch (Exception e) { log.error(ME, e.toString()); };
+            try { cbServer.shutdown(); } catch (Exception e) { log.severe(e.toString()); };
          }
       }
 
-      log.info(ME, "Success in testPriorizedDispatchPluginConnectionState()");
+      log.info("Success in testPriorizedDispatchPluginConnectionState()");
    }
 
    /**

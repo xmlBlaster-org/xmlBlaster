@@ -1,7 +1,8 @@
 // xmlBlaster/demo/javaclients/AllProtocols.java
 package javaclients;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -41,7 +42,7 @@ public class AllProtocols implements I_Callback
 {
    private String ME = "";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(AllProtocols.class.getName());
    private final String[] argsIOR = {
       "-protocol",
       "IOR",
@@ -67,7 +68,7 @@ public class AllProtocols implements I_Callback
 
    public AllProtocols(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(null);
+
       for(int i=0; i<conList.length; i++) {
          ME = conList[i].helpText;
          conList[i].con = conList[i].glob.getXmlBlasterAccess();
@@ -95,7 +96,7 @@ public class AllProtocols implements I_Callback
             MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
             GetReturnQos grq = new GetReturnQos(con.getGlobal(), msgs[0].getQos());
 
-            log.info(ME, "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
+            log.info("Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                          "' and status=" + grq.getState());
 
 
@@ -107,7 +108,7 @@ public class AllProtocols implements I_Callback
             msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
             PublishReturnQos prq = con.publish(msgUnit);
 
-            log.info(ME, "Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
+            log.info("Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
 
             try { Thread.sleep(1000); } 
             catch( InterruptedException ie) {} // wait a second to receive update()
@@ -125,11 +126,11 @@ public class AllProtocols implements I_Callback
             con.disconnect(dq);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, e.getMessage());
+            log.severe(e.getMessage());
          }
          catch (Throwable e) {
             e.printStackTrace();
-            log.error(ME, e.toString());
+            log.severe(e.toString());
          }
       }
    }
@@ -138,12 +139,12 @@ public class AllProtocols implements I_Callback
                         UpdateQos updateQos)
    {
       if (updateKey.isInternal()) {
-         log.info("", "Received unexpected internal message '" +
+         log.info("Received unexpected internal message '" +
               updateKey.getOid() + " from xmlBlaster");
          return "";
       }
 
-      log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
+      log.info("Received asynchronous message '" + updateKey.getOid() +
                    "' state=" + updateQos.getState() +
                    " content=" + new String(content) + " from xmlBlaster");
 

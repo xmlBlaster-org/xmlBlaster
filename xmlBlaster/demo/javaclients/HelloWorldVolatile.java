@@ -1,7 +1,8 @@
 // xmlBlaster/demo/javaclients/HelloWorldVolatile.java
 package javaclients;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
@@ -52,11 +53,11 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 public class HelloWorldVolatile implements I_Callback
 {
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorldVolatile.class.getName());
 
    public HelloWorldVolatile(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(null);
+
       try {
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
@@ -82,30 +83,30 @@ public class HelloWorldVolatile implements I_Callback
             MsgUnit[] msgs = con.get(gk, gq);
             if (msgs.length > 0) {
                GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
-               log.error("", "Did not expect any message as it was volatile");
+               log.severe("Did not expect any message as it was volatile");
             }
          }
          catch (XmlBlasterException e) {
-            log.error("", "Didn't expect an exception in get(): " + e.getMessage());
+            log.severe("Didn't expect an exception in get(): " + e.getMessage());
          }
 
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
       }
       catch (XmlBlasterException e) {
-         log.error("", e.getMessage());
+         log.severe(e.getMessage());
       }
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos) {
       if (updateKey.isInternal()) {
-         log.info("", "Received unexpected internal message '" +
+         log.info("Received unexpected internal message '" +
               updateKey.getOid() + " from xmlBlaster");
          return "";
       }
 
-      log.info("", "Received asynchronous message '" + updateKey.getOid() +
+      log.info("Received asynchronous message '" + updateKey.getOid() +
                    "' state=" + updateQos.getState() +
                    " content=" + new String(content) + " from xmlBlaster");
 

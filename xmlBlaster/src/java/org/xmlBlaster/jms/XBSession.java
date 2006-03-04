@@ -29,7 +29,8 @@ import javax.jms.Topic;
 import javax.jms.Session;
 import javax.jms.TopicSubscriber;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -59,7 +60,7 @@ public class XBSession extends Thread implements Session, I_Callback {
    
    private final static String ME = "XBSession";
    protected Global global;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(XBSession.class.getName());
    protected XBConnection connection;
    protected int ackMode;
    protected final boolean noLocalDefault = false; // is this conform to jms ?
@@ -96,8 +97,8 @@ public class XBSession extends Thread implements Session, I_Callback {
    XBSession(ConnectQos connectQos, int ackMode, boolean transacted) {
       this.connectQos = connectQos;
       this.global = connectQos.getData().getGlobal();
-      this.log = this.global.getLog("jms");
-      if (this.log.CALL) this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
       this.ackMode = ackMode;
       this.durableSubscriptionMap = new HashMap();
       this.open = true;
@@ -118,9 +119,9 @@ public class XBSession extends Thread implements Session, I_Callback {
     */
    public XBSession(Global global, int ackMode, boolean transacted) {
       this.global = global;
-      this.log = this.global.getLog("jms");
-      if (this.log.CALL) 
-         this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("constructor");
       this.ackMode = ackMode;
       this.durableSubscriptionMap = new HashMap();
       this.open = true;
@@ -138,7 +139,7 @@ public class XBSession extends Thread implements Session, I_Callback {
     * @param statusChangeListener
     */
    void setStatusChangeListener(I_StatusChangeListener statusChangeListener) {
-      if (this.log.CALL) this.log.call(ME, "setStatusChangeListener");
+      if (log.isLoggable(Level.FINER)) this.log.finer("setStatusChangeListener");
       if (statusChangeListener == null) {
          this.statusChangeListener = null;
       }
@@ -156,7 +157,7 @@ public class XBSession extends Thread implements Session, I_Callback {
     * @param doActivate
     */
    final synchronized void activateDispatcher(boolean doActivate) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "activateDispatcher '" + doActivate + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("activateDispatcher '" + doActivate + "'");
       // only activate if already in asyc mode, i.e. if there is at least 
       // one msgListener associated to this session
       boolean realDoActivate = (doActivate && (this.syncMode == MODE_ASYNC));
@@ -173,7 +174,7 @@ public class XBSession extends Thread implements Session, I_Callback {
     * @throws JMSException
     */
    String connect() throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "connect");
+      if (log.isLoggable(Level.FINER)) this.log.finer("connect");
       try {
          // TODO add a flag to the connectQos to inhibit the dispatcher already when connecting
          this.sessionName = this.global.getXmlBlasterAccess().connect(this.connectQos, this).getSessionName().getRelativeName();
@@ -207,7 +208,7 @@ public class XBSession extends Thread implements Session, I_Callback {
 
    public TopicSubscriber createDurableSubscriber(Topic topic, String name, String msgSelector, boolean noLocal)
       throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "createDurableSubscriber '" + name + "' msgSelector=" + msgSelector + "' noLocal='" + noLocal + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("createDurableSubscriber '" + name + "' msgSelector=" + msgSelector + "' noLocal='" + noLocal + "'");
       checkIfOpen("createDurableSubscriber");
       checkControlThread();
       TopicSubscriber sub = new XBTopicSubscriber(this, topic, msgSelector, noLocal);
@@ -219,7 +220,7 @@ public class XBSession extends Thread implements Session, I_Callback {
     * It disconnects from xmlBlaster and deregisters from its XBConnection 
     */
    public void close() throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "close");
+      if (log.isLoggable(Level.FINER)) this.log.finer("close");
       if (this.statusChangeListener != null)
          this.statusChangeListener.statusPreChanged(this.sessionName, I_StatusChangeListener.RUNNING, I_StatusChangeListener.CLOSED);
       try {
@@ -227,7 +228,7 @@ public class XBSession extends Thread implements Session, I_Callback {
             try {
                this.open = false;
                Object[] keys = this.consumerMap.keySet().toArray();
-               if (this.log.TRACE) this.log.trace(ME, "close: going to close '" + keys.length + "' consumers too");
+               if (log.isLoggable(Level.FINE)) this.log.fine("close: going to close '" + keys.length + "' consumers too");
                for (int i=0; i < keys.length; i++) {
                   MessageConsumer consumer = (MessageConsumer)this.consumerMap.get(keys[i]);
                   if (consumer != null) consumer.close();
@@ -237,7 +238,7 @@ public class XBSession extends Thread implements Session, I_Callback {
             }
             finally { // to avoid thread leak 
                if (this.syncMode == MODE_ASYNC) {
-                  if (this.log.TRACE) this.log.trace(ME, "close: shutting down the running thread by sending a null message to its channel");
+                  if (log.isLoggable(Level.FINE)) this.log.fine("close: shutting down the running thread by sending a null message to its channel");
                   XBMsgEvent event = new XBMsgEvent(null, null);
                   try {
                      this.channel.put(event);
@@ -259,7 +260,7 @@ public class XBSession extends Thread implements Session, I_Callback {
       checkIfOpen("commit");
       checkIfTransacted("commit");      
       checkControlThread();
-      this.log.warn(ME, "transacted sessions not implemented");
+      log.warning("transacted sessions not implemented");
    }
 
    public BytesMessage createBytesMessage() throws JMSException {
@@ -338,7 +339,7 @@ public class XBSession extends Thread implements Session, I_Callback {
       checkIfOpen("recover");
       checkIfTransacted("recover");      
       checkControlThread();
-      this.log.warn(ME, "transacted sessions not implemented yet");
+      log.warning("transacted sessions not implemented yet");
    }
 
    /* (non-Javadoc)
@@ -348,37 +349,37 @@ public class XBSession extends Thread implements Session, I_Callback {
       checkIfOpen("rollback");
       checkIfTransacted("rollback");      
       checkControlThread();
-      this.log.warn(ME, "transacted sessions not implemented yet");
+      log.warning("transacted sessions not implemented yet");
    }
 
    public void run() {
       if (this.started) {
-         this.log.info(ME, "run: session was already started, not doing anything");
+         log.info("run: session was already started, not doing anything");
          return;
       }
       this.started = true;
-      this.log.info(ME, "run: session started");
+      log.info("run: session started");
       this.controlThread = Thread.currentThread();
       while (true) {
          try {
             XBMsgEvent msgEvent = (XBMsgEvent)this.channel.take();
             Message msg = msgEvent.getMessage();
             if (msg == null) {
-               this.log.info(ME, "Shutting down the running thread since close event received");
+               log.info("Shutting down the running thread since close event received");
                break;
             }
             msgEvent.getListener().onMessage(msg);
             // TODO notify the update thread waiting for ACK
-            if (this.log.TRACE) this.log.trace(ME, "run: msg='" + msg.getJMSMessageID() + "' ack='" + this.ackMode + "'");
+            if (log.isLoggable(Level.FINE)) this.log.fine("run: msg='" + msg.getJMSMessageID() + "' ack='" + this.ackMode + "'");
             if (this.ackMode == Session.DUPS_OK_ACKNOWLEDGE) 
                msg.acknowledge();
          }
          catch (InterruptedException ex) {
-            this.log.error(ME, "run InterruptedException occured " + ex.getMessage());
+            log.severe("run InterruptedException occured " + ex.getMessage());
             ex.printStackTrace();
          }
          catch (Throwable ex) {
-            this.log.error(ME, "run a Throwable occured " + ex.getMessage());
+            log.severe("run a Throwable occured " + ex.getMessage());
             ex.printStackTrace();
          }
       }
@@ -387,8 +388,8 @@ public class XBSession extends Thread implements Session, I_Callback {
    public void setMessageListener(MessageListener msgListener) throws JMSException {
       checkIfOpen("setMessageListener");
       checkControlThread();
-      this.log.warn(ME, "setMessageListener not implemented");
-      if (this.log.TRACE) Thread.dumpStack();
+      log.warning("setMessageListener not implemented");
+      if (log.isLoggable(Level.FINE)) Thread.dumpStack();
       this.msgListener = msgListener;
    }
 
@@ -462,7 +463,7 @@ public class XBSession extends Thread implements Session, I_Callback {
    }
 
    public void unsubscribe(String subName) throws JMSException {
-      if (this.log.CALL) this.log.call(ME, "unsubscribe '" + subName + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("unsubscribe '" + subName + "'");
       checkIfOpen("unsubscribe");
       checkControlThread();
       try {
@@ -483,7 +484,7 @@ public class XBSession extends Thread implements Session, I_Callback {
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      this.log.error(ME, "update: should never be invoked ...");      
+      log.severe("update: should never be invoked ...");      
       return "OK";
    }
 

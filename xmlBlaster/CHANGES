@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
 
+ o #14812 incompatible changes from jutils logging to java.util logging. 
+   see helper script xmlBlaster/bin/convertJutilsToJavaLogging.sh
+
  o #14781 telnet access refactored, some access method names are changed, e.g.
    - getCbQueueEntries() -> getCallbackQueueEntries(String query)
    - "get topic/..." now access all I_AdminTopic methods

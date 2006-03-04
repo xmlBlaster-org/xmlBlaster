@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -44,7 +45,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
 {
    private static String ME = "TestUpdateClientException";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestUpdateClientException.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -69,7 +70,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.name = name;
    }
 
@@ -100,17 +101,17 @@ public class TestUpdateClientException extends TestCase implements I_Callback
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
-      log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
+      log.info("XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
 
       // Subscribe to a message with a supplied filter
@@ -118,22 +119,22 @@ public class TestUpdateClientException extends TestCase implements I_Callback
          SubscribeQos qos = new SubscribeQos(glob);
 
          String subscriptionId = con.subscribe("<key oid='" + msgOidWantException + "'/>", qos.toXml()).getSubscriptionId();
-         log.info(ME, "Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantException + " done");
+         log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantException + " done");
 
          subscriptionId = con.subscribe("<key oid='" + msgOidWantIllegalException + "'/>", qos.toXml()).getSubscriptionId();
-         log.info(ME, "Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantIllegalException + " done");
+         log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantIllegalException + " done");
 
          subscriptionId = con.subscribe("<key oid='" + msgOidWantNPE + "'/>", qos.toXml()).getSubscriptionId();
-         log.info(ME, "Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantNPE + " done");
+         log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidWantNPE + " done");
 
          subscriptionId = con.subscribe("<key oid='" + msgOidNormal + "'/>", qos.toXml()).getSubscriptionId();
-         log.info(ME, "Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidNormal + " done");
+         log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + msgOidNormal + " done");
 
          subscriptionId = con.subscribe("<key oid='" + Constants.OID_DEAD_LETTER + "'/>", "<qos/>").getSubscriptionId();
-         log.info(ME, "Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + Constants.OID_DEAD_LETTER + " done");
+         log.info("Success: Subscribe subscription-id=" + subscriptionId + " on oid="  + Constants.OID_DEAD_LETTER + " done");
         
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -168,64 +169,64 @@ public class TestUpdateClientException extends TestCase implements I_Callback
     */
    public void testException()
    {
-      log.info(ME, "testException() with filterMessageContentBiggerAs=" + filterMessageContentBiggerAs + " ...");
+      log.info("testException() with filterMessageContentBiggerAs=" + filterMessageContentBiggerAs + " ...");
 
-      log.info(ME, "TEST 1: Send a message which triggers an exception in update");
+      log.info("TEST 1: Send a message which triggers an exception in update");
       try {
          con.publish(new MsgUnit("<key oid='" + msgOidWantException + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 2);
 
 
-      log.info(ME, "TEST 2: Send a normal message, check if everything still works");
+      log.info("TEST 2: Send a normal message, check if everything still works");
       try {
          con.publish(new MsgUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 1);
 
-      log.info(ME, "TEST 3: Send a message which triggers an illegal exception in update");
+      log.info("TEST 3: Send a message which triggers an illegal exception in update");
       try {
          con.publish(new MsgUnit("<key oid='" + msgOidWantIllegalException + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 2);
 
-      log.info(ME, "TEST 4: Send a normal message, check if everything still works");
+      log.info("TEST 4: Send a normal message, check if everything still works");
       try {
          con.publish(new MsgUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 1);
 
-      log.info(ME, "TEST 5: Send a message which triggers a nullpointer exception");
+      log.info("TEST 5: Send a message which triggers a nullpointer exception");
       try {
          con.publish(new MsgUnit("<key oid='" + msgOidWantNPE + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 2);
 
-      log.info(ME, "TEST 6: Send a normal message, check if everything still works");
+      log.info("TEST 6: Send a normal message, check if everything still works");
       try {
          con.publish(new MsgUnit("<key oid='" + msgOidNormal + "'/>", "Hello".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 1);
 
-      log.info(ME, "Success in testException()");
+      log.info("Success in testException()");
    }
 
    /**
@@ -235,7 +236,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
    {
-      log.info(ME, "Receiving update of a message '" + updateKey.getOid() + "' state=" + updateQos.getState());
+      log.info("Receiving update of a message '" + updateKey.getOid() + "' state=" + updateQos.getState());
       updateOid = updateKey.getOid();
       numReceived++;
 

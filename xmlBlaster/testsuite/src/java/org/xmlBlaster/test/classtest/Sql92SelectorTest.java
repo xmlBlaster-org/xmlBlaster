@@ -13,7 +13,8 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.lexical.LikeOpWrapper;
@@ -33,7 +34,7 @@ public class Sql92SelectorTest extends TestCase {
    
    private final static String ME = "Sql92SelectorTest"; 
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(Sql92SelectorTest.class.getName());
    private Map[] dataSet;
    private boolean[][] resultSet;
    private String[] querySet;
@@ -46,7 +47,7 @@ public class Sql92SelectorTest extends TestCase {
       super(name);
       if (global == null) this.glob = Global.instance();
       else this.glob = global;
-      this.log = this.glob.getLog("test");
+
    }
 
    protected void setUp() {
@@ -158,7 +159,7 @@ public class Sql92SelectorTest extends TestCase {
       /*
       Sql92Selector[] selectors = new Sql92Selector[this.dataSet.length];
       for (int i=0; i < this.dataSet.length; i++) {
-         if (this.log.TRACE) this.log.trace(ME, "testSelectorStandard: creating selector nr. " + i);
+         if (log.isLoggable(Level.FINE)) log.fine("testSelectorStandard: creating selector nr. " + i);
          selectors[i] = new Sql92Selector(this.glob);
       }
       */
@@ -166,10 +167,10 @@ public class Sql92SelectorTest extends TestCase {
       
       for (int i=0; i <  this.querySet.length; i++) {
          String query = this.querySet[i];
-         this.log.info(ME, "testSelectorStandard: process query '" + query + "'");
+         log.info("testSelectorStandard: process query '" + query + "'");
          boolean[] shouldAnswers = this.resultSet[i];
          for (int j=0; j < this.dataSet.length; j++) {
-            if (this.log.TRACE) this.log.trace(ME, "testSelectorStandard: query '" + query + "' on set '" + getDataAsText(j));
+            if (log.isLoggable(Level.FINE)) log.fine("testSelectorStandard: query '" + query + "' on set '" + getDataAsText(j));
             try {
                boolean response = selector.select(query, this.dataSet[j]);
                assertEquals("wrong answer for query '" + i + "'\"" + query + "\" on set '" + j + "' " + getDataAsText(j), shouldAnswers[j], response);
@@ -188,7 +189,7 @@ public class Sql92SelectorTest extends TestCase {
     * @return the milliseconds per request
     */
    private void performanceCheck() {
-      if (this.log.CALL) this.log.call(ME, "performanceCheck");
+      if (log.isLoggable(Level.FINER)) log.finer("performanceCheck");
       // for each data set one selector
       consistencyCheck();
       /*
@@ -211,10 +212,10 @@ public class Sql92SelectorTest extends TestCase {
          }
          long dt = System.currentTimeMillis() - t0;
          int nmax = kmax * this.dataSet.length * this.querySet.length;
-         this.log.info(ME, "performance: '" + nmax + "' requests in '" + dt + "' ms");
+         log.info("performance: '" + nmax + "' requests in '" + dt + "' ms");
          double ret = 1.0 * dt / nmax;
-         this.log.info(ME, "performance: '" + ret + "' ms per request");
-         this.log.info(ME, "performance: '" + ((int)(1000.0 / ret)) + "' request per second (rps)");
+         log.info("performance: '" + ret + "' ms per request");
+         log.info("performance: '" + ((int)(1000.0 / ret)) + "' request per second (rps)");
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();

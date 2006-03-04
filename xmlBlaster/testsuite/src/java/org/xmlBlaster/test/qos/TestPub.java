@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -39,7 +40,7 @@ public class TestPub extends TestCase implements I_Callback
 {
    private static String ME = "TestPub";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestPub.class.getName());
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -65,7 +66,7 @@ public class TestPub extends TestCase implements I_Callback
    {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
        this.senderName = loginName;
        this.receiverName = loginName;
    }
@@ -85,7 +86,7 @@ public class TestPub extends TestCase implements I_Callback
          senderConnection.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -127,9 +128,9 @@ public class TestPub extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -159,9 +160,9 @@ public class TestPub extends TestCase implements I_Callback
          try {
             MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
-            log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+            log.info("Success: Publishing done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
             assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
          }
          assertTrue("returned publishOid == null", publishOid != null);
@@ -173,7 +174,7 @@ public class TestPub extends TestCase implements I_Callback
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
             assertTrue("Publishing readonly protected message again should not be possible", false);
          } catch(XmlBlasterException e) {
-            log.info(ME, "Success: Publishing again throws an exception");
+            log.info("Success: Publishing again throws an exception");
          }
       }
    }
@@ -189,7 +190,7 @@ public class TestPub extends TestCase implements I_Callback
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
-      log.info(ME, "*** Test #1");
+      log.info("*** Test #1");
       senderContent = "Yeahh, i'm the new content 1";
       testPublish(true);
       waitOnUpdate(5000L);
@@ -197,7 +198,7 @@ public class TestPub extends TestCase implements I_Callback
       assertInUpdate = null;
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
 
-      log.info(ME, "*** Test #2");
+      log.info("*** Test #2");
       senderContent = "Yeahh, i'm the new content 2";
       testPublish(false);
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
@@ -213,9 +214,9 @@ public class TestPub extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message state=" + updateQos.getState());
+      log.info("Receiving update of a message state=" + updateQos.getState());
       if (updateQos.isErased()) {
-         log.info(ME, "Ignore erase event");
+         log.info("Ignore erase event");
          return ""; // We ignore the erase event on tearDown
       }
 
@@ -259,7 +260,7 @@ public class TestPub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

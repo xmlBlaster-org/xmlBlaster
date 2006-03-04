@@ -10,23 +10,23 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.lexical;
 import java_cup.runtime.*;
 import org.xmlBlaster.util.Global;
-import org.jutils.log.LogChannel;   
-   
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 /* Parser code to change the way the parser reports errors (include
    line and column number of the error). */
 parser code {:
 
+	static Logger log = Logger.getLogger(Sql92Parser.class.getName());
         protected final static String ME = "SqlParser";
         protected Global global;
-        protected LogChannel log;
         protected java.util.Map regexMap;
         
     /* Constructor used inside xmlBlaster */
     public Sql92Parser(Global global, /*java.util.Map regexMap,*/ java_cup.runtime.Scanner s) {
        this(s);
        this.global = global;
-       log = this.global.getLog("lexical");
-       if (this.log.CALL) this.log.call(ME, "constructor");
+       if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
 //       if (regexMap != null) this.regexMap = regexMap;
 //       else
           this.regexMap = new java.util.HashMap();
@@ -182,7 +182,7 @@ precedence left L_BRACKET, R_BRACKET;
 logic_term  ::=   
         logic_term:p1 OR logic_term:p2
         {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_term(logic_term OR logic_term): '" + p1 + " OR " + p2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("logic_term(logic_term OR logic_term): '" + p1 + " OR " + p2 + "'");
             if (p1 == null) {
                RESULT = p2;
             }
@@ -195,7 +195,7 @@ logic_term  ::=
         :}
       | logic_factor:p
         {:
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_term(logic_factor) '" +  p + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("logic_term(logic_factor) '" +  p + "'");
             if (p == null) {
                RESULT  = new Boolean(false);
             }   
@@ -208,7 +208,7 @@ logic_term  ::=
 logic_factor ::=   
         logic_factor:p1 AND logic_term:p2
         {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_factor(logic_factor AND logic_term): '" + p1 + " AND " + p2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("logic_factor(logic_factor AND logic_term): '" + p1 + " AND " + p2 + "'");
             if (p1 == null || p2 == null) {
                RESULT  = new Boolean(false);
             }   
@@ -218,7 +218,7 @@ logic_factor ::=
         :}
       | pred:p
         {:
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_factor(pred) '" +  p + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("logic_factor(pred) '" +  p + "'");
             if (p == null) {
                RESULT  = new Boolean(false);
             }   
@@ -232,7 +232,7 @@ pred
   ::=
       NOT pred:p
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(!pred) '!" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("pred(!pred) '!" + p + "'");
           if (p == null) {
              RESULT = new Boolean(true);
           }
@@ -242,37 +242,37 @@ pred
        :}
     | L_BRACKET logic_term:p R_BRACKET
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred((logic_term)) '(" + p + ")'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("pred((logic_term)) '(" + p + ")'");
           RESULT = p; 
        :}
     | basic_pred:p
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(basic_pred) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("pred(basic_pred) '" + p + "'");
           RESULT = p; 
        :}
     | between_pred:p
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(between_pred) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("pred(between_pred) '" + p + "'");
           RESULT = p; 
        :}
     | null_pred:p
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(null_pred) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("pred(null_pred) '" + p + "'");
           RESULT = p; 
        :}
     | like_pred:p
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(like_pred) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("pred(like_pred) '" + p + "'");
           RESULT = p; 
        :}
     | in_pred:p 
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(in_pred) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("pred(in_pred) '" + p + "'");
           RESULT = p; 
        :}
     | regex_pred:p 
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "pred(regex_pred) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("pred(regex_pred) '" + p + "'");
           RESULT = p; 
        :}
     ;
@@ -283,7 +283,7 @@ relop ::= EQUAL |     DIFF     | LT | LET | GT | GET; */
 basic_pred ::=   
         expr:e1 EQUAL expr:e2
          {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " = " + e2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("basic_pred '" + e1 + " = " + e2 + "'");
             if (e1 == null || e2 == null) {
                RESULT = new Boolean(false);
             }   
@@ -294,7 +294,7 @@ basic_pred ::=
           :}
       | expr:e1 DIFF expr:e2 
          {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " != " + e2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("basic_pred '" + e1 + " != " + e2 + "'");
             if (e1 == null || e2 == null) {
                RESULT = new Boolean(true);
             }
@@ -305,7 +305,7 @@ basic_pred ::=
           :}
       | expr:e1 LT expr:e2
          {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " < " + e2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("basic_pred '" + e1 + " < " + e2 + "'");
             if (e1 == null || e2 == null) {
                RESULT = new Boolean(false);
             }
@@ -316,7 +316,7 @@ basic_pred ::=
           :}
       | expr:e1 LET expr:e2
          {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " <= " + e2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("basic_pred '" + e1 + " <= " + e2 + "'");
             if (e1 == null || e2 == null) {
                RESULT = new Boolean(false);
             }
@@ -327,7 +327,7 @@ basic_pred ::=
           :}
       | expr:e1 GT expr:e2
          {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " > " + e2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("basic_pred '" + e1 + " > " + e2 + "'");
             if (e1 == null || e2 == null) {
                RESULT = new Boolean(false);
             }
@@ -338,7 +338,7 @@ basic_pred ::=
           :}
       | expr:e1 GET expr:e2
          {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "basic_pred '" + e1 + " >= " + e2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("basic_pred '" + e1 + " >= " + e2 + "'");
             if (e1 == null || e2 == null) {
                RESULT = new Boolean(false);
             }
@@ -355,7 +355,7 @@ basic_pred ::=
 between_pred ::= 
         expr:e1 BETWEEN expr:e2 AND expr:e3 
            {:
-              if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "between_pred: '" + e1 + " BETWEEN " + e2 + " AND " + e3 + "'");
+              if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("between_pred: '" + e1 + " BETWEEN " + e2 + " AND " + e3 + "'");
               if (e1 == null || e2 == null || e3 == null) {
                  RESULT = new Boolean(false);
               }
@@ -388,7 +388,7 @@ null_pred ::=
 
 like_pred ::=  STRING:p1 LIKE STRING:p2
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " LIKE " + p2 + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("like_pred: '" + p1 + " LIKE " + p2 + "'");
            LikeOpWrapper wrapper = parser.getExpression(p2, (char)0, true);
            if (wrapper != null) {
               RESULT = new Boolean(wrapper.match(p1));
@@ -399,12 +399,12 @@ like_pred ::=  STRING:p1 LIKE STRING:p2
         :}
      | NULL_OBJECT:p1 LIKE STRING:p2
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " LIKE " + p2 + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("like_pred: '" + p1 + " LIKE " + p2 + "'");
            RESULT = new Boolean(false);     
         :}
      | STRING:p1 NOT LIKE STRING:p2
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " NOT LIKE " + p2 + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("like_pred: '" + p1 + " NOT LIKE " + p2 + "'");
            LikeOpWrapper wrapper = parser.getExpression(p2, (char)0, true);
            if (wrapper != null) {
               RESULT = new Boolean(!wrapper.match(p1));
@@ -415,12 +415,12 @@ like_pred ::=  STRING:p1 LIKE STRING:p2
         :}
      | NULL_OBJECT:p1 NOT LIKE STRING:p2
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " NOT LIKE " + p2 + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("like_pred: '" + p1 + " NOT LIKE " + p2 + "'");
            RESULT = new Boolean(true);
         :}
      | STRING:p1 LIKE STRING:p2 ESCAPE ESC:esc
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " LIKE " + p2 + " ESCAPE " + esc + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("like_pred: '" + p1 + " LIKE " + p2 + " ESCAPE " + esc + "'");
            LikeOpWrapper wrapper = parser.getExpression(p2, esc.charValue(), true);
            if (wrapper != null) {
               RESULT = new Boolean(wrapper.match(p1));
@@ -431,12 +431,12 @@ like_pred ::=  STRING:p1 LIKE STRING:p2
         :}
      | NULL_OBJECT:p1 LIKE STRING:p2 ESCAPE ESC:esc
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " LIKE " + p2 + " ESCAPE " + esc + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("like_pred: '" + p1 + " LIKE " + p2 + " ESCAPE " + esc + "'");
            RESULT = new Boolean(false);
         :}
      | STRING:p1 NOT LIKE STRING:p2 ESCAPE ESC:esc
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " NOT LIKE " + p2 + " ESCAPE " + esc + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("like_pred: '" + p1 + " NOT LIKE " + p2 + " ESCAPE " + esc + "'");
            LikeOpWrapper wrapper = parser.getExpression(p2, esc.charValue(), true);
            if (wrapper != null) {
               RESULT = new Boolean(!wrapper.match(p1));
@@ -447,7 +447,7 @@ like_pred ::=  STRING:p1 LIKE STRING:p2
         :}
      | NULL_OBJECT:p1 NOT LIKE STRING:p2 ESCAPE ESC:esc
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "like_pred: '" + p1 + " NOT LIKE " + p2 + " ESCAPE " + esc + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("like_pred: '" + p1 + " NOT LIKE " + p2 + " ESCAPE " + esc + "'");
            RESULT = new Boolean(true);
         :}
      ;
@@ -455,7 +455,7 @@ like_pred ::=  STRING:p1 LIKE STRING:p2
 /* This is not jms specific. It is a special xmlBlaster extention */
 regex_pred ::=  STRING:p1 REGEX STRING:p2
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "regex_pred: '" + p1 + " REGEX " + p2 + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("regex_pred: '" + p1 + " REGEX " + p2 + "'");
            LikeOpWrapper wrapper = parser.getExpression(p2, (char)0, false);
            if (wrapper != null) {
               RESULT = new Boolean(wrapper.match(p1));
@@ -466,7 +466,7 @@ regex_pred ::=  STRING:p1 REGEX STRING:p2
         :}                
      | NULL_OBJECT:p1 REGEX STRING:p2
         {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "regex_pred: '" + p1 + " REGEX " + p2 + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("regex_pred: '" + p1 + " REGEX " + p2 + "'");
            RESULT = new Boolean(false);
         :}
      ;
@@ -483,7 +483,7 @@ in_value ::=
 in_term ::= 
        in_value:v1 COMMA in_value:v2
          {: 
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "in_term '" + v1 + ", " + v2 + "'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("in_term '" + v1 + ", " + v2 + "'");
            java.util.Set set = new java.util.HashSet();
            if (v1 != null) set.add(v1);
            if (v2 != null) set.add(v2);
@@ -500,7 +500,7 @@ in_term ::=
 in_pred ::= 
        expr:e IN L_BRACKET in_value:v R_BRACKET 
          {:
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "in_pred '" + e + "IN(" + v + ")'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("in_pred '" + e + "IN(" + v + ")'");
            if (e == null || v == null) RESULT = new Boolean(false);
            else {
               if (e instanceof String) RESULT = new Boolean(e.equals(v));
@@ -509,7 +509,7 @@ in_pred ::=
          :}
      | expr:e IN L_BRACKET in_term:s R_BRACKET 
         {:
-           if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "in_pred '" + e + " IN (" + s + ")'");
+           if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("in_pred '" + e + " IN (" + s + ")'");
            if (e == null || s == null) RESULT = new Boolean(false);
            else {
               RESULT = new Boolean(s.contains(e));
@@ -531,7 +531,7 @@ in_pred ::=
 expr ::=
        math_term:e
           {: 
-             if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "expr(math_term) '" + e + "'");
+             if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("expr(math_term) '" + e + "'");
              RESULT = e; 
           :}
      | STRING:l
@@ -543,7 +543,7 @@ expr ::=
 math_term  ::=   
         math_term:p1 PLUS math_term:p2
         {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_term(math_term + math_term): '" + p1 + " + " + p2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_term(math_term + math_term): '" + p1 + " + " + p2 + "'");
             if (p1 == null) {
                RESULT = p2;
             }
@@ -556,7 +556,7 @@ math_term  ::=
         :}
       | math_term:p1 MINUS math_term:p2
         {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_term(math_term - math_term): '" + p1 + " - " + p2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_term(math_term - math_term): '" + p1 + " - " + p2 + "'");
             if (p1 == null) {
                RESULT = p2;
             }
@@ -569,7 +569,7 @@ math_term  ::=
         :}
       | math_factor:p
         {:
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_term(math_factor) '" +  p + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_term(math_factor) '" +  p + "'");
             RESULT = p;
         :}  
       ;
@@ -577,7 +577,7 @@ math_term  ::=
 math_factor ::=   
         math_factor:p1 TIMES math_term:p2
         {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_factor(math_factor * math_term): '" + p1 + " * " + p2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_factor(math_factor * math_term): '" + p1 + " * " + p2 + "'");
             if (p1 == null || p2 == null) {
                RESULT = null;
             }   
@@ -587,7 +587,7 @@ math_factor ::=
         :}
       | math_factor:p1 DIV math_term:p2
         {: 
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_factor(math_factor / math_term): '" + p1 + " / " + p2 + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_factor(math_factor / math_term): '" + p1 + " / " + p2 + "'");
             if (p1 == null || p2 == null) {
                RESULT = null;
             }   
@@ -597,7 +597,7 @@ math_factor ::=
         :}
       | math_pred:p
         {:
-            if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_factor(math_pred) '" +  p + "'");
+            if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_factor(math_pred) '" +  p + "'");
             RESULT = p;
         :}  
       ;
@@ -606,7 +606,7 @@ math_pred
   ::=
       MINUS math_pred:p
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred(-math_pred) '-" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_pred(-math_pred) '-" + p + "'");
           if (p == null) {
              RESULT = null;
           }
@@ -616,22 +616,22 @@ math_pred
        :}  %prec UMINUS
     | PLUS math_pred:p
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred(+math_pred) '+" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_pred(+math_pred) '+" + p + "'");
           RESULT = p;
        :}  %prec UMINUS
     | L_BRACKET math_term:p R_BRACKET
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred((math_term)) '(" + p + ")'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_pred((math_term)) '(" + p + ")'");
           RESULT = p; 
        :}
     | NUMBER:p
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred(NUMBER) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_pred(NUMBER) '" + p + "'");
           RESULT = p; 
        :}
     | NULL_OBJECT:p 
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_pred(NULL_OBJECT) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("math_pred(NULL_OBJECT) '" + p + "'");
           RESULT = (Double)null; 
        :}
     ;
@@ -640,7 +640,7 @@ math_pred
 ESC ::=
     | STRING:p 
        {: 
-          if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "ESC(STRING) '" + p + "'");
+          if (Sql92Parser.log.isLoggable(Level.FINER)) Sql92Parser.log.finer("ESC(STRING) '" + p + "'");
           RESULT = new Character(p.charAt(0));
        :}
     ;

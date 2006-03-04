@@ -10,7 +10,8 @@ import java.util.Vector;
 
 import org.jutils.text.StringHelper;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.protocol.ProtoConverter;
@@ -43,7 +44,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 {
    private String ME = "XmlRpcConnection";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlRpcConnection.class.getName());
    private XmlRpcUrl xmlRpcUrl;
    private XmlRpcClient xmlRpcClient; // xml-rpc client to send method calls.
    private String sessionId;
@@ -87,9 +88,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("xmlrpc");
+
       this.pluginInfo = pluginInfo;
-      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
+      log.info("Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**
@@ -118,23 +119,23 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             XmlRpc.setDebug(true);
 
          this.xmlRpcClient = new XmlRpcClient(this.xmlRpcUrl.getUrl());
-         log.info(ME, "Created XmlRpc client to " + this.xmlRpcUrl.getUrl());
+         log.info("Created XmlRpc client to " + this.xmlRpcUrl.getUrl());
       }
       catch (java.net.MalformedURLException e) {
-         log.error(ME+".constructor", "Malformed URL: " + e.toString());
+         log.severe("Malformed URL: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "Malformed URL for XmlRpc connection", e.toString());
       }
    }
 
    public void resetConnection() {
-      log.trace(ME, "XmlRpcCLient is initialized, no connection available");
+      log.fine("XmlRpcCLient is initialized, no connection available");
       this.xmlRpcClient = null;
       this.sessionId = null;
    }
 
    private XmlRpcClient getXmlRpcClient() throws XmlBlasterException {
       if (this.xmlRpcClient == null) {
-         if (log.TRACE) log.trace(ME, "No XMLRPC connection available.");
+         if (log.isLoggable(Level.FINE)) log.fine("No XMLRPC connection available.");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                                        "The XMLRPC xmlBlaster handle is null, no connection available");
       }
@@ -151,9 +152,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       if (connectQos == null)
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Please specify a valid ConnectQoS");
 
-      if (log.CALL) log.call(ME, "Entering login");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering login");
       if (isLoggedIn()) {
-         log.warn(ME, "You are already logged in, we try again: " + toXml());
+         log.warning("You are already logged in, we try again: " + toXml());
          //log.warn(ME, "You are already logged in, no relogin possible.");
          //return "";
       }
@@ -166,21 +167,21 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          String qosStripped = StringHelper.replaceAll(qosOrig, "<![CDATA[", "");
          connectQos = StringHelper.replaceAll(qosStripped, "]]>", "");
          if (!connectQos.equals(qosOrig)) {
-            log.trace(ME, "Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
+            log.fine("Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
                            "This shouldn't be a problem as long as your credentials doesn't contain '<'");
          }
 
          Vector args = new Vector();
-         if (log.TRACE) log.trace(ME, "Executing authenticate.connect() via XmlRpc");
+         if (log.isLoggable(Level.FINE)) log.fine("Executing authenticate.connect() via XmlRpc");
          args.addElement(connectQos);
          return (String)getXmlRpcClient().execute("authenticate.connect", args);
       }
       catch (ClassCastException e) {
-         log.error(ME+".login", "return value not a valid String: " + e.toString());
+         log.severe("return value not a valid String: " + e.toString());
          throw XmlBlasterException.convert(glob, ME, "return value not a valid String, Class Cast Exception", e);
       }
       catch (IOException e) {
-         if (log.TRACE) log.trace(ME+".login", "Login to xmlBlaster failed: " + e.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("Login to xmlBlaster failed: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Login failed", e);
       }
       catch (XmlRpcException e) {
@@ -202,10 +203,10 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * @param sessionId The client sessionId
     */
    public boolean disconnect(String disconnectQos) {
-      if (log.CALL) log.call(ME, "Entering logout");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering logout");
 
       if (!isLoggedIn()) {
-         log.warn(ME, "You are not logged in, no logout possible.");
+         log.warning("You are not logged in, no logout possible.");
       }
 
       try {
@@ -221,23 +222,23 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             shutdown();
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "disconnect() could not shutdown properly. " + ex.getMessage());
+            log.severe("disconnect() could not shutdown properly. " + ex.getMessage());
          }
          resetConnection();
          return true;
       }
       catch (IOException e1) {
-         log.warn(ME+".logout", "IO exception: " + e1.toString());
+         log.warning("IO exception: " + e1.toString());
       }
       catch (XmlRpcException e) {
-         log.warn(ME+".logout", "xml-rpc exception: " + extractXmlBlasterException(glob, e).toString());
+         log.warning("xml-rpc exception: " + extractXmlBlasterException(glob, e).toString());
       }
 
       try {
          shutdown();
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "disconnect() could not shutdown properly. " + ex.getMessage());
+         log.severe("disconnect() could not shutdown properly. " + ex.getMessage());
       }
       resetConnection();
       return false;
@@ -269,7 +270,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     */
    public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering subscribe(id=" + sessionId + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(id=" + sessionId + ")");
       try {
          // prepare the argument vector for the xml-rpc method call
          Vector args = new Vector();
@@ -279,7 +280,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          return (String)getXmlRpcClient().execute("xmlBlaster.subscribe", args);
       }
       catch (ClassCastException e) {
-         log.error(ME+".subscribe", "return value not a valid String: " + e.toString());
+         log.severe("return value not a valid String: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".subscribe", "return value not a valid String, Class Cast Exception", e);
       }
       catch (IOException e1) {
@@ -299,7 +300,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public final String[] unSubscribe (String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering unsubscribe(): id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering unsubscribe(): id=" + sessionId);
 
       try {
          // prepare the argument list:
@@ -326,7 +327,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering publish(): id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publish(): id=" + sessionId);
 
       //PublishQos publishQos = new PublishQos(msgUnit.getQos());
       //msgUnit.getQos() = publishQos.toXml();
@@ -342,7 +343,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
 
       catch (ClassCastException e) {
-         log.error(ME+".publish", "not a valid MsgUnitRaw: " + e.toString());
+         log.severe("not a valid MsgUnitRaw: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".publish", "Not a valid MsgUnitRaw", e);
       }
       catch (IOException e1) {
@@ -362,10 +363,10 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public final String[] publishArr(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering publishArr: id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr: id=" + sessionId);
 
       if (msgUnitArr == null) {
-         log.error(ME + ".InvalidArguments", "The argument of method publishArr() are invalid");
+         log.severe("The argument of method publishArr() are invalid");
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
                                        "The argument of method publishArr() are invalid");
       }
@@ -385,7 +386,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
 
       catch (ClassCastException e) {
-         log.error(ME+".publishArr", "not a valid String[]: " + e.toString());
+         log.severe("not a valid String[]: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".publishArr", "Not a valid String[]", e);
       }
 
@@ -406,10 +407,10 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public final void publishOneway(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering publishOneway: id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishOneway: id=" + sessionId);
 
       if (msgUnitArr == null) {
-         log.error(ME + ".InvalidArguments", "The argument of method publishOneway() are invalid");
+         log.severe("The argument of method publishOneway() are invalid");
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
                                        "The argument of method publishOneway() are invalid");
       }
@@ -422,7 +423,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          getXmlRpcClient().execute("xmlBlaster.publishOneway", args);
       }
       catch (ClassCastException e) {
-         log.error(ME+".publishOneway", e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, "publishOneway Class Cast Exception", e);
       }
@@ -458,7 +459,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public final String[] erase(String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering erase() id=" + sessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering erase() id=" + sessionId);
 
       try {
          // prepare the argument list (as a Vector) for xml-rpc
@@ -473,12 +474,12 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
 
       catch (ClassCastException e) {
-         log.error(ME+".erase", "not a valid Vector: " + e.toString());
+         log.severe("not a valid Vector: " + e.toString());
          throw XmlBlasterException.convert(glob, ME, "erase Class Cast Exception", e);
       }
 
       catch (IOException e1) {
-         log.error(ME+".erase", "IO exception: " + e1.toString() + " sessionId=" + this.sessionId);
+         log.severe("IO exception: " + e1.toString() + " sessionId=" + this.sessionId);
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e1);
       }
 
@@ -510,7 +511,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       try {
          Vector args = new Vector();
          args.addElement(sessionId);
@@ -522,11 +523,11 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          return ProtoConverter.vector2MsgUnitRawArray(retVector);
       }
       catch (ClassCastException e) {
-         log.error(ME+".get", "not a valid Vector: " + e.toString());
+         log.severe("not a valid Vector: " + e.toString());
          throw XmlBlasterException.convert(glob, ME, "get Class Cast Exception", e);
       }
       catch (IOException e1) {
-         log.error(ME+".get", "IO exception: " + e1.toString());
+         log.severe("IO exception: " + e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "get", e1);
       }
       catch (XmlRpcException e) {
@@ -559,7 +560,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          return (String)getXmlRpcClient().execute("xmlBlaster.ping", args);
       }
       catch (ClassCastException e) {
-         log.error(ME+".ping", e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, "ping Class Cast Exception", e);
       }
@@ -588,11 +589,11 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          return (String)this.xmlRpcClient.execute("xmlBlaster.toXml", args);
       }
       catch (ClassCastException e) {
-         log.error(ME+".toXml", "not a valid Vector: " + e.toString());
+         log.severe("not a valid Vector: " + e.toString());
          throw XmlBlasterException.convert(glob, ME, "toXml Class Cast Exception", e);
       }
       catch (IOException e) {
-         log.error(ME+".toXml", "IO exception: " + e.toString());
+         log.severe("IO exception: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "toXml", e);
       }
       catch (XmlRpcException e) {

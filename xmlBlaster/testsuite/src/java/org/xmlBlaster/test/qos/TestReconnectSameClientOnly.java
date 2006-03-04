@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -57,7 +58,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
 {
    private static String ME = "TestReconnectSameClientOnly";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestReconnectSameClientOnly.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String passwd = "secret";
@@ -73,7 +74,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
    public TestReconnectSameClientOnly(Global glob, String testName) {
       super(testName);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
    }
 
    /**
@@ -86,12 +87,12 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
     */
    protected void setUp() {
       //Global embeddedGlobal = glob.getClone(null);  
-      log.info(ME, "#################### setup-testReconnectSameClientOnly ...");
+      log.info("#################### setup-testReconnectSameClientOnly ...");
       this.startEmbedded = glob.getProperty().get("startEmbedded", this.startEmbedded);
       if (this.startEmbedded) {
          glob.init(Util.getOtherServerPorts(serverPort));
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-         log.info(ME, "XmlBlaster is ready for testing");
+         log.info("XmlBlaster is ready for testing");
       }
    }
 
@@ -100,10 +101,10 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
     * @param state Choose one of "2M" or "64k"
     */
    public void testReconnectSameClientOnly() {
-      log.info(ME, "#################### testReconnectSameClientOnly ...");
+      log.info("#################### testReconnectSameClientOnly ...");
 
       try {
-         log.info(ME, "Connecting first ...");
+         log.info("Connecting first ...");
          this.con = glob.getXmlBlasterAccess();
 
          ConnectQos qos = new ConnectQos(glob, "JOE/1", "secret");
@@ -123,7 +124,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
       }
 
       try {
-         log.info(ME, "Connecting other ...");
+         log.info("Connecting other ...");
          Global glob2 = glob.getClone(null);
          I_XmlBlasterAccess con2 = glob2.getXmlBlasterAccess();
 
@@ -136,7 +137,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
          fail(ME+": Reconnect to xmlBlaster should not be possible");
       }
       catch (XmlBlasterException e) {
-         log.info(ME, "SUCCESS, reconnect is not possible: " + e.getMessage());
+         log.info("SUCCESS, reconnect is not possible: " + e.getMessage());
       }
 
       // Now shutdown callback server so that xmlBlaster destroys our first session:
@@ -150,7 +151,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
       try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait
 
       try {
-         log.info(ME, "Connecting other ...");
+         log.info("Connecting other ...");
          Global glob2 = glob.getClone(null);
          I_XmlBlasterAccess con2 = glob2.getXmlBlasterAccess();
 
@@ -160,17 +161,17 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
          sessionQos.setMaxSessions(1);
          sessionQos.setReconnectSameClientOnly(true);
          con2.connect(qos, this);
-         log.info(ME, "SUCCESS, reconnect is OK after first session died");
+         log.info("SUCCESS, reconnect is OK after first session died");
       }
       catch (XmlBlasterException e) {
          fail(ME + ": Reconnect should now be possible: " + e.getMessage());
       }
 
-      log.info(ME, "Success in testReconnectSameClientOnly()");
+      log.info("Success in testReconnectSameClientOnly()");
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      log.error(ME, "TEST FAILED: UpdateKey.toString()=" + updateKey.toString() +
+      log.severe("TEST FAILED: UpdateKey.toString()=" + updateKey.toString() +
                     "UpdateQos.toString()=" + updateQos.toString());
       fail("Unexpected UpdateKey.toString()=" + updateKey.toString());
       return "";
@@ -182,7 +183,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "#################### tearDown-testReconnectSameClientOnly ...");
+      log.info("#################### tearDown-testReconnectSameClientOnly ...");
 
       this.con.disconnect(null);
       this.con = null;

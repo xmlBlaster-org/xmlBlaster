@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue.ram;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -49,7 +50,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    private TreeSet storage;
    private QueuePropertyBase property;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(RamQueuePlugin.class.getName());
    private I_QueuePutListener putListener;
    private boolean isShutdown = false;
    private MsgComparator comparator;
@@ -73,7 +74,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       setProperties(userData);
 
       this.glob = this.property.getGlobal();
-      this.log = glob.getLog("queue");
+
 
       this.storageId = uniqueQueueId;
       if (storageId == null || glob == null) {
@@ -170,7 +171,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    public void finalize() {
-      if (log.TRACE) log.trace(ME, "finalize - garbage collected");
+      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collected");
    }
 
    /** For verbose logging */
@@ -179,11 +180,11 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    public void shutdown() {
-      if (log.TRACE) log.trace(ME, "Entering shutdown(" + this.storage.size() + ")");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering shutdown(" + this.storage.size() + ")");
       synchronized (this) {
          if (this.storage.size() > 0) {
             String reason = "Shutting down RAM queue which contains " + this.storage.size() + " messages";
-            if (log.TRACE) log.trace(ME, reason);
+            if (log.isLoggable(Level.FINE)) log.fine(reason);
             //throw new XmlBlasterException(ME, reason);
             //handleFailure !!!
          }
@@ -191,8 +192,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          this.removeQueueSizeListener(null);
       }
 
-      if (log.CALL) {
-         log.call(ME, "shutdown() of queue " + this.getStorageId() + " which contains " + this.storage.size() + "messages");
+      if (log.isLoggable(Level.FINER)) {
+         log.finer("shutdown() of queue " + this.getStorageId() + " which contains " + this.storage.size() + "messages");
       }
    }
 
@@ -535,8 +536,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     */
    public ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException {
       if (isShutdown) {
-         log.warn(ME, "The queue is shutdown, no message access is possible.");
-         if (log.TRACE) Thread.dumpStack();
+         log.warning("The queue is shutdown, no message access is possible.");
+         if (log.isLoggable(Level.FINE)) Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "The queue is shutdown, no message access is possible.");
       }
       ArrayList ret = null;
@@ -652,7 +653,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       if (entry == null) return;
 
       if (isShutdown) {
-         if (log.TRACE) log.trace(ME, "The queue is shutdown, put() of message " + entry.getUniqueId() + " failed");
+         if (log.isLoggable(Level.FINE)) log.fine("The queue is shutdown, put() of message " + entry.getUniqueId() + " failed");
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "The queue is shutdown, put() of message " + entry.getUniqueId() + " failed");
       }
 
@@ -666,14 +667,14 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          String reason = "Queue overflow (number of entries), " + property.getMaxEntries() +
                          " messages are in queue, try increasing '" +
                          this.property.getPropName("maxEntries") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason);
+         if (log.isLoggable(Level.FINE)) log.fine(reason);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
       if (this.getNumOfBytes() > property.getMaxBytes()) { // Allow superload one time only
          String reason = "Queue overflow, " + this.getNumOfBytes() +
                          " bytes are in queue, try increasing '" + 
                          this.property.getPropName("maxBytes") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason);
+         if (log.isLoggable(Level.FINE)) log.fine(reason);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
 
@@ -692,7 +693,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             }
          }
          else {
-            log.error(ME, "Ignoring IDENTICAL uniqueId=" + entry.getUniqueId());
+            log.severe("Ignoring IDENTICAL uniqueId=" + entry.getUniqueId());
             Thread.dumpStack();
          }
       }
@@ -710,10 +711,10 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       throws XmlBlasterException {
       if (msgArr == null) return;
 
-      //if (log.CALL) log.call(ME, "Entering put(" + msgArr.length + ")");
+      //if (log.isLoggable(Level.FINER)) log.call(ME, "Entering put(" + msgArr.length + ")");
 
       if (isShutdown) {
-         if (log.TRACE) log.trace(ME, "The queue is shutdown, put() of " + msgArr.length + " messages failed");
+         if (log.isLoggable(Level.FINE)) log.fine("The queue is shutdown, put() of " + msgArr.length + " messages failed");
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "The queue is shutdown, put() of " + msgArr.length + " messages failed");
       }
 
@@ -727,13 +728,13 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       if (getNumOfEntries() > property.getMaxEntries()) { // Allow superload one time only
          String reason = "Queue overflow (num of entries), " + property.getMaxEntries() +
                   " messages are in queue, try increasing '" + this.property.getPropName("maxEntries") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason+toXml());
+         if (log.isLoggable(Level.FINE)) log.fine(reason+toXml());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
       if (this.getNumOfBytes() > property.getMaxBytes()) { // Allow superload one time only
          String reason = "Queue overflow, " + this.getNumOfBytes() + " bytes are in queue, try increasing '" +
                          this.property.getPropName("maxBytes") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason+toXml());
+         if (log.isLoggable(Level.FINE)) log.fine(reason+toXml());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
 
@@ -886,7 +887,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          if (listener == null) this.queueSizeListeners = null;
          else {
             if (!this.queueSizeListeners.remove(listener))
-               this.log.warn(ME, "removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
+               log.warning("removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
             if (this.queueSizeListeners.size() == 0) this.queueSizeListeners = null;
          }
       }
@@ -903,7 +904,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes());
             }
             catch (NullPointerException e) {
-               if (log.TRACE) log.trace(ME, "invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
+               if (log.isLoggable(Level.FINE)) log.fine("invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
             }
          }
       }
@@ -923,7 +924,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)
     */
    public long embeddedObjectsToXml(OutputStream out, Properties props) {
-      log.warn(ME, "Sorry, dumping transient entries is not implemented");
+      log.warning("Sorry, dumping transient entries is not implemented");
       return 0;
    }
 }

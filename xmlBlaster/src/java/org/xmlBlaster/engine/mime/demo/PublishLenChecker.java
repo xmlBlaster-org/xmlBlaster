@@ -8,7 +8,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -36,7 +37,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
 {
    private final String ME = "PublishLenChecker";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PublishLenChecker.class.getName());
    /** Limits max message size to 1 MB as a default */
    private long DEFAULT_MAX_LEN = 1000000;
    /** For testsuite TestPublish.java only to force an XmlBlasterException */
@@ -48,8 +49,8 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("mime");
-      log.info(ME, "Filter is initialized, we check all mime types if content is not too long");
+
+      log.info("Filter is initialized, we check all mime types if content is not too long");
    }
 
    /**
@@ -57,21 +58,21 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
-      this.log = glob.getLog("mime");
+
 
       java.util.Properties props = pluginInfo.getParameters();
 
       String lenStr = (String)props.get("DEFAULT_MAX_LEN");
       if (lenStr != null) {
          DEFAULT_MAX_LEN = (new Long(lenStr)).longValue();
-         log.info(ME, "Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
+         log.info("Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
       }
 
       // This is for the testsuite only to test exception
       String throwStr = (String)props.get("THROW_EXCEPTION_FOR_LEN");
       if (throwStr != null) {
          THROW_EXCEPTION_FOR_LEN = (new Integer(throwStr)).intValue();
-         log.info(ME, "Setting THROW_EXCEPTION_FOR_LEN=" + THROW_EXCEPTION_FOR_LEN + " as configured in xmlBlaster.properties");
+         log.info("Setting THROW_EXCEPTION_FOR_LEN=" + THROW_EXCEPTION_FOR_LEN + " as configured in xmlBlaster.properties");
       }
    }
 
@@ -136,15 +137,15 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
          long maxLen = DEFAULT_MAX_LEN;  // Use default max length
 
          if (msgUnit.getContent().length == THROW_EXCEPTION_FOR_LEN) {
-            log.info(ME, "Test what happens if we throw an exception");
+            log.info("Test what happens if we throw an exception");
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Test what happens if we throw an exception");
          }
          if (msgUnit.getContent().length > maxLen) {
-            log.info(ME, "Message REJECTED, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
+            log.info("Message REJECTED, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
             return "REJECTED";
          }
          else {
-            log.info(ME, "Message access OK, msgLen=" + msgUnit.getContent().length + " max=" + maxLen);
+            log.info("Message access OK, msgLen=" + msgUnit.getContent().length + " max=" + maxLen);
             return Constants.STATE_OK; // "OK" message is accepted
          }
       }
@@ -153,7 +154,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
       }
       catch (Throwable e) {
          String tmp = "Can't filter message because of an unexpected problem: " + e.toString();
-         log.error(ME, tmp);
+         log.severe(tmp);
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, tmp);
       }
    }

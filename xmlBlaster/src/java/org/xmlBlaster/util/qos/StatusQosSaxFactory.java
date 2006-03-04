@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -41,7 +42,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
 {
    private String ME = "StatusQosSaxFactory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(StatusQosSaxFactory.class.getName());
 
    private  StatusQosData statusQosData;
 
@@ -59,7 +60,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
    public StatusQosSaxFactory(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
+
    }
 
    /**
@@ -141,7 +142,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
            for (int i = 0; i < len; i++) {
               if( attrs.getQName(i).equalsIgnoreCase("nanos") ) {
                 String tmp = attrs.getValue(i).trim();
-                try { statusQosData.setRcvTimestamp(new RcvTimestamp(Long.parseLong(tmp))); } catch(NumberFormatException e) { log.error(ME, "Invalid rcvTimestamp - nanos =" + tmp); };
+                try { statusQosData.setRcvTimestamp(new RcvTimestamp(Long.parseLong(tmp))); } catch(NumberFormatException e) { log.severe("Invalid rcvTimestamp - nanos =" + tmp); };
               }
            }
         }

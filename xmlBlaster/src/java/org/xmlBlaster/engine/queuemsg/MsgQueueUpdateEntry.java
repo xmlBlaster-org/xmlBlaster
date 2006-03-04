@@ -5,6 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -21,6 +24,7 @@ import org.xmlBlaster.util.queue.StorageId;
  */
 public final class MsgQueueUpdateEntry extends ReferenceEntry
 {
+   private static Logger log = Logger.getLogger(MsgQueueUpdateEntry.class.getName());
    private static final long serialVersionUID = 1L;
    private final static String ME = "MsgQueueUpdateEntry";
    private final String subscriptionId;
@@ -60,7 +64,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       if (msgUnitWrapper.getMsgQosData().getForceDestroyProp().getValue() == true)
          flagTmp += "|forceDestroy";
       this.flag = flagTmp;
-      if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueUpdateEntry for published message '" + msgUnitWrapper.getLogId() + "', id=" + getUniqueId() + " prio=" + priority.toString());
+      if (log.isLoggable(Level.FINE)) log.fine("Created new MsgQueueUpdateEntry for published message '" + msgUnitWrapper.getLogId() + "', id=" + getUniqueId() + " prio=" + priority.toString());
    }
 
    /**
@@ -82,7 +86,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       this.updateOneway = (index != -1 && this.flag.indexOf("|oneway") != -1) ? true : false;
       super.redeliverCounter = redeliverCount;
       if (sizeInBytes != getSizeInBytes()) {
-         log.error(ME, "Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
+         log.severe("Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
       }
    }
    

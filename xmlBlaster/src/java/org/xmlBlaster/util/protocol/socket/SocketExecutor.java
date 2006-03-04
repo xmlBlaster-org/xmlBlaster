@@ -6,7 +6,8 @@ Comment:   Send/receive messages over outStream and inStream.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.socket;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -38,7 +39,7 @@ import java.io.OutputStream;
 public abstract class SocketExecutor extends RequestReplyExecutor implements SocketExecutorMBean
 {
    private String ME = SocketExecutor.class.getName();
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(SocketExecutor.class.getName());
    /** Reading from socket */
    protected InputStream iStream;
    /** Writing to socket */
@@ -69,7 +70,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
     */
    protected void initialize(Global glob, AddressBase addressConfig, InputStream iStream, OutputStream oStream) throws IOException {
       super.initialize(glob, addressConfig);
-      this.log = this.glob.getLog("socket");
+
 
       if (isCompressZlibStream()) { // Statically configured for server side protocol plugin
          this.iStream = new ZFlushInputStream(iStream);
@@ -111,7 +112,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
     */
    public final void setSoTimeout(long millis) {
       if (millis < 0L) {
-         log.warn(ME, this.addressConfig.getEnvLookupKey("SoTimeout") + "=" + millis +
+         log.warning(this.addressConfig.getEnvLookupKey("SoTimeout") + "=" + millis +
                       " is invalid, is invalid, deactivating timeout");
          this.soTimeout = 0L;
       }
@@ -128,7 +129,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
     */
    public final void setSoLingerTimeout(long millis) {
       if (millis < 0L) {
-         log.warn(ME, this.addressConfig.getEnvLookupKey("SoLingerTimeout") + "=" + millis +
+         log.warning(this.addressConfig.getEnvLookupKey("SoLingerTimeout") + "=" + millis +
                       " is invalid, setting it to " + Constants.MINUTE_IN_MILLIS + " millis");
          this.soLingerTimeout = Constants.MINUTE_IN_MILLIS;
       }
@@ -160,7 +161,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       synchronized (oStream) {
          oStream.write(msg);
          oStream.flush();
-         if (log.TRACE) log.trace(ME, "TCP data is send");
+         if (log.isLoggable(Level.FINE)) log.fine("TCP data is send");
       }
       if (listener != null) {
          listener.progressWrite("", msg.length, msg.length);

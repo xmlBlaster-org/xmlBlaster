@@ -6,7 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.engine.Global;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -33,7 +34,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    private final String ME;
 
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientSubscriptions.class.getName());
 
    /**
     * All exact subscriptions of a Client are in this map.
@@ -78,7 +79,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    {
       this.glob = glob;
       this.ME = "ClientSubscriptions" + this.glob.getLogPrefixDashed();
-      this.log = requestBroker.getGlobal().getLog("core");
+
       requestBroker.addSubscriptionListener(this);
       authenticate.addClientListener(this);
    }
@@ -115,7 +116,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       }
 
       SubscriptionInfo subs = (SubscriptionInfo)subMap.get(subscriptionInfoUniqueKey);
-      if (log.TRACE) log.trace(ME, "Looking for subscriptionId=" + subscriptionInfoUniqueKey + " found " + subs);
+      if (log.isLoggable(Level.FINE)) log.fine("Looking for subscriptionId=" + subscriptionInfoUniqueKey + " found " + subs);
       return subs;
    }
 
@@ -142,7 +143,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
          }
       }
 
-      if (log.TRACE) log.trace(ME, "subscriptionId=" + subscriptionInfoUniqueKey + " not found");
+      if (log.isLoggable(Level.FINE)) log.fine("subscriptionId=" + subscriptionInfoUniqueKey + " not found");
       return null;
    }
 
@@ -238,7 +239,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       synchronized(clientSubscriptionMap) {
          obj = clientSubscriptionMap.get(sessionInfo.getSessionName().getRelativeName());
          if (obj == null) {
-            if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "' is unknown, there was no subscription of this session yet.");
+            if (log.isLoggable(Level.FINE)) log.fine("Session '" + sessionInfo.getId() + "' is unknown, there was no subscription of this session yet.");
             return null;
          }
          subMap = (Map)obj;
@@ -283,13 +284,13 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       synchronized(clientSubscriptionMap) {
          obj = clientSubscriptionMap.get(sessionInfo.getSessionName().getRelativeName());
          if (obj == null) {
-            if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "' is unknown, there was no subscription of this session yet. Oid '" + keyOid + "' is not existing");
+            if (log.isLoggable(Level.FINE)) log.fine("Session '" + sessionInfo.getId() + "' is unknown, there was no subscription of this session yet. Oid '" + keyOid + "' is not existing");
             return null;
          }
          subMap = (Map)obj;
       }
 
-      //if (log.TRACE) log.trace(ME, "Found subscription map with " + subMap.size() + " entries for '" + sessionInfo.getId() + "'");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "Found subscription map with " + subMap.size() + " entries for '" + sessionInfo.getId() + "'");
 
       // Slow linear search of all subscribes of a session
       // Don't use for performance critical tasks
@@ -299,12 +300,12 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
             if (exactOnly && sub.getKeyData().isQuery()) {
-               if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getSubscriptionId() +
+               if (log.isLoggable(Level.FINE)) log.fine("Ignoring subscription " + sub.getSubscriptionId() +
                       " for session '" + sessionInfo.getId() + "' for message '" + keyOid + "'");
                continue;
             }
             if (keyOid.equals(sub.getKeyOid())) {
-               if (log.TRACE) log.trace(ME, "Found subscription " + sub.getSubscriptionId() +
+               if (log.isLoggable(Level.FINE)) log.fine("Found subscription " + sub.getSubscriptionId() +
                       " for session '" + sessionInfo.getId() + "' for message '" + keyOid + "'");
                if (vec == null) vec = new Vector();
                vec.addElement(sub);
@@ -340,11 +341,11 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
                while (iterator2.hasNext()) {
                   SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
                   if (exactOnly && sub.getKeyData().isQuery()) {
-                     if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getSubscriptionId() + " for message '" + keyOid + "'");
+                     if (log.isLoggable(Level.FINE)) log.fine("Ignoring subscription " + sub.getSubscriptionId() + " for message '" + keyOid + "'");
                      continue;
                   }
                   if (keyOid.equals(sub.getKeyOid())) {
-                     if (log.TRACE) log.trace(ME, "Found subscription " + sub.getSubscriptionId() + " for message '" + keyOid + "'");
+                     if (log.isLoggable(Level.FINE)) log.fine("Found subscription " + sub.getSubscriptionId() + " for message '" + keyOid + "'");
                      if (vec == null) vec = new Vector();
                      vec.addElement(sub);
                   }
@@ -360,7 +361,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     */
    public void sessionAdded(ClientEvent e) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Login event for client " + e.getSessionInfo().toString() + ", nothing to do");
+      if (log.isLoggable(Level.FINER)) log.finer("Login event for client " + e.getSessionInfo().toString() + ", nothing to do");
    }
 
 
@@ -372,11 +373,11 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     */
    public void sessionRemoved(ClientEvent e) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "START-logout()");
-      //if (log.DUMP) log.dump(ME, requestBroker.toXml());
+      if (log.isLoggable(Level.FINER)) log.finer("START-logout()");
+      //if (log.isLoggable(Level.FINEST)) log.dump(ME, requestBroker.toXml());
 
       SessionInfo sessionInfo = e.getSessionInfo();
-      if (log.TRACE) log.trace(ME, "Logout event for client " + sessionInfo.toString() + ", removing entries");
+      if (log.isLoggable(Level.FINE)) log.fine("Logout event for client " + sessionInfo.toString() + ", removing entries");
       try {
          removeFromClientSubscriptionMap(sessionInfo, null);
       } catch (XmlBlasterException e1) {
@@ -387,7 +388,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       } catch (XmlBlasterException e2) {
       }
 
-      //if (log.DUMP) log.dump(ME, "END-logout()\n" + requestBroker.toXml());
+      //if (log.isLoggable(Level.FINEST)) log.dump(ME, "END-logout()\n" + requestBroker.toXml());
    }
 
 
@@ -396,7 +397,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     */
    public void subjectAdded(ClientEvent e) throws XmlBlasterException
    {
-      log.warn(ME, "Ignoring SubjectInfo added event for client " + e.getSubjectInfo().toString());
+      log.warning("Ignoring SubjectInfo added event for client " + e.getSubjectInfo().toString());
    }
 
    /**
@@ -404,7 +405,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     */
    public void subjectRemoved(ClientEvent e) throws XmlBlasterException
    {
-      log.warn(ME, "Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
+      log.warning("Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
    }
 
 
@@ -416,17 +417,17 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       String uniqueKey = topicHandler.getUniqueKey();
 
       if (topicHandler.hasExactSubscribers()) {
-         if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', we do nothing here as subscription reservation remains even on deleted messages");
+         if (log.isLoggable(Level.FINE)) log.fine("Erase event for oid=" + uniqueKey + "', we do nothing here as subscription reservation remains even on deleted messages");
          return;
       }
       Vector vec = getSubscriptionByOid(uniqueKey, false);
       if (vec == null) {
-         if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', we do nothing as no subscribes are found");
+         if (log.isLoggable(Level.FINE)) log.fine("Erase event for oid=" + uniqueKey + "', we do nothing as no subscribes are found");
          return;
       }
       for (int ii=0; ii<vec.size(); ii++) {
          SubscriptionInfo sub = (SubscriptionInfo)vec.elementAt(ii);
-         if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', removing subId=" + sub.getSubscriptionId() + " ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Erase event for oid=" + uniqueKey + "', removing subId=" + sub.getSubscriptionId() + " ...");
          subscriptionRemove(new SubscriptionEvent(sub));
       }
    }
@@ -438,11 +439,11 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       if (subscriptionInfo.getSubscribeCounter() > 1) {
-         if (log.TRACE) log.trace(ME, "Ignoring multisubscribe instance " + subscriptionInfo.getSubscribeCounter());
+         if (log.isLoggable(Level.FINE)) log.fine("Ignoring multisubscribe instance " + subscriptionInfo.getSubscribeCounter());
          return;
       }
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
-      if (log.TRACE) log.trace(ME, "Subscription add event for client " + sessionInfo.getId());
+      if (log.isLoggable(Level.FINE)) log.fine("Subscription add event for client " + sessionInfo.getId());
       KeyData keyData = subscriptionInfo.getKeyData();
 
       String uniqueKey = sessionInfo.getSessionName().getRelativeName();
@@ -460,7 +461,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
             subMap = (Map)obj;
          }
          subMap.put(subscriptionInfo.getSubscriptionId(), subscriptionInfo);
-         if (log.TRACE) log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getSubscriptionId() + " to subMap of client " + sessionInfo.getId());
+         if (log.isLoggable(Level.FINE)) log.fine("Adding subscriptionId=" + subscriptionInfo.getSubscriptionId() + " to subMap of client " + sessionInfo.getId());
       }
 
 
@@ -483,25 +484,25 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException {
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
       if (subscriptionInfo.getSubscribeCounter() > 1) {
-         if (log.TRACE) log.trace(ME, "Ignoring multisubscribe instance " + subscriptionInfo.getSubscribeCounter());
+         if (log.isLoggable(Level.FINE)) log.fine("Ignoring multisubscribe instance " + subscriptionInfo.getSubscribeCounter());
          return;
       }
 
       String subscriptionInfoUniqueKey = subscriptionInfo.getSubscriptionId();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
 
-      if (log.TRACE) log.trace(ME, "Subscription remove event for client " + sessionInfo.toString() + " for subscriptionId=" + subscriptionInfoUniqueKey);
+      if (log.isLoggable(Level.FINE)) log.fine("Subscription remove event for client " + sessionInfo.toString() + " for subscriptionId=" + subscriptionInfoUniqueKey);
 
       try {
          removeFromClientSubscriptionMap(sessionInfo, subscriptionInfoUniqueKey);
       } catch (XmlBlasterException e1) {
-         log.error(ME+".subscriptionRemove", "removeFromClientSubscriptionMap: " + e1.toString());
+         log.severe("removeFromClientSubscriptionMap: " + e1.toString());
       }
 
       try {
          removeFromQuerySubscribeRequestsSet(sessionInfo, subscriptionInfoUniqueKey);
       } catch (XmlBlasterException e2) {
-         log.error(ME+".subscriptionRemove", "removeFromQuerySubscribeRequestsSet: " + e2.toString());
+         log.severe("removeFromQuerySubscribeRequestsSet: " + e2.toString());
       }
 
       subscriptionInfo.shutdown();
@@ -520,32 +521,32 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       synchronized(clientSubscriptionMap) {
          if (subscriptionInfoUniqueKey == null) {
             obj = clientSubscriptionMap.remove(uniqueKey); // client logout
-            if (log.TRACE) log.trace(ME, "Removing client " + sessionInfo.toString() + " from clientSubscriptionMap ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Removing client " + sessionInfo.toString() + " from clientSubscriptionMap ...");
          }
          else {
             obj = clientSubscriptionMap.get(uniqueKey);    // client unsubscribes
-            if (log.TRACE) log.trace(ME, "Removing subscription " + subscriptionInfoUniqueKey + " from client " + sessionInfo.toString() + " from clientSubscriptionMap, subscriptionInfoUniqueKey=" + subscriptionInfoUniqueKey + " ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Removing subscription " + subscriptionInfoUniqueKey + " from client " + sessionInfo.toString() + " from clientSubscriptionMap, subscriptionInfoUniqueKey=" + subscriptionInfoUniqueKey + " ...");
          }
       }
       if (obj == null) {
-         if (log.TRACE) log.trace(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription for " + sessionInfo.toString() + ", client never subscribed something");
+         if (log.isLoggable(Level.FINE)) log.fine("Sorry, can't remove client subscription for " + sessionInfo.toString() + ", client never subscribed something");
          return;
       }
 
       // Now we have a map of all subscriptions of this client
 
       Map subMap = (Map)obj;
-      if (log.TRACE) log.trace(ME, "Subscription=" + subscriptionInfoUniqueKey + " client=" + sessionInfo.toString() + " subMap.size=" + subMap.size());
+      if (log.isLoggable(Level.FINE)) log.fine("Subscription=" + subscriptionInfoUniqueKey + " client=" + sessionInfo.toString() + " subMap.size=" + subMap.size());
       if (subscriptionInfoUniqueKey == null) {  // client does logout(), remove everything:
          synchronized (subMap) {
             Iterator iterator = subMap.values().iterator();
             while (iterator.hasNext()) {
                SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
                if (sub.getKeyData().isQuery()) {
-                  if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getSubscriptionId() + " from TopicHandler '" + sub.getKeyOid() + "'");
+                  if (log.isLoggable(Level.FINE)) log.fine("Ignoring subscription " + sub.getSubscriptionId() + " from TopicHandler '" + sub.getKeyOid() + "'");
                   continue;
                }
-               if (log.TRACE) log.trace(ME, "Removing subscription " + sub.getSubscriptionId() + " from TopicHandler '" + sub.getKeyOid() + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("Removing subscription " + sub.getSubscriptionId() + " from TopicHandler '" + sub.getKeyOid() + "'");
                sub.removeSubscribe(); // removes me from TopicHandler::subscriberMap
             }
          }
@@ -558,8 +559,8 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
             sub = (SubscriptionInfo)subMap.remove(subscriptionInfoUniqueKey);
          }
          if (sub == null) {
-            log.error(ME + ".Internal", "Sorry, can't remove client subscriptionId=" + subscriptionInfoUniqueKey + " for " + sessionInfo.toString() + ", not found, subMap size=" + subMap.size());
-            log.plain(ME, toXml());
+            log.severe("Sorry, can't remove client subscriptionId=" + subscriptionInfoUniqueKey + " for " + sessionInfo.toString() + ", not found, subMap size=" + subMap.size());
+            log.warning(toXml());
             Thread.dumpStack();
             return;
          }
@@ -574,7 +575,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     */
    private void removeFromQuerySubscribeRequestsSet(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "removing client " + sessionInfo.toString() + " subscriptionInfoUniqueKey=" + subscriptionInfoUniqueKey + " from querySubscribeRequestsSet with size=" + querySubscribeRequestsSet.size() + " ...");
+      if (log.isLoggable(Level.FINE)) log.fine("removing client " + sessionInfo.toString() + " subscriptionInfoUniqueKey=" + subscriptionInfoUniqueKey + " from querySubscribeRequestsSet with size=" + querySubscribeRequestsSet.size() + " ...");
       String uniqueKey = sessionInfo.getSessionName().getRelativeName();
 
       Vector vec = new Vector(querySubscribeRequestsSet.size());
@@ -591,7 +592,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
             }
          }
          for (int ii=0; ii<vec.size(); ii++) {
-            if (log.TRACE) log.trace(ME, "Removing subscription " + ((SubscriptionInfo)vec.elementAt(ii)).getSubscriptionId() + " from querySubscribeRequestsSet");
+            if (log.isLoggable(Level.FINE)) log.fine("Removing subscription " + ((SubscriptionInfo)vec.elementAt(ii)).getSubscriptionId() + " from querySubscribeRequestsSet");
             querySubscribeRequestsSet.remove(vec.elementAt(ii));
          }
       }

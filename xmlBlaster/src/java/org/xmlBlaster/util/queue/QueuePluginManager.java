@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -37,7 +38,7 @@ public class QueuePluginManager extends PluginManagerBase
 {
    private final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(QueuePluginManager.class.getName());
    private final String pluginEnvClass = "queue"; // Used for env lookup like "queue/history/QueuePlugin[JDBC][1.0]=..."
    public static final String pluginPropertyName = "QueuePlugin";
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.util.queue.ram.RamQueuePlugin"},
@@ -47,9 +48,9 @@ public class QueuePluginManager extends PluginManagerBase
    public QueuePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       this.ME = "QueuePluginManager" + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "Constructor QueuePluginManager");
+      if (log.isLoggable(Level.FINER)) log.finer("Constructor QueuePluginManager");
    }
 
    /**
@@ -103,11 +104,11 @@ public class QueuePluginManager extends PluginManagerBase
    public String getDefaultPluginName(String type, String version) {
       for (int i=0; i<defaultPluginNames.length; i++) {
          if (defaultPluginNames[i][0].equalsIgnoreCase(type)) {
-            if (log.TRACE) log.trace(ME, "Choosing for type=" + type + " plugin " + defaultPluginNames[i][1]);
+            if (log.isLoggable(Level.FINE)) log.fine("Choosing for type=" + type + " plugin " + defaultPluginNames[i][1]);
             return defaultPluginNames[i][1];
          }
       }
-      log.warn(ME, "Choosing for type=" + type + " default plugin " + defaultPluginNames[0][1]);
+      log.warning("Choosing for type=" + type + " default plugin " + defaultPluginNames[0][1]);
       return defaultPluginNames[0][1];
    }
 }

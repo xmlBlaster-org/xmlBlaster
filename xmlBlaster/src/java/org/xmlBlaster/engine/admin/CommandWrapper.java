@@ -6,7 +6,8 @@ Comment:   Contains the parsed command
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -34,7 +35,7 @@ public final class CommandWrapper
 {
    private final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(CommandWrapper.class.getName());
 
    //private final static String PROP_SEPARATOR = "&";
    //private final static String XMLBLASTER_PREFIX = "xmlBlaster.";
@@ -85,7 +86,7 @@ public final class CommandWrapper
     */
    public CommandWrapper(Global glob, String command) throws XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog("admin");
+
       this.ME = "CommandWrapper-" + this.glob.getId();
       this.myStrippedClusterNodeId = getStrippedClusterNodeId();
       if (command == null)
@@ -105,14 +106,14 @@ public final class CommandWrapper
       if (questionIndex >= 0 && equalsIndex >= 0 && questionIndex < equalsIndex)  {
          parseKeyValue();
          prefix = cmd.substring(0,equalsIndex);
-         if (log.TRACE) log.trace(ME, "prefix=" + prefix + " key=" + key + " value=" + value);
+         if (log.isLoggable(Level.FINE)) log.fine("prefix=" + prefix + " key=" + key + " value=" + value);
       }
 
       StringTokenizer st = new StringTokenizer(prefix, "/");
       int ii=1;
       while (st.hasMoreTokens()) {
          String token = st.nextToken();
-         if (log.TRACE) log.trace(ME, "Parsing '" + prefix + "' ii=" + ii + " token=" + token);
+         if (log.isLoggable(Level.FINE)) log.fine("Parsing '" + prefix + "' ii=" + ii + " token=" + token);
          if (ii==1)
             root = token;
          else if (ii == 2)
@@ -249,7 +250,7 @@ public final class CommandWrapper
    private void parseKeyValue() throws XmlBlasterException {
       int qIndex = cmd.indexOf("?");
       if (qIndex < 1 || cmd.length() <= (qIndex+1)) {
-         log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find '?'");
+         log.warning("parseKeyValue(): Invalid command '" + cmd + "', can't find '?'");
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find '?'");
       }
       // "addRemoteProperty=arg1&arg2"
@@ -270,7 +271,7 @@ public final class CommandWrapper
       
       this.value = StringPairTokenizer.parseLine(argsString, '&');
       if (this.value.length < 1) {
-         log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find value behind '='");
+         log.warning("parseKeyValue(): Invalid command '" + cmd + "', can't find value behind '='");
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find value behind '='");
       }
       /*
@@ -328,7 +329,7 @@ public final class CommandWrapper
    public final String getCommandStripAssign() throws XmlBlasterException {
       int equalsIndex = cmd.lastIndexOf("=");
       if (equalsIndex < 1 || cmd.length() <= (equalsIndex+1)) {
-         log.warn(ME, "getCommandStripAssign(): Invalid command '" + cmd + "', can't find assignment '='");
+         log.warning("getCommandStripAssign(): Invalid command '" + cmd + "', can't find assignment '='");
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".getCommandStripAssign", "Invalid command '" + cmd + "', can't find assignment '='");
       }
       return cmd.substring(0,equalsIndex).trim();

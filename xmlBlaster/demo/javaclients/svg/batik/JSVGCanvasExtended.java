@@ -10,7 +10,8 @@ package javaclients.svg.batik;
 import org.apache.batik.swing.JSVGCanvas;
 // import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -31,7 +32,7 @@ import org.w3c.dom.Element;
 public class JSVGCanvasExtended extends JSVGCanvas
 {
    private final static String ME = "JSVGCanvasExtended";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(JSVGCanvasExtended.class.getName());
 //   private final static String PARSER_CLASSNAME = "org.xml.sax.parser";
 //   private final static String PARSER_CLASSNAME = "org.apache.crimson.parser.Parser2";
 //   private final static String PARSER_CLASSNAME = "org.apache.crimson.parser.XMLReaderImpl";
@@ -45,7 +46,7 @@ public class JSVGCanvasExtended extends JSVGCanvas
    public JSVGCanvasExtended(Global glob)
    {
       super();
-      this.log = glob.getLog("batik");
+
       this.specificInteractor = new Interactor();
       /* Initializes this object. It sets all necessary stuff for the special
        * interactor (the one which takes care of the application specific stuff)
@@ -114,7 +115,7 @@ public class JSVGCanvasExtended extends JSVGCanvas
          this.transceiver.subscribeElements();
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, ".updateDocument: graphicsNode was null");
+         log.severe(".updateDocument: graphicsNode was null");
       }
    }
 

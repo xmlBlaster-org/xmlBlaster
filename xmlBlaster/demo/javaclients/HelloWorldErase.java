@@ -1,7 +1,8 @@
 // xmlBlaster/demo/javaclients/HelloWorldErase.java
 package javaclients;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -35,11 +36,11 @@ public class HelloWorldErase
 {
    private final String ME = "HelloWorldErase";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorldErase.class.getName());
 
    public HelloWorldErase(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("HelloWorldErase");
+
       try {
          boolean interactive = glob.getProperty().get("interactive", true);
          String oid = glob.getProperty().get("oid", "Hello");
@@ -48,22 +49,22 @@ public class HelloWorldErase
          boolean persistent = glob.getProperty().get("persistent", false);
          int historyNumErase = glob.getProperty().get("historyNumErase", -99);
 
-         log.info(ME, "Used settings are:");
-         log.info(ME, "   -interactive    " + interactive);
-         log.info(ME, "   -oid            " + oid);
-         log.info(ME, "   -xpath          " + xpath);
-         log.info(ME, "   -forceDestroy   " + forceDestroy);
-         log.info(ME, "   -persistent     " + persistent);
+         log.info("Used settings are:");
+         log.info("   -interactive    " + interactive);
+         log.info("   -oid            " + oid);
+         log.info("   -xpath          " + xpath);
+         log.info("   -forceDestroy   " + forceDestroy);
+         log.info("   -persistent     " + persistent);
 
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
-         log.info(ME, "============= CreatingConnectQos");
+         log.info("============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
-         log.info(ME, "ConnectQos is " + qos.toXml());
+         log.info("ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
-         log.info(ME, "Connect success as " + crq.toXml());
+         log.info("Connect success as " + crq.toXml());
 
          if (interactive) {
-            log.info(ME, "Hit a key to erase");
+            log.info("Hit a key to erase");
             try { System.in.read(); } catch(java.io.IOException e) {}
          }
 
@@ -80,22 +81,22 @@ public class HelloWorldErase
          }
          EraseReturnQos[] eraseArr = con.erase(ek, eq);
          for (int i=0; i < eraseArr.length; i++) {
-            log.info(ME, eraseArr[i].toXml());
+            log.info(eraseArr[i].toXml());
          }
-         log.info(ME, "Erased " + eraseArr.length + " topics");
+         log.info("Erased " + eraseArr.length + " topics");
 
-         log.info(ME, "Hit a key to exit");
+         log.info("Hit a key to exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
 
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
    }
 

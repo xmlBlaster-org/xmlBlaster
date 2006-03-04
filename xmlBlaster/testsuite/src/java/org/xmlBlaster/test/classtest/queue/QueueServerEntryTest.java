@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
@@ -44,7 +45,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class QueueServerEntryTest extends TestCase {
    private String ME = "QueueServerEntryTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(QueueServerEntryTest.class.getName());
 
    private I_Queue queue = null;
 
@@ -62,7 +63,7 @@ public class QueueServerEntryTest extends TestCase {
       super(name);
       this.glob        = glob;
       ME = "QueueServerEntryTest with class: " + PLUGIN_TYPES[this.count];
-      log = glob.getLog("test");
+
       this.count       = currImpl;
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
@@ -79,7 +80,7 @@ public class QueueServerEntryTest extends TestCase {
          this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
+         log.severe("could not propertly set up the database: " + ex.getMessage());
       }
    }
 
@@ -89,7 +90,7 @@ public class QueueServerEntryTest extends TestCase {
          ME = "QueueServerEntryTest with class: " + PLUGIN_TYPES[this.count];
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
       }
       if (this.queue != null) {
          this.queue.shutdown();
@@ -105,7 +106,7 @@ public class QueueServerEntryTest extends TestCase {
             this.queue = null;
          }
          catch (Exception ex) {
-            this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+            log.warning("error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
          }
       }
    }
@@ -129,7 +130,7 @@ public class QueueServerEntryTest extends TestCase {
 
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-      this.log.info(ME, "************ Starting updateEntry Test");
+      log.info("************ Starting updateEntry Test");
 
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "updateEntry");
       this.queue.initialize(queueId, prop);
@@ -162,7 +163,7 @@ public class QueueServerEntryTest extends TestCase {
          msgQosData.setRemainingLifeStatic(6000L);
          MsgUnit msgUnit  = new MsgUnit(key.toXml(), content, msgQosData.toXml());
 
-         log.trace(ME, "Testing" + msgQosData.toXml());
+         log.fine("Testing" + msgQosData.toXml());
 
          SessionName receiver = new SessionName(glob, "receiver1");
          String subscriptionId = "subid";
@@ -194,20 +195,20 @@ public class QueueServerEntryTest extends TestCase {
          assertEquals("The msgUnitWrapperUniqueId of the entry is different ", entry.getMsgUnitWrapperUniqueId(), updateEntry.getMsgUnitWrapperUniqueId());
          assertEquals("The topic oid of the entry is different ", entry.getKeyOid(), updateEntry.getKeyOid());
          assertEquals("The topic oid of the entry is different ", entry.getStorageId().getId(), updateEntry.getStorageId().getId());
-         log.info(ME, "SUCCESS: MsgQueueUpdateEntry: Persistent fields are read as expected");
+         log.info("SUCCESS: MsgQueueUpdateEntry: Persistent fields are read as expected");
 
          MsgUnit retMsgUnit = null;
          try {
             retMsgUnit = updateEntry.getMsgUnit();
          }
          catch (Throwable e) {  // Should not happen for RAM queue
-            log.error(ME, "Lookup failed, probably engine.Global has no Requestbroker, wi ignore the problem: " + e.getMessage());
+            log.severe("Lookup failed, probably engine.Global has no Requestbroker, wi ignore the problem: " + e.getMessage());
             e.printStackTrace();
             return;
          }
          MsgQosData retMsgQosData = updateEntry.getMsgQosData();
 
-         log.trace(ME, "Received" + retMsgQosData.toXml());
+         log.fine("Received" + retMsgQosData.toXml());
 
          // check message unit:
          assertEquals("The key of the message unit is different ", key.getOid(), retMsgUnit.getKeyData().getOid());
@@ -231,12 +232,12 @@ public class QueueServerEntryTest extends TestCase {
 
          queue.removeRandom(returnEntry); //just for cleaning up
 
-         this.log.info(ME, "successfully completed tests for the updateEntry");
+         log.info("successfully completed tests for the updateEntry");
 
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
-         this.log.error(ME, "exception occured : " + ex.getMessage());
+         log.severe("exception occured : " + ex.getMessage());
          throw ex;
       }
    }
@@ -260,7 +261,7 @@ public class QueueServerEntryTest extends TestCase {
 
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-      this.log.info(ME, "********* Starting historyEntry Test");
+      log.info("********* Starting historyEntry Test");
       StorageId queueId = new StorageId(Constants.RELATING_HISTORY, "historyEntry");
       this.queue.initialize(queueId, prop);
       this.queue.clear();
@@ -291,7 +292,7 @@ public class QueueServerEntryTest extends TestCase {
          msgQosData.setRemainingLifeStatic(6000L);
          MsgUnit msgUnit  = new MsgUnit(key.toXml(), content, msgQosData.toXml());
 
-         log.trace(ME, "Testing" + msgQosData.toXml());
+         log.fine("Testing" + msgQosData.toXml());
 
          org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, queue.getStorageId());
@@ -312,20 +313,20 @@ public class QueueServerEntryTest extends TestCase {
          assertEquals("The msgUnitWrapperUniqueId of the entry is different ", entry.getMsgUnitWrapperUniqueId(), historyEntry.getMsgUnitWrapperUniqueId());
          assertEquals("The topic oid of the entry is different ", entry.getKeyOid(), historyEntry.getKeyOid());
          assertEquals("The topic oid of the entry is different ", entry.getStorageId().getId(), historyEntry.getStorageId().getId());
-         log.info(ME, "Persistent fields are read as expected");
+         log.info("Persistent fields are read as expected");
 
          MsgUnit retMsgUnit = null;
          try {
             retMsgUnit = historyEntry.getMsgUnit();
          }
          catch (Throwable e) {  // Should not happen for RAM queue
-            log.error(ME, "Lookup failed, probably engine.Global has no Requestbroker, wi ignore the problem: " + e.getMessage());
+            log.severe("Lookup failed, probably engine.Global has no Requestbroker, wi ignore the problem: " + e.getMessage());
             e.printStackTrace();
             return;
          }
          MsgQosData retMsgQosData = historyEntry.getMsgQosData();
 
-         log.trace(ME, "Received" + retMsgQosData.toXml());
+         log.fine("Received" + retMsgQosData.toXml());
 
          // check message unit:
          assertEquals("The key of the message unit is different ", key.getOid(), retMsgUnit.getKeyData().getOid());
@@ -344,12 +345,12 @@ public class QueueServerEntryTest extends TestCase {
 
          queue.removeRandom(returnEntry); //just for cleaning up
 
-         this.log.info(ME, "successfully completed tests for the historyEntry");
+         log.info("successfully completed tests for the historyEntry");
 
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
-         this.log.error(ME, "exception occured : " + ex.getMessage());
+         log.severe("exception occured : " + ex.getMessage());
          throw ex;
       }
    }
@@ -391,7 +392,7 @@ public class QueueServerEntryTest extends TestCase {
          testSub.tearDown();
          */
          long usedTime = System.currentTimeMillis() - startTime;
-         testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+         testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
       }
    }
 }

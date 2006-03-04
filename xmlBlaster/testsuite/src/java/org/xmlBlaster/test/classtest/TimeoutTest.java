@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -18,13 +19,13 @@ import junit.framework.*;
  */
 public class TimeoutTest extends TestCase {
    private String ME = "TimeoutTest";
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TimeoutTest.class.getName());
    private boolean event = false;
    private int counter = 0;
 
    public TimeoutTest(String name) {
       super(name);
-      this.log = org.xmlBlaster.util.Global.instance().getLog(null);
+
    }
 
    /**
@@ -39,7 +40,7 @@ public class TimeoutTest extends TestCase {
          Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   event = true;
-                  log.info(ME, "Timeout happened after 0 millisec");
+                  log.info("Timeout happened after 0 millisec");
                }
             },
             0L, null);
@@ -54,7 +55,7 @@ public class TimeoutTest extends TestCase {
          Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   event = true;
-                  log.info(ME, "Timeout happened after 500 millisec");
+                  log.info("Timeout happened after 500 millisec");
                }
             },
             500L, null);
@@ -69,7 +70,7 @@ public class TimeoutTest extends TestCase {
          Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   event = true;
-                  log.error(ME, "Timeout happened after 1 sec");
+                  log.severe("Timeout happened after 1 sec");
                }
             },
             1000L, null);
@@ -107,7 +108,7 @@ public class TimeoutTest extends TestCase {
             long diff = time - keyArr[counter].getMillis();
             if (Math.abs(diff) < 40)
                // Allow 40 millis wrong notification (for code execution etc.) ...
-               log.info(ME, "Timeout occurred for " + userData.toString() + " at " + time + " millis, real time failure=" + diff + " millis.");
+               log.info("Timeout occurred for " + userData.toString() + " at " + time + " millis, real time failure=" + diff + " millis.");
             else {
                System.err.println("*****ERROR: Wrong timeout occurred for " + userData.toString() + " at " + time + " millis, scheduled was " + keyArr[counter] + " , real time failure=" + diff + " millis.");
                fail("*****ERROR: Wrong timeout occurred for " + userData.toString() + " at " + time + " millis, scheduled was " + keyArr[counter] + " , real time failure=" + diff + " millis.");
@@ -131,7 +132,7 @@ public class TimeoutTest extends TestCase {
 
       Timestamp key = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
       timeout.removeTimeoutListener(key);
-      try { key = timeout.refreshTimeoutListener(key, 1500L); } catch (XmlBlasterException e) { log.info(ME, "Refresh failed which is OK (it is a test): " + e.getMessage()); }
+      try { key = timeout.refreshTimeoutListener(key, 1500L); } catch (XmlBlasterException e) { log.info("Refresh failed which is OK (it is a test): " + e.getMessage()); }
 
       assertEquals("Should not be expired", false, timeout.isExpired(keyArr[2]));
 
@@ -165,7 +166,7 @@ public class TimeoutTest extends TestCase {
             if (counter == numTimers) {
                long diff = System.currentTimeMillis() - start;
                assertTrue("Error testing " + numTimers + " timers, all updates needed " + diff + " millis", diff < 4000L);
-               log.info(ME, "Success, tested " + numTimers + " timers, all updates came in " + diff + " millis");
+               log.info("Success, tested " + numTimers + " timers, all updates came in " + diff + " millis");
             }
          }
       }
@@ -176,7 +177,7 @@ public class TimeoutTest extends TestCase {
       }
       assertEquals("Expected " + numTimers + " instead of " + timeout.getSize() + " active timers", numTimers, timeout.getSize());
 
-      log.info(ME, "Feeding of " + numTimers + " done, " + (long) (1000 * (double) numTimers / (System.currentTimeMillis() - start)) + " adds/sec");
+      log.info("Feeding of " + numTimers + " done, " + (long) (1000 * (double) numTimers / (System.currentTimeMillis() - start)) + " adds/sec");
 
       while (counter != numTimers) {
          try { Thread.currentThread().sleep(500L); } catch (Exception e) { fail("*****ERROR:main interrupt: " + e.toString()); }

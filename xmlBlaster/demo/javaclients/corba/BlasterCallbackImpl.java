@@ -9,7 +9,8 @@ Version:   $Id$
 package javaclients.corba;
 
 import org.xmlBlaster.util.Global;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -32,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie approach
    final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(BlasterCallbackImpl.class.getName());
 
    /**
     * Construct the client CORBA side callback server. 
@@ -40,8 +41,8 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
    public BlasterCallbackImpl(java.lang.String name) {
       this.ME = "BlasterCallbackImpl-" + name;
       this.glob = Global.instance();
-      this.log = glob.getLog("client");
-      if (log.CALL) log.trace(ME, "Entering constructor with argument");
+
+      if (log.isLoggable(Level.FINER)) log.fine("Entering constructor with argument");
    }
 
    /**
@@ -58,8 +59,8 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
     */
    public String[] update(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaMsgUnitArr)
    {
-      log.info(ME, "#================== BlasterCallback update START =============");
-      log.info(ME, "cbSessionId=" + cbSessionId);
+      log.info("#================== BlasterCallback update START =============");
+      log.info("cbSessionId=" + cbSessionId);
       String[] ret = new String[corbaMsgUnitArr.length];
       try {
          MsgUnitRaw[] msgUnitArr = org.xmlBlaster.protocol.corba.CorbaDriver.convert(glob, corbaMsgUnitArr);
@@ -69,17 +70,17 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
             try {
                xmlKey = new UpdateKey(null, msgUnit.getKey());
             } catch (XmlBlasterException e) {
-               log.error(ME, e.getMessage());
+               log.severe(e.getMessage());
             }
-            log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.getContent().length);
-            log.info(ME, new String(msgUnit.getContent()));
+            log.info("Callback invoked for " + xmlKey.toString() + " content length = " + msgUnit.getContent().length);
+            log.info(new String(msgUnit.getContent()));
             ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
-      log.info(ME, "#================== BlasterCallback update END ===============");
+      log.info("#================== BlasterCallback update END ===============");
       return ret;
    }
 
@@ -99,7 +100,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
          update(cbSessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+         log.severe("updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -111,7 +112,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
     */
    public String ping(String qos)
    {
-      if (log.CALL) log.call(ME, "Entering ping() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering ping() ...");
       return "";
    }
 }

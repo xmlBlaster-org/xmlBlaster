@@ -6,7 +6,8 @@ Comment:   Main manager class for administrative commands
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin.extern;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
@@ -36,7 +37,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
    private String ME;
 
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(SnmpGateway.class.getName());
    private CommandManager manager;
    private String sessionId = null;
 
@@ -59,7 +60,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
     */
    public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog("admin");
+
       this.ME = "SnmpGateway" + this.glob.getLogPrefixDashed();
       this.manager = commandManager;
 
@@ -68,7 +69,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       if (!useSnmp) return false;
 
       boolean ret = initSubagent();
-      log.trace(ME, "Started SNMP gateway for administration, try 'snmpget -v 1 -c public " + glob.getLocalIP() + " 1.3.6.1.4.1.11662.1.2.1.3' to access it.");
+      log.fine("Started SNMP gateway for administration, try 'snmpget -v 1 -c public " + glob.getLocalIP() + " 1.3.6.1.4.1.11662.1.2.1.3' to access it.");
       return ret;
    }
 
@@ -96,16 +97,16 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
       System.setProperty("jax.debug", ""+debug);
 
       if (this.port < 1) {
-         log.warn(ME, "SNMP subagent is switched off, please provide admin.snmp.port > 0 to switch it on");
+         log.warning("SNMP subagent is switched off, please provide admin.snmp.port > 0 to switch it on");
          return false;
       }
 
       try {
-         log.info(ME, "Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port);
+         log.info("Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port);
 
          connection = new AgentXConnection(this.hostname, this.port);
 
-         log.info(ME, "Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port + " established");
+         log.info("Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port + " established");
 
          session = new AgentXSession();
          connection.openSession(session);
@@ -113,11 +114,11 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
          registration = new AgentXRegistration(new AgentXOID(Constants.XMLBLASTER_OID_ROOT));
          session.register(registration);
 
-         log.info(ME, "Subagent registered");
+         log.info("Subagent registered");
 
       } catch (Exception e) {
          String text = "Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port + " failed:" + e.toString();
-         log.error(ME, text);
+         log.severe(text);
          throw new XmlBlasterException(ME, text);
       }
 
@@ -173,7 +174,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
 
          QueryKeyData query = new QueryKeyData(this.glob);
          query.setOid("__cmd:" + cmd);
-         if (log.TRACE) log.trace(ME, "Invoking SNMP cmd=" + cmd + " as query=" + query.toXml());
+         if (log.isLoggable(Level.FINE)) log.fine("Invoking SNMP cmd=" + cmd + " as query=" + query.toXml());
 
          AddressServer addressServer = null; // TODO !!!
          MsgUnit[] msgs = manager.get(addressServer, sessionId, query, null);
@@ -192,14 +193,14 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
          }
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME+".SNMP", e.toString());
+         if (log.isLoggable(Level.FINE)) log.fine(e.toString());
          return e.toString();
       }
    }
 
    private final String getErrorText(String error) {
       String text = "ERROR-XmlBlaster SNMP server: " + error + "Try a 'snmpget ...'.";
-      log.info(ME, error);
+      log.info(error);
       return text;
    }
 
@@ -222,7 +223,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
             session.close(AgentXSession.REASON_SHUTDOWN);
             session = null;
          } catch (Exception e) {
-            log.warn(ME, "Problems on shutdown: " + e.toString());
+            log.warning("Problems on shutdown: " + e.toString());
          }
       }
       if (connection != null) {
@@ -230,10 +231,10 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
             connection.close();
             connection = null;
          } catch (Exception e) {
-            log.warn(ME, "Problems on disconnect: " + e.toString());
+            log.warning("Problems on disconnect: " + e.toString());
          }
       }
-      log.info(ME, "Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port + " is shutdown");
+      log.info("Subagent connection over AGENTX to SNMP-agent on " + this.hostname + ":" + this.port + " is shutdown");
    }
 
    /**

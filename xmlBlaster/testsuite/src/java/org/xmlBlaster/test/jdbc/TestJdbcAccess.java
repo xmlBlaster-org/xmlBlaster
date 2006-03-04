@@ -6,7 +6,8 @@ Comment:   Test JDBC plugin
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.jdbc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -42,7 +43,7 @@ public class TestJdbcAccess extends TestCase
 {
    private static String ME = "TestJdbcAccess";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestJdbcAccess.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -60,7 +61,7 @@ public class TestJdbcAccess extends TestCase
    public TestJdbcAccess(String testName) {
       super(testName);
       this.glob = Global.instance();
-      this.log = glob.getLog(null);
+
       this.name = testName; // name to login to xmlBlaster
    }
 
@@ -84,17 +85,17 @@ public class TestJdbcAccess extends TestCase
       glob.init((String[])argsVec.toArray(new String[argsVec.size()]));
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing JDBC access");
+      log.info("XmlBlaster is ready for testing JDBC access");
 
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
 
       wrap = new XmlDbMessageWrapper(glob, "joe", "secret", "jdbc:dbfFile:.");
@@ -133,26 +134,26 @@ public class TestJdbcAccess extends TestCase
     */
    public void testQueries()
    {
-      log.info(ME, "######## Start testQueries()");
+      log.info("######## Start testQueries()");
       String request = "CREATE TABLE cars (name CHAR(25), id NUMERIC(4,0))";
-      log.info(ME, "*** REQUEST=" + request);
+      log.info("*** REQUEST=" + request);
       wrap.initUpdate(true, request);
       String result = invokeSyncQuery(wrap, 1, null);
    
       String[] brands = { "Fiat", "Audi", "BMW", "Porsche", "Mercedes", "Renault", "Citroen" };
       for (int ii=0; ii<brands.length; ii++) {
          request = "INSERT INTO cars (name, id) VALUES('" + brands[ii] + "', " + (ii+1) + ")";
-         log.info(ME, "*** REQUEST=" + request);
+         log.info("*** REQUEST=" + request);
          wrap.initUpdate(true, request);
          result = invokeSyncQuery(wrap, 1, null);
       }
 
       request = "SELECT * from cars";
-      log.info(ME, "*** REQUEST=" + request);
+      log.info("*** REQUEST=" + request);
       wrap.initQuery(100, true, request);
       result = invokeSyncQuery(wrap, 1, "BMW");
-      log.info(ME, "Successful retrieved cars, dump ommitted to not disturb JUNIT test report generation");
-      log.trace(ME, "Retrieved cars:\n" + result);
+      log.info("Successful retrieved cars, dump ommitted to not disturb JUNIT test report generation");
+      log.fine("Retrieved cars:\n" + result);
    }
 
    /**
@@ -160,19 +161,19 @@ public class TestJdbcAccess extends TestCase
     */
    private String invokeSyncQuery(XmlDbMessageWrapper wrap, int numResultRowsExpected, String token) {
       try {
-         if (log.TRACE) log.trace(ME, "Sending command string:\n" + wrap.toXml()); // Junit report does not like it
+         if (log.isLoggable(Level.FINE)) log.fine("Sending command string:\n" + wrap.toXml()); // Junit report does not like it
          GetKey key = new GetKey(glob, "__sys__jdbc");
          key.wrap(wrap.toXml());
          GetQos qos = new GetQos(glob);
          MsgUnit[] msgUnitArr = con.get(key.toXml(), qos.toXml());
          if (msgUnitArr.length > 0) {
             String result = new String(msgUnitArr[0].getContent());
-            if (log.TRACE) log.trace(ME, result);
+            if (log.isLoggable(Level.FINE)) log.fine(result);
             if (token != null && result.indexOf(token) < 0)
                fail("Token " + token + " not found in result");
          }
          else {
-            log.info(ME, "No results for your query");
+            log.info("No results for your query");
          }
          assertEquals("Wrong number of results", numResultRowsExpected, msgUnitArr.length);
          return new String(msgUnitArr[0].getContent());

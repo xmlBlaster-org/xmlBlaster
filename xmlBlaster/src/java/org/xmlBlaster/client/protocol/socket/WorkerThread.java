@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
@@ -22,7 +23,7 @@ public class WorkerThread extends Thread
 {
    private final String ME;
    
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(WorkerThread.class.getName());
 
    /** Contains the received message */
    private final MsgInfo parser;
@@ -35,7 +36,7 @@ public class WorkerThread extends Thread
     */
    public WorkerThread(Global glob, SocketCallbackImpl cbHandler, MsgInfo receiver) {
       super("XmlBlaster."+cbHandler.getType()+".cbWorkerThread");
-      this.log = glob.getLog("socket");
+
       this.cbHandler = cbHandler;
       this.ME = "WorkerThread-" + cbHandler.getSocketConnection().getLoginName();
       this.parser = receiver;
@@ -46,26 +47,26 @@ public class WorkerThread extends Thread
     */
    public void run() {
       try {
-         if (log.TRACE) log.trace(ME, "Starting worker thread, invoking client code with received message");
+         if (log.isLoggable(Level.FINE)) log.fine("Starting worker thread, invoking client code with received message");
          cbHandler.receiveReply(this.parser, SocketUrl.SOCKET_TCP);  // Parse the message and invoke callback to client code
-         if (log.TRACE) log.trace(ME, "Worker thread done");
+         if (log.isLoggable(Level.FINE)) log.fine("Worker thread done");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
       catch (Throwable e) {
          if (!(e instanceof IOException)) e.printStackTrace();
          if (e instanceof java.net.SocketException) { // : Socket closed
-            if (log.TRACE) log.trace(ME, "Shutting down because of: " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Shutting down because of: " + e.toString());
          }
          else {
-            log.error(ME, "Shutting down because of: " + e.toString());
+            log.severe("Shutting down because of: " + e.toString());
          }
          try {
             cbHandler.getSocketConnection().shutdown();
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "run() could not shutdown correctly. " + ex.getMessage());
+            log.severe("run() could not shutdown correctly. " + ex.getMessage());
          }
       }
    }

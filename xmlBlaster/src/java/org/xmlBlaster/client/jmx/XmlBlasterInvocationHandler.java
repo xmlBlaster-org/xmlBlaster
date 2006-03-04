@@ -9,7 +9,8 @@ import java.lang.reflect.*;
 import java.util.*;
 
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.key.*;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -29,7 +30,7 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
   static long messageID = -1;
   private SubscribeKey subsKey = null;
   private final Global global;
-  private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlBlasterInvocationHandler.class.getName());
   private I_XmlBlasterAccess xmlBlasterAccess;
   private String ME = "XmlBlasterInvocationHandler";
   private static int port = 3424;
@@ -39,11 +40,11 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
   public XmlBlasterInvocationHandler(String serverName, Global global) {
     this.global = global;
 //    this.global = Global.instance();
-    this.log = this.global.getLog("jmx");
-    if (this.log.CALL) 
-       this.log.error(ME, "Constructor for '" + serverName + "'");
 
-    log.info(ME,"XmlBlasterInvocationHandler called");
+    if (log.isLoggable(Level.FINER)) 
+       log.severe("Constructor for '" + serverName + "'");
+
+    log.info("XmlBlasterInvocationHandler called");
 
     try {
       Address addr = new Address(global);
@@ -55,7 +56,7 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
       global.init(prop);
       this.xmlBlasterAccess = global.getXmlBlasterAccess();
 
-      log.info(ME,"Connecting to embedded xmlBlaster on port "+ port +" Address " + addr.getBootstrapUrl());
+      log.info("Connecting to embedded xmlBlaster on port "+ port +" Address " + addr.getBootstrapUrl());
       if (!this.xmlBlasterAccess.isConnected()) {
          ConnectQos qos = new ConnectQos(this.global, "InternalConnector", "connector");
          this.xmlBlasterAccess.connect(qos, this);
@@ -81,19 +82,19 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
    */
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     String methodName = method.getName();
-    log.info(ME,"invoke: within XmlBlasterInvocationHandler called - Method called: " + method);
+    log.info("invoke: within XmlBlasterInvocationHandler called - Method called: " + method);
     MethodInvocation mi = new MethodInvocation(method);
     mi.setParams(args);
 
     String ID = "" + messageID++;
     mi.setId(ID);
-    log.info(ME,"invoke: Put MethodInvocation-ID into callback-buffer in order to rematch again '" + mi.getId() + "' and method '" + method.getName() + "'");
+    log.info("invoke: Put MethodInvocation-ID into callback-buffer in order to rematch again '" + mi.getId() + "' and method '" + method.getName() + "'");
     Callback cb = new XmlBlasterCallback(ID, mi);
     callbackBuffer.put(ID, cb);
 
     if (method.getName().equals("close")) {
-      if (this.log.DUMP) {
-         this.log.dump(ME, "invoke 'close': ");
+      if (log.isLoggable(Level.FINEST)) {
+         log.finest("invoke 'close': ");
          Thread.currentThread().dumpStack();
       }
       close();
@@ -102,14 +103,14 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
 
     ser = new SerializeHelper(this.global);
     PublishReturnQos rqos = this.xmlBlasterAccess.publish(new MsgUnit("<key oid='xmlBlasterMBeans_Invoke'/>",ser.serializeObject(mi),"<qos/>"));
-    log.info(ME,"invoke: Returning callback-object: " + cb);
+    log.info("invoke: Returning callback-object: " + cb);
     return cb;
   }
 
 
   synchronized private void close() {
 //   this.xmlBlasterAccess.disconnect(new DisconnectQos());
-    log.error(ME,"Disconnecting from xmlBlaster.... (not really disconnecting)");
+    log.severe("Disconnecting from xmlBlaster.... (not really disconnecting)");
   }
 
 /**
@@ -118,7 +119,7 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
  */
   synchronized public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-    if (this.log.TRACE) this.log.trace(ME, "update: Received asynchronous message in \"update()\" clientSide '" +
+    if (log.isLoggable(Level.FINE)) this.log.fine("update: Received asynchronous message in \"update()\" clientSide '" +
                        updateKey.getOid() + "' state=" + updateQos.getState() + " from xmlBlaster - extracting MethodInvocation...");
 
     //get MI from byteArray
@@ -126,18 +127,18 @@ public class XmlBlasterInvocationHandler implements I_Callback, java.lang.reflec
     SerializeHelper serHelp = new SerializeHelper(global);
     try {
       mi = (MethodInvocation) serHelp.deserializeObject(content);
-      log.info(ME,"update: Method received: " + mi.getMethodName());
+      log.info("update: Method received: " + mi.getMethodName());
     }
     catch (Exception ex) {
-      log.error(ME,"update: Error when trying to expand MethodInvocationObject " + ex.toString());
+      log.severe("update: Error when trying to expand MethodInvocationObject " + ex.toString());
       ex.printStackTrace();
     }
     String ID = mi.getId();
-    log.info(ME, " update: ID from MethodInvocation that maps callback-buffer: " + ID);
+    log.info(" update: ID from MethodInvocation that maps callback-buffer: " + ID);
     XmlBlasterCallback cb = (XmlBlasterCallback) callbackBuffer.get(ID);
-    if (this.log.TRACE) {
-       this.log.trace(ME," update: Whats in Received Object?? - " + mi.getReturnValue());
-       this.log.trace(ME, "update: the callback with ID '" + ID + "' is '" + cb + "'");
+    if (log.isLoggable(Level.FINE)) {
+       log.fine(" update: Whats in Received Object?? - " + mi.getReturnValue());
+       log.fine("update: the callback with ID '" + ID + "' is '" + cb + "'");
     }
     if (cb != null ) cb.setMethodInvocation(mi);
     return "";

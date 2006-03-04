@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -58,7 +59,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class CacheQueueDisconnectTest extends TestCase {
    private String ME = "CacheQueueDisconnectTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(CacheQueueDisconnectTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
    private int numOfQueues = 10;
@@ -86,7 +87,7 @@ public class CacheQueueDisconnectTest extends TestCase {
 
    private void initialize(Global glob, String name, int currImpl) {
       this.glob = Global.instance();
-      this.log = glob.getLog(null);
+
 
       this.numOfQueues = glob.getProperty().get("queues", 2);
       this.numOfMsg = glob.getProperty().get("entries", 100);
@@ -110,18 +111,18 @@ public class CacheQueueDisconnectTest extends TestCase {
          this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
       }
    }
 
    protected void setUp() {
-      log = glob.getLog("test");
+
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
          ME = "CacheQueueDisconnectTest with class: " + PLUGIN_TYPES[this.count];
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
       }
 
       // cleaning up the database from previous runs ...
@@ -133,7 +134,7 @@ public class CacheQueueDisconnectTest extends TestCase {
          this.queue.shutdown();
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
+         log.severe("could not propertly set up the database: " + ex.getMessage());
          this.suppressTest = true;
       }
    }
@@ -144,13 +145,13 @@ public class CacheQueueDisconnectTest extends TestCase {
       this.queue.shutdown();
       }
       catch (Exception ex) {
-         this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+         log.warning("error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
       }
    }
 
    public void testPutWithBreak() {
       if (this.suppressTest) {
-         log.error(ME, "JDBC test is not driven as no database was found");
+         log.severe("JDBC test is not driven as no database was found");
          return;
       }
       try {
@@ -179,7 +180,7 @@ public class CacheQueueDisconnectTest extends TestCase {
 //      for (int j=0; j < sweeps; j++) {
          DummyEntry[] entries = new DummyEntry[num];
          for (int i=0; i < num; i++) {
-            this.log.info(me, "put one entry");
+            log.info("put one entry");
             entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), sizeOfMsg, true);
             queue.put(entries[i], false);
             try {
@@ -194,12 +195,12 @@ public class CacheQueueDisconnectTest extends TestCase {
          for (int i=0; i < entries.length; i++) {
             long uniqueId = ((DummyEntry)lst.get(i)).getUniqueId();
             assertEquals(me + ": wrong order in entries: ", entries[i].getUniqueId(), uniqueId);
-            this.log.info(me, "remove one entry");
+            log.info("remove one entry");
             queue.removeRandom(entries[i]);
          }
       }
   
-//      this.log.info(me, "successfully ended");
+//      log.info("successfully ended");
    }
 
 

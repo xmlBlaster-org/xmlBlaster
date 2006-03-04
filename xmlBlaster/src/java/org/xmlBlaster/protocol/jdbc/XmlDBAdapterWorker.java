@@ -9,7 +9,8 @@
  */
 package org.xmlBlaster.protocol.jdbc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -37,7 +38,7 @@ public class XmlDBAdapterWorker extends Thread {
 
    private static final String   ME = "WorkerThread";
    private final Global          glob;
-   private final LogChannel      log;
+   private static Logger log = Logger.getLogger(XmlDBAdapterWorker.class.getName());
    private String                cust;
    private byte[]                content;
    private I_Publish             callback = null;
@@ -53,7 +54,7 @@ public class XmlDBAdapterWorker extends Thread {
    public XmlDBAdapterWorker(Global glob, String cust, byte[] content,
                              I_Publish callback, NamedConnectionPool namedPool) {
       this.glob = glob;
-      this.log = glob.getLog("jdbc");
+
       this.cust = cust;
       this.content = content;
       this.callback = callback;
@@ -69,7 +70,7 @@ public class XmlDBAdapterWorker extends Thread {
       MsgUnit[] msgArr = adap.query();
       try {
          if (msgArr == null || msgArr.length == 0) {
-            if (log.TRACE) log.trace(ME, "No result message returned to client");
+            if (log.isLoggable(Level.FINE)) log.fine("No result message returned to client");
             return;
          }
          for (int ii=0; ii<msgArr.length; ii++) {
@@ -77,15 +78,15 @@ public class XmlDBAdapterWorker extends Thread {
             PublishQos qos = new PublishQos(glob, new Destination(new SessionName(glob, cust)));
             MsgUnitRaw msgUnitRaw = new MsgUnitRaw(msgArr[ii], key.toXml(), msgArr[ii].getContent(), qos.toXml());
             String  oid = callback.publish(msgUnitRaw);
-            if (log.DUMP) log.plain(ME, "Delivered Results...\n" + new String(content));
+            if (log.isLoggable(Level.FINEST)) log.finest("Delivered Results...\n" + new String(content));
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Exception in notify: " + e.getMessage());
+         log.severe("Exception in notify: " + e.getMessage());
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, "Exception in notify: " + e);
+         log.severe("Exception in notify: " + e);
       }
    }
 }

@@ -1,7 +1,8 @@
 // xmlBlaster/demo/javaclients/HelloWorldSubscribe.java
 package javaclients;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -70,7 +71,7 @@ public class HelloWorldSubscribe implements I_Callback
 {
    private final String ME = "HelloWorldSubscribe";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorldSubscribe.class.getName());
    private I_XmlBlasterAccess con;
    private SubscribeReturnQos srq;
    private String subscribeServerId;
@@ -153,58 +154,58 @@ public class HelloWorldSubscribe implements I_Callback
 
    public HelloWorldSubscribe(Global glob_) {
       this.glob = glob_;
-      this.log = glob.getLog("HelloWorldSubscribe");
+
       boolean disconnect = glob.getProperty().get("disconnect", true);
       try {
          readEnv();
 
          if (oid.length() < 1 && xpath.length() < 1) {
-            log.warn(ME, "No -oid or -xpath given, we subscribe to oid='Hello'.");
+            log.warning("No -oid or -xpath given, we subscribe to oid='Hello'.");
             oid = "Hello";
          }
 
          if (this.updateSleep > 0L && interactiveUpdate == true) {
-            log.warn(ME, "You can't set 'updateSleep' and  'interactiveUpdate' simultaneous, we reset interactiveUpdate to false");
+            log.warning("You can't set 'updateSleep' and  'interactiveUpdate' simultaneous, we reset interactiveUpdate to false");
             this.interactiveUpdate = false;
          }
 
          if (this.updateExceptionErrorCode != null && this.updateExceptionRuntime != null) {
-            log.warn(ME, "You can't throw a runtime and an XmlBlasterException simultaneous, please check your settings " +
+            log.warning("You can't throw a runtime and an XmlBlasterException simultaneous, please check your settings " +
                           " -updateException.errorCode and -updateException.runtime");
             this.updateExceptionRuntime = null;
          }
 
-         log.info(ME, "Used settings are:");
-         log.info(ME, "   -connect/qos/persistent     " + connectPersistent);
-         log.info(ME, "   -connect/qos/sessionRefresh " + connectRefreshSession);
-         log.info(ME, "   -interactive       " + interactive);
-         log.info(ME, "   -interactiveUpdate " + this.interactiveUpdate);
-         log.info(ME, "   -updateSleep       " + this.updateSleep);
-         log.info(ME, "   -updateException.errorCode " + this.updateExceptionErrorCode);
-         log.info(ME, "   -updateException.message   " + this.updateExceptionMessage);
-         log.info(ME, "   -updateException.runtime   " + this.updateExceptionRuntime);
-         log.info(ME, "   -shutdownCbServer          " + shutdownCbServer);
-         log.info(ME, "   -oid               " + oid);
-         log.info(ME, "   -domain            " + domain);
-         log.info(ME, "   -xpath             " + xpath);
-         log.info(ME, "   -multiSubscribe    " + multiSubscribe);
-         log.info(ME, "   -persistentSubscribe " + persistentSubscribe);
-         log.info(ME, "   -notifyOnErase     " + notifyOnErase);
-         log.info(ME, "   -local             " + local);
-         log.info(ME, "   -initialUpdate     " + initialUpdate);
-         log.info(ME, "   -updateOneway      " + updateOneway);
-         log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
-         log.info(ME, "   -historyNewestFirst " + historyNewestFirst);
-         log.info(ME, "   -wantContent       " + wantContent);
-         log.info(ME, "   -dumpToFile        " + dumpToFile);
-         log.info(ME, "   -fileExtension     " + fileExtension);
-         log.info(ME, "   -unSubscribe       " + unSubscribe);
-         log.info(ME, "   -disconnect        " + disconnect);
-         log.info(ME, "   -filter.type       " + filterType);
-         log.info(ME, "   -filter.version    " + filterVersion);
-         log.info(ME, "   -filter.query      " + filterQuery);
-         log.info(ME, "For more info please read:");
-         log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html");
+         log.info("Used settings are:");
+         log.info("   -connect/qos/persistent     " + connectPersistent);
+         log.info("   -connect/qos/sessionRefresh " + connectRefreshSession);
+         log.info("   -interactive       " + interactive);
+         log.info("   -interactiveUpdate " + this.interactiveUpdate);
+         log.info("   -updateSleep       " + this.updateSleep);
+         log.info("   -updateException.errorCode " + this.updateExceptionErrorCode);
+         log.info("   -updateException.message   " + this.updateExceptionMessage);
+         log.info("   -updateException.runtime   " + this.updateExceptionRuntime);
+         log.info("   -shutdownCbServer          " + shutdownCbServer);
+         log.info("   -oid               " + oid);
+         log.info("   -domain            " + domain);
+         log.info("   -xpath             " + xpath);
+         log.info("   -multiSubscribe    " + multiSubscribe);
+         log.info("   -persistentSubscribe " + persistentSubscribe);
+         log.info("   -notifyOnErase     " + notifyOnErase);
+         log.info("   -local             " + local);
+         log.info("   -initialUpdate     " + initialUpdate);
+         log.info("   -updateOneway      " + updateOneway);
+         log.info("   -historyNumUpdates " + historyNumUpdates);
+         log.info("   -historyNewestFirst " + historyNewestFirst);
+         log.info("   -wantContent       " + wantContent);
+         log.info("   -dumpToFile        " + dumpToFile);
+         log.info("   -fileExtension     " + fileExtension);
+         log.info("   -unSubscribe       " + unSubscribe);
+         log.info("   -disconnect        " + disconnect);
+         log.info("   -filter.type       " + filterType);
+         log.info("   -filter.version    " + filterVersion);
+         log.info("   -filter.query      " + filterQuery);
+         log.info("For more info please read:");
+         log.info("   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html");
 
          con = glob.getXmlBlasterAccess();
 
@@ -212,13 +213,13 @@ public class HelloWorldSubscribe implements I_Callback
          con.registerConnectionListener(new I_ConnectionStateListener() {
             public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                if (connection.getConnectReturnQos().isReconnected())
-                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): Same server instance found");
+                  log.info("I_ConnectionStateListener.reachedAlive(): Same server instance found");
                else
-                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): New server instance found, connected to " +
+                  log.info("I_ConnectionStateListener.reachedAlive(): New server instance found, connected to " +
                         connection.getConnectReturnQos().getSessionName());
 
                if (connection.getQueue().getNumOfEntries() > 0) {
-                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): Queue contains " +
+                  log.info("I_ConnectionStateListener.reachedAlive(): Queue contains " +
                            connection.getQueue().getNumOfEntries() + " messages: " +
                            connection.getQueue().toXml(""));
                   // connection.getQueue().clear(); -> Would destroy ConnectQos if new connected
@@ -232,10 +233,10 @@ public class HelloWorldSubscribe implements I_Callback
                }
             }
             public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.warn(ME, "I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
+               log.warning("I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
             }
             public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.error(ME, "I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead, good bye");
+               log.severe("I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead, good bye");
                System.exit(1);
             }
          });
@@ -244,28 +245,28 @@ public class HelloWorldSubscribe implements I_Callback
          ConnectQos qos = new ConnectQos(glob);
          qos.setPersistent(connectPersistent);
          qos.setRefreshSession(connectRefreshSession);
-         log.info(ME, "ConnectQos is " + qos.toXml());
+         log.info("ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          // crq can be null if '-dispatch/connection/doSendConnect false' is set
-         log.info(ME, "Connect success as " + ((crq==null)?" faked connect":crq.toXml()));
+         log.info("Connect success as " + ((crq==null)?" faked connect":crq.toXml()));
 
          subscribe(); // first time
 
          if (shutdownCbServer) {
             Global.waitOnKeyboardHit("Hit a key to shutdown callback server");
             con.getCbServer().shutdown();
-            log.info(ME, "Callback server halted, no update should arrive ...");
+            log.info("Callback server halted, no update should arrive ...");
             /*
             for (int ii=0; ii<4; ii++) {
                Global.waitOnKeyboardHit("Hit a key to publish " + ii + "/4 ...");
                org.xmlBlaster.util.MsgUnit msgUnit = new org.xmlBlaster.util.MsgUnit("<key oid='FromSubscriber'/>", (new String("BLA")).getBytes(), "<qos/>");
                con.publish(msgUnit);
-               log.info(ME, "Published message");
+               log.info("Published message");
             }
             */
          }
          else {
-            log.info(ME, "Waiting on update ...");
+            log.info("Waiting on update ...");
          }
 
          if (interactiveUpdate) {
@@ -281,10 +282,10 @@ public class HelloWorldSubscribe implements I_Callback
             if (domain.length() > 0)  // cluster routing information
                uk.setDomain(domain);
             UnSubscribeQos uq = new UnSubscribeQos(glob);
-            log.info(ME, "UnSubscribeKey=\n" + uk.toXml());
-            log.info(ME, "UnSubscribeQos=\n" + uq.toXml());
+            log.info("UnSubscribeKey=\n" + uk.toXml());
+            log.info("UnSubscribeQos=\n" + uq.toXml());
             UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
-            log.info(ME, "UnSubscribe on " + urqArr.length + " subscriptions done");
+            log.info("UnSubscribe on " + urqArr.length + " subscriptions done");
          }
 
          if (runAsDaemon) {
@@ -300,17 +301,17 @@ public class HelloWorldSubscribe implements I_Callback
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
       finally {
          if (con != null && disconnect) {
             DisconnectQos dq = new DisconnectQos(glob);
             con.disconnect(dq);
-            log.info(ME, "Disconnected");
+            log.info("Disconnected");
          }
       }
    }
@@ -354,8 +355,8 @@ public class HelloWorldSubscribe implements I_Callback
             sq.addAccessFilter(filter);
          }
 
-         log.info(ME, "SubscribeKey=\n" + sk.toXml());
-         log.info(ME, "SubscribeQos=\n" + sq.toXml());
+         log.info("SubscribeKey=\n" + sk.toXml());
+         log.info("SubscribeQos=\n" + sq.toXml());
 
          if (firstConnect && interactive) {
             Global.waitOnKeyboardHit("Hit a key to subscribe '" + qStr + "'");
@@ -366,12 +367,12 @@ public class HelloWorldSubscribe implements I_Callback
 
          subscribeServerId = con.getConnectReturnQos().getSecretSessionId() + con.getConnectReturnQos().getServerInstanceId();
 
-         log.info(ME, "Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
+         log.info("Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
                         "', got subscription id='" + this.srq.getSubscriptionId() + "'\n" + this.srq.toXml());
-         if (log.DUMP) log.dump("", "Subscribed: " + sk.toXml() + sq.toXml() + srq.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest("Subscribed: " + sk.toXml() + sq.toXml() + srq.toXml());
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
    }
 
@@ -391,7 +392,7 @@ public class HelloWorldSubscribe implements I_Callback
       if (dumpToConsole) {
          System.out.println("");
          System.out.println("============= START #" + updateCounter + " '" + updateKey.getOid() + "' =======================");
-         log.info(ME, "Receiving update #" + updateCounter + " of a message ...");
+         log.info("Receiving update #" + updateCounter + " of a message ...");
          System.out.println("<xmlBlaster>");
          System.out.println(updateKey.toXml());
          System.out.println("");
@@ -433,10 +434,10 @@ public class HelloWorldSubscribe implements I_Callback
             }
 
             org.jutils.io.FileUtil.writeFile(fileName, tmp);
-            log.info(ME, "Dumped content #" + updateCounter + " of topic '" + updateKey.getOid() + "' to file '" + fileName + "'");
+            log.info("Dumped content #" + updateCounter + " of topic '" + updateKey.getOid() + "' to file '" + fileName + "'");
          }
          catch (org.jutils.JUtilsException e) {
-            log.error(ME, "Can't dump content to file '" + fileName + "': " + e.toString());
+            log.severe("Can't dump content to file '" + fileName + "': " + e.toString());
          }
          finally {
             try {
@@ -447,7 +448,7 @@ public class HelloWorldSubscribe implements I_Callback
                }
             }
             catch (Exception e) {
-               log.error(ME, "Can't remove lock file '" + lckFile + "': " + e.toString());
+               log.severe("Can't remove lock file '" + lckFile + "': " + e.toString());
             }
          }
       }
@@ -470,29 +471,29 @@ public class HelloWorldSubscribe implements I_Callback
       }
 
       if (this.updateSleep > 0L) {
-         log.info(ME, "Sleeping for " + this.updateSleep + " millis ...");
+         log.info("Sleeping for " + this.updateSleep + " millis ...");
          try { Thread.sleep(this.updateSleep); } catch( InterruptedException i) {}
-         log.info(ME, "Waking up.");
+         log.info("Waking up.");
       } else if (this.interactiveUpdate) {
          Global.waitOnKeyboardHit("Hit a key to return from update() (we are blocking the server callback) ...");
-         log.info(ME, "Returning update() - control goes back to server");
+         log.info("Returning update() - control goes back to server");
       }
 
       if (this.updateExceptionErrorCode != null) {
-         log.info(ME, "Throwing XmlBlasterException with errorCode='" + this.updateExceptionErrorCode + "' back to server ...");
+         log.info("Throwing XmlBlasterException with errorCode='" + this.updateExceptionErrorCode + "' back to server ...");
          ErrorCode errorCode;
          try {
             errorCode = ErrorCode.toErrorCode(this.updateExceptionErrorCode);
          }
          catch (IllegalArgumentException e) {
-            log.error(ME, "Please supply a valid exception errorCode (see ErrorCode.java) for instead of -updateException.errorCode " + this.updateExceptionErrorCode + "");
+            log.severe("Please supply a valid exception errorCode (see ErrorCode.java) for instead of -updateException.errorCode " + this.updateExceptionErrorCode + "");
             return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
          }
          throw new XmlBlasterException(updateKey.getGlobal(), errorCode, ME, this.updateExceptionMessage); 
       }
 
       if (this.updateExceptionRuntime != null) {
-         log.info(ME, "Throwing RuntimeException '" + this.updateExceptionRuntime + "'");
+         log.info("Throwing RuntimeException '" + this.updateExceptionRuntime + "'");
          throw new RuntimeException(this.updateExceptionRuntime);
       }
 

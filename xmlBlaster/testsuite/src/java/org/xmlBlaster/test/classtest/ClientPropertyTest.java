@@ -1,7 +1,8 @@
 package org.xmlBlaster.test.classtest;
 
 import org.custommonkey.xmlunit.XMLTestCase;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -21,7 +22,7 @@ import org.xmlBlaster.util.def.Constants;
  */
 public class ClientPropertyTest extends XMLTestCase {
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(ClientPropertyTest.class.getName());
    int counter = 0;
 
    public ClientPropertyTest(String name) {
@@ -30,7 +31,7 @@ public class ClientPropertyTest extends XMLTestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
    }
 
    public void testClientProperty() throws Exception {

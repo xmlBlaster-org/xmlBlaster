@@ -9,7 +9,8 @@ package org.xmlBlaster.client.protocol.corba;
 
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -78,7 +79,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 {
    private String ME = "CorbaConnection";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(CorbaConnection.class.getName());
 
    private org.omg.CORBA.ORB orb;
 
@@ -133,7 +134,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
       init(glob, null);
 
-      log.info(ME, "Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
+      log.info("Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
    }
 
    /** 
@@ -155,17 +156,17 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("corba");
+
       this.pluginInfo = pluginInfo;
       resetConnection();
-      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
+      log.info("Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**
     * Reset
     */
    public void resetConnection() {
-      if (log.TRACE) log.trace(ME, "resetConnection():");
+      if (log.isLoggable(Level.FINE)) log.fine("resetConnection():");
       this.authServer   = null;
       this.xmlBlaster = null;
    }
@@ -193,7 +194,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     */
    private Server getXmlBlaster() throws XmlBlasterException {
       if (this.xmlBlaster == null) {
-         if (log.TRACE) log.trace(ME, "No CORBA connection available.");
+         if (log.isLoggable(Level.FINE)) log.fine("No CORBA connection available.");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                                        "The CORBA xmlBlaster handle is null, no connection available");
       }
@@ -211,12 +212,12 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     */
    NamingContextExt getNamingService() throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "getNamingService() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("getNamingService() ...");
       if (nameService != null)
          return nameService;
 
       if (orb == null) {
-         log.error(ME, "orb==null, internal problem");
+         log.severe("orb==null, internal problem");
          Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "orb==null, internal problem");
       }
@@ -232,26 +233,26 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                        " - try to specify '-bootstrapHostname <hostName> -bootstrapPort " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster (not using any naming service)\n" +
                        " - or contact the server administrator to start a naming service";
          if (this.verbose)
-            log.warn(ME + ".NoNameService", text);
+            log.warning(text);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", text);
       }
       if (nameServiceObj == null) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", "Can't access naming service (null), is there any running?");
       }
-      // if (log.TRACE) log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
+      // if (log.isLoggable(Level.FINE)) log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
       try {
          nameService = org.omg.CosNaming.NamingContextExtHelper.narrow(nameServiceObj);
          if (nameService == null) {
-            log.error(ME + ".NoNameService", "Can't access naming service (narrow problem)");
+            log.severe("Can't access naming service (narrow problem)");
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", "Can't access naming service (narrow problem)");
          }
-         if (log.TRACE) log.trace(ME, "Successfully narrowed handle for naming service");
+         if (log.isLoggable(Level.FINE)) log.fine("Successfully narrowed handle for naming service");
          return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
                              // but it is not sure that the naming service is really running
       }
       catch (Throwable e) {
-         if (this.verbose) log.warn(ME + ".NoNameService", "Can't access naming service");
+         if (this.verbose) log.warning("Can't access naming service");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, "NoNameService", e.toString());
       }
    }
@@ -277,7 +278,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     *
     */
    public AuthServer getAuthenticationService(Address address) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "getAuthenticationService() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("getAuthenticationService() ...");
       if (this.authServer != null) {
          return this.authServer;
       }
@@ -291,7 +292,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          if (address.getRawAddress() != null && address.getRawAddress().length() > 2) {
             String authServerIOR = address.getRawAddress();
             this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-            if (this.verbose) log.info(ME, "Accessing xmlBlaster using your given IOR string in Address.getRawAddress()");
+            if (this.verbose) log.info("Accessing xmlBlaster using your given IOR string in Address.getRawAddress()");
             return this.authServer;
          }
 
@@ -299,10 +300,10 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          String authServerIOR = address.getEnv("iorString", (String)null).getValue();
          if (authServerIOR != null) {
             this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-            if (this.verbose) log.info(ME, "Accessing xmlBlaster using your given IOR string");
+            if (this.verbose) log.info("Accessing xmlBlaster using your given IOR string");
             return this.authServer;
          }
-         if (log.TRACE) log.trace(ME, "No -dispatch/connection/plugin/ior/iorString ...");
+         if (log.isLoggable(Level.FINE)) log.fine("No -dispatch/connection/plugin/ior/iorString ...");
 
          String authServerIORFile = glob.getProperty().get("dispatch/connection/plugin/ior/iorFile", (String)null);  // -dispatch/connection/plugin/ior/iorFile IOR string is given through a file
          if (authServerIORFile != null) {
@@ -312,10 +313,10 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "dispatch/connection/plugin/ior/iorFile", e);
             }
             this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-            log.info(ME, "Accessing xmlBlaster using your given IOR file " + authServerIORFile);
+            log.info("Accessing xmlBlaster using your given IOR file " + authServerIORFile);
             return this.authServer;
          }
-         if (log.TRACE) log.trace(ME, "No -dispatch/connection/plugin/ior/iorFile ...");
+         if (log.isLoggable(Level.FINE)) log.fine("No -dispatch/connection/plugin/ior/iorFile ...");
 
 
          // 2) check if argument -bootstrapHostname <hostName or IP> -bootstrapPort <number> at program startup is given
@@ -325,10 +326,10 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
             authServerIOR = glob.accessFromInternalHttpServer(address, "AuthenticationService.ior", this.verbose);
             if (System.getProperty("java.version").startsWith("1") &&  !authServerIOR.startsWith("IOR:")) {
                authServerIOR = "IOR:000" + authServerIOR; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
-               log.warn(ME, "Manipulated IOR because of missing 'IOR:'");
+               log.warning("Manipulated IOR because of missing 'IOR:'");
             }
             this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-            log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection to " +
+            log.info("Accessing xmlBlaster AuthServer IOR using builtin http connection to " +
                          address.getBootstrapUrl());
             return this.authServer;
          }
@@ -337,11 +338,11 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          }
          catch(Throwable e) {
             if (this.verbose)  {
-               log.error(ME, "XmlBlaster not found with internal HTTP download");
+               log.severe("XmlBlaster not found with internal HTTP download");
                e.printStackTrace();
             }
          }
-         if (log.TRACE) log.trace(ME, "No -bootstrapHostname / -bootstrapPort for " + address.getBootstrapUrl() + " ...");
+         if (log.isLoggable(Level.FINE)) log.fine("No -bootstrapHostname / -bootstrapPort for " + address.getBootstrapUrl() + " ...");
 
          String contextId = glob.getProperty().get("NameService.context.id", "xmlBlaster");
          if (contextId == null) contextId = "";
@@ -362,7 +363,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          boolean useNameService = address.getEnv("useNameService", true).getValue();  // -plugin/ior/ns default is to ask the naming service
          if (useNameService) {
 
-            if (this.verbose) log.info(ME, "Trying to find a CORBA naming service ...");
+            if (this.verbose) log.info("Trying to find a CORBA naming service ...");
             try {
                
                // NameService entry is e.g. "xmlBlaster.MOM/heron.MOM"
@@ -371,7 +372,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
                NamingContextExt namingContextExt = getNamingService();
                NameComponent [] nameXmlBlaster = new NameComponent[] { new NameComponent(contextId, contextKind) };
-               if (log.TRACE) log.trace(ME, "Query NameServer -ORBInitRef NameService=" + glob.getProperty().get("ORBInitRef","") +
+               if (log.isLoggable(Level.FINE)) log.fine("Query NameServer -ORBInitRef NameService=" + glob.getProperty().get("ORBInitRef","") +
                              ((System.getProperty("ORBInitRef.NameService") != null) ? System.getProperty("ORBInitRef.NameService") : "") +
                              " to find the xmlBlaster root context " + CorbaDriver.getString(nameXmlBlaster));
                org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
@@ -393,7 +394,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                   this.authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNode));
                }
                catch (Exception ex) {
-                  if (log.TRACE) log.trace(ME, "Query NameServer to find a suitable xmlBlaster server for " + CorbaDriver.getString(nameXmlBlaster) + "/" + CorbaDriver.getString(nameNode));
+                  if (log.isLoggable(Level.FINE)) log.fine("Query NameServer to find a suitable xmlBlaster server for " + CorbaDriver.getString(nameXmlBlaster) + "/" + CorbaDriver.getString(nameNode));
                   BindingListHolder bl = new BindingListHolder();
                   BindingIteratorHolder bi = new BindingIteratorHolder();
                   relativeContext.list(0, bl, bi);
@@ -419,24 +420,24 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
                         if (clusterId.equals(id) && clusterKind.equals(kind)) {
                            try {
-                              if (log.TRACE) log.trace(ME, "Trying to resolve NameService entry '"+CorbaDriver.getString(nameNodeTmp)+"'");
+                              if (log.isLoggable(Level.FINE)) log.fine("Trying to resolve NameService entry '"+CorbaDriver.getString(nameNodeTmp)+"'");
                               this.authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
                               break; // found a matching server
                            }
                            catch (Exception exc) {
-                              log.warn(ME, "Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
+                              log.warning("Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
                            }
                         }
 
                         if (authServerFirst == null) {
-                           if (log.TRACE) log.trace(ME, "Remember the first server");
+                           if (log.isLoggable(Level.FINE)) log.fine("Remember the first server");
                            try {
                               firstServerName = tmpServerName;
-                              if (log.TRACE) log.trace(ME, "Remember the first reachable xmlBlaster server from NameService entry '"+firstServerName+"'");
+                              if (log.isLoggable(Level.FINE)) log.fine("Remember the first reachable xmlBlaster server from NameService entry '"+firstServerName+"'");
                               authServerFirst = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
                            }
                            catch (Exception exc) {
-                              log.warn(ME, "Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
+                              log.warning("Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
                            }
                         }
                      }
@@ -449,10 +450,10 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                         String str = "Can't choose one of " + countServerFound +
                                      " avalailable server in CORBA NameService: " + serverNameList +
                                      ". Please choose one with e.g. -NameService.node.id " + tmpId;
-                        log.error(ME, str);
+                        log.severe(str);
                         throw new Exception(str);
                      }
-                     log.info(ME, "Choosing only available server '" + firstServerName + "' in CORBA NameService -ORBInitRef NameService=" +
+                     log.info("Choosing only available server '" + firstServerName + "' in CORBA NameService -ORBInitRef NameService=" +
                                   System.getProperty("ORBInitRef"));
                      this.authServer = authServerFirst;
                      return authServerFirst;
@@ -462,7 +463,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                   }
                }
 
-               log.info(ME, "Accessing xmlBlaster using a naming service '" + nameXmlBlaster[0].id + "." + nameXmlBlaster[0].kind + "/" +
+               log.info("Accessing xmlBlaster using a naming service '" + nameXmlBlaster[0].id + "." + nameXmlBlaster[0].kind + "/" +
                               nameNode[0].id + "." + nameNode[0].kind + "' on " + System.getProperty("ORBInitRef"));
                return this.authServer;
             }
@@ -470,7 +471,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text, e);
             }
          }
-         if (log.TRACE) log.trace(ME, "No -plugin/ior/useNameService ...");
+         if (log.isLoggable(Level.FINE)) log.fine("No -plugin/ior/useNameService ...");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
       }
       finally {
@@ -489,10 +490,10 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please pass a valid QoS for connect()");
 
       this.ME = "CorbaConnection";
-      if (log.CALL) log.call(ME, "connect(xmlBlaster="+this.xmlBlaster+") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("connect(xmlBlaster="+this.xmlBlaster+") ...");
       try {
          AuthServer remoteAuthServer = getAuthenticationService(this.clientAddress);
-         if (log.TRACE) log.trace(ME, "Got authServer handle, trying connect ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Got authServer handle, trying connect ...");
          return remoteAuthServer.connect(connectQos);
       }
       catch(XmlBlasterException e) {
@@ -514,14 +515,14 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see I_XmlBlasterConnection#connectLowlevel(Address)
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "connectLowlevel() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("connectLowlevel() ...");
       this.clientAddress = address;
       if (this.orb == null) {
          this.orb = OrbInstanceFactory.createOrbInstance(this.glob,(String[])null,
                                               glob.getProperty().getProperties(), this.clientAddress);
       }
       getAuthenticationService(this.clientAddress);
-      if (log.TRACE) log.trace(ME, "Success, connectLowlevel()");
+      if (log.isLoggable(Level.FINE)) log.fine("Success, connectLowlevel()");
    }
 
     /**
@@ -533,7 +534,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
          this.xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          this.ME = "CorbaConnection-"+connectReturnQos.getSessionName().toString();
-         if (log.TRACE) log.trace(ME, "setConnectReturnQos(): xmlBlaster=" + this.xmlBlaster);
+         if (log.isLoggable(Level.FINE)) log.fine("setConnectReturnQos(): xmlBlaster=" + this.xmlBlaster);
       }
       catch(Throwable e) {
          this.xmlBlaster = null;
@@ -550,14 +551,14 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     *         false failure on logout
     */
    public boolean disconnect(String qos) {
-      if (log.CALL) log.call(ME, "disconnect() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("disconnect() ...");
 
       if (this.xmlBlaster == null) {
          try {
             shutdown();
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "disconnect. Could not shutdown properly. " + ex.getMessage());
+            log.severe("disconnect. Could not shutdown properly. " + ex.getMessage());
          }
          return false;
       }
@@ -575,18 +576,18 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          this.xmlBlaster = null;
          return true;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         log.warn(ME, "Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
+         log.warning("Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
       } catch(org.omg.CORBA.OBJ_ADAPTER e) {
-         log.warn(ME, "No disconnect possible, no CORBA connection available: " + e.toString());
+         log.warning("No disconnect possible, no CORBA connection available: " + e.toString());
       } catch(org.omg.CORBA.TRANSIENT e) {
-         log.warn(ME, "No disconnect possible, CORBA connection lost: " + e.toString());
+         log.warning("No disconnect possible, CORBA connection lost: " + e.toString());
       } catch(org.omg.CORBA.COMM_FAILURE e) {
-         log.warn(ME, "No disconnect possible, CORBA connection lost: " + e.toString());
+         log.warning("No disconnect possible, CORBA connection lost: " + e.toString());
       } catch(org.omg.CORBA.OBJECT_NOT_EXIST e) {
-         log.warn(ME, "No disconnect possible, CORBA connection lost: " + e.toString());
+         log.warning("No disconnect possible, CORBA connection lost: " + e.toString());
       } catch(Throwable e) {
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, null, e);
-         log.warn(ME, xmlBlasterException.getMessage());
+         log.warning(xmlBlasterException.getMessage());
          e.printStackTrace();
       }
 
@@ -594,7 +595,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          shutdown();
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "disconnect. Could not shutdown properly. " + ex.getMessage());
+         log.severe("disconnect. Could not shutdown properly. " + ex.getMessage());
       }
       this.xmlBlaster = null;
       return false;
@@ -605,7 +606,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * Is called by logout()
     */
    public void shutdown() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "shutdown()");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown()");
       if (this.authServer != null) {
          this.authServer._release();
          this.authServer = null;
@@ -621,7 +622,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
             this.orb = null;
          }
          catch (Throwable ex) {
-            this.log.warn(ME, "shutdown: Exception occured during orb.shutdown("+wait_for_completion+"): " + ex.toString());
+            log.warning("shutdown: Exception occured during orb.shutdown("+wait_for_completion+"): " + ex.toString());
          }
       }
    }
@@ -639,7 +640,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "subscribe() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("subscribe() ...");
       try {
          return getXmlBlaster().subscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
@@ -654,7 +655,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] unSubscribe(String xmlKey, String qos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "unSubscribe() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("unSubscribe() ...");
       try {
          return getXmlBlaster().unSubscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
@@ -676,11 +677,11 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Publishing ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Publishing ...");
       try {
          return getXmlBlaster().publish(CorbaDriver.convert(msgUnit));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("XmlBlasterException: " + e.getMessage());
          throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publish() failed", e);
@@ -693,11 +694,11 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     */
    public String[] publishArr(MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "publishArr() num of Entries: " + msgUnitArr.length);
+      if (log.isLoggable(Level.FINER)) log.finer("publishArr() num of Entries: " + msgUnitArr.length);
       try {
          return getXmlBlaster().publishArr(CorbaDriver.convert(msgUnitArr));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("XmlBlasterException: " + e.getMessage());
          throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishArr", e);
@@ -708,7 +709,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public void publishOneway(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "publishOneway() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("publishOneway() ...");
       try {
          getXmlBlaster().publishOneway(CorbaDriver.convert(msgUnitArr));
       } catch(Throwable e) {
@@ -720,7 +721,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "erase() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("erase() ...");
       if (xmlKey==null) xmlKey = "";
       if (qos==null) qos = "";
       try {
@@ -728,7 +729,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
-         log.error(ME+".erase", "IO exception: " + e.toString() + " sessionId=" + this.sessionId);
+         log.severe("IO exception: " + e.toString() + " sessionId=" + this.sessionId);
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e);
       }
    }
@@ -738,7 +739,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final MsgUnitRaw[] get(String xmlKey, String qos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "get() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("get() ...");
       try {
          return CorbaDriver.convert(glob, getXmlBlaster().get(xmlKey, qos));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {

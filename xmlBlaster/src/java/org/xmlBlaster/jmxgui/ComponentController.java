@@ -14,7 +14,8 @@ import org.xml.sax.*;
 
 import java.util.Hashtable;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.jmxgui.util.XmlUtil;
 
@@ -25,7 +26,7 @@ import org.xmlBlaster.jmxgui.util.XmlUtil;
 public class ComponentController {
 
   private XmlUtil xmlUtil = null;
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(ComponentController.class.getName());
   private Global glob = null;
   private Hashtable hObjects;
   private static String ME = "ComponentController";
@@ -33,7 +34,7 @@ public class ComponentController {
   public ComponentController(Global glob) {
     if (glob == null) glob = Global.instance();
     xmlUtil = new XmlUtil();
-    log = glob.getLog("jmxGUI");
+
     hObjects = new Hashtable();
     Document doc = xmlUtil.loadConfig();
     buildDOM(doc);
@@ -46,8 +47,8 @@ public class ComponentController {
       NamedNodeMap nn = n.getAttributes();
       String className = nn.getNamedItem("class").getNodeValue();
       String key = nn.getNamedItem("name").getNodeValue();
-      log.info(ME," name of the class to load: " + className);
-      log.info(ME,"class will be stored with key " + key+ " in hashtable");
+      log.info(" name of the class to load: " + className);
+      log.info("class will be stored with key " + key+ " in hashtable");
       try {
         Class cl = java.lang.Class.forName(className);
         if (cl!=null){
@@ -55,7 +56,7 @@ public class ComponentController {
         }
       }
       catch (ClassNotFoundException ex) {
-        log.warn(ME,"class "+ className+ " not found in classpath!");
+        log.warning("class "+ className+ " not found in classpath!");
       }
     }
   }

@@ -9,7 +9,8 @@ import org.jutils.JUtilsException;
 import org.jutils.io.FileUtil;
 import org.jutils.time.TimeHelper;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -47,7 +48,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
 
    // XmlBlaster attributes
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(SimpleChat.class.getName());
    private I_XmlBlasterAccess xmlBlasterConnection = null;
    private static String ME = "Mike's TestClient";
    private static String passwd ="some";
@@ -70,7 +71,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    public SimpleChat(Global glob){
       super(glob.getProperty().get("loginName", "SimpleChat - <NoName>"));
       this.glob = glob;
-      this.log = glob.getLog("client");
+
 
       this.addWindowListener(
          new WindowAdapter() {
@@ -85,7 +86,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       initUI();
       pack();
       logFileName = glob.getProperty().get("logFile", System.getProperty("user.home") + System.getProperty("file.separator") + "xmlBlasterChat.log");
-      log.info(ME, "Logging messages to " + logFileName);
+      log.info("Logging messages to " + logFileName);
 
                 //prepare the speach synthetizer ...
       try {
@@ -97,7 +98,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
         this.speakMethod = speech.getMethod("speak", argClasses);
       }
       catch (Throwable ex) {
-         log.error(ME, "Audio output of messages not activated, please use JDK 1.4 or better and add speech.jar to your classpath: " + ex.toString());
+         log.severe("Audio output of messages not activated, please use JDK 1.4 or better and add speech.jar to your classpath: " + ex.toString());
       }
 
       label.setText(logFileName);
@@ -111,17 +112,17 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
                        "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                        "</key>";
          MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
-         log.trace(ME, "Publishing ...");
+         log.fine("Publishing ...");
          xmlBlasterConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
       }
-      log.trace(ME, "Publishing done");
+      log.fine("Publishing done");
    }
 
    protected void getUserList() {
       if (xmlBlasterConnection == null) {
-         log.error(ME, "Please log in first");
+         log.severe("Please log in first");
          return;
       }
 
@@ -140,7 +141,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
          }
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "error when getting the list of users");
+         log.severe("error when getting the list of users");
       }
    }
 
@@ -238,7 +239,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
         ( (ev.getSource()) instanceof TextField )){
 
          if (xmlBlasterConnection == null) {
-            log.error(ME, "Please log in first");
+            log.severe("Please log in first");
             return;
          }
 
@@ -255,7 +256,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       output.append(text);
 //      output.insert(text, 0);
 
-      try { FileUtil.appendToFile(logFileName, text); } catch(JUtilsException e) { log.warn(ME, "Can't log message:" + e.toString()); }
+      try { FileUtil.appendToFile(logFileName, text); } catch(JUtilsException e) { log.warning("Can't log message:" + e.toString()); }
       //output.repaint();
       this.repaint();
    }
@@ -279,7 +280,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
                this.speakMethod.invoke(this.speaker, args);
             }
             catch (Throwable ex){
-               log.error(ME, "Audio output of messages not activated, please use JDK 1.4 or better and add speech.jar to your classpath: " + ex.toString());
+               log.severe("Audio output of messages not activated, please use JDK 1.4 or better and add speech.jar to your classpath: " + ex.toString());
             }
          }
          toFront();
@@ -291,7 +292,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       text += "[" + updateQos.getSender() +"]: ";
       text += msgContent;
       appendOutput(text +System.getProperty("line.separator"));
-      log.info(ME, "CallBack\n");
+      log.info("CallBack\n");
 
       return "";
    }
@@ -305,7 +306,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
          xmlBlasterConnection.registerConnectionListener(this);  // configure settings on command line or in xmlBlaster.properties
       }
       catch (Exception e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
       }
       subscription();
@@ -322,7 +323,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
             output.append(tmp+System.getProperty("line.separator"));
          }
       } catch (JUtilsException e) {
-         log.warn(ME, "Can't read old logs from " + logFileName + ": " + e.toString());
+         log.warning("Can't read old logs from " + logFileName + ": " + e.toString());
       }
    }
 
@@ -330,13 +331,13 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    public void subscription() {
       try {
          //----------- Subscribe to OID -------
-         log.trace(ME, "Subscribing using the exact oid ...");
+         log.fine("Subscribing using the exact oid ...");
          String xmlKeyPub = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                          "</key>";
          xmlBlasterConnection.subscribe(xmlKeyPub, "<qos></qos>");
-         log.trace(ME, "Subscribed to '" + publishOid + "' ...");
+         log.fine("Subscribed to '" + publishOid + "' ...");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
       }
    }
 
@@ -345,17 +346,17 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       if (xmlBlasterConnection == null) return;
       //----------- Unsubscribe from the previous message --------
       if (xmlKey != null) {
-         log.trace(ME, "Unsubscribe ...");
+         log.fine("Unsubscribe ...");
          try {
             xmlBlasterConnection.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
          }
-         log.info(ME, "Unsubscribe done");
+         log.info("Unsubscribe done");
       }
 
       //----------- Logout --------------------------------------
-      log.trace(ME, "Logout ...");
+      log.fine("Logout ...");
       xmlBlasterConnection.disconnect(null);
    }
 
@@ -374,11 +375,11 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    {
       subscription();
       if (connection.getQueue().getNumOfEntries() > 0) {
-         log.info(ME, "We were lucky, reconnected to xmlBlaster, sending backup " +
+         log.info("We were lucky, reconnected to xmlBlaster, sending backup " +
                         connection.getQueue().getNumOfEntries() + " messages ...");
       }
       else
-         log.info(ME, "We were lucky, reconnected to xmlBlaster, no backup messages to flush");
+         log.info("We were lucky, reconnected to xmlBlaster, no backup messages to flush");
    }
 
    /**
@@ -388,7 +389,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
      */
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
    {
-      log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
+      log.warning("I_ConnectionStateListener: Lost connection to xmlBlaster");
    }
 
    /**
@@ -396,7 +397,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
      */
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
    {
-      log.warn(ME, "I_ConnectionStateListener: DEAD - Lost connection to xmlBlaster, giving up.");
+      log.warning("I_ConnectionStateListener: DEAD - Lost connection to xmlBlaster, giving up.");
    }
 
    public static void main(String args[]) {

@@ -7,7 +7,8 @@ package org.xmlBlaster.test.client;
 
 import org.jutils.init.Property;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -50,7 +51,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
 {
    private static String ME = "TestFailSafePing";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestFailSafePing.class.getName());
 
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
@@ -87,7 +88,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
    protected void setUp()
    {
       this.glob = (this.glob == null) ? new Global() : this.glob;
-      this.log = this.glob.getLog("test");
+
       this.senderName = "TestFailSafePing-joe/97";
 
       this.glob.init(Util.getOtherServerPorts(serverPort));
@@ -115,10 +116,10 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
          con.connect(connectQos, this.updateInterceptor); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed");
+          log.warning("setUp() - login failed");
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
       }
    }
@@ -129,7 +130,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSafe-AGENT" +
@@ -139,7 +140,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
       }
 
       con.disconnect(null);
@@ -159,7 +160,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
     * TEST: Subscribe to messages with XPATH.
     */
    public void doSubscribe() {
-      if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSafePing-AGENT" +
@@ -167,10 +168,10 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
       String qos = "<qos><initialUpdate>false</initialUpdate></qos>";
       try {
          String subscribeOid = con.subscribe(xmlKey, qos).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
          assertTrue("returned null subscribeOid", subscribeOid != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -182,7 +183,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
    public void doPublish() throws XmlBlasterException
    {
       counter++;
-      if (log.TRACE) log.trace(ME, "Publishing a message " + counter + " ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message " + counter + " ...");
 
       String oid = "MyMessage-" + counter;
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
@@ -194,7 +195,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
       MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
       msgUnitArr = new MsgUnit[] { msgUnit };
       con.publish(msgUnit);
-      log.info(ME, "Success: Publishing of " + oid + " done");
+      log.info("Success: Publishing of " + oid + " done");
    }
 
    /**
@@ -226,14 +227,14 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
+      log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       doSubscribe();    // initialize subscription
       try {
          doPublish();
       }
       catch(XmlBlasterException e) {
          if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
-            log.warn(ME, "Lost connection, my connection layer is polling: " + e.getMessage());
+            log.warning("Lost connection, my connection layer is polling: " + e.getMessage());
          else if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_DEAD)
             assertTrue("Lost connection, my connection layer is not polling", false);
          else
@@ -242,11 +243,11 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
+      log.warning("I_ConnectionStateListener: Lost connection to xmlBlaster");
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+      log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    /**

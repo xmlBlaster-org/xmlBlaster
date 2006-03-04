@@ -6,7 +6,8 @@ Comment:   Parsing connect QoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -100,7 +101,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
 {
    private String ME = "ConnectQosSaxFactory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ConnectQosSaxFactory.class.getName());
 
    private ConnectQosData connectQosData;
 
@@ -127,7 +128,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    public ConnectQosSaxFactory(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
+
    }
    
    /**
@@ -193,7 +194,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
-      //if (log.TRACE) log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "Entering startElement for uri=" + uri + " localName=" + localName + " name=" + name);
 
       if (name.equalsIgnoreCase("serverRef")) {
          //this.inServerRef = true;
@@ -209,7 +210,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             }
          }
          if (type == null) {
-            log.error(ME, "Missing 'serverRef' attribute 'type' in login-qos");
+            log.severe("Missing 'serverRef' attribute 'type' in login-qos");
             type = AddressBase.DEFAULT_type;// Since 1.0.7 "SOCKET", before "IOR";
          }
          tmpServerRef = new ServerRef(type);
@@ -255,12 +256,12 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       if (name.equalsIgnoreCase("queue")) {
          inQueue = true;
          if (inCallback) {
-            log.error(ME, "<queue> tag is not allowed inside <callback> tag, element ignored.");
+            log.severe("<queue> tag is not allowed inside <callback> tag, element ignored.");
             character.setLength(0);
             return;
          }
          if (inAddress) {
-            log.error(ME, "<queue> tag is not allowed inside <address> tag, element ignored.");
+            log.severe("<queue> tag is not allowed inside <address> tag, element ignored.");
             character.setLength(0);
             return;
          }
@@ -281,7 +282,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             this.connectQosData.setSubjectQueueProperty(tmpCbProp);
          }
          else {
-            log.warn(ME, "The given relating='" + related + "' is not supported, configuration for '" + related + "' is ignored");
+            log.warning("The given relating='" + related + "' is not supported, configuration for '" + related + "' is ignored");
          }
          character.setLength(0);
          return;
@@ -305,8 +306,8 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
                }
             }
          }
-         if (!existsTypeAttr) log.error(ME, "Missing 'type' attribute in login-qos <securityService>");
-         if (!existsVersionAttr) log.error(ME, "Missing 'version' attribute in login-qos <securityService>");
+         if (!existsTypeAttr) log.severe("Missing 'type' attribute in login-qos <securityService>");
+         if (!existsVersionAttr) log.severe("Missing 'version' attribute in login-qos <securityService>");
          character.setLength(0);
          // Fall through and collect xml, will be parsed later by appropriate security plugin
       }
@@ -337,7 +338,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
                else if (attrs.getQName(ii).equalsIgnoreCase("sessionId"))
                   sessionQos.setSecretSessionId(attrs.getValue(ii));
                else
-                  log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
+                  log.warning("Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
             }
          }
          character.setLength(0);
@@ -424,7 +425,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
-      //if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "Entering endElement for " + name);
 
       if (name.equalsIgnoreCase("serverRef")) {
          //this.inServerRef = false;
@@ -524,7 +525,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
            return;
          }
          catch(XmlBlasterException e) {
-            log.warn(ME, "Can't parse security string - " + e.toString() + "\n Check:\n" + tmp);
+            log.warning("Can't parse security string - " + e.toString() + "\n Check:\n" + tmp);
             throw new org.xml.sax.SAXException("Can't parse security string - " + e.toString() + "\n Check:\n" + tmp, e);
             //throw new StopParseException();
          }
@@ -535,7 +536,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             connectQosData.setPersistent(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
          character.setLength(0);
          return;
       }

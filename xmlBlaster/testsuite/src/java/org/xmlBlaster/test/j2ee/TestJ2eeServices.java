@@ -18,7 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.xmlBlaster.test.j2ee;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -54,7 +55,7 @@ import javax.naming.Context;
 public class TestJ2eeServices extends TestCase implements I_Callback {
    private static String ME = "TestJ2eeServices";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestJ2eeServices.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String propertyFileName = "org/xmlBlaster/test/j2ee/blasterServer.properties";
@@ -78,7 +79,7 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
    public  TestJ2eeServices(Global glob, String testName){
       super(testName);
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("test");
+
       
    }
 
@@ -117,7 +118,7 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
       glob.init(args);
       // Set up a subscriber
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
@@ -128,20 +129,20 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
          String sqos = "<qos><notify>false</notify></qos>"; // send no erase events
     
          subscribeOid = con.subscribe(xmlKey, sqos).getSubscriptionId() ;
-         log.info(ME, "Success: Subscribe on subscriptionId=" + subscribeOid + " done");
+         log.info("Success: Subscribe on subscriptionId=" + subscribeOid + " done");
          assertTrue("returned null subscriptionId", subscribeOid != null);
          
          subscriberTable.put(subscribeOid, new Integer(0));
          
 
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
    protected void tearDown() throws Exception 
    {
-      log.info(ME, "TEST: tearing down");
+      log.info("TEST: tearing down");
       
       // FIXME: how do we destroy the managed connections?
 
@@ -180,10 +181,10 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
             conn = factory.getConnection();
             String c = "<content>"+i+"</content>";
             String k = "<key oid='"+i+"' contentMime='text/xml'><TestLocalProtocol-AGENT id='"+i+"' type='generic'/></key>";
-            log.info(ME,"Key: " +k);
+            log.info("Key: " +k);
             conn.publish(new MsgUnit(k, c.getBytes(), null));
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
             assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
          }finally {
             
@@ -204,9 +205,9 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
+      log.info("Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
       int ii = ((Integer)subscriberTable.get(updateQos.getSubscriptionId())).intValue();
-      log.trace(ME,"Got message " + new String(content));
+      log.fine("Got message " + new String(content));
       subRec[ii]++;
       numReceived++;
       return "";
@@ -235,7 +236,7 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
       // check if too many are arriving
       try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, subRec[ii]);
-      log.info(ME,"Found correct rec messages for: " + subId);
+      log.info("Found correct rec messages for: " + subId);
       subRec[ii]= 0;
    }
 

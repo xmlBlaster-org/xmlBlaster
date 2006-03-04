@@ -7,7 +7,8 @@ Comment:   XmlRpcUrl knows how to parse the URL notation of our XMLRPC protocol
 package org.xmlBlaster.protocol.xmlrpc;
 
 import org.xmlBlaster.util.Global;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -23,7 +24,7 @@ public class XmlRpcUrl
 {
    private String ME = "XmlRpcUrl";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlRpcUrl.class.getName());
    /** The string representation like "192.168.1.1", useful if multihomed computer */
    private String hostname;
    /** xmlBlaster server host */
@@ -38,7 +39,7 @@ public class XmlRpcUrl
     */
    public XmlRpcUrl(Global glob, String hostname, int port) throws XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog("xmlrpc");
+
       this.hostname = hostname;
       if (this.hostname == null || this.hostname.length() < 1) {
          this.hostname = glob.getLocalIP();
@@ -54,7 +55,7 @@ public class XmlRpcUrl
     */
    public XmlRpcUrl(Global glob, String url) throws XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog("xmlrpc");
+
       parse(url);
       createInetAddress(); // first check
    }
@@ -82,7 +83,7 @@ public class XmlRpcUrl
     */
    public XmlRpcUrl(Global glob, AddressBase address, boolean isLocal, int defaultServerPort) throws XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog("xmlrpc");
+
 
       if (isLocal) {
          this.isLocal = true;
@@ -179,7 +180,7 @@ public class XmlRpcUrl
          Thread.currentThread().dumpStack();
          String txt = "The hostname [" + this.hostname + "] of url '" + getUrl() + "' is invalid, check your '-plugin/xmlrpc/" +
                        (isLocal ? "localHostname" : "hostname") + " <ip>' setting: " + e.toString();
-         log.warn(ME, txt);
+         log.warning(txt);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, txt);
       }
    }

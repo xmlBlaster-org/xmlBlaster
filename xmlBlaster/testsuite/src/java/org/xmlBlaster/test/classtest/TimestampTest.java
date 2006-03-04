@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -16,13 +17,13 @@ import junit.framework.*;
  */
 public class TimestampTest extends TestCase {
    private String ME = "TimestampTest";
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TimestampTest.class.getName());
    private boolean event = false;
    private int counter = 0;
 
    public TimestampTest(String name) {
       super(name);
-      this.log = org.xmlBlaster.util.Global.instance().getLog(null);
+
    }
 
    /**

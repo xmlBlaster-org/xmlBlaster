@@ -6,7 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE filep
 
 package org.xmlBlaster.contrib.filewriter;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -31,7 +32,7 @@ public class Receiver implements I_Plugin, I_Callback {
 
    private String ME = "Receiver";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(Receiver.class.getName());
    private I_XmlBlasterAccess access;
    private ConnectQos connectQos;
    private String subscribeKey;
@@ -51,9 +52,9 @@ public class Receiver implements I_Plugin, I_Callback {
       this.isShutdown = false;
       this.global = globOrig.getClone(globOrig.getNativeConnectArgs()); // sets session.timeout to 0 etc.
       this.info = info;
-      this.log = this.global.getLog("filepoller");
-      if (this.log.CALL) 
-         this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("constructor");
       // retrieve all necessary properties:
       String tmp = null;
       tmp = this.global.get("subscribeKey", (String)null, null, info);
@@ -61,7 +62,7 @@ public class Receiver implements I_Plugin, I_Callback {
       if (tmp != null) {
          this.subscribeKey = tmp;
          if (topicName != null)
-            this.log.warn(ME, "constructor: since 'subscribeKey' is defined, 'topicName' will be ignored");
+            log.warning("constructor: since 'subscribeKey' is defined, 'topicName' will be ignored");
       }
       else {
          if (topicName == null)
@@ -103,8 +104,8 @@ public class Receiver implements I_Plugin, I_Callback {
     * @throws XmlBlasterException
     */
    private synchronized void initConnection() throws XmlBlasterException {
-      if (this.log.CALL) 
-         this.log.call(ME, "init");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("init");
       if (this.isShutdown) { // on a second init
          this.global = this.global.getClone(null);
       }
@@ -120,8 +121,8 @@ public class Receiver implements I_Plugin, I_Callback {
     * @throws XmlBlasterException
     */
    public void shutdown() throws XmlBlasterException {
-      if (this.log.CALL) 
-         this.log.call(ME, "shutdown");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("shutdown");
       synchronized (this) {
          this.isShutdown = false;
          this.access.disconnect(new DisconnectQos(this.global));
@@ -148,9 +149,9 @@ public class Receiver implements I_Plugin, I_Callback {
       this.isShutdown = false;
       this.global = glob.getClone(glob.getNativeConnectArgs()); // sets session.timeout to 0 etc.
       this.info = info;
-      this.log = this.global.getLog("filepoller");
-      if (this.log.CALL) 
-         this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("constructor");
       // retrieve all necessary properties:
       String tmp = null;
       tmp = this.global.get("subscribeKey", (String)null, null, info);
@@ -158,7 +159,7 @@ public class Receiver implements I_Plugin, I_Callback {
       if (tmp != null) {
          this.subscribeKey = tmp;
          if (topicName != null)
-            this.log.warn(ME, "constructor: since 'subscribeKey' is defined, 'topicName' will be ignored");
+            log.warning("constructor: since 'subscribeKey' is defined, 'topicName' will be ignored");
       }
       else {
          if (topicName == null)

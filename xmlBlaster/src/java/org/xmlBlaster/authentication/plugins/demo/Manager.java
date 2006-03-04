@@ -2,7 +2,8 @@ package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -16,7 +17,7 @@ import java.awt.*;
 public class Manager implements I_Manager{
    private static final String          ME = "Manager";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(Manager.class.getName());
 
    private static final String        TYPE = "gui";
    private static final String     VERSION = "1.0";
@@ -37,9 +38,9 @@ public class Manager implements I_Manager{
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
       this.glob = glob;
-      this.log = glob.getLog("demo");
-      log.call(ME+"."+ME+"()", "-------START--------\n");
-      log.info(ME+"."+ME+"()", "Starting GUI ...");
+
+      log.finer("-------START--------\n");
+      log.info("Starting GUI ...");
       frame = new PluginGUI();
       //Validate frames that have preset sizes
       //Pack frames that have useful preferred size info, e.g. from their layout
@@ -60,8 +61,8 @@ public class Manager implements I_Manager{
       }
       frame.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
       frame.setVisible(true);
-      log.info(ME+"."+ME+"()", "... GUI started.");
-      log.call(ME+"."+ME+"()", "-------END----------\n");
+      log.info("... GUI started.");
+      log.finer("-------END----------\n");
    }
 
    public String getType() {
@@ -77,12 +78,12 @@ public class Manager implements I_Manager{
    }
 
    public I_Session reserveSession(String sessionId) {
-      log.trace(ME+".reserveSessionSecurityContext(String sessionId="+sessionId+")", "-------START--------\n");
+      log.fine("-------START--------\n");
       Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);
       }
-      log.trace(ME+".reserveSessionSecurityContext(...))", "-------END--------\n");
+      log.fine("-------END--------\n");
 
       return session;
    }

@@ -9,7 +9,8 @@ package org.xmlBlaster.engine.query.plugins;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.query.I_Query;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
@@ -35,13 +36,13 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
 
    private final static String ME = "QueueQueryPlugin";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(QueueQueryPlugin.class.getName());
    private int maxEntries;
    private long maxSize;
    
    public QueueQueryPlugin(Global global) {
       this.global = global;
-      this.log = global.getLog("query");
+
    }
 
 
@@ -74,7 +75,7 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
     * "maxEntries=3&maxSize=1000&consumable=true&waitingDelay=1000"      
     */
    public MsgUnit[] query(Object source, String query) throws XmlBlasterException {
-      //if (this.log.CALL) this.log.call(ME, "query for '" + keyData.getOid() + "'");
+      //if (log.isLoggable(Level.FINER)) this.log.call(ME, "query for '" + keyData.getOid() + "'");
       if (source == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".query", "the source on which do the query is null");
       if (! (source instanceof I_Queue) )
@@ -117,37 +118,37 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
       prop = (ClientProperty)props.get("waitingDelay");
       if (prop != null) waitingDelay = prop.getLongValue();
 
-      if (this.log.TRACE) 
-      this.log.trace(ME, "query: waitingDelay='" + waitingDelay + "' consumable='" + consumable + "' maxEntries='" + this.maxEntries + "' maxSize='" + this.maxSize + "'");
+      if (log.isLoggable(Level.FINE)) 
+      log.fine("query: waitingDelay='" + waitingDelay + "' consumable='" + consumable + "' maxEntries='" + this.maxEntries + "' maxSize='" + this.maxSize + "'");
       
       if (waitingDelay != 0L) {
-         if (this.log.TRACE) this.log.trace(ME, "query: waiting delay is " + waitingDelay);
+         if (log.isLoggable(Level.FINE)) this.log.fine("query: waiting delay is " + waitingDelay);
          if (maxEntries < 1 && maxSize < 1L && waitingDelay < 0L)
             throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + ".query: if you specify a blocking get you must also specify a maximum size or maximum number of entries to retreive, otherwise specify non-blocking by setting 'waitingDelay' to zero");
          if (checkIfNeedsWaiting((int)queue.getNumOfEntries(), queue.getNumOfBytes(), maxEntries, maxSize)) {
-            if (this.log.TRACE) this.log.trace(ME, "query: going to wait due to first check");
+            if (log.isLoggable(Level.FINE)) this.log.fine("query: going to wait due to first check");
             synchronized(this) {
                try {
                   queue.addQueueSizeListener(this);
                   if (checkIfNeedsWaiting((int)queue.getNumOfEntries(), queue.getNumOfBytes(), maxEntries, maxSize)) {
-                     if (this.log.TRACE) this.log.trace(ME, "query: going to wait due to second check (inside sync now)");
+                     if (log.isLoggable(Level.FINE)) this.log.fine("query: going to wait due to second check (inside sync now)");
                      try {
                         if (waitingDelay < 0L) this.wait();
                         else this.wait(waitingDelay);
-                        if (this.log.TRACE) this.log.trace(ME, "did not wake up after waiting");
+                        if (log.isLoggable(Level.FINE)) this.log.fine("did not wake up after waiting");
                      }
                      catch (InterruptedException ex) {
-                        if (this.log.TRACE) this.log.trace(ME, "just waked up after waiting for incoming entries");
+                        if (log.isLoggable(Level.FINE)) this.log.fine("just waked up after waiting for incoming entries");
                      }
                   }
                }
                finally {
                   try {
                      queue.removeQueueSizeListener(this);
-                     if (this.log.TRACE) this.log.trace(ME, "query: removed myself as a QueueSizeListener");
+                     if (log.isLoggable(Level.FINE)) this.log.fine("query: removed myself as a QueueSizeListener");
                   }
                   catch (Throwable ex) {
-                     if (this.log.TRACE) this.log.trace(ME, "query: exception occurred when removing the QueueSizeListener from the queue");
+                     if (log.isLoggable(Level.FINE)) this.log.fine("query: exception occurred when removing the QueueSizeListener from the queue");
                   }
                }
             }
@@ -187,9 +188,9 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
    }
 
    public void changed(I_Queue queue, long numEntries, long numBytes) {
-      if (this.log.CALL) this.log.call(ME, "changed numEntries='" + numEntries + "' numBytes='" + numBytes + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("changed numEntries='" + numEntries + "' numBytes='" + numBytes + "'");
       if (!checkIfNeedsWaiting((int)numEntries, numBytes, this.maxEntries, this.maxSize)) {
-         if (this.log.TRACE) this.log.trace(ME, "changed going to notify");
+         if (log.isLoggable(Level.FINE)) this.log.fine("changed going to notify");
          synchronized(this) {
             this.notify();
          }

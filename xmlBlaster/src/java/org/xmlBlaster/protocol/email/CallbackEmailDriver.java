@@ -5,7 +5,8 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
@@ -45,7 +46,7 @@ public class CallbackEmailDriver extends EmailExecutor implements
       I_CallbackDriver {
    private String ME = "CallbackEmailDriver";
 
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(CallbackEmailDriver.class.getName());
 
    private CallbackAddress callbackAddress;
 
@@ -115,7 +116,7 @@ public class CallbackEmailDriver extends EmailExecutor implements
    public void init(Global glob, CallbackAddress callbackAddress)
          throws XmlBlasterException {
       super.init(glob, callbackAddress, this.pluginInfo);
-      this.log = glob.getLog("email");
+
       this.callbackAddress = callbackAddress;
       super.setSecretSessionId(callbackAddress.getSecretSessionId());
       // This is a contract with client side EmailCallbackImpl.java:
@@ -178,19 +179,17 @@ public class CallbackEmailDriver extends EmailExecutor implements
       
       if (Thread.currentThread().getName().equals(
             Pop3Driver.threadName)) {
-         if (log.TRACE) log.trace(ME,
-                  "Email ping is suppressed as doing this from thread '"
-                  + Pop3Driver.threadName
-                  + "' would deadlock");
+         if (log.isLoggable(Level.FINE)) log.fine("Email ping is suppressed as doing this from thread '"
+         + Pop3Driver.threadName
+         + "' would deadlock");
          return Constants.RET_OK;
       }
       
       // "<qos><state info='INITIAL'/></qos>"
       // Send from CbDispatchConnection.java on connect 
       if (qos != null && qos.indexOf(Constants.INFO_INITIAL) != -1) {
-         if (log.TRACE) log.trace(ME,
-               "Email callback ping is suppressed as doing it before connect() may" +
-               " block the clients connect() if the callback is not functional");
+         if (log.isLoggable(Level.FINE)) log.fine("Email callback ping is suppressed as doing it before connect() may" +
+         " block the clients connect() if the callback is not functional");
          return Constants.RET_OK;
       }
       
@@ -206,7 +205,7 @@ public class CallbackEmailDriver extends EmailExecutor implements
       super.shutdown();
       this.glob.unregisterMBean(this.mbeanHandle);
       this.mbeanHandle = null; 
-      if (log != null) log.trace(ME, "shutdown() does currently nothing");
+      if (log != null) log.fine("shutdown() does currently nothing");
    }
 
    /**

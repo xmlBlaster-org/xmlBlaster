@@ -6,7 +6,8 @@ Comment:   Support check of message content with XPath expressions.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.xpath;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -75,7 +76,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
 
    private final String ME = "XPathFilter";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XPathFilter.class.getName());
    private int maxCacheSize = 10;
    private LinkedList domCache;
    private String [] mimeTypes;
@@ -86,8 +87,8 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("mime");
-      log.info(ME, "Filter is initialized, we check xml mime types");
+
+      log.info("Filter is initialized, we check xml mime types");
 
    }
    
@@ -189,7 +190,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
                expression = new DOMXPath(query.getQuery());
                query.setPreparedQuery(expression); 
             } catch (JaxenException e) {
-               log.warn(ME, "Can't compile XPath filter expression '" + query + "':" + e.toString());
+               log.warning("Can't compile XPath filter expression '" + query + "':" + e.toString());
                throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Can't compile XPath filter expression '" + query + "'", e);
             }
          }
@@ -198,21 +199,21 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          
          Document doc = getDocument(msgUnitWrapper);
          
-         if ( log.DUMP)
-            log.dump(ME,"Matching query " + query.getQuery() + " against document: " + msgUnitWrapper.getContentStr());
+         if ( log.isLoggable(Level.FINEST))
+            log.finest("Matching query " + query.getQuery() + " against document: " + msgUnitWrapper.getContentStr());
          
          boolean match = expression.booleanValueOf(doc);
-         if (log.TRACE )
-            log.trace(ME,"Query "+query.getQuery()+" did" + (match ? " match" : " not match"));
+         if (log.isLoggable(Level.FINE))
+            log.fine("Query "+query.getQuery()+" did" + (match ? " match" : " not match"));
          
          return match;
       }
       catch (JaxenException e) {
-         log.warn(ME, "Error in querying dom tree with query " + query + ": " + e.toString());
+         log.warning("Error in querying dom tree with query " + query + ": " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Error in querying dom tree with query " + query, e);
       }
       catch (Throwable e) {
-         log.warn(ME, "Error in handling XPath filter with query '" + query + "': and '" + msgUnitWrapper.getContentStr() + "': " + e.toString());
+         log.warning("Error in handling XPath filter with query '" + query + "': and '" + msgUnitWrapper.getContentStr() + "': " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Error in querying dom tree with query " + query, e);
       }
    }
@@ -304,11 +305,11 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
       // try get document from cache
       int index = domCache.indexOf(new Entry(key,null));
       if ( index != -1) {
-         if (log.TRACE )log.trace(ME,"Returning doc from cache with key: " +key);
+         if (log.isLoggable(Level.FINE))log.fine("Returning doc from cache with key: " +key);
          Entry e = (Entry)domCache.get(index);
          doc =  e.doc;
       } else {
-         if (log.TRACE )log.trace(ME,"Constructing new doc from with key: " +key);
+         if (log.isLoggable(Level.FINE))log.fine("Constructing new doc from with key: " +key);
          doc = getDocument(msg.getContentStr());
          
          // Put into cache and check size

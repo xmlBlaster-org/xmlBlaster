@@ -8,7 +8,8 @@ package org.xmlBlaster.client.filepoller;
 
 import java.io.File;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * FileInfo is a placeholder for the information necessary to the poller about
@@ -34,7 +35,7 @@ public class FileInfo {
     * Convenience constructor
     * @param file
     */
-   public FileInfo(File file, LogChannel log) {
+   public FileInfo(File file, Logger log) {
       this();
       update(file, log);
    }
@@ -44,7 +45,7 @@ public class FileInfo {
     * null, then the method silently returns.
     * @param file
     */
-   public void update(File file, LogChannel log) {
+   public void update(File file, Logger log) {
       if (file == null)
          return;
       if (this.name == null) {
@@ -52,21 +53,21 @@ public class FileInfo {
             this.name = file.getCanonicalPath();
          }
          catch (java.io.IOException ex) {
-            log.warn("FileInfo", "could not set the absolute name for file '" + file.getName() + "' " + ex.getMessage());
+            log.warning("could not set the absolute name for file '" + file.getName() + "' " + ex.getMessage());
          }
       }
       long newTimestamp = file.lastModified();
       long newSize = file.length();
       if (this.size != newSize) {
          this.lastChange = System.currentTimeMillis();
-         if (log.DUMP)
-            log.dump("FileInfo", "'" + this.name + "' changed: size='" + this.size + "' new size='" + newSize + "'");
+         if (log.isLoggable(Level.FINEST))
+            log.finest("'" + this.name + "' changed: size='" + this.size + "' new size='" + newSize + "'");
          this.size = newSize;
       }
       if (this.timestamp != newTimestamp) {
          this.lastChange = System.currentTimeMillis();
-         if (log.DUMP)
-            log.dump("FileInfo", "'" + this.name + "' changed: time='" + this.timestamp + "' new time='" + newTimestamp + "'");
+         if (log.isLoggable(Level.FINEST))
+            log.finest("'" + this.name + "' changed: time='" + this.timestamp + "' new time='" + newTimestamp + "'");
          this.timestamp = newTimestamp;
       }
    }

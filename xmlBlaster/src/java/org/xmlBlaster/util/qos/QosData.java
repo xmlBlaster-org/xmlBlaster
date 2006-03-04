@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
@@ -31,7 +32,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
 {
    private transient final String ME = "QosData";
    protected transient Global glob;
-   protected transient LogChannel log;
+   private static Logger log = Logger.getLogger(QosData.class.getName());
    protected transient final String serialData; // can be null - in this case use toXml()
 
    /** the state of the message, defaults to "OK" if no state is returned */
@@ -88,7 +89,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public void setGlobal(Global glob) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = glob.getLog("core");
+
    }
 
    /**
@@ -264,7 +265,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final void addRouteInfo(RouteInfo routeInfo) {
       if (routeInfo == null) {
-         log.error(ME, "Adding null routeInfo");
+         log.severe("Adding null routeInfo");
          return;
       }
 

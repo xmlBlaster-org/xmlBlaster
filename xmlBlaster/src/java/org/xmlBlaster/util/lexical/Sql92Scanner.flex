@@ -20,7 +20,9 @@ import java_cup.sym;
 
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.Global;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
       
 %%
    
@@ -67,7 +69,7 @@ import org.jutils.log.LogChannel;
     private StringBuffer stringBf = new StringBuffer();
 
     private Global global;
-    private LogChannel log;
+    private static Logger log = Logger.getLogger(Sql92Scanner.class.getName();
     
     /** A buffer used only for logging purposes (active only when TRACE is on) */
     private StringBuffer logBuffer = new StringBuffer();
@@ -78,8 +80,7 @@ import org.jutils.log.LogChannel;
      public Sql92Scanner(Global global) {
         super();
         this.global = global;
-        this.log = this.global.getLog("lexical");
-        if (this.log.CALL) this.log.call(ME, "Constructor");
+        if (log.isLoggable(Level.FINER)) log.finer("Constructor");
      }
 
      /**
@@ -115,7 +116,7 @@ import org.jutils.log.LogChannel;
           return symbol(Sql92Symbols.NULL_OBJECT, null);
        }   
        String str = clientProperty.getStringValue();
-       if (this.log.TRACE) this.logBuffer.append(propertyName).append("(").append(str).append(")");
+       if (log.isLoggable(Level.FINE)) logBuffer.append(propertyName).append("(").append(str).append(")");
        if (clientProperty.getType() == null) { // then it is a string
           return symbol(Sql92Symbols.STRING, str);
        }
@@ -178,37 +179,37 @@ Exponent = [eE] [+-]? [0-9]+
    
     /* Print the token found that was declared in the class sym and then
        return it. */
-    "+"                { if (this.log.TRACE) this.logBuffer.append(" + ");  return symbol(Sql92Symbols.PLUS); }
-    "-"                { if (this.log.TRACE) this.logBuffer.append(" - ");  return symbol(Sql92Symbols.MINUS); }
-    "*"                { if (this.log.TRACE) this.logBuffer.append(" * ");  return symbol(Sql92Symbols.TIMES); }
-    "/"                { if (this.log.TRACE) this.logBuffer.append(" / ");  return symbol(Sql92Symbols.DIV); }
-    "("                { if (this.log.TRACE) this.logBuffer.append(" ( ");  return symbol(Sql92Symbols.L_BRACKET); }
-    ")"                { if (this.log.TRACE) this.logBuffer.append(" ) ");  return symbol(Sql92Symbols.R_BRACKET); }
-    ","                { if (this.log.TRACE) this.logBuffer.append(" , ");  return symbol(Sql92Symbols.COMMA); }
-    "AND"              { if (this.log.TRACE) this.logBuffer.append(" && "); return symbol(Sql92Symbols.AND); }
-    "OR"               { if (this.log.TRACE) this.logBuffer.append(" || "); return symbol(Sql92Symbols.OR); }
-    "="                { if (this.log.TRACE) this.logBuffer.append(" = ");  return symbol(Sql92Symbols.EQUAL); }
-    "<>"               { if (this.log.TRACE) this.logBuffer.append(" != ");  return symbol(Sql92Symbols.DIFF); }
-    "!="               { if (this.log.TRACE) this.logBuffer.append(" != ");  return symbol(Sql92Symbols.DIFF); }
-    "^="               { if (this.log.TRACE) this.logBuffer.append(" != ");  return symbol(Sql92Symbols.DIFF); }
-    ">"                { if (this.log.TRACE) this.logBuffer.append(" > ");  return symbol(Sql92Symbols.GT); }
-    "<"                { if (this.log.TRACE) this.logBuffer.append(" < ");  return symbol(Sql92Symbols.LT); }
-    "=>"               { if (this.log.TRACE) this.logBuffer.append(" => "); return symbol(Sql92Symbols.GET); }
-    "<="               { if (this.log.TRACE) this.logBuffer.append(" <= "); return symbol(Sql92Symbols.LET); }
-    "NOT"              { if (this.log.TRACE) this.logBuffer.append(" ! "); return symbol(Sql92Symbols.NOT); }
-    "BETWEEN"          { if (this.log.TRACE) this.logBuffer.append(" BETWEEN "); return symbol(Sql92Symbols.BETWEEN); }
-    "IN"               { if (this.log.TRACE) this.logBuffer.append(" IN "); return symbol(Sql92Symbols.IN); }
-    "IS"               { if (this.log.TRACE) this.logBuffer.append(" IS "); return symbol(Sql92Symbols.IS); }
-    "LIKE"             { if (this.log.TRACE) this.logBuffer.append(" LIKE "); return symbol(Sql92Symbols.LIKE); }
-    "ESCAPE"           { if (this.log.TRACE) this.logBuffer.append(" ESCAPE "); return symbol(Sql92Symbols.ESCAPE); }
-    "NULL"             { if (this.log.TRACE) this.logBuffer.append(" NULL "); return symbol(Sql92Symbols.NULL); }
-    "REGEX"            { if (this.log.TRACE) this.logBuffer.append(" NULL "); return symbol(Sql92Symbols.REGEX); }
+    "+"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" + ");  return symbol(Sql92Symbols.PLUS); }
+    "-"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" - ");  return symbol(Sql92Symbols.MINUS); }
+    "*"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" * ");  return symbol(Sql92Symbols.TIMES); }
+    "/"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" / ");  return symbol(Sql92Symbols.DIV); }
+    "("                { if (log.isLoggable(Level.FINE)) logBuffer.append(" ( ");  return symbol(Sql92Symbols.L_BRACKET); }
+    ")"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" ) ");  return symbol(Sql92Symbols.R_BRACKET); }
+    ","                { if (log.isLoggable(Level.FINE)) logBuffer.append(" , ");  return symbol(Sql92Symbols.COMMA); }
+    "AND"              { if (log.isLoggable(Level.FINE)) logBuffer.append(" && "); return symbol(Sql92Symbols.AND); }
+    "OR"               { if (log.isLoggable(Level.FINE)) logBuffer.append(" || "); return symbol(Sql92Symbols.OR); }
+    "="                { if (log.isLoggable(Level.FINE)) logBuffer.append(" = ");  return symbol(Sql92Symbols.EQUAL); }
+    "<>"               { if (log.isLoggable(Level.FINE)) logBuffer.append(" != ");  return symbol(Sql92Symbols.DIFF); }
+    "!="               { if (log.isLoggable(Level.FINE)) logBuffer.append(" != ");  return symbol(Sql92Symbols.DIFF); }
+    "^="               { if (log.isLoggable(Level.FINE)) logBuffer.append(" != ");  return symbol(Sql92Symbols.DIFF); }
+    ">"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" > ");  return symbol(Sql92Symbols.GT); }
+    "<"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" < ");  return symbol(Sql92Symbols.LT); }
+    "=>"               { if (log.isLoggable(Level.FINE)) logBuffer.append(" => "); return symbol(Sql92Symbols.GET); }
+    "<="               { if (log.isLoggable(Level.FINE)) logBuffer.append(" <= "); return symbol(Sql92Symbols.LET); }
+    "NOT"              { if (log.isLoggable(Level.FINE)) logBuffer.append(" ! "); return symbol(Sql92Symbols.NOT); }
+    "BETWEEN"          { if (log.isLoggable(Level.FINE)) logBuffer.append(" BETWEEN "); return symbol(Sql92Symbols.BETWEEN); }
+    "IN"               { if (log.isLoggable(Level.FINE)) logBuffer.append(" IN "); return symbol(Sql92Symbols.IN); }
+    "IS"               { if (log.isLoggable(Level.FINE)) logBuffer.append(" IS "); return symbol(Sql92Symbols.IS); }
+    "LIKE"             { if (log.isLoggable(Level.FINE)) logBuffer.append(" LIKE "); return symbol(Sql92Symbols.LIKE); }
+    "ESCAPE"           { if (log.isLoggable(Level.FINE)) logBuffer.append(" ESCAPE "); return symbol(Sql92Symbols.ESCAPE); }
+    "NULL"             { if (log.isLoggable(Level.FINE)) logBuffer.append(" NULL "); return symbol(Sql92Symbols.NULL); }
+    "REGEX"            { if (log.isLoggable(Level.FINE)) logBuffer.append(" NULL "); return symbol(Sql92Symbols.REGEX); }
 
 /*
-    "["                { if (this.log.TRACE) this.logBuffer.append(" ( ");  return symbol(Sql92Symbols.L_SBRACKET); }
-    "]"                { if (this.log.TRACE) this.logBuffer.append(" ) ");  return symbol(Sql92Symbols.R_SBRACKET); }
-    "{"                { if (this.log.TRACE) this.logBuffer.append(" ( ");  return symbol(Sql92Symbols.L_FBRACKET); }
-    "}"                { if (this.log.TRACE) this.logBuffer.append(" ) ");  return symbol(Sql92Symbols.R_FBRACKET); }
+    "["                { if (log.isLoggable(Level.FINE)) logBuffer.append(" ( ");  return symbol(Sql92Symbols.L_SBRACKET); }
+    "]"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" ) ");  return symbol(Sql92Symbols.R_SBRACKET); }
+    "{"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" ( ");  return symbol(Sql92Symbols.L_FBRACKET); }
+    "}"                { if (log.isLoggable(Level.FINE)) logBuffer.append(" ) ");  return symbol(Sql92Symbols.R_FBRACKET); }
  */
 
    
@@ -217,7 +218,7 @@ Exponent = [eE] [+-]? [0-9]+
        held in the string yytext which will get turned into an integer
        before returning */
     {number_literal}  { 
-                         if (this.log.TRACE) this.logBuffer.append(yytext());
+                         if (log.isLoggable(Level.FINE)) logBuffer.append(yytext());
                          return symbol(Sql92Symbols.NUMBER, new Double(yytext())); 
                       }
    
@@ -244,7 +245,7 @@ Exponent = [eE] [+-]? [0-9]+
    \'      { 
               yybegin(YYINITIAL);
               String tmp = this.stringBf.toString();
-              if (this.log.TRACE) this.logBuffer.append(tmp).append("(string litteral)");
+              if (log.isLoggable(Level.FINE)) logBuffer.append(tmp).append("(string litteral)");
               return symbol(Sql92Symbols.STRING, tmp); 
            }
 
@@ -255,4 +256,4 @@ Exponent = [eE] [+-]? [0-9]+
 
 /* No token was found for the input so through an error.  Print out an
    Illegal character message with the illegal character that was found. */
-[^]                    { throw new Error(this.logBuffer.toString() + " Illegal character <"+yytext()+">"); }
+[^]                    { throw new Error(logBuffer.toString() + " Illegal character <"+yytext()+">"); }

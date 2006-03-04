@@ -13,7 +13,8 @@ import java.util.logging.Logger;
 import javax.mail.internet.InternetAddress;
 import javax.management.NotificationBroadcasterSupport;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.log.LogableDevice;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
@@ -30,7 +31,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
+// import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -506,20 +507,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                // Please use JDK14 notation for configuration
                // We want to be notified if a log.error() is called, this will
                // notify our LogableDevice.log() method
-               log.fine("Register logging status " + event);
-               LogNotifierDeviceFactory lf = this.engineGlob
-                     .getLogNotifierDeviceFactory();
-               lf.register(LogChannel.LOG_ERROR, this);
+               log.severe("NOT IMPLEMENTED Register logging status " + event);
+               //LogNotifierDeviceFactory lf = this.engineGlob
+               //      .getLogNotifierDeviceFactory();
+               //lf.register(Logger.LOG_ERROR, this);
                if (this.loggingSet == null) this.loggingSet = new TreeSet();
                this.loggingSet.add(event);
             }
             // "logging/warning/*"
             else if (event.startsWith(ContextNode.LOGGING_MARKER_TAG+"/warning/")
                   || event.startsWith("logging/warn/")) {
-               log.fine("Register logging status " + event);
-               LogNotifierDeviceFactory lf = this.engineGlob
-                     .getLogNotifierDeviceFactory();
-               lf.register(LogChannel.LOG_WARN, this);
+               log.severe("NOT IMPLEMENTED: Register logging status " + event);
+               //LogNotifierDeviceFactory lf = this.engineGlob
+               //      .getLogNotifierDeviceFactory();
+               //lf.register(Logger.LOG_WARN, this);
                if (this.loggingSet == null) this.loggingSet = new TreeSet();
                this.loggingSet.add(event);
             }
@@ -864,10 +865,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       
       if (this.loggingSet != null)
          this.loggingSet = null;
-      LogNotifierDeviceFactory lf = this.engineGlob
-            .getLogNotifierDeviceFactory();
-      lf.unregister(LogChannel.LOG_WARN, this);
-      lf.unregister(LogChannel.LOG_ERROR, this);
+      
+      //LogNotifierDeviceFactory lf = this.engineGlob
+      //      .getLogNotifierDeviceFactory();
+      //lf.unregister(Logger.LOG_WARN, this);
+      //lf.unregister(Logger.LOG_ERROR, this);
       
       if (this.engineGlob != null && this.mbeanHandle != null)
          this.engineGlob.unregisterMBean(this.mbeanHandle);
@@ -926,16 +928,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    public void log(int level, String source, String str) {
       // We may not do any log.xxx() call here because of recursion!!
-      if (LogChannel.LOG_WARN != level && LogChannel.LOG_ERROR != level)
-         return;
+      //if (Logger.LOG_WARN != level && LogChannel.LOG_ERROR != level)
+      //   return;
 
       if (this.loggingSet == null) return;
-      
-      String found = (LogChannel.LOG_WARN == level) ? "logging/warning/" : "logging/severe/";
+      // FIXME TODO
+      //String found = (Logger.LOG_WARN == level) ? "logging/warning/" : "logging/severe/";
+      String found = "dummy";
       String foundEvent = found + "*"; // "logging/warning/*"
       if (!this.loggingSet.contains(foundEvent))
          return;
-      // How to extract the LogChannel name like "core"?
+      // How to extract the Logger name like "core"?
       
       try {
          if (source == null) source = "";
@@ -943,7 +946,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          String summary = 
              "[" + new java.sql.Timestamp(new java.util.Date().getTime()).toString()
-           + " " + LogChannel.bitToLogLevel(level)
+           // + " " + Logger.bitToLogLevel(level)
            + " " + Thread.currentThread().getName()
            + " " + source + "]";
 
@@ -968,12 +971,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    
          /*
          if (this.publishDestinationHelper != null) {
-            if (LogChannel.LOG_WARN == level) {
+            if (Logger.LOG_WARN == level) {
                // log.fine("Too dangerous as it could produce looping messages");
                // e.g. [WARN  XmlBlaster.DispatchWorkerPool.heron-1 RequestBroker] Generating dead message 'callback:/node/heron/client/subscribe/1/NORM/1136329068010000002/__sys__Event' from publisher=/node/heron/client/__RequestBroker_internal[heron]/1 because delivery with queue 'null' failed: XmlBlasterException errorCode=[communication.noConnection.dead] serverSideException=true location=[SOCKET-HandleClient-subscribe/1] message=[#14515:14516M update() invocation ignored, we are shutdown. : Original erroCode=communication.noConnection] [See URL http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.listing.html#communication.noConnection.dead]
             }
             else {
-               // if (LogChannel.LOG_ERROR == level)
+               // if (Logger.LOG_ERROR == level)
                // Should suppress as well ?
                // Lead to looping messages if during publish a log.error is done
                sendMessage(summary, description, eventType, errorCode, false);

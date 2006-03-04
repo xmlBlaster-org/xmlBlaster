@@ -6,7 +6,8 @@ Comment:   Demo code for a client using xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -43,7 +44,7 @@ public class TestSubXPath extends TestCase
 {
    private String ME = "TestSubXPath";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubXPath.class.getName());
 
    private String publishOid = "";
    private I_XmlBlasterAccess senderConnection;
@@ -65,7 +66,7 @@ public class TestSubXPath extends TestCase
    public TestSubXPath(Global glob, String testName, String loginName) {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.senderName = loginName;
       this.receiverName = loginName;
    }
@@ -83,7 +84,7 @@ public class TestSubXPath extends TestCase
          senderConnection.connect(qos, this.updateInterceptor); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -104,7 +105,7 @@ public class TestSubXPath extends TestCase
     * <p />
     */
    private void subscribeXPath(String query) {
-      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using XPath syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       query +
@@ -112,9 +113,9 @@ public class TestSubXPath extends TestCase
       String qos = "<qos/>";
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done:\n" + xmlKey);
+         log.info("Success: Subscribe on " + subscribeOid + " done:\n" + xmlKey);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -127,7 +128,7 @@ public class TestSubXPath extends TestCase
     * The returned publishOid is checked
     */
    private void doPublish() {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       for (int counter= 1; counter <= numPublish; counter++) {
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -141,9 +142,9 @@ public class TestSubXPath extends TestCase
          try {
             MsgUnit msgUnit = new MsgUnit(glob, xmlKey, content.getBytes(), "<qos></qos>");
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
-            log.info(ME, "Success: Publishing #" + counter + " done, returned oid=" + publishOid);
+            log.info("Success: Publishing #" + counter + " done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
             assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
          }
 
@@ -176,7 +177,7 @@ public class TestSubXPath extends TestCase
          assertEquals("", 1, this.updateInterceptor.getMsgs().length);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
          fail(e.getMessage());
       }
 
@@ -208,7 +209,7 @@ public class TestSubXPath extends TestCase
          assertEquals("", 1, this.updateInterceptor.getMsgs().length);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
          fail(e.getMessage());
       }
 
@@ -232,7 +233,7 @@ public class TestSubXPath extends TestCase
 
       int n = 4;
       for(int i=0; i<n; i++) {
-         log.info(ME, "TEST " + (i+1) + " - publishing 5 messages, expecting No.3");
+         log.info("TEST " + (i+1) + " - publishing 5 messages, expecting No.3");
          doPublish();
          assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, "3", Constants.STATE_OK));
          assertEquals("", 1, this.updateInterceptor.getMsgs().length);

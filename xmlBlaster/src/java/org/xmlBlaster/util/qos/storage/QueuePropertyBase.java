@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.storage;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -28,7 +29,7 @@ public abstract class QueuePropertyBase implements Cloneable
 {
    private static final String ME = "QueuePropertyBase";
    protected final Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(QueuePropertyBase.class.getName());
 
    private String propertyPrefix = "";
 
@@ -123,7 +124,7 @@ public abstract class QueuePropertyBase implements Cloneable
       }
       else
          this.glob = glob;
-      this.log = glob.getLog("core"); // will be overwritten in initialize with "queue" or "persistence"
+
       this.nodeId = (nodeId == null) ? glob.getStrippedId() : nodeId;
    }
 
@@ -161,7 +162,7 @@ public abstract class QueuePropertyBase implements Cloneable
    protected void initialize(String relating) {
       this.relating = (relating == null) ? "" : relating;
       String prefix = getPrefix();
-      this.log = this.glob.getLog(getRootTagName());
+
       String context = null; // something like "/topic/HelloWorld"
 
       // extract the plugin type and version from 'defaultPlugin'
@@ -170,7 +171,7 @@ public abstract class QueuePropertyBase implements Cloneable
          PropString defaultPlugin = new PropString(this.type.getDefaultValue()+","+this.version.getDefaultValue());
          // Port to linked ContextNode?
          propName = defaultPlugin.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "defaultPlugin");
-         if (log.TRACE) log.trace(ME, "Lookup of nodeId=" + nodeId + " context=" + context + " getRootTagName=" + getRootTagName() +
+         if (log.isLoggable(Level.FINE)) log.fine("Lookup of nodeId=" + nodeId + " context=" + context + " getRootTagName=" + getRootTagName() +
              " relating=" + relating + " propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
          PluginInfo pluginInfo = new PluginInfo(glob, null, defaultPlugin.getValue());
          if (defaultPlugin.isModified()) {
@@ -183,7 +184,7 @@ public abstract class QueuePropertyBase implements Cloneable
          }
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "initialize: could not set the default plugin to what indicated by "+propName);
+         log.severe("initialize: could not set the default plugin to what indicated by "+propName);
       }
                                 
       // The newer way:
@@ -212,7 +213,7 @@ public abstract class QueuePropertyBase implements Cloneable
       
       checkConsistency();
 
-      if (log.TRACE) log.trace(ME, "Initialized: " + toXml());
+      if (log.isLoggable(Level.FINE)) log.fine("Initialized: " + toXml());
    }
 
    /**
@@ -236,7 +237,7 @@ public abstract class QueuePropertyBase implements Cloneable
       else if (Constants.RELATING_SESSION.equalsIgnoreCase(relating))
          this.relating = Constants.RELATING_SESSION;
       else {
-         this.log.warn(ME, "Ignoring relating='" + relating + "'");
+         log.warning("Ignoring relating='" + relating + "'");
          Thread.dumpStack();
       }
    }
@@ -475,11 +476,11 @@ public abstract class QueuePropertyBase implements Cloneable
          this.onOverflow.setValue(Constants.ONOVERFLOW_DISCARDOLDEST);
 
          this.onOverflow.setValue(Constants.ONOVERFLOW_DEADMESSAGE); // TODO !!!
-         log.error(ME, getRootTagName() + " onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to " + this.onOverflow + " mode");
+         log.severe(getRootTagName() + " onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to " + this.onOverflow + " mode");
       }
       else {
          this.onOverflow.setValue(Constants.ONOVERFLOW_DEADMESSAGE);
-         log.warn(ME, "The " + getRootTagName() + " onOverflow attribute is invalid '" + onOverflow + "', setting to '" + this.onOverflow + "'");
+         log.warning("The " + getRootTagName() + " onOverflow attribute is invalid '" + onOverflow + "', setting to '" + this.onOverflow + "'");
       }
    }
 
@@ -510,7 +511,7 @@ public abstract class QueuePropertyBase implements Cloneable
       if (Constants.ONOVERFLOW_DEADMESSAGE.equalsIgnoreCase(onFailure))
          this.onFailure.setValue(Constants.ONOVERFLOW_DEADMESSAGE);
       else {
-         log.warn(ME, "The " + getRootTagName() + " onFailure attribute is invalid '" + onFailure + "', setting to 'deadMessage'");
+         log.warning("The " + getRootTagName() + " onFailure attribute is invalid '" + onFailure + "', setting to 'deadMessage'");
          this.onFailure.setValue(Constants.ONOVERFLOW_DEADMESSAGE);
       }
    }
@@ -555,7 +556,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setMaxEntriesUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxEntries='" + tmp + "'>, expected a long, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " maxEntries='" + tmp + "'>, expected a long, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("type")) {
@@ -566,7 +567,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setDebug(new Boolean(tmp).booleanValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " debug='" + tmp + "'>, expected a boolean, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " debug='" + tmp + "'>, expected a boolean, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("version")) {
@@ -577,7 +578,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setMaxEntriesCacheUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxEntriesCache='" + tmp + "'>, expected an long, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " maxEntriesCache='" + tmp + "'>, expected an long, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("maxBytes")) {
@@ -585,7 +586,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setMaxBytesUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxBytes='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " maxBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("maxBytesCache")) {
@@ -593,7 +594,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setMaxBytesCacheUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxBytesCache='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " maxBytesCache='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapLevel")) {
@@ -601,7 +602,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setStoreSwapLevel(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " storeSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " storeSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapBytes")) {
@@ -609,7 +610,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setStoreSwapBytes(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " storeSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " storeSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapLevel")) {
@@ -617,7 +618,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setReloadSwapLevel(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " reloadSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " reloadSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapBytes")) {
@@ -625,7 +626,7 @@ public abstract class QueuePropertyBase implements Cloneable
                try {
                   setReloadSwapBytes(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <" + getRootTagName() + " reloadSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.severe("Wrong format of <" + getRootTagName() + " reloadSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("onOverflow")) {
@@ -635,11 +636,11 @@ public abstract class QueuePropertyBase implements Cloneable
                setOnFailure(attrs.getValue(ii).trim());
             }
             else
-               log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' in connect QoS <" + getRootTagName() + ">");
+               log.warning("Ignoring unknown attribute '" + attrs.getQName(ii) + "' in connect QoS <" + getRootTagName() + ">");
          }
       }
       else {
-         log.warn(ME, "Missing 'relating' attribute in connect QoS <" + getRootTagName() + ">");
+         log.warning("Missing 'relating' attribute in connect QoS <" + getRootTagName() + ">");
       }
       checkConsistency();
    }
@@ -690,11 +691,11 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public final void checkConsistency() { // throws XmlBlasterException {
       if (getMaxEntriesCache() > getMaxEntries()) {
-         log.warn(ME, this.relating + " maxEntriesCache=" + getMaxEntriesCache() + " is bigger than maxEntries=" + getMaxEntries() + ", we reduce maxEntriesCache to maxEntries and continue.");
+         log.warning(this.relating + " maxEntriesCache=" + getMaxEntriesCache() + " is bigger than maxEntries=" + getMaxEntries() + ", we reduce maxEntriesCache to maxEntries and continue.");
          this.maxEntriesCache.setValue(getMaxEntries());
       }
       if (getMaxBytesCache() > getMaxBytes()) {
-         log.warn(ME, this.relating + " maxBytesCache=" + getMaxBytesCache() + " is bigger than maxBytes=" + getMaxBytes() + ", we reduce maxBytesCache to maxBytes and continue.");
+         log.warning(this.relating + " maxBytesCache=" + getMaxBytesCache() + " is bigger than maxBytes=" + getMaxBytes() + ", we reduce maxBytesCache to maxBytes and continue.");
          this.maxBytesCache.setValue(getMaxBytes());
       }
    }

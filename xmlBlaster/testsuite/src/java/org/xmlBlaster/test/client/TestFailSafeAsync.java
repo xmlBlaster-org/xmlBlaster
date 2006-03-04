@@ -5,9 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.init.Property;
-
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.property.PropString;
@@ -54,7 +53,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
 {
    private static String ME = "TestFailSafeAsync";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestFailSafeAsync.class.getName());
    private boolean messageArrived = false;
 
    private int serverPort = 7604;
@@ -104,7 +103,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
    protected void setUp()
    {
       this.glob = (this.glob == null) ? new Global() : this.glob;
-      this.log = this.glob.getLog("test");
+
 
       numReceived = 0;
       numTailbackReceived = 0;
@@ -139,11 +138,11 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
          con.connect(connectQos, this.updateInterceptor); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed: " + e.toString());
+          log.warning("setUp() - login failed: " + e.toString());
           fail("setUp() - login failed: " + e.toString());
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
           fail("setUp() - login failed: " + e.toString());
       }
@@ -166,7 +165,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
     */
    protected void tearDown()
    {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSafeAsync-AGENT" +
                       "</key>";
@@ -180,7 +179,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
 
             PropString defaultPlugin = new PropString("CACHE,1.0");
             String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
-            log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+            log.info("Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
             
             if (defaultPlugin.getValue().startsWith("RAM"))
                assertEquals("Wrong number of message erased", (maxEntries-failMsg), arr.length);
@@ -214,7 +213,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
     */
    public void subscribe()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSafeAsync-AGENT" +
@@ -222,10 +221,10 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       String qos = "<qos></qos>";
       try {
          String subscribeOid = con.subscribe(xmlKey, qos).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
          assertTrue("returned null subscribeOid", subscribeOid != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -235,7 +234,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
     * Construct a message and publish it.
     */
    public void publish(int counter) {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       long publishDelay = 1000/publishRate;  // 20 msg/sec -> send every 50 milli one
       String oid = "MSG-" + counter;
@@ -250,7 +249,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       catch(XmlBlasterException e) {
          fail(ME + ": Publish failed: " + e.toString());
       }
-      log.info(ME, "Success: Publishing of " + oid + " done");
+      log.info("Success: Publishing of " + oid + " done");
    }
 
 
@@ -265,7 +264,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
             EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
             this.serverThread = null;
             Util.delay(600L);    // Wait some time, ping should activate login polling
-            log.info(ME, "lostConnection, sending message " + ii + " - " + (reconnectMsg-1));
+            log.info("lostConnection, sending message " + ii + " - " + (reconnectMsg-1));
          }
 
          if (ii==reconnectMsg) {
@@ -275,7 +274,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
                   break;
                Util.delay(10L); // Wait some time, to allow the login poller to reconnect
             }
-            log.info(ME, "Reconnected, sending message " + ii + " - " + (maxEntries-1));
+            log.info("Reconnected, sending message " + ii + " - " + (maxEntries-1));
          }
 
          publish(ii);
@@ -285,23 +284,23 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       int numPublish = maxEntries-numFailsave;     // 80
       long wait = 5000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate));
       assertEquals("", maxEntries, this.updateInterceptor.waitOnUpdate(wait, maxEntries));
-      log.info(ME, "******* testFailSafe() DONE");
+      log.info("******* testFailSafe() DONE");
    }
 
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info(ME, "I_ConnectionStateListener: We were lucky, (re)connected to xmlBlaster");
+      log.info("I_ConnectionStateListener: We were lucky, (re)connected to xmlBlaster");
       subscribe();    // initialize subscription again
       reconnected = true;
       allTailbackAreFlushed = true;
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      if (log != null) log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
+      if (log != null) log.warning("I_ConnectionStateListener: Lost connection to xmlBlaster");
       allTailbackAreFlushed = false;
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      if (log != null) log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+      if (log != null) log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    /**
@@ -327,7 +326,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
          try {
             ii = Integer.parseInt(oid.substring("MSG-".length()));
          } catch(NumberFormatException e) {
-            log.error(ME, "Can't extract message number " + oid);
+            log.severe("Can't extract message number " + oid);
             fail("Can't extract message number " + oid);
          }
 
@@ -343,10 +342,10 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
             contentCounter = Integer.parseInt(cnt);
             assertEquals("Wrong counter in content", ii, contentCounter);
          } catch(NumberFormatException e) {
-            log.error(ME, "Can't extract message number '" + new String(content) + "': " + updateQos.toXml());
+            log.severe("Can't extract message number '" + new String(content) + "': " + updateQos.toXml());
          }
 
-         log.info(ME, "Update message oid=" + oid + " numReceived=" + numReceived + ", numNormalPublishReceived=" + numNormalPublishReceived + " numTailbackReceived=" + numTailbackReceived + " ...");
+         log.info("Update message oid=" + oid + " numReceived=" + numReceived + ", numNormalPublishReceived=" + numNormalPublishReceived + " numTailbackReceived=" + numTailbackReceived + " ...");
 
          /* NOT SUPPORTED ANYMORE SINCE CLIENT SIDE QUEUE EMBEDDING (before supported by Recorder framework)
          // Check here async behavior:
@@ -356,10 +355,10 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
 
             if (diff > 6) {
                String text = "Expected tailback updates = " + expectedTailback + " but got " + numTailbackReceived;
-               log.error(ME, text);
+               log.severe(text);
                fail(text);
             }
-            log.info(ME, "TEST SUCCESS: Expected tailback updates = " + expectedTailback + " and got " + numTailbackReceived);
+            log.info("TEST SUCCESS: Expected tailback updates = " + expectedTailback + " and got " + numTailbackReceived);
          }
          */
 
@@ -378,7 +377,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
    public static void main(String args[]) {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         glob.getLog(null).error(ME, "Init failed");
+         log.severe("Init failed");
          System.exit(1);
       }
       TestFailSafeAsync testSub = new TestFailSafeAsync(glob, "TestFailSafeAsync");

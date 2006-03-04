@@ -13,6 +13,7 @@ import org.xmlBlaster.util.def.Constants;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.logging.Logger;
 
 import org.xml.sax.Attributes;
 
@@ -24,8 +25,7 @@ import org.xml.sax.Attributes;
  * different nodes.
  */
 public class NodeStateInfo {
-   private static final String ME = "NodeStateInfo";
-   private final Global glob;
+   private static Logger log = Logger.getLogger(NodeStateInfo.class.getName());
 
    /** Free RAM memory in kBytes, -1 if not known */
    private int freeRam = - 1;
@@ -36,11 +36,7 @@ public class NodeStateInfo {
    /** Average idle of all CPUs of the node, -1 if not known */
    private int avgCpuIdle = -1;
 
-   /**
-    * @param glob The global specific to this node
-    */
-   public NodeStateInfo(Global glob) {
-      this.glob = glob;
+   public NodeStateInfo(Global global) {
    }
 
    /** @return Free RAM memory in kBytes */
@@ -94,12 +90,12 @@ public class NodeStateInfo {
             int id = 0;
             String tmp = attrs.getValue("id");
             if (tmp != null) {
-               try { id = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { glob.getLog("cluster").error(ME, "Invalid <cpu id='" + tmp + "'"); };
+               try { id = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.severe("Invalid <cpu id='" + tmp + "'"); };
             }
             int idle = 50;
             tmp = attrs.getValue("idle");
             if (tmp != null) {
-               try { idle = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { glob.getLog("cluster").error(ME, "Invalid <cpu idle='" + tmp + "'"); };
+               try { idle = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.severe("Invalid <cpu idle='" + tmp + "'"); };
             }
             setCpu(id, idle);
          }
@@ -111,7 +107,7 @@ public class NodeStateInfo {
          if (attrs != null) {
             String tmp = attrs.getValue("free");
             if (tmp != null) {
-               try { setFreeRam(Integer.parseInt(tmp.trim())); } catch(NumberFormatException e) { glob.getLog("cluster").error(ME, "Invalid <ram free='" + tmp + "'"); };
+               try { setFreeRam(Integer.parseInt(tmp.trim())); } catch(NumberFormatException e) { log.severe("Invalid <ram free='" + tmp + "'"); };
             }
          }
          character.setLength(0);

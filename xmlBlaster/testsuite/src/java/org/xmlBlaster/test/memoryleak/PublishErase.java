@@ -1,7 +1,8 @@
 package org.xmlBlaster.test.memoryleak;
 
 // xmlBlaster/demo/javaclients/PublishErase.java
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -25,7 +26,7 @@ import java.io.*;
 public class PublishErase
 {
    private final String ME = "PublishErase";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PublishErase.class.getName());
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
@@ -33,7 +34,7 @@ public class PublishErase
 
    public PublishErase(final Global glob) {
       
-      log = glob.getLog(null);
+
       bulkSize = glob.getProperty().get("bulkSize", bulkSize);
 
       try {
@@ -42,7 +43,7 @@ public class PublishErase
          conRetQos = con.connect(qos, new I_Callback() {
 
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
+               log.info("Receiving asynchronous message '" + updateKey.getOid() +
                                "' state=" + updateQos.getState() + " in default handler");
                return "";
             }
@@ -69,7 +70,7 @@ public class PublishErase
          
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
             if ((lCount % bulkSize) == 0) {
-               log.info(ME, "Published and erased " + lCount + " topics, enter return to continue, enter 'q' to quit");
+               log.info("Published and erased " + lCount + " topics, enter return to continue, enter 'q' to quit");
                try {
                   BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
                   String line = in.readLine(); // Blocking in I/O
@@ -80,17 +81,17 @@ public class PublishErase
                   }
                }
                catch(Exception e) {
-                  log.error(ME, e.toString());
+                  log.severe(e.toString());
                   break;
                }
             }
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Houston, we have a problem: " + e.toString());
+         log.severe("Houston, we have a problem: " + e.toString());
       }
       finally {
-         log.info(ME, "Success, hit a key to logout and exit");
+         log.info("Success, hit a key to logout and exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          con.disconnect(new DisconnectQos(glob));
       }

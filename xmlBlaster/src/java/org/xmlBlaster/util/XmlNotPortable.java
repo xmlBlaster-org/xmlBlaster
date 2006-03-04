@@ -18,7 +18,8 @@ import org.w3c.dom.Text;
 import org.w3c.dom.Document;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,7 +46,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 public class XmlNotPortable
 {
    private static final String ME = "XmlNotPortable";
-   private static final LogChannel log = Global.instance().getLog("core");
+   private static Logger log = Logger.getLogger(XmlNotPortable.class.getName());
    private static java.lang.reflect.Method method_newXPath = null;
    private static Class[] paramCls_StringDocument = null;
    private static Class clazz_XPathFactory = null;
@@ -279,7 +280,7 @@ public class XmlNotPortable
       if (getJvmXmlVersionToUse() == 14) {
          // see http://java.sun.com/xml/jaxp/dist/1.1/docs/tutorial/xslt/2_write.html
          try {
-            if (log.TRACE) log.trace(ME, "write - Using JDK 1.4 DOM implementation");
+            if (log.isLoggable(Level.FINE)) log.fine("write - Using JDK 1.4 DOM implementation");
             javax.xml.transform.TransformerFactory tf = javax.xml.transform.TransformerFactory.newInstance();
             javax.xml.transform.Transformer t = tf.newTransformer();
             // t.setOutputProperty(javax.xml.transform.OutputKeys.DOCTYPE_SYSTEM, PROPS_DTD_URI);
@@ -291,13 +292,13 @@ public class XmlNotPortable
          }
          catch(Exception e) {
             e.printStackTrace();
-            log.error(ME, "Code to write XML-ASCII has failed for document class=" + node.getClass().getName() + ": " + e.toString());
+            log.severe("Code to write XML-ASCII has failed for document class=" + node.getClass().getName() + ": " + e.toString());
          }
          return out;
       }
 
       try {
-         if (log.TRACE) log.trace(ME, "write - Using JDK 1.5 DOM implementation");
+         if (log.isLoggable(Level.FINE)) log.fine("write - Using JDK 1.5 DOM implementation");
          // JDK 1.5 DOM Level 3 conforming:
 
          /* Works only with lib/ant/xercesImpl.jar in the CLASSPATH
@@ -359,7 +360,7 @@ public class XmlNotPortable
       }
       catch(Exception e) {
          e.printStackTrace();
-         log.error(ME, "Code to write XML-ASCII has failed for document class=" + node.getClass().getName() + ": " + e.toString());
+         log.severe("Code to write XML-ASCII has failed for document class=" + node.getClass().getName() + ": " + e.toString());
       }
       /* NEW: xerces 2x (=IBM xml4j 4.0.1)   2002-04-18
       -> samples/dom/GetElementsByTagName.java shows how to dump XML our self
@@ -438,8 +439,8 @@ public class XmlNotPortable
     */
    public static final org.w3c.dom.Node mergeNode(org.w3c.dom.Document document, org.w3c.dom.Node node)
    {
-      if (log.CALL) log.call(ME, "mergeNode()");
-      if (log.DUMP) log.dump(ME, "mergeNode=" + node.toString());
+      if (log.isLoggable(Level.FINER)) log.finer("mergeNode()");
+      if (log.isLoggable(Level.FINEST)) log.finest("mergeNode=" + node.toString());
 
       if (getJvmXmlVersionToUse() == 13 || getJvmXmlVersionToUse() == 14) {
          //if (document instanceof org.apache.crimson.tree.XmlDocument) {
@@ -453,16 +454,16 @@ public class XmlNotPortable
                return document.getDocumentElement().appendChild(node);
             }
             catch(Exception e) {
-               log.error(ME, "Code to merge XML-documents adoptNode() has failed for document class=" + document.getClass().getName() + ": " + e.toString());
+               log.severe("Code to merge XML-documents adoptNode() has failed for document class=" + document.getClass().getName() + ": " + e.toString());
             }
          }
          else {
-            log.error(ME, "Code to merge XML-documents is missing for document class=" + document.getClass().getName());
+            log.severe("Code to merge XML-documents is missing for document class=" + document.getClass().getName());
          }
          return null;
       }
       try {
-         if (log.TRACE) log.trace(ME, "mergeNode - Using JDK 1.5 DOM implementation");
+         if (log.isLoggable(Level.FINE)) log.fine("mergeNode - Using JDK 1.5 DOM implementation");
          // DOM Level 3 WD - Experimental
          // com/sun/org/apache/xerces/internal/dom/CoreDocumentImpl.adoptNode()
          // Changes the ownerDocument of a node, its children, as well as the attached attribute nodes if there are any.
@@ -492,7 +493,7 @@ public class XmlNotPortable
          return document.getDocumentElement().appendChild(newNode);
       }
       catch(/*org.w3c.dom.DOMException*/Exception e) {
-         log.error(ME, "Code to merge XML-documents adoptNode() has failed for document class=" + document.getClass().getName() + ": " + e.toString());
+         log.severe("Code to merge XML-documents adoptNode() has failed for document class=" + document.getClass().getName() + ": " + e.toString());
       }
       return null;
    }
@@ -506,7 +507,7 @@ public class XmlNotPortable
     */
    public static final org.w3c.dom.traversal.TreeWalker getTreeWalker(org.w3c.dom.Document document, org.w3c.dom.Node node)
    {
-      if (log.CALL) log.call(ME, "getTreeWalker()");
+      if (log.isLoggable(Level.FINER)) log.finer("getTreeWalker()");
       if (node == null) {
          node = document.getFirstChild();
       }
@@ -585,7 +586,7 @@ public class XmlNotPortable
     * @param newNode the node to put in place of the old node
    public static final void replaceNode(org.w3c.dom.Node oldNode, org.w3c.dom.Node newNode)
    {
-      if (log.TRACE) log.trace(ME, "replaceNode=" + oldNode.toString());
+      if (log.isLoggable(Level.FINE)) log.trace(ME, "replaceNode=" + oldNode.toString());
 
       org.w3c.dom.Document document = oldNode.getOwnerDocument();
 
@@ -606,7 +607,7 @@ public class XmlNotPortable
          parentNode.removeChild(oldNode);
       }
 
-      if (log.TRACE) log.trace(ME, "Successfully replaced node");
+      if (log.isLoggable(Level.FINE)) log.trace(ME, "Successfully replaced node");
    }
     */
    

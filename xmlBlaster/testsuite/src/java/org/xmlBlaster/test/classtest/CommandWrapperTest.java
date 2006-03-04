@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.engine.Global;
@@ -23,7 +24,7 @@ import junit.framework.*;
 public class CommandWrapperTest extends TestCase {
    private String ME = "CommandWrapperTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(CommandWrapperTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
    public CommandWrapperTest(String name) {
@@ -32,7 +33,7 @@ public class CommandWrapperTest extends TestCase {
 
    protected void setUp() {
       glob = new Global();
-      log = glob.getLog(null);
+
       glob.setId("heron");
    }
 
@@ -194,7 +195,7 @@ public class CommandWrapperTest extends TestCase {
       try {
          CommandWrapper w = new CommandWrapper(glob, keyData);
          QueryQosData qos = w.getQueryQosData();
-         this.log.info(ME, qos.toXml());
+         log.info(qos.toXml());
          ClientProperty clp = qos.getClientProperty("_one");
          assertNotNull("should not be null", clp);
          assertEquals("wrong value for this property", "1", clp.getStringValue());

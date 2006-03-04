@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -48,7 +49,7 @@ abstract public class DispatchConnection implements I_Timeout
 {
    public final String ME;
    protected final Global glob;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(DispatchConnection.class.getName());
 
    protected DispatchConnectionsHandler connectionsHandler = null;
 
@@ -83,16 +84,17 @@ abstract public class DispatchConnection implements I_Timeout
          throw new IllegalArgumentException("DispatchConnection expects an address!=null");
       this.ME = "DispatchConnection-" + connectionsHandler.getDispatchManager().getQueue().getStorageId();
       this.glob = glob;
-      this.log = glob.getLog("dispatch");
+
       this.logEveryMillis = glob.getProperty().get("dispatch/logRetryEveryMillis", 60000L); // every minute a log
-      if (log.TRACE) log.trace(ME, "dispatch/logRetryEveryMillis=" + this.logEveryMillis);
+      if (log.isLoggable(Level.FINE)) log.fine("dispatch/logRetryEveryMillis=" + this.logEveryMillis);
       this.connectionsHandler = connectionsHandler;
       this.myId = connectionsHandler.getDispatchManager().getQueue().getStorageId().getId();
       this.address = address;
    }
 
    public void setAddress(AddressBase address)  throws XmlBlasterException {
-      if (this.log.TRACE) this.log.trace(ME, "setAddress: configuration has changed (with same url) set to new address object");
+      if (log.isLoggable(Level.FINE)) 
+         log.fine("setAddress: configuration has changed (with same url) set to new address object");
       this.address = address;
    }
 
@@ -126,7 +128,7 @@ abstract public class DispatchConnection implements I_Timeout
          handleTransition(true, null);
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "initialize:" + e.getMessage());
+         log.warning("initialize:" + e.getMessage());
          if (retry(e)) {    // all types of ErrorCode.COMMUNICATION*
             handleTransition(true, e); // never returns (only if DEAD) - throws exception
          }
@@ -139,12 +141,12 @@ abstract public class DispatchConnection implements I_Timeout
          throwable.printStackTrace();
          XmlBlasterException e = (throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable :
                                   new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "", throwable);
-         if (log.TRACE) log.trace(ME, e.toString());
+         if (log.isLoggable(Level.FINE)) log.fine(e.toString());
          connectionsHandler.toDead(this, e);
          throw e;
       }
 
-      if (log.TRACE) log.trace(ME, "Created driver for protocol '" + this.address.getType() + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Created driver for protocol '" + this.address.getType() + "'");
    }
 
    private boolean retry(XmlBlasterException e) {
@@ -162,7 +164,7 @@ abstract public class DispatchConnection implements I_Timeout
          this.timerKey = null;
       }
 
-      if (log.TRACE) log.trace(ME, "finalize - garbage collected");
+      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collected");
    }
 
    public final AddressBase getAddress() {
@@ -209,11 +211,11 @@ abstract public class DispatchConnection implements I_Timeout
     */
    public void send(MsgQueueEntry[] msgArr) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "send(msgArr.length=" + msgArr.length + ")"); 
+      if (log.isLoggable(Level.FINER)) log.finer("send(msgArr.length=" + msgArr.length + ")"); 
       if (msgArr == null || msgArr.length == 0) return; // assert
 
       if (isDead()) { // assert
-         log.error(ME, "Connection to " + this.address.toString() + " is in state DEAD, msgArr.length=" + msgArr.length + " messages are lost");
+         log.severe("Connection to " + this.address.toString() + " is in state DEAD, msgArr.length=" + msgArr.length + " messages are lost");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Internal problem: Connection to " + this.address.toString() + " is in state DEAD, msgArr.length=" + msgArr.length + " messages are lost");
       }
 
@@ -226,14 +228,14 @@ abstract public class DispatchConnection implements I_Timeout
          return;
       }
       catch (XmlBlasterException e) {
-         if (isPolling() && log.TRACE) log.trace(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
+         if (isPolling() && log.isLoggable(Level.FINE)) log.fine("Exception from update(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
          for (int i=0; i<msgArr.length; i++)
             msgArr[i].incrRedeliverCounter();
          if (isDead()) throw e;
          handleTransition(true, e);
          if (isDead()) throw e;
          if (retry(e)) {
-            log.error(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + this.state.toString() + ": " + e.getMessage());
+            log.severe("Exception from update(), retryCounter=" + retryCounter + ", state=" + this.state.toString() + ": " + e.getMessage());
          }
          else {
             throw e; // forward server side exception to the client
@@ -268,9 +270,9 @@ abstract public class DispatchConnection implements I_Timeout
     *        false: If invoked by our timer/ping thread, we need to notify the situation
     */
    protected final String ping(String data, boolean byDispatchConnectionsHandler) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "ping(" + data + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("ping(" + data + ")");
       if (isDead()) { // assert
-         log.error(ME, "Protocol driver is in state DEAD, ping failed");
+         log.severe("Protocol driver is in state DEAD, ping failed");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Protocol driver is in state DEAD, ping failed");
       }
       
@@ -293,12 +295,12 @@ abstract public class DispatchConnection implements I_Timeout
                            true);  /* We need to set serverSide==true ! */
             }
          }
-         if (log.TRACE && isAlive()) log.trace(ME, "Success for ping('" + data + "'), return='" + returnVal + "'");
+         if (log.isLoggable(Level.FINE) && isAlive()) log.fine("Success for ping('" + data + "'), return='" + returnVal + "'");
          handleTransition(byDispatchConnectionsHandler, null);
          return returnVal;
       }
       catch (Throwable e) { // the remote ping does not throw any XmlBlasterException, see xmlBlaster.idl
-         if (isAlive() && log.TRACE) log.trace(ME, "Exception from remote ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString() + ": " + e.toString());
+         if (isAlive() && log.isLoggable(Level.FINE)) log.fine("Exception from remote ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString() + ": " + e.toString());
          handleTransition(byDispatchConnectionsHandler, e);
          return ""; // Only reached if from timeout
       }
@@ -324,42 +326,42 @@ abstract public class DispatchConnection implements I_Timeout
       boolean isPing = (userData == null);
 
       if (isPing) {
-         if (log.TRACE) log.trace(ME, "timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
+         if (log.isLoggable(Level.FINE)) log.fine("timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
          try {
             /*String result = */ping("", false);
          }
          catch (XmlBlasterException e) {
             if (isDead()) {
-               log.trace(ME, "We are shutdown already: " + e.toString());
+               log.fine("We are shutdown already: " + e.toString());
             }
             else {
                e.printStackTrace();
-               log.error(ME, "PANIC: " + e.toString());
+               log.severe("PANIC: " + e.toString());
             }
          } // is handled in ping() itself
       }
       else { // reconnect polling
          try {
-            if (log.TRACE) log.trace(ME, "timeout -> Going to check if remote server is available again, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
+            if (log.isLoggable(Level.FINE)) log.fine("timeout -> Going to check if remote server is available again, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
             reconnect(); // The ClientDispatchConnection may choose to ping only
             try {
                /*String result = */ping("", false);
             } 
             catch (XmlBlasterException e) {
                if (isDead()) {
-                  log.trace(ME, "We are shutdown already: " + e.toString());
+                  log.fine("We are shutdown already: " + e.toString());
                }
                else {
                   e.printStackTrace();
-                  log.error(ME, "PANIC: " + e.toString()); // is handled in ping() itself
+                  log.severe("PANIC: " + e.toString()); // is handled in ping() itself
                }
             }
          }
          catch (Throwable e) {
-            if (log.TRACE) log.trace(ME, "Polling for remote connection failed:" + e.getMessage());
+            if (log.isLoggable(Level.FINE)) log.fine("Polling for remote connection failed:" + e.getMessage());
             if (logInterval > 0 && (retryCounter % logInterval) == 0)
-               log.warn(ME, "No connection established, " + address.getLogId() + " still seems to be down after " + (retryCounter+1) + " connection retries.");
-            try { handleTransition(false, e); } catch(XmlBlasterException e2) { e.printStackTrace(); log.error(ME, "PANIC: " + e.toString()); }
+               log.warning("No connection established, " + address.getLogId() + " still seems to be down after " + (retryCounter+1) + " connection retries.");
+            try { handleTransition(false, e); } catch(XmlBlasterException e2) { e.printStackTrace(); log.severe("PANIC: " + e.toString()); }
          }
       }
    }
@@ -402,15 +404,15 @@ abstract public class DispatchConnection implements I_Timeout
       if (ex != null) {
          if (ErrorCode.COMMUNICATION_USER_HOLDBACK.equals(ex.getErrorCode())) {
             this.connectionsHandler.getDispatchManager().setDispatcherActive(false);
-            log.warn(ME, "We have set dispatchActive=false, please activate dispatcher manually when the client side problem is resolved: " + ex.getMessage());
+            log.warning("We have set dispatchActive=false, please activate dispatcher manually when the client side problem is resolved: " + ex.getMessage());
          }
       }
 
-      if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> toReconnected=" + toReconnected + " byDispatchConnectionsHandler=" + byDispatchConnectionsHandler + ": " + ((ex == null) ? "" : ex.toXml()));
+      if (log.isLoggable(Level.FINE)) log.fine("Connection transition " + oldState.toString() + " -> toReconnected=" + toReconnected + " byDispatchConnectionsHandler=" + byDispatchConnectionsHandler + ": " + ((ex == null) ? "" : ex.toXml()));
 
       synchronized (this) {
          if (isDead()) {   // ignore, not possible
-            if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() +
+            if (log.isLoggable(Level.FINE)) log.fine("Connection transition " + oldState.toString() + " -> " + this.state.toString() +
                       " for " + myId + ": We ignore it: " + ((throwable == null) ? "No throwable" : throwable.toString()));
             if (connectionsHandler.getDispatchManager().isShutdown()) {
                return; // Can happen if DispatchWorker is currently delivering and the client has disconnected in the same time (thus DEAD)
@@ -457,7 +459,7 @@ abstract public class DispatchConnection implements I_Timeout
          if (toReconnected /*&& this.serverAcceptsRequests*/ && (isPolling() || isUndef())) {
             this.state = ConnectionStateEnum.ALIVE;
             retryCounter = 0; // success
-            log.info(ME, "Connection '" + getAddress().getType() + "' transition " + oldState.toString() + " -> " + this.state.toString() + ": Success, " + myId + " connected.");
+            log.info("Connection '" + getAddress().getType() + "' transition " + oldState.toString() + " -> " + this.state.toString() + ": Success, " + myId + " connected.");
             if (this.address.getPingInterval() > 0L) // respan ping timer
                timerKey = this.glob.getPingTimer().addTimeoutListener(this, this.address.getPingInterval(), null);
             connectionsHandler.toAlive(this);
@@ -469,16 +471,16 @@ abstract public class DispatchConnection implements I_Timeout
             this.state = ConnectionStateEnum.POLLING;
             retryCounter++;
             if (this.address.getDelay() > 0L) { // respan reconnect poller
-               if (log.TRACE) log.trace(ME, "Polling for server with delay=" + this.address.getDelay() + " oldState=" + oldState + " retryCounter=" + retryCounter);
+               if (log.isLoggable(Level.FINE)) log.fine("Polling for server with delay=" + this.address.getDelay() + " oldState=" + oldState + " retryCounter=" + retryCounter);
                if (!this.physicalConnectionOk) resetConnection();
                timerKey = this.glob.getPingTimer().addTimeoutListener(this, this.address.getDelay(), "poll");
                if (oldState == ConnectionStateEnum.ALIVE || oldState == ConnectionStateEnum.UNDEF) {
                   String str = (throwable != null) ? ": " + throwable.toString() : "";
                   //if (throwable != null) throwable.printStackTrace();
-                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " +
+                  log.warning("Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " +
                                this.address.getLogId() +
                                " is unaccessible, we poll for it every " + this.address.getDelay() + " msec" + str);
-                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
+                  if (log.isLoggable(Level.FINE)) log.fine("Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
                                ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                   connectionsHandler.toPolling(this);
                   spanPingTimer(400, false); // do one instant try
@@ -491,8 +493,8 @@ abstract public class DispatchConnection implements I_Timeout
                if (oldState == ConnectionStateEnum.ALIVE) {
                   resetConnection();
                   String str = (throwable != null) ? ": " + throwable.toString() : "";
-                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible" + str);
-                  if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
+                  log.warning("Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() + " is unaccessible" + str);
+                  if (log.isLoggable(Level.FINE)) log.fine("Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
                                  ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                }
             }
@@ -514,7 +516,7 @@ abstract public class DispatchConnection implements I_Timeout
       else {
          ex = new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Sending of messge failed", throwable);
       }
-      log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": retryCounter=" + retryCounter +
+      log.warning("Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": retryCounter=" + retryCounter +
                    ", maxRetries=" + this.address.getRetries());
 
       connectionsHandler.toDead(this, ex);
@@ -532,7 +534,7 @@ abstract public class DispatchConnection implements I_Timeout
     */
    public void shutdown() throws XmlBlasterException {
       this.state = ConnectionStateEnum.DEAD;
-      if (log.CALL) log.call(ME, "Entering shutdown ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown ...");
       if (this.timerKey != null) {
          this.glob.getPingTimer().removeTimeoutListener(this.timerKey);
          this.timerKey = null;

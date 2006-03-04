@@ -8,7 +8,8 @@ Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
@@ -36,7 +37,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
    public static final String pluginPropertyName = "MimePublishPlugin";
 
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PublishPluginManager.class.getName());
 
    /** Map holds the known plugins */
    private final Map pluginMap = new TreeMap();
@@ -51,7 +52,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
       super(glob);
       this.glob = glob;
       this.ME = "PublishPluginManager" + this.glob.getLogPrefixDashed();
-      this.log = this.glob.getLog("mime");
+
       this.maxMimeCacheSize = glob.getProperty().get("MimePublishPlugin.maxMimeCacheSize", 1000);
       glob.getRunlevelManager().addRunlevelListener(this);
    }
@@ -61,10 +62,10 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
       I_PublishFilter plugin = (I_PublishFilter)plugin_;
       plugin.initialize(glob);
       if (pluginMap.get(plugin.getName()) != null)
-         log.warn(ME, "Instantiating publish filter plugin '" + plugin.getName() + "' again, have you configured it twice?");
+         log.warning("Instantiating publish filter plugin '" + plugin.getName() + "' again, have you configured it twice?");
          
       pluginMap.put(plugin.getName(), plugin);
-      if (log.TRACE) log.trace(ME, "Instantiated publish filter plugin '" + plugin.getName() + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Instantiated publish filter plugin '" + plugin.getName() + "'");
    }
 
    /**
@@ -87,13 +88,13 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
             String version = key.substring(key.indexOf(":")+1);
             I_PublishFilter plugin = (I_PublishFilter)getPluginObject(type, version);
             if (plugin == null) {
-               log.error(ME, "Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
+               log.severe("Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
             }
          }
-         log.info(ME, "Instantiated " + pluginMap.size() + " publish filter plugins");
+         log.info("Instantiated " + pluginMap.size() + " publish filter plugins");
       }
       else {
-         log.info(ME, "No plugins configured with 'MimePublishPlugin'");
+         log.info("No plugins configured with 'MimePublishPlugin'");
       }
    }
 
@@ -126,10 +127,10 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
       else if (ret != null && ret instanceof Object)
          return null;  // dummy object to indicate that such messages have no plugin
 
-      if (log.TRACE) log.trace(ME, "mime=" + mime + " mimeExtended=" + mimeExtended + " not found in cache, searching the plugin ...");
+      if (log.isLoggable(Level.FINE)) log.fine("mime=" + mime + " mimeExtended=" + mimeExtended + " not found in cache, searching the plugin ...");
       
       if (mimeCache.size() > maxMimeCacheSize) {
-         log.warn(ME, "Cache has reached max size of " + maxMimeCacheSize + " entries, erasing entries");
+         log.warning("Cache has reached max size of " + maxMimeCacheSize + " entries, erasing entries");
          mimeCache.clear(); // This way we avoid very old entries and memory exhaust
       }
 
@@ -142,7 +143,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
          String[] extended = plugin.getMimeExtended();
          if (mimes == null || extended == null || mimes.length != extended.length) {
             String text = "Your plugin '" + plugin.getName() + "' must pass a valid mime type with a corresponding mimeExtended type, plugin ignored.";
-            log.error(ME, text);
+            log.severe(text);
             Thread.dumpStack();
             throw new IllegalArgumentException(text);
          }
@@ -157,7 +158,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
                   mimeCache.put(key, plugins);
                }
                plugins.put(plugin.getName(), plugin);
-               log.info(ME, "mime=" + mime + " mimeExtended=" + mimeExtended + " added to cache with plugin=" + plugin.getName());
+               log.info("mime=" + mime + " mimeExtended=" + mimeExtended + " added to cache with plugin=" + plugin.getName());
                break;
             }
          }
@@ -166,7 +167,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
       Object plugins = mimeCache.get(key);
       if (plugins == null) {
          mimeCache.put(key, dummyObject);
-         log.info(ME, "mime=" + mime + " mimeExtended=" + mimeExtended + " added to cache, no plugin is available");
+         log.info("mime=" + mime + " mimeExtended=" + mimeExtended + " added to cache, no plugin is available");
          return null;
       }
       if (plugins instanceof Map)
@@ -214,7 +215,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      //if (log.isLoggable(Level.FINER)) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
          return;
 

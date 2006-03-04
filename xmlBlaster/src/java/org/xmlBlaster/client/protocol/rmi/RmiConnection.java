@@ -13,7 +13,8 @@ import org.xmlBlaster.protocol.rmi.RmiUrl;
 
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -59,7 +60,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 {
    private String ME = "RmiConnection";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(RmiConnection.class.getName());
 
    private I_AuthServer authServer = null;
    private I_XmlBlaster blasterServer = null;
@@ -111,16 +112,16 @@ public class RmiConnection implements I_XmlBlasterConnection
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("rmi");
+
       XmlBlasterSecurityManager.createSecurityManager(this.glob);
-      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
+      log.info("Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**
     * Connect to RMI server.
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "connectLowlevel() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("connectLowlevel() ...");
 
       if (this.authServer != null) {
          return;
@@ -137,7 +138,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
          this.authServer = (I_AuthServer)rem;
          this.clientAddress.setRawAddress(addr);
-         log.info(ME, "Accessed xmlBlaster authentication reference with '" + addr + "'");
+         log.info("Accessed xmlBlaster authentication reference with '" + addr + "'");
       }
       else {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "No connect to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
@@ -148,7 +149,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlaster) {
          this.blasterServer = (I_XmlBlaster)rem;
-         log.info(ME, "Accessed xmlBlaster server reference with '" + addr + "'");
+         log.info("Accessed xmlBlaster server reference with '" + addr + "'");
       }
       else {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "No connect to '" + addr + "' possible, class needs to implement interface I_XmlBlaster.");
@@ -165,19 +166,19 @@ public class RmiConnection implements I_XmlBlasterConnection
          return Naming.lookup(addr);
       }
       catch (RemoteException e) {
-         if (this.verbose) log.warn(ME, "Can't access address ='" + addr + "', no rmi registry running");
+         if (this.verbose) log.warning("Can't access address ='" + addr + "', no rmi registry running");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Can't access address ='" + addr + "', no rmi registry running");
       }
       catch (NotBoundException e) {
-         if (this.verbose) log.warn(ME, "The given address ='" + addr + "' is not bound to rmi registry: " + e.toString());
+         if (this.verbose) log.warning("The given address ='" + addr + "' is not bound to rmi registry: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "The given address '" + addr + "' is not bound to rmi registry: " + e.toString());
       }
       catch (MalformedURLException e) {
-         log.error(ME, "The given address ='" + addr + "' is invalid: " + e.toString());
+         log.severe("The given address ='" + addr + "' is invalid: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "The given address '" + addr + "' is invalid: " + e.toString());
       }
       catch (Throwable e) {
-         log.error(ME, "The given address ='" + addr + "' is invalid : " + e.toString());
+         log.severe("The given address ='" + addr + "' is invalid : " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "The given address '" + addr + "' is invalid : " + e.toString());
       }
       finally {
@@ -202,7 +203,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     */
    private I_XmlBlaster getXmlBlaster() throws XmlBlasterException {
       if (this.blasterServer == null) {
-         if (log.TRACE) log.trace(ME, "No RMI connection available.");
+         if (log.isLoggable(Level.FINE)) log.fine("No RMI connection available.");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                                        "The RMI xmlBlaster handle is null, no connection available");
       }
@@ -225,10 +226,10 @@ public class RmiConnection implements I_XmlBlasterConnection
    public String connect(String connectQos) throws XmlBlasterException {
       if (connectQos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
-      if (log.CALL) log.call(ME, "connect() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("connect() ...");
 
       if (this.sessionId != null) {
-         log.warn(ME, "You are already logged in.");
+         log.warning("You are already logged in.");
          return "";
       }
 
@@ -237,7 +238,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       try {
          return authServer.connect(connectQos);
       } catch(RemoteException e) {
-         if (log.TRACE) log.trace(ME, "Login failed");
+         if (log.isLoggable(Level.FINE)) log.fine("Login failed");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Login failed");
       }
    }
@@ -259,7 +260,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     *         false failure on gout
     */
    public boolean disconnect(String disconnectQos) {
-      if (log.CALL) log.call(ME, "logout() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("logout() ...");
 
       try {
          if (authServer != null) {
@@ -269,9 +270,9 @@ public class RmiConnection implements I_XmlBlasterConnection
          resetConnection();
          return true;
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
       } catch(RemoteException e) {
-         log.warn(ME, e.toString());
+         log.warning(e.toString());
          e.printStackTrace();
       }
 
@@ -279,7 +280,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          shutdown();
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "disconnect: could not shutdown properly. " + ex.getMessage());
+         log.severe("disconnect: could not shutdown properly. " + ex.getMessage());
       }
       resetConnection();
       return false;
@@ -306,7 +307,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "subscribe() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("subscribe() ...");
       try {
          return getXmlBlaster().subscribe(this.sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
@@ -321,7 +322,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] unSubscribe(String xmlKey, String qos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "unSubscribe() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("unSubscribe() ...");
       try {
          return getXmlBlaster().unSubscribe(this.sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
@@ -342,11 +343,11 @@ public class RmiConnection implements I_XmlBlasterConnection
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Publishing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing ...");
       try {
          return getXmlBlaster().publish(this.sessionId, msgUnit);
       } catch(XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("XmlBlasterException: " + e.getMessage());
          throw e;
       } catch(Exception e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publish", e);
@@ -359,11 +360,11 @@ public class RmiConnection implements I_XmlBlasterConnection
     */
    public String[] publishArr(MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "publishArr() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("publishArr() ...");
       try {
          return getXmlBlaster().publishArr(this.sessionId, msgUnitArr);
       } catch(XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("XmlBlasterException: " + e.getMessage());
          throw e;
       } catch(Exception e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishArr", e);
@@ -376,7 +377,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     */
    public void publishOneway(MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "publishOneway(), RMI does not support oneway, we switch to publishArr() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("publishOneway(), RMI does not support oneway, we switch to publishArr() ...");
       publishArr(msgUnitArr);
    }
 
@@ -385,7 +386,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "erase() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("erase() ...");
       try {
          return getXmlBlaster().erase(this.sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
@@ -401,7 +402,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     */
    public final MsgUnitRaw[] get(String xmlKey, String qos) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "get() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("get() ...");
       try {
          return getXmlBlaster().get(this.sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -40,7 +41,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 {
    private String ME = "QueryQosSaxFactory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(QueryQosSaxFactory.class.getName());
 
    private  QueryQosData queryQosData;
 
@@ -70,7 +71,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    public QueryQosSaxFactory(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
+
    }
 
    /**
@@ -133,7 +134,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <meta> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <meta> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -147,7 +148,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <content> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <content> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -161,7 +162,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <multiSubscribe> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <multiSubscribe> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -175,7 +176,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <local> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <local> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -189,7 +190,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <initialUpdate> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <initialUpdate> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -203,7 +204,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <updateOneway> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <updateOneway> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -217,7 +218,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               log.warn(ME, "Ignoring sent <notify> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warning("Ignoring sent <notify> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
          }
          return;
@@ -427,7 +428,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             queryQosData.setPersistent(new Boolean(tmp).booleanValue());
-         // if (log.TRACE) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
+         // if (log.isLoggable(Level.FINE)) log.trace(ME, "Found persistent = " + msgQosData.isPersistent());
          character.setLength(0);
          return;
       }

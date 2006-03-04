@@ -8,7 +8,8 @@ Version:   $Id$
 package javaclients.rmi;
 
 import org.jutils.time.StopWatch;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -53,21 +54,21 @@ public class ClientGet
 {
    private static String ME = "Heidi";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientGet.class.getName());
    private I_AuthServer authServer = null;
    private I_XmlBlaster blasterServer = null;
    private String sessionId = null;
 
    public ClientGet(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("client");
+
       try {
          initRmi();
 
          String loginName = glob.getProperty().get("loginName", "RMIClient");
          String passwd = glob.getProperty().get("passwd", "secret");
          ConnectQos qos = new ConnectQos(glob, loginName, passwd);
-         log.info(ME, "Trying login to '" + loginName + "'");
+         log.info("Trying login to '" + loginName + "'");
          String retXml = authServer.connect(qos.toXml());
 
          // Parse the returned XML string and retrieve the secret sessionId
@@ -88,7 +89,7 @@ public class ClientGet
                             "</key>";
             String content = "<file><size>1024 kBytes</size><creation>1.1.2000</creation></file>";
             MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey, content.getBytes(), "<qos></qos>");
-            log.trace(ME, "Publishing ...");
+            log.fine("Publishing ...");
             stop.restart();
             try {
                String pubXml = blasterServer.publish(sessionId, msgUnit);
@@ -96,17 +97,17 @@ public class ClientGet
                // Parse the returned XML string
                PublishReturnQos q = new PublishReturnQos(glob, pubXml);
                publishOid = q.getKeyOid();
-               log.info(ME, "   Returned oid=" + publishOid);
+               log.info("   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
-            log.trace(ME, "Publishing done" + stop.nice());
+            log.fine("Publishing done" + stop.nice());
          }
 
 
          //----------- get() the previous message OID -------
          {
-            log.trace(ME, "get() using the exact oid ...");
+            log.fine("get() using the exact oid ...");
             String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                             "</key>";
             stop.restart();
@@ -114,15 +115,15 @@ public class ClientGet
             try {
                msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
 
-               log.info(ME, "Got " + msgArr.length + " messages:");
+               log.info("Got " + msgArr.length + " messages:");
                for (int ii=0; ii<msgArr.length; ii++) {
-                  log.plain(ME, msgArr[ii].getKey() +
+                  System.out.println(msgArr[ii].getKey() +
                              "\n################### RETURN CONTENT: ##################\n\n" +
                               new String(msgArr[ii].getContent()) +
                              "\n\n#######################################");
                }
             } catch(XmlBlasterException e) {
-               log.error(ME, "XmlBlasterException: " + e.getMessage());
+               log.severe("XmlBlasterException: " + e.getMessage());
                System.exit(1);
             }
          }
@@ -141,7 +142,7 @@ public class ClientGet
                             "</key>";
             String content = "Export program started";
             MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey, content.getBytes(), "<qos></qos>");
-            log.trace(ME, "Publishing ...");
+            log.fine("Publishing ...");
             stop.restart();
             try {
                String pubXml = blasterServer.publish(sessionId, msgUnit);
@@ -149,16 +150,16 @@ public class ClientGet
                // Parse the returned XML string
                PublishReturnQos q = new PublishReturnQos(glob, pubXml);
                publishOid = q.getKeyOid();
-               log.info(ME, "   Returned oid=" + publishOid);
+               log.info("   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
-            log.trace(ME, "Publishing done" + stop.nice());
+            log.fine("Publishing done" + stop.nice());
          }
 
 
          //----------- get() with XPath -------
-         log.trace(ME, "get() using the Xpath query syntax ...");
+         log.fine("get() using the Xpath query syntax ...");
          String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                          "   //DRIVER[@id='ProgramExecute']" +
                          "</key>";
@@ -167,15 +168,15 @@ public class ClientGet
          try {
             msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
-            log.error(ME, "XmlBlasterException: " + e.getMessage());
+            log.severe("XmlBlasterException: " + e.getMessage());
          }
 
          if (msgArr.length == 1)
-            log.info(ME, "Got " + msgArr.length + " messages:");
+            log.info("Got " + msgArr.length + " messages:");
          else
-            log.error(ME, "Got " + msgArr.length + " messages:");
+            log.severe("Got " + msgArr.length + " messages:");
          for (int ii=0; ii<msgArr.length; ii++) {
-            log.plain(ME, msgArr[ii].getKey() +
+            System.out.println(msgArr[ii].getKey() +
                           "\n################### RETURN CONTENT: ##################\n\n" +
                           new String(msgArr[ii].getContent()) +
                           "\n\n#######################################");
@@ -185,11 +186,11 @@ public class ClientGet
          authServer.disconnect(sessionId, "<qos/>");
       }
       catch (RemoteException e) {
-         log.error(ME, "Error occurred: " + e.toString());
+         log.severe("Error occurred: " + e.toString());
          e.printStackTrace();
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "XmlBlaster error occurred: " + e.toString());
+         log.severe("XmlBlaster error occurred: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -203,7 +204,7 @@ public class ClientGet
       // Create and install a security manager
       if (System.getSecurityManager() == null) {
          System.setSecurityManager(new RMISecurityManager());
-         if (log.TRACE) log.trace(ME, "Started RMISecurityManager");
+         if (log.isLoggable(Level.FINE)) log.fine("Started RMISecurityManager");
       }
 
       String hostname;
@@ -211,7 +212,7 @@ public class ClientGet
          java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
          hostname = addr.getHostName();
       } catch (Exception e) {
-         log.warn(ME, "Can't determin your hostname");
+         log.warning("Can't determin your hostname");
          hostname = "localhost";
       }
       hostname = glob.getProperty().get("dispatch/clientside/plugin/rmi/hostname", hostname);
@@ -227,7 +228,7 @@ public class ClientGet
       Remote rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
          authServer = (I_AuthServer)rem;
-         log.info(ME, "Accessing reference using given '" + addr + "' string");
+         log.info("Accessing reference using given '" + addr + "' string");
       }
       else {
          throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
@@ -239,7 +240,7 @@ public class ClientGet
       rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlaster) {
          blasterServer = (I_XmlBlaster)rem;
-         log.info(ME, "Accessing reference using given '" + addr + "' string");
+         log.info("Accessing reference using given '" + addr + "' string");
       }
       else {
          throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_XmlBlaster.");
@@ -256,19 +257,19 @@ public class ClientGet
          return Naming.lookup(addr);
       }
       catch (RemoteException e) {
-         log.error(ME, "Can't access address ='" + addr + "', no rmi registry running");
+         log.severe("Can't access address ='" + addr + "', no rmi registry running");
          throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "CallbackHandleInvalid", "Can't access address ='" + addr + "', no rmi registry running");
       }
       catch (NotBoundException e) {
-         log.error(ME, "The given address ='" + addr + "' is not bound to rmi registry: " + e.toString());
+         log.severe("The given address ='" + addr + "' is not bound to rmi registry: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "CallbackHandleInvalid", "The given address '" + addr + "' is not bound to rmi registry: " + e.toString());
       }
       catch (MalformedURLException e) {
-         log.error(ME, "The given address ='" + addr + "' is invalid: " + e.toString());
+         log.severe("The given address ='" + addr + "' is invalid: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "CallbackHandleInvalid", "The given address '" + addr + "' is invalid: " + e.toString());
       }
       catch (Throwable e) {
-         log.error(ME, "The given address ='" + addr + "' is invalid : " + e.toString());
+         log.severe("The given address ='" + addr + "' is invalid : " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "CallbackHandleInvalid", "The given address '" + addr + "' is invalid : " + e.toString());
       }
    }

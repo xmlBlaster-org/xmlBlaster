@@ -16,7 +16,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xmlBlaster.util.Global;
@@ -37,7 +38,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 public class XmlMethodsTest extends XMLTestCase {
    protected final static String ME = "XmlMethodsTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(XmlMethodsTest.class.getName());
 
    public XmlMethodsTest(String name) {
       this(new Global(), name);
@@ -50,7 +51,7 @@ public class XmlMethodsTest extends XMLTestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
    }
 
    protected void testWriteNode() throws Exception {
@@ -97,22 +98,22 @@ public class XmlMethodsTest extends XMLTestCase {
          
          ByteArrayOutputStream out = XmlNotPortable.writeNode(xmlDoc.getDocumentElement());
          String response = new String(out.toByteArray());
-         log.info(ME+ " the response ", response);
+         log.info(response);
          reader = new StringReader(response);
          input = new InputSource(reader);
          Document xmlDoc1 = db.parse(input);
          this.assertXMLEqual("", xmlDoc, xmlDoc1);
       } 
       catch (ParserConfigurationException e) {
-         log.error(ME+".IO", "Problems when building DOM parser: " + e.toString() + "\n" + txt);
+         log.severe("Problems when building DOM parser: " + e.toString() + "\n" + txt);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string\n" + txt, e);
       } 
       catch (java.io.IOException e) {
-         log.error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + txt);
+         log.severe("Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + txt);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string:\n" + txt, e);
       } 
       catch (org.xml.sax.SAXException e) {
-         log.warn(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + txt);
+         log.warning("Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + txt);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problems when building DOM tree from your XML-ASCII string:\n" + txt, e);
       }
 

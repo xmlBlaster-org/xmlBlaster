@@ -19,13 +19,12 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.naming.NamingService;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.jms.XBConnectionFactory;
 import org.xmlBlaster.jms.XBDestination;
-import org.xmlBlaster.jms.XBMessageProducer;
-import org.xmlBlaster.jms.XBSession;
 
 import junit.framework.*;
 
@@ -40,11 +39,10 @@ import junit.framework.*;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class TestJmsSubscribe extends TestCase implements MessageListener {
-   private final static String ME = "TestJmsSubscribe";
    private final static String CONNECTION_FACTORY = "connectionFactory";
    private final static String TOPIC = "jms-test";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(TestJmsSubscribe.class.getName());
    int counter = 0, nmax;
    private Throwable ex;
    
@@ -104,19 +102,18 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
    public void prepare(String[] args) {
       this.args = args;
       this.glob = new Global(args);
-      this.glob.getLog("test");
    }
 
    public void onMessage(Message message) {
       try {
-         if (this.log.CALL) this.log.call(ME, "onMessage start");
+         if (log.isLoggable(Level.FINER)) log.finer("onMessage start");
          if (message instanceof TextMessage) {
             this.counter++;
-            this.log.trace(ME, ((TextMessage)message).getText());
+            log.fine(((TextMessage)message).getText());
             this.msg = message;
             // message.acknowledge();
          }
-         if (this.log.CALL) this.log.call(ME, "onMessage stop");
+         if (log.isLoggable(Level.FINER)) log.finer("onMessage stop");
       }
       catch (Throwable ex) {
          ex.printStackTrace();
@@ -127,7 +124,7 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
       try {
          adminJmsStart();
          this.ex = null;

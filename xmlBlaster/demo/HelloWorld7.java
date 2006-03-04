@@ -1,5 +1,6 @@
 // xmlBlaster/demo/HelloWorld7.java
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -42,11 +43,11 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 public class HelloWorld7 implements I_Callback
 {
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorld7.class.getName());
 
    public HelloWorld7(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(null);
+
       
       I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       
@@ -59,7 +60,7 @@ public class HelloWorld7 implements I_Callback
          // Initializes everything but does NOT send connect message
          con.connect(qos, this);
 
-         log.info("HelloWorld7", "Waiting now for updates ...");
+         log.info("Waiting now for updates ...");
          char ret = 0;
          while (ret != 'q')
             ret = (char)Global.waitOnKeyboardHit("Enter 'q' to quit");
@@ -67,10 +68,10 @@ public class HelloWorld7 implements I_Callback
          con.disconnect(null); // Cleanup client library
       }
       catch (XmlBlasterException e) {
-         log.error("HelloWorld7", e.getMessage());
+         log.severe(e.getMessage());
       }
       catch (Throwable e) {
-         log.error("HelloWorld7", e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
       }
    }
@@ -79,13 +80,13 @@ public class HelloWorld7 implements I_Callback
                         UpdateQos updateQos)
    {
       if (updateKey.isInternal()) {
-         log.info("", "Received unexpected internal message '" +
+         log.info("Received unexpected internal message '" +
               updateKey.getOid() + " from xmlBlaster");
          return "";
       }
 
       int myAge = updateQos.getClientProperty("myAge", 0);
-      log.info("", "Received asynchronous message '" + updateKey.getOid() +
+      log.info("Received asynchronous message '" + updateKey.getOid() +
                    "' state=" + updateQos.getState() +
                    " content=" + new String(content) + 
                    " clientProperty myAge=" + myAge + " from xmlBlaster");

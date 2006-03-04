@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins.prio;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.init.I_PropertyChangeListener;
 import org.jutils.init.PropertyChangeEvent;
 import org.xmlBlaster.util.Global;
@@ -66,7 +67,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
 {
    private String ME = "PriorizedDispatchPlugin";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PriorizedDispatchPlugin.class.getName());
    private ConfigurationParser parser = null;
    public static final String CONFIG_PROPERTY_KEY = "PriorizedDispatchPlugin/config";
    private String specificConfigPropertyKey = null;
@@ -88,7 +89,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * @see I_MsgDispatchInterceptor#initialize(Global, String)
     */
    public void initialize(Global glob, String typeVersion) throws XmlBlasterException {
-      this.log = glob.getLog("dispatch");
+
       this.glob = glob;
       String sessionId = null; // !!!! In future needed for native access?
 
@@ -112,7 +113,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
       this.specificConfigPropertyKey = CONFIG_PROPERTY_KEY + "[" + typeVersion + "]";
       this.glob.getProperty().addPropertyChangeListener(CONFIG_PROPERTY_KEY, "startup", this);
       this.glob.getProperty().addPropertyChangeListener(this.specificConfigPropertyKey, "startup", this);
-      log.info(ME, "Succefully initialized");
+      log.info("Succefully initialized");
    }
 
    /**
@@ -125,7 +126,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
          changeManagerState(dispatchManager, dispatchManager.getDispatchConnectionsHandler().getState(), false);
       }
       //flushHoldbackQueue(managerEntry);
-      log.info(ME, "Stored dispatchManager=" + dispatchManager.getId() + ", dispatchManagerEntryMap.size()=" + dispatchManagerEntryMap.size());
+      log.info("Stored dispatchManager=" + dispatchManager.getId() + ", dispatchManagerEntryMap.size()=" + dispatchManagerEntryMap.size());
    }
 
    /**
@@ -133,7 +134,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * Supports changing configuration in hot operation.
     */
    public void propertyChanged(PropertyChangeEvent ev) {
-      if (log.TRACE) log.trace(ME, "propertyChanged event: " + ev.toString());
+      if (log.isLoggable(Level.FINE)) log.fine("propertyChanged event: " + ev.toString());
       String newConfig = ev.getNewValue();
 
       if (newConfig == null || newConfig.equals("startup")) { // && ev.getOldValue() == null)
@@ -159,7 +160,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
             this.parser = new ConfigurationParser(this.glob, newConfig);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "The new property '" + ev.toString() + " is ignored: " + e.getMessage());
+            log.severe("The new property '" + ev.toString() + " is ignored: " + e.getMessage());
             return;
          }
 
@@ -169,16 +170,16 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
 
             // Activate ...
             statusChanged(this.currMsgStatus);
-            log.info(ME, "Reconfigured priorized dispatch plugin with '" + ev.getKey() + "', currMsgStatus=" + this.currMsgStatus);
+            log.info("Reconfigured priorized dispatch plugin with '" + ev.getKey() + "', currMsgStatus=" + this.currMsgStatus);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "The new property '" + ev.toString() + " is ignored: " + e.getMessage());
+            log.severe("The new property '" + ev.toString() + " is ignored: " + e.getMessage());
             // rollback ...
             this.parser = oldParser;
             this.currMsgStatusConfiguration = oldConf;
             this.hasDefaultActionOnly = oldDef;
             if (this.parser != null) {
-               try { subscribeStatusMessages(); } catch (XmlBlasterException e2) { log.error(ME, "Rollback to old configuration failed: "+ e2.getMessage()); }
+               try { subscribeStatusMessages(); } catch (XmlBlasterException e2) { log.severe("Rollback to old configuration failed: "+ e2.getMessage()); }
                statusChanged(this.currMsgStatus);
             }
          }
@@ -226,13 +227,13 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     * an initial event is fired an calls this method to initialize all attributes here
     */
    public final void statusChanged(String status) {
-      if (log.TRACE) log.trace(ME, "statusChanged(status=" + status + ")");
+      if (log.isLoggable(Level.FINE)) log.fine("statusChanged(status=" + status + ")");
       synchronized (this) {
          String oldStatus = this.currMsgStatus;
          this.currMsgStatus = status;
          this.currMsgStatusConfiguration = parser.getStatusConfiguration(currMsgStatus);
          this.hasDefaultActionOnly = this.currMsgStatusConfiguration.defaultActionOnly(); // cache for performance
-         log.info(ME, "Changed priorized dispatch from old status=" + oldStatus + " to new status=" + this.currMsgStatus);
+         log.info("Changed priorized dispatch from old status=" + oldStatus + " to new status=" + this.currMsgStatus);
          if ((oldStatus==null&&this.currMsgStatus!=null) ||
              (oldStatus!=null && !oldStatus.equals(this.currMsgStatus))) {
             Iterator it = this.dispatchManagerEntryMap.values().iterator();
@@ -267,7 +268,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
 
       /*
       if (dispatchManager.getNotifyCounter() > 0 && dispatchManager.getQueue().getNumOfEntries() > 0) {
-         if (log.TRACE) log.trace(ME, "doAvtivate -> true: notifyCounter=" + dispatchManager.getNotifyCounter() + " currEntries=" + dispatchManager.getQueue().getNumOfEntries());
+         if (log.isLoggable(Level.FINE)) log.trace(ME, "doAvtivate -> true: notifyCounter=" + dispatchManager.getNotifyCounter() + " currEntries=" + dispatchManager.getQueue().getNumOfEntries());
          return true;
       }
 
@@ -299,18 +300,18 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
          String text = "Internal error: can't queue " + ((entries==null) ? 0 : entries.size()) +
                        " messages, dispatchManager=" + dispatchManager +
                        " is unknown, dispatchManagerEntryMap.size()=" + ((dispatchManagerEntryMap==null) ? 0 : dispatchManagerEntryMap.size());
-         log.error(ME, text);
+         log.severe(text);
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, text);
       }
 
       if (managerEntry.getCurrConnectionState() == ConnectionStateEnum.ALIVE &&
           managerEntry.getCurrConnectionStateConfiguration() == null &&
           this.hasDefaultActionOnly) {
-         if (log.TRACE) log.trace(ME, "We have default action only, returning all " + entryList.size() + " messages");
+         if (log.isLoggable(Level.FINE)) log.fine("We have default action only, returning all " + entryList.size() + " messages");
          return entryList;
       }
 
-      if (log.TRACE) log.trace(ME, "Working with " + entryList.size() + " messages ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Working with " + entryList.size() + " messages ...");
 
       // ... do plugin specific work ...
       ArrayList resultList = new ArrayList();
@@ -318,24 +319,24 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
          MsgQueueEntry entry = (MsgQueueEntry)entryList.get(i);
          DispatchAction action = getDispatchAction(managerEntry, entry);
 
-         if (log.TRACE) log.trace(ME, "Working on '" + entry.getLogId() + "', action=" + action.getAction() + " from sender " + entry.getSender());
+         if (log.isLoggable(Level.FINE)) log.fine("Working on '" + entry.getLogId() + "', action=" + action.getAction() + " from sender " + entry.getSender());
 
          if (managerEntry.getCurrConnectionState() == ConnectionStateEnum.ALIVE) {
             if (entry.isInternal()) {
-               log.info(ME, "Sending out of bound internal message '" + entry.getLogId() + "'");
+               log.info("Sending out of bound internal message '" + entry.getLogId() + "'");
                resultList.add(entry);
                continue; // Send internal message out of bound
             }
 
             if (this.xmlBlasterClient.getLoginName().equals(entry.getSender().getLoginName())) {
-               log.info(ME, "Sending out of bound PtP message '" + entry.getLogId() + "'");
+               log.info("Sending out of bound PtP message '" + entry.getLogId() + "'");
                resultList.add(entry);
                continue; // Send PtP notifications out of bound to avoid looping
             }
          }
 
          if (managerEntry.getCurrConnectionState() != ConnectionStateEnum.ALIVE && action.doSend()) {
-            log.error(ME, "We are in state " + managerEntry.getCurrConnectionState() + " and the configuration tells us to send nevertheless, we queue instead: " + entry.getLogId());
+            log.severe("We are in state " + managerEntry.getCurrConnectionState() + " and the configuration tells us to send nevertheless, we queue instead: " + entry.getLogId());
             action = this.QUEUE_ACTION;
          }
 
@@ -344,20 +345,20 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
          }
          else if (action.doQueue()) {
             // ignore in async - put to queue in sync mode !!
-            if (log.TRACE) log.trace(ME, "Queueing holdback message " + entry.getLogId());
+            if (log.isLoggable(Level.FINE)) log.fine("Queueing holdback message " + entry.getLogId());
             try {
                putToHoldbackQueue(managerEntry, entry);
             }
             catch (XmlBlasterException e) {
                dispatchManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, dispatchManager, e));
             }
-            if (log.TRACE) log.trace(ME, "Removing from callback queue " + entry.getLogId() + " (is now a holdback message)");
+            if (log.isLoggable(Level.FINE)) log.fine("Removing from callback queue " + entry.getLogId() + " (is now a holdback message)");
             try {
                dispatchManager.getQueue().removeRandom(entry);
-               if (log.TRACE) log.trace(ME, "Callback queue size is now " + dispatchManager.getQueue().getNumOfEntries());
+               if (log.isLoggable(Level.FINE)) log.fine("Callback queue size is now " + dispatchManager.getQueue().getNumOfEntries());
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + dispatchManager.getQueue().getStorageId() + "': " + e.getMessage());
+               log.severe("PANIC: Can't remove " + entry.toXml("") + " from queue '" + dispatchManager.getQueue().getStorageId() + "': " + e.getMessage());
                e.printStackTrace();
             }
          }
@@ -366,7 +367,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
                dispatchManager.getQueue().removeRandom(entry);
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + dispatchManager.getQueue().getStorageId() + "': " + e.getMessage());
+               log.severe("PANIC: Can't remove " + entry.toXml("") + " from queue '" + dispatchManager.getQueue().getStorageId() + "': " + e.getMessage());
                e.printStackTrace();
             }
          }
@@ -400,12 +401,12 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
                queue = glob.getQueuePluginManager().getPlugin(typeVersion, storageId, queueProperties);
                queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting (otherwise we have memory leaks)
                managerEntry.setHoldbackQueue(queue);
-               log.info(ME, "Created holdback queue '" + queue.getStorageId() + "' with " + queue.getNumOfEntries() + " entries");
+               log.info("Created holdback queue '" + queue.getStorageId() + "' with " + queue.getNumOfEntries() + " entries");
             }
          }
       }
       queue.put(entry, true);
-      if (log.TRACE) log.trace(ME, "Filled to holdback queue '" + queue.getStorageId() + "' one entry '" + entry.getLogId() +
+      if (log.isLoggable(Level.FINE)) log.fine("Filled to holdback queue '" + queue.getStorageId() + "' one entry '" + entry.getLogId() +
                                "', it has now " + queue.getNumOfEntries() + " entries");
    }
 
@@ -418,7 +419,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
          DispatchManager dispatchManager = managerEntry.getDispatchManager();
          I_Queue holdbackQueue = managerEntry.getHoldbackQueue();
          if (holdbackQueue != null && holdbackQueue.getNumOfEntries() > 0) {
-            log.info(ME, "Flushing " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getStorageId());
+            log.info("Flushing " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getStorageId());
             ArrayList list = null;
             int lastSize = -99;
             while (holdbackQueue.getNumOfEntries() > 0) {
@@ -426,13 +427,13 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
                try {
                   list = holdbackQueue.peek(-1, -1);
                   if (holdbackQueue.getNumOfEntries() == lastSize) {
-                     log.error(ME, "PANIC: " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getStorageId() + " can't be flushed, giving up!");
+                     log.severe("PANIC: " + holdbackQueue.getNumOfEntries() + " entries from holdback queue " + holdbackQueue.getStorageId() + " can't be flushed, giving up!");
                      break;
                   }
                   lastSize = (int)holdbackQueue.getNumOfEntries();
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "PANIC: Can't flush holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries: " + e.getMessage());
+                  log.severe("PANIC: Can't flush holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries: " + e.getMessage());
                   e.printStackTrace();
                   continue;
                }
@@ -443,7 +444,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
                   dispatchManager.getQueue().put(queueEntries, false);
                }
                catch (XmlBlasterException e) {
-                  log.warn(ME, "flushHoldbackQueue() failed: " + e.getMessage());
+                  log.warning("flushHoldbackQueue() failed: " + e.getMessage());
                   // errorCode == "ONOVERFLOW"
                   dispatchManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, queueEntries, dispatchManager, e));
                }
@@ -451,11 +452,11 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
                try {
                   long num = holdbackQueue.remove(list.size(), -1);
                   if (num != list.size()) {
-                     log.error(ME, "PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
+                     log.severe("PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
                   }
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.getMessage());
+                  log.severe("PANIC: Expected to remove from holdbackQueue '" + holdbackQueue.getStorageId() + "' with " + holdbackQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.getMessage());
                }
             }
 
@@ -463,7 +464,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
             dispatchManager.notifyAboutNewEntry();
          }
          else {
-            if (log.TRACE) log.trace(ME, "No holdback queue for " + dispatchManager.getId() + ", nothing to flush");
+            if (log.isLoggable(Level.FINE)) log.fine("No holdback queue for " + dispatchManager.getId() + ", nothing to flush");
          }
       }
    }
@@ -504,9 +505,9 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
       StatusConfiguration tmp = parser.getStatusConfiguration(newState);
       managerEntry.setCurrConnectionStateConfiguration(tmp);
       if (tmp != null)
-         log.info(ME, "Changing to " + newState + ", found configuration is '" + tmp.toXml(null) + "'");
+         log.info("Changing to " + newState + ", found configuration is '" + tmp.toXml(null) + "'");
       else 
-         log.info(ME, "Changing to connection state " + newState);
+         log.info("Changing to connection state " + newState);
       if (flush)
          flushHoldbackQueue(managerEntry);
       return managerEntry; 
@@ -547,7 +548,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
    /**
    */ 
    public void shutdown() throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "shutdown()");
+      if (log.isLoggable(Level.FINE)) log.fine("shutdown()");
       synchronized (this) {
          if (isShutdown) return;
 
@@ -558,7 +559,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
             shutdown(arr[i].getDispatchManager());
          }
          if (this.dispatchManagerEntryMap.size() > 0) {
-            log.error(ME, "Internal cleanup error in dispatchManagerEntryMap");
+            log.severe("Internal cleanup error in dispatchManagerEntryMap");
          }
          this.dispatchManagerEntryMap.clear();
          

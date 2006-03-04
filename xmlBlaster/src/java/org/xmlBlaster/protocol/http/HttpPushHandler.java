@@ -6,30 +6,20 @@ Comment:   Handling callback over http
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
-import org.jutils.log.LogChannel;
-import org.jutils.io.FileUtil;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.text.StringHelper;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 
-import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
-import java.net.URLEncoder;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import java.io.ObjectInputStream;
-import java.io.FileInputStream;
-import java.io.ObjectOutputStream;
-import java.io.FileOutputStream;
-
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * This handles and hides the different http push modes when sending
@@ -47,7 +37,7 @@ import org.apache.commons.codec.binary.Base64;
 public class HttpPushHandler implements I_Callback 
 {
    private String ME  = "HttpPushHandler";
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(HttpPushHandler.class.getName());
 
    /**
     * Ping the browser every 10 seconds.
@@ -101,7 +91,7 @@ public class HttpPushHandler implements I_Callback
                           String loginName, I_XmlBlasterAccess xmlBlasterAccess)
                                throws ServletException, IOException
    {
-      this.log = org.xmlBlaster.util.Global.instance().getLog("http");
+
       this.req = req;
       this.res = res;
       this.sessionId = sessionId;
@@ -121,7 +111,7 @@ public class HttpPushHandler implements I_Callback
       pushQueue = new Vector();
       setBrowserIsReady(true);
 
-      log.trace(ME,"Creating PingThread ...");
+      log.fine(ME + " Creating PingThread ...");
       pingThread = new HttpPingThread(this, PING_INTERVAL, browserId);
    }
 
@@ -133,7 +123,7 @@ public class HttpPushHandler implements I_Callback
     */
    private void initialize(String head, String tail) throws IOException
    {
-      if (log.TRACE) log.trace(ME, "Creating HttpPushHandler ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Creating HttpPushHandler ...");
       this.head = head;
       this.tail = tail;
       this.handlesMultipart = doesHandleMultipart();
@@ -142,7 +132,7 @@ public class HttpPushHandler implements I_Callback
       else
          this.outPlain =  res.getWriter();
 
-      log.trace(ME, "Initialize ...");
+      log.fine("Initialize ...");
 
       if (this.head == null) {
          this.head = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">" +
@@ -194,10 +184,10 @@ public class HttpPushHandler implements I_Callback
          }
 
          pingThread.stopThread();
-         log.info(ME, "Closed push connection to browser");
+         log.info("Closed push connection to browser");
       }
       catch(Exception e) {
-         log.error(ME,"Error occurred while de-initializing the push handler :"+e.toString());
+         log.severe("Error occurred while de-initializing the push handler :"+e.toString());
       }
    }
 
@@ -216,7 +206,7 @@ public class HttpPushHandler implements I_Callback
     * Delegates the cleanup call to HttpPushHandler
     */
    public void cleanup() {
-      if (log.CALL) log.call(ME, "Entering cleanup(" + sessionId + ") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering cleanup(" + sessionId + ") ...");
       try {
          if (this.sessionId != null) {
             BlasterHttpProxy.cleanup(this.sessionId);
@@ -224,7 +214,7 @@ public class HttpPushHandler implements I_Callback
 
          if (this.xmlBlasterAccess != null) {
             this.xmlBlasterAccess.disconnect(null);
-            log.info(ME, "XmlBlaster connection removed");
+            log.info("XmlBlaster connection removed");
             this.xmlBlasterAccess = null;
          }
 
@@ -234,7 +224,7 @@ public class HttpPushHandler implements I_Callback
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, "Can't destroy http connection for sessionId=" + sessionId + ": " + e.toString());
+         log.severe("Can't destroy http connection for sessionId=" + sessionId + ": " + e.toString());
       }
    }
 
@@ -256,7 +246,7 @@ public class HttpPushHandler implements I_Callback
     */
    public void setClosed(boolean closed)
    {
-      if (log.TRACE) log.trace(ME, "Setting closed from " + this.closed + " to " + closed);
+      if (log.isLoggable(Level.FINE)) log.fine("Setting closed from " + this.closed + " to " + closed);
       this.closed = closed;
    }
 
@@ -281,7 +271,7 @@ public class HttpPushHandler implements I_Callback
       if (closed()) { this.browserIsReady=false; return; }
 
       this.browserIsReady = ready;
-      if (log.TRACE) log.trace(ME, "Setting browserReady=" + browserIsReady);
+      if (log.isLoggable(Level.FINE)) log.fine("Setting browserReady=" + browserIsReady);
 
       pong(); // Use this as a browser alive as well, since some internet proxies seem to hold back my pongs
 
@@ -291,7 +281,7 @@ public class HttpPushHandler implements I_Callback
             pushToBrowser();
          }
          catch(Exception e) {
-            log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
+            log.severe("sending push queue to browser failed. ["+e.toString()+"]");
             shutdownBrowserConnection();
          }
       }
@@ -319,9 +309,9 @@ public class HttpPushHandler implements I_Callback
 
 
       if (doesMulti)
-         log.info(ME, "Checking browser = " + browser + ". Assuming it supports 'multipart requests'");
+         log.info("Checking browser = " + browser + ". Assuming it supports 'multipart requests'");
       else
-         log.info(ME, "Checking browser = " + browser + ". We won't use 'multipart requests'");
+         log.info("Checking browser = " + browser + ". We won't use 'multipart requests'");
       return doesMulti;
    }
 
@@ -346,19 +336,19 @@ public class HttpPushHandler implements I_Callback
     */
    private void pushToBrowser() throws ServletException, IOException
    {
-      if (log.CALL) log.call(ME, "Entering pushToBrowser() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering pushToBrowser() ...");
 
       synchronized(pushQueue) {
          if(pushQueue.size() == 0)
             return;
          if(!isBrowserReady() ) {
-            log.info(ME, "Waiting until browser is ready to send " + pushQueue.size() + " messages");
+            log.info("Waiting until browser is ready to send " + pushQueue.size() + " messages");
             return;
          }
 
          //setting Http push connection to false.
          if (handlesMultipart) {
-            if (log.TRACE) log.trace(ME, "Pushing multipart, pushQueue.size=" + pushQueue.size());
+            if (log.isLoggable(Level.FINE)) log.fine("Pushing multipart, pushQueue.size=" + pushQueue.size());
             /* Every line which is sent to the browser overwrites the former one
                Problems: (Linux/netscape)
                1. The watch-wait cursor is displayed, until the doGet() leaves.
@@ -385,19 +375,19 @@ public class HttpPushHandler implements I_Callback
                   setBrowserIsReady(false); // Force browser to tell us when it is ready
 
                buf.append(tail);
-               if (log.DUMP) log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
+               if (log.isLoggable(Level.FINEST)) log.finest("Sending to callbackFrame:\n" + buf.toString());
 
                outMulti.println(buf.toString());
 
                outMulti.println();
                outMulti.println("--End");
                outMulti.flush();
-               log.trace(ME,"Push content queue successfully sent as multipart.");
+               log.fine("Push content queue successfully sent as multipart.");
                pushQueue.clear();
             }
          }
          else {
-            log.trace(ME, "Pushing plain, pushQueue.size=" + pushQueue.size());
+            log.fine("Pushing plain, pushQueue.size=" + pushQueue.size());
             /*
                Problems: (Linux/netscape)
                1. The watch-wait cursor is displayed, until the doGet() leaves.
@@ -429,14 +419,14 @@ public class HttpPushHandler implements I_Callback
 
                // bug, thanks to Just: buf.append(tail);
 
-               if (log.DUMP) log.dump(ME, "Sending plain to callbackFrame:\n" + buf.toString());
+               if (log.isLoggable(Level.FINEST)) log.finest("Sending plain to callbackFrame:\n" + buf.toString());
 
                outPlain.println(buf.toString());
 
                outPlain.println("</script><p />\n");
 
                outPlain.flush();
-               log.trace(ME,"Push content queue successfully sent.");
+               log.fine("Push content queue successfully sent.");
                pushQueue.clear();
             }
          }
@@ -457,7 +447,7 @@ public class HttpPushHandler implements I_Callback
     */
    public String update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       try {
-         if (log.TRACE) log.trace(ME,"update '" + updateKey.getOid() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("update '" + updateKey.getOid() + "'");
 
          if(callbackInterceptor != null) {
             callbackInterceptor.update(sessionId, updateKey, content, updateQos);
@@ -473,7 +463,7 @@ public class HttpPushHandler implements I_Callback
       }
       catch(Exception e) {
          e.printStackTrace();
-         log.error(ME,e.toString());
+         log.severe(e.toString());
       }
       return "<qos/>"; // TODO: Async wait on return value from browser/applet
    }
@@ -496,7 +486,7 @@ public class HttpPushHandler implements I_Callback
       retStr.append("alert(\'" + StringHelper.replaceAll(tmp, "\n", "\\n'+\n'") + "');\n");
       retStr.append("</script>\n");
       retStr.append("</body></html>\n");
-      Global.instance().getLog("http").warn("HttpPushHandler", "Sending alert to browser: " + text);
+      log.warning("Sending alert to browser: " + text);
       return retStr.toString();
    }
 
@@ -514,7 +504,7 @@ public class HttpPushHandler implements I_Callback
          push(new PushDataItem(PushDataItem.LOGGING, "if (parent.message != null) parent.message('"+codedText+"');\n"));
       }
       catch(Exception e) {
-         log.error(ME,e.toString());
+         log.severe(e.toString());
       }
    }
 
@@ -547,7 +537,7 @@ public class HttpPushHandler implements I_Callback
    public void ping(String state) throws ServletException, IOException
    {
       if (!isBrowserReady()) {
-         log.warn(ME, "Browser seems not to be ready, forcing a push nevertheless (checking browser with ping)");
+         log.warning("Browser seems not to be ready, forcing a push nevertheless (checking browser with ping)");
          setBrowserIsReady(true);
       }
       push(new PushDataItem(PushDataItem.PING, "if (parent.ping != null) parent.ping('" + state + "');\n"));
@@ -594,7 +584,7 @@ public class HttpPushHandler implements I_Callback
        */
       public void pong()
       {
-         if (log.TRACE) log.trace(ME, "Received pong, current waitForPong=" + waitForPong + ", counter=" + counter);
+         if (log.isLoggable(Level.FINE)) log.fine("Received pong, current waitForPong=" + waitForPong + ", counter=" + counter);
          waitForPong = 0; // not waitForPong--; if (waitForPong<0) waitForPong=0; since we don't care about delay, we are happy if the browser does respond somehow
       }
 
@@ -611,10 +601,10 @@ public class HttpPushHandler implements I_Callback
          this.ME = "HttpPingThread-" + loginName;
          this.pushHandler = pushHandler;
          this.PING_INTERVAL = pingInterval;
-         if (log.CALL) log.call(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering constructor HTTP ping interval=" + pingInterval + " millis");
       }
       public void run() {
-         if (log.CALL) log.call(ME, "Pinging browser ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Pinging browser ...");
          while (pingRunning) {
 
             try {
@@ -629,24 +619,24 @@ public class HttpPushHandler implements I_Callback
                //if (false) {  //// Switched off !!!!!
                if (waitForPong > 2) {  // Allow three pongs delay over slow connections
                // This ping doesn't work over the internet??????
-                  Global.instance().getLog("http").warn(ME, "Browser seems to have disappeared, no response for my ping=" + counter + ", missing " + waitForPong + " responses. Closing connection.");
+                  log.warning("Browser seems to have disappeared, no response for my ping=" + counter + ", missing " + waitForPong + " responses. Closing connection.");
                   pushHandler.cleanup();
                   stopThread();
                }
                else {
                   String text = "refresh-" + counter;
-                  if (log.TRACE) log.trace(ME,"Sending ping '" + text + "'  to browser ...");
+                  if (log.isLoggable(Level.FINE)) log.fine("Sending ping '" + text + "'  to browser ...");
                   pushHandler.ping(text);
                   waitForPong++;
                }
             } catch(Exception e) {
                //error handling: browser closed connection.
-               log.warn(ME,"You tried to ping=" + counter + " a browser who is not interested. Close HttpPushHandler.");
+               log.warning("You tried to ping=" + counter + " a browser who is not interested. Close HttpPushHandler.");
                pushHandler.cleanup();
                stopThread();
             }
          }
-         if (log.TRACE) log.trace(ME, "Ping thread dies ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Ping thread dies ...");
       }
    } // class PingThread
 

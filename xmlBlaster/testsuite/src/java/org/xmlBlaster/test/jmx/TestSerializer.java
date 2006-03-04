@@ -2,7 +2,8 @@ package org.xmlBlaster.test.jmx;
 
 import junit.framework.*;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.util.admin.extern.SerializeHelper;
@@ -12,7 +13,7 @@ import java.io.*;
 public class TestSerializer  extends TestCase{
   private final static String ME = "TestSerializer";
   private Global glob = null;
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(TestSerializer.class.getName());
 
   SerializeHelper sh = null;
   MethodInvocation mi = null;
@@ -26,7 +27,7 @@ public class TestSerializer  extends TestCase{
    protected void setUp()
    {
      this.glob = Global.instance();
-     this.log = this.glob.getLog("test");
+
    }
 
 
@@ -49,24 +50,24 @@ public class TestSerializer  extends TestCase{
       sh = new SerializeHelper(glob);
     }
     catch (Exception ex) {
-      log.error(ME, "Error when creating SerializeHelper" + ex.toString());
+      log.severe("Error when creating SerializeHelper" + ex.toString());
       assertTrue("Error when creating SerializeHelper" + ex.toString(),false);
     }
     mi = new MethodInvocation();
     try {
       mi.setMethodName("Test");
-       log.info(ME,"Serializing MethodInvocation");
+       log.info("Serializing MethodInvocation");
        byte[] testByte = sh.serializeObject(mi);
-       log.info(ME,"Deserializing MethodInvocation...");
+       log.info("Deserializing MethodInvocation...");
        MethodInvocation mi2 = (MethodInvocation) sh.deserializeObject(testByte);
        if (!(mi2.getMethodName().equals("Test"))) {
-         log.error(ME,"Values are different");
+         log.severe("Values are different");
          assertTrue("Values are different", false);
        }
     }
     catch (Exception ex) {
       assertTrue("Error when serializing or deserialiizing Object " + ex.toString(), false);
-      log.error(ME,"Error when serializing or deserialiizing Object " + ex.toString());
+      log.severe("Error when serializing or deserialiizing Object " + ex.toString());
     }
    }
 

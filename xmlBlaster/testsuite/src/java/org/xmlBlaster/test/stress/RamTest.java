@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.jutils.runtime.Memory;
@@ -45,7 +46,7 @@ public class RamTest extends TestCase
 {
    private static String ME = "Tim";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(RamTest.class.getName());
    private StopWatch stopWatch = null;
 
    private String publishOid = "";
@@ -73,7 +74,7 @@ public class RamTest extends TestCase
    {
       super(testName);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
       this.senderName = loginName;
       this.numPublish = numPublish;
    }
@@ -93,7 +94,7 @@ public class RamTest extends TestCase
          senderConnection.connect(connectQos, null); // Login to xmlBlaster without Callback
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
 
@@ -107,7 +108,7 @@ public class RamTest extends TestCase
     */
    protected void tearDown()
    {
-      log.info(ME, "tearDown() ...");
+      log.info("tearDown() ...");
       stopWatch = new StopWatch();
 
       for (int ii=0; ii<numPublish; ii++) {
@@ -118,14 +119,14 @@ public class RamTest extends TestCase
             EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
             assertTrue("returned erased oid array == null", null != arr);
             assertEquals("num erased messages is wrong", 1, arr.length);
-         } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
+         } catch(XmlBlasterException e) { log.severe("XmlBlasterException: " + e.getMessage()); }
       }
 
       long avg = 0;
       double elapsed = stopWatch.elapsed();
       if (elapsed > 0.)
          avg = (long)(1000.0 * numPublish / elapsed);
-      log.info(ME, "Success: Erasing done, " + numPublish + " messages erased, average messages/second = " + avg);
+      log.info("Success: Erasing done, " + numPublish + " messages erased, average messages/second = " + avg);
 
       senderConnection.disconnect(null);
    }
@@ -138,7 +139,7 @@ public class RamTest extends TestCase
     */
    public void doPublish()
    {
-      log.info(ME, "Publishing " + numPublish + " messages ...");
+      log.info("Publishing " + numPublish + " messages ...");
 
       long usedMemBefore = 0L;
 
@@ -170,7 +171,7 @@ public class RamTest extends TestCase
          assertTrue("returned msgArr[0].msgUnit.content.length == 0", 0 != msgArr[0].getContent().length);
          String mem = new String(msgArr[0].getContent());
          usedMemBefore = new Long(mem).longValue();
-         log.info(ME, "xmlBlaster used allocated memory before publishing = " + Memory.byteString(usedMemBefore));
+         log.info("xmlBlaster used allocated memory before publishing = " + Memory.byteString(usedMemBefore));
 
 
          stopWatch = new StopWatch();
@@ -181,7 +182,7 @@ public class RamTest extends TestCase
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numPublish / elapsed);
-         log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
+         log.info("Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
 
          assertTrue("returned publishOidArr == null", null != publishOidArr);
          assertEquals("numPublished is wrong", numPublish, publishOidArr.length);
@@ -190,14 +191,14 @@ public class RamTest extends TestCase
          // 3. Query the memory allocated in xmlBlaster after publishing all the messages
          msgArr = senderConnection.get(xmlKey, qos);
          long usedMemAfter = new Long(new String(msgArr[0].getContent())).longValue();
-         log.info(ME, "xmlBlaster used allocated memory after publishing = " + Memory.byteString(usedMemAfter));
-         log.info(ME, "Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/numPublish));
+         log.info("xmlBlaster used allocated memory after publishing = " + Memory.byteString(usedMemAfter));
+         log.info("Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/numPublish));
 
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       } catch(Exception e) {
-         log.warn(ME, "Exception: " + e.toString());
+         log.warning("Exception: " + e.toString());
          e.printStackTrace();
          assertTrue("get or publish - Exception: " + e.toString(), false);
       }

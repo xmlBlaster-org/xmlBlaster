@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.client.key.EraseKey;
@@ -37,7 +38,7 @@ public class TestPtPDispatch extends TestCase {
    private static String ME = "TestPtPDispatch";
    private final static long TIMEOUT = 5000L;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestPtPDispatch.class.getName());
    private PtPDestination[] destinations;
    private int numDestinations = 4;
    private int counter = 0;
@@ -61,27 +62,27 @@ public class TestPtPDispatch extends TestCase {
     */
    protected void setUp() {
       this.glob = (this.glob == null) ? Global.instance() : this.glob;
-      this.log = this.glob.getLog("test");
+
       // this.counter = 0;
 
       this.destinations = new PtPDestination[this.numDestinations];
       for (int i=0; i < this.numDestinations; i++) 
          this.destinations[i] = new PtPDestination(this.glob, this.subjectName + "/" + (i+1));
-      log.info(ME, "XmlBlaster is ready for testing");
+      log.info("XmlBlaster is ready for testing");
       try {
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
          ConnectQos connectQos = new ConnectQos(glob, "src_" + this.subjectName, passwd); // == "<qos>...</qos>";
-         if (this.log.TRACE) this.log.trace(ME, "setUp: connectQos '" + connectQos.toXml() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("setUp: connectQos '" + connectQos.toXml() + "'");
          con.connect(connectQos, null);  // Login to xmlBlaster, register for updates
 
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed: " + e.getMessage());
+          log.warning("setUp() - login failed: " + e.getMessage());
           fail("setUp() - login fail: " + e.getMessage());
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
           fail("setUp() - login fail: " + e.toString());
       }
@@ -108,7 +109,7 @@ public class TestPtPDispatch extends TestCase {
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       try {
          EraseKey key = new EraseKey(this.glob, "testPtPDispatch"); 
@@ -144,7 +145,7 @@ public class TestPtPDispatch extends TestCase {
       else toSessionName = this.destinations[destNum].getSessionName();
       
       // String oid = "Message" + "-" + counter;
-      log.info(ME, "Publishing a message " + toSessionName.getRelativeName() + " ...");
+      log.info("Publishing a message " + toSessionName.getRelativeName() + " ...");
       PublishKey key = new PublishKey(this.glob, "testPtPDispatch");
       
       Destination destination = new Destination(this.glob, toSessionName);
@@ -164,7 +165,7 @@ public class TestPtPDispatch extends TestCase {
          if (!expectEx) ex.printStackTrace();
          assertTrue("did'nt expect an exception after publishing to " + toSessionName.getRelativeName() + " here but got one: " + ex.getMessage(), expectEx);
       }
-      log.info(ME, "Success: Publishing of message for " + toSessionName.getRelativeName() + " done");
+      log.info("Success: Publishing of message for " + toSessionName.getRelativeName() + " done");
 
       for (int i=0; i < this.destinations.length; i++) 
          this.destinations[i].check(timeout, counts[i]);

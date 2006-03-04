@@ -8,7 +8,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -41,7 +42,7 @@ import java.io.*;
 public class SystemInfo extends HttpServlet
 {
    private static final String ME = "SystemInfo";
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(SystemInfo.class.getName());
 
 
    /**
@@ -51,7 +52,7 @@ public class SystemInfo extends HttpServlet
    public void init(ServletConfig conf) throws ServletException
    {
       super.init(conf);
-      this.log = org.xmlBlaster.util.Global.instance().getLog("http");
+
    }
 
 
@@ -79,7 +80,7 @@ public class SystemInfo extends HttpServlet
     */
    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException
    {
-      if (log.CALL) log.call(ME, "Entering SystemInfo.doRequest() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering SystemInfo.doRequest() ...");
       StopWatch stop = new StopWatch();
 
       String sessionId = request.getRequestedSessionId();
@@ -89,7 +90,7 @@ public class SystemInfo extends HttpServlet
       try {
          if (actionType == null) {
             String str = "Please call servlet with some ActionType e.g. xmlBlaster/dhtml/systemInfo?ActionType=cpuinfo";
-            log.error(ME, str);
+            log.severe(str);
             htmlOutput(str, response);
             return;
          }
@@ -97,20 +98,20 @@ public class SystemInfo extends HttpServlet
          I_XmlBlasterAccess corbaConnection = BlasterHttpProxy.getXmlBlasterAccess(sessionId);
          if (corbaConnection == null) {
             String text = "Your Session ID is not valid, please try again with cookies enabled";
-            log.error(ME, text);
+            log.severe(text);
             popupError(response, text);
             return;
          }
 
          // Expecting actionType = "cpuinfo" or "meminfo" but it could be
          // any valid key oid.
-         log.info(ME,"Got request for " + actionType + ", sessionId=" + sessionId + " ...");
+         log.info("Got request for " + actionType + ", sessionId=" + sessionId + " ...");
 
          SubscribeKey xmlKey = new SubscribeKey(null, actionType);
          SubscribeQos xmlQos = new SubscribeQos(null);
 
          String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml()).getSubscriptionId();
-         log.info(ME, "Subscribed to " + actionType + "=" + ret);
+         log.info("Subscribed to " + actionType + "=" + ret);
 
          // NOTE: The callback messages (update()) are handled by our
          // BlasterHttpProxyServlet framework and pushed to the browser.
@@ -119,19 +120,19 @@ public class SystemInfo extends HttpServlet
       }
       catch (XmlBlasterException e) {
          String text = "Error from xmlBlaster: " + e.getMessage();
-         log.error(ME, text);
+         log.severe(text);
          popupError(response, text);
          return;
       }
       catch (Exception e) {
          e.printStackTrace();
-         log.error(ME, "Error in doGet(): " + e.toString());
+         log.severe("Error in doGet(): " + e.toString());
          popupError(response, e.toString());
          return;
       }
 
       htmlOutput(output, response);
-      log.trace(ME, "Leaving SystemInfo.doRequest() ..."+stop.nice());
+      log.fine("Leaving SystemInfo.doRequest() ..."+stop.nice());
       System.gc();
    }
 
@@ -152,7 +153,7 @@ public class SystemInfo extends HttpServlet
          pw.close();
       }
       catch(IOException e) {
-         log.warn(ME, "Could not deliver HTML page to browser:"+e.toString());
+         log.warning("Could not deliver HTML page to browser:"+e.toString());
          throw new ServletException(e.toString());
       }
    }
@@ -173,7 +174,7 @@ public class SystemInfo extends HttpServlet
          pw.close();
       }
       catch(IOException e) {
-         log.error(ME, "Sending of error failed: " + error + "\n Reason=" + e.toString());
+         log.severe("Sending of error failed: " + error + "\n Reason=" + e.toString());
       }
    }
 
@@ -196,9 +197,9 @@ public class SystemInfo extends HttpServlet
       }
       catch(IOException e) {
          String text = "Sending XML data to browser failed: " + e.toString();
-         log.warn(ME, text);
+         log.warning(text);
          PrintWriter pw;
-         try { pw = response.getWriter(); } catch(IOException e2) { log.error(ME, "2.xml send problem"); return; }
+         try { pw = response.getWriter(); } catch(IOException e2) { log.severe("2.xml send problem"); return; }
          pw.println("<html><body>Request Problems" + text + "</body></html>");
          pw.close();
       }

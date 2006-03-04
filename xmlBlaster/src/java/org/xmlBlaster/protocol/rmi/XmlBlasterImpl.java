@@ -8,8 +8,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
-import org.jutils.log.LogChannel;
-import org.jutils.time.StopWatch;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -26,8 +26,8 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaster.protocol.rmi.I_XmlBlaster
 {
-   private final String ME = "RMI.XmlBlasterImpl";
-   private final LogChannel log;
+   private static final long serialVersionUID = 1L;
+   private static Logger log = Logger.getLogger(XmlBlasterImpl.class.getName());
    private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
    private final AddressServer addressServer;
 
@@ -37,8 +37,8 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    public XmlBlasterImpl(Global glob, AddressServer addressServer,
                          org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException, XmlBlasterException
    {
-      this.log = glob.getLog("rmi");
-      if (log.CALL) log.call(ME, "Entering constructor ...");
+
+      if (log.isLoggable(Level.FINER)) log.finer("Entering constructor ...");
       this.blasterNative = blasterNative;
       this.addressServer = addressServer;
    }
@@ -49,12 +49,9 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public String subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      StopWatch stop=null; if (log.TIME) stop = new StopWatch();
+      if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
 
       String oid = blasterNative.subscribe(this.addressServer, sessionId, xmlKey_literal, qos_literal);
-
-      if (log.TIME) log.time(ME, "Elapsed time in subscribe()" + stop.nice());
 
       return oid;
    }
@@ -65,12 +62,9 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public String[] unSubscribe(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      StopWatch stop=null; if (log.TIME) stop = new StopWatch();
+      if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
 
       String[] retArr = blasterNative.unSubscribe(this.addressServer, sessionId, xmlKey_literal, qos_literal);
-
-      if (log.TIME) log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
 
       return retArr;
    }
@@ -81,7 +75,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public String publish(String sessionId, MsgUnitRaw msgUnit) throws RemoteException, XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering publish() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publish() ...");
 
       String retVal = blasterNative.publish(this.addressServer, sessionId, msgUnit);
 
@@ -94,9 +88,9 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public String[] publishArr(String sessionId, MsgUnitRaw[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
-      if (log.CALL) log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
+      if (log.isLoggable(Level.FINER)) log.fine("Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
       if (msgUnitArr.length < 1) {
-         if (log.TRACE) log.trace(ME, "Entering xmlBlaster.publishArr(), nothing to do, zero msgUnits sent");
+         if (log.isLoggable(Level.FINE)) log.fine("Entering xmlBlaster.publishArr(), nothing to do, zero msgUnits sent");
          return new String[0];
       }
       return blasterNative.publishArr(this.addressServer, sessionId, msgUnitArr);
@@ -108,10 +102,10 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public void publishOneway(String sessionId, MsgUnitRaw[] msgUnitArr) throws RemoteException
    {
-      if (log.CALL) log.trace(ME, "Entering xmlBlaster.publishOneway() for " + msgUnitArr.length + " Messages");
+      if (log.isLoggable(Level.FINER)) log.fine("Entering xmlBlaster.publishOneway() for " + msgUnitArr.length + " Messages");
 
       if (msgUnitArr.length < 1) {
-         if (log.TRACE) log.trace(ME, "Entering xmlBlaster.publishOneway(), nothing to do, zero msgUnits sent");
+         if (log.isLoggable(Level.FINE)) log.fine("Entering xmlBlaster.publishOneway(), nothing to do, zero msgUnits sent");
          return;
       }
 
@@ -124,7 +118,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public String[] erase(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
 
       String [] retArr = blasterNative.erase(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
@@ -139,12 +133,9 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public MsgUnitRaw[] get(String sessionId, String xmlKey_literal, String qos_literal) throws RemoteException, XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      StopWatch stop=null; if (log.TIME) stop = new StopWatch();
+      if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
 
       MsgUnitRaw[] msgUnitArr = blasterNative.get(this.addressServer, sessionId, xmlKey_literal, qos_literal);
-
-      if (log.TIME) log.time(ME, "Elapsed time in get()" + stop.nice());
 
       return msgUnitArr;
    }

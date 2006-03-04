@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
@@ -59,7 +60,7 @@ public class TestPtSession extends TestCase
 {
    private static String ME = "TestPtSession";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestPtSession.class.getName());
 
    class ConHolder {
       public I_XmlBlasterAccess con;
@@ -89,7 +90,7 @@ public class TestPtSession extends TestCase
    public TestPtSession(Global glob, String testName, String name) {
       super(testName);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
       this.name = name;
    }
 
@@ -109,17 +110,17 @@ public class TestPtSession extends TestCase
          glob.init(args);
 
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-         log.info(ME, "XmlBlaster is ready for testing the session PtP messages");
+         log.info("XmlBlaster is ready for testing the session PtP messages");
       }
       else
-         log.warn(ME, "You need to start an external xmlBlaster server for this test or use option -startEmbedded true");
+         log.warning("You need to start an external xmlBlaster server for this test or use option -startEmbedded true");
 
       this.conHolderArr = new ConHolder[numCons];
 
       for(int ii=0; ii<conHolderArr.length; ii++) {
          this.conHolderArr[ii] = new ConHolder();
          try {
-            log.info(ME, "Connecting ...");
+            log.info("Connecting ...");
             Global globTmp = glob.getClone(null);
             this.conHolderArr[ii].con = globTmp.getXmlBlasterAccess();
             ConnectQos qos = new ConnectQos(globTmp, name, passwd);
@@ -128,7 +129,7 @@ public class TestPtSession extends TestCase
          }
          catch (Exception e) {
             Thread.currentThread().dumpStack();
-            log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+            log.severe("Can't connect to xmlBlaster: " + e.toString());
             fail("Can't connect to xmlBlaster: " + e.toString());
          }
       }
@@ -151,11 +152,11 @@ public class TestPtSession extends TestCase
 
          PublishReturnQos rq = conHolder.con.publish(msgUnit);
          
-         log.info(ME, "SUCCESS publish '" + oid + "' with " + sessionNameArr.length + " destinations, returned state=" + rq.getState());
+         log.info("SUCCESS publish '" + oid + "' with " + sessionNameArr.length + " destinations, returned state=" + rq.getState());
          assertEquals("Returned oid wrong", oid, rq.getKeyOid());
          assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -164,11 +165,11 @@ public class TestPtSession extends TestCase
     * Test all tuples of possibilities
     */
    public void testPtSession() {
-      log.info(ME, "testPtSession() ...");
+      log.info("testPtSession() ...");
       long sleep = 1000L;
 
       {
-         log.info(ME, "TEST #1: Sending PtP message to all sessions of client " + name);
+         log.info("TEST #1: Sending PtP message to all sessions of client " + name);
          SessionName[] sessionNameArr = { new SessionName(glob, name) };
          publish(this.conHolderArr[0], this.msgOid, sessionNameArr);
          for(int ii=0; ii<this.conHolderArr.length; ii++) {
@@ -179,7 +180,7 @@ public class TestPtSession extends TestCase
 
       {
          SessionName sessionName3 = this.conHolderArr[3].connectReturnQos.getSessionName();
-         log.info(ME, "TEST #2: Sending PtP message to session " + sessionName3.getAbsoluteName());
+         log.info("TEST #2: Sending PtP message to session " + sessionName3.getAbsoluteName());
          SessionName[] sessionNameArr = { sessionName3 };
          publish(this.conHolderArr[0], this.msgOid, sessionNameArr);
          for(int ii=0; ii<this.conHolderArr.length; ii++) {
@@ -192,7 +193,7 @@ public class TestPtSession extends TestCase
       {
          SessionName sessionName1 = this.conHolderArr[1].connectReturnQos.getSessionName();
          SessionName sessionName3 = this.conHolderArr[3].connectReturnQos.getSessionName();
-         log.info(ME, "TEST #3: Sending PtP message to session " + sessionName3.getAbsoluteName() + " and " + sessionName1.getAbsoluteName());
+         log.info("TEST #3: Sending PtP message to session " + sessionName3.getAbsoluteName() + " and " + sessionName1.getAbsoluteName());
          SessionName[] sessionNameArr = { sessionName3, sessionName1 };
          publish(this.conHolderArr[0], this.msgOid, sessionNameArr);
          for(int ii=0; ii<this.conHolderArr.length; ii++) {
@@ -202,7 +203,7 @@ public class TestPtSession extends TestCase
          }
       }
 
-      log.info(ME, "Success in testPtSession()");
+      log.info("Success in testPtSession()");
    }
 
    /**
@@ -226,7 +227,7 @@ public class TestPtSession extends TestCase
          this.serverThread = null;
       }
 
-      log.error(ME, "DEBUG ONLY: tearDown() all resources released");
+      log.severe("DEBUG ONLY: tearDown() all resources released");
       this.glob = null;
       this.log = null;
       Global.instance().shutdown();

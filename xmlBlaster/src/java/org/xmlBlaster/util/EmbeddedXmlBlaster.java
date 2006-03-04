@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.I_Main;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
@@ -22,13 +23,11 @@ import java.net.URLClassLoader;
  */
 public class EmbeddedXmlBlaster
 {
-   private static final String ME = "EmbeddedXmlBlaster";
+   private static Logger log = Logger.getLogger(EmbeddedXmlBlaster.class.getName());
    private Global glob;
-   LogChannel log;
    /** Main.java renames the thread name, so we remember the original and restore it on shutdown */
    private String origThreadName;
    /** Key/value array, containing command line arguments or xmlBlaster.properties variables to be used */
-   private String[] args;
    private org.xmlBlaster.I_Main xmlBlasterMain;
 
 
@@ -55,7 +54,7 @@ public class EmbeddedXmlBlaster
       while(!serverThread.isReady()) {
          try { Thread.sleep(200L); } catch( InterruptedException i) {}
       }
-      glob.getLog(glob.getId()).info(ME, "Server is up and ready");
+      log.info("Server is up and ready");
       return serverThread;
    }
 
@@ -86,7 +85,7 @@ public class EmbeddedXmlBlaster
       while(!serverThread.isReady()) {
          try { Thread.sleep(200L); } catch( InterruptedException i) {}
       }
-      glob.getLog(glob.getId()).info(ME, "Server is up and ready.");
+      log.info("Server is up and ready.");
       return serverThread;
    }
 
@@ -110,10 +109,10 @@ public class EmbeddedXmlBlaster
       while(!serverThread.isReady()) {
          try { Thread.sleep(200L); }
          catch( InterruptedException i) {
-            glob.getLog(glob.getId()).info(ME, "Server has been interrupted.");
+            log.info("Server has been interrupted.");
          }
       }
-      glob.getLog(glob.getId()).info(ME, "Server is up and ready.");
+      log.info("Server is up and ready.");
       return serverThread;
    }
 
@@ -133,7 +132,7 @@ public class EmbeddedXmlBlaster
     */
    private EmbeddedXmlBlaster(Global glob) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = glob.getLog(glob.getId());
+
       this.origThreadName = Thread.currentThread().getName(); // Main.java renames the thread, we remember the original name
    }
 
@@ -154,7 +153,7 @@ public class EmbeddedXmlBlaster
     */
    public void stopServer(boolean sync) {
       try {
-         log.info(ME, "Stopping the xmlBlaster server instance (sync=" + sync + ") ...");
+         log.info("Stopping the xmlBlaster server instance (sync=" + sync + ") ...");
          this.xmlBlasterMain.destroy();  // does a glob.shutdown() as well
          if (sync) {
             while(true) {
@@ -164,21 +163,20 @@ public class EmbeddedXmlBlaster
                   break;
                try { Thread.sleep(100L); }
                catch( InterruptedException i) {
-                  log.info(ME, "Server has been interrupted");
+                  log.info("Server has been interrupted");
                }
             }
             this.xmlBlasterMain = null;
             Thread.currentThread().setName(this.origThreadName);
-            log.info(ME, "Server is down!");
+            log.info("Server is down!");
          }
          else
-            log.info(ME, "Server is processing shutdown!");
+            log.info("Server is processing shutdown!");
       }
       finally {
-         if (log.TRACE) log.trace(ME, "stopServer done");
+         if (log.isLoggable(Level.FINE)) log.fine("stopServer done");
          this.glob = null;
          this.xmlBlasterMain = null;
-         this.log = null;
       }
    }
 
@@ -191,7 +189,7 @@ public class EmbeddedXmlBlaster
 
       try {
          cl = factory.getXmlBlasterClassLoader();
-         if( log.TRACE ) log.trace(ME, "Get first instance of org.xmlBlaster.Main via own class loader.");
+         if( log.isLoggable(Level.FINE)) log.fine("Get first instance of org.xmlBlaster.Main via own class loader.");
 
          this.xmlBlasterMain = (I_Main)cl.loadClass("org.xmlBlaster.Main").newInstance();
          // java.util.Properties props = glob.getProperty().getProperties();
@@ -209,14 +207,14 @@ public class EmbeddedXmlBlaster
             System.exit(-1);
          }
          */
-         log.info(ME, "Successfully loaded org.xmlBlaster.Main instance with specific classloader");
+         log.info("Successfully loaded org.xmlBlaster.Main instance with specific classloader");
       } catch(Throwable e) {
          if (cl != null)
-            log.error(ME, "Problems loading org.xmlBlaster.Main with ClassLoader "+cl.getClass().getName()+": " + e.toString() + " -> using default classloader");
+            log.severe("Problems loading org.xmlBlaster.Main with ClassLoader "+cl.getClass().getName()+": " + e.toString() + " -> using default classloader");
          else
-            log.error(ME, "Problems loading org.xmlBlaster.Main (classloader = 'null' ???): " + e.toString() + " -> using default classloader");
+            log.severe("Problems loading org.xmlBlaster.Main (classloader = 'null' ???): " + e.toString() + " -> using default classloader");
          this.xmlBlasterMain = new org.xmlBlaster.Main(glob);
-         log.info(ME, "Successfully loaded org.xmlBlaster.Main instance with default classloader");
+         log.info("Successfully loaded org.xmlBlaster.Main instance with default classloader");
       }
    }
 

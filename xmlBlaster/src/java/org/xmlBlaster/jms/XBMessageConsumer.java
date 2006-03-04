@@ -17,7 +17,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -45,7 +46,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
 
    private String ME = "XBMessageConsumer";
    protected Global global;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(XBMessageConsumer.class.getName());
    protected String msgSelector;
    protected MessageListener msgListener;
    protected XBSession session;
@@ -67,7 +68,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
       this.noLocal = noLocal;
       this.destination = destination;
       this.global = this.session.global;
-      this.log = this.global.getLog("jms");
+
       this.subscribeReturnQos = subscribe(destination, msgSelector, noLocal);
       this.session.consumerMap.put(this.subscribeReturnQos.getSubscriptionId(), this); 
       this.ME = this.ME + "-" + this.subscribeReturnQos.getSubscriptionId();
@@ -75,7 +76,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
    }
 
    protected final void checkIfOpen(String methodName) throws JMSException {
-      if (this.log.CALL) this.log.call(ME, methodName);
+      if (log.isLoggable(Level.FINER)) this.log.finer(methodName);
       if (!this.open)
          throw new IllegalStateException(ME + "." + methodName, "the session has been closed, operation '" + methodName + "' not permitted");
    }
@@ -116,7 +117,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
    synchronized public void close() throws JMSException {
       if (!this.open) return;
       try {
-         if (this.log.CALL) this.log.call(ME, "close");
+         if (log.isLoggable(Level.FINER)) this.log.finer("close");
          String subId = this.subscribeReturnQos.getSubscriptionId();
          UnSubscribeKey key = new UnSubscribeKey(this.global, subId);
          UnSubscribeQos qos = new UnSubscribeQos(this.global);
@@ -205,12 +206,12 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "update cbSessionId='" + cbSessionId + "' oid='" + updateKey.getOid() + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("update cbSessionId='" + cbSessionId + "' oid='" + updateKey.getOid() + "'");
       try {
          if (this.msgListener != null) {
             Message msg = MessageHelper.convert(this.session, updateQos.getSender().getAbsoluteName(), updateKey.getData(), content, updateQos.getData()); 
             int ackMode = this.session.getAcknowledgeMode();
-            if (this.log.TRACE) this.log.trace(ME, "update: acknowledge mode is: " + ackMode);
+            if (log.isLoggable(Level.FINE)) this.log.fine("update: acknowledge mode is: " + ackMode);
             if (msg != null) {
                // TODO keep reference to this and on next event fill this
                
@@ -224,9 +225,9 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
                      long timeout = this.session.getUpdateTimeout();
                      if (timeout > 0) {
                         long t0 = System.currentTimeMillis();
-                        if (this.log.TRACE) this.log.trace(ME, "update: waiting for ack");
+                        if (log.isLoggable(Level.FINE)) this.log.fine("update: waiting for ack");
                         this.session.wait(timeout);
-                        if (this.log.TRACE) this.log.trace(ME, "update: waked up from ack");
+                        if (log.isLoggable(Level.FINE)) this.log.fine("update: waked up from ack");
                         long dt = System.currentTimeMillis() - t0;
                         if (dt >= timeout) {
                            if (this.exceptionListener != null) {
@@ -240,7 +241,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
                   }
                }
                else {
-                  if (this.log.TRACE) this.log.trace(ME, "update: acknowledge mode is AUTO: no waiting for user acknowledge");
+                  if (log.isLoggable(Level.FINE)) this.log.fine("update: acknowledge mode is AUTO: no waiting for user acknowledge");
                   msg.acknowledge();
                }
             }

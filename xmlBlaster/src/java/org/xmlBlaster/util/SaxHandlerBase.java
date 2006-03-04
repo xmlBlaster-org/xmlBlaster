@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import java.io.*;
 import org.xml.sax.Attributes;
@@ -36,7 +37,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    private String ME = "SaxHandlerBase";
 
    protected final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(SaxHandlerBase.class.getName());
 
    // The current location
    protected Locator locator = null;
@@ -67,8 +68,8 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
 
    public SaxHandlerBase(Global glob) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog(null);
-      if (log.CALL) log.trace(ME, "Creating new SaxHandlerBase");
+
+      if (log.isLoggable(Level.FINER)) log.fine("Creating new SaxHandlerBase");
    }
 
    /*
@@ -135,7 +136,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
          SAXParserFactory spf = glob.getSAXParserFactory();
          boolean validate = glob.getProperty().get("javax.xml.parsers.validation", false);
          spf.setValidating(validate);
-         //if (log.TRACE) log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
+         //if (log.isLoggable(Level.FINE)) log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
 
          SAXParser sp = spf.newSAXParser();
          XMLReader parser = sp.getXMLReader();
@@ -151,10 +152,10 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
                parser.setProperty("http://xml.org/sax/properties/lexical-handler", this); // register for startCDATA() etc. events
             }
             catch (SAXNotRecognizedException e) {
-               log.warn(ME, "The SAX parser does not support the LexicalHandler interface, CDATA sections can't be restored" + e.toString());
+               log.warning("The SAX parser does not support the LexicalHandler interface, CDATA sections can't be restored" + e.toString());
             }
             catch (SAXNotSupportedException e) {
-               log.warn(ME, "The SAX parser does not support the LexicalHandler interface, CDATA sections can't be restored" + e.toString());
+               log.warning("The SAX parser does not support the LexicalHandler interface, CDATA sections can't be restored" + e.toString());
             }
          }
 
@@ -167,19 +168,19 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
          if (e instanceof org.xmlBlaster.util.StopParseException) {
             // This inctanceOf / and cast does not seem to work: do we have different classloaders?
             StopParseException stop = (StopParseException)e;
-            if (log.TRACE) log.trace(ME, "StopParseException: Parsing execution stopped half the way");
+            if (log.isLoggable(Level.FINE)) log.fine("StopParseException: Parsing execution stopped half the way");
             if (stop.hasError()) {
                throw stop.getXmlBlasterException();
             }
             else {
-               log.error(ME, "StopParseException without embedded XmlBlasterException: " + e.toString());
+               log.severe("StopParseException without embedded XmlBlasterException: " + e.toString());
             }
             return;
          }
 
          if (e instanceof SAXException) { // Try to find an encapsulated XmlBlasterException ...
             SAXException saxE = (SAXException)e;
-            if (log.TRACE) log.trace(ME, "SAXException: Parsing execution stopped half the way");
+            if (log.isLoggable(Level.FINE)) log.fine("SAXException: Parsing execution stopped half the way");
             Exception exc = saxE.getException();
             if (exc instanceof XmlBlasterException) {
                XmlBlasterException stop = (XmlBlasterException)exc;
@@ -203,11 +204,11 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
          }
 
          if (e.getMessage() != null && e.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
-            if (log.TRACE) log.trace(ME, location + ": Parsing execution stopped half the way: " + e.getMessage() + ": " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine(location + ": Parsing execution stopped half the way: " + e.getMessage() + ": " + e.toString());
             return;
          }
-         if (log.TRACE) {
-            log.trace(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
+         if (log.isLoggable(Level.FINE)) {
+            log.fine("Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
             e.printStackTrace();
          }
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".parse()",
@@ -268,11 +269,11 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    }
 
    public void endElement(java.lang.String namespaceURI, java.lang.String localName, java.lang.String qName) throws org.xml.sax.SAXException {
-      log.warn(ME, "Please provide your endElement() implementation");
+      log.warning("Please provide your endElement() implementation");
    }
 
    public void endPrefixMapping(java.lang.String prefix) {
-      log.warn(ME, "Entering endPrefixMapping(prefix="+prefix+") ...");
+      log.warning("Entering endPrefixMapping(prefix="+prefix+") ...");
    }
 
    /** Ignorable whitespace. */
@@ -290,7 +291,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    }
 
    public void skippedEntity(java.lang.String name) {
-      log.warn(ME, "Entering skippedEntity() ...");
+      log.warning("Entering skippedEntity() ...");
    }
 
    /** Start document. */
@@ -330,11 +331,11 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
     * </p>
     */
    public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws org.xml.sax.SAXException {
-      log.warn(ME, "Please provide your startElement() implementation");
+      log.warning("Please provide your startElement() implementation");
    }
 
    public void startPrefixMapping(java.lang.String prefix, java.lang.String uri) {
-      log.warn(ME, "Entering startPrefixMapping() ...");
+      log.warning("Entering startPrefixMapping() ...");
    }
 
 
@@ -344,28 +345,28 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
       // "Declared encoding "UTF-8" does not match actual one "UTF8" -> Why this strange warning??
       String msg = ex.getMessage();
       if (msg!=null && msg.startsWith("Declared encoding")) {
-         log.trace(ME, "warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
+         log.fine("warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
       }
       else {
-         log.warn(ME, "warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
+         log.warning("warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
       }
    }
 
    /** Error. */
    public void error(SAXParseException ex) {
-      log.warn(ME, "error: " + getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+      log.warning("error: " + getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
    }
 
    /** Fatal error. */
    public void fatalError(SAXParseException ex) throws SAXException {
       if (ex.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
          // using Picolo SAX2 parser we end up here
-         if (log.TRACE) log.trace(ME+".fatalError", "Parsing execution stopped half the way");
+         if (log.isLoggable(Level.FINE)) log.fine("Parsing execution stopped half the way");
          return;
       }
 
-      if (log.TRACE) {
-         log.trace(ME+".fatalError", getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
+      if (log.isLoggable(Level.FINE)) {
+         log.fine(getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
          ex.printStackTrace();
       }
       throw ex;
@@ -373,12 +374,12 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
 
    /**  */
    public void notationDecl(String name, String publicId, String systemId) {
-      if (log.TRACE) log.trace(ME, "notationDecl(name="+name+", publicId="+publicId+", systemId="+systemId+")");
+      if (log.isLoggable(Level.FINE)) log.fine("notationDecl(name="+name+", publicId="+publicId+", systemId="+systemId+")");
    }
 
    /**  */
    public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) {
-      if (log.TRACE) log.trace(ME, "unparsedEntityDecl(name="+name+
+      if (log.isLoggable(Level.FINE)) log.fine("unparsedEntityDecl(name="+name+
                                           ", publicId="+publicId+
                                           ", systemId="+systemId+
                                           ", notationName="+notationName+")");
@@ -412,30 +413,30 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    //=============== LexicalHandler interface =====================
    /** Report an XML comment anywhere in the document. (interface LexicalHandler) */
    public void comment(char[] ch, int start, int length) {
-      //if (log.TRACE) log.trace(ME, "Entering comment(str=" + new String(ch, start, length) + ")");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "Entering comment(str=" + new String(ch, start, length) + ")");
    }
    /** Report the end of a CDATA section. (interface LexicalHandler) */
    public void endCDATA() {
-      //if (log.TRACE) log.trace(ME, "endCDATA()");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "endCDATA()");
    }
    /** Report the end of DTD declarations. (interface LexicalHandler) */
    public void endDTD() {
-      //if (log.TRACE) log.trace(ME, "endDTD()");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "endDTD()");
    }
    /** Report the end of an entity. (interface LexicalHandler) */
    public void endEntity(java.lang.String name) {
-      //if (log.TRACE) log.trace(ME, "endEntity(name="+name+")");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "endEntity(name="+name+")");
    }
    /** Report the start of a CDATA section. (interface LexicalHandler) */
    public void startCDATA() {
-      //if (log.TRACE) log.trace(ME, "startCDATA()");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "startCDATA()");
    }
    /** Report the start of DTD declarations, if any. (interface LexicalHandler) */
    public void startDTD(java.lang.String name, java.lang.String publicId, java.lang.String systemId) {
-      //if (log.TRACE) log.trace(ME, "startDTD(name="+name+", publicId="+publicId+", systemId="+systemId+")");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "startDTD(name="+name+", publicId="+publicId+", systemId="+systemId+")");
    }
    /** Report the beginning of some internal and external XML entities. (interface LexicalHandler) */
    public void startEntity(java.lang.String name) {
-      //if (log.TRACE) log.trace(ME, "startEntity(name="+name+")");
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "startEntity(name="+name+")");
    }
 }

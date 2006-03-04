@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.GetKey;
@@ -44,7 +45,7 @@ public class TestHistoryZero extends TestCase {
    
    private Global glob;
    private Global serverGlobal;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestHistoryZero.class.getName());
 
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
@@ -71,7 +72,7 @@ public class TestHistoryZero extends TestCase {
     */
    protected void setUp() {
       this.glob = (this.glob == null) ? Global.instance() : this.glob;
-      this.log = this.glob.getLog("test");
+
       glob.init(Util.getOtherServerPorts(serverPort));
 
       String[] args = new String[] {"-queue/history/maxEntriesCache", "0",
@@ -81,7 +82,7 @@ public class TestHistoryZero extends TestCase {
       this.serverGlobal = this.glob.getClone(args);
       
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+      log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess(); // Find orb
 
@@ -93,11 +94,11 @@ public class TestHistoryZero extends TestCase {
          con.connect(connectQos, this.updateInterceptor);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed: " + e.getMessage());
+          log.warning("setUp() - login failed: " + e.getMessage());
           fail("setUp() - login fail: " + e.getMessage());
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
           fail("setUp() - login fail: " + e.toString());
       }
@@ -109,7 +110,7 @@ public class TestHistoryZero extends TestCase {
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestHistoryZero-AGENT" +
                       "</key>";
@@ -121,10 +122,10 @@ public class TestHistoryZero extends TestCase {
 
          PropString defaultPlugin = new PropString("CACHE,1.0");
          String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
-         log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+         log.info("Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
       }
       finally {
          con.disconnect(null);
@@ -144,7 +145,7 @@ public class TestHistoryZero extends TestCase {
     * <p />
     */
    public void doPublish(String oid, int counter, long numHistory) throws XmlBlasterException {
-      log.info(ME, "Publishing a message " + oid + " ...");
+      log.info("Publishing a message " + oid + " ...");
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
                       "   <TestHistoryZero-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestHistoryZero-AGENT>" +
@@ -163,7 +164,7 @@ public class TestHistoryZero extends TestCase {
       MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
       this.glob.getXmlBlasterAccess().publish(msgUnit);
-      log.info(ME, "Success: Publishing of " + oid + " done");
+      log.info("Success: Publishing of " + oid + " done");
    }
 
    private void doGet(String oid, int expect) {

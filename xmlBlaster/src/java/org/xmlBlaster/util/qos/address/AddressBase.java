@@ -6,7 +6,8 @@ Comment:   Holding connect address and callback address string including protoco
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.address;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
@@ -38,7 +39,7 @@ public abstract class AddressBase
 {
    private static final String ME = "AddressBase";
    protected final Global glob;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(AddressBase.class.getName());
 
    // Are strongest, usually set by programmer
    private /*I_Info*/ClientPropertiesInfo pluginAttributes;
@@ -151,7 +152,7 @@ public abstract class AddressBase
     */
    public AddressBase(Global glob, String rootTag) {
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       setRootTag(rootTag);
    }
 
@@ -181,7 +182,7 @@ public abstract class AddressBase
       // dispatch/callback/plugin/socket/hostname
       // dispatch/connection/plugin/ior/localPort
       this.envPrefix = "plugin/"+this.type.getValue().toLowerCase()+"/";
-      if (log.TRACE) log.trace(ME, "type=" + this.type.getValue() + " nodeId=" + this.nodeId + " context=" + context +
+      if (log.isLoggable(Level.FINE)) log.fine("type=" + this.type.getValue() + " nodeId=" + this.nodeId + " context=" + context +
                          " className=" + className + " instanceName=" + this.instanceName + " envPrefix=" + this.envPrefix);
 
       // On server side for SOCKET protocol we support compression types:
@@ -563,7 +564,7 @@ public abstract class AddressBase
    public final void setRawAddress(String rawAddress) {
       if (rawAddress == null) rawAddress = "";
       this.rawAddress.setValue(rawAddress);
-      if (log.TRACE) log.trace(ME, "setRawAddress=" + this.rawAddress.getValue());
+      if (log.isLoggable(Level.FINE)) log.fine("setRawAddress=" + this.rawAddress.getValue());
    }
 
    /**
@@ -635,7 +636,7 @@ public abstract class AddressBase
 
    public void setBurstModeMaxEntries(int burstModeMaxEntries) {
       if (burstModeMaxEntries == 0)
-         log.warn(ME, "<burstMode maxEntries='" + burstModeMaxEntries + "'> is not supported and may cause strange behavior");
+         log.warning("<burstMode maxEntries='" + burstModeMaxEntries + "'> is not supported and may cause strange behavior");
       else if (burstModeMaxEntries < -1)
          burstModeMaxEntries = -1;
       
@@ -652,7 +653,7 @@ public abstract class AddressBase
 
    public void setBurstModeMaxBytes(long burstModeMaxBytes) {
       if (burstModeMaxBytes == 0)
-         log.warn(ME, "<burstMode maxBytes='" + burstModeMaxBytes + "'> is not supported and may cause strange behavior");
+         log.warning("<burstMode maxBytes='" + burstModeMaxBytes + "'> is not supported and may cause strange behavior");
       else if (burstModeMaxBytes < -1L)
          burstModeMaxBytes = -1L;
 
@@ -674,7 +675,7 @@ public abstract class AddressBase
    public void setPingInterval(long pingInterval) {
       if (pingInterval <= 0L) this.pingInterval.setValue(0L);
       else if (pingInterval < 10L) {
-         log.warn(ME, "pingInterval=" + pingInterval + " msec is too short, setting it to 10 millis");
+         log.warning("pingInterval=" + pingInterval + " msec is too short, setting it to 10 millis");
          this.pingInterval.setValue(10L);
       }
       else
@@ -867,7 +868,7 @@ public abstract class AddressBase
                   try {
                      setBootstrapPort(new Integer(ll).intValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " bootstrapPort='" + ll + "'>, expected an integer number.");
+                     log.severe("Wrong format of <" + rootTag + " bootstrapPort='" + ll + "'>, expected an integer number.");
                   }
                }
                else if( attrs.getQName(i).equalsIgnoreCase("port") ) {  // deprecated -> use bootstrapPort
@@ -875,7 +876,7 @@ public abstract class AddressBase
                   try {
                      setBootstrapPort(new Integer(ll).intValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " port='" + ll + "'>, expected an integer number.");
+                     log.severe("Wrong format of <" + rootTag + " port='" + ll + "'>, expected an integer number.");
                   }
                }
                else if( attrs.getQName(i).equalsIgnoreCase("sessionId") ) {
@@ -886,7 +887,7 @@ public abstract class AddressBase
                   try {
                      setPingInterval(new Long(ll).longValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " pingInterval='" + ll + "'>, expected a long in milliseconds.");
+                     log.severe("Wrong format of <" + rootTag + " pingInterval='" + ll + "'>, expected a long in milliseconds.");
                   }
                }
                else if( attrs.getQName(i).equalsIgnoreCase("retries") ) {
@@ -894,7 +895,7 @@ public abstract class AddressBase
                   try {
                      setRetries(new Integer(ll).intValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " retries='" + ll + "'>, expected an integer number.");
+                     log.severe("Wrong format of <" + rootTag + " retries='" + ll + "'>, expected an integer number.");
                   }
                }
                else if( attrs.getQName(i).equalsIgnoreCase("delay") ) {
@@ -902,7 +903,7 @@ public abstract class AddressBase
                   try {
                      setDelay(new Long(ll).longValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " delay='" + ll + "'>, expected a long in milliseconds.");
+                     log.severe("Wrong format of <" + rootTag + " delay='" + ll + "'>, expected a long in milliseconds.");
                   }
                }
                else if( attrs.getQName(i).equalsIgnoreCase("oneway") ) {
@@ -918,16 +919,16 @@ public abstract class AddressBase
                   this.dispatchPlugin.setValue(attrs.getValue(i).trim());
                }
                else {
-                  log.error(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in " + rootTag + " section.");
+                  log.severe("Ignoring unknown attribute " + attrs.getQName(i) + " in " + rootTag + " section.");
                }
             }
          }
          if (getType() == null) {
-            log.error(ME, "Missing '" + rootTag + "' attribute 'type' in QoS");
+            log.severe("Missing '" + rootTag + "' attribute 'type' in QoS");
             setType("IOR");
          }
          if (getSecretSessionId() == null) {
-            log.warn(ME, "Missing '" + rootTag + "' attribute 'sessionId' QoS");
+            log.warning("Missing '" + rootTag + "' attribute 'sessionId' QoS");
          }
          return;
       }
@@ -942,7 +943,7 @@ public abstract class AddressBase
                   try {
                      setCollectTime(new Long(ll).longValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <burstMode collectTime='" + ll + "'>, expected a long in milliseconds, burst mode is switched off sync messages.");
+                     log.severe("Wrong format of <burstMode collectTime='" + ll + "'>, expected a long in milliseconds, burst mode is switched off sync messages.");
                   }
                }
                else if( attrs.getQName(ii).equalsIgnoreCase("maxEntries") ) {
@@ -950,7 +951,7 @@ public abstract class AddressBase
                   try {
                      setBurstModeMaxEntries(new Integer(ll).intValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <burstMode maxEntries='" + ll + "'>, expected an integer number.");
+                     log.severe("Wrong format of <burstMode maxEntries='" + ll + "'>, expected an integer number.");
                   }
                }
                else if( attrs.getQName(ii).equalsIgnoreCase("maxBytes") ) {
@@ -958,13 +959,13 @@ public abstract class AddressBase
                   try {
                      setBurstModeMaxBytes(new Long(ll).longValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <burstMode maxBytes='" + ll + "'>, expected a long in bytes.");
+                     log.severe("Wrong format of <burstMode maxBytes='" + ll + "'>, expected a long in bytes.");
                   }
                }
             }
          }
          else {
-            log.error(ME, "Missing 'collectTime' attribute in login-qos <burstMode>");
+            log.severe("Missing 'collectTime' attribute in login-qos <burstMode>");
          }
          return;
       }
@@ -981,13 +982,13 @@ public abstract class AddressBase
                   try {
                      setMinSize(new Long(ll).longValue());
                   } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <compress minSize='" + ll + "'>, expected a long in bytes, compress is switched off.");
+                     log.severe("Wrong format of <compress minSize='" + ll + "'>, expected a long in bytes, compress is switched off.");
                   }
                }
             }
          }
          else {
-            log.error(ME, "Missing 'type' attribute in qos <compress>");
+            log.severe("Missing 'type' attribute in qos <compress>");
          }
          return;
       }
@@ -1008,7 +1009,7 @@ public abstract class AddressBase
          if (tmp.length() > 0)
             setRawAddress(tmp);
          else if (getRawAddress() == null)
-            log.error(ME, rootTag + " QoS contains no rawAddress data");
+            log.severe(rootTag + " QoS contains no rawAddress data");
       }
       else if (name.equalsIgnoreCase("burstMode")) {
       }

@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.key;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -28,7 +29,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 public class MsgKeyFactoryTest extends XMLTestCase {
    private String ME = "MsgKeyFactoryTest";
    protected final Global glob;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(MsgKeyFactoryTest.class.getName());
    private String currImpl;
    private I_MsgKeyFactory factory;
    static I_MsgKeyFactory[] IMPL = { 
@@ -38,13 +39,13 @@ public class MsgKeyFactoryTest extends XMLTestCase {
    public MsgKeyFactoryTest(Global glob, String name, int currImpl) {
       super(name);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
       this.factory = IMPL[currImpl];
       XMLUnit.setIgnoreWhitespace(true);
    }
 
    protected void setUp() {
-      log.info(ME, "Testing parser factory " + factory.getName());
+      log.info("Testing parser factory " + factory.getName());
    }
 
    /**
@@ -166,7 +167,7 @@ public class MsgKeyFactoryTest extends XMLTestCase {
            "</key>\n";
          MsgKeyData key = factory.readObject(xml);
          String newXml = key.toXml();
-         log.info(ME, "New XML=" + newXml);
+         log.info("New XML=" + newXml);
          key = factory.readObject(newXml);
 
          assertEquals("", "HELLO", key.getOid());
@@ -284,13 +285,13 @@ public class MsgKeyFactoryTest extends XMLTestCase {
       try {
          String keyLiteral = "<key oid='oid' ><client><xkey><xqos><xkey>xxx</xkey></xqos></xkey></client></key>";
          MsgKeyData key = factory.readObject(keyLiteral);
-         this.log.info(ME, "testEmbeddedKeyTag: key (should)='" + keyLiteral);
-         this.log.info(ME, "testEmbeddedKeyTag: key (is)    ='" + key.toXml());         
+         log.info("testEmbeddedKeyTag: key (should)='" + keyLiteral);
+         log.info("testEmbeddedKeyTag: key (is)    ='" + key.toXml());         
          assertXMLEqual(keyLiteral, key.toXml());
          keyLiteral = "<key oid='oid' ><client><key><qos><key>xxx</key></qos></key></client></key>";
          key = factory.readObject(keyLiteral);
-         this.log.info(ME, "testEmbeddedKeyTag: key (should)='" + keyLiteral);
-         this.log.info(ME, "testEmbeddedKeyTag: key (is)    ='" + key.toXml());
+         log.info("testEmbeddedKeyTag: key (should)='" + keyLiteral);
+         log.info("testEmbeddedKeyTag: key (is)    ='" + key.toXml());
          assertXMLEqual(keyLiteral, key.toXml());
       }
       catch (Throwable e) {

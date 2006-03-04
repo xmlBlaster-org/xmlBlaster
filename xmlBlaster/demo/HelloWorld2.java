@@ -66,7 +66,7 @@ public class HelloWorld2 implements I_Callback
 
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
-         glob.getLog(null).info("HelloWorld2", "Example: java HelloWorld2 -session.name Jack\n");
+         System.out.println("Example: java HelloWorld2 -session.name Jack");
          System.exit(1);
       }
 

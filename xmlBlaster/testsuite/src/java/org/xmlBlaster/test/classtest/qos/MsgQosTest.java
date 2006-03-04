@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -27,7 +28,7 @@ import junit.framework.TestCase;
 public class MsgQosTest extends TestCase {
    private final String ME = "MsgQosTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(MsgQosTest.class.getName());
    int counter = 0;
 
    public MsgQosTest(String name) {
@@ -36,7 +37,7 @@ public class MsgQosTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = glob.getLog("test");
+
    }
 
    public void testMethods() {

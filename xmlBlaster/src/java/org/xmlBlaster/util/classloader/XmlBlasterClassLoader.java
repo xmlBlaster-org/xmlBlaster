@@ -8,7 +8,8 @@ Author:    konrad.krafft@doubleslash.de
 package org.xmlBlaster.util.classloader;
 
 import java.net.*;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 /**
@@ -19,12 +20,12 @@ import org.xmlBlaster.util.Global;
 public class XmlBlasterClassLoader extends URLClassLoader {
 
    private String ME = "XmlBlasterClassLoader";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlBlasterClassLoader.class.getName());
    private final boolean useXmlBlasterClassloader;
 
    public XmlBlasterClassLoader(Global glob, URL[] urls) {
       super(urls);
-      log = glob.getLog("classloader");
+
       useXmlBlasterClassloader = glob.getProperty().get("classloader.xmlBlaster", false);
    }
 
@@ -37,36 +38,36 @@ public class XmlBlasterClassLoader extends URLClassLoader {
       }
 
       if (name.startsWith("java.")) {
-         if (log.TRACE) log.trace(ME, "Using default JVM class loader for java class " + name);
+         if (log.isLoggable(Level.FINE)) log.fine("Using default JVM class loader for java class " + name);
          return parent.loadClass(name);
       }
 
       if (name.startsWith("org.xmlBlaster.I_Main") || name.startsWith("org.omg") || name.startsWith("org.w3c")) {
-         if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name);
+         if (log.isLoggable(Level.FINE)) log.fine("Using default JVM class loader for " + name);
          return parent.loadClass(name);
       }
       /*
       if (name.startsWith("org.xmlBlaster.I_Main") || name.startsWith("org.jutils") ||
             name.startsWith("org.xmlBlaster.util.Global")) {
-         if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name);
+         if (log.isLoggable(Level.FINE)) log.trace(ME, "Using default JVM class loader for " + name);
          return parent.loadClass(name);
       }
       */
          
       Class clazz = findLoadedClass(name);
       if (clazz != null) {
-            if (log.TRACE) log.trace(ME, "Using specific class loader from cache for " + name);
+            if (log.isLoggable(Level.FINE)) log.fine("Using specific class loader from cache for " + name);
             return clazz;
       }
 
       try {
          clazz = findClass(name);
          //resolveClass(clazz);
-         if (log.TRACE) log.trace(ME, "Using specific class loader for " + name);
+         if (log.isLoggable(Level.FINE)) log.fine("Using specific class loader for " + name);
          return clazz;
       }
       catch (ClassNotFoundException e) {
-            if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name + " as not found in specific class loader");
+            if (log.isLoggable(Level.FINE)) log.fine("Using default JVM class loader for " + name + " as not found in specific class loader");
             clazz = parent.loadClass(name);
             resolveClass(clazz);
             return clazz;
@@ -81,8 +82,8 @@ public class XmlBlasterClassLoader extends URLClassLoader {
     * Helper for debugging classpath.
     */
    private void debugState(String name) {
-     log.trace(ME,"Looking up class: " + name);
-     log.trace(ME,"Local path is: " + getURLPath());
+     log.fine("Looking up class: " + name);
+     log.fine("Local path is: " + getURLPath());
      
    }
 

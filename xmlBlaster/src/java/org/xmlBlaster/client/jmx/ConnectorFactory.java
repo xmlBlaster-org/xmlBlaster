@@ -8,11 +8,8 @@ package org.xmlBlaster.client.jmx;
 import javax.management.*;
 
 import java.lang.reflect.*;
-import java.rmi.*;
 
-import javax.naming.*;
-import javax.jms.*;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import java.util.TreeMap;
@@ -20,13 +17,12 @@ import java.util.Iterator;
 
 public class ConnectorFactory  {
 
-   private final static String ME = "ConnectorFactory";
    private static ConnectorFactory singletonFactory;
    private static Global applicationGlobal;
    private static Object syncObject = new Object();
 
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(ConnectorFactory.class.getName());
    private TreeMap childGlobals;
    private TreeMap servers;
 
@@ -40,15 +36,15 @@ public class ConnectorFactory  {
          }
       }
       if (global != applicationGlobal) {
-         global.getLog(null).error(ME, "getInstance: The global used for this invocation is not the same as the application global");
-         Thread.currentThread().dumpStack();
+         log.severe("getInstance: The global used for this invocation is not the same as the application global");
+         Thread.dumpStack();
       }
       return singletonFactory;
    }
 
    private ConnectorFactory(Global global) {
       this.global = global;
-      this.log = global.getLog("jmx");
+
       this.childGlobals = new TreeMap();
       this.servers = new TreeMap();
    }
@@ -107,7 +103,7 @@ public class ConnectorFactory  {
          }
       }
       catch (Exception ex) {
-         global.getLog(null).error(ME, "Exception occured in 'getMBeanServers': " + ex.getMessage());
+         log.severe("Exception occured in 'getMBeanServers': " + ex.getMessage());
          ex.printStackTrace();
          throw new ConnectorException("Error when retreiving mbean server ", ex);
       }
@@ -128,7 +124,7 @@ public class ConnectorFactory  {
          }
       }
       catch(Exception ex) {
-         this.log.error(ME, "Exception occured in 'getMBeanServerList': " + ex.getMessage());
+         log.severe("Exception occured in 'getMBeanServerList': " + ex.getMessage());
          ex.printStackTrace();
       }
       return ret;

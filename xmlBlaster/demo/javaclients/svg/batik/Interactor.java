@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -37,7 +38,7 @@ public class Interactor extends InteractorAdapter
     * The JSVGCanvas on which to work on.
     */
    private final String ME                   = "Interactor";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(Interactor.class.getName());
    private JSVGCanvas   canvas               = null;
    private GraphicsNode graphicsNode         = null;
    // the mouse position where the last mousePressed event occured
@@ -50,8 +51,8 @@ public class Interactor extends InteractorAdapter
    public Interactor ()
    {
       super();
-      log = Global.instance().getLog("batik");
-      log.trace(ME,"constructor called");
+
+      log.fine("constructor called");
    }
 
 
@@ -82,18 +83,18 @@ public class Interactor extends InteractorAdapter
     */
    public void setCanvas (JSVGCanvas canvas)
    {
-      log.trace(ME,".setCanvas start");
+      log.fine(".setCanvas start");
       boolean setInteractorList = false;
       System.out.println(ME + ".setCanvas " + canvas + " start");
       // if the same canvas is set for the second time, the interactor list
       // is unchanged.
       if ((canvas != this.canvas) && (canvas != null)) {
-         log.info(ME,".setCanvas interactor list set");
+         log.info(".setCanvas interactor list set");
          List interactorList = canvas.getInteractors();
          interactorList.add(this);
       }
       this.canvas   = canvas;
-      log.trace(ME,".setCanvas end");
+      log.fine(".setCanvas end");
    }
 
 
@@ -106,21 +107,21 @@ public class Interactor extends InteractorAdapter
     */
    public void setGraphicsNode () throws XmlBlasterException
    {
-      log.trace(ME,".setGraphicsNode start");
+      log.fine(".setGraphicsNode start");
       if (this.canvas == null) {
-         log.error(ME,".setGraphicsNode canvas is null");
+         log.severe(".setGraphicsNode canvas is null");
          throw new XmlBlasterException(ME, ".setGraphicsNode canvas is null");
       }
       this.graphicsNode = this.canvas.getGraphicsNode();
       if (this.graphicsNode == null)
-         log.warn(ME, ".setGraphicsNode: the graphics node is null");
-      log.trace(ME,".setGraphicsNode end");
+         log.warning(".setGraphicsNode: the graphics node is null");
+      log.fine(".setGraphicsNode end");
    }
 
 
    public boolean startInteraction (InputEvent ie)
    {
-      log.trace(ME,".startInteraction called");
+      log.fine(".startInteraction called");
       // don't really know what to return here ...
       return true;
    }
@@ -134,7 +135,7 @@ public class Interactor extends InteractorAdapter
 
    public void mousePressed (MouseEvent evt)
    {
-      log.trace(ME,".mousePressed");
+      log.fine(".mousePressed");
       // this.graphicsNode.getGlobalTransform().deltaTransform(p0, p1);
       this.lastMousePosition = evt.getPoint();
       Rectangle2D rect = graphicsNode.getBounds();
@@ -146,10 +147,10 @@ public class Interactor extends InteractorAdapter
                           this.lastMousePosition.getY());
       this.selectedGraphicsNode = this.graphicsNode.nodeHitAt(point2D);
       if (this.selectedGraphicsNode == null) {
-         log.warn(ME,".mousePressed hit a null object");
+         log.warning(".mousePressed hit a null object");
       }
       else {
-         log.info(ME,".mousePressed hit " + this.selectedGraphicsNode.toString());
+         log.info(".mousePressed hit " + this.selectedGraphicsNode.toString());
       }
    }
 
@@ -186,14 +187,14 @@ public class Interactor extends InteractorAdapter
 
    public void mouseReleased (MouseEvent evt)
    {
-      log.info(ME,".mouseReleased");
+      log.info(".mouseReleased");
 
       // here you can perform the tasks which are specific to this implementation
       /* In this case translate the current object */
 
       // calculate the translation coordinates ..
       if (this.lastMousePosition == null) {
-         log.error(ME, "the last mouse position was null");
+         log.severe("the last mouse position was null");
       }
       else {
          if (this.selectedGraphicsNode != null) {
@@ -202,7 +203,7 @@ public class Interactor extends InteractorAdapter
             p.y = evt.getY() - this.lastMousePosition.y;
             this.transceiver.move(this.selectedGraphicsNode, p);
          }
-         else log.warn(ME, ".mouseReleased: selectedGraphicsNode was null");
+         else log.warning(".mouseReleased: selectedGraphicsNode was null");
       }
       // reset the members
       this.selectedGraphicsNode = null;

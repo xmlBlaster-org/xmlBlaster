@@ -8,7 +8,8 @@ package org.xmlBlaster.engine.distributor.plugins;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.SubscriptionEvent;
@@ -42,7 +43,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    boolean isReady;
    boolean isRunning;
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(ConsumableQueuePlugin.class.getName());
    private PluginInfo pluginInfo;
    private TopicHandler topicHandler;
 
@@ -60,7 +61,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * more threads running concurrently (see processHistoryQueue).
     */
    private synchronized void toRunning() {
-      if (this.log.CALL) this.log.call(ME, "toRunning, isRunning='" + this.isRunning + "' isReady='" + this.isReady + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("toRunning, isRunning='" + this.isRunning + "' isReady='" + this.isReady + "'");
       if (this.isRunning || !this.isReady) return;
       this.isRunning = true;
       try {
@@ -68,7 +69,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          this.global.getDispatchWorkerPool().execute(new ConsumableQueueWorker(this.log, this));
       }
       catch (InterruptedException ex) {
-         this.log.error(ME, "toRunning: exception " + ex.getMessage());
+         log.severe("toRunning: exception " + ex.getMessage());
          ex.printStackTrace();
       }
    }
@@ -79,7 +80,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * returnes immeditately. From here distribution is handled by another thread.
     **/
    public void distribute(MsgUnitWrapper msgUnitWrapper) {
-      if (this.log.CALL) this.log.call(ME, "distribute");
+      if (log.isLoggable(Level.FINER)) this.log.finer("distribute");
       toRunning(); 
    }
    
@@ -89,8 +90,8 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    synchronized public void init(Global global, PluginInfo pluginInfo)
       throws XmlBlasterException {
       this.global = global;
-      this.log = this.global.getLog("distributor");
-      if (this.log.CALL) this.log.call(ME, "init");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("init");
       this.pluginInfo = pluginInfo;
       this.topicHandler = (TopicHandler)this.pluginInfo.getUserData();
       this.isReady = true;
@@ -109,7 +110,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * It removes all subscriptions done on this topic
     */
    synchronized public void shutdown() throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "shutdown");
+      if (log.isLoggable(Level.FINER)) this.log.finer("shutdown");
       SubscriptionInfo[] subs = this.topicHandler.getSubscriptionInfoArr();
       for (int i=0; i < subs.length; i++) this.subscriptionRemove(new SubscriptionEvent(subs[i]));
       this.isReady = false;
@@ -117,19 +118,19 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    
    private final DispatchManager getDispatchManager(SubscriptionInfo subscriptionInfo) {
       if (subscriptionInfo == null) {
-         this.log.error(ME, "getDispatchManager the subscriptionInfo object is null");
+         log.severe("getDispatchManager the subscriptionInfo object is null");
          Thread.dumpStack();
          return null;
       }
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       if (sessionInfo == null) {
-         this.log.error(ME, "getDispatchManager the sessionInfo object is null");
+         log.severe("getDispatchManager the sessionInfo object is null");
          Thread.dumpStack();
          return null;
       }
       DispatchManager dispatchManager = sessionInfo.getDispatchManager();
       if (dispatchManager == null) {
-         this.log.error(ME, "getDispatchManager the dispatcherManager object is null");
+         log.severe("getDispatchManager the dispatcherManager object is null");
          Thread.dumpStack();
          return null;
       }
@@ -143,7 +144,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    public synchronized void subscriptionAdd(SubscriptionEvent e) 
       throws XmlBlasterException {
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
-      if (this.log.CALL) this.log.call(ME, "onAddSubscriber");
+      if (log.isLoggable(Level.FINER)) this.log.finer("onAddSubscriber");
       DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
       if (dispatchManager != null) dispatchManager.addConnectionStatusListener(this);
       this.isReady = true;
@@ -156,7 +157,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     */
    synchronized public void subscriptionRemove(SubscriptionEvent e) throws XmlBlasterException {
       SubscriptionInfo subscriptionInfo = e.getSubscriptionInfo();
-      if (this.log.CALL) this.log.call(ME, "onRemoveSubscriber");
+      if (log.isLoggable(Level.FINER)) this.log.finer("onRemoveSubscriber");
       DispatchManager dispatchManager = getDispatchManager(subscriptionInfo);
       if (dispatchManager != null) dispatchManager.removeConnectionStatusListener(this);
    }
@@ -166,7 +167,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * start distribute again. 
     */
    public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-      if (this.log.CALL) this.log.call(ME, "toAlive");
+      if (log.isLoggable(Level.FINER)) this.log.finer("toAlive");
       this.isReady = true;
       toRunning();
    }
@@ -183,7 +184,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * is alive.
     */
    void processHistoryQueue() {
-      if (this.log.CALL) this.log.call(ME, "processQueue");
+      if (log.isLoggable(Level.FINER)) this.log.finer("processQueue");
       try {
          ArrayList lst = null;
          while (true) {
@@ -194,7 +195,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
                   break;
                }
                lst = historyQueue.peek(-1, -1L);
-               if (this.log.TRACE) this.log.trace(ME, "processQueue: processing '" + lst.size() + "' entries from queue");
+               if (log.isLoggable(Level.FINE)) this.log.fine("processQueue: processing '" + lst.size() + "' entries from queue");
                if (lst == null || lst.size() < 1) {
                   this.isRunning = false;
                   break;
@@ -227,7 +228,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          this.isReady = false;
          this.isRunning = false;
          ex.printStackTrace();
-         this.log.error(ME, "processQueue: " + ex.getMessage());
+         log.severe("processQueue: " + ex.getMessage());
       }
    }
 
@@ -255,13 +256,13 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       try {
 
          if (msgUnitWrapper == null) {
-            log.error(ME, "distributeOneEntry() MsgUnitWrapper is null");
+            log.severe("distributeOneEntry() MsgUnitWrapper is null");
             Thread.dumpStack();
             givingUpDistribution(null, msgUnitWrapper, entry, null);
             return true; // let the loop continue: other entries could be OK
          }
 
-         if (this.log.CALL) this.log.call(ME, "distributeOneEntry '" + msgUnitWrapper.getUniqueId() + "' '" + msgUnitWrapper.getKeyOid() + "'");
+         if (log.isLoggable(Level.FINER)) this.log.finer("distributeOneEntry '" + msgUnitWrapper.getUniqueId() + "' '" + msgUnitWrapper.getKeyOid() + "'");
          // Take a copy of the map entries (a current snapshot)
          // If we would iterate over the map directly we can risk a java.util.ConcurrentModificationException
          // when one of the callback fails and the entry is removed by the callback worker thread
@@ -270,7 +271,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          for (int ii=0; ii<subInfoArr.length; ii++) {
             SubscriptionInfo sub = subInfoArr[ii];
             if (this.topicHandler.isDirtyRead(sub, msgUnitWrapper)) {
-               this.log.error(ME, "ConsumableQueuePlugin used together with 'dirtyRead' is not supported");
+               log.severe("ConsumableQueuePlugin used together with 'dirtyRead' is not supported");
                srcQueue.removeRandom(entry);
                return true; // even if it has not been sent
             } 
@@ -307,16 +308,16 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
 
                UpdateReturnQosServer retQos = doDistribute(sub, updateEntry);
 
-               if (this.log.TRACE) {
-                  if (retQos == null) this.log.trace(ME, "distributeOneEntry: the return object was null: callback has not sent the message (dirty reads ?)");
+               if (log.isLoggable(Level.FINE)) {
+                  if (retQos == null) log.fine("distributeOneEntry: the return object was null: callback has not sent the message (dirty reads ?)");
                }
                if (retQos == null || retQos.getException() == null) {
                   srcQueue.removeRandom(entry); // success
-                  if (this.log.TRACE) this.log.trace(ME, "distributeOneEntry: successfully removed entry from queue");
+                  if (log.isLoggable(Level.FINE)) this.log.fine("distributeOneEntry: successfully removed entry from queue");
                   return true;
                }
                else {
-                  this.log.error(ME, "distributeOneEntry an exception occured: " + retQos.getException().getMessage());
+                  log.severe("distributeOneEntry an exception occured: " + retQos.getException().getMessage());
                   Throwable ex = retQos.getException();
                   // continue if it is a communication exception stop otherwise
                   if (ex instanceof XmlBlasterException && ((XmlBlasterException)ex).isCommunication()) continue;
@@ -334,7 +335,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       }
       catch (Throwable ex) {
          ex.printStackTrace();
-         this.log.error(ME, "distributeOneEntry " + ex.getMessage());
+         log.severe("distributeOneEntry " + ex.getMessage());
          givingUpDistribution(null, msgUnitWrapper, entry, ex);         
          // TODO or should we return true here to allow to continue ? 
          // I think it is a serious ex: probably does not make sense to cont.
@@ -349,7 +350,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          String exTxt = "";
          if (e != null) exTxt = e.toString();
          SessionName publisherName = msgUnitWrapper.getMsgQosData().getSender();
-         if (log.TRACE) log.trace(ME, "Sending of message from " + publisherName + " to " +
+         if (log.isLoggable(Level.FINE)) log.fine("Sending of message from " + publisherName + " to " +
                             id + " failed: " + exTxt);
                
          if (sub != null && e != null) 
@@ -363,7 +364,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
             historyQueue.removeRandom(entry);
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "givingUpDistribution: " + ex.getMessage());
+         log.severe("givingUpDistribution: " + ex.getMessage());
          ex.printStackTrace();
       }
    }
@@ -373,7 +374,7 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * the DispatchWorker this entry. 
     */    
    private UpdateReturnQosServer doDistribute(SubscriptionInfo sub, MsgQueueUpdateEntry entry) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "doDistribute");
+      if (log.isLoggable(Level.FINER)) this.log.finer("doDistribute");
       // this is a sync call (all in the same thread)
       entry.setWantReturnObject(true);
       DispatchWorker worker = new DispatchWorker(this.global, sub.getSessionInfo().getDispatchManager());

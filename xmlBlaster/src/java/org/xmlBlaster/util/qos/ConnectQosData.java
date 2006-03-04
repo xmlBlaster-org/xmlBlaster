@@ -24,6 +24,8 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 import java.util.Vector;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -39,6 +41,7 @@ import java.util.ArrayList;
  */
 public final class ConnectQosData extends QosData implements java.io.Serializable, Cloneable
 {
+   private static Logger log = Logger.getLogger(ConnectQosData.class.getName());
    private static final long serialVersionUID = 1L;
    private final String ME = "ConnectQosData";
    protected transient I_ConnectQosFactory factory;
@@ -285,7 +288,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       if (this.nodeId != null) {
          passwd = glob.getProperty().get("passwd["+this.nodeId+"]", passwd);
       }
-      if (log.TRACE) log.trace(ME, "Initializing passwd=" + passwd + " nodeId=" + this.nodeId);
+      if (log.isLoggable(Level.FINE)) 
+         log.fine("Initializing passwd=" + passwd + " nodeId=" + this.nodeId);
       return passwd;
    }
 
@@ -517,7 +521,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
          }
       }
       if (adr == null) {
-         log.error(ME, "Internal error, can't access address instance in queue");
+         log.severe("Internal error, can't access address instance in queue");
          throw new IllegalArgumentException(ME + ": Internal error, can't access address instance in queue");
       }
       return adr;
@@ -575,7 +579,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       // We use a list to allow in future mutliple addresses
       if (!allowMultiAddress && this.clientQueuePropertyList.size() > 0) {
          Address addr = prop.getCurrentAddress();
-         log.warn(ME, "Clients side load balancing is not implemented, we ignore the additional address" +
+         log.warning("Clients side load balancing is not implemented, we ignore the additional address" +
                   ((addr==null) ? "" : " '"+addr.toString()+"'"));
          //Thread.currentThread().dumpStack();
          return false;
@@ -606,12 +610,12 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     */
    private ClientQueueProperty createClientQueueProperty() {
       if (this.clientQueuePropertyList.size() < 1) {
-         if (log.TRACE) log.trace(ME, "Creating default server address instance");
+         if (log.isLoggable(Level.FINE)) log.fine("Creating default server address instance");
          //setAddress(glob.getBootstrapAddress());
          setAddress(new Address(glob));
       }
       if (this.clientQueuePropertyList.size() < 1) {
-         log.error(ME, "Internal error, can't access address instance");
+         log.severe("Internal error, can't access address instance");
          throw new IllegalArgumentException(ME + ": Internal error, can't access address instance");
       }
       return (ClientQueueProperty)this.clientQueuePropertyList.get(0);
@@ -799,7 +803,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * Currently TopicProperty and RouteInfo is not cloned (so don't change it)
     */
    public Object clone() {
-      log.error(ME, "clone() is not tested");
+      log.severe("clone() is not tested");
       ConnectQosData newOne = null;
       newOne = (ConnectQosData)super.clone();
       synchronized(this) {

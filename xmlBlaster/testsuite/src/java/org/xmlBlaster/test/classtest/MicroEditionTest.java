@@ -14,7 +14,8 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.protocol.http.common.BufferedInputStreamMicro;
 import org.xmlBlaster.client.protocol.http.common.Msg;
 import org.xmlBlaster.client.protocol.http.common.MsgHolder;
@@ -128,20 +129,20 @@ public class MicroEditionTest extends TestCase {
    
    final static String ME = "MicroEditionTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(MicroEditionTest.class.getName());
    int counter = 0;
 
    public MicroEditionTest(String name, String[] args) {
       super(name);
       this.glob = Global.instance();
       this.glob.init(args);
-      this.log = this.glob.getLog("test");
+
    }
 
    public MicroEditionTest(String name) {
       super(name);
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
    }
 
    protected void setUp() {
@@ -210,7 +211,7 @@ public class MicroEditionTest extends TestCase {
          assertHashtableContent("one-qos", qos, qosOut);
          assertHashtableContent("two-qos", qos, qosOut);
          assertHashtableContent("three-qos", qos, qosOut);
-         this.log.info(ME, "testVectorIO successfully completed");
+         log.info("testVectorIO successfully completed");
       }
       catch (Exception ex) {
          ex.printStackTrace();         
@@ -241,7 +242,7 @@ public class MicroEditionTest extends TestCase {
          assertHashtableContent("two", hashtable, table);
          assertHashtableContent("three", hashtable, table);
          assertHashtableContent("four", hashtable, table);
-         this.log.info(ME, "testHashtableIO successfully completed");
+         log.info("testHashtableIO successfully completed");
       }
       catch (Exception ex) {
          ex.printStackTrace();         
@@ -263,7 +264,7 @@ public class MicroEditionTest extends TestCase {
          assertTrue("string is not of type 'String', it is " + obj.getClass().getName(), obj instanceof String);
          String response = (String)obj;
          assertEquals("wrong content for the string", testString, response);
-         this.log.info(ME, "testStringIO successfully completed");
+         log.info("testStringIO successfully completed");
       }
       catch (Exception ex) {
          ex.printStackTrace();         
@@ -303,7 +304,7 @@ public class MicroEditionTest extends TestCase {
          String lineToCheck = bism.readLine(); // must be the same as the corresponding reference since we expect same behaviour
          assertTrue("The line to check must also be null", lineToCheck == null);
          
-         this.log.info(ME, "testReadLine successfully completed");
+         log.info("testReadLine successfully completed");
       }
       catch (Exception ex) {
          ex.printStackTrace();         
@@ -331,9 +332,9 @@ public class MicroEditionTest extends TestCase {
          Receiver receiver1 = new Receiver(port1, false);
          Receiver receiver2 = new Receiver(port2, true);
          
-         this.log.info(ME, "testReadLineDelayed create sender 1");
+         log.info("testReadLineDelayed create sender 1");
          Sender sender1 = new Sender(receiver1.startListener(), port1, buf, 1L);
-         this.log.info(ME, "testReadLineDelayed create sender 2");
+         log.info("testReadLineDelayed create sender 2");
          Sender sender2 = new Sender(receiver2.startListener(), port2, buf, 10L);
 
          while (!receiver1.isFinished() || !receiver2.isFinished()) {
@@ -345,7 +346,7 @@ public class MicroEditionTest extends TestCase {
          
          assertEquals("wrong number of lines returned", resp1.length, resp2.length);
          for (int i=0; i < resp1.length; i++) {
-            this.log.info(ME, ".testReadLineDelayed '" + resp1[i] + "' '" + resp2[i] + "'");
+            log.info(".testReadLineDelayed '" + resp1[i] + "' '" + resp2[i] + "'");
          }
          for (int i=0; i < resp1.length; i++) {
             assertEquals("wrong content of line " + i, resp1[i], resp2[i]);
@@ -384,7 +385,7 @@ public class MicroEditionTest extends TestCase {
          assertEquals("wrong content for the qos", qos, msgHolder.getQos());
          assertEquals("wrong content for the content", new String(content), new String(msgHolder.getContent()));
          
-         this.log.info(ME, "testMessageIO successfully completed");
+         log.info("testMessageIO successfully completed");
       }
       catch (Exception ex) {
          ex.printStackTrace();         

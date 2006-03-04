@@ -7,7 +7,8 @@ package org.xmlBlaster.test.topic;
 
 import org.jutils.init.Property;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -68,7 +69,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
 {
    private static String ME = "TestReferenceCountSwap";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestReferenceCountSwap.class.getName());
 
    private int serverPort = 7694;
    private EmbeddedXmlBlaster serverThread;
@@ -101,7 +102,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
     */
    protected void setUp() {
       this.glob = (this.glob == null) ? new Global() : this.glob;
-      this.log = this.glob.getLog("test");
+
       this.glob.init(Util.getOtherServerPorts(serverPort));
    }
 
@@ -111,7 +112,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
 
       if (this.serverThread != null) {
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
@@ -145,7 +146,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
          return client;
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "doConnect() - login failed: " + e.getMessage());
+         log.warning("doConnect() - login failed: " + e.getMessage());
          fail(ME+".doConnect() failed: " + e.getMessage());
       }
       return null;
@@ -155,15 +156,15 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
     * Subscribe to message. 
     */
    private void doSubscribe(I_XmlBlasterAccess con) {
-      if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using EXACT oid syntax ...");
       try {
          SubscribeKey subscribeKey = new SubscribeKey(con.getGlobal(), this.oid);
          SubscribeQos subscribeQos = new SubscribeQos(con.getGlobal());
          String subscribeOid = con.subscribe(subscribeKey, subscribeQos).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
          assertTrue("returned null subscribeOid", subscribeOid != null);
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
          fail(ME+".doSubscribe() failed: " + e.getMessage());
       }
    }
@@ -172,7 +173,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
     * Construct a message and publish it persistent. 
     */
    private void doPublish(I_XmlBlasterAccess con) {
-      if (log.TRACE) log.trace(ME, "Publishing a message");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message");
       try {
          PublishKey publishKey = new PublishKey(con.getGlobal(), this.oid);
          PublishQos publishQos = new PublishQos(con.getGlobal());
@@ -180,9 +181,9 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
          String content = "Hi";
          MsgUnit msgUnit = new MsgUnit(publishKey, content.getBytes(), publishQos);
          con.publish(msgUnit);
-         log.info(ME, "Success: Publishing of " + this.oid + " done");
+         log.info("Success: Publishing of " + this.oid + " done");
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
          fail(ME+".doPublish() failed: " + e.getMessage());
       }
    }
@@ -191,7 +192,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
     * Erase the message. 
     */
    private void doErase(I_XmlBlasterAccess con) {
-      if (log.TRACE) log.trace(ME, "Erasing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Erasing ...");
       try {
          EraseKey eraseKey = new EraseKey(con.getGlobal(), this.oid);
          EraseQos eraseQos = new EraseQos(con.getGlobal());
@@ -199,7 +200,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
          EraseReturnQos[] arr = con.erase(eraseKey, eraseQos);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
          fail(ME+".doErase() failed: " + e.getMessage());
       }
    }
@@ -208,24 +209,24 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
     * Test as described in class javadoc. 
     */
    public void testReferenceCount() {
-      log.info(ME, "testReferenceCount START");
-      log.info(ME, "STEP1: Start xmlBlaster server");
+      log.info("testReferenceCount START");
+      log.info("STEP1: Start xmlBlaster server");
       this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
 
-      log.info(ME, "STEP2: Publish a message twice");
+      log.info("STEP2: Publish a message twice");
       Client pub = doConnect("publisher", null);
       doPublish(pub.con);
       doPublish(pub.con);
 
-      log.info(ME, "STEP3: Start subscriber and subscribe and block in callback");
+      log.info("STEP3: Start subscriber and subscribe and block in callback");
       Client sub1 = doConnect("subscribe/1", new I_Callback() {
          public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-            log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+            log.info("Receiving update of a message oid=" + updateKey.getOid() +
                            " priority=" + updateQos.getPriority() +
                            " state=" + updateQos.getState() +
                            " we going to sleep and don't return control to server");
             try { Thread.currentThread().sleep(1000000L); } catch( InterruptedException i) {}
-            log.error(ME, "Waiking up from sleep");
+            log.severe("Waiking up from sleep");
             fail("Waiking up from sleep");
             return "";
          }
@@ -234,30 +235,30 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
       assertEquals("", 1, sub1.updateInterceptor.waitOnUpdate(1000L, 1));
       sub1.updateInterceptor.clear();
 
-      log.info(ME, "STEP4: Kill server and thereafter the clients");
+      log.info("STEP4: Kill server and thereafter the clients");
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
       pub.con.disconnect(null);
       sub1.con.disconnect(null);
 
-      log.info(ME, "STEP5: Start server and recover message from persistence store");
+      log.info("STEP5: Start server and recover message from persistence store");
       this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
 
-      log.info(ME, "STEP6: Start subscriber and expect the last not delivered message to be sent automatically");
+      log.info("STEP6: Start subscriber and expect the last not delivered message to be sent automatically");
       sub1 = doConnect("subscribe/1", null);
       assertEquals("", 1, sub1.updateInterceptor.waitOnUpdate(1000L, 1));
       sub1.updateInterceptor.clear();
       sub1.con.disconnect(null);
 
-      log.info(ME, "STEP7: Start another subscriber and subscribe");
+      log.info("STEP7: Start another subscriber and subscribe");
       Client sub2 = doConnect("subscribe2", null);
       doSubscribe(sub2.con);
       assertEquals("", 1, sub2.updateInterceptor.waitOnUpdate(1000L, 1));
       sub2.updateInterceptor.clear();
 
-      log.info(ME, "testReferenceCount SUCCESS");
+      log.info("testReferenceCount SUCCESS");
 
-      log.info(ME, "STEP8: Cleanup");
+      log.info("STEP8: Cleanup");
       doErase(sub2.con);
       sub2.con.disconnect(null);
 
@@ -272,15 +273,15 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info(ME, "I_ConnectionStateListener-"+connection.getId()+": We were lucky, reconnected to xmlBlaster");
+      log.info("I_ConnectionStateListener-"+connection.getId()+": We were lucky, reconnected to xmlBlaster");
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      if (log!=null) log.warn(ME, "I_ConnectionStateListener-"+connection.getId()+": Lost connection to xmlBlaster");
+      if (log!=null) log.warning("I_ConnectionStateListener-"+connection.getId()+": Lost connection to xmlBlaster");
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      if (log!=null) log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+      if (log!=null) log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    /**

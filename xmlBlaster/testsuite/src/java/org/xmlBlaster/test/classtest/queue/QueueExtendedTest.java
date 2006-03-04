@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -80,7 +81,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class QueueExtendedTest extends TestCase {
    private String ME = "QueueExtendedTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(QueueExtendedTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
    private int numOfQueues = 10;
@@ -102,7 +103,7 @@ public class QueueExtendedTest extends TestCase {
    public QueueExtendedTest(Global glob, String name, int currImpl) {
       super(name);
       this.glob = glob;
-      log = glob.getLog("test");
+
       ME = "QueueExtendedTest with class: " + PLUGIN_TYPES[currImpl];
 
       this.numOfQueues = glob.getProperty().get("queues", 2);
@@ -120,7 +121,7 @@ public class QueueExtendedTest extends TestCase {
          this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
+         log.severe("could not propertly set up the database: " + ex.getMessage());
       }
    }
 
@@ -137,7 +138,7 @@ public class QueueExtendedTest extends TestCase {
                this.queues[i].shutdown();
             }
             catch (Exception ex) {
-               this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+               log.warning("error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
             }
          }
       }
@@ -164,11 +165,11 @@ public class QueueExtendedTest extends TestCase {
       // set up the queues ....
       this.queues = new I_Queue[numOfQueues];
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-      this.log.info(ME, "performancePut: number of queues: " + numOfQueues + ", number of messages per queue: " + numOfMsg + ", size of each message: " + sizeOfMsg);
+      log.info("performancePut: number of queues: " + numOfQueues + ", number of messages per queue: " + numOfMsg + ", size of each message: " + sizeOfMsg);
 
       prop.setMaxEntries(numOfMsg + 1);
 
-      this.log.info(ME, "starting setting up " + numOfQueues + " queues");
+      log.info("starting setting up " + numOfQueues + " queues");
       long t0 = System.currentTimeMillis();
 
       for (int i=0; i < numOfQueues; i++) {
@@ -178,7 +179,7 @@ public class QueueExtendedTest extends TestCase {
       }
 
       long t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "setting up " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("setting up " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
 
       ArrayList entryList = new ArrayList(numOfMsg*numOfQueues);
       t0 = System.currentTimeMillis();
@@ -190,7 +191,7 @@ public class QueueExtendedTest extends TestCase {
          }
       }
       t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "putting " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("putting " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
 
 
       // peek all messages one single sweep ...
@@ -199,7 +200,7 @@ public class QueueExtendedTest extends TestCase {
          queues[i].peek(numOfMsg, -1L);
       }
       t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "peek in one sweep " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("peek in one sweep " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
 
       // remove all messages one by one ..
       t0 = System.currentTimeMillis();
@@ -209,7 +210,7 @@ public class QueueExtendedTest extends TestCase {
          }
       }
       t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "remove one by one " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("remove one by one " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
 
    }
 
@@ -236,7 +237,7 @@ public class QueueExtendedTest extends TestCase {
 
       prop.setMaxEntries(numOfMsg + 1);
 
-      this.log.info(ME, "starting setting up " + numOfQueues + " queues");
+      log.info("starting setting up " + numOfQueues + " queues");
       long t0 = System.currentTimeMillis();
 
       for (int i=0; i < numOfQueues; i++) {
@@ -246,7 +247,7 @@ public class QueueExtendedTest extends TestCase {
       }
 
       long t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "setting up " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("setting up " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
 
       ArrayList entryList = new ArrayList(numOfQueues*numOfMsg);
       t0 = System.currentTimeMillis();
@@ -260,7 +261,7 @@ public class QueueExtendedTest extends TestCase {
 
       }
       t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "multi-putting " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("multi-putting " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
 
       // peek one msg and then remove it one by one ..
       t0 = System.currentTimeMillis();
@@ -271,7 +272,7 @@ public class QueueExtendedTest extends TestCase {
          }
       }
       t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "peek /removeRandom one by one " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("peek /removeRandom one by one " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
 
       // remove all messages one by one ..
       t0 = System.currentTimeMillis();
@@ -281,7 +282,7 @@ public class QueueExtendedTest extends TestCase {
          }
       }
       t1 = System.currentTimeMillis() - t0;
-      this.log.info(ME, "remove one by one " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
+      log.info("remove one by one " + numOfMsg + " messages in " + numOfQueues + " queues took " + (1.0*t1/1000) + " seconds");
    }
 
    /**
@@ -320,7 +321,7 @@ public class QueueExtendedTest extends TestCase {
          testSub.tearDown();
 
          long usedTime = System.currentTimeMillis() - startTime;
-         testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+         testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
       }
    }
 }

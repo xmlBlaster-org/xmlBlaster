@@ -8,7 +8,8 @@ package org.xmlBlaster.client.filepoller;
 
 import java.util.Set;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -32,7 +33,7 @@ public class Publisher implements I_Timeout {
 
    private String ME = "Publisher";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(Publisher.class.getName());
    private DirectoryManager directoryManager;
    private I_XmlBlasterAccess access;
    private String publishKey;
@@ -74,9 +75,9 @@ public class Publisher implements I_Timeout {
       this.isShutdown = false;
       this.global = globOrig.getClone(globOrig.getNativeConnectArgs()); // sets session.timeout to 0 etc.
       // this.pluginConfig = pluginConfig;
-      this.log = this.global.getLog("filepoller");
-      if (this.log.CALL) 
-         this.log.call(ME, "constructor");
+
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("constructor");
       // retrieve all necessary properties:
       String tmp = null;
       tmp = this.global.get("publishKey", (String)null, null, pluginConfig);
@@ -85,7 +86,7 @@ public class Publisher implements I_Timeout {
          // this.publishKey = new PublishKey(this.global, new MsgKeyData(this.global, tmp));
          this.publishKey = tmp;
          if (topicName != null)
-            this.log.warn(ME, "constructor: since 'publishKey' is defined, 'topicName' will be ignored");
+            log.warning("constructor: since 'publishKey' is defined, 'topicName' will be ignored");
       }
       else {
          if (topicName == null)
@@ -161,8 +162,8 @@ public class Publisher implements I_Timeout {
     * @throws XmlBlasterException
     */
    public synchronized void init() throws XmlBlasterException {
-      if (this.log.CALL) 
-         this.log.call(ME, "init");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("init");
       if (this.isShutdown) { // on a second init
          this.global = this.global.getClone(null);
       }
@@ -181,8 +182,8 @@ public class Publisher implements I_Timeout {
     * @throws XmlBlasterException
     */
    public void shutdown() throws XmlBlasterException {
-      if (this.log.CALL) 
-         this.log.call(ME, "shutdown");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("shutdown");
       timeout.removeTimeoutListener(this.timeoutHandle);
       this.isActive = false;
       this.forceShutdown = true; // in case doPublish is looping due to an exception
@@ -204,7 +205,7 @@ public class Publisher implements I_Timeout {
             break;
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "publish: exception " + ex.getMessage());
+            log.severe("publish: exception " + ex.getMessage());
             try {
                Thread.sleep(this.pollInterval);
             }
@@ -238,8 +239,8 @@ public class Publisher implements I_Timeout {
     * @throws XmlBlasterException
     */
    private FileInfo[] doPublish() throws XmlBlasterException {
-      if (this.log.CALL) 
-         this.log.call(ME, "doPublish");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("doPublish");
       Set entries = this.directoryManager.getEntries();
       if (entries == null || entries.size() < 1)
          return new FileInfo[0];
@@ -247,7 +248,7 @@ public class Publisher implements I_Timeout {
       for (int i=0; i < infos.length; i++) {
          if (this.maximumFileSize <= 0L || infos[i].getSize() <= this.maximumFileSize) {
             if (infos[i].getSize() > Integer.MAX_VALUE) {
-               this.log.error(ME , "doPublish: sizes bigger than '" + Integer.MAX_VALUE + "' are currently not implemented");
+               log.severe("doPublish: sizes bigger than '" + Integer.MAX_VALUE + "' are currently not implemented");
             }
             else {
                byte[] content = this.directoryManager.getContent(infos[i]);
@@ -264,7 +265,7 @@ public class Publisher implements I_Timeout {
                   break;
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, ex.getMessage());
+                  log.severe(ex.getMessage());
                   try {
                      Thread.sleep(this.pollInterval);
                   }
@@ -275,13 +276,13 @@ public class Publisher implements I_Timeout {
             }
          }
          else { // delete or move to 'discarded'
-            this.log.warn(ME, "doPublish: the file '" + infos[i].getName() + "' is too long (" + infos[i].getSize() + "'): I will remove it without publishing");
+            log.warning("doPublish: the file '" + infos[i].getName() + "' is too long (" + infos[i].getSize() + "'): I will remove it without publishing");
             boolean success = false;
             try {
                this.directoryManager.deleteOrMoveEntry(infos[i].getName(), success);
             }
             catch (XmlBlasterException ex) {
-               this.log.warn(ME, "doPublish: could not handle file '" + infos[i].getName() + "' which was too big: check file and directories permissions and fix it manually: I will continue working anyway. " + ex.getMessage());
+               log.warning("doPublish: could not handle file '" + infos[i].getName() + "' which was too big: check file and directories permissions and fix it manually: I will continue working anyway. " + ex.getMessage());
             }
          }
       }
@@ -293,13 +294,13 @@ public class Publisher implements I_Timeout {
     */
    public void timeout(Object userData) {
       try {
-         if (this.log.CALL) 
-            this.log.call(ME, "timeout");
+         if (log.isLoggable(Level.FINER)) 
+            log.finer("timeout");
          publish();
       }
       catch (Throwable ex) {
          ex.printStackTrace();
-         this.log.error(ME, "timeout: " + ex.getMessage());
+         log.severe("timeout: " + ex.getMessage());
       }
       finally {
          if (this.pollInterval >= 0)

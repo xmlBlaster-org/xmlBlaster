@@ -93,7 +93,7 @@ public class Simulator {
 
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
-         glob.getLog(null).info("Simulator", "Example: java Simulator -session.name Jack\n");
+         System.out.println("Example: java Simulator -session.name Jack");
          System.exit(1);
       }
 

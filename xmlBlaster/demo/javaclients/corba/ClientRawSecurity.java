@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
@@ -53,7 +54,7 @@ public class ClientRawSecurity
    private static String ME = "ClientRawSecurity";
 
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientRawSecurity.class.getName());
    private final org.omg.CORBA.ORB orb;
 
    private Server xmlBlaster = null;
@@ -61,7 +62,7 @@ public class ClientRawSecurity
    public ClientRawSecurity(String args[])
    {
       glob = new Global(args);
-      log = glob.getLog(null);
+
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
@@ -84,13 +85,13 @@ public class ClientRawSecurity
             name[0].id = "xmlBlaster-Authenticate";
             name[0].kind = "MOM";
             if (nc == null) {
-               log.plain(ME, "\nSorry, please pass the server IOR string to the client, e.g.:\n"
+               System.out.println("\nSorry, please pass the server IOR string to the client, e.g.:\n"
                            + "Start the server:\n"
                            + "   jaco org.xmlBlaster.Main -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref\n"
                            + "Start this client:\n"
                            + "   jaco javaclients.corba.ClientRawSecurity -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref\n");
                usage();
-               log.error(ME, "Read xmlBlaster/INSTALL for help");
+               log.severe("Read xmlBlaster/INSTALL for help");
                System.exit(1);
             }
             authServer = AuthServerHelper.narrow(nc.resolve(name));
@@ -134,22 +135,22 @@ public class ClientRawSecurity
             // Parse the returned string, it contains the server IOR
             ConnectReturnQos returnQos = new ConnectReturnQos(glob, retXml);
 
-            log.info(ME, "Login (Connect) done.");
-            log.info(ME, "Used QoS=\n" + qos);
-            log.info(ME, "Returned QoS=\n" + returnQos.toXml());
+            log.info("Login (Connect) done.");
+            log.info("Used QoS=\n" + qos);
+            log.info("Returned QoS=\n" + returnQos.toXml());
 
             // Get the CORBA handle of xmlBlaster ...
             String xmlBlasterIOR = returnQos.getServerRef().getAddress();
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
 
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
          }
 
 
          //----------- Subscribe to messages with XPATH -------
          {
-            log.trace(ME, "Subscribing using XPath syntax ...");
+            log.fine("Subscribing using XPath syntax ...");
             String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                            "<key oid='' queryType='XPATH'>\n" +
                            "/xmlBlaster/key/AGENT" +
@@ -158,9 +159,9 @@ public class ClientRawSecurity
             try {
                xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
-            log.info(ME, "Subscribe done, there should be no Callback" + stop.nice());
+            log.info("Subscribe done, there should be no Callback" + stop.nice());
          }
 
 
@@ -178,15 +179,15 @@ public class ClientRawSecurity
                             "</key>";
             String content = "Yeahh, i'm the new content";
             MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-            log.info(ME, "Publishing ...");
+            log.info("Publishing ...");
             stop.restart();
             try {
                String publishOid = xmlBlaster.publish(msgUnit);
-               log.trace(ME, "Returned oid=" + publishOid);
+               log.fine("Returned oid=" + publishOid);
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
-            log.info(ME, "Publishing done, there should be a callback now" + stop.nice());
+            log.info("Publishing done, there should be a callback now" + stop.nice());
          }
 
          delay(1000); // Wait some time ...
@@ -196,32 +197,32 @@ public class ClientRawSecurity
          ask("logout()");
 
          //----------- Logout --------------------------------------
-         log.info(ME, "Logout ...");
+         log.info("Logout ...");
          try {
             authServer.logout(xmlBlaster);
             authServer._release();
             xmlBlaster._release();
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
          }
 
          //----------- Shutdown my callback server -----------------
          try {
             callback._release();
             rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
-         } catch(Exception e) { log.warn(ME, "POA deactivate callback failed"); }
+         } catch(Exception e) { log.warning("POA deactivate callback failed"); }
 
 
          //----------- Stop the POA --------------------------------
          try {
             rootPOA.the_POAManager().deactivate(false, true);
-         } catch(Exception e) { log.warn(ME, "POA deactivate failed"); }
+         } catch(Exception e) { log.warning("POA deactivate failed"); }
 
          //----------- Shutdown the ORB ----------------------------
          orb.shutdown(true);
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -268,16 +269,15 @@ public class ClientRawSecurity
    {
       final String ME;
       final Global glob;
-      final LogChannel log;
 
       /**
        * Construct it.
        */
       public RawCallback(Global glob, java.lang.String name) {
          this.glob = glob;
-         this.log = glob.getLog("client");
+
          this.ME = "RawCallback-" + name;
-         if (log.CALL) log.trace(ME, "Entering constructor with argument");
+         if (log.isLoggable(Level.FINER)) log.fine("Entering constructor with argument");
       }
 
       /**
@@ -309,7 +309,7 @@ public class ClientRawSecurity
             update(cbSessionId, msgUnitArr);
          }
          catch (Throwable e) {
-            log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+            log.severe("updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
             e.printStackTrace();
          }
       }
@@ -321,7 +321,7 @@ public class ClientRawSecurity
        */
       public String ping(String qos)
       {
-         if (log.CALL) log.call(ME, "Entering ping() ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering ping() ...");
          return "";
       }
    } // RawCallback

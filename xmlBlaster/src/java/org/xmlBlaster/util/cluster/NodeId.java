@@ -7,6 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.cluster;
 
+import java.util.logging.Logger;
+
 
 /**
  * Holds the unique name of an xmlBlaster server instance (= cluster node)
@@ -16,6 +18,8 @@ package org.xmlBlaster.util.cluster;
  */
 public final class NodeId implements Comparable, java.io.Serializable
 {
+   private static final long serialVersionUID = 1L;
+   private static Logger log = Logger.getLogger(NodeId.class.getName());
    private static final String ME = "NodeId";
 
    /**
@@ -41,7 +45,7 @@ public final class NodeId implements Comparable, java.io.Serializable
     */
    public final void setId(String id) {
       if (id == null || id.length() < 1) {
-         org.xmlBlaster.util.Global.instance().getLog("cluster").error(ME, "Cluster node has no name please specify one with -cluster.node.id XXX");
+         log.severe("Cluster node has no name please specify one with -cluster.node.id XXX");
          id = "NoNameNode";
       }
       this.id = id;

@@ -7,6 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.property.PropBoolean;
 
@@ -19,8 +21,8 @@ import org.xmlBlaster.util.property.PropBoolean;
  */
 public class DisconnectQosData extends QosData implements java.io.Serializable, Cloneable
 {
+   private static Logger log = Logger.getLogger(DisconnectQosData.class.getName());
    private static final long serialVersionUID = 2690405423464959314L;
-   private String ME = "DisconnectQosData";
    protected transient I_DisconnectQosFactory factory;
    private PropBoolean deleteSubjectQueue = new PropBoolean(true);
    private PropBoolean clearSessions = new PropBoolean(false);
@@ -45,7 +47,7 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
     */
    public boolean isPersistent() {
       if (super.isPersistent() == true) {
-         glob.getLog("client").warn(ME, "DisconnectQos messages is changed to be not persistent, as this would disconnect a client automatically on restart if the disconnect is queued on client side");
+         log.warning("DisconnectQos messages is changed to be not persistent, as this would disconnect a client automatically on restart if the disconnect is queued on client side");
       }
       return false;
    }

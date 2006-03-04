@@ -6,7 +6,8 @@ Comment:   Implementation for administrative property access
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin.intern;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -28,7 +29,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
 
    private String ME = "PropertyHandler";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(PropertyHandler.class.getName());
    private CommandManager commandManager = null;
 
 
@@ -41,11 +42,11 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
     */
    public void initialize(Global glob, CommandManager commandManager) {
       this.glob = glob;
-      this.log = this.glob.getLog("admin");
+
       this.commandManager = commandManager;
       this.ME = "PropertyHandler" + this.glob.getLogPrefixDashed();
       this.commandManager.register("sysprop", this);
-      log.info(ME, "Property administration plugin is initialized");
+      log.info("Property administration plugin is initialized");
    }
 
    /**
@@ -94,14 +95,17 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
 
       String ret = null;
 
+      /*
       if (isLogLevelRequest(cmdString)) {
-         ret = ""+glob.getLogLevel(cmdString);
-         if (log.TRACE) log.trace(ME, "Checking log level '" + cmdString + "', is " + ret);
+         // ret = ""+glob.getLogLevel(cmdString);
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("Checking log level '" + cmdString + "', is " + ret);
       }
       else
+      */
          ret = glob.getProperty().get(cmdString, (String)null);
 
-      if (log.TRACE) log.trace(ME, "Found for cmd " + cmdString + "=" + ret);
+      if (log.isLoggable(Level.FINE)) log.fine("Found for cmd " + cmdString + "=" + ret);
       if (ret == null)
          return new MsgUnit[0];
       else {
@@ -134,44 +138,24 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       */
       String key = cmd.getKey();
       String[] values = cmd.getValue();
-         
+
+      /*
       if (isLogLevelRequest(key)) {
          boolean bool = glob.changeLogLevel(key, values[0].trim());
-         log.info(ME, "Changed log level '" + key + "' to " + bool);
+         log.info("Changed log level '" + key + "' to " + bool);
          return ""+bool;
       }
       else {
+      */
          try {
             String ret = glob.getProperty().set(key, values[0]);
-            log.info(ME, "Changed property '" + key + "' to " + ret);
+            log.info("Changed property '" + key + "' to " + ret);
             return ret;
          }
          catch (JUtilsException e) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".set", e.id + " " + e.getMessage());
          }
-      }
-   }
-
-   private boolean isLogLevelRequest(String cmdString) {
-      if (cmdString == null) return false;
-      cmdString = cmdString.toUpperCase();
-      if (cmdString.startsWith("ERROR"))
-         return true;
-      else if (cmdString.startsWith("WARN"))
-         return true;
-      else if (cmdString.startsWith("INFO"))
-         return true;
-      else if (cmdString.startsWith("CALL"))
-         return true;
-      else if (cmdString.startsWith("TIME"))
-         return true;
-      else if (cmdString.startsWith("TRACE"))
-         return true;
-      else if (cmdString.startsWith("DUMP"))
-         return true;
-      else if (cmdString.startsWith("PLAIN"))
-         return true;
-      return false;
+      // }
    }
 
    public String help() {
@@ -183,7 +167,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
    }
 
    public void shutdown() {
-      if (log.TRACE) log.trace(ME, "Shutdown ignored, nothing to do");
+      if (log.isLoggable(Level.FINE)) log.fine("Shutdown ignored, nothing to do");
    }
 
 }

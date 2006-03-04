@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.authentication;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -65,7 +66,7 @@ public class TestSessionReconnect extends TestCase
 {
    private static String ME = "TestSessionReconnect";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSessionReconnect.class.getName());
    private String passwd = "secret";
    private int serverPort = 7615;
    private String oid = "TestSessionReconnect.Msg";
@@ -91,7 +92,7 @@ public class TestSessionReconnect extends TestCase
    public TestSessionReconnect(Global glob, String testName) {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -102,7 +103,7 @@ public class TestSessionReconnect extends TestCase
    protected void setUp() {
       glob.init(Util.getOtherServerPorts(serverPort));
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing");
+      log.info("XmlBlaster is ready for testing");
    }
 
    /**
@@ -119,10 +120,10 @@ public class TestSessionReconnect extends TestCase
    /**
     */
    public void testSessionReconnect() {
-      log.info(ME, "testSessionReconnect("+sessionNameSub+") ...");
+      log.info("testSessionReconnect("+sessionNameSub+") ...");
 
       try {
-         log.info(ME, "============ STEP 1: Start subscriber");
+         log.info("============ STEP 1: Start subscriber");
 
          Global globSub = glob.getClone(null);
          // A testsuite helper to collect update messages
@@ -140,9 +141,9 @@ public class TestSessionReconnect extends TestCase
             addr.setSecretCbSessionId(secretCbSessionId);
             qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
 
-            log.info(ME, "First subscribe connect QoS = " + qosSub.toXml());
+            log.info("First subscribe connect QoS = " + qosSub.toXml());
             crqSub = conSub.connect(qosSub, this.updateInterceptorSub); // Login to xmlBlaster
-            log.info(ME, "Connect as subscriber '" + crqSub.getSessionName() + "' success");
+            log.info("Connect as subscriber '" + crqSub.getSessionName() + "' success");
          }
 
          SubscribeKey sk = new SubscribeKey(globSub, oid);
@@ -156,16 +157,16 @@ public class TestSessionReconnect extends TestCase
          sq.setHistoryQos(historyQos);
 
          SubscribeReturnQos srq = conSub.subscribe(sk.toXml(), sq.toXml());
-         log.info(ME, "Subscription to '" + oid + "' done");
+         log.info("Subscription to '" + oid + "' done");
 
-         log.info(ME, "============ STEP 2: Start publisher");
+         log.info("============ STEP 2: Start publisher");
          Global globPub = glob.getClone(null);
          conPub = globPub.getXmlBlasterAccess();
          ConnectQos qosPub = new ConnectQos(globPub, sessionNamePub, passwd);
          ConnectReturnQos crqPub = conPub.connect(qosPub, null);  // Login to xmlBlaster, no updates
-         log.info(ME, "Connect success as " + crqPub.getSessionName());
+         log.info("Connect success as " + crqPub.getSessionName());
 
-         log.info(ME, "============ STEP 3: Stop subscriber callback");
+         log.info("============ STEP 3: Stop subscriber callback");
          try {
             conSub.getCbServer().shutdown();
          }
@@ -173,7 +174,7 @@ public class TestSessionReconnect extends TestCase
             fail("ShutdownCB: " + e.getMessage());
          }
 
-         log.info(ME, "============ STEP 4: Publish messages");
+         log.info("============ STEP 4: Publish messages");
          int numPub = 8;
          MsgUnit[] sentArr = new MsgUnit[numPub];
          PublishReturnQos[] sentQos = new PublishReturnQos[numPub];
@@ -191,7 +192,7 @@ public class TestSessionReconnect extends TestCase
                topicProperty.setReadonly(false);
                topicProperty.getHistoryQueueProperty().setMaxEntries(numPub+5);
                pq.setTopicProperty(topicProperty);
-               log.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
+               log.info("Added TopicProperty on first publish: " + topicProperty.toXml());
             }
 
             byte[] content = "Hello".getBytes();
@@ -199,11 +200,11 @@ public class TestSessionReconnect extends TestCase
             sentArr[i] = msgUnit;
             PublishReturnQos prq = conPub.publish(msgUnit);
             sentQos[i] = prq;
-            log.info(ME, "Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
+            log.info("Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
                         " for published message '" + prq.getKeyOid() + "'");
          }
 
-         log.info(ME, "============ STEP 5: Start subscriber callback with same public sessionId");
+         log.info("============ STEP 5: Start subscriber callback with same public sessionId");
          Global globSub2 = glob.getClone(null);
          MsgInterceptor updateInterceptorSub2 = new MsgInterceptor(globSub2, log, null);
          updateInterceptorSub2.setLogPrefix("TrustMeSub2");
@@ -218,9 +219,9 @@ public class TestSessionReconnect extends TestCase
             qosSub.getSessionCbQueueProperty().setCallbackAddress(addr);
             qosSub.getSessionQos().setSessionName(crqSub.getSessionQos().getSessionName());
 
-            log.info(ME, "Second subscribe connect QoS = " + qosSub.toXml());
+            log.info("Second subscribe connect QoS = " + qosSub.toXml());
             ConnectReturnQos crqSub2 = conSub2.connect(qosSub, updateInterceptorSub2); // Login to xmlBlaster
-            log.info(ME, "Connect as subscriber '" + crqSub2.getSessionName() + "' success");
+            log.info("Connect as subscriber '" + crqSub2.getSessionName() + "' success");
          }
 
          assertEquals("", 0, updateInterceptorSub.count()); // The first login session should not receive anything
@@ -232,15 +233,15 @@ public class TestSessionReconnect extends TestCase
          updateInterceptorSub2.clear();
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          fail(e.toString());
       }
       finally { // clean up
-         log.info(ME, "Disconnecting '" + sessionNameSub + "'");
+         log.info("Disconnecting '" + sessionNameSub + "'");
          conSub.disconnect(null);
          conSub2.disconnect(null);
       }
-      log.info(ME, "Success in testSessionReconnect()");
+      log.info("Success in testSessionReconnect()");
    }
 
    /**

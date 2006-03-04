@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
@@ -26,7 +27,7 @@ import junit.framework.*;
 public class QueryQosFactoryTest extends TestCase {
    private String ME = "QueryQosFactoryTest";
    protected final Global glob;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(QueryQosFactoryTest.class.getName());
    private String currImpl;
    private I_QueryQosFactory factory;
    static I_QueryQosFactory[] IMPL = { 
@@ -36,12 +37,12 @@ public class QueryQosFactoryTest extends TestCase {
    public QueryQosFactoryTest(Global glob, String name, int currImpl) {
       super(name);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
       this.factory = IMPL[currImpl];
    }
 
    protected void setUp() {
-      log.info(ME, "Testing parser factory " + factory.getName());
+      log.info("Testing parser factory " + factory.getName());
    }
 
    /**
@@ -108,7 +109,7 @@ public class QueryQosFactoryTest extends TestCase {
            "</qos>\n";
          QueryQosData qos = factory.readObject(xml);
          String newXml = qos.toXml();
-         log.info(ME, "New XML=" + newXml);
+         log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
 
          assertEquals("", "_subId:1", qos.getSubscriptionId());

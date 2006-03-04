@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -55,7 +56,7 @@ import junit.framework.*;
 public class TestSynchronousCache extends TestCase {
    private String ME = "TestSynchronousCache";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestSynchronousCache.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private MsgInterceptor updateInterceptor;
@@ -78,7 +79,7 @@ public class TestSynchronousCache extends TestCase {
    public TestSynchronousCache(Global glob, String testName) {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
    }
 
    /**
@@ -94,7 +95,7 @@ public class TestSynchronousCache extends TestCase {
          String[] args = { };
          glob.init(args);
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-         log.info(ME, "XmlBlaster is ready for testing the client cache");
+         log.info("XmlBlaster is ready for testing the client cache");
       }
 
       try {
@@ -105,7 +106,7 @@ public class TestSynchronousCache extends TestCase {
          this.con.connect(connectQos, this.updateInterceptor);
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -146,7 +147,7 @@ public class TestSynchronousCache extends TestCase {
    }
 
    public EraseReturnQos[] sendErase(String publishOid) {
-      log.info(ME, "Erasing topic '" + publishOid + "'");
+      log.info("Erasing topic '" + publishOid + "'");
       try {
          EraseQos eq = new EraseQos(glob);
          // !!!! NOTE: if force destroy is true the erase event may not
@@ -167,7 +168,7 @@ public class TestSynchronousCache extends TestCase {
     * Publish an almost volatile message.
     */
    public PublishReturnQos publishMsg(String publishOid, String content) {
-      log.info(ME, "Sending a message '" + content + "'");
+      log.info("Sending a message '" + content + "'");
       try {
          // Publish a volatile message
          PublishKey pk = new PublishKey(glob, publishOid, "text/xml", "1.0");
@@ -175,10 +176,10 @@ public class TestSynchronousCache extends TestCase {
          MsgUnit msgUnit = new MsgUnit(pk, content, pq);
          PublishReturnQos publishReturnQos = con.publish(msgUnit);
          assertEquals("Retunred oid is invalid", publishOid, publishReturnQos.getKeyOid());
-         log.info(ME, "Sending of '" + content + "' done, returned oid=" + publishOid + " " + msgUnit.toXml());
+         log.info("Sending of '" + content + "' done, returned oid=" + publishOid + " " + msgUnit.toXml());
          return publishReturnQos;
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         log.severe("publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       return null; // never reached
@@ -193,7 +194,7 @@ public class TestSynchronousCache extends TestCase {
    public void testCachedAccess() {
       this.ME = "TestSynchronousCache-testCachedAccess";
       {
-         log.info(ME, "Entering testCachedAccess ...");
+         log.info("Entering testCachedAccess ...");
          try {
             publishMsg(publishOidArr[0], contentArr[0]);
             publishMsg(publishOidArr[2], contentArr[2]);
@@ -207,7 +208,7 @@ public class TestSynchronousCache extends TestCase {
                assertEquals(this.synchronousCache.toXml(""), 1, msgs.length);
                GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
                assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
-               log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
+               log.info("Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                               "' and status=" + grq.getState());
             }
 
@@ -216,14 +217,14 @@ public class TestSynchronousCache extends TestCase {
             EraseReturnQos[] arr2 = sendErase(publishOidArr[2]);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "testCachedAccess() failed: " + e.getMessage());
+            log.severe("testCachedAccess() failed: " + e.getMessage());
             fail(e.getMessage());
          }
          assertEquals("Unexpected update arrived", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
       }
 
       {
-         log.info(ME, "Entering testCachedAccess with updated MsgUnit ...");
+         log.info("Entering testCachedAccess with updated MsgUnit ...");
          try {
             PublishReturnQos publishReturnQos = publishMsg(publishOidArr[0], contentArr[0]);
 
@@ -237,7 +238,7 @@ public class TestSynchronousCache extends TestCase {
                assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
                assertEquals("", publishReturnQos.getRcvTimestamp(), grq.getRcvTimestamp());
                assertEquals("", contentArr[0], msgs[0].getContentStr());
-               log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
+               log.info("Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                               "' and status=" + grq.getState() + " rcv=" + grq.getRcvTimestamp());
             }
 
@@ -253,7 +254,7 @@ public class TestSynchronousCache extends TestCase {
                assertEquals("", publishReturnQos.getRcvTimestamp().getTimestamp(), grq.getRcvTimestamp().getTimestamp());
                assertEquals("", publishReturnQos.getKeyOid(), msgs[0].getKeyOid());
                assertEquals("", contentNew, msgs[0].getContentStr());
-               log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
+               log.info("Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                               "' and status=" + grq.getState() + " rcv=" + grq.getRcvTimestamp());
             }
 
@@ -261,14 +262,14 @@ public class TestSynchronousCache extends TestCase {
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "testCachedAccess() failed: " + e.getMessage());
+            log.severe("testCachedAccess() failed: " + e.getMessage());
             fail(e.getMessage());
          }
          assertEquals("Unexpected update arrived", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
       }
 
       {
-         log.info(ME, "Entering testCachedAccess with XPATH ...");
+         log.info("Entering testCachedAccess with XPATH ...");
          try {
             PublishReturnQos publishReturnQos0 = publishMsg(publishOidArr[0], contentArr[0]);
             PublishReturnQos publishReturnQos1 = publishMsg(publishOidArr[1], contentArr[1]);
@@ -286,7 +287,7 @@ public class TestSynchronousCache extends TestCase {
                GetReturnQos grq1 = new GetReturnQos(glob, msgs[1].getQos());
                assertEquals(this.synchronousCache.toXml(""), 2, msgs.length);
                assertEquals(this.synchronousCache.toXml(""), 1, this.synchronousCache.getNumQueriesCached());
-               log.info(ME, " publishReturnQos0.getRcvTimestamp()=" + publishReturnQos0.getRcvTimestamp() +
+               log.info(" publishReturnQos0.getRcvTimestamp()=" + publishReturnQos0.getRcvTimestamp() +
                             " publishReturnQos1.getRcvTimestamp()=" + publishReturnQos1.getRcvTimestamp() +
                             " grq0.getRcvTimestamp()=" + grq0.getRcvTimestamp() +
                             " grq1.getRcvTimestamp()=" + grq1.getRcvTimestamp());
@@ -296,32 +297,32 @@ public class TestSynchronousCache extends TestCase {
                               publishReturnQos1.getRcvTimestamp().equals(grq1.getRcvTimestamp()));
                assertTrue("", !grq0.getRcvTimestamp().equals(grq1.getRcvTimestamp()));
                assertEquals("", 2, msgs.length);
-               log.info(ME, "Accessed " + msgs.length + " xmlBlaster messages with content '" +
+               log.info("Accessed " + msgs.length + " xmlBlaster messages with content '" +
                               new String(msgs[0].getContent()) +
                               "' and '" + new String(msgs[1].getContent()) + "' and status=" + grq0.getState());
             }
 
-            log.info(ME, "Current cache:" + this.synchronousCache.toXml(""));
+            log.info("Current cache:" + this.synchronousCache.toXml(""));
             assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
             EraseReturnQos[] arr0 = sendErase(publishOidArr[0]);
             assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
             EraseReturnQos[] arr1 = sendErase(publishOidArr[1]);
-            log.info(ME, "Current cache:" + this.synchronousCache.toXml(""));
+            log.info("Current cache:" + this.synchronousCache.toXml(""));
 
             // The cache is not cleared automatically for XPATH, we do it manually
             this.synchronousCache.removeEntryByQueryString(this.synchronousCache.getQueryString(gk));
-            log.info(ME, "Current cache:" + this.synchronousCache.toXml(""));
+            log.info("Current cache:" + this.synchronousCache.toXml(""));
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
             EraseReturnQos[] arr2 = sendErase(publishOidArr[2]);
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "testCachedAccess() failed: " + e.getMessage());
+            log.severe("testCachedAccess() failed: " + e.getMessage());
             fail(e.getMessage());
          }
          assertEquals("Unexpected update arrived", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
       }
-      log.info(ME, "SUCCESS testCachedAccess");
+      log.info("SUCCESS testCachedAccess");
    }
 
    /**

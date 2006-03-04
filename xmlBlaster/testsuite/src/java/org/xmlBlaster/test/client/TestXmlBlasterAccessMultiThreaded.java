@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -47,7 +48,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
 {
    private static String ME = "TestXmlBlasterAccessMultiThreaded";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestXmlBlasterAccessMultiThreaded.class.getName());
 
    private int serverPort = 7404;
    private EmbeddedXmlBlaster serverThread;
@@ -82,12 +83,12 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
     */
    protected void setUp() {
       this.glob = (this.glob == null) ? new Global() : this.glob;
-      this.log = this.glob.getLog("test");
+
 
       glob.init(Util.getOtherServerPorts(serverPort));
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+      log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
          con = glob.getXmlBlasterAccess(); // Find orb
 
@@ -108,11 +109,11 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
          con.connect(connectQos, this.updateInterceptor);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed: " + e.getMessage());
+          log.warning("setUp() - login failed: " + e.getMessage());
           fail("setUp() - login fail: " + e.getMessage());
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
           fail("setUp() - login fail: " + e.toString());
       }
@@ -124,7 +125,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestXmlBlasterAccessMultiThreaded-AGENT" +
                       "</key>";
@@ -133,7 +134,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         log.severe("XmlBlasterException: " + e.getMessage());
       }
       finally {
          con.disconnect(null);
@@ -154,7 +155,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
     * TEST: Subscribe to messages with XPATH.
     */
    public void doSubscribe() {
-      if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestXmlBlasterAccessMultiThreaded-AGENT" +
@@ -162,10 +163,10 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
       String qos = "<qos><notify>false</notify></qos>"; // send no erase events
       try {
          SubscribeReturnQos subscriptionId = con.subscribe(xmlKey, qos);
-         log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
+         log.info("Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -175,7 +176,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
     * <p />
     */
    public MsgUnit doPublish(String oid, String content) throws XmlBlasterException {
-      log.info(ME, "Publishing a message " + oid + " ...");
+      log.info("Publishing a message " + oid + " ...");
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
                       "   <TestXmlBlasterAccessMultiThreaded-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestXmlBlasterAccessMultiThreaded-AGENT>" +
@@ -184,7 +185,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
       MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
       con.publish(msgUnit);
-      log.info(ME, "Success: Publishing of " + oid + " content='" + content + "' done");
+      log.info("Success: Publishing of " + oid + " content='" + content + "' done");
       return msgUnit;
    }
 
@@ -198,7 +199,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
       ME = "TestXmlBlasterAccessMultiThreaded.testPublishThreads()";
       final String oid = "TestXmlBlasterAccessMultiThreaded";
       int numThreads = 5;
-      log.info(ME, "Going to publish " + numPublish + " messages with each of " + numThreads + " threads");
+      log.info("Going to publish " + numPublish + " messages with each of " + numThreads + " threads");
       final Vector sentMsgVec = new Vector(numPublish*numThreads);
       PublishThread[] publishThreads = new PublishThread[numThreads];
       for (iThread=0; iThread<numThreads; iThread++) {
@@ -206,18 +207,18 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
          publishThreads[iThread].start();
       }
 
-      log.info(ME, "Trying join ...");
+      log.info("Trying join ...");
 
       for (int kk=0; kk<numThreads; kk++) {
          try {
             publishThreads[kk].join();
          }
          catch (InterruptedException ie) {
-            log.warn(ME, "Caught join() exception: " + ie.toString());
+            log.warning("Caught join() exception: " + ie.toString());
          }
       }
 
-      log.info(ME, "Threads are joined");
+      log.info("Threads are joined");
 
       // Now check everything:
 
@@ -246,7 +247,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
          lastMsg[iThread] = iMsg;
       }
       
-      log.info(ME, "SUCCESS, all check are OK.");
+      log.info("SUCCESS, all check are OK.");
    }
 
    /**
@@ -264,18 +265,18 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
          this.sentMsgList = new ArrayList(numPublish);
       }
       public void run() {
-         log.info(ME, "Started thread " + iThread + ": " + Thread.currentThread().getName());
+         log.info("Started thread " + iThread + ": " + Thread.currentThread().getName());
          for (int ii=0; ii<numPublish; ii++) {
             try {
                MsgUnit msgUnit = doPublish(oid, Thread.currentThread().getName() + ":" + (ii+1));
                sentMsgList.add(msgUnit);
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "Fail: " + e.getMessage());
+               log.severe("Fail: " + e.getMessage());
                fail(ME+": "+e.getMessage());
             }
          }
-         log.info(ME, Thread.currentThread().getName() + ": Published " + numPublish + " messages");
+         log.info(Thread.currentThread().getName() + ": Published " + numPublish + " messages");
       }
       public final ArrayList getSentMsgList() {
          return this.sentMsgList;
@@ -289,16 +290,16 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
     * This method is enforced through interface I_ConnectionStateListener
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
+      log.info("I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
       doSubscribe();    // initialize on startup and on reconnect
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.warn(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
+      log.warning("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+      log.severe("DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    /**

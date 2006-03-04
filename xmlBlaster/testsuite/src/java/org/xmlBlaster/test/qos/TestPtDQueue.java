@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -41,7 +42,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
 {
    private final static String ME = "TestPtDQueue";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestPtDQueue.class.getName());
 
    private final String senderName = "William";
    private String publishOid = "";
@@ -67,7 +68,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
    }
 
 
@@ -82,10 +83,10 @@ public class TestPtDQueue extends TestCase implements I_Callback
       try {
          senderConnection = glob.getClone(null).getXmlBlasterAccess();
          senderConnection.connect(new ConnectQos(senderConnection.getGlobal(), senderName, passwd), this);
-         log.info(ME, "Successful login for " + senderName);
+         log.info("Successful login for " + senderName);
       }
       catch (XmlBlasterException e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
           assertTrue("login - XmlBlasterException: " + e.getMessage(), false);
       }
@@ -114,7 +115,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    public void testPtUnknownDestination()
    {
       {
-         log.info(ME, "[1] Testing point to a unknown destination with NO forceQueuing set ...");
+         log.info("[1] Testing point to a unknown destination with NO forceQueuing set ...");
 
          // Construct a message and send it to "Averell"
          String xmlKey = "<key oid='' contentMime='text/plain'/>";
@@ -128,10 +129,10 @@ public class TestPtDQueue extends TestCase implements I_Callback
          try {
             MsgUnit msgUnit = new MsgUnit(senderConnection.getGlobal(), xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
-            log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
+            log.severe("Publishing to a not logged in client should throw an exception, forceQueuing is not set");
             assertTrue("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
          } catch(XmlBlasterException e) {
-            log.info(ME, "Exception is correct, client is not logged in: " + e.getMessage());
+            log.info("Exception is correct, client is not logged in: " + e.getMessage());
          }
 
          waitOnUpdate(1000L);
@@ -140,7 +141,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
       }
 
       {
-         log.info(ME, "[2] Testing point to a unknown destination with forceQueuing set ...");
+         log.info("[2] Testing point to a unknown destination with forceQueuing set ...");
 
          // Construct a message and send it to "Martin Unknown"
          String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
@@ -156,9 +157,9 @@ public class TestPtDQueue extends TestCase implements I_Callback
          try {
             MsgUnit msgUnit = new MsgUnit(senderConnection.getGlobal(), xmlKey, senderContent.getBytes(), qos);
             publishOid = senderConnection.publish(msgUnit).getKeyOid();
-            log.info(ME, "Sending done, returned oid=" + publishOid);
+            log.info("Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+            log.severe("publish() XmlBlasterException: " + e.getMessage());
             assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
          }
 
@@ -166,7 +167,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          assertEquals("numReceived after sending to '" + receiverName + "'", 0, numReceived); // no message?
          numReceived = 0;
 
-         log.info(ME, "[3] Now the receiver '" + receiverName + "' logs in and should get the message '" + publishOid + "' from the xmlBlaster queue ...");
+         log.info("[3] Now the receiver '" + receiverName + "' logs in and should get the message '" + publishOid + "' from the xmlBlaster queue ...");
 
          // Now the receiver logs in and should get the message from the xmlBlaster queue ...
          try {
@@ -174,7 +175,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
             ConnectQos connectQos = new ConnectQos(receiverConnection.getGlobal(), receiverName, passwd);
             receiverConnection.connect(connectQos, this); // Login to xmlBlaster
          } catch (XmlBlasterException e) {
-             log.error(ME, e.toString());
+             log.severe(e.toString());
              e.printStackTrace();
              assertTrue("login - XmlBlasterException: " + e.getMessage(), false);
              return;
@@ -193,7 +194,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message '" + updateKey.getOid() + "' state=" + updateQos.getState() + " ...");
+      log.info("Receiving update of a message '" + updateKey.getOid() + "' state=" + updateQos.getState() + " ...");
 
       numReceived += 1;
 
@@ -223,7 +224,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

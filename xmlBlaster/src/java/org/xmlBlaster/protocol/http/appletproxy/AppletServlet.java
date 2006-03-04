@@ -5,7 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http.appletproxy;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 import org.xmlBlaster.util.Global;
 import org.jutils.runtime.Memory;
 
@@ -77,6 +79,7 @@ import org.apache.commons.codec.binary.Base64;
  */
 public class AppletServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
+   private static Logger log = Logger.getLogger(HttpServlet.class.getName());
    private static final long serialVersionUID = 1L;
    private Global initialGlobal;
    private Timeout timeout;
@@ -109,7 +112,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       // outcomment this line:
       //log.addLogableDevice(this);
 
-      this.initialGlobal.getLog("servlet").info(this.getClass().getName(), "Initialize ...");
+      log.info("Initialize ...");
 
       initSystemProperties(conf); // Using JacORB and Suns XML parser as a default ...
 
@@ -117,7 +120,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
    }
 
 
-   protected void connect(String ME, LogChannel log, HttpSession session, String qos, HttpServletRequest req, HttpServletResponse res) 
+   protected void connect(String ME, Logger log, HttpSession session, String qos, HttpServletRequest req, HttpServletResponse res) 
       throws XmlBlasterException, IOException, ServletException {
       if (qos == null || qos.length() < 1)
          throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, "Missing connect QoS. Pass xmlBlaster.connectQos='<qos> ... </qos>' with your URL in your POST in a hidden form field or in your cookie.");
@@ -135,9 +138,9 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       ME  += connectQos.getSessionName().getLoginName() + "-" + session.getId();
             
       if (warnAuth)
-         log.warn(ME, "Login action, applet has not supplied connect QoS authentication information - we login with the servlets default authentication settings");
+         log.warning("Login action, applet has not supplied connect QoS authentication information - we login with the servlets default authentication settings");
       else
-         log.info(ME, "Login action with applet supplied connect QoS authentication information");
+         log.info("Login action with applet supplied connect QoS authentication information");
 
       I_XmlBlasterAccess xmlBlasterAccess = glob.getXmlBlasterAccess();
       PushHandler pushHandler = new PushHandler(req, res, session.getId(),
@@ -149,7 +152,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       session.setAttribute(key, pushHandler);
 
       // Don't fall out of doGet() to keep the HTTP connection open
-      log.info(ME, "Waiting forever, permanent HTTP connection from " +
+      log.info("Waiting forever, permanent HTTP connection from " +
                      req.getRemoteHost() + "/" + req.getRemoteAddr() +
                      ", sessionName=" + connectQos.getSessionName().getRelativeName() + " sessionId=" + session.getId() +
                      "', protocol='" + req.getProtocol() +
@@ -158,18 +161,17 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                      "', storing PushHandler with key '" + key +
                      "'.");
 
-      if (log.TRACE) log.trace(ME,
-                     "user='" + req.getRemoteUser() +
-                     "', serverPort='" + req.getServerPort() +
-                     "', query='" + req.getQueryString() +
-                     "', pathInfo='" + req.getPathInfo() +
-                     "', pathTranslated='" + req.getPathTranslated() +
-                     "', servletPath='" + req.getServletPath() +
-                     "', documentRoot='" + getServletConfig().getServletContext().getRealPath("/") +
-                     "', accept='" + req.getHeader("Accept") +
-                     "', referer='" + req.getHeader("Referer") +
-                     "', authorization='" + req.getHeader("Authorization") +
-                     "'.");
+      if (log.isLoggable(Level.FINE)) log.fine("user='" + req.getRemoteUser() +
+      "', serverPort='" + req.getServerPort() +
+      "', query='" + req.getQueryString() +
+      "', pathInfo='" + req.getPathInfo() +
+      "', pathTranslated='" + req.getPathTranslated() +
+      "', servletPath='" + req.getServletPath() +
+      "', documentRoot='" + getServletConfig().getServletContext().getRealPath("/") +
+      "', accept='" + req.getHeader("Accept") +
+      "', referer='" + req.getHeader("Referer") +
+      "', authorization='" + req.getHeader("Authorization") +
+      "'.");
 
       pushHandler.ping("loginSucceeded");
 
@@ -178,13 +180,13 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             Thread.sleep(10000L);
          }
          catch (InterruptedException i) {
-            log.error(ME,"Error in Thread handling, don't know what to do: "+i.toString());
+            log.severe("Error in Thread handling, don't know what to do: "+i.toString());
             pushHandler.cleanup();
             break;
          }
       }
       pushHandler = null;
-      log.info(ME, "Persistent HTTP connection lost, leaving doGet() ....");
+      log.info("Persistent HTTP connection lost, leaving doGet() ....");
    }
 
    /**
@@ -203,12 +205,12 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
    public void doGetFake(String ME, HttpServletRequest req, HttpServletResponse res, String actionType, MsgHolder msgHolder) 
       throws ServletException, IOException {
       res.setContentType("text/plain");
-      LogChannel log = this.initialGlobal.getLog("servlet");
-      if (log.CALL) log.call(this.getClass().getName(), "Entering doGet() ... " + Memory.getStatistic());
+
+      if (log.isLoggable(Level.FINER)) log.finer("Entering doGet() ... " + Memory.getStatistic());
 
       if (actionType.equalsIgnoreCase("NONE")) {
          String str = "Please call servlet with some ActionType";
-         log.error(ME, str);
+         log.severe(str);
          XmlBlasterException x = new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, x.getMessage());
          return;
@@ -223,7 +225,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
           actionType.equals(I_XmlBlasterAccessRaw.CONNECT_NAME)) { // "connect" TODO: !!! Reconnect to old session
          boolean invalidate = getParameter(req, "xmlBlaster/invalidate", false);
          if (invalidate == true) {
-            log.info(ME, "Entering servlet doGet("+I_XmlBlasterAccessRaw.CONNECT_NAME+"), forcing a new sessionId");
+            log.info("Entering servlet doGet("+I_XmlBlasterAccessRaw.CONNECT_NAME+"), forcing a new sessionId");
             session.invalidate();   // force a new sessionId
          }
          session = req.getSession(true);
@@ -232,14 +234,14 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       String sessionId = session.getId();
 
       ME += "-" + sessionId;
-      if (log.TRACE) log.trace(ME, "Entering servlet doGet(oldSessionId="+oldSessionId+") ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering servlet doGet(oldSessionId="+oldSessionId+") ...");
 
       if (false) {
          // HttpServletResponse.addCookie(javax.servlet.http.Cookie)
          javax.servlet.http.Cookie[] cookies = req.getCookies();
          if (cookies != null) {
             for (int i=0; i<cookies.length; i++) {
-               log.info(ME, "Receiving cookie name=" + cookies[i].getName() + ", domain=" + cookies[i].getDomain() + ", path=" + cookies[i].getPath());
+               log.info("Receiving cookie name=" + cookies[i].getName() + ", domain=" + cookies[i].getDomain() + ", path=" + cookies[i].getPath());
             }
          }
       }
@@ -261,7 +263,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          }
          else if (actionType.equals(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) {
             //------------------ first request from applet --------------------------
-            if (log.TRACE) log.trace(ME, "doGet: dummyToCreateASessionId");
+            if (log.isLoggable(Level.FINE)) log.fine("doGet: dummyToCreateASessionId");
             writeResponse(res, I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME, "OK-"+System.currentTimeMillis());
             return;
          }
@@ -274,22 +276,22 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             try {
                PushHandler pushHandler = getPushHandler(req);
                pushHandler.pong();
-               if (log.TRACE) log.trace(ME, "Received pong");
+               if (log.isLoggable(Level.FINE)) log.fine("Received pong");
                writeResponse(res, I_XmlBlasterAccessRaw.PONG_NAME, "OK-"+System.currentTimeMillis());
                return;
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.getMessage());
+               log.severe("Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.getMessage());
                return;
             }
          }
          else if (actionType.equals(I_XmlBlasterAccessRaw.DISCONNECT_NAME)) { // "disconnect"
-            log.info(ME, "Logout arrived ...");
+            log.info("Logout arrived ...");
             try {
                PushHandler pc = getPushHandler(req);
                pc.cleanup();
             } catch(XmlBlasterException e) {
-               log.error(ME, e.toString());
+               log.severe(e.toString());
             }
             writeResponse(res, I_XmlBlasterAccessRaw.DISCONNECT_NAME, "<qos/>");
          }
@@ -298,10 +300,10 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, text);
          }
       } catch (XmlBlasterException e) {
-         log.warn(ME, "Caught XmlBlaster Exception: " + e.getMessage());
+         log.warning("Caught XmlBlaster Exception: " + e.getMessage());
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.getMessage());
       } catch (Exception e) {
-         log.error(ME, "Caught Exception: " + e.toString());
+         log.severe("Caught Exception: " + e.toString());
          e.printStackTrace();
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.toString());
       }
@@ -380,18 +382,18 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       }
    }
 
-   protected MsgHolder extractMessage(String ME, LogChannel log, HttpServletRequest req, MsgHolder binaryMsg) {
+   protected MsgHolder extractMessage(String ME, Logger log, HttpServletRequest req, MsgHolder binaryMsg) {
       if (binaryMsg != null) return binaryMsg;
 
       String oid = getParameter(req, "key.oid", (String)null);
-      if (log.TRACE) log.trace(ME, "encoded oid=" + oid);
+      if (log.isLoggable(Level.FINE)) log.fine("encoded oid=" + oid);
       if (oid != null) oid = this.decode(oid, ENCODING);
 
       String key = getParameter(req, "key", (String)null);
-      if (log.TRACE) log.trace(ME, "encoded key=" + key);
+      if (log.isLoggable(Level.FINE)) log.fine("encoded key=" + key);
       if (key != null) {
          key = this.decode(key, ENCODING);
-         if (log.DUMP) log.dump(ME, "key=\n'" + key + "'");
+         if (log.isLoggable(Level.FINEST)) log.finest("key=\n'" + key + "'");
       }
          
       byte[] content;
@@ -402,23 +404,23 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       }
       else
          content = new byte[0];
-      if (log.DUMP) log.dump(ME, "content=\n'" + new String(content) + "'");
+      if (log.isLoggable(Level.FINEST)) log.finest("content=\n'" + new String(content) + "'");
 
       String qos = getParameter(req, "qos", (String)null);
-      if (log.TRACE) log.trace(ME, "encoded qos=" + qos);
+      if (log.isLoggable(Level.FINE)) log.fine("encoded qos=" + qos);
       if (qos != null) {
          qos = this.decode(qos, ENCODING);
       }
       else
          qos = ""; 
-      if (log.DUMP) log.dump(ME, "qos=\n'" + qos + "'");
+      if (log.isLoggable(Level.FINEST)) log.finest("qos=\n'" + qos + "'");
 
       // See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
       String xmlRequest = getParameter(req, "xmlRequest", (String)null);
-      if (log.TRACE) log.trace(ME, "encoded xmlRequest=" + xmlRequest);
+      if (log.isLoggable(Level.FINE)) log.fine("encoded xmlRequest=" + xmlRequest);
       if (xmlRequest != null) {
          xmlRequest = this.decode(xmlRequest, ENCODING);
-         if (log.DUMP) log.dump(ME, "xmlRequest=\n'" + xmlRequest + "'");
+         if (log.isLoggable(Level.FINEST)) log.finest("xmlRequest=\n'" + xmlRequest + "'");
       }
 
       return new MsgHolder(oid, key, qos, content);
@@ -477,9 +479,9 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       res.setContentType("text/plain");
       //HttpSession session = req.getSession(false);
       String sessionId = req.getRequestedSessionId();
-      LogChannel log = this.initialGlobal.getLog("servlet");
+
       ME  += "-" + sessionId;
-      if (log.TRACE) log.trace(ME, "Entering servlet doPost() ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering servlet doPost() ...");
 
       Global glob = null;
       I_XmlBlasterAccess xmlBlaster = null;
@@ -492,7 +494,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          glob = xmlBlaster.getGlobal();
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "Caught XmlBlaster Exception: " + e.getMessage());
+         log.warning("Caught XmlBlaster Exception: " + e.getMessage());
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.getMessage());
          return;
       }
@@ -508,7 +510,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          byte[] content = msg.getContent();
          
          if (actionType.equals(I_XmlBlasterAccessRaw.PING_NAME)) { // "ping"
-            if (log.TRACE) log.trace(ME, "ping arrived, qos=" + qos);
+            if (log.isLoggable(Level.FINE)) log.fine("ping arrived, qos=" + qos);
             Hashtable map = new Hashtable();
             if (xmlBlaster.isAlive()) {
                map.put("/qos/state/@id", Constants.STATE_OK);
@@ -526,28 +528,28 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          }
 
          else if (actionType.equals(I_XmlBlasterAccessRaw.SUBSCRIBE_NAME)) { // "subscribe"
-            if (log.TRACE) log.trace(ME, "subscribe arrived ... oid=" + oid + ", key=" + key + ", qos=" + qos);
+            if (log.isLoggable(Level.FINE)) log.fine("subscribe arrived ... oid=" + oid + ", key=" + key + ", qos=" + qos);
       
             if (oid != null) {
                SubscribeKey xmlKey = new SubscribeKey(glob, oid);
                SubscribeReturnQos ret = xmlBlaster.subscribe(xmlKey.toXml(), qos);
                returnObject = ret.getData().toJXPath();
-               if (log.TRACE) log.trace(ME, "Subscribed to simple key.oid=" + oid + ": " + ret.getSubscriptionId());
+               if (log.isLoggable(Level.FINE)) log.fine("Subscribed to simple key.oid=" + oid + ": " + ret.getSubscriptionId());
             }
             else if (key != null) {
                SubscribeReturnQos ret = xmlBlaster.subscribe(key, qos);
                returnObject = ret.getData().toJXPath();
-               if (log.TRACE) log.trace(ME, "Subscribed to " + key + ": SubscriptionId=" + ret.getSubscriptionId() + " qos=" + qos + " returnObject=" + returnObject.getClass().getName());
+               if (log.isLoggable(Level.FINE)) log.fine("Subscribed to " + key + ": SubscriptionId=" + ret.getSubscriptionId() + " qos=" + qos + " returnObject=" + returnObject.getClass().getName());
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";
-               log.warn(ME, str);
+               log.warning(str);
                throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
             }
          }
 
          else if (actionType.equals(I_XmlBlasterAccessRaw.UNSUBSCRIBE_NAME)) { // "unSubscribe"
-            if (log.TRACE) log.trace(ME, "unSubscribe arrived ...");
+            if (log.isLoggable(Level.FINE)) log.fine("unSubscribe arrived ...");
             UnSubscribeReturnQos[] ret;
 
             if (oid != null) {
@@ -559,19 +561,19 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when unsubscribing";
-               log.warn(ME, str);
+               log.warning(str);
                throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
             }
             Vector arr = new Vector();
             for (int ii=0; ii<ret.length; ii++) {
                arr.add(ret[ii].getData().toJXPath());
-               if (log.TRACE) log.trace(ME, "UnSubscribed " + ret[ii].getSubscriptionId());
+               if (log.isLoggable(Level.FINE)) log.fine("UnSubscribed " + ret[ii].getSubscriptionId());
             }
             returnObject = (Hashtable[])arr.toArray(new Hashtable[arr.size()]);
          }
 
          else if (actionType.equals(I_XmlBlasterAccessRaw.GET_NAME)) { // "get"
-            if (log.TRACE) log.trace(ME, "get arrived ...");
+            if (log.isLoggable(Level.FINE)) log.fine("get arrived ...");
             MsgUnit[] msgUnitArr = xmlBlaster.get(key, qos);
             Vector list = new Vector(msgUnitArr.length*3);
             for (int i=0; i<msgUnitArr.length; i++) {
@@ -583,27 +585,27 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          }
 
          else if (actionType.equals(I_XmlBlasterAccessRaw.PUBLISH_NAME)) { // "publish"
-            if (log.TRACE) log.trace(ME, "publish arrived ...");
+            if (log.isLoggable(Level.FINE)) log.fine("publish arrived ...");
             if (key == null) {
                String str = "Please call servlet with some key when publishing";
-               log.warn(ME, str);
+               log.warning(str);
                XmlBlasterException x = new XmlBlasterException(this.initialGlobal, ErrorCode.USER_ILLEGALARGUMENT, ME, str);
                writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, x.getMessage());
                return;
             }
-            if (log.TRACE) log.trace(ME, "Publishing '" + key + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("Publishing '" + key + "'");
             MsgUnit msgUnit = new MsgUnit(glob, key, content, qos);
             try {
                PublishReturnQos prq = xmlBlaster.publish(msgUnit);
                returnObject = prq.getData().toJXPath();
-               if (log.TRACE) log.trace(ME, "Success: Publishing done, returned oid=" + prq.getKeyOid());
+               if (log.isLoggable(Level.FINE)) log.fine("Success: Publishing done, returned oid=" + prq.getKeyOid());
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
          }
 
          else if (actionType.equals(I_XmlBlasterAccessRaw.ERASE_NAME)) { // "erase"
-            if (log.TRACE) log.trace(ME, "erase arrived ...");
+            if (log.isLoggable(Level.FINE)) log.fine("erase arrived ...");
             EraseReturnQos[] ret;
 
             if (oid != null) {
@@ -615,13 +617,13 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";
-               log.warn(ME, str);
+               log.warning(str);
                throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
             }
             Vector arr = new Vector();
             for (int ii=0; ii<ret.length; ii++) {
                arr.add(ret[ii].getData().toJXPath());
-               if (log.TRACE) log.trace(ME, "Erased " + ret[ii].getKeyOid());
+               if (log.isLoggable(Level.FINE)) log.fine("Erased " + ret[ii].getKeyOid());
             }
             returnObject = (Hashtable[])arr.toArray(new Hashtable[arr.size()]);
          }
@@ -640,16 +642,16 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
 
          else {
             String str = "Unknown or missing 'ActionType=" + actionType + "' please choose 'subscribe' 'unSubscribe' 'erase' etc.";
-            log.warn(ME, str);
+            log.warning(str);
             throw new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
          }
 
          writeResponse(res, actionType, returnObject);
       } catch (XmlBlasterException e) {
-         log.warn(ME, "Caught XmlBlaster Exception: " + e.getMessage());
+         log.warning("Caught XmlBlaster Exception: " + e.getMessage());
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, e.getMessage());
       } catch (Throwable e) {
-         log.error(ME, "Exception: " + e.toString());
+         log.severe("Exception: " + e.toString());
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, XmlBlasterException.convert(this.initialGlobal, ME, "", e).getMessage());
       }
    }
@@ -666,24 +668,24 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       String ME  = "AppletServlet";
 
       Properties props = System.getProperties();
-      LogChannel log = Global.instance().getLog("http");
+
 
       // Check for orb configuration
       if (conf.getInitParameter("org.omg.CORBA.ORBClass") != null) { // "org.jacorb.orb.ORB"
          props.put( "org.omg.CORBA.ORBClass", conf.getInitParameter("org.omg.CORBA.ORBClass"));
-         log.info(ME, "Using servlet system parameter org.omg.CORBA.ORBClass=" + props.get("org.omg.CORBA.ORBClass"));
+         log.info("Using servlet system parameter org.omg.CORBA.ORBClass=" + props.get("org.omg.CORBA.ORBClass"));
       }
 
       if (conf.getInitParameter("org.omg.CORBA.ORBSingletonClass") != null) { // "org.jacorb.orb.ORBSingleton");
          props.put( "org.omg.CORBA.ORBSingletonClass", conf.getInitParameter("org.omg.CORBA.ORBSingletonClass"));
-         log.info(ME, "Using servlet system parameter org.omg.CORBA.ORBSingletonClass=" + props.get("org.omg.CORBA.ORBSingletonClass"));
+         log.info("Using servlet system parameter org.omg.CORBA.ORBSingletonClass=" + props.get("org.omg.CORBA.ORBSingletonClass"));
       }
 
       // xmlBlaster uses Suns XML parser as default
       /*
       if (conf.getInitParameter("org.xml.sax.parser") != null) {
          props.put( "org.xml.sax.parser", conf.getInitParameter("org.xml.sax.parser"));
-         if (log.TRACE) log.trace(ME, "Found system parameter org.xml.sax.parser=" + conf.getInitParameter("org.xml.sax.parser"));
+         if (log.isLoggable(Level.FINE)) log.trace(ME, "Found system parameter org.xml.sax.parser=" + conf.getInitParameter("org.xml.sax.parser"));
       }
       else
          props.put("org.xml.sax.parser", "org.apache.crimson.parser.Parser2"); // xmlBlaster uses Suns XML parser as default
@@ -743,7 +745,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
    }
 
    /**
-    * Event fired by LogChannel.java through interface LogableDevice.
+    * Event fired by Logger.java through interface LogableDevice.
     * <p />
     * Log output from log.info(); etc. into Servlet log file.
     * <p />

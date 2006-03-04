@@ -2,7 +2,8 @@ package org.xmlBlaster.test.classtest;
 
 import java.util.Properties;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -33,7 +34,7 @@ import org.xmlBlaster.engine.runlevel.PluginConfigComparator;
 public class RunLevelTest extends TestCase {
    final static String ME = "RunLevelTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(RunLevelTest.class.getName());
    int counter = 0;
 
 
@@ -41,13 +42,13 @@ public class RunLevelTest extends TestCase {
       super(name);
       this.glob = Global.instance();
       this.glob.init(args);
-      this.log = this.glob.getLog("test");
+
    }
 
    public RunLevelTest(String name) {
       super(name);
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
    }
 
    protected void setUp() {
@@ -58,7 +59,7 @@ public class RunLevelTest extends TestCase {
 
    public void testAction() {
       String me = ME + "-testAction";
-      this.log.info(me, "start");
+      log.info("start");
 
       try {
          String xml = "<action do='LOAD'\n" +
@@ -80,7 +81,7 @@ public class RunLevelTest extends TestCase {
             assertEquals(me + " checking isOnStartupLevel", true, action.isOnStartupRunlevel());
             xml = action.toXml();
             action = factory.readObject(xml);
-            this.log.info(me, "going to test the second time ...");
+            log.info("going to test the second time ...");
          }
 
          // now test a null string
@@ -91,7 +92,7 @@ public class RunLevelTest extends TestCase {
             assertTrue(me + " a null string is not allowed here. Should have thrown an exception", true);
          }
          catch (XmlBlasterException ex) {
-            this.log.info(me, "the exception is allowed here since a null string is not allowed here." + ex.getMessage());
+            log.info("the exception is allowed here since a null string is not allowed here." + ex.getMessage());
          }
          try {
             xml = "";
@@ -99,7 +100,7 @@ public class RunLevelTest extends TestCase {
             assertTrue(me + " an empty string is not allowed here. Should have thrown an exception", true);
          }
          catch (XmlBlasterException ex) {
-            this.log.info(me, "the exception is allowed here since an empty string is not allowed here." + ex.getMessage());
+            log.info("the exception is allowed here since an empty string is not allowed here." + ex.getMessage());
          }
          try {
             xml = "xyz";
@@ -107,7 +108,7 @@ public class RunLevelTest extends TestCase {
             assertTrue(me + " a non-xml string is not allowed here. Should have thrown an exception", true);
          }
          catch (XmlBlasterException ex) {
-            this.log.info(me, "the exception is allowed here since a non-xml string is not allowed here." + ex.getMessage());
+            log.info("the exception is allowed here since a non-xml string is not allowed here." + ex.getMessage());
          }
          try {
             xml = "<xmlBlaster></xmlBlaster>";
@@ -115,7 +116,7 @@ public class RunLevelTest extends TestCase {
             assertTrue(me + " a wrong tag name is not allowed here. Should have thrown an exception", true);
          }
          catch (XmlBlasterException ex) {
-            this.log.info(me, "the exception is allowed here since  a wrong tag name is not allowed here." + ex.getMessage());
+            log.info("the exception is allowed here since  a wrong tag name is not allowed here." + ex.getMessage());
          }
 
          // this is allowed ...
@@ -126,13 +127,13 @@ public class RunLevelTest extends TestCase {
       catch (XmlBlasterException e) {
          fail(ME+ " failed: " + e.toString());
       }
-      this.log.info(ME, "successfully ended");
+      log.info("successfully ended");
    }
 
    public void testPluginConfig() {
       String me = ME + "-testPluginConfig";
       try {
-         this.log.info(me, "start");
+         log.info("start");
          PluginConfig config = new PluginConfig(this.glob, "queueJDBC", true, "org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin");
          config.addAttribute("url", "jdbc:oracle:thin:@localhost:1521:noty");
          config.addAttribute("user", "joe");
@@ -145,7 +146,7 @@ public class RunLevelTest extends TestCase {
          config.addAction(action);
      
          String xml = config.toXml();
-         this.log.info(me, xml);
+         log.info(xml);
      
          PluginConfigSaxFactory factory = new PluginConfigSaxFactory(this.glob);
          config = factory.readObject(xml);
@@ -155,7 +156,7 @@ public class RunLevelTest extends TestCase {
       catch (XmlBlasterException e) {
          fail(ME + " failed: " + e.toString());
       }
-      this.log.info(me, "successfully ended");
+      log.info("successfully ended");
    }
 
    private MsgQosData getQosData(String attrVal) throws XmlBlasterException {
@@ -178,7 +179,7 @@ public class RunLevelTest extends TestCase {
 
    public void testPluginConfigParser() {
       String me = ME + "-testPluginConfigParser";
-      this.log.info(ME, "start");
+      log.info("start");
       String xml = "<![CDATA[<qos><expiration lifeTime='4000'/></qos>]]>";
       try {
          MsgQosData data = getQosData(xml);
@@ -223,7 +224,7 @@ public class RunLevelTest extends TestCase {
    public void testPluginHolder() {
       String me = ME + "-testPluginHolder";
       try {
-         this.log.info(me, "start");
+         log.info("start");
 
          PluginHolder holder = new PluginHolder(this.glob);
          
@@ -234,11 +235,11 @@ public class RunLevelTest extends TestCase {
 
          tmp = holder.getPluginConfig("avalon", "queueRAM");
          if (tmp == null) assertTrue(me + " getting 'avalon queueRAM'", false);
-         this.log.info(me, tmp.toXml());
+         log.info(tmp.toXml());
 
          tmp = holder.getPluginConfig("avalon", "queueJDBC");
          if (tmp == null) assertTrue(me + " getting 'avalon queueJDBC'", false);
-         this.log.info(me, tmp.toXml());
+         log.info(tmp.toXml());
 
          PluginConfig[] help = holder.getAllPluginConfig("avalon");
          assertEquals(me + " get all plugins for avalon", 2, help.length);
@@ -329,7 +330,7 @@ public class RunLevelTest extends TestCase {
          PluginHolderSaxFactory factory = new PluginHolderSaxFactory(this.glob);
          PluginHolder pluginHolder = null;
          for (int i=0; i < 2; i++) {
-            this.log.info(me, "looping through the loop. sweep '" + i + "'");
+            log.info("looping through the loop. sweep '" + i + "'");
             pluginHolder = factory.readObject(xml);
             PluginConfig[] plugins = pluginHolder.getAllPluginConfig("avalon");
             assertEquals(me + " number of plugins for 'avalon' in plugin holder", 6, plugins.length);
@@ -356,19 +357,19 @@ public class RunLevelTest extends TestCase {
             pluginConfig = pluginHolder.getPluginConfig("heron","queueJDBC");
 
             xml = pluginHolder.toXml();
-            this.log.info(ME, xml);
+            log.info(xml);
          }
       }
       catch (XmlBlasterException e) {
          fail(me + " failed: " + e.toString());
       }
-      this.log.info(me, "successfully ended");
+      log.info("successfully ended");
    }
 
 
    public void testPluginConfigComparator() {
       String me = ME + "-testPluginConfigConparator";
-      this.log.info(me, "start");
+      log.info("start");
 
       PluginConfigComparator upComparator = new PluginConfigComparator(this.glob, true);
       PluginConfigComparator downComparator = new PluginConfigComparator(this.glob, false);
@@ -416,31 +417,31 @@ public class RunLevelTest extends TestCase {
          assertTrue(me + " number of actions", true);
       }
       catch (ClassCastException ex) {
-         this.log.info(me, "exception is OK and expected in this context");
+         log.info("exception is OK and expected in this context");
       }
       try {
          cmp = upComparator.compare(config3, (PluginConfig)null);
          assertTrue(me + " number of actions", true);
       }
       catch (ClassCastException ex) {
-         this.log.info(me, "exception is OK and expected in this context");
+         log.info("exception is OK and expected in this context");
       }
       try {
          cmp = upComparator.compare((PluginConfig)null, config4);
          assertTrue(me + " number of actions", true);
       }
       catch (ClassCastException ex) {
-         this.log.info(me, "exception is OK and expected in this context");
+         log.info("exception is OK and expected in this context");
       }
       try {
          cmp = downComparator.compare((PluginConfig)null, config4);
          assertTrue(me + " number of actions", true);
       }
       catch (ClassCastException ex) {
-         this.log.info(me, "exception is OK and expected in this context");
+         log.info("exception is OK and expected in this context");
       }
 
-      this.log.info(me, "successfully ended");
+      log.info("successfully ended");
    }
 
 

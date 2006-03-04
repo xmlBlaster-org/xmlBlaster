@@ -167,7 +167,7 @@ public class LowMemoryDetector {
             for (int i=0; i<numTries; i++) {
                // Memory is low! maxJvmMemory=8.323 MBytes, max for heap=7.340 MBytes, otherMem=983040, threshold reached=6.606 MBytes,
                // Runtime.totalMemory=8323072, Runtime.freeMemory=1461904, usedMem=6.861 MBytes
-               if (Global.instance().getLog("jmx").TRACE)
+               if (Global.instance().getLog("jmx").isLoggable(Level.FINE))
                   Global.instance().getLog("jmx").trace("DefaultLowMemoryListener: Memory is low",
                   "Memory is low! maxJvmMemory=" + Global.byteString(LowMemoryDetector.maxJvmMemory()) +
                   ", max for heap=" + Global.byteString(pool.getUsage().getMax()) +
@@ -182,7 +182,7 @@ public class LowMemoryDetector {
 
                long usedMem = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
                if (usedMem < pool.getUsageThreshold()) {
-                  if (Global.instance().getLog("jmx").TRACE)
+                  if (Global.instance().getLog("jmx").isLoggable(Level.FINE))
                      Global.instance().getLog("jmx").trace("DefaultLowMemoryListener", "Low memory: Nothing to do, the garbage collector has handled it usedMem=" + Global.byteString(usedMem) + " threshold=" + Global.byteString(pool.getUsageThreshold()));
                   return;  // Nothing to do, the garbage collector has handled it
                }

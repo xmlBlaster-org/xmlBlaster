@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
@@ -43,7 +44,7 @@ public class SubscribeMessage implements I_Callback
 {
    private static final String ME = "SubscribeMessage";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(SubscribeMessage.class.getName());
    private I_XmlBlasterAccess xmlBlasterConnection;
    private String subscriptionHandle;
 
@@ -57,14 +58,14 @@ public class SubscribeMessage implements I_Callback
    public SubscribeMessage(Global glob) throws JUtilsException
    {
       this.glob = glob;
-      this.log = glob.getLog("client");
+
 
       String oidString = glob.getProperty().get("oid", (String)null);
       String xpathString = glob.getProperty().get("xpath", (String)null);
 
       if (oidString == null && xpathString == null) {
          usage();
-         log.error(ME, "Specify the message oid or a xpath query");
+         log.severe("Specify the message oid or a xpath query");
          System.exit(1);
       }
 
@@ -83,7 +84,7 @@ public class SubscribeMessage implements I_Callback
       subscriptionHandle = subscribe(xmlKey, queryType);
 
       try { Thread.currentThread().sleep(10000000L); } catch (Exception e) { }
-      log.warn(ME, "Bye, time is over.");
+      log.warning("Bye, time is over.");
    }
 
 
@@ -93,7 +94,7 @@ public class SubscribeMessage implements I_Callback
    public SubscribeMessage(Global glob, String xmlKey, String queryType)
    {
       this.glob = glob;
-      this.log = glob.getLog("client");
+
       setUp();  // login
       subscriptionHandle = subscribe(xmlKey, queryType);
    }
@@ -112,7 +113,7 @@ public class SubscribeMessage implements I_Callback
          xmlBlasterConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -135,10 +136,10 @@ public class SubscribeMessage implements I_Callback
          SubscribeQos xmlQos = new SubscribeQos(glob);
          SubscribeReturnQos ret = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
          String subscriptionId = ret.getSubscriptionId();
-         log.info(ME, "Subscribed to [" + xmlKey + "] " + queryType + ", subscriptionId=" + subscriptionId);
+         log.info("Subscribed to [" + xmlKey + "] " + queryType + ", subscriptionId=" + subscriptionId);
          return subscriptionId;
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException:\n" + e.getMessage());
+         log.severe("XmlBlasterException:\n" + e.getMessage());
          System.exit(1);
       }
       return null;
@@ -156,9 +157,9 @@ public class SubscribeMessage implements I_Callback
          SubscribeKey xmlKey = new SubscribeKey(glob, subscriptionId);
          SubscribeQos xmlQos = new SubscribeQos(glob);
          xmlBlasterConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
-         if (log.TRACE) log.trace(ME, "Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
+         if (log.isLoggable(Level.FINE)) log.fine("Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.getMessage());
+         log.warning("unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.getMessage());
       }
    }
 
@@ -167,7 +168,7 @@ public class SubscribeMessage implements I_Callback
    {
       System.out.println("");
       System.out.println("============= START " + updateKey.getOid() + " =======================");
-      log.info(ME, "Receiving update of a message ...");
+      log.info("Receiving update of a message ...");
       System.out.println("<xmlBlaster>");
       System.out.println(updateKey.toXml());
       System.out.println("");

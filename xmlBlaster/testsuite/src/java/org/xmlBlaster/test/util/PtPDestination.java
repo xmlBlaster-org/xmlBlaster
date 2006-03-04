@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.test.util;
 
+import java.util.logging.Logger;
+
 import junit.framework.TestCase;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -27,11 +29,12 @@ public class PtPDestination {
    private Global global;
    private MsgInterceptor updateInterceptor;
    private SessionName sessionName;
-      
+   Logger log = Logger.getLogger(PtPDestination.class.getName());
+   
    public PtPDestination(Global parentGlobal, String sessionName) {
       this.global = parentGlobal.getClone(null);
       this.sessionName = new SessionName(this.global, sessionName);
-      this.updateInterceptor = new MsgInterceptor(this.global, this.global.getLog("test"), null);
+      this.updateInterceptor = new MsgInterceptor(this.global, log, null);
    }
       
    public void init(boolean wantsPtP, boolean shutdownCb, long cbMaxEntries, long cbMaxEntriesCache, long subjMaxEntries, long subjMaxEntriesCache) throws XmlBlasterException {

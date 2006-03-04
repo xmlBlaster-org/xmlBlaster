@@ -1,5 +1,6 @@
 // xmlBlaster/demo/HelloWorld6.java
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
@@ -41,13 +42,13 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 public class HelloWorld6
 {
    private final String ME = "HelloWorld6";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorld6.class.getName());
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
 
    public HelloWorld6(final Global glob) {
 
-      log = glob.getLog(null);
+
 
       try {
          con = glob.getXmlBlasterAccess();
@@ -101,14 +102,14 @@ public class HelloWorld6
 
                public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                   conRetQos = connection.getConnectReturnQos();
-                  log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
+                  log.info("I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
                   // we can access the queue via connectionHandler and for example erase the entries ...
                }
                public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
+                  log.warning("I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
                }
                public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  log.warn(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is DEAD -> Good bye");
+                  log.warning("I_ConnectionStateListener: Connection to " + glob.getId() + " is DEAD -> Good bye");
                   System.exit(1);
                }
             });
@@ -117,21 +118,21 @@ public class HelloWorld6
          this.conRetQos = con.connect(connectQos, new I_Callback() {
 
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               if (log.DUMP) log.dump(ME, "UpdateKey.toString()=" + updateKey.toString());
+               if (log.isLoggable(Level.FINEST)) log.finest("UpdateKey.toString()=" + updateKey.toString());
                if (updateKey.isInternal()) {
-                  log.error(ME, "Receiving unexpected asynchronous internal message '" + updateKey.getOid() +
+                  log.severe("Receiving unexpected asynchronous internal message '" + updateKey.getOid() +
                                 "' in default handler");
                   return "";
                }
                if (updateQos.isErased()) {
-                  log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
+                  log.info("Message '" + updateKey.getOid() + "' is erased");
                   return "";
                }
                if (updateKey.getOid().equals("Banking"))
-                  log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
+                  log.info("Receiving asynchronous message '" + updateKey.getOid() +
                                "' state=" + updateQos.getState() + " in default handler");
                else
-                  log.error(ME, "Receiving unexpected asynchronous message '" + updateKey.getOid() +
+                  log.severe("Receiving unexpected asynchronous message '" + updateKey.getOid() +
                                    "' in default handler");
                return "";
             }
@@ -140,9 +141,9 @@ public class HelloWorld6
 
 
          if (con.isAlive())
-            log.info(ME, "Connected as " + connectQos.getUserId() + " to xmlBlaster: " + this.conRetQos.getSessionName());
+            log.info("Connected as " + connectQos.getUserId() + " to xmlBlaster: " + this.conRetQos.getSessionName());
          else
-            log.info(ME, "Not connected to xmlBlaster, proceeding in fail save mode ...");
+            log.info("Not connected to xmlBlaster, proceeding in fail save mode ...");
 
 
          SubscribeKey sk = new SubscribeKey(glob, "Banking");
@@ -155,10 +156,10 @@ public class HelloWorld6
          SubscribeReturnQos sr2 = con.subscribe(sk, sq, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (updateKey.getOid().equals("HelloWorld6"))
-                  log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
+                  log.info("Receiving asynchronous message '" + updateKey.getOid() +
                            "' state=" + updateQos.getState() + " in HelloWorld6 handler");
                else
-                  log.error(ME, "Receiving unexpected asynchronous message '" + updateKey.getOid() +
+                  log.severe("Receiving unexpected asynchronous message '" + updateKey.getOid() +
                             "' with state '" + updateQos.getState() + "' in HelloWorld6 handler");
                return "";
             }
@@ -169,7 +170,7 @@ public class HelloWorld6
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi".getBytes(), pq);
          PublishReturnQos retQos = con.publish(msgUnit);
-         log.info(ME, "Published message '" + pk.getOid() + "'");
+         log.info("Published message '" + pk.getOid() + "'");
 
 
          pk = new PublishKey(glob, "Banking", "text/plain", "1.0");
@@ -177,10 +178,10 @@ public class HelloWorld6
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
          retQos = con.publish(msgUnit);
-         log.info(ME, "Published message '" + pk.getOid() + "'");
+         log.info("Published message '" + pk.getOid() + "'");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Houston, we have a problem: " + e.toString());
+         log.severe("Houston, we have a problem: " + e.toString());
       }
       finally {
          // Wait a second for messages to arrive before we logout
@@ -201,7 +202,7 @@ public class HelloWorld6
                try { Thread.sleep(1000); } catch( InterruptedException i) {}
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "Houston, we have a problem: " + e.toString());
+               log.severe("Houston, we have a problem: " + e.toString());
                e.printStackTrace();
             }
 

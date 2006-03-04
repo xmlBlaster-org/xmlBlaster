@@ -4,7 +4,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
 
 /**
  * @author  $Author$ ($Name:  $)
@@ -12,9 +12,8 @@ import org.jutils.log.LogChannel;
  */
 
 public class Subject implements I_Subject {
-   private String ME="SimpleSecuritySubject";
+   private static Logger log = Logger.getLogger(Subject.class.getName());
    private String name = null;
-   private final Global glob;
 
 
    public Subject(Global glob) {
@@ -22,7 +21,6 @@ public class Subject implements I_Subject {
    }
 
    public Subject(Global glob, String userId) {
-      this.glob = glob;
       this.name = userId;
    }
 
@@ -54,7 +52,7 @@ public class Subject implements I_Subject {
    void authenticate(String passwd) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".authenticationFailed", "Wrong identity!");
       // dummy implementation
-      this.glob.getLog("simple").info(ME, "Access for " + getName() + " granted, without further checks.");
+      log.info("Access for " + getName() + " granted, without further checks.");
    }
 
 }

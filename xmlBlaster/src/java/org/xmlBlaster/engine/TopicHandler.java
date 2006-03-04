@@ -13,7 +13,8 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -84,7 +85,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 {
    private String ME = "TopicHandler";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TopicHandler.class.getName());
    private final ContextNode contextNode;
 
    private boolean dyingInProgress = false;
@@ -193,7 +194,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters");
 
       this.uniqueKey = uniqueKey;
-      this.log = this.glob.getLog("core");
+
       this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + this.uniqueKey;
       this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + this.uniqueKey;
 
@@ -208,7 +209,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       toUnconfigured();
       TopicHandler t = this.requestBroker.addTopicHandler(this);
       if (t != null) {
-         log.error(ME, "Unexpected duplicated of TopicHandler in RequestBroker");
+         log.severe("Unexpected duplicated of TopicHandler in RequestBroker");
          Thread.dumpStack();
       }
       
@@ -216,10 +217,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       if (publisherSessionInfo == null) {
-         if (log.CALL) log.trace(ME, "Creating new TopicHandler because of subscription.");
+         if (log.isLoggable(Level.FINER)) log.fine("Creating new TopicHandler because of subscription.");
       }
       else {
-         if (log.CALL) log.trace(ME, "Creating new TopicHandler because of publish.");
+         if (log.isLoggable(Level.FINER)) log.fine("Creating new TopicHandler because of publish.");
       }
       // mimeType and content remains unknown until first data is fed
    }
@@ -245,21 +246,21 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    private synchronized void administrativeInitialize(MsgKeyData msgKeyData, MsgQosData publishQos,
                              PublishQosServer publishQosServer) throws XmlBlasterException {
       if (!isUnconfigured() && !isSoftErased()) {
-         log.error(ME, "Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the request");
+         log.severe("Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the request");
          return;
       }
 
       if (publishQosServer.getTopicEntry() != null) {
          this.topicEntry = publishQosServer.getTopicEntry(); // Call from persistent layer, reuse the TopicEntry
-         if (log.TRACE) log.trace(ME, "Reuse TopicEntry persistence handle");
-         if (log.DUMP) log.dump(ME, "Reuse TopicEntry persistence handle: " + this.topicEntry.toXml());
+         if (log.isLoggable(Level.FINE)) log.fine("Reuse TopicEntry persistence handle");
+         if (log.isLoggable(Level.FINEST)) log.finest("Reuse TopicEntry persistence handle: " + this.topicEntry.toXml());
       }
 
       if (this.msgKeyData == null) {
          this.msgKeyData = msgKeyData;
       }
 
-      if (log.DUMP) log.dump(ME, "administrativeInitialize()" + publishQos.toXml());
+      if (log.isLoggable(Level.FINEST)) log.finest("administrativeInitialize()" + publishQos.toXml());
 
       this.creatorSessionName = publishQos.getSender();
       this.topicProperty = publishQos.getTopicProperty();
@@ -283,7 +284,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          String hist = (maxEntriesHistory > 0) ? "history/maxEntries="+maxEntriesHistory : "message history is switched off with queue/history/maxEntries=0";
          long maxEntriesStore = this.topicProperty.getMsgUnitStoreProperty().getMaxEntries();
          String store = (maxEntriesStore > 0) ? "persistence/msgUnitStore/maxEntries="+maxEntriesStore : "message storage is switched off with persistence/msgUnitStore/maxEntries=0";
-         log.info(ME, "New topic is ready, " + hist + ", " + store);
+         log.info("New topic is ready, " + hist + ", " + store);
       }
    }
 
@@ -303,7 +304,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             }
          }
          else {
-            log.info(ME, "Reconfiguring message store.");
+            log.info("Reconfiguring message store.");
             this.msgUnitCache.setProperties(msgUnitStoreProperty);
          }
       }
@@ -342,16 +343,16 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
             }
             else {
-               if (log.TRACE) log.trace(ME, queueName + " queuing of this topic is switched off with maxEntries=0");
+               if (log.isLoggable(Level.FINE)) log.fine(queueName + " queuing of this topic is switched off with maxEntries=0");
             }
          }
          else {
             if (prop.getMaxEntries() > 0L) {
-               log.info(ME, "Reconfiguring " + queueName + " queue.");
+               log.info("Reconfiguring " + queueName + " queue.");
                queue.setProperties(prop);
             }
             else {
-               log.warn(ME, "Destroying " + queueName + " queue with " + queue.getNumOfEntries() +
+               log.warning("Destroying " + queueName + " queue with " + queue.getNumOfEntries() +
                             " entries because of new configuration with maxEntries=0");
                queue.clear();
                queue.shutdown();
@@ -377,7 +378,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    public void finalize() {
-      if (log.TRACE) log.trace(ME, "finalize - garbage collect " + getId());
+      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collect " + getId());
    }
 
    public RequestBroker getRequestBroker() {
@@ -430,9 +431,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          boolean isNew = false;
          synchronized (this) {
             if (this.topicEntry == null) {
-               if (log.TRACE) log.trace(ME, "Creating TopicEntry to make topic persistent");
+               if (log.isLoggable(Level.FINE)) log.fine("Creating TopicEntry to make topic persistent");
                if (this.topicProperty==null || this.msgKeyData==null) {
-                  log.error(ME, "Can't create useful TopicEntry in state=" + getStateStr() + " no QoS is available");
+                  log.severe("Can't create useful TopicEntry in state=" + getStateStr() + " no QoS is available");
                   return null;
                }
                MsgQosData msgQosData = new MsgQosData(glob, MethodName.PUBLISH);
@@ -444,7 +445,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                MsgUnit msgUnit = new MsgUnit(this.msgKeyData, null, msgQosData);
                this.topicEntry = new TopicEntry(glob, msgUnit);
                isNew = true;
-               if (log.TRACE) log.trace(ME, "Created persistent topicEntry '" + this.topicEntry.getUniqueId() + "'"); //: " + this.topicEntry.toXml());
+               if (log.isLoggable(Level.FINE)) log.fine("Created persistent topicEntry '" + this.topicEntry.getUniqueId() + "'"); //: " + this.topicEntry.toXml());
             }
          }
 
@@ -460,13 +461,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    private boolean persistTopic(TopicEntry entry) {
       try {
-         if (log.TRACE) log.trace(ME, "Making topicHandler persistent, topicEntry=" + topicEntry.getUniqueId());
+         if (log.isLoggable(Level.FINE)) log.fine("Making topicHandler persistent, topicEntry=" + topicEntry.getUniqueId());
          int numAdded = this.requestBroker.addPersistentTopicHandler(entry);
-         if (log.TRACE) log.trace(ME, "Persisted " + numAdded + " TopicHandler");
+         if (log.isLoggable(Level.FINE)) log.fine("Persisted " + numAdded + " TopicHandler");
          return numAdded>0;
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Persisting TopicHandler failed, we continue memory based: " + e.getMessage());
+         log.severe("Persisting TopicHandler failed, we continue memory based: " + e.getMessage());
       }
       return false;
    }
@@ -485,7 +486,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    public PublishReturnQos publish(SessionInfo publisherSessionInfo, MsgUnit msgUnit, PublishQosServer publishQosServer) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "publish() publisherSessionInfo '" + publisherSessionInfo.getId() + "', message '" + msgUnit.getLogId() + "' ...");
+      if (log.isLoggable(Level.FINE)) log.fine("publish() publisherSessionInfo '" + publisherSessionInfo.getId() + "', message '" + msgUnit.getLogId() + "' ...");
 
       PublishReturnQos publishReturnQos = null;
       MsgQosData msgQosData = null;
@@ -518,12 +519,12 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
                }
                if (msgQosData.isFromPersistenceStore()) {
-                  log.info(ME, "Topic is successfully recovered from persistency to state " + getStateStr() +
+                  log.info("Topic is successfully recovered from persistency to state " + getStateStr() +
                            //((requestBroker.getTopicStore()!=null) ? (" '" + requestBroker.getTopicStore().getStorageId() + "'") : "") +
                            " with " + getNumOfHistoryEntries() + " history entries (" + getNumOfCacheEntries() + " currently referenced msgUnits are loaded).");
                }
                else {
-                  log.info(ME, "Topic is successfully configured by administrative message.");
+                  log.info("Topic is successfully configured by administrative message.");
                }
                publishReturnQos.getData().setStateInfo("Administrative configuration request handled");
                return publishReturnQos;
@@ -565,7 +566,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
             if (!isInvisiblePtp) {  // readonly is only checked for Pub/Sub?
                if (this.topicProperty.isReadonly() && hasHistoryEntries()) {
-                  log.warn(ME+".Readonly", "Sorry, published message '" + msgKeyData.getOid() + "' rejected, message is readonly.");
+                  log.warning("Sorry, published message '" + msgKeyData.getOid() + "' rejected, message is readonly.");
                   throw new XmlBlasterException(glob, ErrorCode.USER_PUBLISH_READONLY, ME, "Sorry, published message '" + msgKeyData.getOid() + "' rejected, message is readonly.");
                }
             }
@@ -599,19 +600,19 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                      // TODO: Implement count>1 in takeLowest():
                      ArrayList entryList = this.historyQueue.takeLowest((int)count, -1L, null, false);
                      if (entryList.size() != count) {
-                        log.error(ME, "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
+                        log.severe("Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
                      }
                   }
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "History queue take() problem: " + e.getMessage());
+                  log.severe("History queue take() problem: " + e.getMessage());
                }
 
                try { // increments reference counter += 1
                   this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "History queue put() problem: " + e.getMessage());
+                  log.severe("History queue put() problem: " + e.getMessage());
                }
 
                try {
@@ -623,11 +624,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                               "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
                      }
                      MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-                     if (log.TRACE) { if (!entry.isInternal()) log.trace(ME, "Removed oldest entry in history queue."); }
+                     if (log.isLoggable(Level.FINE)) { if (!entry.isInternal()) log.fine("Removed oldest entry in history queue."); }
                   }
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "History queue take() problem: " + e.getMessage());
+                  log.severe("History queue take() problem: " + e.getMessage());
                }
             }
          } // synchronized
@@ -645,7 +646,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          }
 
          //----- 2b. now we can send updates to all subscribed clients:
-         if (log.TRACE) log.trace(ME, "Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
+         if (log.isLoggable(Level.FINE)) log.fine("Message " + msgUnit.getLogId() + " handled, now we can send updates to all interested clients.");
          if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
             invokeCallbackAndHandleFailure(publisherSessionInfo, msgUnitWrapper);
          }
@@ -714,7 +715,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       for (int ii = 0; ii < destinationArr.length; ii++) {
          Destination destination = destinationArr[ii];
 
-         if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destination.getDestination() + "]");
+         if (log.isLoggable(Level.FINE)) log.fine("Working on PtP message for destination [" + destination.getDestination() + "]");
 
          SessionName destinationSessionName = destination.getDestination();
          boolean destinationIsSession = destinationSessionName.isSession();
@@ -729,11 +730,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
             if (!forceQueing && destinationClient==null) {
                String tmp = "Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
-               log.warn(ME, tmp);
+               log.warning(tmp);
                throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
                    " Client is not logged in and <destination forceQueuing='true'> is not set");
             }
-            if (log.TRACE) log.trace(ME, "Queuing PtP message '" + cacheEntry.getLogId() + "' for subject destination [" + destination.getDestination() + "], forceQueing="+forceQueing);
+            if (log.isLoggable(Level.FINE)) log.fine("Queuing PtP message '" + cacheEntry.getLogId() + "' for subject destination [" + destination.getDestination() + "], forceQueing="+forceQueing);
 
             // We are responsible to call destinationClient.getLock().release()
             final boolean returnLocked = true;
@@ -760,7 +761,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                if (receiverSessionInfo.isAlive()) {
                   if (!receiverSessionInfo.getConnectQos().isPtpAllowed() &&
                       !Constants.EVENT_OID_ERASEDTOPIC.equals(cacheEntry.getKeyOid())) { // no spam, case 2
-                     if (log.TRACE) log.trace(ME, "Rejecting PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "], isPtpAllowed=false");
+                     if (log.isLoggable(Level.FINE)) log.fine("Rejecting PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "], isPtpAllowed=false");
                      throw new XmlBlasterException(glob, ErrorCode.USER_PTP_DENIED, ME,
                            receiverSessionInfo.getId() + " does not accept PtP messages '" + cacheEntry.getLogId() +
                            "' is rejected");
@@ -774,14 +775,14 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
             if (receiverSessionInfo == null && !forceQueing) {
                String tmp = "Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
-               log.warn(ME, tmp);
+               log.warning(tmp);
                throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
                      " Client is not logged in and <destination forceQueuing='true'> is not set");
             }
 
             // Row 1 in table 
             if (receiverSessionInfo == null) { // We create a faked session without password check
-               if (log.TRACE) log.trace(ME, "Working on PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "] which does not exist, forceQueuing=true, we create a dummy session");
+               if (log.isLoggable(Level.FINE)) log.fine("Working on PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "] which does not exist, forceQueuing=true, we create a dummy session");
                ConnectQos connectQos = new ConnectQos(glob);
                connectQos.setSessionName(destinationSessionName);
                connectQos.setUserId(destinationSessionName.getLoginName());
@@ -811,7 +812,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                }
             } 
 
-            if (log.TRACE) log.trace(ME, "Queuing PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "]");
+            if (log.isLoggable(Level.FINE)) log.fine("Queuing PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "]");
             MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob,
                      cacheEntry,
                      receiverSessionInfo.getSessionQueue().getStorageId(),
@@ -903,7 +904,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * Event triggered by MsgUnitWrapper itself when it reaches destroy state
     */
    public void entryDestroyed(MsgUnitWrapper msgUnitWrapper) {
-      if (log.CALL) log.call(ME, "Entering entryDestroyed(" + msgUnitWrapper.getLogId() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering entryDestroyed(" + msgUnitWrapper.getLogId() + ")");
 
       boolean underConstruction = false;
       synchronized(this.msgUnitWrapperUnderConstruction) {
@@ -933,7 +934,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             getMsgUnitCache().remove(msgUnitWrapper);
          }
          catch (XmlBlasterException e) {
-            log.warn(ME, "Internal problem in entryDestroyed removeRandom of msg store (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
+            log.warning("Internal problem in entryDestroyed removeRandom of msg store (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
                        e.getMessage()); // + ": " + toXml());
          }
       }
@@ -951,7 +952,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                }
             }
             catch (XmlBlasterException e) {
-               log.error(ME, "Internal problem with entryDestroyed: " + e.getMessage() + ": " + toXml());
+               log.severe("Internal problem with entryDestroyed: " + e.getMessage() + ": " + toXml());
             }
          }
       }
@@ -986,7 +987,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (this.subscriptionListener != null) 
          this.subscriptionListener.subscriptionAdd(new SubscriptionEvent(sub));
 
-      if (log.TRACE) log.trace(ME, "Client '" + sub.getSessionInfo().getId() + "' has successfully subscribed");
+      if (log.isLoggable(Level.FINE)) log.fine("Client '" + sub.getSessionInfo().getId() + "' has successfully subscribed");
 
       if (isUnconfigured()) {
          return;
@@ -1004,7 +1005,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          return;
       }
 
-      if (log.TRACE) log.trace(ME, "addSubscriber("+sub.getId()+")");
+      if (log.isLoggable(Level.FINE)) log.fine("addSubscriber("+sub.getId()+")");
       if (subscribeQosServer.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
          MsgUnitWrapper[] wrappers = null;
          if (hasHistoryEntries())
@@ -1042,7 +1043,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          Iterator iterator = removeSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            if (log.TRACE) log.trace(ME, "Removed subscriber '" + sub.getSessionInfo().getId() + "' as callback failed.");
+            if (log.isLoggable(Level.FINE)) log.fine("Removed subscriber '" + sub.getSessionInfo().getId() + "' as callback failed.");
             sub.removeSubscribe();
          }
          removeSet.clear();
@@ -1058,7 +1059,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
       // DON'T call from inside a synchronized(this)! (the notifySubscribersAboutErase() could dead lock)
 
-      if (log.TRACE) log.trace(ME, "Before size of subscriberMap = " + this.subscriberMap.size());
+      if (log.isLoggable(Level.FINE)) log.fine("Before size of subscriberMap = " + this.subscriberMap.size());
 
       SubscriptionInfo subs = null;
       synchronized(this.subscriberMap) {
@@ -1066,10 +1067,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
       if (subs == null && !isDead() && !isSoftErased()) {
          //Thread.currentThread().dumpStack();
-         log.warn(ME, ", can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
+         log.warning(", can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
       }
 
-      if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + this.subscriberMap.size());
+      if (log.isLoggable(Level.FINE)) log.fine("After size of subscriberMap = " + this.subscriberMap.size());
 
       if (isDead()) {
          if (this.subscriptionListener != null && subs != null) {
@@ -1077,7 +1078,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                this.subscriptionListener.subscriptionRemove(new SubscriptionEvent(subs));
             }
             catch (XmlBlasterException ex) {
-               this.log.error(ME, "removeSubscriber: an exception occured: " + ex.getMessage());
+               log.severe("removeSubscriber: an exception occured: " + ex.getMessage());
             }
          }
          return subs; // during cleanup process
@@ -1093,7 +1094,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   notifyList = toUnreferenced(false);
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, "Internal problem with removeSubscriber: " + e.getMessage() + ": " + toXml());
+                  log.severe("Internal problem with removeSubscriber: " + e.getMessage() + ": " + toXml());
                }
             }
          }
@@ -1103,7 +1104,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             this.subscriptionListener.subscriptionRemove(new SubscriptionEvent(subs));
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "removeSubscriber: an exception occured: " + ex.getMessage());
+            log.severe("removeSubscriber: an exception occured: " + ex.getMessage());
          }
       }
       if (notifyList != null) notifySubscribersAboutErase(notifyList); // must be outside the synchronize
@@ -1157,7 +1158,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
-      if (log.TRACE) log.trace(ME, "Going to update dependent clients for " + msgUnitWrapper.getKeyOid() + ", subscriberMap.size() = " + this.subscriberMap.size());
+      if (log.isLoggable(Level.FINE)) log.fine("Going to update dependent clients for " + msgUnitWrapper.getKeyOid() + ", subscriberMap.size() = " + this.subscriberMap.size());
 
       if (this.distributor != null &&  !msgUnitWrapper.isInternal()) { // if there is a plugin
          this.distributor.distribute(msgUnitWrapper);
@@ -1189,17 +1190,17 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    private boolean checkIfAllowedToSend(SessionInfo publisherSessionInfo, SubscriptionInfo sub) {
       if (!sub.getSessionInfo().hasCallback()) {
-         log.warn(ME, "A client which subscribes " + sub.toXml() + " should have a callback server: "
+         log.warning("A client which subscribes " + sub.toXml() + " should have a callback server: "
                        + sub.getSessionInfo().toXml(""));
          Thread.dumpStack();
          return false;
       }
       if (isUnconfigured()) {
-         log.warn(ME, "invokeCallback() not supported, this MsgUnit was created by a subscribe() and not a publish()");
+         log.warning("invokeCallback() not supported, this MsgUnit was created by a subscribe() and not a publish()");
          return false;
       }
       if (isUnreferenced()) {
-         log.error(ME, "PANIC: invoke callback is strange in state 'UNREFERENCED'");
+         log.severe("PANIC: invoke callback is strange in state 'UNREFERENCED'");
          Thread.dumpStack();
          return false;
       }
@@ -1245,7 +1246,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                          msgUnitWrapper.getLogId() + "' from sender '" + publisherName + "' to subscriber '" +
                          sub.getSessionInfo().getSessionName() + "' threw an exception, we don't deliver " +
                          "the message to the subscriber: " + e.toString();
-               if (log.TRACE) log.trace(ME, reason);
+               if (log.isLoggable(Level.FINE)) log.fine(reason);
                if (handleException) {
                   MsgQueueEntry[] entries = {
                        new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
@@ -1284,9 +1285,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       throws XmlBlasterException {
       MsgQosData msgQosData = msgUnitWrapper.getMsgQosData();
       if (sub.getSessionInfo().getSubjectInfo().isCluster()) {
-         if (log.DUMP) log.dump(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + msgUnitWrapper.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest("Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + msgUnitWrapper.toXml());
          if (msgQosData.dirtyRead(sub.getSessionInfo().getSubjectInfo().getNodeId())) {
-            if (log.TRACE) log.trace(ME, "Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + sub.getSubscriptionId() + "', '" + sub.getKeyData().getOid() + "' we don't need to send it back");
+            if (log.isLoggable(Level.FINE)) log.fine("Slave node '" + sub.getSessionInfo() + "' has dirty read message '" + sub.getSubscriptionId() + "', '" + sub.getKeyData().getOid() + "' we don't need to send it back");
             return true;
          }
       }
@@ -1315,7 +1316,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (!checkIfAllowedToSend(publisherSessionInfo, sub)) return -1;
 
       if (msgUnitWrapper == null) {
-         log.error(ME, "invokeCallback() MsgUnitWrapper is null: " +
+         log.severe("invokeCallback() MsgUnitWrapper is null: " +
                        ((publisherSessionInfo != null) ? publisherSessionInfo.toXml() + "\n" : "") +
                        ((sub != null) ? sub.toXml() + "\n" : "") +
                        ((this.historyQueue != null) ? this.historyQueue.toXml("") : ""));
@@ -1334,7 +1335,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             return 0;
          }
 
-         if (log.CALL) log.call(ME, "pushing update() message '" + sub.getKeyData().getOid() + "' " + msgUnitWrapper.getStateStr() +
+         if (log.isLoggable(Level.FINER)) log.finer("pushing update() message '" + sub.getKeyData().getOid() + "' " + msgUnitWrapper.getStateStr() +
                        "' into '" + sub.getSessionInfo().getId() + "' callback queue");
 
          MsgQueueUpdateEntry entry = createEntryFromWrapper(msgUnitWrapper, sub);
@@ -1349,7 +1350,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          SessionName publisherName = (publisherSessionInfo != null) ? publisherSessionInfo.getSessionName() :
                                      msgUnitWrapper.getMsgQosData().getSender();
          if ( doErrorHandling ) {
-            if (log.TRACE) log.trace(ME, "Sending of message from " + publisherName + " to " +
+            if (log.isLoggable(Level.FINE)) log.fine("Sending of message from " + publisherName + " to " +
                                sub.getSessionInfo().getId() + " failed: " + e.toString());
             try {
                MsgQueueEntry[] entries = {
@@ -1362,7 +1363,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                requestBroker.deadMessage(entries, null, reason);
             }
             catch (XmlBlasterException e2) {
-               log.error(ME, "PANIC: Sending of message '" + msgUnitWrapper.getLogId() + "' from " + publisherName + " to " +
+               log.severe("PANIC: Sending of message '" + msgUnitWrapper.getLogId() + "' from " + publisherName + " to " +
                                sub.getSessionInfo().getId() + " failed, message is lost: " + e2.getMessage() + " original exception is: " + e.toString());
             }
             return 1; // Don't remove subscriber for queue overflow exception
@@ -1449,7 +1450,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             glob.getRequestBroker().fireUnSubscribeEvent(subscriptionInfoArr[i]);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "Problems in clearSubscriber: " + e.getMessage());
+            log.severe("Problems in clearSubscriber: " + e.getMessage());
          }
       }
       synchronized(this.subscriberMap) {
@@ -1474,7 +1475,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       long num = this.historyQueue.getNumOfEntries();
       if (num > 0L && !this.dyingInProgress && !isAlive() && !isUnconfigured()) { // assert
          // isUnconfigured is possible on administrative startup with persistent messages
-         log.error(ME, "Internal problem: we have messages but are not alive: " + toXml());
+         log.severe("Internal problem: we have messages but are not alive: " + toXml());
          Thread.dumpStack();
       }
       return num;
@@ -1508,7 +1509,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (this.historyQueue == null)
          return new MsgUnitWrapper[0];
       ArrayList historyList = this.historyQueue.peek(num, -1);
-      if (log.TRACE) log.trace(ME, "getMsgUnitWrapperArr("+num+","+newestFirst+"), found " + historyList.size() + " historyList entries");
+      if (log.isLoggable(Level.FINE)) log.fine("getMsgUnitWrapperArr("+num+","+newestFirst+"), found " + historyList.size() + " historyList entries");
       ArrayList aliveMsgUnitWrapperList = new ArrayList();
       ArrayList historyDestroyList = null;
       int n = historyList.size();
@@ -1527,10 +1528,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             }
             else {
                if (entry.isExpired()) {
-                  if (log.TRACE) log.trace(ME, "getMsgUnitWrapperArr(): MsgUnitWrapper weak reference from history queue is null, it is expired: " + entry.toXml());
+                  if (log.isLoggable(Level.FINE)) log.fine("getMsgUnitWrapperArr(): MsgUnitWrapper weak reference from history queue is null, it is expired: " + entry.toXml());
                }
                else {
-                  log.error(ME, "getMsgUnitWrapperArr(): MsgUnitWrapper weak reference from history queue is null, this could be a serious bug, please report it to xmlBlaster@xmlBlaster.org mailing list: " +
+                  log.severe("getMsgUnitWrapperArr(): MsgUnitWrapper weak reference from history queue is null, this could be a serious bug, please report it to xmlBlaster@xmlBlaster.org mailing list: " +
                      entry.toXml() + "\n" + // toXml() not possible as it call recursive getMsgUnitWrapperArr());
                      ((this.msgUnitCache != null) ? this.msgUnitCache.toXml("") + "\n" : "") +
                      ((this.historyQueue != null) ? this.historyQueue.toXml("") : "")
@@ -1583,7 +1584,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    public long eraseFromHistoryQueue(SessionInfo sessionInfo, HistoryQos historyQos) throws XmlBlasterException {
       //if (hasHistoryEntries()) {
-         if (log.TRACE) log.trace(ME, "Erase request for " + historyQos.toXml() +
+         if (log.isLoggable(Level.FINE)) log.fine("Erase request for " + historyQos.toXml() +
              " history entries, we currently contain " + this.historyQueue.getNumOfEntries() + " entries.");
          if (historyQos.getNumEntries() == -1) {
             return this.historyQueue.clear();
@@ -1644,7 +1645,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    private void toUnconfigured() {
-      if (log.CALL) log.call(ME, "Entering toUnconfigured(oldState="+getStateStr()+")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering toUnconfigured(oldState="+getStateStr()+")");
       synchronized (this) {
          if (isUnconfigured()) {
             return;
@@ -1658,7 +1659,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    private void toAlive() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering toAlive(oldState="+getStateStr()+")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering toAlive(oldState="+getStateStr()+")");
       synchronized (this) {
          if (isAlive()) {
             return;
@@ -1694,21 +1695,21 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             int num = this.requestBroker.removePersistentTopicHandler(this.topicEntry);
             this.topicEntry = null;
             if (num == 0) {
-               log.warn(ME, "" + num + " TopicHandler removed from persistency");
+               log.warning("" + num + " TopicHandler removed from persistency");
             }
             else {
-               if (log.TRACE) log.trace(ME, "" + num + " TopicHandler removed from persistency");
+               if (log.isLoggable(Level.FINE)) log.fine("" + num + " TopicHandler removed from persistency");
             }
             return;
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Persisting TopicHandler failed, we continue memory based: " + e.getMessage());
+         log.severe("Persisting TopicHandler failed, we continue memory based: " + e.getMessage());
       }
    }
 
    private ArrayList toUnreferenced(boolean onAdministrativeCreate) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering toUnreferenced(oldState="+getStateStr()+", onAdministrativeCreate="+onAdministrativeCreate+")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering toUnreferenced(oldState="+getStateStr()+", onAdministrativeCreate="+onAdministrativeCreate+")");
       ArrayList notifyList = null;
       synchronized (this) {
          if (isUnreferenced() || isDead()) {
@@ -1717,11 +1718,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          int oldState = this.state;
 
          if (hasHistoryEntries()) {
-            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + getNumOfHistoryEntries() + " history entries");
+            if (log.isLoggable(Level.FINE)) log.fine(getStateStr() + "->" + "UNREFERENCED: Clearing " + getNumOfHistoryEntries() + " history entries");
             this.historyQueue.clear();
          }
          if (hasCacheEntries()) {
-            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "UNREFERENCED: Clearing " + this.msgUnitCache.getNumOfEntries() + " msgUnitStore cache entries");
+            if (log.isLoggable(Level.FINE)) log.fine(getStateStr() + "->" + "UNREFERENCED: Clearing " + this.msgUnitCache.getNumOfEntries() + " msgUnitStore cache entries");
             this.msgUnitCache.clear();  // Who removes the MsgUnitWrapper entries from their Timer?!!!! TODO
          }
 
@@ -1764,19 +1765,19 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @param eraseQosServer TODO
     */
    private ArrayList toSoftErased(SessionInfo sessionInfo, QueryKeyData eraseKey, EraseQosServer eraseQos) {
-      if (log.CALL) log.call(ME, "Entering toSoftErased(oldState="+getStateStr()+")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering toSoftErased(oldState="+getStateStr()+")");
       ArrayList notifyList = null;
       synchronized (this) {
          if (isSoftErased()) {
             return null;
          }
          if (hasHistoryEntries()) {
-            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + getNumOfHistoryEntries() + " history entries");
+            if (log.isLoggable(Level.FINE)) log.fine(getStateStr() + "->" + "SOFTERASED: Clearing " + getNumOfHistoryEntries() + " history entries");
             this.historyQueue.clear();
          }
 
          if (hasSubscribers()) {
-            if (log.TRACE) log.trace(ME, getStateStr() + "->" + "SOFTERASED: Clearing " + numSubscribers() + " subscriber entries");
+            if (log.isLoggable(Level.FINE)) log.fine(getStateStr() + "->" + "SOFTERASED: Clearing " + numSubscribers() + " subscriber entries");
             notifyList = collectNotifySubscribersAboutErase(sessionInfo.getSessionName(), eraseKey, eraseQos);
             clearSubscribers();
          }
@@ -1794,7 +1795,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    private ArrayList toDead(SessionName sessionName, QueryKeyData eraseKey, EraseQosServer eraseQos) {
       
-      if (log.CALL) log.call(ME, "Entering toDead(oldState="+getStateStr()+")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering toDead(oldState="+getStateStr()+")");
       long numHistory = 0L;
       ArrayList notifyList = null;
 
@@ -1814,10 +1815,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             else {
                if (!isUnconfigured()) {
                   if (isSoftErased()) {
-                     log.trace(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
+                     log.fine("In " + getStateStr() + " -> DEAD: this.topicEntry == null");
                   }
                   else {
-                     log.error(ME, "In " + getStateStr() + " -> DEAD: this.topicEntry == null");
+                     log.severe("In " + getStateStr() + " -> DEAD: this.topicEntry == null");
                      Thread.dumpStack();
                   }
                   return null;
@@ -1826,7 +1827,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
             if (isAlive()) {
                if (numSubscribers() > 0 || hasCacheEntries() || hasHistoryEntries())
-                  log.info(ME, "Forced state transition ALIVE -> DEAD with " + numSubscribers() + " subscribers, " +
+                  log.info("Forced state transition ALIVE -> DEAD with " + numSubscribers() + " subscribers, " +
                             getNumOfCacheEntries() + " cache messages and " +
                             getNumOfHistoryEntries() + " history messages.");
             }
@@ -1838,10 +1839,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             if (hasHistoryEntries()) {
                try {
                   numHistory = this.historyQueue.clear();
-                  if (log.TRACE) log.trace(ME, getStateStr() + "->" + "DEAD: Cleared " + numHistory + " history entries");
+                  if (log.isLoggable(Level.FINE)) log.fine(getStateStr() + "->" + "DEAD: Cleared " + numHistory + " history entries");
                }
                catch (Throwable e) {
-                  log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the history queue: " + e.getMessage());
+                  log.severe(getStateStr() + "->" + "DEAD: Ignoring problems during clearing the history queue: " + e.getMessage());
                }
             }
             if (this.historyQueue != null) {
@@ -1851,10 +1852,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             if (hasCacheEntries()) {
                try {
                   long num = this.msgUnitCache.clear();
-                  if (log.TRACE) log.trace(ME, getStateStr() + "->" + "DEAD: Cleared " + num + " message storage entries");
+                  if (log.isLoggable(Level.FINE)) log.fine(getStateStr() + "->" + "DEAD: Cleared " + num + " message storage entries");
                }
                catch (XmlBlasterException e) {
-                  log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the message store: " + e.getMessage());
+                  log.severe(getStateStr() + "->" + "DEAD: Ignoring problems during clearing the message store: " + e.getMessage());
                }
             }
             if (this.msgUnitCache != null) {
@@ -1866,7 +1867,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             }
          }
          catch (Throwable e) {
-            log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the message store: " + e.getMessage());
+            log.severe(getStateStr() + "->" + "DEAD: Ignoring problems during clearing the message store: " + e.getMessage());
          }
          finally {
             this.state = DEAD;
@@ -1878,28 +1879,28 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             removeFromBigSubscriptionSet();
          }
          catch (Throwable e) {
-            log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the subscriptions: " + e.getMessage());
+            log.severe(getStateStr() + "->" + "DEAD: Ignoring problems during clearing the subscriptions: " + e.getMessage());
          }
          
          try {
             removeFromBigDom();
          }
          catch (Throwable e) {
-            log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the big DOM: " + e.getMessage());
+            log.severe(getStateStr() + "->" + "DEAD: Ignoring problems during clearing the big DOM: " + e.getMessage());
          }
          
          try {
             clearSubscribers(); // see notifySubscribersAboutErase() above
          }
          catch (Throwable e) {
-            log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the subscribers: " + e.getMessage());
+            log.severe(getStateStr() + "->" + "DEAD: Ignoring problems during clearing the subscribers: " + e.getMessage());
          }
 
          try {
             removeFromBigMessageMap();
          }
          catch (Throwable e) {
-            log.error(ME, getStateStr() + "->" + "DEAD: Ignoring problems during clearing the big message map: " + e.getMessage());
+            log.severe(getStateStr() + "->" + "DEAD: Ignoring problems during clearing the big message map: " + e.getMessage());
          }
 
          if (this.timerKey != null) {
@@ -1909,7 +1910,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
          this.handlerIsNewCreated = true;
       } // sync
-      log.info(ME, "Topic reached state " + getStateStr() + ". " + numHistory + " history entries are destroyed.");
+      log.info("Topic reached state " + getStateStr() + ". " + numHistory + " history entries are destroyed.");
       return notifyList;
    }
 
@@ -1942,7 +1943,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          isRegisteredInBigXmlDom = false;
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Received exception on BigDom erase, we ignore it: " + e.getMessage());
+         log.severe("Received exception on BigDom erase, we ignore it: " + e.getMessage());
          e.printStackTrace();
       }
    }
@@ -1972,7 +1973,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          }
          catch (XmlBlasterException e) {
             // The access plugin or client may throw an exception. The behavior is not coded yet
-            log.error(ME, "Received exception when sending message erase event callback to client: " + e.getMessage() + ": " + msgUnit.toXml());
+            log.severe("Received exception when sending message erase event callback to client: " + e.getMessage() + ": " + msgUnit.toXml());
          }
       }
    }
@@ -1987,7 +1988,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @return A set containing MsgUnit instances to send to the various clients
     */
    private ArrayList collectNotifySubscribersAboutErase(SessionName sessionName, QueryKeyData eraseKey, EraseQosServer eraseQos) {
-      if (log.CALL) log.call(ME, "Sending client notification about message erase() event");
+      if (log.isLoggable(Level.FINER)) log.finer("Sending client notification about message erase() event");
 
       if (hasSubscribers()) { // && (isAlive() || isUnconfigured())) { // Filter for Approach 1. (supresses XPath notifies)
          if (Constants.EVENT_OID_ERASEDTOPIC.equals(getUniqueKey())) {
@@ -2036,7 +2037,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                      prop.setMaxEntries(0);
                      topicProperty.setHistoryQueueProperty(prop);
                      pq.setTopicProperty(topicProperty);
-                     if (log.TRACE) log.trace(ME, "Added TopicProperty to " + pk.getOid() + " on first publish: " + topicProperty.toXml());
+                     if (log.isLoggable(Level.FINE)) log.fine("Added TopicProperty to " + pk.getOid() + " on first publish: " + topicProperty.toXml());
                   }
                   MsgUnit msgUnit = new MsgUnit(pk, getId(), pq);
                   notifyList.add(msgUnit);
@@ -2078,7 +2079,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          }
          catch (XmlBlasterException e) {
             // The access plugin or client may throw an exception. The behavior is not coded yet
-            log.error(ME, "Received exception for message erase event (callback to client), we ignore it: " + e.getMessage());
+            log.severe("Received exception for message erase event (callback to client), we ignore it: " + e.getMessage());
             return null;
          }
       }
@@ -2093,7 +2094,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          requestBroker.getClientSubscriptions().messageErase(this);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Received exception on message erase, we ignore it: " + e.getMessage());
+         log.severe("Received exception on message erase, we ignore it: " + e.getMessage());
          e.printStackTrace();
       }
    }
@@ -2106,7 +2107,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          requestBroker.topicErase(this);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Received exception on message erase, we ignore it: " + e.getMessage());
+         log.severe("Received exception on message erase, we ignore it: " + e.getMessage());
          e.printStackTrace();
       }
    }
@@ -2119,7 +2120,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @param eraseQos
     */
    final void fireMessageEraseEvent(SessionInfo sessionInfo, QueryKeyData eraseKey, EraseQosServer eraseQos) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering fireMessageEraseEvent forceDestroy=" + eraseQos.getForceDestroy());
+      if (log.isLoggable(Level.FINER)) log.finer("Entering fireMessageEraseEvent forceDestroy=" + eraseQos.getForceDestroy());
       eraseQos = (eraseQos==null) ? new EraseQosServer(glob, new QueryQosData(glob, MethodName.ERASE)) : eraseQos;
       ArrayList notifyList = null;
       try {
@@ -2137,7 +2138,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                      return;
                   }
                   else {
-                     log.info(ME, "Erase not possible, we are still referenced by " + numMsgUnitStore +
+                     log.info("Erase not possible, we are still referenced by " + numMsgUnitStore +
                      " callback queue entries, transition to topic state " + getStateStr() + ", all subscribers are removed.");
                   }
                }
@@ -2159,7 +2160,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * This timeout occurs after a configured delay (destroyDelay) in UNREFERENCED state
     */
    public final void timeout(Object userData) {
-      if (log.CALL) log.call(ME, "Timeout after destroy delay occurred - destroying topic now ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Timeout after destroy delay occurred - destroying topic now ...");
       ArrayList notifyList = timeout();
       if (notifyList != null) notifySubscribersAboutErase(notifyList); // must be outside the synchronize
    }
@@ -2194,7 +2195,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          return "UNDEF";
       }
       else {
-         log.error(ME, "PANIC: Unknown internal state=" + state);
+         log.severe("PANIC: Unknown internal state=" + state);
          return "ERROR";
       }
    }
@@ -2273,7 +2274,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
 
       if (hasSubscribers()) {
@@ -2318,7 +2319,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @throws XmlBlasterException
     */
    private void initMsgDistributorPlugin() throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "initMsgDistributorPlugin");
+      if (log.isLoggable(Level.FINER)) this.log.finer("initMsgDistributorPlugin");
       if (this.distributor != null) return;
       String typeVersion = this.topicProperty.getMsgDistributor();
       // if (typeVersion == null) return; // no plugin has been configured for this topic
@@ -2332,14 +2333,14 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
    
    private void shutdownMsgDistributorPlugin() {
-      if (this.log.CALL) this.log.call(ME, "shutdownMsgDistributorPlugin");
+      if (log.isLoggable(Level.FINER)) this.log.finer("shutdownMsgDistributorPlugin");
       if (this.distributor == null) return;
       synchronized(this) {
          try {
             this.distributor.shutdown();
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "shutdownMsgDistributorPlugin " + ex.getMessage());
+            log.severe("shutdownMsgDistributorPlugin " + ex.getMessage());
          }
          finally {
             this.distributor = null;
@@ -2388,7 +2389,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          return new String[] { "Please choose an index between 0 and " + (infoArr.length-1) + " (inclusiv)" };
       }
 
-      log.info(ME, "Administrative unSubscribe() of client '" + infoArr[index].getSessionName() + "' for topic '" + getId() + "'");
+      log.info("Administrative unSubscribe() of client '" + infoArr[index].getSessionName() + "' for topic '" + getId() + "'");
       return unSubscribe(infoArr[index].getSessionInfo(), qos);
    }
 
@@ -2411,7 +2412,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (sessionInfo == null)
          return new String[] { "Unsubscribe of client '" + sessionName + "' failed, it did NOT match any client" };
 
-      log.info(ME, "Administrative unSubscribe() of client '" + sessionName + "' for topic '" + getId() + "'");
+      log.info("Administrative unSubscribe() of client '" + sessionName + "' for topic '" + getId() + "'");
       return unSubscribe(sessionInfo, qos);
    }
    
@@ -2446,7 +2447,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (infoArr.length < 1)
          return new String[] { "This topic has currently no subscribers" };
 
-      log.info(ME, "Administrative unSubscribe() of " + infoArr.length + " clients");
+      log.info("Administrative unSubscribe() of " + infoArr.length + " clients");
 
       ArrayList retList = new ArrayList();
       for (int i=0; i<infoArr.length; i++) {
@@ -2484,7 +2485,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                     ek.getData(),
                     new EraseQosServer(this.glob, eq.getData()));
       if (eraseArr.length == 1) {
-         log.info(ME, "Erased topic '" + getId() + "' due to administrative request");
+         log.info("Erased topic '" + getId() + "' due to administrative request");
          return "Erased topic '" + getId() + "'";
       }
       else {

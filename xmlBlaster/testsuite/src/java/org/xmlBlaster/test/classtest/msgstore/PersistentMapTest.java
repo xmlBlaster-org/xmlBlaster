@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.msgstore;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.PersistentMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ import junit.framework.TestCase;
 public class PersistentMapTest extends TestCase {
    private String ME = "I_MapTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(PersistentMapTest.class.getName());
 
    public PersistentMapTest(Global global) {
       super();
@@ -62,7 +63,7 @@ public class PersistentMapTest extends TestCase {
       }
       catch(Exception e) {
          e.printStackTrace();
-         log.error(ME, "Exception thrown: " + e.getMessage());
+         log.severe("Exception thrown: " + e.getMessage());
          fail(ME + ": Exception thrown: " + e.getMessage());
       }
    }

@@ -5,6 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -20,6 +23,7 @@ import org.xmlBlaster.util.queue.StorageId;
  */
 public final class MsgQueueHistoryEntry extends ReferenceEntry
 {
+   private static Logger log = Logger.getLogger(MsgQueueHistoryEntry.class.getName());
    private static final long serialVersionUID = -2967395648378724198L;
    private final static String ME = "MsgQueueHistoryEntry";
    private final boolean forceDestroy;
@@ -31,7 +35,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
    public MsgQueueHistoryEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, msgUnitWrapper, (Timestamp)null, storageId, (SessionName)null);
       this.forceDestroy = msgUnitWrapper.getMsgQosData().getForceDestroyProp().getValue();
-      if (log.TRACE) log.trace(ME+"-/client/"+getStorageId(), "Created new MsgQueueHistoryEntry for published message, id=" + getUniqueId() + " prio=" + priority.toString());
+      if (log.isLoggable(Level.FINE)) log.fine("Created new MsgQueueHistoryEntry for published message, id=" + getUniqueId() + " prio=" + priority.toString());
    }
 
    /**
@@ -45,7 +49,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
             (String)null, (String)null, (byte[])null);
       this.forceDestroy = true; // TODO: Make flag persistent, assuming true will prevent log.error() for 'no meat found'
       if (sizeInBytes != getSizeInBytes()) {
-         log.error(ME, "Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
+         log.severe("Internal problem: From persistence sizeInBytes=" + sizeInBytes + " but expected " + getSizeInBytes());
       }
    }
 

@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
@@ -90,7 +91,7 @@ public class I_QueueTest extends TestCase {
 
    private String ME = "I_QueueTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(I_QueueTest.class.getName());
 
    private I_Queue queue;
    private QueueSizeListener queueSizeListener = new QueueSizeListener();
@@ -117,7 +118,7 @@ public class I_QueueTest extends TestCase {
       if (glob == null) this.glob = Global.instance();
       else this.glob = glob;
 
-      this.log = glob.getLog("test");
+
       try {
          String type = PLUGIN_TYPES[currImpl];
          this.glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
@@ -135,7 +136,7 @@ public class I_QueueTest extends TestCase {
          this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
       }
    }
 
@@ -153,7 +154,7 @@ public class I_QueueTest extends TestCase {
          jdbcQueue.destroy();
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
+         log.severe("could not propertly set up the database: " + ex.getMessage());
       }
 */
    }
@@ -225,17 +226,17 @@ public class I_QueueTest extends TestCase {
             fail("Did expect an exception on overflow");
          }
          catch(XmlBlasterException e) {
-            log.info(ME, "SUCCESS the exception is OK: " + e.getMessage());
+            log.info("SUCCESS the exception is OK: " + e.getMessage());
          }
 
-         log.info(ME, "toXml() test:" + queue.toXml(""));
-         log.info(ME, "usage() test:" + queue.usage());
+         log.info("toXml() test:" + queue.toXml(""));
+         log.info("usage() test:" + queue.usage());
 
          assertEquals(ME+": should not be shutdown", false, queue.isShutdown());
          queue.shutdown();
          assertEquals(ME+": should be shutdown", true, queue.isShutdown());
 
-         log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
+         log.info("#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
          System.out.println("***" + ME + " [SUCCESS]");
          queue.shutdown();
          queue = null;
@@ -308,13 +309,13 @@ public class I_QueueTest extends TestCase {
          // The queues allow temporary oversize (one extra put())
          assertEquals(ME+": Wrong total size " + queue.toXml(""), maxEntries+1, queue.getNumOfEntries());
          this.checkSizeAndEntries(" put(I_QueueEntry) ", list, queue);
-         log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
+         log.info("#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
 
          ArrayList entryList = null;
          try {
             entryList = queue.peekLowest(1, -1L, null, false);
             assertEquals("PEEK #1 failed"+queue.toXml(""), 1, entryList.size());
-            log.info(ME, "curr entries="+queue.getNumOfEntries());
+            log.info("curr entries="+queue.getNumOfEntries());
          }
          catch (XmlBlasterException e) {
             if (e.getErrorCode()!=ErrorCode.INTERNAL_NOTIMPLEMENTED) throw e;
@@ -328,7 +329,7 @@ public class I_QueueTest extends TestCase {
          entryList = queue.takeLowest(1, -1L, null, false);
          long singleSize = ((I_QueueEntry)entryList.get(0)).getSizeInBytes(); 
          assertEquals("TAKE #1 failed"+queue.toXml(""), 1, entryList.size());
-         log.info(ME, "curr entries="+queue.getNumOfEntries());
+         log.info("curr entries="+queue.getNumOfEntries());
          assertEquals("number of entries incremented on last invocation", -1, this.queueSizeListener.getLastIncrementEntries());
          assertEquals("number of bytes incremented on last invocation", -singleSize, this.queueSizeListener.getLastIncrementBytes());
 
@@ -348,7 +349,7 @@ public class I_QueueTest extends TestCase {
       catch(XmlBlasterException e) {
          fail(ME + ": Exception thrown: " + e.getMessage());
       }
-      log.info(ME, "SUCCESS");
+      log.info("SUCCESS");
    }
 
 
@@ -449,7 +450,7 @@ public class I_QueueTest extends TestCase {
 
          int total = numLoop*3;
          assertEquals(ME+": Wrong total size", total, queue.getNumOfEntries());
-         log.info(ME, "#1 Success, filled " + queue.getNumOfEntries() + " messages into queue");
+         log.info("#1 Success, filled " + queue.getNumOfEntries() + " messages into queue");
 
 
          //========== Test 2: put(I_QueueEntry)
@@ -460,7 +461,7 @@ public class I_QueueTest extends TestCase {
          }
          assertEquals(ME+": Wrong total size", numLoop+total, queue.getNumOfEntries());
          this.checkSizeAndEntries(" put(I_QueueEntry) ", list, queue);
-         log.info(ME, "#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
+         log.info("#2 Success, filled " + queue.getNumOfEntries() + " messages into queue");
 
          queue.clear();
          assertEquals(ME+": Wrong empty size", 0L, queue.getNumOfEntries());
@@ -490,7 +491,7 @@ public class I_QueueTest extends TestCase {
          peekMsg(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing peekMsg probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing peekMsg probably due to failed initialization of the queue " + queueType);
       }
 
    }
@@ -534,7 +535,7 @@ public class I_QueueTest extends TestCase {
                I_QueueEntry result = queue.peek();
                assertTrue("Unexpected entry", result == null);
             }
-            log.info(ME, "#1 Success, peek()");
+            log.info("#1 Success, peek()");
          }
 
 
@@ -566,7 +567,7 @@ public class I_QueueTest extends TestCase {
             }
 
             queue.clear();
-            log.info(ME, "#2 Success, peek(int)");
+            log.info("#2 Success, peek(int)");
          }
 
          //========== Test 3: peekSamePriority(-1)
@@ -604,7 +605,7 @@ public class I_QueueTest extends TestCase {
 
             assertEquals(ME+": Expected empty queue", 0, queue.getNumOfEntries());
 
-            log.info(ME, "#3 Success, peekSamePriority()");
+            log.info("#3 Success, peekSamePriority()");
          }
 
          //========== Test 4: peekWithPriority(-1,7,9)
@@ -638,7 +639,7 @@ public class I_QueueTest extends TestCase {
             queue.clear();
             assertEquals(ME+": Expected empty queue", 0, queue.getNumOfEntries());
 
-            log.info(ME, "#4 Success, peekWithPriority()");
+            log.info("#4 Success, peekWithPriority()");
          }
 
 
@@ -666,7 +667,7 @@ public class I_QueueTest extends TestCase {
             queue.clear();
             assertEquals(ME+": Expected empty queue", 0, queue.getNumOfEntries());
 
-            log.info(ME, "#5 Success, peek(100, 60)");
+            log.info("#5 Success, peek(100, 60)");
          }
 
          System.out.println("***" + ME + " [SUCCESS]");
@@ -692,7 +693,7 @@ public class I_QueueTest extends TestCase {
          removeWithPriority(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing removeWithpriority probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing removeWithpriority probably due to failed initialization of the queue " + queueType);
       }
    }
 
@@ -744,7 +745,7 @@ public class I_QueueTest extends TestCase {
 
             queue.clear();
 
-            log.info(ME, "#1 Success, fill and remove");
+            log.info("#1 Success, fill and remove");
          }
 
          //========== Test 2: remove prio 7 and 9 with num limit
@@ -778,7 +779,7 @@ public class I_QueueTest extends TestCase {
             assertEquals("number of entries incremented on last invocation", -2, this.queueSizeListener.getLastIncrementEntries());
             assertEquals("number of bytes incremented on last invocation", -2*queueEntries[0].getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
                                         
-            log.info(ME, "#2 Success, fill and remove");
+            log.info("#2 Success, fill and remove");
          }
          queue.shutdown();
       }
@@ -801,7 +802,7 @@ public class I_QueueTest extends TestCase {
          removeRandom(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing removeRandom probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing removeRandom probably due to failed initialization of the queue " + queueType);
       }
 
    }
@@ -834,7 +835,7 @@ public class I_QueueTest extends TestCase {
 
             assertEquals(ME+": Wrong number removed", 1, numRemoved);
             assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
-            log.info(ME, "#1 Success, fill and random remove");
+            log.info("#1 Success, fill and random remove");
          }
 
          //========== Test 2: removeRandom 2 from 3
@@ -861,7 +862,7 @@ public class I_QueueTest extends TestCase {
             I_QueueEntry result = queue.peek();
             assertEquals(ME+": Wrong timestamp", queueEntries[1].getUniqueId(), result.getUniqueId());
             queue.clear();
-            log.info(ME, "#2 Success, fill and random remove");
+            log.info("#2 Success, fill and random remove");
          }
 
          //========== Test 3: removeRandom 5 from 3
@@ -895,7 +896,7 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong entry removed", queueEntries[1].getUniqueId(), entry.getUniqueId());
 
             queue.clear();
-            log.info(ME, "#3 Success, fill and random remove");
+            log.info("#3 Success, fill and random remove");
          }
 
          //========== Test 4: removeRandom 0 from 0
@@ -912,7 +913,7 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong number removed", 0, numRemoved);
             assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
             queue.clear();
-            log.info(ME, "#4 Success, fill and random remove");
+            log.info("#4 Success, fill and random remove");
          }
 
          //========== Test 5: removeRandom null from null
@@ -927,7 +928,7 @@ public class I_QueueTest extends TestCase {
             assertEquals(ME+": Wrong number removed", 0, numRemoved);
             assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
             queue.clear();
-            log.info(ME, "#5 Success, fill and random remove");
+            log.info("#5 Success, fill and random remove");
          }
 
          queue.shutdown();
@@ -953,7 +954,7 @@ public class I_QueueTest extends TestCase {
          takeLowest(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing removeRandomLong probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing removeRandomLong probably due to failed initialization of the queue " + queueType);
       }
 
    }
@@ -974,7 +975,7 @@ public class I_QueueTest extends TestCase {
       I_QueueEntry refEntry, boolean leaveOne, I_QueueEntry[] origEntries, int entriesLeft, 
       int currentEntries, long size) throws XmlBlasterException {
       String me = ME + "/" + numEntries + "/" + numBytes + "/" + leaveOne + "/" + entriesLeft + "/" + currentEntries;
-      if (this.log.TRACE) this.log.trace(me, "");
+      if (log.isLoggable(Level.FINE)) log.fine("");
       assertEquals(me+": Wrong size of entry ", size, origEntries[0].getSizeInBytes());
       assertEquals(me+": Wrong amount of entries in queue before takeLowest invocation ", entriesLeft, queue.getNumOfEntries());
       assertEquals(me+": Wrong size of entries in queue before takeLowest invocation ", size*entriesLeft, queue.getNumOfBytes());
@@ -1024,7 +1025,7 @@ public class I_QueueTest extends TestCase {
       try {
          //========== Test 1: takeLowest without restrictions
          {
-            this.log.trace(ME, "takeLowest test 1");
+            log.fine("takeLowest test 1");
             int imax = 50;
             long size = 0L;
             long msgSize = 100L; // every msg is 100 bytes long
@@ -1077,7 +1078,7 @@ public class I_QueueTest extends TestCase {
 
          //========== Test 2: takeLowest which should return an empty array
          {
-            this.log.trace(ME, "takeLowest test 2");
+            log.fine("takeLowest test 2");
             int imax = 20;
             long size = 0L;
 
@@ -1104,7 +1105,7 @@ public class I_QueueTest extends TestCase {
 
          //========== Test 3: takeLowest should return 13 entries
          {
-            this.log.trace(ME, "takeLowest test 3");
+            log.fine("takeLowest test 3");
             int imax = 20;
             long size = 0L;
 
@@ -1130,7 +1131,7 @@ public class I_QueueTest extends TestCase {
 
          //========== Test 4: takeLowest without restrictions
          {
-            this.log.trace(ME, "takeLowest test 4 (with entry null)");
+            log.fine("takeLowest test 4 (with entry null)");
             int imax = 20;
             long size = 0L;
 
@@ -1176,7 +1177,7 @@ public class I_QueueTest extends TestCase {
          wrongOrder(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing removeRandomLong probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing removeRandomLong probably due to failed initialization of the queue " + queueType);
       }
 
    }
@@ -1191,7 +1192,7 @@ public class I_QueueTest extends TestCase {
          //========== Test 1: checks if entries are returned in the correct
          // order even if they are inserted in the wrong order
          {
-            this.log.trace(ME, "wrongOrder test 1");
+            log.fine("wrongOrder test 1");
             int imax = 5;
             long size = 0L;
 
@@ -1250,7 +1251,7 @@ public class I_QueueTest extends TestCase {
          putEntriesTwice(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing putEntriesTwice probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing putEntriesTwice probably due to failed initialization of the queue " + queueType);
       }
    }
 
@@ -1265,7 +1266,7 @@ public class I_QueueTest extends TestCase {
          //========== Test 1: checks if entries are returned in the correct
          // order even if they are inserted in the wrong order
          {
-            this.log.trace(ME, "putEntriesTwice test 1");
+            log.fine("putEntriesTwice test 1");
             int imax = 5;
             long size = 0L;
 
@@ -1303,7 +1304,7 @@ public class I_QueueTest extends TestCase {
          peekWithLimitEntry(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing peekWithLimitEntry probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing peekWithLimitEntry probably due to failed initialization of the queue " + queueType);
       }
    }
 
@@ -1317,7 +1318,7 @@ public class I_QueueTest extends TestCase {
       try {
          //========== Test 1: normal case where limitEntry is contained in the queue
          {
-            this.log.trace(ME, "peekWithLimitEntry test 1");
+            log.fine("peekWithLimitEntry test 1");
             int imax = 5;
 
             DummyEntry[] entries = new DummyEntry[imax];
@@ -1342,7 +1343,7 @@ public class I_QueueTest extends TestCase {
 
          //========== Test 2: normal case where limitEntry is NOT contained in the queue (should not return anything)
          {
-            this.log.trace(ME, "peekWithLimitEntry test 2");
+            log.fine("peekWithLimitEntry test 2");
             int imax = 5;
 
             DummyEntry[] entries = new DummyEntry[imax];
@@ -1365,7 +1366,7 @@ public class I_QueueTest extends TestCase {
 
          //========== Test 3: normal case where limitEntry is NOT contained in the queue
          {
-            this.log.trace(ME, "peekWithLimitEntry test 3");
+            log.fine("peekWithLimitEntry test 3");
             int imax = 5;
 
             DummyEntry[] entries = new DummyEntry[imax];
@@ -1392,7 +1393,7 @@ public class I_QueueTest extends TestCase {
 
          //========== Test 4: normal case where limitEntry is NOT contained in the queue
          {
-            this.log.trace(ME, "peekWithLimitEntry test 4");
+            log.fine("peekWithLimitEntry test 4");
             int imax = 5;
 
             DummyEntry[] entries = new DummyEntry[imax];
@@ -1431,7 +1432,7 @@ public class I_QueueTest extends TestCase {
          sizesCheck(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing sizesCheck probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing sizesCheck probably due to failed initialization of the queue " + queueType);
       }
    }
 
@@ -1445,7 +1446,7 @@ public class I_QueueTest extends TestCase {
       try {
          //========== Test 1: normal case where limitEntry is contained in the queue
          {
-            this.log.trace(ME, "sizesCheck test 1");
+            log.fine("sizesCheck test 1");
             int imax = 20;
 
             DummyEntry[] entries = new DummyEntry[imax];
@@ -1460,11 +1461,11 @@ public class I_QueueTest extends TestCase {
             this.checkSizeAndEntries("sizesCheck test 1: ", list, queue);
 
             if (queue instanceof CacheQueueInterceptorPlugin) return;
-            this.log.info(ME, "size of list before: " + list.size());
+            log.info("size of list before: " + list.size());
             queue.takeLowest(2, 100L, null, true);
             list.remove(list.size()-1);
             list.remove(list.size()-1);
-            this.log.info(ME, "size of list after: " + list.size());
+            log.info("size of list after: " + list.size());
 
             this.checkSizeAndEntries("sizesCheck test 1 (after takeLowest): ", list, queue);
 
@@ -1492,7 +1493,7 @@ public class I_QueueTest extends TestCase {
          bigEntries(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing sizesCheck probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing sizesCheck probably due to failed initialization of the queue " + queueType);
       }
    }
 
@@ -1509,7 +1510,7 @@ public class I_QueueTest extends TestCase {
          publishMsgBigEntry(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing sizesCheck probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing sizesCheck probably due to failed initialization of the queue " + queueType);
       }
    }
    */
@@ -1523,7 +1524,7 @@ public class I_QueueTest extends TestCase {
       System.out.println("***" + ME);
       try {
          {
-            this.log.trace(ME, "start test");
+            log.fine("start test");
             int msgSize = 1000000;
             
             StorageId storageId = new StorageId("mystore", "test");
@@ -1549,7 +1550,7 @@ public class I_QueueTest extends TestCase {
       System.out.println("***" + ME);
       try {
          {
-            this.log.trace(ME, "start test");
+            log.fine("start test");
             int imax = 3; 
             long msgSize = 202010L;
             DummyEntry[] entries = new DummyEntry[imax];
@@ -1593,7 +1594,7 @@ public class I_QueueTest extends TestCase {
          overflow(this.queue);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "Exception when testing overflowCheck probably due to failed initialization of the queue " + queueType);
+         log.severe("Exception when testing overflowCheck probably due to failed initialization of the queue " + queueType);
       }
    }
 
@@ -1606,7 +1607,7 @@ public class I_QueueTest extends TestCase {
       ME = "I_QueueTest.overflow(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
       System.out.println("***" + ME);
       try {
-         this.log.trace(ME, "start test");
+         log.fine("start test");
          int imax = 4; 
          long msgSize = 100L;
          boolean isPersistent = true;
@@ -1623,14 +1624,14 @@ public class I_QueueTest extends TestCase {
             assertTrue("here we expect an overflow exception", false);
          }
          catch (XmlBlasterException ex) {
-            this.log.info(ME, "overflow: an exception here is OK since it was expected due to overflow of the queue");
+            log.info("overflow: an exception here is OK since it was expected due to overflow of the queue");
          }
          try {
             queue.put(entries[3], false); // <-- overflow
             assertTrue("here we expect an overflow exception", false);
          }
          catch (XmlBlasterException ex) {
-            this.log.info(ME, "overflow: an exception here is OK since it was expected due to overflow of the queue");
+            log.info("overflow: an exception here is OK since it was expected due to overflow of the queue");
          }
    
          ArrayList ret = queue.peek(4, -1L);
@@ -1652,7 +1653,7 @@ public class I_QueueTest extends TestCase {
          this.queue.shutdown();
       }
       catch (Exception ex) {
-         this.log.error(ME, "error when tearing down " + ex.getMessage());
+         log.severe("error when tearing down " + ex.getMessage());
       }
    }
 
@@ -1751,7 +1752,7 @@ public class I_QueueTest extends TestCase {
          testSub.tearDown();
 
          long usedTime = System.currentTimeMillis() - startTime;
-         testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+         testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
       }
    }
 }

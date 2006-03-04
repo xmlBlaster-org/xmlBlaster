@@ -10,7 +10,8 @@ package org.xmlBlaster.protocol.socket;
 import java.io.IOException;
 import java.net.Socket;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -36,7 +37,7 @@ public class SocketCbConnection extends SocketExecutor
 {
    private String ME = "SocketCbConnection";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(SocketCbConnection.class.getName());
    /** Holds the hostname/port of the callback server running on client side to which we want connect */
    private SocketUrl socketUrl;
    /** The socket connection to one client */
@@ -50,8 +51,8 @@ public class SocketCbConnection extends SocketExecutor
     */
    public SocketCbConnection(Global glob) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("socket");
-      if (log.CALL) log.call(ME, "Entering init()");
+
+      if (log.isLoggable(Level.FINER)) log.finer("Entering init()");
    }
 
    /**
@@ -60,7 +61,7 @@ public class SocketCbConnection extends SocketExecutor
    public Socket getSocket() throws XmlBlasterException
    {
       if (this.sock == null) {
-         if (log.TRACE) log.trace(ME, "No socket connection available.");
+         if (log.isLoggable(Level.FINE)) log.fine("No socket connection available.");
          //Thread.currentThread().dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                                        "No plain SOCKET connection available.");
@@ -86,12 +87,12 @@ public class SocketCbConnection extends SocketExecutor
       this.clientAddress = callbackAddress;
       this.socketUrl = new SocketUrl(glob, this.clientAddress);
 
-      if (log.CALL) log.call(ME, "Entering connectLowlevel(), connection with seperate raw socket to client " +
+      if (log.isLoggable(Level.FINER)) log.finer("Entering connectLowlevel(), connection with seperate raw socket to client " +
                                     this.socketUrl.getUrl() + " ...");
       try {
          // SSL support
          boolean ssl = this.clientAddress.getEnv("SSL", false).getValue();
-         if (log.TRACE) log.trace(ME, clientAddress.getEnvLookupKey("SSL") + "=" + ssl);
+         if (log.isLoggable(Level.FINE)) log.fine(clientAddress.getEnvLookupKey("SSL") + "=" + ssl);
           
          // TODO: use clientAddress.getCompressType() !!!
          
@@ -104,21 +105,21 @@ public class SocketCbConnection extends SocketExecutor
          
          //this.localPort = this.sock.getLocalPort();
          //this.localHostname = this.sock.getLocalAddress().getHostAddress();
-         log.info(ME, "Created SOCKET client connected to '" + this.socketUrl.getUrl() + "', callback address is " + getLocalAddress());
+         log.info("Created SOCKET client connected to '" + this.socketUrl.getUrl() + "', callback address is " + getLocalAddress());
 
          // initialize base class SocketExecutor
          initialize(glob, this.clientAddress, this.sock.getInputStream(), this.sock.getOutputStream());
       }
       catch (java.net.UnknownHostException e) {
          String str = "XmlBlaster server host is unknown, '-dispatch/callback/plugin/socket/hostname=<ip>': " + e.toString();
-         if (log.TRACE) log.trace(ME+".constructor", str);
+         if (log.isLoggable(Level.FINE)) log.fine(str);
          //e.printStackTrace(); 
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
                                        "XmlBlaster server is unknown, '-dispatch/callback/plugin/socket/hostname=<ip>'", e);
       }
       catch (java.io.IOException e) {
          String str = "Connection to xmlBlaster server failed: " + e.toString();
-         if (log.TRACE) log.trace(ME+".constructor", str);
+         if (log.isLoggable(Level.FINE)) log.fine(str);
          //e.printStackTrace(); 
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str);
       }
@@ -129,7 +130,7 @@ public class SocketCbConnection extends SocketExecutor
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, e);
       }
 
-      if (log.TRACE) log.trace(ME, "Created '" + getProtocol() + "' protocol plugin and connect to client side callback server on '" + this.socketUrl.getUrl() + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Created '" + getProtocol() + "' protocol plugin and connect to client side callback server on '" + this.socketUrl.getUrl() + "'");
    }
 
 
@@ -138,12 +139,12 @@ public class SocketCbConnection extends SocketExecutor
     */
    public void resetConnection()
    {
-      if (log.TRACE) log.trace(ME, "SocketClient is re-initialized, no connection available");
+      if (log.isLoggable(Level.FINE)) log.fine("SocketClient is re-initialized, no connection available");
       try {
          shutdown();
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "disconnect. Could not shutdown properly. " + ex.getMessage());
+         log.severe("disconnect. Could not shutdown properly. " + ex.getMessage());
       }
    }
 
@@ -154,7 +155,7 @@ public class SocketCbConnection extends SocketExecutor
    public String getLocalAddress() {
       if (this.sock == null) {
          // Happens if on client startup an xmlBlaster server is not available
-         if (log.TRACE) log.trace(ME, "Can't determine xmlBlaster local address, no socket connection available");
+         if (log.isLoggable(Level.FINE)) log.fine("Can't determine xmlBlaster local address, no socket connection available");
          return null;
       }
       return "" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort();
@@ -175,10 +176,10 @@ public class SocketCbConnection extends SocketExecutor
     */
    public void shutdown() throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering shutdown of callback server");
-      try { if (this.iStream != null) { this.iStream.close(); this.iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      try { if (this.oStream != null) { this.oStream.close(); this.oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      try { if (this.sock != null) { this.sock.close(); this.sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown of callback server");
+      try { if (this.iStream != null) { this.iStream.close(); this.iStream=null; } } catch (IOException e) { log.warning(e.toString()); }
+      try { if (this.oStream != null) { this.oStream.close(); this.oStream=null; } } catch (IOException e) { log.warning(e.toString()); }
+      try { if (this.sock != null) { this.sock.close(); this.sock=null; } } catch (IOException e) { log.warning(e.toString()); }
    }
 
    /**
@@ -199,7 +200,7 @@ public class SocketCbConnection extends SocketExecutor
     *
    private final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr, boolean expectingResponse) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId);
+      if (log.isLoggable(Level.FINER)) log.call(ME, "Entering update: id=" + cbSessionId);
       if (!isConnected())
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "update() invocation ignored, we are not connected.");
 
@@ -212,7 +213,7 @@ public class SocketCbConnection extends SocketExecutor
          parser.addMessage(msgArr);
          if (expectingResponse) {
             Object response = execute(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
-            if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
+            if (log.isLoggable(Level.FINE)) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
@@ -232,7 +233,7 @@ public class SocketCbConnection extends SocketExecutor
                    "SOCKET callback of " + msgArr.length + " messages failed", xmlBlasterException);
       }
       catch (IOException e1) {
-         if (log.TRACE) log.trace(ME+".update", "IO exception: " + e1.toString());
+         if (log.isLoggable(Level.FINE)) log.trace(ME+".update", "IO exception: " + e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                "SOCKET callback of " + msgArr.length + " messages failed", e1);
       }
@@ -255,7 +256,7 @@ public class SocketCbConnection extends SocketExecutor
          return (String)response;
       }
       catch (Throwable e) {
-         if (log.TRACE) log.trace(ME+".ping", "IO exception: " + e.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("IO exception: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION,
                    ME, "SOCKET callback ping failed", e);
       }

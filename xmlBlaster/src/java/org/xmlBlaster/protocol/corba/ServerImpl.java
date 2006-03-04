@@ -8,11 +8,11 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.qos.AddressServer;
-import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 
@@ -28,7 +28,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
 
    private final String ME = "ServerImpl";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ServerImpl.class.getName());
    private final org.omg.CORBA.ORB orb;
    private final I_XmlBlaster blaster;
    private final AddressServer addressServer;
@@ -40,8 +40,8 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    public ServerImpl(Global glob, org.omg.CORBA.ORB orb, AddressServer addressServer, I_XmlBlaster blaster) throws XmlBlasterException
    {
       this.glob = glob;
-      this.log = this.glob.getLog("corba");
-      if (log.CALL) log.call(ME, "Entering constructor with ORB argument");
+
+      if (log.isLoggable(Level.FINER)) log.finer("Entering constructor with ORB argument");
       this.orb = orb;
       this.blaster = blaster;
       this.addressServer = addressServer;
@@ -64,13 +64,12 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-         if (log.DUMP) log.dump(ME, "subscribe()\n" + xmlKey_literal + "\n" + qos_literal);
-         StopWatch stop=null; if (log.TIME) stop = new StopWatch();
+         if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+         if (log.isLoggable(Level.FINEST)) log.finest("subscribe()\n" + xmlKey_literal + "\n" + qos_literal);
 
          String oid = blaster.subscribe(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
-         if (log.TIME) log.time(ME, "Elapsed time in subscribe()" + stop.nice());
+         // if (log.isLoggable(Level.FINEST)) log.finest("Elapsed time in subscribe()" + stop.nice());
 
          return oid;
       }
@@ -86,13 +85,12 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    public String[] unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-         if (log.DUMP) log.dump(ME, "unSubscribe()\n" + xmlKey_literal + "\n" + qos_literal);
-         StopWatch stop=null; if (log.TIME) stop = new StopWatch();
+         if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+         if (log.isLoggable(Level.FINEST)) log.finest("unSubscribe()\n" + xmlKey_literal + "\n" + qos_literal);
 
          String[] strArr = blaster.unSubscribe(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
-         if (log.TIME) log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
+         // if (log.isLoggable(Level.FINEST)) log.finest("Elapsed time in unSubscribe()" + stop.nice());
 
          return strArr;
       }
@@ -108,8 +106,8 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    public String publish(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering publish() ...");
-         if (log.DUMP) log.dump(ME, "publish()\n" + msgUnit.xmlKey + "\n" + msgUnit.qos);
+         if (log.isLoggable(Level.FINER)) log.finer("Entering publish() ...");
+         if (log.isLoggable(Level.FINEST)) log.finest("publish()\n" + msgUnit.xmlKey + "\n" + msgUnit.qos);
 
          String retVal = blaster.publish(this.addressServer, getSecretSessionId(), CorbaDriver.convert(glob, msgUnit));
 
@@ -127,16 +125,16 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    public String[] publishArr(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering publish(" + msgUnitArr.length + ") ...");
-         if (log.DUMP) {
+         if (log.isLoggable(Level.FINER)) log.finer("Entering publish(" + msgUnitArr.length + ") ...");
+         if (log.isLoggable(Level.FINEST)) {
             for (int ii=0; ii<msgUnitArr.length; ii++)
-               log.dump(ME, "publishArr()\n" + msgUnitArr[ii].xmlKey + "\n" + msgUnitArr[ii].qos);
+               log.finest("publishArr()\n" + msgUnitArr[ii].xmlKey + "\n" + msgUnitArr[ii].qos);
          }
 
          String[] returnArr = new String[0];
 
          if (msgUnitArr.length < 1) {
-            if (log.TRACE) log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
+            if (log.isLoggable(Level.FINE)) log.fine("Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
             return returnArr;
          }
 
@@ -159,16 +157,16 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    {
       try {
          if (msgUnitArr == null || msgUnitArr.length < 1) {
-            if (log.TRACE) log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
+            if (log.isLoggable(Level.FINE)) log.fine("Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
             return;
          }
-         if (log.CALL) log.call(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering publishOneway(" + msgUnitArr.length + ") ...");
 
          org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
          blaster.publishOneway(this.addressServer, getSecretSessionId(), internalUnitArr);
       }
       catch (Throwable e) {
-         log.error(ME, "publishOneway() failed, exception is not sent to client: " + e.toString());
+         log.severe("publishOneway() failed, exception is not sent to client: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -180,8 +178,8 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-         if (log.DUMP) log.dump(ME, "erase()\n" + xmlKey_literal + "\n" + qos_literal);
+         if (log.isLoggable(Level.FINER)) log.finer("Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+         if (log.isLoggable(Level.FINEST)) log.finest("erase()\n" + xmlKey_literal + "\n" + qos_literal);
 
          String [] retArr = blaster.erase(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
@@ -200,15 +198,14 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    public org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       try {
-         if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-         if (log.DUMP) log.dump(ME, "get()\n" + xmlKey_literal + "\n" + qos_literal);
-         StopWatch stop=null; if (log.TIME) stop = new StopWatch();
+         if (log.isLoggable(Level.FINER)) log.finer("Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+         if (log.isLoggable(Level.FINEST)) log.finest("get()\n" + xmlKey_literal + "\n" + qos_literal);
 
          org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr = blaster.get(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
          org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = CorbaDriver.convert(msgUnitArr);  // convert internal to Corba ...
 
-         if (log.TIME) log.time(ME, "Elapsed time in get()" + stop.nice());
+         // if (log.isLoggable(Level.FINEST)) log.finest("Elapsed time in get()" + stop.nice());
 
          return corbaUnitArr;
       }
@@ -237,7 +234,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          active_oid = poa_current.get_object_id();
          sessionId = convert(active_oid);
       } catch (Exception e) {
-         log.error(ME+".AccessCheckProblem", "Sorry, can't find out who you are, access denied");
+         log.severe("Sorry, can't find out who you are, access denied");
          throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
                         ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
                         "Sorry, can't find out who you are, access denied"));
@@ -263,7 +260,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          char c2 = (char)(n2>9 ? ('A'+(n2-10)) : ('0'+n2));
          result += ( c1 + (c2 + ""));
       }
-      // if (log.TRACE) log.trace("ServerImpl.CONVERT", "Converted POA-AOM <" + objectId + "> to session ID <" + result + ">");
+      // if (log.isLoggable(Level.FINE)) log.trace("ServerImpl.CONVERT", "Converted POA-AOM <" + objectId + "> to session ID <" + result + ">");
       return result;
    }
 
@@ -273,7 +270,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
     */
    public String ping(String qos)
    {
-      if (log.CALL) log.call(ME, "Entering ping("+qos+") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering ping("+qos+") ...");
       return blaster.ping(this.addressServer, qos);
    }
 }

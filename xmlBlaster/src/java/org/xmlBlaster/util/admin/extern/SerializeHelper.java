@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.admin.extern;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 
@@ -23,12 +24,12 @@ import java.io.ObjectInputStream;
 public class SerializeHelper {
 
   private final Global glob;
-  private final LogChannel log;
+   private static Logger log = Logger.getLogger(SerializeHelper.class.getName());
   private final String ME;
 
   public SerializeHelper(Global glob) {
     this.glob = glob;
-    this.log = glob.getLog("jmx");
+
     this.ME = "SerializeHelper" + this.glob.getLogPrefixDashed();
   }
 
@@ -37,7 +38,7 @@ public class SerializeHelper {
    * Serializes object to byteArray
    */
   public byte[] serializeObject(Object obj) throws IOException {
-    log.info(ME,"Serializing object " + obj);
+    log.info("Serializing object " + obj);
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
       ObjectOutputStream oos = new ObjectOutputStream(bos);
@@ -55,7 +56,7 @@ public class SerializeHelper {
  * Deserializes byteArray to Java-Object
  */
   public Object deserializeObject(byte[] mybyte) throws IOException {
-    log.info(ME,"Deserializing object ");
+    log.info("Deserializing object ");
     Object obj = new Object();
     ByteArrayInputStream bas = new ByteArrayInputStream(mybyte);
     try {

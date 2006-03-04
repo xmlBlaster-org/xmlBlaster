@@ -8,7 +8,8 @@ Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -40,7 +41,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
    public static final String pluginPropertyName = "MapMsgToMasterPlugin";
 
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(MapMsgToMasterPluginManager.class.getName());
    private final ClusterManager clusterManager;
 
    private final Map mapMsgToMasterIdMap = Collections.synchronizedMap(new HashMap());
@@ -48,7 +49,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
    public MapMsgToMasterPluginManager(Global glob, ClusterManager clusterManager) {
       super(glob);
       this.glob = glob;
-      this.log = this.glob.getLog("cluster");
+
       this.clusterManager = clusterManager;
    }
 
@@ -104,7 +105,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
          return addMapMsgToMasterIdPlugin(type, version); // try to load it
 
       } catch (Exception e) {
-         log.error(ME, "Problems accessing cluster domain mapping " + createPluginPropertyKey(type, version) + " mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
+         log.severe("Problems accessing cluster domain mapping " + createPluginPropertyKey(type, version) + " mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
          e.printStackTrace();
          return (I_MapMsgToMasterId)null;
       }
@@ -120,14 +121,14 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
       key.append(type).append(version);
       Object obj = mapMsgToMasterIdMap.get(key.toString());
       if (obj != null) {
-         if (log.TRACE) log.trace(ME, "Plugin '" + key.toString() + "' is loaded already");
+         if (log.isLoggable(Level.FINE)) log.fine("Plugin '" + key.toString() + "' is loaded already");
          return (I_MapMsgToMasterId)obj;
       }
 
       try {
          I_MapMsgToMasterId plugin = getPlugin(type, version);
          if (plugin == null) {
-            log.error(ME, "Problems accessing plugin " + createPluginPropertyKey(type, version) + ", please check your configuration");
+            log.severe("Problems accessing plugin " + createPluginPropertyKey(type, version) + ", please check your configuration");
             return null;
          }
 
@@ -139,7 +140,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
          // check plugin code:
          if (mimeExtended == null || mimeExtended.length != mime.length) {
             if (mimeExtended.length != mime.length)
-               log.error(ME, createPluginPropertyKey(type, version) + ": Number of mimeExtended does not match mime, ignoring mimeExtended.");
+               log.severe(createPluginPropertyKey(type, version) + ": Number of mimeExtended does not match mime, ignoring mimeExtended.");
             mimeExtended = new String[mime.length];
             for (int ii=0; ii < mime.length; ii++)
                mimeExtended[ii] = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
@@ -148,13 +149,13 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
          for (int ii = 0; ii < mime.length; ii++) {
             key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
             mapMsgToMasterIdMap.put(key.toString(), plugin);
-            log.info(ME, "Loaded '" + key.toString() + "'");
+            log.info("Loaded '" + key.toString() + "'");
             key.setLength(0);
          }
 
          return plugin;
       } catch (Throwable e) {
-         log.error(ME, "Problems accessing cluster domain mapping plugin manager, can't instantiate " + createPluginPropertyKey(type, version) + ": " + e.toString());
+         log.severe("Problems accessing cluster domain mapping plugin manager, can't instantiate " + createPluginPropertyKey(type, version) + ": " + e.toString());
          e.printStackTrace();
       }
       return null;

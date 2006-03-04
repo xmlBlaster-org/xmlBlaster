@@ -7,7 +7,8 @@ Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.classloader;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -26,11 +27,11 @@ public class PluginClassLoader extends URLClassLoader {
    private String ME = "PluginClassLoader";
    private final String pluginName;
    private String pluginPackage;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginClassLoader.class.getName());
 
    public PluginClassLoader(Global glob, URL[] urls, PluginInfo pluginInfo) {
       super(urls);
-      log = glob.getLog("classloader");
+
       this.pluginName = pluginInfo.getClassName();
       int pos = pluginName.lastIndexOf(".");
       if (pos >= 0) {
@@ -44,30 +45,30 @@ public class PluginClassLoader extends URLClassLoader {
    public Class loadClass(String name) throws ClassNotFoundException {
       ClassLoader parent = getClass().getClassLoader();
       if (name.startsWith("java.") ) {
-         if (log.TRACE) log.trace(ME, "Using default JVM class loader for java class " + name);
+         if (log.isLoggable(Level.FINE)) log.fine("Using default JVM class loader for java class " + name);
          return parent.loadClass(name);
       }
       if (name.startsWith("org.xmlBlaster") || name.startsWith("org.jutils") || name.startsWith("org.omg")) {
          if (!name.startsWith(pluginPackage)) { // matches for empty packages "" as well
-            if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name);
+            if (log.isLoggable(Level.FINE)) log.fine("Using default JVM class loader for " + name);
             return parent.loadClass(name);
          }
       }
          
       Class clazz = findLoadedClass(name);
       if (clazz != null) {
-          if (log.TRACE) log.trace(ME, "Using specific class loader from cache for " + name);
+          if (log.isLoggable(Level.FINE)) log.fine("Using specific class loader from cache for " + name);
           return clazz;
       }
 
       try {
          clazz = findClass(name);
          resolveClass(clazz);
-         if (log.TRACE) log.trace(ME, "Using specific class loader for " + name);
+         if (log.isLoggable(Level.FINE)) log.fine("Using specific class loader for " + name);
          return clazz;
       }
       catch (ClassNotFoundException e) {
-          if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name + " as not found in specific class loader");
+          if (log.isLoggable(Level.FINE)) log.fine("Using default JVM class loader for " + name + " as not found in specific class loader");
           clazz = parent.loadClass(name);
           resolveClass(clazz);
           return clazz;

@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -54,13 +55,13 @@ public class JdbcQueueTest extends TestCase {
       
       public void run() {
          try {
-            log.info(ME, "connectionConsumer " + this.count + " starting");
+            log.info("connectionConsumer " + this.count + " starting");
             Connection conn = this.pool.getConnection();
-            log.info(ME, "connectionConsumer " + this.count + " got the connection " + conn);
+            log.info("connectionConsumer " + this.count + " got the connection " + conn);
             if (conn != null) this.pool.releaseConnection(conn);
          }
          catch (XmlBlasterException ex) {
-            log.info(ME, "connectionConsumer exception " + ex.getMessage());
+            log.info("connectionConsumer exception " + ex.getMessage());
             if (ex.getErrorCode().getErrorCode().equals(ErrorCode.RESOURCE_TOO_MANY_THREADS.getErrorCode())) {
                synchronized(JdbcQueueTest.class) {
                   exceptionCount++;
@@ -75,7 +76,7 @@ public class JdbcQueueTest extends TestCase {
    
    private String ME = "JdbcQueueTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(JdbcQueueTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
    private int numOfQueues = 10;
@@ -106,7 +107,7 @@ public class JdbcQueueTest extends TestCase {
 
    private void initialize(Global glob, String name, int currImpl) {
       this.glob = Global.instance();
-      this.log = glob.getLog(null);
+
 
       this.numOfQueues = glob.getProperty().get("queues", 2);
       this.numOfMsg = glob.getProperty().get("entries", 100);
@@ -130,18 +131,18 @@ public class JdbcQueueTest extends TestCase {
          this.queue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
       }
    }
 
    protected void setUp() {
-      log = glob.getLog("test");
+
       try {
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
          ME = "JdbcQueueTest with class: " + PLUGIN_TYPES[this.count];
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'" + ex.getMessage());
       }
 
       // cleaning up the database from previous runs ...
@@ -152,7 +153,7 @@ public class JdbcQueueTest extends TestCase {
          this.queue.shutdown();
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
+         log.severe("could not propertly set up the database: " + ex.getMessage());
          this.suppressTest = true;
       }
    }
@@ -163,21 +164,21 @@ public class JdbcQueueTest extends TestCase {
          this.queue.shutdown();
       }
       catch (Exception ex) {
-         this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
+         log.warning("error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
       }
    }
 
    
    public void testPutWithBreak() {
       if (this.suppressTest) {
-         log.error(ME, "JDBC test is not driven as no database was found");
+         log.severe("JDBC test is not driven as no database was found");
          return;
       }
       try {
          if (this.doExecute) putWithBreak();
          else {
-            this.log.warn(ME, "test desactivated since needs to be run manually");
-            this.log.warn(ME, "please invoke it as 'java org.xmlBlaster.test.classtest.queue.JdbcQueueTest'");
+            log.warning("test desactivated since needs to be run manually");
+            log.warning("please invoke it as 'java org.xmlBlaster.test.classtest.queue.JdbcQueueTest'");
          }
       }
       catch (XmlBlasterException ex) {
@@ -199,7 +200,7 @@ public class JdbcQueueTest extends TestCase {
       boolean success = false;
       for (int i=0; i < num; i++) {
          try {
-            this.log.info(me, "put with break entry " + i + "/" + num + " please kill the DB manually to test reconnect");
+            log.info("put with break entry " + i + "/" + num + " please kill the DB manually to test reconnect");
             DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), sizeOfMsg, true);
             queue.put(entry, false);
             try {
@@ -209,9 +210,9 @@ public class JdbcQueueTest extends TestCase {
             }
          }
          catch (XmlBlasterException ex) {
-            if (this.log.TRACE)  this.log.trace(me, ex.getMessage());
+            if (log.isLoggable(Level.FINE))  log.fine(ex.getMessage());
             if ("resource.db.unavailable".equalsIgnoreCase(ex.getErrorCodeStr())) {
-               this.log.info(me, "the communication to the db has been lost");
+               log.info("the communication to the db has been lost");
                success = true;
                break;
             }
@@ -221,19 +222,19 @@ public class JdbcQueueTest extends TestCase {
       
       assertTrue(me + ": Timed out when waiting to loose the connection to the DB", success);
       success = false; // reset the flag
-      this.log.info(me, "preparing to reconnect again ...");
+      log.info("preparing to reconnect again ...");
 
       for (int i=0; i < num; i++) {
          try {
-            this.log.info(me, "put with break entry " + i + "/" + num + " please restart the the DB to test reconnect");
+            log.info("put with break entry " + i + "/" + num + " please restart the the DB to test reconnect");
             DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), sizeOfMsg, true);
             queue.put(entry, false);
-            this.log.info(me, "the communication to the db has been reestablished");
+            log.info("the communication to the db has been reestablished");
             success = true;
             break;
          }
          catch (XmlBlasterException ex) {
-            if (this.log.TRACE)  this.log.trace(me, ex.getMessage());
+            if (log.isLoggable(Level.FINE))  log.fine(ex.getMessage());
             if ("resource.db.unavailable".equalsIgnoreCase(ex.getErrorCodeStr())) {
                try {
                   Thread.sleep(5000L);
@@ -245,12 +246,12 @@ public class JdbcQueueTest extends TestCase {
          }
       }
       assertTrue(me + ": Timed out when waiting to regain the connection to the DB", success);
-      this.log.info(me, "successfully ended");
+      log.info("successfully ended");
    }
 
    public void testInitialEntries() {
       if (this.suppressTest) {
-         log.error(ME, "JDBC test is not driven as no database was found");
+         log.severe("JDBC test is not driven as no database was found");
          return;
       }
       try {
@@ -264,7 +265,7 @@ public class JdbcQueueTest extends TestCase {
 
    public void initialEntries() throws XmlBlasterException {
       // set up the queues ....
-      this.log.info(ME, "initialEntries test starts");
+      log.info("initialEntries test starts");
       QueuePropertyBase cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       cbProp.setMaxEntries(10000L);
       cbProp.setMaxBytes(200000L);
@@ -296,11 +297,11 @@ public class JdbcQueueTest extends TestCase {
          queue.shutdown();
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
          ex.printStackTrace();
          assertTrue("exception occured when testing initialEntries", false);
       }
-      this.log.info(ME, "initialEntries test successfully ended");
+      log.info("initialEntries test successfully ended");
    }
 
 
@@ -318,7 +319,7 @@ public class JdbcQueueTest extends TestCase {
 
    public void multiplePut() throws XmlBlasterException {
       // set up the queues ....
-      this.log.info(ME, "initialEntries test starts");
+      log.info("initialEntries test starts");
       QueuePropertyBase cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
       cbProp.setMaxEntries(10000L);
       cbProp.setMaxBytes(200000L);
@@ -346,7 +347,7 @@ public class JdbcQueueTest extends TestCase {
             long time1 = System.currentTimeMillis();
             tmpQueue.put(entries, false);
             long delta = System.currentTimeMillis() - time1;
-            this.log.info(ME, "multiple put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+            log.info("multiple put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
            
             ArrayList list = tmpQueue.peek(-1, -1L);
             assertEquals("Wrong number of entries in queue", nmax, list.size());
@@ -354,7 +355,7 @@ public class JdbcQueueTest extends TestCase {
             time1 = System.currentTimeMillis();
             tmpQueue.removeRandom(entries);
             delta = System.currentTimeMillis() - time1;
-            this.log.info(ME, "multiple remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+            log.info("multiple remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
             tmpQueue.clear();
            
             time1 = System.currentTimeMillis();
@@ -362,29 +363,29 @@ public class JdbcQueueTest extends TestCase {
                tmpQueue.put(entries[i], false);
             }
             delta = System.currentTimeMillis() - time1;
-            this.log.info(ME, "repeated single put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+            log.info("repeated single put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
            
             time1 = System.currentTimeMillis();
             for (int i=0; i < nmax; i++) tmpQueue.removeRandom(entries[i]);
             delta = System.currentTimeMillis() - time1;
-            this.log.info(ME, "repeated single remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+            log.info("repeated single remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
             nmax *= 10;
          }
          tmpQueue.shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
-         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
+         log.severe("setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
          ex.printStackTrace();
          assertTrue("exception occured when testing initialEntries", false);
       }
-      this.log.info(ME, "initialEntries test successfully ended");
+      log.info("initialEntries test successfully ended");
    }
 
 
    public void testConnectionPool() {
       try {
          String me = ME + "-testConnectionPool";
-         this.log.info(me, " starting ");
+         log.info(" starting ");
          int numConn = 3;
          int maxWaitingThreads = 10;
 
@@ -402,12 +403,12 @@ public class JdbcQueueTest extends TestCase {
 
          Connection[] conn = new Connection[numConn];         
          for (int i=0; i < numConn; i++) {
-            this.log.info(me, " getting connection " + i);
+            log.info(" getting connection " + i);
             conn[i] = pool.getConnection();
             assertNotNull("The connection " + i + " shall not be null", conn[i]);
          }
          
-         this.log.info(me, " getting extra connection");
+         log.info(" getting extra connection");
          
          Connection extraConn = null;
          try {
@@ -437,7 +438,7 @@ public class JdbcQueueTest extends TestCase {
          }
  
          assertEquals("Number of exceptions due to too many waiting threads is wrong", expectedEx, this.exceptionCount);
-         this.log.info(me, " successfully ended ");
+         log.info(" successfully ended ");
       }
       catch (Exception ex) {
          fail("Exception when testing multiplePut probably due to failed initialization of the queue of type " + PLUGIN_TYPES[this.count] + " " + ex.getMessage() );

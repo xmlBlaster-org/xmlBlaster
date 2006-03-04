@@ -6,7 +6,8 @@ Comment:   Handling one xmlQoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.Constants;
@@ -26,7 +27,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
 {
    private final String ME = "SessionQos";
    private final transient Global glob;
-   private final transient LogChannel log;
+   private static Logger log = Logger.getLogger(SessionQos.class.getName());
 
    /** Default session span of life is one day, given in millis "-session.timeout 86400000" */
    private PropLong sessionTimeout = new PropLong(Constants.DAY_IN_MILLIS);
@@ -72,7 +73,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
     */
    public SessionQos(Global glob, NodeId nodeId) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = glob.getLog(null);
+
       this.nodeId = nodeId;
       initialize();
    }
@@ -98,16 +99,16 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       }
 
       this.sessionName = new SessionName(glob, nodeId, sessionNameStr);
-      //if (log.TRACE) log.trace(ME, "sessionName =" + sessionName.getRelativeName() + " absolute=" + sessionName.getAbsoluteName());
+      //if (log.isLoggable(Level.FINE)) log.trace(ME, "sessionName =" + sessionName.getRelativeName() + " absolute=" + sessionName.getAbsoluteName());
 
       {
          // user warning for the old style loginName
          String loginName = glob.getProperty().get("loginName", (String)null);
          if (loginName != null)
-            log.warn(ME, "session.name=" + this.sessionName + " is stronger than loginName=" + loginName + ", we proceed with " + this.sessionName);
+            log.warning("session.name=" + this.sessionName + " is stronger than loginName=" + loginName + ", we proceed with " + this.sessionName);
       }
 
-      if (log.TRACE) log.trace(ME, "initialize session.name=" + this.sessionName + " nodeId=" + nodeId);
+      if (log.isLoggable(Level.FINE)) log.fine("initialize session.name=" + this.sessionName + " nodeId=" + nodeId);
    }
 
    /**
@@ -314,7 +315,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
     */
    public Object clone() {
       try {
-         log.error(ME, "clone() is not tested");
+         log.severe("clone() is not tested");
          SessionQos newOne = null;
          newOne = (SessionQos)super.clone();
          synchronized(this) {
@@ -328,7 +329,7 @@ public final class SessionQos implements java.io.Serializable, Cloneable
          return newOne;
       }
       catch (java.lang.CloneNotSupportedException e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          return null;
       }
    }

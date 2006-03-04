@@ -10,7 +10,8 @@ import CH.ifa.draw.framework.FigureChangeEvent;
 import CH.ifa.draw.framework.Figure;
 import CH.ifa.draw.standard.StandardDrawing;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
@@ -39,7 +40,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 
    private static final String ME = "XmlBlasterDrawing";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlBlasterDrawing.class.getName());
    /** inhibit events to avoid loops when events are generated in update method */
    private boolean doPublishEvent; 
    /** key = timestamp, value = object reference (Figure) */
@@ -60,19 +61,19 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    public XmlBlasterDrawing() {
       super();
       init(Global.instance());
-      if (this.log.CALL) this.log.call(ME, "default contructor");
+      if (log.isLoggable(Level.FINER)) this.log.finer("default contructor");
    }
 
    public XmlBlasterDrawing(Global global) {
       super();
       init(global);
-      if (this.log.CALL) this.log.call(ME, "global contructor");
+      if (log.isLoggable(Level.FINER)) this.log.finer("global contructor");
    }
 
    public void init(Global global) {
       this.global = global.getClone(null);
-      this.log = this.global.getLog("graphical");
-      if (this.log.CALL) this.log.call(ME, "init");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("init");
       this.doPublishEvent = true;
       this.timestampFigureTable = new HashMap();
       this.figureTimestampTable = new HashMap();
@@ -93,7 +94,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
 
    public void initConnection() {
       try {
-         if (this.log.CALL) this.log.call(ME, "initConnection");
+         if (log.isLoggable(Level.FINER)) this.log.finer("initConnection");
          this.access = this.global.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(this.global);
          this.access.connect(qos, this);  // Login to xmlBlaster, register for updates
@@ -110,22 +111,22 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          this.subscribeReturnQos = this.access.subscribe(sk, sq);
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "initConnection. Exception : " + ex.getMessage());
+         log.severe("initConnection. Exception : " + ex.getMessage());
          ex.printStackTrace();
       }
    }
 
    synchronized public void shutdown() {
-      if (this.log.CALL) this.log.call(ME, "shutdown");
+      if (log.isLoggable(Level.FINER)) this.log.finer("shutdown");
       try {
          if (this.subscribeReturnQos != null) {
             this.access.unSubscribe(new UnSubscribeKey(this.global, this.subscribeReturnQos.getSubscriptionId()), new UnSubscribeQos(this.global));
          }
          this.access.disconnect(new DisconnectQos(this.global));
-         this.log.info(ME, "successfully shutdown drawing (unsubscribed and disconnected");
+         log.info("successfully shutdown drawing (unsubscribed and disconnected");
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "shutdown. Exception : " + ex.getMessage());
+         log.severe("shutdown. Exception : " + ex.getMessage());
       }
    }
 
@@ -142,9 +143,9 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    synchronized public void figureChanged(FigureChangeEvent e) {
-      if (this.log.CALL) this.log.call(ME, "figureChanged event='" + e.toString() + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("figureChanged event='" + e.toString() + "'");
       if (e.getFigure() instanceof Drawing) {
-         if (this.log.TRACE) this.log.trace(ME, "figureChanged for a Drawing instance " + e.getFigure());
+         if (log.isLoggable(Level.FINE)) this.log.fine("figureChanged for a Drawing instance " + e.getFigure());
          return;
       }
       super.figureChanged(e);
@@ -153,7 +154,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          if (this.isBurstPublish) this.newChanged[this.currentIndex].add(figureHolder); 
          else publish(figureHolder);
       }
-      if (this.log.CALL) this.log.call(ME, "figureChanged " + e.getFigure());
+      if (log.isLoggable(Level.FINER)) this.log.finer("figureChanged " + e.getFigure());
    }
 
    protected void addToTable(StorableFigureHolder figureHolder) {
@@ -166,7 +167,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }   
 
    protected void removeFromTable(StorableFigureHolder figureHolder) {
-      if (this.log.CALL) this.log.call(ME, "remove");
+      if (log.isLoggable(Level.FINER)) this.log.finer("remove");
       String figureId = figureHolder.getFigureId();
       Figure figure = figureHolder.getFigure();
       synchronized (this.timestampFigureTable) {
@@ -185,26 +186,26 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       if (figureHolder == null) {
          String timestamp = "" + (new Timestamp()).getTimestampLong();
          String figureId = this.drawingName + "-" + timestamp;
-         figureHolder = new StorableFigureHolder(this.log, figure, figureId, null);
+         figureHolder = new StorableFigureHolder(figure, figureId, null);
          addToTable(figureHolder);
       }
       return figureHolder;
    }
 
    synchronized public Figure add(Figure figure) {
-      if (this.log.CALL) this.log.call(ME, "add");
+      if (log.isLoggable(Level.FINER)) this.log.finer("add");
       if (figure instanceof Drawing) return figure;
       if (this.doPublishEvent) {
          StorableFigureHolder figureHolder = getFigureHolder(figure);
          if (this.isBurstPublish) this.newChanged[this.currentIndex].add(figureHolder);
          else publish(figureHolder);
-         if (this.log.TRACE) this.log.trace(ME, "add: adding '" + figureHolder.getFigureId() + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("add: adding '" + figureHolder.getFigureId() + "'");
       }
       return super.add(figure);
    }
 
    synchronized public void bringToFront(Figure figure) {
-      if (this.log.CALL) this.log.call(ME, "bringToFront");
+      if (log.isLoggable(Level.FINER)) this.log.finer("bringToFront");
       if (this.doPublishEvent) {
          ((StorableFigureHolder)this.figureTimestampTable.get(figure)).setToFront("true");
       } 
@@ -212,7 +213,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    synchronized public Figure orphan(Figure figure) {
-      if (this.log.CALL) this.log.call(ME, "orphan");
+      if (log.isLoggable(Level.FINER)) this.log.finer("orphan");
       if (figure instanceof Drawing) return figure;
       if (this.doPublishEvent) {
          try {
@@ -220,7 +221,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          }
          catch (XmlBlasterException ex) {
             String figureId = ((StorableFigureHolder)this.figureTimestampTable.get(figure)).getFigureId();
-            this.log.error(ME, "orphan '" + figureId + "' exception : " + ex.getMessage());
+            log.severe("orphan '" + figureId + "' exception : " + ex.getMessage());
             ex.printStackTrace();
          }
       }
@@ -228,7 +229,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    public synchronized void sendToBack(Figure figure) {
-      if (this.log.CALL) this.log.call(ME, "sendToBack");
+      if (log.isLoggable(Level.FINER)) this.log.finer("sendToBack");
       if (this.doPublishEvent) {
          ((StorableFigureHolder)this.figureTimestampTable.get(figure)).setToFront("false");
       } 
@@ -236,12 +237,12 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    public synchronized void sendToLayer(Figure figure, int layerNr) {
-      if (this.log.CALL) this.log.call(ME, "sendToLayer");
+      if (log.isLoggable(Level.FINER)) this.log.finer("sendToLayer");
       super.sendToLayer(figure, layerNr);
    }
 
    public synchronized void setTitle(java.lang.String name) {
-      if (this.log.CALL) this.log.call(ME, "");
+      if (log.isLoggable(Level.FINER)) this.log.finer("");
       super.setTitle(name);
    }
 
@@ -262,7 +263,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          this.newChanged[this.publishIndex].clear();
       }
       catch (Throwable ex) {
-         this.log.warn(ME ,"timeout: exception occured in timeout: " + ex.getMessage());
+         log.warning("timeout: exception occured in timeout: " + ex.getMessage());
          ex.printStackTrace();
       }
       finally {
@@ -273,12 +274,12 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    // publish -----------------------------------------------------------
 
    private void publish(StorableFigureHolder figureHolder) {
-      if (this.log.CALL) this.log.call(ME, "publish");
+      if (log.isLoggable(Level.FINER)) this.log.finer("publish");
       // publish the message here ...
       if (figureHolder == null || figureHolder.getFigure() instanceof Drawing) return;
       try {
          String figureId = figureHolder.getFigureId();
-         if (this.log.TRACE) this.log.trace(ME, "publish '" + figureId + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("publish '" + figureId + "'");
          PublishKey pk = new PublishKey(this.global, figureId, "application/draw", "1.0");
          pk.setClientTags("<drawingName>"+this.drawingName+"</drawingName>");
          PublishQos pq = new PublishQos(this.global);
@@ -287,15 +288,15 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          this.access.publish(msgUnit);
       }
       catch (IOException ex) {
-         this.log.error(ME, "exception occured when publishing: " + ex.toString());
+         log.severe("exception occured when publishing: " + ex.toString());
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "exception occured when publishing: " + ex.getMessage());
+         log.severe("exception occured when publishing: " + ex.getMessage());
       }
    }
 
    private void publishMetaInfo(String data) {
-      if (this.log.CALL) this.log.call(ME, "publishMetaInfo");
+      if (log.isLoggable(Level.FINER)) this.log.finer("publishMetaInfo");
       // publish the message here ...
       try {
          PublishKey pk = new PublishKey(this.global, null, "text/plain", "1.0");
@@ -306,19 +307,19 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          this.access.publish(msgUnit);
       }
       catch (XmlBlasterException ex) {
-              this.log.error(ME, "exception occured when publishing: " + ex.getMessage());
+              log.severe("exception occured when publishing: " + ex.getMessage());
       }
    }
 
    // erase ---------------------------------------------------------------
 
    private void erase(Figure figure) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "erase");
+      if (log.isLoggable(Level.FINER)) this.log.finer("erase");
       if (figure == null) return;
       StorableFigureHolder figureHolder = (StorableFigureHolder)this.figureTimestampTable.get(figure);
       if (figureHolder == null) return;
       String figureId = figureHolder.getFigureId();
-      if (this.log.TRACE) this.log.trace(ME, "erase '" + figureId + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("erase '" + figureId + "'");
       EraseKey ek = new EraseKey(this.global, figureId);
       EraseQos eq = new EraseQos(this.global);
       EraseReturnQos[] eraseArr = this.access.erase(ek, eq);
@@ -328,22 +329,22 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    // update ---------------------------------------------------------------
 
    private void currentFigureUpdate(StorableFigureHolder figureHolder) {
-      if (this.log.CALL) this.log.call(ME, "currentFigureUpdate");
+      if (log.isLoggable(Level.FINER)) this.log.finer("currentFigureUpdate");
       boolean sendToBack = false;
       boolean sendToFront = false;
       String toFront = figureHolder.getToFront(); 
       if (toFront != null) {
          boolean val = "true".equalsIgnoreCase(toFront);
-         this.log.info(ME, "update: the attribute 'TO_FRONT' is set to '" + val + "'"); 
+         log.info("update: the attribute 'TO_FRONT' is set to '" + val + "'"); 
          if (val == true) sendToFront = true;
          else sendToBack = true;                         
          // setFigureAttribute(fig, TO_FRONT, null);
       }
       String figureId = figureHolder.getFigureId();
-      if (this.log.TRACE) this.log.trace(ME, "currentFigureUpdate figureId='" + figureId + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("currentFigureUpdate figureId='" + figureId + "'");
       if (figureId == null) return;
       // String figureId = msgContent.getFigureId();
-      this.log.info(ME, "update figure: '" + figureId  + "' changed or added");
+      log.info("update figure: '" + figureId  + "' changed or added");
       StorableFigureHolder oldFigureHolder = (StorableFigureHolder)this.timestampFigureTable.get(figureId);
 
       Figure fig = figureHolder.getFigure();
@@ -359,11 +360,11 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          FigureChangeEvent ev = new FigureChangeEvent(oldFigure);
          figureRequestUpdate(ev);
          if (sendToFront) {
-            if (this.log.TRACE) this.log.trace(ME, "update: send to front");
+            if (log.isLoggable(Level.FINE)) this.log.fine("update: send to front");
             bringToFront(fig);
          } 
          else if (sendToBack) {
-            if (this.log.TRACE) this.log.trace(ME, "update: send to back");
+            if (log.isLoggable(Level.FINE)) this.log.fine("update: send to back");
             sendToBack(fig);
          } 
       }
@@ -372,13 +373,13 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    public synchronized String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      this.log.info(ME, "update for '" + cbSessionId + "', '" + updateKey.getOid() + "' length of msg is '" + content.length + "'");
+      log.info("update for '" + cbSessionId + "', '" + updateKey.getOid() + "' length of msg is '" + content.length + "'");
       try {
          lock();
          this.doPublishEvent = false;
               
          if (updateQos.isErased()) {
-            log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
+            log.info("Message '" + updateKey.getOid() + "' is erased");
             String figureId = updateKey.getOid();
             StorableFigureHolder figHolder = (StorableFigureHolder)this.timestampFigureTable.get(figureId);
             if (figHolder != null) {
@@ -396,10 +397,10 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
          currentFigureUpdate(figureHolder);
       }
       catch (IOException ex) {
-         this.log.error(ME, "update: an IOException occured when reconstructing the content: " + ex.getMessage());
+         log.severe("update: an IOException occured when reconstructing the content: " + ex.getMessage());
       }
       catch (Throwable ex) {
-         this.log.error(ME, "update: a Throwable occured when reconstructing the content (acknowledge anyway): " + ex.getMessage());
+         log.severe("update: a Throwable occured when reconstructing the content (acknowledge anyway): " + ex.getMessage());
          ex.printStackTrace();
       }
       finally {
@@ -410,7 +411,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    public void release() {
-      if (this.log.CALL) this.log.call(ME, "release");
+      if (log.isLoggable(Level.FINER)) this.log.finer("release");
       shutdown();
       super.release();
    }
@@ -420,51 +421,51 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    /*
       public void figureInvalidated(FigureChangeEvent e) {
          super.figureInvalidated(e);
-         if (this.log.CALL) this.log.call(ME, "figureInvalidated " + e.getFigure());
+         if (log.isLoggable(Level.FINER)) this.log.finer("figureInvalidated " + e.getFigure());
       }
 
       public void figureRemoved(FigureChangeEvent e) {
          super.figureRemoved(e);
-         if (this.log.CALL) this.log.call(ME, "figureRemoved " + e.getFigure());
+         if (log.isLoggable(Level.FINER)) this.log.finer("figureRemoved " + e.getFigure());
       }
 
       public void figureRequestRemove(FigureChangeEvent e) {
          super.figureRequestRemove(e);
-         if (this.log.CALL) this.log.call(ME, "figureRequestRemove " + e.getFigure());
+         if (log.isLoggable(Level.FINER)) this.log.finer("figureRequestRemove " + e.getFigure());
       }
 
       public void figureRequestUpdate(FigureChangeEvent e) {
          super.figureRequestUpdate(e);
-         if (this.log.CALL) this.log.call(ME, "figureRequestUpdate");
+         if (log.isLoggable(Level.FINER)) this.log.finer("figureRequestUpdate");
       }
 
       public void addAll(FigureEnumeration fe) {
-         if (this.log.CALL) this.log.call(ME, "addAll");
+         if (log.isLoggable(Level.FINER)) this.log.finer("addAll");
          super.addAll(fe);
       }
 
       public void init(java.awt.Rectangle viewRectangle) {
-         if (this.log.CALL) this.log.call(ME, "init");
+         if (log.isLoggable(Level.FINER)) this.log.finer("init");
          super.init(viewRectangle);
       }
 
       public void orphanAll(FigureEnumeration fe) {
-         if (this.log.CALL) this.log.call(ME, "orphanAll");
+         if (log.isLoggable(Level.FINER)) this.log.finer("orphanAll");
          super.orphanAll(fe);
       }
 
       public Figure remove(Figure figure) {
-         if (this.log.CALL) this.log.call(ME, "remove");
+         if (log.isLoggable(Level.FINER)) this.log.finer("remove");
          return super.remove(figure);
       }
 
       public void removeAll(FigureEnumeration fe) {
-         if (this.log.CALL) this.log.call(ME, "removeAll");
+         if (log.isLoggable(Level.FINER)) this.log.finer("removeAll");
          super.removeAll(fe);
       }
 
       public Figure replace(Figure figure, Figure replacement) {
-         if (this.log.CALL) this.log.call(ME, "replace");
+         if (log.isLoggable(Level.FINER)) this.log.finer("replace");
          return super.replace(figure, replacement);
       }
    */

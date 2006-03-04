@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins.prio;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -25,7 +26,7 @@ public final class StatusConfiguration
 {
    private String ME = "StatusConfiguration";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(StatusConfiguration.class.getName());
    private final DispatchAction[] dispatchActionArr = new DispatchAction[PriorityEnum.MAX_PRIORITY.getInt()+1];
    private DispatchAction defaultDispatchAction;
    private String oid;
@@ -40,7 +41,7 @@ public final class StatusConfiguration
          throw new IllegalArgumentException("Missing defaultAction for connectionState=" + connectionState);
       }
       this.glob = glob;
-      this.log = glob.getLog("dispatch");
+
       setOid(oid);
       setContent(content);
       setConnectionState(connectionState);
@@ -113,7 +114,7 @@ public final class StatusConfiguration
    public void addDispatchAction(String priorityRange, DispatchAction action) {
       if (priorityRange == null || priorityRange.length() < 1) {
          priorityRange = "0-9";
-         if (log.TRACE) log.trace(ME, "Given priorityRange is empty, setting it to '" + priorityRange + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Given priorityRange is empty, setting it to '" + priorityRange + "'");
       }
       priorityRange = priorityRange.trim();
       String[] lowerUpper = org.jutils.text.StringHelper.toArray(priorityRange, "- ");
@@ -137,7 +138,7 @@ public final class StatusConfiguration
 
       for (int i=lower.getInt(); i<=upper.getInt(); i++) {
          if (dispatchActionArr[i] != null) {
-            log.warn(ME, "Overwriting dispatch action=" + action.getAction() + " for priority=" +
+            log.warning("Overwriting dispatch action=" + action.getAction() + " for priority=" +
                          PriorityEnum.toPriorityEnum(i).toString());
          }
          dispatchActionArr[i] = action;

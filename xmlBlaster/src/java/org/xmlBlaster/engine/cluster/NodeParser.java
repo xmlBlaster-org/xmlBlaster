@@ -7,6 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -77,6 +79,7 @@ import org.xml.sax.SAXException;
  */
 public class NodeParser extends SaxHandlerBase
 {
+   private static Logger log = Logger.getLogger(NodeParser.class.getName());
    private String ME = "NodeParser";
 
    private final Global glob;
@@ -139,7 +142,7 @@ public class NodeParser extends SaxHandlerBase
                if (attrs != null) {
                   id = attrs.getValue("id");
                   if (id == null) {
-                     glob.getLog("cluster").error(ME, "<clusternode> attribute 'id' is missing, ignoring message");
+                     log.severe("<clusternode> attribute 'id' is missing, ignoring message");
                      throw new RuntimeException("NodeParser: <clusternode> attribute 'id' is missing, ignoring message");
                   }
                   id = id.trim();
@@ -154,7 +157,7 @@ public class NodeParser extends SaxHandlerBase
          }
 
          if (inMaster) { // delegate master internal tags
-            if (tmpMaster == null) { glob.getLog("cluster").error(ME, "Internal problem in <master> section"); return; }
+            if (tmpMaster == null) { log.severe("Internal problem in <master> section"); return; }
             tmpMaster.startElement(uri, localName, name, character, attrs);
             return;
          }
@@ -182,7 +185,7 @@ public class NodeParser extends SaxHandlerBase
             if (tmpState.startElement(uri, localName, name, character, attrs) == true)
                tmpClusterNode.setNodeStateInfo(tmpState);
             else {
-               glob.getLog("cluster").error(ME, "Internal problem in <state> section");
+               log.severe("Internal problem in <state> section");
                tmpState = null;
             }
             character.setLength(0);
@@ -201,7 +204,7 @@ public class NodeParser extends SaxHandlerBase
             if (tmpNodeInfo.startElement(uri, localName, name, character, attrs) == true)
                tmpClusterNode.setNodeInfo(tmpNodeInfo);
             else {
-               glob.getLog("cluster").error(ME, "Internal problem in <"+name+"> section");
+               log.severe("Internal problem in <"+name+"> section");
                tmpNodeInfo = null;
             }
             character.setLength(0);
@@ -216,7 +219,7 @@ public class NodeParser extends SaxHandlerBase
          throw new SAXException("", ex);
       }
 
-      glob.getLog("cluster").warn(ME, "startElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
+      log.warning("startElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
    }
 
 
@@ -268,7 +271,7 @@ public class NodeParser extends SaxHandlerBase
          return;
       }
 
-      glob.getLog("cluster").warn(ME, "endElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
+      log.warning("endElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
    }
 
 
@@ -347,7 +350,7 @@ public class NodeParser extends SaxHandlerBase
       }
       catch(Throwable e) {
          e.printStackTrace();
-         glob.getLog(null).error("TestFailed", e.toString());
+         log.severe(e.toString());
       }
    }
 }

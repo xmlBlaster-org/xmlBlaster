@@ -15,7 +15,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageNotWriteableException;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -40,7 +41,7 @@ public class XBMessage implements Message {
    public final static int DEFAULT_TYPE = XBMessage.STREAM;
    
    private final static String ME = "XBMessage";
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(XBMessage.class.getName());
    protected Global  global;
    protected byte[]  content;
    protected int     type;
@@ -90,7 +91,7 @@ public class XBMessage implements Message {
          this.global = new Global();
       else 
          this.global = this.session.global;
-      this.log = this.global.getLog("jms");
+
       this.content = content;
       this.props = new HashMap();
       this.type = type;

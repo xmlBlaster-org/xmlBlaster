@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.client.key.EraseKey;
@@ -48,7 +49,7 @@ public class TestPtPPersistent extends TestCase  {
    private static String ME = "TestPtPPersistent";
    private static final long PUB_DELAY=250L;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestPtPPersistent.class.getName());
 
    private int serverPort = 7674;
    private EmbeddedXmlBlaster serverThread;
@@ -76,11 +77,11 @@ public class TestPtPPersistent extends TestCase  {
     */
    protected void setUp() {
       this.glob = (this.glob == null) ? Global.instance() : this.glob;
-      this.log = this.glob.getLog("test");
+
       glob.init(Util.getOtherServerPorts(serverPort));
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+      log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
          I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
@@ -94,11 +95,11 @@ public class TestPtPPersistent extends TestCase  {
          con.connect(connectQos, null);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed: " + e.getMessage());
+          log.warning("setUp() - login failed: " + e.getMessage());
           fail("setUp() - login fail: " + e.getMessage());
       }
       catch (Exception e) {
-          log.error(ME, "setUp() - login failed: " + e.toString());
+          log.severe("setUp() - login failed: " + e.toString());
           e.printStackTrace();
           fail("setUp() - login fail: " + e.toString());
       }
@@ -112,10 +113,10 @@ public class TestPtPPersistent extends TestCase  {
    protected void tearDown() {
       I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       try {
-         log.info(ME, "Entering tearDown(), test is finished");
+         log.info("Entering tearDown(), test is finished");
          PropString defaultPlugin = new PropString("CACHE,1.0");
          String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
-         log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+         log.info("Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
          EraseKey eraseKey = new EraseKey(this.glob, "//airport", "XPATH");      
          EraseQos eraseQos = new EraseQos(this.glob);
          con.erase(eraseKey, eraseQos);
@@ -147,7 +148,7 @@ public class TestPtPPersistent extends TestCase  {
     */
    public void doPublish(int counter, String oid, boolean doGc, long sleep) throws XmlBlasterException {
       String content = "" + counter;
-      log.info(ME, "Publishing message " + content);
+      log.info("Publishing message " + content);
 
       PublishKey key = new PublishKey(this.glob);
       if (oid != null) key.setOid(oid);
@@ -165,7 +166,7 @@ public class TestPtPPersistent extends TestCase  {
       }
       catch (Exception ex) {
       }
-      log.info(ME, "Success: Publishing of " + content + " done");
+      log.info("Success: Publishing of " + content + " done");
    }
 
    public void testPersistentPtPOneOidWithGc() {
@@ -248,7 +249,7 @@ public class TestPtPPersistent extends TestCase  {
             assertTrue("an exception on publish '" + i + "' should have occurred ", false);
          }
          catch (XmlBlasterException ex) {
-            this.log.info(ME, "this is an allowed exception since queues are overflown");
+            log.info("this is an allowed exception since queues are overflown");
          }
       }
 
@@ -298,7 +299,7 @@ public class TestPtPPersistent extends TestCase  {
             GetQos getQos = new GetQos(this.glob); 
             MsgUnit[] tmp = this.glob.getXmlBlasterAccess().get(getKey, getQos);
             if (tmp.length > 0) 
-               this.log.info(ME, tmp[0].getContentStr());
+               log.info(tmp[0].getContentStr());
          }
          catch (XmlBlasterException ex) {
             ex.printStackTrace();

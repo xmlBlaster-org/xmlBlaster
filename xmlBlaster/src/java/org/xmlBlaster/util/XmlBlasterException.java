@@ -10,6 +10,8 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.io.ByteArrayOutputStream;
 import java.text.MessageFormat;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Global;
@@ -56,6 +58,7 @@ import org.jutils.JUtilsException;
  */
 public class XmlBlasterException extends Exception implements java.io.Serializable
 {
+   private static Logger log = Logger.getLogger(XmlBlasterException.class.getName());
    private static final long serialVersionUID = -973794183539996697L;
    transient private final Global glob;
    transient private ErrorCode errorCodeEnum;
@@ -252,7 +255,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          }
       }
       catch (IllegalArgumentException e) {
-         glob.getLog("core").error("XmlBlasterException", "Please check your formatting string for exceptions, usually set by 'XmlBlasterException.logFormat=...'" +
+         log.severe("Please check your formatting string for exceptions, usually set by 'XmlBlasterException.logFormat=...'" +
                    " as described in http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html: " + e.toString() +
                    "\nOriginal exception is: errorCode=" + errorCodeStr + " message=" + getRawMessage());
          if (isInternal() || handleAsInternal) {
@@ -454,7 +457,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          return new XmlBlasterException(glob, ErrorCode.toErrorCode(errorCode), "XmlBlasterException", reason);
       }
       catch (IllegalArgumentException e) {
-         glob.getLog("core").warn("XmlBlasterException", "Parsing exception string <" + toString + "> failed: " + e.toString());
+         log.warning("Parsing exception string <" + toString + "> failed: " + e.toString());
          return new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "XmlBlasterException", toString);
       }
    }
@@ -618,14 +621,14 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          exceptionFromServer = new Boolean(new String(data, start, end-start));
       }
       catch (java.lang.StringIndexOutOfBoundsException e) {
-         glob.getLog("core").error("XmlBlasterException", "Receiving invalid format for XmlBlasterException in '" + new String(data) + "'");
+         log.severe("Receiving invalid format for XmlBlasterException in '" + new String(data) + "'");
       }
       ErrorCode errorCode = ErrorCode.INTERNAL_UNKNOWN;
       try {
          errorCode = ErrorCode.toErrorCode(errorCodeStr);
       }
       catch (Throwable e) {
-         glob.getLog("core").error("XmlBlasterException", "Receiving invalid errorCode in XmlBlasterException in '" + new String(data) + "'");
+         log.severe("Receiving invalid errorCode in XmlBlasterException in '" + new String(data) + "'");
          message = "Can't parse XmlBlasterException in method parseByteArr(). original message is '" + new String(data) + "'";
       }
       Timestamp ti = new Timestamp();
@@ -633,7 +636,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          ti = Timestamp.valueOf(timestampStr);
       }
       catch (Throwable e) {
-         glob.getLog("core").trace("XmlBlasterException", "Receiving invalid timestamp in XmlBlasterException in '" + new String(data) + "'");
+         log.fine("Receiving invalid timestamp in XmlBlasterException in '" + new String(data) + "'");
       }
       return new XmlBlasterException(glob, errorCode,
                                node, location, lang, message, versionInfo, ti,

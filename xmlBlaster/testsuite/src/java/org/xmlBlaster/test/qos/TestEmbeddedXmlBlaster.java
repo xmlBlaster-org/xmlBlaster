@@ -7,7 +7,8 @@ Comment:   Test start/stop xmlBlaster in a thread
 package org.xmlBlaster.test.qos;
 
 import org.jutils.runtime.ThreadLister;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -37,7 +38,7 @@ public class TestEmbeddedXmlBlaster extends TestCase
 {
    private static final String ME = "TestEmbeddedXmlBlaster";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestEmbeddedXmlBlaster.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -57,7 +58,7 @@ public class TestEmbeddedXmlBlaster extends TestCase
    public TestEmbeddedXmlBlaster(Global glob, String testName) {
       super(testName);
       this.glob = glob;
-      this.log = glob.getLog(null);
+
       this.name = testName; // name to login to xmlBlaster
    }
 
@@ -120,10 +121,10 @@ public class TestEmbeddedXmlBlaster extends TestCase
     */
    public void testThreadFree()
    {
-      log.info(ME, "######## Start testThreadFree()");
+      log.info("######## Start testThreadFree()");
 
       int threadsBefore = ThreadLister.countThreads();
-      log.info(ME, "Testing thread consume before xmlBlaster startup=" + threadsBefore);
+      log.info("Testing thread consume before xmlBlaster startup=" + threadsBefore);
       ThreadLister.listAllThreads(System.out);
 
       // Start xmlBlaster
@@ -145,7 +146,7 @@ public class TestEmbeddedXmlBlaster extends TestCase
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing JDBC access");
+      log.info("XmlBlaster is ready for testing JDBC access");
 
       // Stop xmlBlaster
       try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
@@ -155,7 +156,7 @@ public class TestEmbeddedXmlBlaster extends TestCase
 
       ThreadLister.listAllThreads(System.out);
       int threadsAfter = ThreadLister.countThreads();
-      log.info(ME, "Currently used threads after server startup/shutdown" + threadsAfter);
+      log.info("Currently used threads after server startup/shutdown" + threadsAfter);
       int allow = threadsBefore + 1; // This 1 thread is temporary
       assertTrue("We have a thread leak, threadsBefore=" + threadsBefore + " threadsAfter=" + threadsAfter, threadsAfter <= allow);
 

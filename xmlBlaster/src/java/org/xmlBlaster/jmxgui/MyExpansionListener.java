@@ -13,7 +13,8 @@ import java.awt.event.*;
 
 import java.util.Hashtable;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 
@@ -24,7 +25,7 @@ import org.xmlBlaster.util.Global;
  */
 public class MyExpansionListener implements TreeSelectionListener {
 
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(MyExpansionListener.class.getName());
   private Global glob = null;
   private final String ME = "MyExpansionListener";
 
@@ -39,7 +40,7 @@ public class MyExpansionListener implements TreeSelectionListener {
   public MyExpansionListener(MainFrame parentFrame, Global glob) {
 //    this.connectorClient = connectorClient;
     if (glob == null) glob = Global.instance();
-    log = glob.getLog("jmxGUI");
+
     cc = new ComponentController(glob);
     this.parentFrame = parentFrame;
   }

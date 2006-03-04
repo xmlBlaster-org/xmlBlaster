@@ -22,9 +22,7 @@ import java.util.Properties;
 import java.io.InputStream;
 
 import org.jutils.init.Property;
-import org.jutils.JUtilsException;
-import org.jutils.log.LogChannel;
-
+import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -36,6 +34,7 @@ import org.xmlBlaster.util.def.ErrorCode;
  */
 
 public class JacorbUtil {
+   private static Logger log = Logger.getLogger(JacorbUtil.class.getName());
    private static final String ME = "JacorbUtil";
    /**
     * Load the given jacorb properties file from the context classloader and
@@ -61,8 +60,8 @@ public class JacorbUtil {
             Property p = glob.getProperty();
             p.addArgs2Props( props );
          } else {
-            LogChannel log = glob.getLog("j2ee");
-            log.warn(ME,"No "+fileName+" found in context classpath");
+
+            log.warning("No "+fileName+" found in context classpath");
          }
       } catch (Exception e) {
          throw new XmlBlasterException(glob,ErrorCode.RESOURCE_CONFIGURATION,

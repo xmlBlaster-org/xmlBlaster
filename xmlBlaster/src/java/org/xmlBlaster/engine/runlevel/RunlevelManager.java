@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.TimeHelper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
@@ -33,7 +34,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
 {
    private String ME = "RunlevelManager";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(RunlevelManager.class.getName());
    private int currRunlevel = 0;
 
    public static final int RUNLEVEL_HALTED_PRE = -1;
@@ -71,9 +72,9 @@ public final class RunlevelManager implements RunlevelManagerMBean
     */
    public RunlevelManager(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("runlevel");
+
       this.ME = "RunlevelManager" + this.glob.getLogPrefixDashed();
-      if (log.CALL) log.call(ME, "Incarnated run level manager");
+      if (log.isLoggable(Level.FINER)) log.finer("Incarnated run level manager");
       // For JMX instanceName may not contain ","
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
             "RunlevelManager", this.glob.getScopeContextNode());
@@ -85,7 +86,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
          this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, e.getMessage());
+         log.severe(e.getMessage());
       }
    }
    
@@ -107,7 +108,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
       // TODO: This should be configurable
       new Authenticate(glob);
       // glob.getProtocolManager(); // force incarnation
-      if (log.CALL) log.call(ME, "Initialized run level manager");
+      if (log.isLoggable(Level.FINER)) log.finer("Initialized run level manager");
    }
 
    /**
@@ -144,7 +145,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
          String text = "Runlevel " + newRunlevel + " is not allowed, please choose one of " +
                        RUNLEVEL_HALTED + "|" + RUNLEVEL_STANDBY + "|" +
                        RUNLEVEL_CLEANUP + "|" + RUNLEVEL_RUNNING;
-         if (log.TRACE) log.trace(ME, text);
+         if (log.isLoggable(Level.FINE)) log.fine(text);
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, text);
       }
 
@@ -197,7 +198,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
     * @exception XmlBlasterException for invalid run level
     */
    public final int changeRunlevel(int newRunlevel, boolean force) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Changing from run level " + currRunlevel + " to run level " + newRunlevel + " with force=" + force);
+      if (log.isLoggable(Level.FINER)) log.finer("Changing from run level " + currRunlevel + " to run level " + newRunlevel + " with force=" + force);
       long start = System.currentTimeMillis();
       int numErrors = 0;
       if (currRunlevel == newRunlevel) {
@@ -206,13 +207,13 @@ public final class RunlevelManager implements RunlevelManagerMBean
       int from = currRunlevel;
       int to = newRunlevel;
 
-      log.info(ME, "Change request from run level " + toRunlevelStr(from) + " to run level " + toRunlevelStr(to) + " ...");
+      log.info("Change request from run level " + toRunlevelStr(from) + " to run level " + toRunlevelStr(to) + " ...");
 
       if (!isMajorLevel(to)) {
          String text = "Runlevel " + to + " is not allowed, please choose one of " +
                        RUNLEVEL_HALTED + "|" + RUNLEVEL_STANDBY + "|" +
                        RUNLEVEL_CLEANUP + "|" + RUNLEVEL_RUNNING;
-         if (log.TRACE) log.trace(ME, text);
+         if (log.isLoggable(Level.FINE)) log.fine(text);
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, text);
       }
 
@@ -228,9 +229,9 @@ public final class RunlevelManager implements RunlevelManagerMBean
                if (dest > from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
-                     log.info(ME, "Successful startup to run level " + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
+                     log.info("Successful startup to run level " + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
                   else
-                     log.info(ME, "Startup to run level " + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
+                     log.info("Startup to run level " + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
                }
             }
          }
@@ -250,15 +251,15 @@ public final class RunlevelManager implements RunlevelManagerMBean
                if (dest < from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
-                     log.info(ME, "Successful shutdown to run level=" + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
+                     log.info("Successful shutdown to run level=" + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
                   else
-                     log.info(ME, "Shutdown to run level=" + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
+                     log.info("Shutdown to run level=" + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
                }
             }
          }
       }
 
-      if (log.CALL) log.call(ME, "Leaving changeRunlevel with runlevel = " + toRunlevelStr(currRunlevel)); 
+      if (log.isLoggable(Level.FINER)) log.finer("Leaving changeRunlevel with runlevel = " + toRunlevelStr(currRunlevel)); 
       return numErrors;
    }
 
@@ -268,34 +269,34 @@ public final class RunlevelManager implements RunlevelManagerMBean
     */
    private void startupPlugins(int from, int to) throws XmlBlasterException {
       TreeSet pluginSet = this.glob.getPluginHolder().getStartupSequence(this.glob.getStrippedId(), from+1, to);
-      if (this.log.CALL) this.log.call(ME, "startupPlugins. the size of the plugin set is '" + pluginSet.size() + "'");
+      if (log.isLoggable(Level.FINER)) this.log.finer("startupPlugins. the size of the plugin set is '" + pluginSet.size() + "'");
       Iterator iter = pluginSet.iterator();
       while (iter.hasNext()) {
          PluginConfig pluginConfig = (PluginConfig)iter.next();
          if (pluginConfig == null) { 
-            this.log.warn(ME, "startupPlugins. the pluginConfig object is null");
+            log.warning("startupPlugins. the pluginConfig object is null");
             continue;
          }
          if (!pluginConfig.isCreate()) {
-            this.log.trace(ME, "startupPlugins. the plugin + " + pluginConfig.getId() + " is ignored, create='false'");
+            log.fine("startupPlugins. the plugin + " + pluginConfig.getId() + " is ignored, create='false'");
             continue;
          }
-         if (this.log.DUMP) this.log.dump(ME, "startupPlugins " + pluginConfig.toXml());
+         if (log.isLoggable(Level.FINEST)) this.log.finest("startupPlugins " + pluginConfig.toXml());
          try {
             PluginInfo pluginInfo = pluginConfig.getPluginInfo();
-            if (this.log.CALL) {
+            if (log.isLoggable(Level.FINER)) {
                if (pluginInfo != null) {
-                  this.log.call(ME,"startupPlugins pluginInfo object: " + pluginInfo.getId() + " classname: " + pluginInfo.getClassName());
+                  log.finer("startupPlugins pluginInfo object: " + pluginInfo.getId() + " classname: " + pluginInfo.getClassName());
                }
-               else this.log.call(ME, "startupPlugins: the pluginInfo is null");
+               else log.finer("startupPlugins: the pluginInfo is null");
             }
             this.glob.getPluginManager().getPluginObject(pluginInfo);
-            this.log.info(ME, "startupPlugins: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded");
+            log.info("startupPlugins: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded");
          }
          catch (Throwable ex) {
             ErrorCode code = pluginConfig.getUpAction().getOnFail();
             if (code == null) {
-               this.log.warn(ME, "startupPlugins. Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
+               log.warning("startupPlugins. Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
                ex.printStackTrace();
             }
             else {
@@ -322,12 +323,12 @@ public final class RunlevelManager implements RunlevelManagerMBean
             I_Plugin plugin = this.glob.getPluginManager().getPluginObject(pluginInfo);
             plugin.shutdown();
             this.glob.getPluginManager().removeFromPluginCache(pluginInfo.getId());
-            this.log.info(ME, "fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' shutdown");
+            log.info("fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' shutdown");
          }
          catch (Throwable ex) {
             ErrorCode code = pluginConfig.getDownAction().getOnFail();
             if (code == null) {
-               this.log.warn(ME, ".fireRunlevelEvent. Exception when shutting down the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
+               log.warning(".fireRunlevelEvent. Exception when shutting down the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
             }
             else {
                throw new XmlBlasterException(this.glob, code, ME + ".fireRunlevelEvent",  ".fireRunlevelEvent. Exception when shutting down the plugin '" + pluginConfig.getId() + "'", ex);
@@ -357,21 +358,21 @@ public final class RunlevelManager implements RunlevelManagerMBean
          I_RunlevelListener li = listeners[ii];
          try {
             li.runlevelChange(from, to, force);
-            if (log.TRACE) {
+            if (log.isLoggable(Level.FINE)) {
                if (isMajorLevel(to)) {
                   if (from < to)
-                     log.trace(ME, li.getName() + " successful startup to run level=" + to + ", errors=" + numErrors + ".");
+                     log.fine(li.getName() + " successful startup to run level=" + to + ", errors=" + numErrors + ".");
                   else
-                     log.trace(ME, li.getName() + " successful shutdown to run level=" + to + ", errors=" + numErrors + ".");
+                     log.fine(li.getName() + " successful shutdown to run level=" + to + ", errors=" + numErrors + ".");
                }
             }
          }
          catch (XmlBlasterException e) {
             if (e.isInternal()) {
-               log.error(ME, "Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.getMessage());
+               log.severe("Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.getMessage());
             }
             else {
-               log.warn(ME, "Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.getMessage());
+               log.warning("Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.getMessage());
             }
             numErrors++;
          }

@@ -2,7 +2,8 @@ package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
@@ -20,7 +21,7 @@ import java.util.Hashtable;
 public class Manager implements I_Manager {
 
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(Manager.class.getName());
 
    private static final String ME = "PasswdManager";
    private static final String TYPE = "htpasswd";
@@ -39,7 +40,7 @@ public class Manager implements I_Manager {
     */
    public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = glob.getLog("auth");
+
    }
 
    public final Global getGlobal() {
@@ -56,7 +57,7 @@ public class Manager implements I_Manager {
 
 
    public I_Session reserveSession(String sessionId) throws XmlBlasterException {
-      if (log != null && log.CALL) log.call(ME, "reserveSession(sessionId="+sessionId+")");
+      if (log != null && log.isLoggable(Level.FINER)) log.finer("reserveSession(sessionId="+sessionId+")");
       Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);

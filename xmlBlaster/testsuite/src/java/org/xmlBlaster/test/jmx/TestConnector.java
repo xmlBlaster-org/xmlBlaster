@@ -3,7 +3,8 @@ package org.xmlBlaster.test.jmx;
 import java.io.IOException;
 import junit.framework.*;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.util.admin.extern.SerializeHelper;
@@ -31,7 +32,7 @@ public class TestConnector  extends TestCase implements I_Callback {
   private final int serverPort = 3424;
   private final static String ME = "TestConnector";
   private Global glob = null;
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(TestConnector.class.getName());
   private I_XmlBlasterAccess returnCon;
   private I_XmlBlasterAccess invokeCon;
 
@@ -50,8 +51,8 @@ public class TestConnector  extends TestCase implements I_Callback {
    protected void setUp()
    {
      if (this.glob == null) this.glob = Global.instance();
-     this.log = this.glob.getLog("test");
-     log.info(ME,"setUp of TestConnector...");
+
+     log.info("setUp of TestConnector...");
      //connect to embedded xmlBlaster
 
     Properties prop = new Properties();
@@ -63,14 +64,14 @@ public class TestConnector  extends TestCase implements I_Callback {
     invokeCon = glob.getXmlBlasterAccess();
     returnCon = glob.getXmlBlasterAccess();
 
-//    log.info(ME,"Connecting to embedded xmlBlaster on port "+ port +" Adresse " + addr.getAddress());
+//    log.info("Connecting to embedded xmlBlaster on port "+ port +" Adresse " + addr.getAddress());
     try {
       ConnectQos qos = new ConnectQos(glob, "InternalConnector", "connector");
       returnCon.connect(qos, this);
     }
     catch (XmlBlasterException ex) {
       assertTrue("Error when connecting to xmlBlaster " + ex.toString(), false);
-      log.error(ME,"Error when connecting to xmlBlaster " + ex.toString());
+      log.severe("Error when connecting to xmlBlaster " + ex.toString());
     }
     SubscribeKey subKey = new SubscribeKey(this.glob, "xmlBlasterMBeans_Return");
 
@@ -81,12 +82,12 @@ public class TestConnector  extends TestCase implements I_Callback {
     }
     catch (XmlBlasterException ex) {
       assertTrue("Error when subscribing to xmlBlaster " + ex.toString(), false);
-      log.error(ME,"Error when subscribing to xmlBlaster " + ex.toString());
+      log.severe("Error when subscribing to xmlBlaster " + ex.toString());
     }
      sh = new SerializeHelper(glob);
 
-     if (invokeCon.isConnected() && returnCon.isConnected()) {log.info(ME,"connection establisheld");}
-     else log.warn(ME,"Couldnt connect to server on port " + port);
+     if (invokeCon.isConnected() && returnCon.isConnected()) {log.info("connection establisheld");}
+     else log.warning("Couldnt connect to server on port " + port);
    }
 
 
@@ -105,18 +106,18 @@ public class TestConnector  extends TestCase implements I_Callback {
     */
    public void testConnector() {
      try {
-       log.info(ME,"Creating TestMessage");
+       log.info("Creating TestMessage");
        mi = new MethodInvocation();
        mi.setMethodName("getDefaultDomain");
-       log.info(ME,"new MethodInvocation build " + mi.getMethodName());
+       log.info("new MethodInvocation build " + mi.getMethodName());
        PublishReturnQos rqos = invokeCon.publish(new MsgUnit("<key oid='xmlBlasterMBeans_Invoke'/>",sh.serializeObject(mi),"<qos/>"));
-       log.info(ME,"Publish test Message to jmx-topic..");
+       log.info("Publish test Message to jmx-topic..");
        }
     catch (XmlBlasterException ex) {
       ex.printStackTrace();
     }
     catch (IOException ex) {
-      log.error(ME,"Error when creating methodInvocation " + ex.toString());
+      log.severe("Error when creating methodInvocation " + ex.toString());
       ex.printStackTrace();
     }
 
@@ -130,19 +131,19 @@ public class TestConnector  extends TestCase implements I_Callback {
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message, checking ...");
+      log.info("Receiving update of a message, checking ...");
       MethodInvocation mi = null;
       try {
         mi = (MethodInvocation) sh.deserializeObject(content);
       }
       catch (IOException ex) {
-        log.error(ME,"Error when deserializing object");
+        log.severe("Error when deserializing object");
       }
       Object obj = mi.getReturnValue();
-      log.info(ME,"Received Object: " + obj);
-      if (obj.toString().length()>0) log.info(ME,"Success... Received Domainname: " + obj);
+      log.info("Received Object: " + obj);
+      if (obj.toString().length()>0) log.info("Success... Received Domainname: " + obj);
       else {
-        log.error(ME,"Error when receiving returning object...");
+        log.severe("Error when receiving returning object...");
         assertTrue("Error when receiving returning object...", false);
       }
       return "";

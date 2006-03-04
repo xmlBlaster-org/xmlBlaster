@@ -6,7 +6,8 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.xbformat;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
@@ -46,7 +47,7 @@ public class MsgInfo {
 
    private final Global glob;
 
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(MsgInfo.class.getName());
 
    public static final byte INVOKE_BYTE = (byte) 73; // INVOKE_TYPE = "I";
 
@@ -137,7 +138,7 @@ public class MsgInfo {
          MethodName methodName, String sessionId,
          I_ProgressListener progressListener) {
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       this.progressListener = progressListener;
       this.msgVec = new Vector();
       initialize();
@@ -365,7 +366,7 @@ public class MsgInfo {
    /** Enable checksum? */
    public final void setChecksum(boolean checksum) {
       if (checksum == true) {
-         log.warn(ME, "Checksum for raw socket message is not supported");
+         log.warning("Checksum for raw socket message is not supported");
          return;
       }
       this.checksum = checksum;
@@ -380,7 +381,7 @@ public class MsgInfo {
     */
    public final void setCompressed(boolean compressed) {
       if (compressed == true) {
-         log.warn(ME, "Compression for raw socket message is not supported");
+         log.warning("Compression for raw socket message is not supported");
          return;
       }
       this.compressed = compressed;
@@ -563,7 +564,7 @@ public class MsgInfo {
             errorCode = ErrorCode.toErrorCode(data.getStateInfo());
          }
          catch (Throwable e) {
-            log.error(ME, "Unexpected exception markup in: '" + msg.getQos() + "': " + e.toString());
+            log.severe("Unexpected exception markup in: '" + msg.getQos() + "': " + e.toString());
          }
          XmlBlasterException e = new XmlBlasterException(glob, errorCode, ME, "");
          e.isServerSide(!glob.isServerSide()); // mark to be from the other side

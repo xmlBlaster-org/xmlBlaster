@@ -6,7 +6,8 @@ Comment:   Native Interface to xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
@@ -48,7 +49,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private final Authenticate authenticate;
    private final AvailabilityChecker availabilityChecker;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(XmlBlasterImpl.class.getName());
    private final byte[] EMPTY_BYTEARR = null;
 
    /**
@@ -60,7 +61,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       this.authenticate = authenticate;
       this.glob = authenticate.getGlobal();
       this.ME = "XmlBlasterImpl" + this.glob.getLogPrefixDashed();
-      this.log = this.glob.getLog("core");
+
       this.requestBroker = new RequestBroker(authenticate);
       this.availabilityChecker = new AvailabilityChecker(this.glob);
    }
@@ -72,7 +73,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String subscribe(AddressServer addressServer, String sessionId,
                                  String xmlKey_literal, String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering subscribe(" + sessionId + ", key, qos)");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(" + sessionId + ", key, qos)");
 
       try {
          // authentication security check
@@ -107,7 +108,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    public final String[] unSubscribe(AddressServer addressServer, String sessionId,
                                      String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering unSubscribe(" + sessionId + ", key, qos)");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering unSubscribe(" + sessionId + ", key, qos)");
 
       try {
          // authentication and authorization security checks
@@ -144,7 +145,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String publish(AddressServer addressServer, String sessionId, MsgUnitRaw msgUnitRaw) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering publish()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publish()");
 
       try {
          // authentication and authorization security checks
@@ -170,7 +171,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String[] publishArr(AddressServer addressServer, String sessionId,
                                     MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering publishArr()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishArr()");
 
       try {
          // authentication and authorization security checks
@@ -200,12 +201,12 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final void publishOneway(AddressServer addressServer, String sessionId, MsgUnitRaw[] msgUnitArr) {
-      if (log.CALL) log.call(ME, "Entering publishOneway()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering publishOneway()");
       try {
          publishArr(addressServer, sessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         log.error(ME, "Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.getMessage());
+         log.severe("Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.getMessage());
       }
    }
 
@@ -216,7 +217,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String[] erase(AddressServer addressServer, String sessionId,
                                String xmlKey_literal, String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering erase()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering erase()");
 
       try {
          // authentication and authorization security checks
@@ -252,7 +253,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final MsgUnitRaw[] get(AddressServer addressServer, String sessionId,
                                  String xmlKey_literal, String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering get()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering get()");
 
       try {
          // authentication and authorization security checks
@@ -352,11 +353,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          else if (!sessionInfo.getSessionName().equalsAbsolute(qosData.getSender())) {
             //if (! publishQos.isFromPersistenceStore()) {
             if (!this.authenticate.acceptWrongSenderAddress(sessionInfo)) {
-               log.warn(ME, sessionInfo.getId() + " sends message '" + msgUnit.getKeyOid() + "' with invalid sender name '" + qosData.getSender() + "', we fix this");
+               log.warning(sessionInfo.getId() + " sends message '" + msgUnit.getKeyOid() + "' with invalid sender name '" + qosData.getSender() + "', we fix this");
                qosData.setSender(sessionInfo.getSessionName());
             }
             else {
-               log.info(ME, sessionInfo.getId() + " sends message '" + msgUnit.getKeyOid() + "' with invalid sender name '" + qosData.getSender() + "', we accept it");
+               log.info(sessionInfo.getId() + " sends message '" + msgUnit.getKeyOid() + "' with invalid sender name '" + qosData.getSender() + "', we accept it");
             }
          }
       }
@@ -386,7 +387,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     */
    public final String ping(AddressServer addressServer, String qos) {
       String ret = "<qos><state id='" + this.availabilityChecker.getStatus(qos) + "'/></qos>";
-      if (log.CALL) log.call(ME, "Entering ping("+qos+"), returning " + ret + " ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering ping("+qos+"), returning " + ret + " ...");
       return ret;
    }
 

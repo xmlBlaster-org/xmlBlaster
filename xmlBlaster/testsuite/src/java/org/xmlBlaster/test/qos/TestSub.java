@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -43,7 +44,7 @@ public class TestSub extends TestCase implements I_Callback
 {
    private static String ME = "TestSub";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSub.class.getName());
 
    private boolean messageArrived = false;
 
@@ -72,7 +73,7 @@ public class TestSub extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.senderName = loginName;
       this.receiverName = loginName;
    }
@@ -90,8 +91,8 @@ public class TestSub extends TestCase implements I_Callback
 
          String passwd = "secret";
          ConnectQos qos = new ConnectQos(glob, senderName, passwd);
-         if (log.TRACE)
-           log.trace(ME, "the connect qos is: " + qos.toXml());
+         if (log.isLoggable(Level.FINE))
+           log.fine("the connect qos is: " + qos.toXml());
          
          CallbackAddress cbAddress = new CallbackAddress(this.glob);
          cbAddress.setSecretSessionId(cbSessionId); // to protect our callback server - see method update()
@@ -100,7 +101,7 @@ public class TestSub extends TestCase implements I_Callback
          senderConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -134,7 +135,7 @@ public class TestSub extends TestCase implements I_Callback
     */
    public void testSubscribeXPath()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using XPath syntax ...");
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='' queryType='XPATH'>\n" +
@@ -145,9 +146,9 @@ public class TestSub extends TestCase implements I_Callback
       try {
          SubscribeReturnQos subscribeReturnQos = senderConnection.subscribe(xmlKey, null);
          subscribeOid = subscribeReturnQos.getSubscriptionId();
-         log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done: " + subscribeReturnQos.toXml());
+         log.info("Success: Subscribe subscription-id=" + subscribeOid + " done: " + subscribeReturnQos.toXml());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -162,7 +163,7 @@ public class TestSub extends TestCase implements I_Callback
     */
    public void testPublish()
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -178,9 +179,9 @@ public class TestSub extends TestCase implements I_Callback
          sentTimestamp = new Timestamp();
          PublishReturnQos tmp = senderConnection.publish(msgUnit);
          assertEquals("Wrong publishOid", publishOid, tmp.getKeyOid());
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -209,8 +210,8 @@ public class TestSub extends TestCase implements I_Callback
     */
    public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + "...");
-      log.info(ME, "subscribeOid=" + subscribeOid + ":" + updateQos.toXml());
+      log.info("Receiving update of message oid=" + updateKey.getOid() + "...");
+      log.info("subscribeOid=" + subscribeOid + ":" + updateQos.toXml());
 
       numReceived += 1;
 
@@ -223,7 +224,7 @@ public class TestSub extends TestCase implements I_Callback
          if (subscribeOid != null) 
             break;
          try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
-         log.info(ME, "waiting ...");
+         log.info("waiting ...");
       }
 
       assertEquals("Wrong cbSessionId", this.cbSessionId, cbSessionId_);
@@ -262,7 +263,7 @@ public class TestSub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

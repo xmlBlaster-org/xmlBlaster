@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -29,7 +30,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
 {
    private String ME = "CallbackCorbaDriver";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(CallbackCorbaDriver.class.getName());
    private BlasterCallback cb;
    private CallbackAddress callbackAddress;
    private OrbInstanceWrapper orbInstanceWrapper;
@@ -49,17 +50,17 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public final void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("corba");
+
       this.callbackAddress = callbackAddress;
       String callbackIOR = callbackAddress.getRawAddress();
       try {
          this.orbInstanceWrapper = OrbInstanceFactory.getOrbInstanceWrapper(this.glob, Constants.RELATING_CALLBACK);
          this.orb = this.orbInstanceWrapper.getOrb((String[])null, this.glob.getProperty().getProperties(), this.callbackAddress);
          this.cb = BlasterCallbackHelper.narrow(this.orb.string_to_object(callbackIOR));
-         if (log.TRACE) log.trace(ME, "Accessing client callback reference using given IOR string");
+         if (log.isLoggable(Level.FINE)) log.fine("Accessing client callback reference using given IOR string");
       }
       catch (Throwable e) {
-         log.error(ME, "The given callback IOR ='" + callbackIOR + "' is invalid: " + e.toString());
+         log.severe("The given callback IOR ='" + callbackIOR + "' is invalid: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "Corba-CallbackHandleInvalid", "The given callback IOR is invalid: " + e.toString());
       }
    }
@@ -158,7 +159,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    {
       if (msgArr == null || msgArr.length < 1)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
-      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getRawAddress());
+      if (log.isLoggable(Level.FINE)) log.fine("xmlBlaster.updateOneway() to " + callbackAddress.getRawAddress());
       //log.info(ME, "xmlBlaster.updateOneway(" + msgArr.length + ")");
 
       org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msgArr.length];
@@ -184,7 +185,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public final String ping(String qos) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "ping client");
+      if (log.isLoggable(Level.FINER)) log.finer("ping client");
       try {
          return this.cb.ping(qos);
       } catch (Throwable e) {
@@ -209,7 +210,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    }
 
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
-      if (log.TRACE) log.trace(ME, "Registering I_ProgressListener is not supported with this protocol plugin");
+      if (log.isLoggable(Level.FINE)) log.fine("Registering I_ProgressListener is not supported with this protocol plugin");
       return null;
    }
 
@@ -219,7 +220,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public void shutdown()
    {
-      if (log != null && log.CALL) log.call(ME, "Entering shutdown ...");
+      if (log != null && log.isLoggable(Level.FINER)) log.finer("Entering shutdown ...");
       if (this.cb != null) {
          // CorbaDriver.getOrb().disconnect(this.cb); TODO: !!! must be called delayed, otherwise the logout() call from the client is aborted with a CORBA exception
          this.cb._release();
@@ -233,7 +234,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
 
       // On disconnect: called once for sessionQueue and for last session for subjectQueue as well
-      if (log != null && log.TRACE) log.trace(ME, "Shutdown of CORBA callback client done.");
+      if (log != null && log.isLoggable(Level.FINE)) log.fine("Shutdown of CORBA callback client done.");
    }
 
 }

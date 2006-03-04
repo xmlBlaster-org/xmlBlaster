@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.authentication;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -39,7 +40,7 @@ public class TestSession extends TestCase implements I_Callback
 {
    private static String ME = "TestSession";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSession.class.getName());
    private String name;
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
@@ -54,7 +55,7 @@ public class TestSession extends TestCase implements I_Callback
    {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
        this.name = name;
    }
 
@@ -80,9 +81,9 @@ public class TestSession extends TestCase implements I_Callback
     */
    public void testZeroSessions()
    {
-      log.info(ME, "testZeroSessions() ...");
+      log.info("testZeroSessions() ...");
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          Global glob = this.glob.getClone(null);
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
@@ -91,9 +92,9 @@ public class TestSession extends TestCase implements I_Callback
          assertTrue("Connecting with zero sessions should not be possible", false);
       }
       catch (Exception e) {
-         log.info(ME, "Success, can't connect with zero sessions");
+         log.info("Success, can't connect with zero sessions");
       }
-      log.info(ME, "Success in testZeroSessions()");
+      log.info("Success in testZeroSessions()");
    }
 
 
@@ -101,14 +102,14 @@ public class TestSession extends TestCase implements I_Callback
     */
    public void testSessionOverflow()
    {
-      log.info(ME, "testSessionOverflow() ...");
+      log.info("testSessionOverflow() ...");
       int numLogin = 5;
       int maxSessions = numLogin - 2;
       I_XmlBlasterAccess[] con = new I_XmlBlasterAccess[5];
       try {
          for (int ii=0; ii<numLogin; ii++) {
             try {
-               log.info(ME, "Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
+               log.info("Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
                con[ii] = glob.getClone(null).getXmlBlasterAccess();
                ConnectQos qos = new ConnectQos(con[ii].getGlobal(), name, passwd);
                qos.setMaxSessions(maxSessions);
@@ -118,10 +119,10 @@ public class TestSession extends TestCase implements I_Callback
             }
             catch (Exception e) {
                if (ii >= maxSessions) {
-                  log.info(ME, "Success, connecting number " + ii + " of max=" + maxSessions + " was denied: " + e.toString());
+                  log.info("Success, connecting number " + ii + " of max=" + maxSessions + " was denied: " + e.toString());
                }
                else {
-                  log.error(ME, e.toString());
+                  log.severe(e.toString());
                   assertTrue("Connecting number " + ii + " of max=" + maxSessions + " should be possible", false);
                }
             }
@@ -140,7 +141,7 @@ public class TestSession extends TestCase implements I_Callback
             assertTrue(e.toString(), false);
          }
       }
-      log.info(ME, "Success in testSessionOverflow()");
+      log.info("Success in testSessionOverflow()");
    }
 
 
@@ -150,7 +151,7 @@ public class TestSession extends TestCase implements I_Callback
     */
    public void testSessionTimeout()
    {
-      log.info(ME, "testSessionTimeout() ...");
+      log.info("testSessionTimeout() ...");
       long timeout = 1000L;
       I_XmlBlasterAccess con = null;
       Global glob = this.glob.getClone(null);
@@ -162,17 +163,17 @@ public class TestSession extends TestCase implements I_Callback
             con.connect(qos, this);
          }
          catch (Exception e) {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
             assertTrue("Login failed" + e.toString(), false);
          }
 
          try { Thread.currentThread().sleep(timeout*2); } catch (Exception e) { } // wait until session expires
 
          try {
-            log.info(ME, "Check that session has dissapeared ...");
+            log.info("Check that session has dissapeared ...");
             MsgUnit[] msgs = Util.adminGet(glob, "__sys__UserList");
             assertEquals("Can't access __sys__UserList", 1, msgs.length);
-            log.info(ME, "Got userList=" + msgs[0].getContentStr());
+            log.info("Got userList=" + msgs[0].getContentStr());
             assertEquals("Session of " + name + " was not destroyed by failing callback",
                       -1, msgs[0].getContentStr().indexOf(name));
          }
@@ -188,7 +189,7 @@ public class TestSession extends TestCase implements I_Callback
             assertTrue(e.toString(), false);
          }
       }
-      log.info(ME, "Success in testSessionTimeout()");
+      log.info("Success in testSessionTimeout()");
    }
 
 
@@ -198,7 +199,7 @@ public class TestSession extends TestCase implements I_Callback
     */
    public void testSessionRefresh()
    {
-      log.info(ME, "testSessionRefresh() ...");
+      log.info("testSessionRefresh() ...");
       long timeout = 2000L;
       I_XmlBlasterAccess con = null;
       Global glob = this.glob.getClone(null);
@@ -211,23 +212,23 @@ public class TestSession extends TestCase implements I_Callback
             con.connect(qos, this);
          }
          catch (Exception e) {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
             assertTrue("Login failed" + e.toString(), false);
          }
 
-         log.info(ME, "Wait " + timeout*2 + " sec if session expires (because of inactivity)");
+         log.info("Wait " + timeout*2 + " sec if session expires (because of inactivity)");
          try { Thread.currentThread().sleep(timeout*2); } catch (Exception e) { }
 
          try {
             for (int ii=0; ii<1; ii++) {
                try { Thread.currentThread().sleep(timeout/2); } catch (Exception e) { }
-               log.info(ME, "Check access #" + ii + " ...");
+               log.info("Check access #" + ii + " ...");
                con.get("<key oid='__cmd:?freeMem'/>", null);
-               log.info(ME, "Check access #" + ii + " OK");
+               log.info("Check access #" + ii + " OK");
             }
          }
          catch (Exception e) {
-            log.error(ME, "No access: " + e.toString());
+            log.severe("No access: " + e.toString());
             assertTrue("Session is expired", false);
          }
       }
@@ -239,7 +240,7 @@ public class TestSession extends TestCase implements I_Callback
             assertTrue(e.toString(), false);
          }
       }
-      log.info(ME, "Success in testSessionRefresh()");
+      log.info("Success in testSessionRefresh()");
    }
 
 
@@ -250,7 +251,7 @@ public class TestSession extends TestCase implements I_Callback
     */
    public void testSessionTimeoutRespan()
    {
-      log.info(ME, "testSessionTimeoutRespan() ...");
+      log.info("testSessionTimeoutRespan() ...");
       long timeout = 2000L;
       I_XmlBlasterAccess con = null;
       Global glob = this.glob.getClone(null);
@@ -262,20 +263,20 @@ public class TestSession extends TestCase implements I_Callback
             con.connect(qos, this);
          }
          catch (Exception e) {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
             assertTrue("Login failed" + e.toString(), false);
          }
 
          try {
             for (int ii=0; ii<4; ii++) {
                try { Thread.currentThread().sleep(timeout/2); } catch (Exception e) { }
-               log.info(ME, "Check access #" + ii + " ...");
+               log.info("Check access #" + ii + " ...");
                con.get("<key oid='__cmd:?freeMem'/>", null);
-               log.info(ME, "Check access #" + ii + " OK");
+               log.info("Check access #" + ii + " OK");
             }
          }
          catch (Exception e) {
-            log.error(ME, "No access: " + e.toString());
+            log.severe("No access: " + e.toString());
             assertTrue("Session is expired", false);
          }
       }
@@ -287,7 +288,7 @@ public class TestSession extends TestCase implements I_Callback
             assertTrue(e.toString(), false);
          }
       }
-      log.info(ME, "Success in testSessionTimeoutRespan()");
+      log.info("Success in testSessionTimeoutRespan()");
    }
 
 
@@ -295,13 +296,13 @@ public class TestSession extends TestCase implements I_Callback
     */
    public void testClearSession()
    {
-      log.info(ME, "***testClearSession() ...");
+      log.info("***testClearSession() ...");
       int numLogin = 5;
       int maxSessions = numLogin - 2;
       I_XmlBlasterAccess[] con = new I_XmlBlasterAccess[5];
       for (int ii=0; ii<numLogin; ii++) {
          try {
-            log.info(ME, "Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
+            log.info("Connecting number " + ii + " of " + numLogin + " max=" + maxSessions);
             con[ii] = glob.getClone(null).getXmlBlasterAccess();
             ConnectQos qos = new ConnectQos(con[ii].getGlobal(), name, passwd);
             qos.setMaxSessions(maxSessions);
@@ -309,25 +310,25 @@ public class TestSession extends TestCase implements I_Callback
          }
          catch (XmlBlasterException e) {
             if (ii >= maxSessions) {
-               log.info(ME, "Success, connecting number " + ii + " of max=" + maxSessions + " was denied: " + e.toString());
-               log.info(ME, "We try to clear the old sessions now");
+               log.info("Success, connecting number " + ii + " of max=" + maxSessions + " was denied: " + e.toString());
+               log.info("We try to clear the old sessions now");
                try {
                   ConnectQos qos = new ConnectQos(null, name, passwd);
                   qos.setMaxSessions(maxSessions);
                   qos.clearSessions(true);
                   con[ii].connect(qos, this);
-                  log.info(ME, "Success, login is possible again");
+                  log.info("Success, login is possible again");
                   con[ii].get("<key oid='__cmd:?freeMem'/>", null);
-                  log.info(ME, "Success, get works");
+                  log.info("Success, get works");
                }
                catch (Exception e2) {
-                  log.error(ME, "Clear session failed: " + e2.toString());
+                  log.severe("Clear session failed: " + e2.toString());
                   e2.printStackTrace();
                   fail("Login failed" + e2.toString());
                }
             }
             else {
-               log.error(ME, e.toString());
+               log.severe(e.toString());
                assertTrue("Connecting number " + ii + " of max=" + maxSessions + " should be possible", false);
             }
          }
@@ -340,7 +341,7 @@ public class TestSession extends TestCase implements I_Callback
             con[ii].disconnect(disQos);
          }
       }
-      log.info(ME, "***Success in testClearSession()");
+      log.info("***Success in testClearSession()");
    }
 
    /**
@@ -350,7 +351,7 @@ public class TestSession extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid());
+      log.info("Receiving update of a message " + updateKey.getOid());
       numReceived++;
       return "";
    }

@@ -8,7 +8,8 @@ package org.xmlBlaster.test.C;
 
 import java.io.File;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.Execute;
@@ -36,7 +37,7 @@ public class TestC extends TestCase implements I_ExecuteListener
 {
    private static String ME = "TestC";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestC.class.getName());
 
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7615;
@@ -51,7 +52,7 @@ public class TestC extends TestCase implements I_ExecuteListener
    public TestC(String testName) {
       super(testName);
       this.glob = Global.instance();
-      this.log = glob.getLog(null);
+
    }
 
    /**
@@ -69,16 +70,16 @@ public class TestC extends TestCase implements I_ExecuteListener
       Vector argsVec = Util.getOtherServerPortVec(serverPort);
       glob.init((String[])argsVec.toArray(new String[argsVec.size()]));
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing C client library");
+      log.info("XmlBlaster is ready for testing C client library");
       */
 
       /* Find the location of the C binaries */
       String xmlBlasterHome = getXmlBlasterHomePath();
       this.pathToCBinary = xmlBlasterHome+sep+"testsuite"+sep+"src"+sep+"c"+sep+"bin";
       File f = new File(this.pathToCBinary);
-      log.trace(ME, "Looking under '" + f.toString() + "'");
+      log.fine("Looking under '" + f.toString() + "'");
       if (f.exists()) {
-         log.info(ME, "Found C executables under '" + this.pathToCBinary + "'");
+         log.info("Found C executables under '" + this.pathToCBinary + "'");
       }
       assertTrue("Path to C binaries not found, no testing of C client library is not possible", this.pathToCBinary!=null);
    }
@@ -129,7 +130,7 @@ public class TestC extends TestCase implements I_ExecuteListener
       String[] commandArr = { pathToCBinary+sep+"TestMethods" };
       String[] envArr = { "" };
 
-      log.info(ME, "######## Start test_C_MethodInvocations('" + commandArr[0] + "')");
+      log.info("######## Start test_C_MethodInvocations('" + commandArr[0] + "')");
 
       Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
@@ -150,7 +151,7 @@ public class TestC extends TestCase implements I_ExecuteListener
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_MethodInvocations('" + commandArr[0] + "') exit=" +
+      log.info("######## SUCCESS test_C_MethodInvocations('" + commandArr[0] + "') exit=" +
                e.getExitValue() + " : " + e.getStdout());
    }
 
@@ -163,7 +164,7 @@ public class TestC extends TestCase implements I_ExecuteListener
       String[] commandArr = { pathToCBinary+sep+"TestError" };
       String[] envArr = { "" };
 
-      log.info(ME, "######## Start test_C_IllegalArguments('" + commandArr[0] + "')");
+      log.info("######## Start test_C_IllegalArguments('" + commandArr[0] + "')");
 
       Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
@@ -184,7 +185,7 @@ public class TestC extends TestCase implements I_ExecuteListener
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_IllegalArguments('" + commandArr[0] + "') exit=" +
+      log.info("######## SUCCESS test_C_IllegalArguments('" + commandArr[0] + "') exit=" +
                e.getExitValue() + " : " + e.getStdout());
    }
 
@@ -197,7 +198,7 @@ public class TestC extends TestCase implements I_ExecuteListener
       String[] commandArr = { pathToCBinary+sep+"TestStress" };
       String[] envArr = { "" };
 
-      log.info(ME, "######## Start test_C_Stress('" + commandArr[0] + "')");
+      log.info("######## Start test_C_Stress('" + commandArr[0] + "')");
 
       Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
@@ -218,7 +219,7 @@ public class TestC extends TestCase implements I_ExecuteListener
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_Stress('" + commandArr[0] + "') exit=" +
+      log.info("######## SUCCESS test_C_Stress('" + commandArr[0] + "') exit=" +
                e.getExitValue() + " : " + e.getStdout());
    }
 
@@ -231,7 +232,7 @@ public class TestC extends TestCase implements I_ExecuteListener
       String[] commandArr = { pathToCBinary+sep+"TestUtil" };
       String[] envArr = { "" };
 
-      log.info(ME, "######## Start test_C_Util('" + commandArr[0] + "')");
+      log.info("######## Start test_C_Util('" + commandArr[0] + "')");
 
       Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
@@ -252,7 +253,7 @@ public class TestC extends TestCase implements I_ExecuteListener
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_Util('" + commandArr[0] + "') exit=" +
+      log.info("######## SUCCESS test_C_Util('" + commandArr[0] + "') exit=" +
                e.getExitValue() + " : " + e.getStdout());
    }
 
@@ -265,7 +266,7 @@ public class TestC extends TestCase implements I_ExecuteListener
       String[] commandArr = { pathToCBinary+sep+"TestQueue" };
       String[] envArr = { "" };
 
-      log.info(ME, "######## Start test_C_Queue('" + commandArr[0] + "')");
+      log.info("######## Start test_C_Queue('" + commandArr[0] + "')");
 
       Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
@@ -286,7 +287,7 @@ public class TestC extends TestCase implements I_ExecuteListener
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_Queue('" + commandArr[0] + "') exit=" +
+      log.info("######## SUCCESS test_C_Queue('" + commandArr[0] + "') exit=" +
                e.getExitValue() + " : " + e.getStdout());
    }
 
@@ -299,7 +300,7 @@ public class TestC extends TestCase implements I_ExecuteListener
       String[] commandArr = { pathToCBinary+sep+"TestLeaveServer" };
       String[] envArr = { "" };
 
-      log.info(ME, "######## Start test_C_LeaveServer('" + commandArr[0] + "')");
+      log.info("######## Start test_C_LeaveServer('" + commandArr[0] + "')");
 
       Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
@@ -320,7 +321,7 @@ public class TestC extends TestCase implements I_ExecuteListener
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_LeaveServer('" + commandArr[0] + "') exit=" +
+      log.info("######## SUCCESS test_C_LeaveServer('" + commandArr[0] + "') exit=" +
                e.getExitValue() + " : " + e.getStdout());
    }
 
@@ -333,7 +334,7 @@ public class TestC extends TestCase implements I_ExecuteListener
       String[] commandArr = { pathToCBinary+sep+"TestSocket" };
       String[] envArr = { "" };
 
-      log.info(ME, "######## Start test_C_Socket('" + commandArr[0] + "')");
+      log.info("######## Start test_C_Socket('" + commandArr[0] + "')");
 
       Execute e = new Execute(commandArr, envArr);
       e.setExecuteListener(this);
@@ -354,15 +355,15 @@ public class TestC extends TestCase implements I_ExecuteListener
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS test_C_Socket('" + commandArr[0] + "') exit=" +
+      log.info("######## SUCCESS test_C_Socket('" + commandArr[0] + "') exit=" +
                e.getExitValue() + " : " + e.getStdout());
    }
 
    public void stdout(String data) {
-      log.info(ME, "Native C output: " + data);
+      log.info("Native C output: " + data);
    }
    public void stderr(String data) {
-      log.error(ME, "Native C output: " + data);
+      log.severe("Native C output: " + data);
    }
 
    /**

@@ -8,7 +8,7 @@ package org.xmlBlaster.util.recorder.file;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.io.IOException;
-import java.io.SyncFailedException;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -47,6 +47,7 @@ import org.xmlBlaster.util.def.ErrorCode;
  */
 public class FileIO
 {
+   private static Logger log = Logger.getLogger(FileIO.class.getName());
    private final String ME = "FileIO";
    private final Global glob;
    private long currReadPos;
@@ -239,7 +240,7 @@ public class FileIO
          }
          else {
             String text = "Maximum size=" + maxEntries + " of '" + fileName + "' reached, message rejected.";
-            glob.getLog("recorder").warn("FileRecorder.MaxSize", text);
+            log.warning(text);
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, text);
          }
       }
@@ -252,7 +253,7 @@ public class FileIO
       ra.writeLong(numUnread);
 
       if (errorText != null) {
-         glob.getLog("recorder").error("FileRecorder.FileLost", errorText);
+         log.severe(errorText);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_FILEIO_FILELOST, ME, errorText);
       }
    }
@@ -303,7 +304,7 @@ public class FileIO
             numUnread = ra.readLong(); // on restart
          }
          catch(java.io.IOException e) {
-            glob.getLog("recorder").error("FileIO.getNumUnread()", e.toString());
+            log.severe(e.toString());
          }
       }
       return this.numUnread;
@@ -321,7 +322,7 @@ public class FileIO
             numLost = ra.readLong(); // on restart
          }
          catch(java.io.IOException e) {
-            glob.getLog("recorder").error("FileIO.getNumLost()", e.toString());
+            log.severe(e.toString());
          }
       }
       return this.numLost;

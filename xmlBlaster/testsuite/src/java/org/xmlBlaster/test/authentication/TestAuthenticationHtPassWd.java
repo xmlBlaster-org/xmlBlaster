@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.authentication;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -27,7 +28,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   private final String WRONG_PASSWORD = "notExistingUserPW";
   private String userhome = "";
   private Global glob = null;
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(TestAuthenticationHtPassWd.class.getName());
   private I_XmlBlasterAccess con = null;
   private int serverPort = 7604;
 
@@ -38,7 +39,7 @@ public class TestAuthenticationHtPassWd extends TestCase
   public TestAuthenticationHtPassWd (String name)
   { super(name);
     this.glob = new Global();
-    this.log = glob.getLog("test");
+
     this.userhome = glob.getProperty().get("user.home","/home/astelzl")+java.io.File.separatorChar;
     try
     { FileUtil.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
@@ -100,14 +101,14 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
 
   public void testAuthHtPassWordCase1()
-  { log.info(ME,"Testcase1");
+  { log.info("Testcase1");
     setupTestCase(1);
     boolean isValue=true;
     try
     { con = glob.getXmlBlasterAccess();
     }
     catch(Exception ex)
-    { log.error(ME,"Could not initialize I_XmlBlasterAccess: " + ex.toString());
+    { log.severe("Could not initialize I_XmlBlasterAccess: " + ex.toString());
       ex.printStackTrace();
     }
     try
@@ -116,7 +117,7 @@ public class TestAuthenticationHtPassWd extends TestCase
       con.disconnect(null);
     }
     catch(Exception ex)
-    { log.info(ME,"Could not connect: " + ex.toString());
+    { log.info("Could not connect: " + ex.toString());
       ex.printStackTrace();
       isValue = false;
     }
@@ -125,14 +126,14 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
   
   public void testAuthHtPassWordCase2()
-  { log.info(ME,"Testcase2");
+  { log.info("Testcase2");
     setupTestCase(2);
     boolean isValue = true;
     try
     { con = glob.getXmlBlasterAccess();
     }
     catch(Exception ex)
-    { log.error(ME,"Could not initialize I_XmlBlasterAccess");
+    { log.severe("Could not initialize I_XmlBlasterAccess");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,RIGHT_USERNAME, RIGHT_PASSWORD);
@@ -140,7 +141,7 @@ public class TestAuthenticationHtPassWd extends TestCase
       con.disconnect(null);
     }
     catch(Exception ex)
-    { log.info(ME,"Could not connect");
+    { log.info("Could not connect");
       isValue = false;
       ex.printStackTrace();
     }
@@ -149,14 +150,14 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
 
   public void testAuthHtPassWordCaseWrongPassword()
-  { log.info(ME,"Testcase3");
+  { log.info("Testcase3");
     setupTestCase(3);
     boolean isValue = false;
     try
     { con = glob.getXmlBlasterAccess();
     }
     catch(Exception ex)
-    { log.error(ME,"Could not initialize I_XmlBlasterAccess");
+    { log.severe("Could not initialize I_XmlBlasterAccess");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,WRONG_USERNAME, WRONG_PASSWORD);
@@ -166,19 +167,19 @@ public class TestAuthenticationHtPassWd extends TestCase
     }
     catch(Exception ex)
     { isValue = true;
-      log.info(ME,"Could not connect");
+      log.info("Could not connect");
     }
   }
 
   public void testAuthHtPassWordCase3()
-  { log.info(ME,"Testcase4");
+  { log.info("Testcase4");
     setupTestCase(4);
     boolean isValue = true;
     try
     { con = glob.getXmlBlasterAccess();
     }
     catch(Exception ex)
-    { log.error(ME,"Could not initialize I_XmlBlasterAccess");
+    { log.severe("Could not initialize I_XmlBlasterAccess");
     }
     try
     { ConnectQos qos = new ConnectQos(glob,WRONG_USERNAME, WRONG_PASSWORD);
@@ -186,7 +187,7 @@ public class TestAuthenticationHtPassWd extends TestCase
       con.disconnect(null);
     }
     catch(Exception ex)
-    { log.info(ME,"Could not connect");
+    { log.info("Could not connect");
       isValue = false;
     }
     assertTrue("Could not connect although it should have been possible as any username and password is authenticated",isValue);

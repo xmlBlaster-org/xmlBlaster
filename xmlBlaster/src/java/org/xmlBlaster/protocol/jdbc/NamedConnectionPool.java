@@ -10,7 +10,8 @@ package org.xmlBlaster.protocol.jdbc;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.runtime.Sleeper;
 
 import org.xmlBlaster.util.Global;
@@ -78,7 +79,7 @@ public class NamedConnectionPool
 {
    private static final String ME = "NamedConnectionPool";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(NamedConnectionPool.class.getName());
    private Hashtable namedPools = new Hashtable();
 
    private final Object meetingPoint = new Object();
@@ -86,7 +87,7 @@ public class NamedConnectionPool
    NamedConnectionPool(Global glob)
    {
       this.glob = glob;
-      this.log = glob.getLog("jdbc");
+
    }
 
 
@@ -132,14 +133,14 @@ public class NamedConnectionPool
       }
       try {
          Connection con = pool.reserve();
-         if (log.TRACE) log.trace(ME, "reserve(" + dbUrl + ", " + dbUser + ") con=" + con);
+         if (log.isLoggable(Level.FINE)) log.fine("reserve(" + dbUrl + ", " + dbUser + ") con=" + con);
          return con;
       }
       catch(XmlBlasterException e) {
          throw e;
       }
       catch(Throwable e) {
-         log.error(ME, "Unexpected exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
+         log.severe("Unexpected exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME+".NoOpen", "Couldn't open database connection: " + e.toString());
       }
    }
@@ -152,7 +153,7 @@ public class NamedConnectionPool
       UnnamedConnectionPool pool = getPool(dbUrl, dbUser, dbPasswd);
       if (pool != null) {
          pool.release(con);
-         if (log.TRACE) log.trace(ME, "release(" + dbUrl + ", " + dbUser + ") con=" + con);
+         if (log.isLoggable(Level.FINE)) log.fine("release(" + dbUrl + ", " + dbUser + ") con=" + con);
       }
    }
 
@@ -162,7 +163,7 @@ public class NamedConnectionPool
    void eraseConnection(String dbUrl, String dbUser, String dbPasswd, Connection con) throws XmlBlasterException {
       UnnamedConnectionPool pool = getPool(dbUrl, dbUser, dbPasswd);
       if (pool != null) {
-         if (log.TRACE) log.trace(ME, "erase(" + dbUrl + ", " + dbUser + ") con=" + con);
+         if (log.isLoggable(Level.FINE)) log.fine("erase(" + dbUrl + ", " + dbUser + ") con=" + con);
          pool.erase(con);
       }
    }
@@ -174,16 +175,16 @@ public class NamedConnectionPool
     */
    void destroy(String dbUrl, String dbUser, String dbPasswd) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "Entering destroy() ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering destroy() ...");
       try {
          String key = getKey(dbUrl, dbUser, dbPasswd);
          UnnamedConnectionPool pool = (UnnamedConnectionPool)namedPools.remove(key);
          if (pool != null)
             pool.destroy();
-         if (log.TRACE) log.trace(ME, "All JDBC connections for '" + dbUrl + "' destroyed");
+         if (log.isLoggable(Level.FINE)) log.fine("All JDBC connections for '" + dbUrl + "' destroyed");
       }
       catch (Exception e) {
-         log.error(ME, "System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
+         log.severe("System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME+".DestroyError", "System Exception in destroy JDBC connection for '" + dbUrl + "': " + e.toString());
       }
    }
@@ -349,10 +350,10 @@ public class NamedConnectionPool
          Connection con = (Connection)resource;
          try {
             con.close();
-            if (log.TRACE) log.trace(ME, "JDBC connection closed for '" + dbUrl + "', '" + dbUser + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("JDBC connection closed for '" + dbUrl + "', '" + dbUser + "'");
          }
          catch (Exception e) {
-            log.error(ME, "System Exception in close JDBC connection: " + e.toString());
+            log.severe("System Exception in close JDBC connection: " + e.toString());
             // For example Oracle throws this if you have shutdown Oracle in the mean time:
             // System Exception in close JDBC connection: java.sql.SQLException: Io exception: End of TNS data channel
          }
@@ -363,7 +364,7 @@ public class NamedConnectionPool
        */
       Connection reserve() throws XmlBlasterException {
          if (poolManager == null) { throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".Destroyed", "Pool is destroyed"); }
-         if (log.TRACE) log.trace(ME, "Entering reserve '" + dbUrl + "', '" + dbUser + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Entering reserve '" + dbUrl + "', '" + dbUser + "'");
          int ii=0;
          while (true) {
             try {
@@ -381,7 +382,7 @@ public class NamedConnectionPool
             catch (XmlBlasterException e) {
                // id.equals("ResourceExhaust")
                if (e.getErrorCode() == ErrorCode.RESOURCE_EXHAUST && ii < this.maxResourceExhaustRetries) {
-                  if (ii == 0) log.warn(ME, "Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
+                  if (ii == 0) log.warning("Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
                   Sleeper.sleep(resourceExhaustSleepGap);
                   ii++;
                }
@@ -398,7 +399,7 @@ public class NamedConnectionPool
        */
       void release(Connection con) throws XmlBlasterException {
          if (poolManager == null) { throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".Destroyed", "Pool is destroyed"); }
-         if (log.TRACE) log.trace(ME, "Entering release '" + dbUrl + "', '" + dbUser + "' conId=" + con);
+         if (log.isLoggable(Level.FINE)) log.fine("Entering release '" + dbUrl + "', '" + dbUser + "' conId=" + con);
          try {
             synchronized(meetingPoint) {
                poolManager.release(""+con);
@@ -406,7 +407,7 @@ public class NamedConnectionPool
          }
          catch (XmlBlasterException e) {
             Thread.dumpStack();
-            log.error(ME, "Caught exception in release(): " + e.toString());
+            log.severe("Caught exception in release(): " + e.toString());
             throw e;
          }
       }
@@ -416,7 +417,7 @@ public class NamedConnectionPool
        */
       void erase(Connection con) throws XmlBlasterException {
          if (poolManager == null) { throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".Destroyed", "Pool is destroyed"); }
-         if (log.TRACE) log.trace(ME, "Entering erase '" + dbUrl + "', '" + dbUser + "' conId=" + con);
+         if (log.isLoggable(Level.FINE)) log.fine("Entering erase '" + dbUrl + "', '" + dbUser + "' conId=" + con);
          synchronized(meetingPoint) {
             poolManager.erase(""+con);
          }
@@ -428,10 +429,10 @@ public class NamedConnectionPool
        */
       public void timeout(java.lang.Object o)
       {
-         if (log.TRACE) log.trace(ME, "Entering pool destroy timeout for '" + dbUrl + "', '" + dbUser + "' ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Entering pool destroy timeout for '" + dbUrl + "', '" + dbUser + "' ...");
          synchronized(meetingPoint) {
             if (poolManager.getNumBusy() != 0) {
-               log.warn(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
+               log.warning("Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
                if (this.eraseUnusedPoolTimeout > 200L) {
                   synchronized(this.timeoutMonitor) {
                      this.timeoutHandle = this.poolManager.getTransistionTimer().addTimeoutListener(this, this.eraseUnusedPoolTimeout, "dummy");
@@ -443,7 +444,7 @@ public class NamedConnectionPool
             try {
                boss.destroy(dbUrl, dbUser, dbPasswd);
             } catch(XmlBlasterException e) {
-               log.error(ME, "timeout: " + e.toString());
+               log.severe("timeout: " + e.toString());
             }
          }
       }
@@ -452,7 +453,7 @@ public class NamedConnectionPool
       void destroy() {
          synchronized(meetingPoint) {
             if (poolManager != null) {
-               if (log.TRACE) log.trace(ME, "Destroying pool: " + poolManager.toXml());
+               if (log.isLoggable(Level.FINE)) log.fine("Destroying pool: " + poolManager.toXml());
                poolManager.destroy();
                poolManager = null;
             }

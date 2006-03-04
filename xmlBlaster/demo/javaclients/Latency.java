@@ -1,7 +1,8 @@
 // xmlBlaster/demo/javaclients/Latency.java
 package javaclients;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -52,10 +53,10 @@ public class Latency implements I_Callback
 {
    private long startTime = 0L;
    private boolean messageArrived = false;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(Latency.class.getName());
 
    public Latency(Global glob) {
-      log = glob.getLog("client");
+
       try {
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
@@ -90,7 +91,7 @@ public class Latency implements I_Callback
          con.disconnect(dq);
       }
       catch (Exception e) {
-         log.error("", e.toString());
+         log.severe(e.toString());
       }
    }
 
@@ -99,7 +100,7 @@ public class Latency implements I_Callback
    {
       long endTime = System.currentTimeMillis();
       messageArrived = true;
-      log.info("", "Received asynchronous message '" + updateKey.getOid() +
+      log.info("Received asynchronous message '" + updateKey.getOid() +
                    "' from xmlBlaster - latency=" + (endTime - startTime) + " millis");
       return "";
    }

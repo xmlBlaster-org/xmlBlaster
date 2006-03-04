@@ -16,7 +16,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.JUtilsException;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
@@ -43,7 +44,7 @@ public class PublishFile
    private static final String ME = "PublishFile";
    private I_XmlBlasterAccess senderConnection;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PublishFile.class.getName());
    private String loginName;
    private String passwd;
 
@@ -69,7 +70,7 @@ public class PublishFile
          System.err.println(ME + ": Bye");
          System.exit(1);
       }
-      log = glob.getLog("client");
+
 
       loginName = glob.getProperty().get("loginName", ME);
       passwd = glob.getProperty().get("passwd", "secret");
@@ -101,7 +102,7 @@ public class PublishFile
       if (contentFile != null) {
          try { content = FileUtil.readFile(contentFile); }
          catch (JUtilsException e) {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
          }
       }
       if (content == null && contentGiven != null) {
@@ -118,7 +119,7 @@ public class PublishFile
       if (keyFile != null) {
          try { xmlKey = FileUtil.readAsciiFile(keyFile); }
          catch (JUtilsException e) {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
          }
       }
       if (xmlKey == null) {
@@ -129,14 +130,14 @@ public class PublishFile
       }
       if (xmlKey == null && body != null) { // The filename will be the key-oid ...
          if (contentMime == null) {
-            log.error(ME, "File MIME type is unknown, specify MIME type as '-m <MIME>', for example '-m \"image/gif\"' (get help with -?)");
+            log.severe("File MIME type is unknown, specify MIME type as '-m <MIME>', for example '-m \"image/gif\"' (get help with -?)");
             System.exit(1);
          }
          PublishKey publishKey = new PublishKey(glob, body, contentMime, contentMimeExtended);
          xmlKey = publishKey.toXml();  // default <key oid=......></key>
       }
       if (xmlKey == null) {
-         log.error(ME, "XmlKey is missing, specify key as '-k <file>' or '-xmlKey <the XML key>' (get help with -?)");
+         log.severe("XmlKey is missing, specify key as '-k <file>' or '-xmlKey <the XML key>' (get help with -?)");
          System.exit(1);
       }
 
@@ -145,7 +146,7 @@ public class PublishFile
       if (qosFile != null) {
          try { xmlQos = FileUtil.readAsciiFile(qosFile); }
          catch (JUtilsException e) {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
          }
       }
       if (xmlQos == null) {
@@ -197,7 +198,7 @@ public class PublishFile
          senderConnection.connect(connectQos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -217,16 +218,16 @@ public class PublishFile
     */
    public void publish(String xmlKey, byte[] content, String qos)
    {
-      if (log.TRACE) log.trace(ME, "Publishing the message ...\nKEY:\n" + xmlKey + "\nCONTENT-LENGTH=" + content.length + "\nQOS:\n" + qos);
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing the message ...\nKEY:\n" + xmlKey + "\nCONTENT-LENGTH=" + content.length + "\nQOS:\n" + qos);
 
       try {
          MsgUnit msgUnit = new MsgUnit(glob, xmlKey, content, qos);
          StopWatch stop = new StopWatch();
          PublishReturnQos publish = senderConnection.publish(msgUnit);
-         log.info(ME, "Success: Publishing done: " + publish.toXml() + "\n" + stop.nice());
+         log.info("Success: Publishing done: " + publish.toXml() + "\n" + stop.nice());
          //log.info(ME, "Success: Publishing done, returned message oid=" + publish.getKeyOid() + stop.nice());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
       }
    }
 

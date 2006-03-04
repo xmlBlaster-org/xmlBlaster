@@ -6,7 +6,8 @@ Comment:   Building a huge DOM tree for all known MsgUnit xmlKey
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.xml2java.XmlKeyDom;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.XmlNotPortable;
@@ -28,7 +29,7 @@ public class BigXmlKeyDOM extends XmlKeyDom
 {
    final private static String ME = "BigXmlKeyDOM";
 
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(BigXmlKeyDOM.class.getName());
 
    /**
     * A singleton for each xmlBlaster server.
@@ -36,7 +37,7 @@ public class BigXmlKeyDOM extends XmlKeyDom
    BigXmlKeyDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       super(requestBroker);
-      this.log = requestBroker.getLog();
+
    }
 
 
@@ -55,7 +56,7 @@ public class BigXmlKeyDOM extends XmlKeyDom
     */
    public void messageErase(TopicHandler topicHandler) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "Erase event occured ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Erase event occured ...");
       if (!topicHandler.isUnconfigured()) {
          /*org.w3c.dom.Node node =*/removeKeyNode(topicHandler.getRootNode());
       }

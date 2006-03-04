@@ -7,7 +7,8 @@ package org.xmlBlaster.test.qos;
 
 import org.jutils.time.StopWatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -46,7 +47,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
 {
    private static String ME = "TestSubLostClient";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubLostClient.class.getName());
 
    private boolean messageArrived = false;
 
@@ -79,7 +80,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.oneName = loginName;
       numClients = 2;
    }
@@ -92,7 +93,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      log.info(ME, "Setting up test ...");
+      log.info("Setting up test ...");
       numReceived = 0;
       try {
          oneConnection = glob.getXmlBlasterAccess(); // Find orb
@@ -101,7 +102,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
          oneConnection.connect(connectQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -115,7 +116,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      if (numReceived != (numClients-1)) log.error(ME, "numClients=" + (numClients-1) + " but numReceived=" + numReceived);
+      if (numReceived != (numClients-1)) log.severe("numClients=" + (numClients-1) + " but numReceived=" + numReceived);
       assertEquals("numClients=1 but numReceived=" + numReceived, numClients-1, numReceived);
 
       if (manyClients != null) {
@@ -136,7 +137,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
       }
 
       oneConnection.disconnect(null);
-      log.info(ME, "Logout done");
+      log.info("Logout done");
    }
 
 
@@ -145,7 +146,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
     */
    public void susbcribeMany()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing ...");
 
       String passwd = "secret";
 
@@ -157,7 +158,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
 
       manyClients = new Client[numClients];
 
-      log.info(ME, "Setting up " + numClients + " subscriber clients ...");
+      log.info("Setting up " + numClients + " subscriber clients ...");
       stopWatch = new StopWatch();
       for (int ii=0; ii<numClients; ii++) {
          Client sub = new Client();
@@ -170,15 +171,15 @@ public class TestSubLostClient extends TestCase implements I_Callback
             sub.connection.connect(loginQosW, this);
          }
          catch (Exception e) {
-             log.error(ME, "Login failed: " + e.toString());
+             log.severe("Login failed: " + e.toString());
              assertTrue("Login failed: " + e.toString(), false);
          }
 
          try {
             sub.subscribeOid = sub.connection.subscribe(subKey, subQos).getSubscriptionId();
-            log.info(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
+            log.info("Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
             assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
          }
 
@@ -186,8 +187,8 @@ public class TestSubLostClient extends TestCase implements I_Callback
       }
       double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
 
-      log.info(ME, numClients + " subscriber clients are ready.");
-      log.info(ME, "Time " + (long)(numClients/timeForLogins) + " logins/sec");
+      log.info(numClients + " subscriber clients are ready.");
+      log.info("Time " + (long)(numClients/timeForLogins) + " logins/sec");
 
       try {
          manyClients[0].connection.getCbServer().shutdown(); // Kill the callback server, without doing a logout
@@ -196,7 +197,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
          e.printStackTrace();
          assertTrue("Problems with connection,shutdownCb()", false);
       }
-      log.info(ME, "Killed callback server of first client.");
+      log.info("Killed callback server of first client.");
    }
 
 
@@ -207,7 +208,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
     */
    public void publishOne()
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -219,9 +220,9 @@ public class TestSubLostClient extends TestCase implements I_Callback
          stopWatch = new StopWatch();
          String tmp = oneConnection.publish(msgUnit).getKeyOid();
          assertEquals("Wrong publishOid1", publishOid1, tmp);
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
+         log.info("Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException in publish: " + e.getMessage());
+         log.severe("XmlBlasterException in publish: " + e.getMessage());
          assertTrue("XmlBlasterException in publish: " + e.getMessage(), true);
       }
    }
@@ -233,17 +234,17 @@ public class TestSubLostClient extends TestCase implements I_Callback
     */
    public void testManyClients()
    {
-      log.plain(ME, "");
-      log.info(ME, "TEST 1, many subscribers, one publisher ...");
+      System.out.println("");
+      log.info("TEST 1, many subscribers, one publisher ...");
 
       susbcribeMany();
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       publishOne();
-      log.info(ME, "Waiting long enough for updates ...");
+      log.info("Waiting long enough for updates ...");
       Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
-      log.info(ME, "Received " + numReceived + " updates");
+      log.info("Received " + numReceived + " updates");
       assertEquals("Wrong number of updates", numClients-1, numReceived); // One client killed its callback server
    }
 
@@ -254,7 +255,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Client " + cbSessionId + " receiving update of message oid=" + updateKey.getOid() + "...");
+      log.info("Client " + cbSessionId + " receiving update of message oid=" + updateKey.getOid() + "...");
       numReceived++;
       return "";
    }

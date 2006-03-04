@@ -22,7 +22,8 @@ import java_cup.sym;
 
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.Global;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
       
 
 /**
@@ -302,7 +303,7 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
     private StringBuffer stringBf = new StringBuffer();
 
     private Global global;
-    private LogChannel log;
+   private static Logger log = Logger.getLogger(Sql92Scanner.class.getName());
     
     /** A buffer used only for logging purposes (active only when TRACE is on) */
     private StringBuffer logBuffer = new StringBuffer();
@@ -313,8 +314,8 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
      public Sql92Scanner(Global global) {
         super();
         this.global = global;
-        this.log = this.global.getLog("lexical");
-        if (this.log.CALL) this.log.call(ME, "Constructor");
+
+        if (log.isLoggable(Level.FINER)) this.log.finer("Constructor");
      }
 
      /**
@@ -350,7 +351,7 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
           return symbol(Sql92Symbols.NULL_OBJECT, null);
        }   
        String str = clientProperty.getStringValue();
-       if (this.log.TRACE) this.logBuffer.append(propertyName).append("(").append(str).append(")");
+       if (log.isLoggable(Level.FINE)) this.logBuffer.append(propertyName).append("(").append(str).append(")");
        if (clientProperty.isStringType()) {
           return symbol(Sql92Symbols.STRING, str);
        }
@@ -691,11 +692,11 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
 
       switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
         case 8: 
-          { if (this.log.TRACE) this.logBuffer.append(" * ");  return symbol(Sql92Symbols.TIMES);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" * ");  return symbol(Sql92Symbols.TIMES);
           }
         case 32: break;
         case 28: 
-          { if (this.log.TRACE) this.logBuffer.append(" LIKE "); return symbol(Sql92Symbols.LIKE);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" LIKE "); return symbol(Sql92Symbols.LIKE);
           }
         case 33: break;
         case 1: 
@@ -703,11 +704,11 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
           }
         case 34: break;
         case 22: 
-          { if (this.log.TRACE) this.logBuffer.append(" != ");  return symbol(Sql92Symbols.DIFF);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" != ");  return symbol(Sql92Symbols.DIFF);
           }
         case 35: break;
         case 31: 
-          { if (this.log.TRACE) this.logBuffer.append(" BETWEEN "); return symbol(Sql92Symbols.BETWEEN);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" BETWEEN "); return symbol(Sql92Symbols.BETWEEN);
           }
         case 36: break;
         case 17: 
@@ -715,11 +716,11 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
           }
         case 37: break;
         case 30: 
-          { if (this.log.TRACE) this.logBuffer.append(" ESCAPE "); return symbol(Sql92Symbols.ESCAPE);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" ESCAPE "); return symbol(Sql92Symbols.ESCAPE);
           }
         case 38: break;
         case 20: 
-          { if (this.log.TRACE) this.logBuffer.append(" => "); return symbol(Sql92Symbols.GET);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" => "); return symbol(Sql92Symbols.GET);
           }
         case 39: break;
         case 2: 
@@ -727,23 +728,23 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
           }
         case 40: break;
         case 14: 
-          { if (this.log.TRACE) this.logBuffer.append(" < ");  return symbol(Sql92Symbols.LT);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" < ");  return symbol(Sql92Symbols.LT);
           }
         case 41: break;
         case 13: 
-          { if (this.log.TRACE) this.logBuffer.append(" = ");  return symbol(Sql92Symbols.EQUAL);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" = ");  return symbol(Sql92Symbols.EQUAL);
           }
         case 42: break;
         case 26: 
-          { if (this.log.TRACE) this.logBuffer.append(" ! "); return symbol(Sql92Symbols.NOT);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" ! "); return symbol(Sql92Symbols.NOT);
           }
         case 43: break;
         case 19: 
-          { if (this.log.TRACE) this.logBuffer.append(" || "); return symbol(Sql92Symbols.OR);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" || "); return symbol(Sql92Symbols.OR);
           }
         case 44: break;
         case 12: 
-          { if (this.log.TRACE) this.logBuffer.append(" , ");  return symbol(Sql92Symbols.COMMA);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" , ");  return symbol(Sql92Symbols.COMMA);
           }
         case 45: break;
         case 5: 
@@ -751,48 +752,48 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
           }
         case 46: break;
         case 29: 
-          { if (this.log.TRACE) this.logBuffer.append(" NULL "); return symbol(Sql92Symbols.REGEX);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" NULL "); return symbol(Sql92Symbols.REGEX);
           }
         case 47: break;
         case 23: 
-          { if (this.log.TRACE) this.logBuffer.append(" IN "); return symbol(Sql92Symbols.IN);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" IN "); return symbol(Sql92Symbols.IN);
           }
         case 48: break;
         case 21: 
-          { if (this.log.TRACE) this.logBuffer.append(" <= "); return symbol(Sql92Symbols.LET);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" <= "); return symbol(Sql92Symbols.LET);
           }
         case 49: break;
         case 11: 
-          { if (this.log.TRACE) this.logBuffer.append(" ) ");  return symbol(Sql92Symbols.R_BRACKET);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" ) ");  return symbol(Sql92Symbols.R_BRACKET);
           }
         case 50: break;
         case 27: 
-          { if (this.log.TRACE) this.logBuffer.append(" NULL "); return symbol(Sql92Symbols.NULL);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" NULL "); return symbol(Sql92Symbols.NULL);
           }
         case 51: break;
         case 25: 
-          { if (this.log.TRACE) this.logBuffer.append(" && "); return symbol(Sql92Symbols.AND);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" && "); return symbol(Sql92Symbols.AND);
           }
         case 52: break;
         case 24: 
-          { if (this.log.TRACE) this.logBuffer.append(" IS "); return symbol(Sql92Symbols.IS);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" IS "); return symbol(Sql92Symbols.IS);
           }
         case 53: break;
         case 4: 
-          { if (this.log.TRACE) this.logBuffer.append(yytext());
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(yytext());
                          return symbol(Sql92Symbols.NUMBER, new Double(yytext()));
           }
         case 54: break;
         case 6: 
-          { if (this.log.TRACE) this.logBuffer.append(" - ");  return symbol(Sql92Symbols.MINUS);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" - ");  return symbol(Sql92Symbols.MINUS);
           }
         case 55: break;
         case 9: 
-          { if (this.log.TRACE) this.logBuffer.append(" / ");  return symbol(Sql92Symbols.DIV);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" / ");  return symbol(Sql92Symbols.DIV);
           }
         case 56: break;
         case 15: 
-          { if (this.log.TRACE) this.logBuffer.append(" > ");  return symbol(Sql92Symbols.GT);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" > ");  return symbol(Sql92Symbols.GT);
           }
         case 57: break;
         case 3: 
@@ -800,17 +801,17 @@ class Sql92Scanner implements java_cup.runtime.Scanner {
           }
         case 58: break;
         case 10: 
-          { if (this.log.TRACE) this.logBuffer.append(" ( ");  return symbol(Sql92Symbols.L_BRACKET);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" ( ");  return symbol(Sql92Symbols.L_BRACKET);
           }
         case 59: break;
         case 7: 
-          { if (this.log.TRACE) this.logBuffer.append(" + ");  return symbol(Sql92Symbols.PLUS);
+          { if (log.isLoggable(Level.FINE)) this.logBuffer.append(" + ");  return symbol(Sql92Symbols.PLUS);
           }
         case 60: break;
         case 18: 
           { yybegin(YYINITIAL);
               String tmp = this.stringBf.toString();
-              if (this.log.TRACE) this.logBuffer.append(tmp).append("(string litteral)");
+              if (log.isLoggable(Level.FINE)) this.logBuffer.append(tmp).append("(string litteral)");
               return symbol(Sql92Symbols.STRING, tmp);
           }
         case 61: break;

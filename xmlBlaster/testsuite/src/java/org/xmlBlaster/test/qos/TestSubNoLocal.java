@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -45,7 +46,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
 {
    private static String ME = "TestSubNoLocal";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestSubNoLocal.class.getName());
 
    private String subscribeId1;
    private MsgInterceptor updateInterceptor1;
@@ -64,7 +65,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
    public TestSubNoLocal(Global glob, String testName) {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -97,7 +98,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
     * Subscribe twice to the same message, one time with &lt;local>false&lt;/local>
     */
    public void subscribe() {
-      if (log.TRACE) log.trace(ME, "Subscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing ...");
       try {
          {
             SubscribeKey key = new SubscribeKey(glob, publishOid);
@@ -116,7 +117,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
             subscribeId2 = ret.getSubscriptionId();
          }
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -125,16 +126,16 @@ public class TestSubNoLocal extends TestCase implements I_Callback
     * Construct a message and publish it.
     */
    public void publish() {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       String xmlKey = "<key oid='" + publishOid + "'/>";
       String senderContent = "Yeahh, i'm the new content";
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos/>");
          publishOid = connection.publish(msgUnit).getKeyOid();
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish - XmlBlasterException: " + e.getMessage());
       }
 
@@ -146,17 +147,17 @@ public class TestSubNoLocal extends TestCase implements I_Callback
     * unSubscribe twice to same message. 
     */
    public void unSubscribe() {
-      if (log.TRACE) log.trace(ME, "unSubscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("unSubscribing ...");
 
       String qos = "<qos/>";
       try {
          connection.unSubscribe("<key oid='" + subscribeId1 + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 1 on " + subscribeId1 + " done");
+         log.info("Success: unSubscribe 1 on " + subscribeId1 + " done");
 
          connection.unSubscribe("<key oid='" + subscribeId2 + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 2 on " + subscribeId2 + " done");
+         log.info("Success: unSubscribe 2 on " + subscribeId2 + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          fail("unSubscribe - XmlBlasterException: " + e.getMessage());
       }
    }
@@ -168,7 +169,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
          connection.connect(qos, this);
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           fail("Login failed: " + e.toString());
       }
@@ -179,7 +180,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
     * the first subscription shouldn't  receive the message as local==false
     */
    public void testLocalUpdates() {
-      log.info(ME, "testLocalUpdates ...");
+      log.info("testLocalUpdates ...");
       
       connect();
 
@@ -205,7 +206,7 @@ public class TestSubNoLocal extends TestCase implements I_Callback
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      log.error(ME, "Receiving unexpected update of a message " + updateKey.getOid() + " state=" + updateQos.getState());
+      log.severe("Receiving unexpected update of a message " + updateKey.getOid() + " state=" + updateQos.getState());
       return "";
    }
 

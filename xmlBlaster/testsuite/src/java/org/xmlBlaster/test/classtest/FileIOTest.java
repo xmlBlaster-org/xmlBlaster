@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -22,7 +23,7 @@ import junit.framework.*;
 public class FileIOTest extends TestCase {
    private String ME = "FileIOTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(FileIOTest.class.getName());
    private String fileName = null;
    private StopWatch stopWatch = new StopWatch();
    private boolean testDiscardOldest = false;
@@ -33,7 +34,7 @@ public class FileIOTest extends TestCase {
 
    protected void setUp() {
       glob = new Global();
-      log = glob.getLog(null);
+
    }
 
    protected void tearDown() {
@@ -64,7 +65,7 @@ public class FileIOTest extends TestCase {
       FileIO fileIO = null;
 
       try {
-         log.info(ME, "Opening file '" + fileName + "' num=" + num + " sync=" + sync + " ...");
+         log.info("Opening file '" + fileName + "' num=" + num + " sync=" + sync + " ...");
          fileIO = new FileIO(glob, fileName, userDataHandler, num, sync);
          File f = new File(fileName);
          long emptyLength = f.length();

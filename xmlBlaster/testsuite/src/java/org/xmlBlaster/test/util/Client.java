@@ -8,7 +8,8 @@ package org.xmlBlaster.test.util;
 
 import java.util.ArrayList;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.EraseKey;
@@ -31,7 +32,7 @@ import org.xmlBlaster.util.qos.TopicProperty;
 public class Client implements I_Callback {
    private String ME = "Client-";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(Client.class.getName());
    private I_XmlBlasterAccess accessor;
    private String name;
    private String publishOid;
@@ -49,12 +50,12 @@ public class Client implements I_Callback {
     */   
    public Client(Global global, String name, ArrayList responses) {
       this.global = global.getClone(null);
-      this.log = this.global.getLog("test");
+
       this.accessor = this.global.getXmlBlasterAccess();
       this.name = name;
       this.ME += this.name;
       this.responses = responses;
-      if (this.log.CALL) this.log.call(ME, "constructor");
+      if (log.isLoggable(Level.FINER)) log.finer("constructor");
    }
 
    /**
@@ -70,7 +71,7 @@ public class Client implements I_Callback {
     * @throws XmlBlasterException
     */
    public void init(String publishOid, String subscribeOid, boolean consumable, int session) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "init");
+      if (log.isLoggable(Level.FINER)) log.finer("init");
       this.consumable = consumable;
       ConnectQos connectQos = new ConnectQos(this.global, name, "secret");
       if (session > 0) {
@@ -93,7 +94,7 @@ public class Client implements I_Callback {
     * @throws XmlBlasterException
     */
    public void publish(String content) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "publish");
+      if (log.isLoggable(Level.FINER)) log.finer("publish");
       if (this.publishOid == null)
          throw new XmlBlasterException(this.global, ErrorCode.USER_CLIENTCODE, ME, "no oid configured for publishing");
       if (content == null)
@@ -114,7 +115,7 @@ public class Client implements I_Callback {
     * @throws XmlBlasterException
     */
    public void shutdown(boolean doEraseTopic) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "shutdown");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown");
       if (this.publishOid != null && doEraseTopic) {
          this.accessor.erase(new EraseKey(this.global, this.publishOid), new EraseQos(this.global));
       }
@@ -144,7 +145,7 @@ public class Client implements I_Callback {
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
       throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME, "update '" + cbSessionId + "' content='" + new String(content) + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("update '" + cbSessionId + "' content='" + new String(content) + "'");
       String clientProp = (String)updateQos.getData().getClientProperties().get("MsgDistributorPlugin");
 
       if (this.responses != null) {

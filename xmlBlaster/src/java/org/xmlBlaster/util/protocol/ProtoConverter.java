@@ -8,6 +8,8 @@ package org.xmlBlaster.util.protocol;
 
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -24,6 +26,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
  */
 public class ProtoConverter {
 
+   private static Logger log = Logger.getLogger(ProtoConverter.class.getName());
    private final static String ME = "ProtoConverter";
 
    /**
@@ -184,7 +187,7 @@ public class ProtoConverter {
       if (size == 0)
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a String from the given Vector");
       if (size > 1)
-         org.xmlBlaster.util.Global.instance().getLog("core").error("ProtoConvertor.vector2String", "There are too many strings in the vector");
+         log.severe("There are too many strings in the vector");
 
       try {
          return (String)vec.elementAt(0);

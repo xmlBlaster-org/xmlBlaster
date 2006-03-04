@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins.prio;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -55,7 +56,7 @@ public final class XmlBlasterNativeClient implements I_Callback
 {
    private String ME = "dispatch.plugins.prio.XmlBlasterNativeClient";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlBlasterNativeClient.class.getName());
    private PriorizedDispatchPlugin plugin;
    /* // Native xmlBlaster access currently not implemented, using remote client xmlBlasterConnection access instead
    private final I_Authenticate authenticate;
@@ -79,7 +80,7 @@ public final class XmlBlasterNativeClient implements I_Callback
     */
    public XmlBlasterNativeClient(final Global glob_, PriorizedDispatchPlugin plugin, String sessionId) throws XmlBlasterException {
       this.glob = glob_.getClone(null);
-      this.log = this.glob.getLog("dispatch");
+
       this.plugin = plugin;
       /*
       this.authenticate = (I_Authenticate)this.glob.getObjectEntry(Constants.I_AUTHENTICATE_PROPERTY_KEY);
@@ -89,7 +90,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       this.xmlBlasterImpl = ((org.xmlBlaster.authentication.Authenticate)this.authenticate).getXmlBlaster();
       this.sessionId = sessionId;
       */
-      log.info(ME, "Connecting to xmlBlaster to subscribe to status messages");
+      log.info("Connecting to xmlBlaster to subscribe to status messages");
 
       // Connect as a remote client ...
       xmlBlasterCon = this.glob.getXmlBlasterAccess();
@@ -117,31 +118,31 @@ public final class XmlBlasterNativeClient implements I_Callback
             public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                connected = true;
                conRetQos = connection.getConnectReturnQos();
-               log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + 
+               log.info("I_ConnectionStateListener: We were lucky, connected to " + 
                             connection.getGlobal().getId() + " as " + conRetQos.getSessionName());
             }
 
             public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.warn(ME, "I_ConnectionStateListener: No connection to " + connection.getGlobal().getId());
+               log.warning("I_ConnectionStateListener: No connection to " + connection.getGlobal().getId());
                connected = false;
             }
 
             public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.error(ME, "I_ConnectionStateListener: Connection to " + connection.getGlobal().getId() + " is dead");
+               log.severe("I_ConnectionStateListener: Connection to " + connection.getGlobal().getId() + " is dead");
                connected = false;
             }
          });
 
       try {      
-         if (log.TRACE) log.trace(ME, "Connecting to xmlBlaster as user '" + loginName + "' to subscribe to status messages");
+         if (log.isLoggable(Level.FINE)) log.fine("Connecting to xmlBlaster as user '" + loginName + "' to subscribe to status messages");
          this.conRetQos = this.xmlBlasterCon.connect(this.connectQos, this);
          this.connected = true;
          this.loginName = conRetQos.getUserId(); // this.connectQos.getUserId();
 
-         log.info(ME, "Succefully initialized");
+         log.info("Succefully initialized");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Can't subscribe to status messages: " + e.getMessage());
+         log.severe("Can't subscribe to status messages: " + e.getMessage());
       }
    }
 
@@ -162,7 +163,7 @@ public final class XmlBlasterNativeClient implements I_Callback
     */
    public final void sendPtPMessage(MsgQueueEntry entry, String pluginName, String action, String currStatus) throws XmlBlasterException {
       SessionName receiver = entry.getSender();  // Send back (receiver==sender)
-      if (log.TRACE) log.trace(ME, "Sending PtP notification about special message treatment in plugin, dispatcher state=" + currStatus + " receiver '" + receiver + "' ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Sending PtP notification about special message treatment in plugin, dispatcher state=" + currStatus + " receiver '" + receiver + "' ...");
       PublishQos pq = new PublishQos(glob);
       pq.addDestination(new Destination(receiver)); 
       pq.setSender(new SessionName(glob, getLoginName())); // Set ourself as sender
@@ -265,7 +266,7 @@ public final class XmlBlasterNativeClient implements I_Callback
                xmlBlasterCon.unSubscribe(uk.toXml(), uq.toXml());
             }
             catch (XmlBlasterException e) {
-               log.warn(ME, "Unsubscribe failed: " + e.getMessage());
+               log.warning("Unsubscribe failed: " + e.getMessage());
             }
          }
 
@@ -278,7 +279,7 @@ public final class XmlBlasterNativeClient implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       if (!this.cbSessionId.equals(cbSessionId)) {
-         log.warn(ME, "The given cbSessionId=" + cbSessionId + " is unknown, we don't trust this callback of a status message with oid=" + updateKey.getOid());
+         log.warning("The given cbSessionId=" + cbSessionId + " is unknown, we don't trust this callback of a status message with oid=" + updateKey.getOid());
          UpdateReturnQos q = new UpdateReturnQos(glob);
          q.setState("ERROR");
          q.setStateInfo("Callback access denied");
@@ -291,12 +292,12 @@ public final class XmlBlasterNativeClient implements I_Callback
       String contentStr = new String(content);
 
       if (!updateQos.isOk()) {
-         log.warn(ME, "Receiving unexpected asynchronous status message '" + updateKey.getOid() +
+         log.warning("Receiving unexpected asynchronous status message '" + updateKey.getOid() +
                       "' state=" + updateQos.getState() + " with content='" + contentStr + "'");
          return "";
       }
 
-      log.info(ME, "Receiving asynchronous status message '" + updateKey.getOid() +
+      log.info("Receiving asynchronous status message '" + updateKey.getOid() +
                      "' state=" + updateQos.getState() + " with content='" + contentStr + "'");
 
       // notify listeners ...
@@ -310,7 +311,7 @@ public final class XmlBlasterNativeClient implements I_Callback
             }
          }
          else {
-            log.warn(ME, "Receiving asynchronous status message '" + updateKey.getOid() +
+            log.warning("Receiving asynchronous status message '" + updateKey.getOid() +
               "' state=" + updateQos.getState() + " with content='" + contentStr + "' but nobody is interested in it");
          }
       }
@@ -333,7 +334,7 @@ public final class XmlBlasterNativeClient implements I_Callback
     * @see I_MsgDispatchInterceptor#shutdown()
     */ 
    synchronized void shutdown() {
-      if (log.TRACE) log.trace(ME, "shutdown()");
+      if (log.isLoggable(Level.FINE)) log.fine("shutdown()");
       //unSubscribeStatusMessages(); -> disconnect() takes care
 
       synchronized (subscriptionsByNotifierMap) {
@@ -361,7 +362,7 @@ public final class XmlBlasterNativeClient implements I_Callback
          xmlBlasterCon.disconnect(null); // does unsubscribe automatically
          xmlBlasterCon = null;
       }
-      log.info(ME, "Native xmlBlaster access stopped, resources released.");
+      log.info("Native xmlBlaster access stopped, resources released.");
 
       this.glob = null;
       this.log = null;

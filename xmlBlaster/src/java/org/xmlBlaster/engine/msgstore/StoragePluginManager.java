@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -48,7 +49,7 @@ public class StoragePluginManager extends PluginManagerBase
 {
    private final String ME;
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(StoragePluginManager.class.getName());
    private final String pluginEnvClass = "persistence"; // Used for env lookup like "persistence/topicStore/StoragePlugin[JDBC][1.0]=..."
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.engine.msgstore.ram.MapPlugin"},
                                                           {"JDBC", "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin"},
@@ -58,10 +59,10 @@ public class StoragePluginManager extends PluginManagerBase
    public StoragePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("persistence");
+
       this.ME = "StoragePluginManager" + this.glob.getLogPrefixDashed();
       //this.glob.addObjectEntry("org.xmlBlaster.engine.msgstore.StoragePluginManager", this);
-      if (log.CALL) log.call(ME, "Constructor StoragePluginManager");
+      if (log.isLoggable(Level.FINER)) log.finer("Constructor StoragePluginManager");
    }
 
    /**
@@ -82,7 +83,7 @@ public class StoragePluginManager extends PluginManagerBase
     * @return The plugin for this type and version or null if none is specified or type=="undef"
     */
    public I_Map getPlugin(String type, String version, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "getPlugin(type="+type+", version="+version+", storageId="+storageId+", pluginEnvClass="+this.pluginEnvClass+")");
+      if (log.isLoggable(Level.FINER)) log.finer("getPlugin(type="+type+", version="+version+", storageId="+storageId+", pluginEnvClass="+this.pluginEnvClass+")");
       return getPlugin(new PluginInfo(glob, this, type, version,
                                       new ContextNode(this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
                        storageId, props);
@@ -116,11 +117,11 @@ public class StoragePluginManager extends PluginManagerBase
    public String getDefaultPluginName(String type, String version) {
       for (int i=0; i<defaultPluginNames.length; i++) {
          if (defaultPluginNames[i][0].equalsIgnoreCase(type)) {
-            if (log.TRACE) log.trace(ME, "Choosing for type=" + type + " plugin " + defaultPluginNames[i][1]);
+            if (log.isLoggable(Level.FINE)) log.fine("Choosing for type=" + type + " plugin " + defaultPluginNames[i][1]);
             return defaultPluginNames[i][1];
          }
       }
-      log.warn(ME, "Choosing for type=" + type + " default plugin " + defaultPluginNames[0][1]);
+      log.warning("Choosing for type=" + type + " default plugin " + defaultPluginNames[0][1]);
       return defaultPluginNames[0][1];
    }
 }

@@ -7,7 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster.simpledomain;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
@@ -27,7 +28,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
 
    private String ME = "RoundRobin";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(RoundRobin.class.getName());
    private int counter = 0;
 
    /**
@@ -36,9 +37,9 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
     */
    public void initialize(Global glob, ClusterManager clusterManager) {
       this.glob = glob;
-      this.log = this.glob.getLog("cluster");
+
       this.ME = this.ME + "-" + glob.getId();
-      log.info(ME, "Round robin load balancer is initialized");
+      log.info("Round robin load balancer is initialized");
    }
 
    /**
@@ -85,7 +86,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
       // TODO: Change return to NodeDomainInfo[] if multiple fail over nodes exist !!!
       
       if (nodeDomainInfoSet.size() == 0) {
-         log.warn(ME, "Empty nodeDomainInfoSet, using local node");
+         log.warning("Empty nodeDomainInfoSet, using local node");
          return null; // clusterManager.getMyClusterNode(); // handle locally
       }
 
@@ -128,17 +129,17 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
          if (myStratum <= nodeDomainInfo.getStratum()) {
             // handle locally, no need to send to a worse or equal stratum
             if (nodeDomainInfo.getStratum() > 0) {
-               log.warn(ME, "Selected myself as master node from a choice of " + nodeDomainInfoSet.size()
+               log.warning("Selected myself as master node from a choice of " + nodeDomainInfoSet.size()
                     + " nodes, but we are only stratum=" + nodeDomainInfo.getStratum() + ". The message is not routed further!");
             }
             else {
-               if (log.TRACE) log.trace(ME, "Selected myself as master node from a choice of " + nodeDomainInfoSet.size() + " nodes");
+               if (log.isLoggable(Level.FINE)) log.fine("Selected myself as master node from a choice of " + nodeDomainInfoSet.size() + " nodes");
             }
             return null; // handle locally: clusterManager.getMyClusterNode();
          }
 
-         if (log.TRACE)
-            log.trace(ME, "Selected master node id='" + 
+         if (log.isLoggable(Level.FINE))
+            log.fine("Selected master node id='" + 
                      nodeDomainInfo.getClusterNode().getId() + "' from a choice of " + 
                      nodeDomainInfoSet.size() + " nodes.  alive = " + 
                      nodeDomainInfo.getClusterNode().isAlive() + ", polling = " +
@@ -156,7 +157,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
          if (ii == counter) {
             NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)obj;
             ClusterNode clusterNode = nodeDomainInfo.getClusterNode();
-            if (log.TRACE) log.trace(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
+            if (log.isLoggable(Level.FINE)) log.trace(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
             counter++;
             return clusterNode;
          }
@@ -164,7 +165,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
       }
       */
 
-      log.warn(ME, "Can't find master, using local node");
+      log.warning("Can't find master, using local node");
       return null; // handle locally: clusterManager.getMyClusterNode();
    }
 

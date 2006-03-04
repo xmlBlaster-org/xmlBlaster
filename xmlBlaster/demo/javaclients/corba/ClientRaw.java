@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.key.UpdateKey; // To SAX parse the received XML key
 import org.xmlBlaster.client.qos.UpdateQos; // To SAX parse the received XML QoS
@@ -48,7 +49,7 @@ public class ClientRaw
    
    private final org.omg.CORBA.ORB orb;
    private final String[] args;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientRaw.class.getName());
 
    private Server xmlBlaster = null;
 
@@ -57,7 +58,7 @@ public class ClientRaw
       System.out.println("   -dispatch/connection/plugin/ior/iorString  The raw IOR string from xmlBlaster.");
       System.out.println("   -dispatch/connection/plugin/ior/iorFile    The raw IOR string from a file.");
       Global glob = new Global(args);
-      this.log = glob.getLog("client");
+
       orb = org.omg.CORBA.ORB.init(this.args,null);
       try {
          AuthServer authServer;
@@ -80,7 +81,7 @@ public class ClientRaw
             name[0].id = "xmlBlaster-Authenticate";
             name[0].kind = "MOM";
             if (nc == null) {
-               log.plain(ME, "\nSorry, please pass the server IOR string to the client, e.g.:\n"
+               System.out.println("\nSorry, please pass the server IOR string to the client, e.g.:\n"
                            + "Start the server:\n"
                            + "   jaco org.xmlBlaster.Main -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref\n"
                            + "Start this client:\n"
@@ -119,15 +120,15 @@ public class ClientRaw
             // to our client-side callback interface to deliver updates back
 
             xmlBlaster = authServer.login(loginName, passwd, qos);
-            log.info(ME, "Login done");
+            log.info("Login done");
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
          }
 
 
          //----------- Subscribe to messages with XPATH -------
          {
-            log.trace(ME, "Subscribing using XPath syntax ...");
+            log.fine("Subscribing using XPath syntax ...");
             String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                            "<key oid='' queryType='XPATH'>\n" +
                            "/xmlBlaster/key/AGENT" +
@@ -136,9 +137,9 @@ public class ClientRaw
             try {
                xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
-            log.info(ME, "Subscribe done, there should be no Callback" + stop.nice());
+            log.info("Subscribe done, there should be no Callback" + stop.nice());
          }
 
 
@@ -156,15 +157,15 @@ public class ClientRaw
                             "</key>";
             String content = "Yeahh, i'm the new content";
             MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-            log.info(ME, "Publishing ...");
+            log.info("Publishing ...");
             stop.restart();
             try {
                String publishOid = xmlBlaster.publish(msgUnit);
-               log.trace(ME, "Returned oid=" + publishOid);
+               log.fine("Returned oid=" + publishOid);
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
-            log.info(ME, "Publishing done, there should be a callback now" + stop.nice());
+            log.info("Publishing done, there should be a callback now" + stop.nice());
          }
 
          delay(1000); // Wait some time ...
@@ -174,29 +175,29 @@ public class ClientRaw
          ask("logout()");
 
          //----------- Logout --------------------------------------
-         log.info(ME, "Logout ...");
+         log.info("Logout ...");
          try {
             authServer.logout(xmlBlaster);
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            log.warning("XmlBlasterException: " + e.getMessage());
          }
 
          //----------- Shutdown my callback server -----------------
          try {
             rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
-         } catch(Exception e) { log.warn(ME, "POA deactivate callback failed"); }
+         } catch(Exception e) { log.warning("POA deactivate callback failed"); }
 
 
          //----------- Stop the POA --------------------------------
          try {
             rootPOA.the_POAManager().deactivate(false, true);
-         } catch(Exception e) { log.warn(ME, "POA deactivate failed"); }
+         } catch(Exception e) { log.warning("POA deactivate failed"); }
 
          //----------- Shutdown the ORB ----------------------------
          orb.shutdown(true);
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -212,8 +213,8 @@ public class ClientRaw
 
 
    private void ask(String text) {
-      log.plain(ME, text);
-      log.plain(ME, "################### Hit a key to continue ###################");
+      System.out.println(text);
+      System.out.println("################### Hit a key to continue ###################");
       try {
          System.in.read();
       } catch (java.io.IOException e) {}
@@ -241,7 +242,7 @@ class RawCallback implements BlasterCallbackOperations
 {
    final String ME;
    final Global glob;
-   final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientRaw.class.getName());
 
    /**
     * Construct it.
@@ -249,8 +250,8 @@ class RawCallback implements BlasterCallbackOperations
    public RawCallback(String[] args, java.lang.String name) {
       this.ME = "RawCallback-" + name;
       glob = new Global(args);
-      log = glob.getLog("client");
-      if (log.CALL) log.trace(ME, "Entering constructor with argument");
+
+      if (log.isLoggable(Level.FINER)) log.fine("Entering constructor with argument");
    }
 
 
@@ -269,12 +270,12 @@ class RawCallback implements BlasterCallbackOperations
             key = new UpdateKey(glob, msgUnit.xmlKey);
             qos = new UpdateQos(glob, msgUnit.qos);
          } catch (org.xmlBlaster.util.XmlBlasterException e) {
-            log.error(ME, e.getMessage());
+            log.severe(e.getMessage());
          }
-         log.plain(ME, "\n================== BlasterCallback update START =============");
-         log.plain(ME, "Callback invoked for " + key.toString() + " content length = " + msgUnit.content.length);
-         log.plain(ME, new String(msgUnit.content));
-         log.plain(ME, "================== BlasterCallback update END ===============\n");
+         System.out.println("\n================== BlasterCallback update START =============");
+         System.out.println("Callback invoked for " + key.toString() + " content length = " + msgUnit.content.length);
+         System.out.println(new String(msgUnit.content));
+         System.out.println("================== BlasterCallback update END ===============\n");
          ret[ii] = "<qos><state id='OK'/></qos>";
       }
       return ret;
@@ -291,7 +292,7 @@ class RawCallback implements BlasterCallbackOperations
          update(cbSessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+         log.severe("updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
          e.printStackTrace();
       }
    }

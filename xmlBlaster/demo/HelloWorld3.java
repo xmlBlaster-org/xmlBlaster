@@ -1,5 +1,6 @@
 // xmlBlaster/demo/HelloWorld3.java
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -47,11 +48,11 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 public class HelloWorld3 implements I_Callback
 {
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorld3.class.getName());
 
    public HelloWorld3(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog(null);
+
       
       I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       
@@ -78,7 +79,7 @@ public class HelloWorld3 implements I_Callback
          MsgUnit[] msgs = con.get(gk, gq);
          if (msgs.length > 0) {
             GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
-            log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
+            log.info("Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                       "' and status=" + grq.getState());
          }
 
@@ -91,7 +92,7 @@ public class HelloWorld3 implements I_Callback
          msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
          PublishReturnQos prq = con.publish(msgUnit);
 
-         log.info("", "Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
+         log.info("Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
 
          try { Thread.sleep(1000); } 
          catch( InterruptedException i) {} // wait a second to receive update()
@@ -100,22 +101,22 @@ public class HelloWorld3 implements I_Callback
          UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
          UnSubscribeQos uq = new UnSubscribeQos(glob);
          UnSubscribeReturnQos[] urq = con.unSubscribe(uk, uq);
-         if (urq.length > 0) log.info("", "Unsubscribed from topic");
+         if (urq.length > 0) log.info("Unsubscribed from topic");
 
          EraseKey ek = new EraseKey(glob, "HelloWorld3");
          EraseQos eq = new EraseQos(glob);
          EraseReturnQos[] eraseArr = con.erase(ek, eq);
-         if (eraseArr.length > 0) log.info("", "Erased topic");
+         if (eraseArr.length > 0) log.info("Erased topic");
 
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
          glob.shutdown(); // free resources
       }
       catch (XmlBlasterException e) {
-         log.error("HelloWorld3", e.getMessage());
+         log.severe(e.getMessage());
       }
       catch (Throwable e) {
-         log.error("HelloWorld3", e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
       }
    }
@@ -124,13 +125,13 @@ public class HelloWorld3 implements I_Callback
                         UpdateQos updateQos)
    {
       if (updateKey.isInternal()) {
-         log.info("", "Received unexpected internal message '" +
+         log.info("Received unexpected internal message '" +
               updateKey.getOid() + " from xmlBlaster");
          return "";
       }
 
       int myAge = updateQos.getClientProperty("myAge", 0);
-      log.info("", "Received asynchronous message '" + updateKey.getOid() +
+      log.info("Received asynchronous message '" + updateKey.getOid() +
                    "' state=" + updateQos.getState() +
                    " content=" + new String(content) + 
                    " clientProperty myAge=" + myAge + " from xmlBlaster");

@@ -14,7 +14,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.*;
@@ -23,13 +24,13 @@ import org.xmlBlaster.util.*;
  * Helperclass for Configuration
  */
 public class XmlUtil {
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(XmlUtil.class.getName());
   private Global glob = null;
   private static String ME = "XmlUtil";
 
   public XmlUtil() {
     this.glob = new Global();
-    this.log = this.glob.getLog("jmxGUI");
+
   }
 
   private DocumentBuilder docBuilder = null;
@@ -43,7 +44,7 @@ public class XmlUtil {
   public Document loadConfig () {
   	String filename = "jmxgui.xml";
   	String propertyName = "jmxgui.config";
-    log.info(ME,"loading config from file '" + filename + "' or property '" + propertyName + "'");
+    log.info("loading config from file '" + filename + "' or property '" + propertyName + "'");
     
     java.net.URL oUrl = null;
     oUrl = (new FileLocator(this.glob)).findFileInXmlBlasterSearchPath(propertyName, filename);
@@ -59,11 +60,11 @@ public class XmlUtil {
       doc = docBuilder.parse(in);
     }
     catch (SAXException ex) {
-      log.error(ME,"Error parsing xmlString from file " + filename);
+      log.severe("Error parsing xmlString from file " + filename);
       ex.printStackTrace();
     }
     catch (IOException ex) {
-      log.error(ME,"Error reading file " + filename);
+      log.severe("Error reading file " + filename);
       ex.printStackTrace();
     }
     return doc;

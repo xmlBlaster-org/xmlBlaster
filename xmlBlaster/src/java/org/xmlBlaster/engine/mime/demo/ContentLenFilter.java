@@ -6,7 +6,8 @@ Comment:   Interface hiding the real callback protocol
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -38,7 +39,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "ContentLenFilter";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(ContentLenFilter.class.getName());
    /** Limits max message size to 1 MB as a default */
    private long DEFAULT_MAX_LEN = 1000000;
    /** For testsuite TestAccess.java only to force an XmlBlasterException */
@@ -50,8 +51,8 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("mime");
-      log.info(ME, "Filter is initialized, we check all mime types if content is not too long");
+
+      log.info("Filter is initialized, we check all mime types if content is not too long");
    }
 
    /**
@@ -59,20 +60,20 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(Global,PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
-      this.log = glob.getLog("mime");
+
       java.util.Properties props = pluginInfo.getParameters();
 
       String lenStr = (String)props.get("DEFAULT_MAX_LEN");
       if (lenStr != null) {
          DEFAULT_MAX_LEN = (new Long(lenStr)).longValue();
-         log.info(ME, "Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
+         log.info("Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
       }
 
       // This is for the testsuite only to test exception
       String throwStr = (String)props.get("THROW_EXCEPTION_FOR_LEN");
       if (throwStr != null) {
          THROW_EXCEPTION_FOR_LEN = (new Integer(throwStr)).intValue();
-         log.info(ME, "Setting THROW_EXCEPTION_FOR_LEN=" + THROW_EXCEPTION_FOR_LEN + " as configured in xmlBlaster.properties");
+         log.info("Setting THROW_EXCEPTION_FOR_LEN=" + THROW_EXCEPTION_FOR_LEN + " as configured in xmlBlaster.properties");
       }
    }
 
@@ -144,22 +145,22 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 
          if (msgUnit.getContent().length == THROW_EXCEPTION_FOR_LEN) {
             if (Constants.OID_DEAD_LETTER.equals(msgUnit.getKeyOid())) {
-               log.info(ME, "Dead messages pass through");
+               log.info("Dead messages pass through");
                return true;  // message will be delivered
             }
             if (msgUnit.getQosData().isErased()) {
-               log.info(ME, "Messages with state=" + msgUnit.getQosData().getState() + " pass through");
+               log.info("Messages with state=" + msgUnit.getQosData().getState() + " pass through");
                return true;  // message will be delivered
             }
-            log.info(ME, "Test what happens if we throw an exception");
+            log.info("Test what happens if we throw an exception");
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Test what happens if we throw an exception");
          }
          if (msgUnit.getContent().length > maxLen) {
-            log.info(ME, "Message access denied, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
+            log.info("Message access denied, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
             return false; // message will not be send to client
          }
          else {
-            log.info(ME, "Message access OK, msgLen=" + msgUnit.getContent().length + " max=" + maxLen);
+            log.info("Message access OK, msgLen=" + msgUnit.getContent().length + " max=" + maxLen);
             return true;  // message will be delivered
          }
       }
@@ -167,7 +168,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
          throw e;
       }
       catch (Throwable e) {
-         log.error(ME, "Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer: " + e.toString());
+         log.severe("Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer", e);
       }
    }

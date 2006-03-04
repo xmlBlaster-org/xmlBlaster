@@ -8,7 +8,8 @@ package org.xmlBlaster.test.stress;
 
 import org.jutils.time.StopWatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -57,7 +58,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
    private int numToRec = numSubscribers * noToPub;
    private String ME = "MassiveSubTest";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(MassiveSubTest.class.getName());
    private int serverPort = 7615;
    private EmbeddedXmlBlaster serverThread;
    private boolean messageArrived = false;
@@ -97,7 +98,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
 
    public void init(Global glob, String testName, String loginName, boolean useOneConnection) {
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.oneName = loginName;
       numSubscribers = glob.getProperty().get("numSubscribers", numSubscribers);
       maxSubPerCon = glob.getProperty().get("maxSubPerCon", maxSubPerCon);
@@ -136,11 +137,11 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       };
       glob.init(args);
 
-      log.info(ME, "Setting up test ...");
+      log.info("Setting up test ...");
       if (withEmbedded) {
          glob.init(Util.getOtherServerPorts(serverPort));
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-         log.info(ME, "XmlBlaster is ready for testing a lots of subscribers");
+         log.info("XmlBlaster is ready for testing a lots of subscribers");
          globalUtil = new GlobalUtil( serverThread.getMain().getGlobal() );
       } else {
          globalUtil = new GlobalUtil( );
@@ -158,10 +159,10 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          cbProp.setMaxEntriesCache(numSubscribers+1000);
          this.updateInterceptor = new MsgInterceptor(this.glob, log, this); // Collect received msgs
          ConnectReturnQos connectReturnQos = oneConnection.connect(connectQos, this.updateInterceptor);
-         log.info(ME, "Connected: " + connectReturnQos.toXml());
+         log.info("Connected: " + connectReturnQos.toXml());
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -174,13 +175,13 @@ public class MassiveSubTest extends TestCase implements I_Callback {
     */
    protected void tearDown()
    {
-      log.info(ME, "Tearing down");
+      log.info("Tearing down");
       if (numReceived != numToRec) {
-         log.error(ME, "numToRec=" + numToRec + " but numReceived=" + numReceived);
+         log.severe("numToRec=" + numToRec + " but numReceived=" + numReceived);
          assertEquals("numToRec=" + numToRec + " but numReceived=" + numReceived, numSubscribers, numReceived);
       }
       
-      log.removeLogLevel("INFO");
+
       if (manyClients != null) {
          for (int ii=0; ii<numSubscribers; ii++) {
             Client sub = manyClients[ii];
@@ -195,7 +196,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                   } // end of else
                   
                }catch(XmlBlasterException ex) {
-                  log.error(ME,"Could not unsubscribe: " +sub.subscribeOid+": " + ex);
+                  log.severe("Could not unsubscribe: " +sub.subscribeOid+": " + ex);
                }
             }else {
                sub.connection.disconnect(null);
@@ -210,7 +211,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       } // end of if ()
       
 
-      log.addLogLevel("INFO");
+
       
       {
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -225,7 +226,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       
       oneConnection.disconnect(null);
       oneConnection = null;
-      log.info(ME, "Logout done");
+      log.info("Logout done");
       if (withEmbedded) {
          try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
@@ -252,7 +253,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       int ci=-1;
       try {
 
-         if (log.TRACE) log.trace(ME, "Subscribing ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Subscribing ...");
          
          String passwd = "secret";
          
@@ -275,8 +276,8 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          
          long usedBefore = getUsedServerMemory();
          
-         log.info(ME, "Setting up " + numSubscribers + " subscriber clients ...");
-         log.removeLogLevel("INFO");
+         log.info("Setting up " + numSubscribers + " subscriber clients ...");
+
          int startNoThreads = ThreadLister.countThreads();
          //ThreadLister.listAllThreads(System.out);
          stopWatch = new StopWatch();
@@ -290,7 +291,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                   if (  ii % maxSubPerCon == 0) {
                      ci++;
                      try {
-                        log.trace(ME,"Creating connection no: " +ci);
+                        log.fine("Creating connection no: " +ci);
                         Global gg = globalUtil.getClone(glob);
                         // Try to reuse the same ORB to avoid too many threads:
                         if ("IOR".equals(gg.getProperty().get("protocol","IOR")) && ci > 0) {
@@ -306,12 +307,12 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                         //cbProp.setMaxBytes(4000);
                         //cbProp.setOnOverflow(Constants.ONOVERFLOW_BLOCK);
                         //connectQos.setSubjectQueueProperty(cbProp);
-                        log.trace(ME,"Login qos: " +  connectQos.toXml());
+                        log.fine("Login qos: " +  connectQos.toXml());
                         ConnectReturnQos connectReturnQos = manyConnections[ci].connect(connectQos, this);
-                        log.info(ME, "Connected maxSubPerCon=" + maxSubPerCon + " : " + connectReturnQos.toXml());
+                        log.info("Connected maxSubPerCon=" + maxSubPerCon + " : " + connectReturnQos.toXml());
                      }
                      catch (Exception e) {
-                        log.error(ME, "Login failed: " + e.toString());
+                        log.severe("Login failed: " + e.toString());
                         assertTrue("Login failed: " + e.toString(), false);
                      }
                      
@@ -326,25 +327,25 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                   sub.connection = gg.getXmlBlasterAccess();
                   ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
                   ConnectReturnQos connectReturnQos = sub.connection.connect(connectQos, this);
-                  log.info(ME, "Connected: " + connectReturnQos.toXml());
+                  log.info("Connected: " + connectReturnQos.toXml());
                }
                catch (Exception e) {
-                  log.error(ME, "Login failed: " + e.toString());
+                  log.severe("Login failed: " + e.toString());
                   assertTrue("Login failed: " + e.toString(), false);
                }                                                        
             }
             try {
             sub.subscribeOid = sub.connection.subscribe(subKey, subQos).getSubscriptionId();
-            log.trace(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
+            log.fine("Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
                assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
             }
             
             manyClients[ii] = sub;
          }
          double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
-         log.addLogLevel("INFO");
+
          
          long usedAfter = getUsedServerMemory();
          long memPerLogin = (usedAfter - usedBefore)/numSubscribers;
@@ -353,17 +354,17 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          int tPerConn = ((ci == 0|| ci == -1) ? tDiff :tDiff/(ci+1));
          int subPerT = tDiff != 0 ? numSubscribers/tDiff:0;
          
-         log.info(ME, numSubscribers + " subscriber clients are ready.");
-         log.info(ME, "Server memory per login consumed=" + memPerLogin);
-         log.info(ME, "Time " + (long)(numSubscribers/timeForLogins) + " logins/sec");
-         log.info(ME, "Threads created " + tDiff + ", threads per connection " + tPerConn + ", sub  per thread " + subPerT);
+         log.info(numSubscribers + " subscriber clients are ready.");
+         log.info("Server memory per login consumed=" + memPerLogin);
+         log.info("Time " + (long)(numSubscribers/timeForLogins) + " logins/sec");
+         log.info("Threads created " + tDiff + ", threads per connection " + tPerConn + ", sub  per thread " + subPerT);
          //ThreadLister.listAllThreads(System.out);
          //try { Thread.currentThread().sleep(5000000L); } catch( InterruptedException i) {}
          
       } catch (Error e) {
          e.printStackTrace();
-         log.error(ME,"Could not set up subscribers: " +e);
-         log.error(ME,"No of threads " + ThreadLister.countThreads() + " for connection no " + ci);
+         log.severe("Could not set up subscribers: " +e);
+         log.severe("No of threads " + ThreadLister.countThreads() + " for connection no " + ci);
          throw e;
       } // end of try-catch
       
@@ -380,7 +381,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          String mem = new String(msgArr[0].getContent());
          return new Long(mem).longValue();
       } catch (XmlBlasterException e) {
-         log.warn(ME, e.toString());
+         log.warning(e.toString());
          return 0L;
       }
    }
@@ -391,7 +392,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
     */
    public void publish()
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
       
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -406,10 +407,10 @@ public class MassiveSubTest extends TestCase implements I_Callback {
             MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
             String tmp = oneConnection.publish(msgUnit).getKeyOid();
             assertEquals("Wrong publishOid1", publishOid1, tmp);
-            log.info(ME, "Success: Publishing done for " + i +", returned oid=" + publishOid1);
+            log.info("Success: Publishing done for " + i +", returned oid=" + publishOid1);
          }
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -420,7 +421,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      //log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getOid() + "...");
+      //log.info("Client " + loginName + " receiving update of message oid=" + updateKey.getOid() + "...");
       numReceived++;
 
       if (numReceived == numToRec) {
@@ -428,7 +429,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numReceived / elapsed);
-         log.info(ME, numReceived + " messages updated, average messages/second = " + avg + stopWatch.nice());
+         log.info(numReceived + " messages updated, average messages/second = " + avg + stopWatch.nice());
       }
       return "";
    }
@@ -439,8 +440,8 @@ public class MassiveSubTest extends TestCase implements I_Callback {
     */
    public void testManyClients()
    {
-      log.plain(ME, "");
-      log.info(ME, "TEST 1, many clients, useOneConnection="+useOneConnection);
+      System.out.println("");
+      log.info("TEST 1, many clients, useOneConnection="+useOneConnection);
       
       subcribeMany();
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
@@ -448,35 +449,35 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       
       publish();
       long delay = 2000L + 10 * numToRec;
-      log.info(ME, "Waiting long enough for updates ..."+delay);
+      log.info("Waiting long enough for updates ..."+delay);
       Util.delay(delay);                          // Wait some time for callback to arrive ...
       // !!!! this.updateInterceptor.
 
       if ( numReceived != numToRec ){
          // Warn and wait some more
-         log.warn(ME,"Have not yet received more than " +numReceived+"/"+numToRec+" waiting some more");
+         log.warning("Have not yet received more than " +numReceived+"/"+numToRec+" waiting some more");
          int midRec=numReceived;
          long avg = 0;
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numReceived / elapsed);
-         log.info(ME, numReceived + " messages updated, average firts round messages/second = " + avg + stopWatch.nice(false));//Don't reset
+         log.info(numReceived + " messages updated, average firts round messages/second = " + avg + stopWatch.nice(false));//Don't reset
          Util.delay(2L*delay); 
          //Lastt delay
          if ( numReceived != numToRec ){
          // Warn and wait some more
-         log.warn(ME,"Have NOT yet received more than " +numReceived+"/"+numToRec+" waiting last round");
+         log.warning("Have NOT yet received more than " +numReceived+"/"+numToRec+" waiting last round");
          avg = 0;
          elapsed = stopWatch.elapsed()-elapsed;
          if (elapsed > 0.)
             avg = (long)(1000.0 *( numReceived -midRec)/ elapsed);
-         log.info(ME, numReceived-midRec + " messages updated this round, average second round messages/second = " + avg + stopWatch.nice(false));//Don't reset
+         log.info(numReceived-midRec + " messages updated this round, average second round messages/second = " + avg + stopWatch.nice(false));//Don't reset
          Util.delay(4L*delay); 
       }
          
       }
 
-      log.info(ME, "Got messages:" +numReceived+"/"+numToRec);
+      log.info("Got messages:" +numReceived+"/"+numToRec);
       assertEquals("Wrong number of updates", numToRec, numReceived);
       
    }

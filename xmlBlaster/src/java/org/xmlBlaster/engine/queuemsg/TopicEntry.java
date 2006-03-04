@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -41,9 +43,9 @@ import org.xmlBlaster.engine.msgstore.I_MapEntry;
  */
 public final class TopicEntry implements I_MapEntry
 {
+   private static Logger log = Logger.getLogger(TopicEntry.class.getName());
    private static final long serialVersionUID = 1L;
    private transient final String ME;
-   private transient final Global glob;
    private transient final long uniqueId;
    private transient final String uniqueIdStr;    // cache uniqueId as String
    private transient final String embeddedType;
@@ -73,7 +75,6 @@ public final class TopicEntry implements I_MapEntry
     *                   If -1L it is estimated for you
     */
    public TopicEntry(Global glob, MsgUnit msgUnit, String embeddedType, long sizeInBytes) throws XmlBlasterException {
-      this.glob = glob;
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "TopicEntry", "Invalid constructor parameter msgUnit==null");
       }
@@ -232,7 +233,7 @@ public final class TopicEntry implements I_MapEntry
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) {
-      this.glob.getLog("core").error(ME, "added("+storageId.getId()+") invocation not expected (internal illegal argument)");
+      log.severe(ME + "added("+storageId.getId()+") invocation not expected (internal illegal argument)");
    }
 
    /**
@@ -240,7 +241,7 @@ public final class TopicEntry implements I_MapEntry
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) {
-      this.glob.getLog("core").error(ME, "removed("+storageId.getId()+") invocation not expected (internal illegal argument)");
+      log.severe(ME + "removed("+storageId.getId()+") invocation not expected (internal illegal argument)");
    }
 
    /**

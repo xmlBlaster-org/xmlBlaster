@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -26,7 +27,7 @@ import junit.framework.*;
 public class StatusQosFactoryTest extends TestCase {
    private String ME = "StatusQosFactoryTest";
    protected final Global glob;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(StatusQosFactoryTest.class.getName());
    private String currImpl;
    private I_StatusQosFactory factory;
    static I_StatusQosFactory[] IMPL = { 
@@ -37,12 +38,12 @@ public class StatusQosFactoryTest extends TestCase {
    public StatusQosFactoryTest(Global glob, String name, int currImpl) {
       super(name);
       this.glob = glob;
-      this.log = glob.getLog("test");
+
       this.factory = IMPL[currImpl];
    }
 
    protected void setUp() {
-      log.info(ME, "Testing parser factory " + factory.getName());
+      log.info("Testing parser factory " + factory.getName());
    }
 
    /**
@@ -93,7 +94,7 @@ public class StatusQosFactoryTest extends TestCase {
 
          StatusQosData qos = factory.readObject(xml);
          String newXml = qos.toXml();
-         log.info(ME, "New XML=" + newXml);
+         log.info("New XML=" + newXml);
          qos = factory.readObject(newXml);
 
          assertEquals("", Constants.STATE_ERASED, qos.getState());
@@ -158,7 +159,7 @@ public class StatusQosFactoryTest extends TestCase {
                StatusQosData qos = factory.readObject(xml);
             }
             long elapsed = System.currentTimeMillis() - start;
-            log.info(ME, num + " parses for " + factory.getName() + ": " + elapsed + " millisec -> " +
+            log.info(num + " parses for " + factory.getName() + ": " + elapsed + " millisec -> " +
                      ((((double)elapsed)*1000.*1000.)/((double)num)) + " nanosec/parse");
          }
       }

@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -87,7 +88,7 @@ public class RmiDriver implements I_Driver
 {
    private String ME = "RmiDriver";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(RmiDriver.class.getName());
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
    /** The singleton handle for this xmlBlaster server */
@@ -139,7 +140,7 @@ public class RmiDriver implements I_Driver
 
       this.glob = glob;
       this.ME = "RmiDriver" + this.glob.getLogPrefixDashed();
-      this.log = glob.getLog("rmi");
+
 
       org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
@@ -195,17 +196,17 @@ public class RmiDriver implements I_Driver
             // Start a 'rmiregistry' if desired
             try {
                java.rmi.registry.LocateRegistry.createRegistry(registryPort);
-               log.info(ME, "Started RMI registry on port " + registryPort);
+               log.info("Started RMI registry on port " + registryPort);
             } catch (java.rmi.server.ExportException e) {
                // Try to bind to an already running registry:
                try {
                   java.rmi.registry.LocateRegistry.getRegistry(hostname, registryPort);
-                  log.info(ME, "Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
+                  log.info("Another rmiregistry is running on port " + DEFAULT_REGISTRY_PORT +
                                " we will use this one. You could change the port with e.g. '-plugin/rmi/registryPort 1122' to run your own rmiregistry.");
                }
                catch (RemoteException e2) {
                   String text = "Port " + DEFAULT_REGISTRY_PORT + " is already in use, but does not seem to be a rmiregistry. Please can change the port with e.g. -plugin/rmi/registryPortCB=1122 : " + e.toString();
-                  log.error(ME, text);
+                  log.severe(text);
                   throw new XmlBlasterException(ME, text);
                }
             }
@@ -222,20 +223,20 @@ public class RmiDriver implements I_Driver
          throw new XmlBlasterException("InitRmiFailed", "Could not initialize RMI registry: " + e.toString());
       }
 
-      if (log.TRACE) log.trace(ME, "Initialized RMI server");
+      if (log.isLoggable(Level.FINE)) log.fine("Initialized RMI server");
    }
 
    /**
     * Activate xmlBlaster access through this protocol.
     */
    public synchronized void activate() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering activate");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering activate");
       try {
          authRmiServer = new AuthServerImpl(glob, this.addressServer, this.authenticate, xmlBlasterImpl);
          xmlBlasterRmiServer = new XmlBlasterImpl(glob, this.addressServer, xmlBlasterImpl);
       }
       catch (RemoteException e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          throw new XmlBlasterException("RmiDriverFailed", e.toString());
       }
 
@@ -243,14 +244,14 @@ public class RmiDriver implements I_Driver
 
       isActive = true;
 
-      log.info(ME, "Started successfully RMI driver.");
+      log.info("Started successfully RMI driver.");
    }
 
    /**
     * Deactivate xmlBlaster access (standby), no clients can connect. 
     */
    public synchronized void deActivate() throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering deActivate");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering deActivate");
       try {
          if (authBindName != null) {
             Naming.unbind(authBindName);
@@ -258,7 +259,7 @@ public class RmiDriver implements I_Driver
          // force shutdown, even if we still have calls in progress:
          java.rmi.server.UnicastRemoteObject.unexportObject(authRmiServer, true);
       } catch (Exception e) {
-         log.warn(ME, "Can't shutdown authentication server: " + e.toString());
+         log.warning("Can't shutdown authentication server: " + e.toString());
       }
 
       try {
@@ -266,30 +267,30 @@ public class RmiDriver implements I_Driver
          // force shutdown, even if we still have calls in progress:
          java.rmi.server.UnicastRemoteObject.unexportObject(xmlBlasterRmiServer, true);
       } catch (Exception e) {
-         log.warn(ME, "Can't shutdown xmlBlaster server: " + e.toString());
+         log.warning("Can't shutdown xmlBlaster server: " + e.toString());
       }
 
       isActive = false;
 
-      log.info(ME, "RMI deactivated, no client access possible.");
+      log.info("RMI deactivated, no client access possible.");
    }
 
    /**
     *  Instructs RMI to shut down.
     */
    public void shutdown() throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Shutting down RMI driver ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Shutting down RMI driver ...");
 
       if (isActive) {
          try {
             deActivate();
          } catch (XmlBlasterException e) {
-            log.error(ME, e.toString());
+            log.severe(e.toString());
          }
       }
 
       authBindName = null;
-      log.info(ME, "RMI driver stopped, naming entries released.");
+      log.info("RMI driver stopped, naming entries released.");
    }
 
 
@@ -302,44 +303,44 @@ public class RmiDriver implements I_Driver
     */
    private void bindToRegistry() throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "bindToRegistry() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("bindToRegistry() ...");
 
       // Publish RMI based xmlBlaster server ...
       try {
          Naming.bind(authBindName, authRmiServer);
-         log.info(ME, "Bound authentication RMI server to registry with name '" + authBindName + "'");
+         log.info("Bound authentication RMI server to registry with name '" + authBindName + "'");
       } catch (AlreadyBoundException e) {
          try {
             Naming.rebind(authBindName, authRmiServer);
-            log.warn(ME, "Removed another entry while binding authentication RMI server to registry with name '" + authBindName + "'");
+            log.warning("Removed another entry while binding authentication RMI server to registry with name '" + authBindName + "'");
          }
          catch(Exception e2) {
-            if (log.TRACE) log.trace(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e2.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("RMI registry of '" + authBindName + "' failed: " + e2.toString());
             throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e2.toString());
          }
       } catch (java.rmi.NoSuchObjectException e) { // 'rmi://noty:7904/I_AuthServer': authRmiServer -> no such object in table
-         if (log.TRACE) log.trace(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' authRmiServer=" + authRmiServer + " failed: " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("RMI registry of '" + authBindName + "' authRmiServer=" + authRmiServer + " failed: " + e.getMessage());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME+".RmiRegistryFailed",
                                        "RMI registry of '" + authBindName + "' failed, probably another server instance is running already (implementation to handle this is missing): " + e.toString());
       } catch (Throwable e) {
-         if (log.TRACE) log.trace(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) log.fine("RMI registry of '" + authBindName + "' failed: " + e.getMessage());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME+".RmiRegistryFailed",
                                        "RMI registry of '" + authBindName + "' failed: ", e);
       }
 
       try {
          Naming.bind(xmlBlasterBindName, xmlBlasterRmiServer);
-         log.info(ME, "Bound xmlBlaster RMI server to registry with name '" + xmlBlasterBindName + "'");
+         log.info("Bound xmlBlaster RMI server to registry with name '" + xmlBlasterBindName + "'");
       } catch (AlreadyBoundException e) {
          try {
             Naming.rebind(xmlBlasterBindName, xmlBlasterRmiServer);
-            log.warn(ME, "Removed another entry while binding xmlBlaster RMI server to registry with name '" + xmlBlasterBindName + "'");
+            log.warning("Removed another entry while binding xmlBlaster RMI server to registry with name '" + xmlBlasterBindName + "'");
          } catch (Exception e2) {
-            log.error(ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
+            log.severe("RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
          }
       } catch (Throwable e) {
-         log.error(ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
+         log.severe("RMI registry of '" + xmlBlasterBindName + "' failed: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME+".RmiRegistryFailed", "RMI registry of '" + xmlBlasterBindName + "' failed", e);
       }
    }

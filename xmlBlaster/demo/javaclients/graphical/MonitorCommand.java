@@ -9,7 +9,8 @@ package javaclients.graphical;
 import java.awt.Rectangle;
 import java.util.StringTokenizer;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -37,7 +38,7 @@ public class MonitorCommand {
    public final static String ME = "MonitorCommand";
    
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(MonitorCommand.class.getName());
    private String oid;
    private String type;
    private int    action = NONE;
@@ -45,7 +46,7 @@ public class MonitorCommand {
    
    private MonitorCommand(Global global, String oid, int action, Figure figure) {
       this.global = global;
-      this.log    = this.global.getLog("monitor");
+
       this.oid    = oid;
       this.action = action;
       this.figure = figure;
@@ -53,7 +54,7 @@ public class MonitorCommand {
    
    public MonitorCommand(Global global, String txt, Figure figure) throws XmlBlasterException {
       this.global = global;
-      this.log = this.global.getLog("monitor");
+
       this.figure = figure;
       StringTokenizer tokenizer = new StringTokenizer(txt.trim(), ";");
       if (tokenizer.countTokens() != 3)
@@ -112,7 +113,7 @@ public class MonitorCommand {
             int y = Integer.parseInt(tokenizer.nextToken().trim());
             this.figure.moveBy(x-oldRect.x, y-oldRect.y);
             
-            if (this.log.TRACE) this.log.trace(ME, "new position: " + x  + " " + y);
+            if (log.isLoggable(Level.FINE)) this.log.fine("new position: " + x  + " " + y);
          }
       }  
       catch (Exception ex) {

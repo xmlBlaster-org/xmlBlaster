@@ -36,7 +36,8 @@ import org.xmlBlaster.j2ee.util.GlobalUtil;
 import org.jutils.init.Property;
 import org.jutils.init.Property.FileInfo;
 import org.jutils.JUtilsException;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 /**
  * XmlBlaster for embedded use in a JMX server.
  *
@@ -63,7 +64,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    private EmbeddedXmlBlaster blaster = null;
    private Global glob;
    private String propFile;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlBlasterService.class.getName());
    private String jndiName;
    private Properties args = new Properties();
    private GlobalUtil globalUtil;
@@ -120,8 +121,8 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
       loadJacorbProperties();
       globalUtil.setupSecurityManager(glob);
 
-      log = glob.getLog("XmlBlasterService");
-      log.info(ME,"Starting XmlBlasterService");
+
+      log.info("Starting XmlBlasterService");
 
       blaster = EmbeddedXmlBlaster.startXmlBlaster(glob);
 
@@ -131,7 +132,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    }
    
    public void stop() throws Exception {
-      log.info(ME,"Stopping XmlBlaster service");
+      log.info("Stopping XmlBlaster service");
       if (blaster != null ) {
          EmbeddedXmlBlaster.stopXmlBlaster(blaster);
       } // end of if ()

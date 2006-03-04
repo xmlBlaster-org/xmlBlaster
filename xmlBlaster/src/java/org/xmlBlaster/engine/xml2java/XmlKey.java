@@ -7,7 +7,8 @@ package org.xmlBlaster.engine.xml2java;
 
 import org.jutils.text.StringHelper;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -88,7 +89,7 @@ public final class XmlKey
 {
    private String ME = "XmlKey";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlKey.class.getName());
 
    private XmlToDom xmlToDom = null;
 
@@ -124,7 +125,7 @@ public final class XmlKey
     */
    public XmlKey(Global glob, KeyData keyData) {
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       this.keyData = keyData;
    }
 
@@ -136,7 +137,7 @@ public final class XmlKey
     */
    public XmlKey(Global glob, String xmlKey_literal) throws XmlBlasterException {
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       
       xmlKey_literal = xmlKey_literal.trim();
       if (!xmlKey_literal.startsWith("<")) {
@@ -148,7 +149,7 @@ public final class XmlKey
          // perhaps we should make it configurable through a property file !!!
          // Example: xmlKey_literal="Airport.*" as a regular expression
 
-         log.warn(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported: '" + xmlKey_literal + "'");
+         log.warning("Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported: '" + xmlKey_literal + "'");
          Thread.dumpStack();
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + " Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
       }
@@ -182,7 +183,7 @@ public final class XmlKey
     * @see #literal()
     */
    public String toXml() {
-      log.warn(ME, "Accessing raw xml key string");
+      log.warning("Accessing raw xml key string");
       Thread.dumpStack();
       return this.keyData.toXml();
    }
@@ -278,14 +279,14 @@ public final class XmlKey
 
       // Finds the <key oid="..." queryType="..."> attributes, or inserts a unique oid if empty
       if (node == null) {
-         log.error(ME+".Internal", "root node = null");
+         log.severe("root node = null");
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + " Internal", "root node = null");
       }
 
       String nodeName = node.getNodeName();
 
       if (!nodeName.equalsIgnoreCase("key")) {
-         log.error(ME+".WrongRootNode", "The root node must be named \"key\"\n" + this.keyData.toXml());
+         log.severe("The root node must be named \"key\"\n" + this.keyData.toXml());
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME+".WrongRootNode", "The root node must be named \"key\"\n" + this.keyData.toXml());
       }
 
@@ -314,7 +315,7 @@ public final class XmlKey
          }
       }
 
-      log.info(ME, "DOM parsed the XmlKey " + getOid());
+      log.info("DOM parsed the XmlKey " + getOid());
    }
 
    /**
@@ -333,35 +334,35 @@ public final class XmlKey
     * @return true if this message key matches the query
     */
    public final boolean match(QueryKeyData queryKey) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Trying query=" + queryKey.toXml() + "\non key=" + literal());
+      if (log.isLoggable(Level.FINE)) log.fine("Trying query=" + queryKey.toXml() + "\non key=" + literal());
       if (queryKey.isDomain()) {
          if (queryKey.getDomain() == null) {
-            log.warn(ME, "Your query is of type DOMAIN but you have not specified a domain: " + queryKey.toXml());
+            log.warning("Your query is of type DOMAIN but you have not specified a domain: " + queryKey.toXml());
             throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_INVALID, ME, "Your query is of type DOMAIN but you have not specified a domain: " + queryKey.toXml());
          }
          if (queryKey.getDomain().equals("*") || queryKey.getDomain().equals(getDomain())) {
-            if (log.TRACE) log.trace(ME, "Message oid='" + getOid() + "' matched for domain='" + getDomain() + "'.");
+            if (log.isLoggable(Level.FINE)) log.fine("Message oid='" + getOid() + "' matched for domain='" + getDomain() + "'.");
             return true;
          }
       }
       else if (queryKey.isExact()) {
          if (queryKey.getOid().equals(getOid())) {
-            if (log.TRACE) log.trace(ME, "Message oid='" + getOid() + "' matched.");
+            if (log.isLoggable(Level.FINE)) log.fine("Message oid='" + getOid() + "' matched.");
             return true;
          }
       }
       else if (queryKey.isXPath()) {
          if (match(queryKey.getQueryString())) {
-            if (log.TRACE) log.trace(ME, "Message oid='" + getOid() + "' matched with XPath query '" + queryKey.getQueryString() + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("Message oid='" + getOid() + "' matched with XPath query '" + queryKey.getQueryString() + "'");
             return true;
          }
       }
       else {
-         log.error(ME, "Don't know queryType '" + queryKey.getQueryType() + "' for message oid='" + getOid() + "'. I'll return false for match.");
+         log.severe("Don't know queryType '" + queryKey.getQueryType() + "' for message oid='" + getOid() + "'. I'll return false for match.");
          return false;
       }
       
-      if (log.TRACE) log.trace(ME, "Message oid='" + getOid() + "' does not match with query");
+      if (log.isLoggable(Level.FINE)) log.fine("Message oid='" + getOid() + "' does not match with query");
       return false;
    }
 
@@ -376,28 +377,28 @@ public final class XmlKey
       String xmlKey_literal = this.keyData.toXml();
       if (this.xmlKeyDoc == null) {
          try {
-            if (log.TRACE) log.trace(ME, "Creating tiny DOM tree and a query manager ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Creating tiny DOM tree and a query manager ...");
             // Add the <xmlBlaster> root element ...
             String tmp = StringHelper.replaceFirst(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
             this.xmlKeyDoc = XmlToDom.parseToDomTree(glob, tmp);
          } catch (Exception e) {
             String text = "Problems building tiny key DOM tree\n" + xmlKey_literal + "\n for XPath subscriptions check: " + e.getMessage();
-            log.warn(ME + ".MergeNodeError", text);
+            log.warning(text);
             throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_INVALID, ME, text, e);
          }
       }
       try {
          Enumeration nodeIter = XmlNotPortable.getNodeSetFromXPath(xpath, this.xmlKeyDoc);
          if (nodeIter != null && nodeIter.hasMoreElements()) {
-            log.info(ME, "XPath subscription '" + xpath + "' matches message '" + getKeyOid() + "'");
+            log.info("XPath subscription '" + xpath + "' matches message '" + getKeyOid() + "'");
             return true;
          }
       }
       catch (Exception e) {
-         log.warn(ME + ".XPathError", "XPath query '" + xpath + "' on tiny key DOM tree" + xmlKey_literal + "failed: " + e.getMessage());
+         log.warning("XPath query '" + xpath + "' on tiny key DOM tree" + xmlKey_literal + "failed: " + e.getMessage());
          throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_INVALID, ME, "XPath query '" + xpath + "' on tiny key DOM tree" + xmlKey_literal + "failed", e);
       }
-      if (log.TRACE) log.trace(ME, "XPath subscription '" + xpath + "' does NOT match message '" + getKeyOid() + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("XPath subscription '" + xpath + "' does NOT match message '" + getKeyOid() + "'");
       return false;
    }
 
@@ -407,7 +408,7 @@ public final class XmlKey
     */
    public void cleanupMatch()
    {
-      if (log.TRACE) log.trace(ME, "Releasing tiny DOM tree");
+      if (log.isLoggable(Level.FINE)) log.fine("Releasing tiny DOM tree");
       this.xmlKeyDoc = null;
    }
 }

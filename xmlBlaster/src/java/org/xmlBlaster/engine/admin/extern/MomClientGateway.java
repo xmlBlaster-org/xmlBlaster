@@ -6,7 +6,8 @@ Comment:   Access with messages to administration tasks
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin.extern;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.def.Constants;
@@ -40,7 +41,7 @@ public final class MomClientGateway implements I_ExternGateway
 {
    private String ME;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(MomClientGateway.class.getName());
    private CommandManager commandManager;
    private static int instanceCounter = 0;
 
@@ -49,7 +50,7 @@ public final class MomClientGateway implements I_ExternGateway
     */
    public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog("admin");
+
 
       boolean useMessages = glob.getProperty().get("admin.messages", true);
       useMessages = glob.getProperty().get("admin.messages[" + glob.getId() + "]", useMessages);
@@ -69,7 +70,7 @@ public final class MomClientGateway implements I_ExternGateway
    public MsgUnit[] getCommand(SessionInfo sessionInfo, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
       //String cmdType = "get";
 
-      if (log.CALL) log.call(ME, "Invoking getCommand(" + keyData.getOid() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Invoking getCommand(" + keyData.getOid() + ")");
       /*
       CommandWrapper cw = new CommandWrapper(glob, query);
 
@@ -126,7 +127,7 @@ public final class MomClientGateway implements I_ExternGateway
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".setCommand", "Ignoring your empty command.");
       }
       command = command.trim();
-      if (log.CALL) log.call(ME, "Invoking setCommand(" + command + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Invoking setCommand(" + command + ")");
       if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".setCommand", "Ignoring your empty command '" + command + "'.");
       }
@@ -157,7 +158,7 @@ public final class MomClientGateway implements I_ExternGateway
    }
 
    public void shutdown() {
-      if (log.TRACE) log.trace(ME, "Shutdown.");
+      if (log.isLoggable(Level.FINE)) log.fine("Shutdown.");
    }
 
    /**

@@ -634,7 +634,7 @@ public class TestReplicationWriter extends XMLTestCase {
       info.put("table.AIS.DEVICE_FORMS", "trigger=REPL_NDB_031");
       info.put("table.AIS.PROCESSREGIONS", "trigger=REPL_NDB_032");
       info.put("table.AIS.AD_RESPS", "trigger=REPL_NDB_033");
-      info.put("table.AIS.CALL_SIGNS", "trigger=REPL_NDB_034");
+      info.put("table.AIS.isLoggable(Level.FINER)_SIGNS", "trigger=REPL_NDB_034");
       info.put("table.AIS.AFOD_ADDRESSES", "trigger=REPL_NDB_035");
       info.put("table.AIS.FIR_FPL_ADDRS", "trigger=REPL_NDB_036");
       info.put("table.AIS.HOSTS", "trigger=REPL_NDB_037");

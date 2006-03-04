@@ -10,7 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.filepoller.Publisher;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -45,7 +46,7 @@ import junit.framework.TestCase;
 public class TestFilePollerPlugin extends TestCase implements I_Callback {
    private static String ME = "TestFilePollerPlugin";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(TestFilePollerPlugin.class.getName());
    private Global connGlobal;
    private String oid = "filepollerTest";
    private String dirName;
@@ -96,7 +97,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          if (pos < 0)
             fail("the temporary path is not absolute '" + path + "'");
          this.dirName = path.substring(0, pos) + "/testsuitePoller";
-         this.log.info(ME, "WILL USE THE DIRECTORY '" + this.dirName + "' AS THE BASE DIRECTORY");
+         log.info("WILL USE THE DIRECTORY '" + this.dirName + "' AS THE BASE DIRECTORY");
          this.dirNameSent = this.dirName + "/Sent";
          this.dirNameDiscarded = this.dirName + "/Discarded";
       }
@@ -114,7 +115,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          this.global = new Global();
          this.global.init((String[])null);
       }
-      this.log = this.global.getLog("test");
+
       getBaseDir();
    }
 
@@ -145,7 +146,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      log.info(ME, "Entering tearDown(), test is finished");
+      log.info("Entering tearDown(), test is finished");
       cleanUpDirs();
       try {
          this.connGlobal.getXmlBlasterAccess().unSubscribe(new UnSubscribeKey(this.connGlobal, this.oid), new UnSubscribeQos(this.connGlobal));
@@ -162,13 +163,13 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       String contentStr = new String(content);
       String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
-      this.log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+      log.info("Receiving update of a message oid=" + updateKey.getOid() +
                         " priority=" + updateQos.getPriority() +
                         " state=" + updateQos.getState() +
                         " content=" + cont);
-      this.log.info(ME, "further log for receiving update of a message cbSessionId=" + cbSessionId +
+      log.info("further log for receiving update of a message cbSessionId=" + cbSessionId +
                      updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
-      this.log.error(ME, "update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
+      log.severe("update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
 
       return "OK";
    }
@@ -260,7 +261,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          assertTrue("an exception should occur since '" + this.dirName + "' is a file and should be a directory", false);
       }
       catch (XmlBlasterException ex) {
-         this.log.info(ME, "Exception is OK here");
+         log.info("Exception is OK here");
       }
       cleanUpDirs();
       
@@ -285,7 +286,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
          assertTrue("an exception should occur since '" + this.dirName + "' is a file and should be a directory", false);
       }
       catch (XmlBlasterException ex) {
-         this.log.info(ME, "Exception is OK here");
+         log.info("Exception is OK here");
       }
       cleanUpDirs();
    }

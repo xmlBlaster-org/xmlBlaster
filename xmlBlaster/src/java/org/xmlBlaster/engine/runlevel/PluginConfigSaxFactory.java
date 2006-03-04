@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
@@ -30,7 +31,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
 {
    private String ME = "PluginConfigSaxFactory";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginConfigSaxFactory.class.getName());
 
    private PluginConfig pluginConfig;
    private boolean isPlugin = false; // to set when an 'action' tag has been found (to know when to throw an ex)
@@ -52,7 +53,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
       super(glob);
       setUseLexicalHandler(true); // to allow CDATA wrapped attributes 
       this.glob = glob;
-      this.log = glob.getLog("runlevel");
+
       this.actionFactory = new RunLevelActionSaxFactory(this.glob);
    }
 
@@ -87,7 +88,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          this.init(xmlTxt);      // use SAX parser to parse it (is slow)
       }
       catch (Throwable thr) {
-         if (this.log.TRACE) {
+         if (log.isLoggable(Level.FINE)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readObject", "exception occured when parsing the <plugin> tag. In fact it was '" + xmlTxt + "'", thr);
          }
          else {
@@ -145,7 +146,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
                   this.pluginConfig.setJar(value);
                   continue;
                }
-               this.log.warn(ME, "startElement: " + key + "='" + value + "' is unknown");
+               log.warning("startElement: " + key + "='" + value + "' is unknown");
             }
          
          }
@@ -172,12 +173,12 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          this.attributeValue.append(">");
       }
       else {
-         this.log.warn(ME, "startElement: unknown tag '" + name + "'");
+         log.warning("startElement: unknown tag '" + name + "'");
       }
    }
 
    public void startCDATA() {
-      if (this.log.CALL) this.log.call(ME, "startCDATA");
+      if (log.isLoggable(Level.FINER)) this.log.finer("startCDATA");
       this.wrappedInCDATA = true;
       if (this.subTagCounter > 0) {
          this.attributeValue.append("<![CDATA[");

@@ -6,7 +6,8 @@ Comment:   Support check of message content with regular expressions.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.sql92;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.lexical.Sql92Selector;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -37,7 +38,7 @@ public class Sql92Filter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "Sql92Filter";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(Sql92Filter.class.getName());
 
    /**
     * This is called after instantiation of the plugin 
@@ -45,8 +46,8 @@ public class Sql92Filter implements I_Plugin, I_AccessFilter
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("mime");
-      log.info(ME, "Filter is initialized, we check all mime types");
+
+      log.info("Filter is initialized, we check all mime types");
    }
 
    /**

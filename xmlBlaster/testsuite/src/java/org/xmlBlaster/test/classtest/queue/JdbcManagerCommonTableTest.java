@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
@@ -21,13 +22,13 @@ import java.util.ArrayList;
 public class JdbcManagerCommonTableTest extends TestCase {
    private String ME = "JdbcManagerCommonTableTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(JdbcManagerCommonTableTest.class.getName());
    private JdbcManagerCommonTable manager;
 
    public JdbcManagerCommonTableTest(Global glob, String name) {
       super(name);
       this.glob = glob;
-      log = glob.getLog("test");
+
    }
 
    protected void setUp() {
@@ -50,7 +51,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          this.manager.wipeOutDB(false);
       }
       catch (Exception ex) {
-         log.error(me, "exception occured " + ex.toString());
+         log.severe("exception occured " + ex.toString());
          assertTrue(me, false);
       }
    }
@@ -61,7 +62,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
 /*
       }
       catch (XmlBlasterException ex) {
-         log.error(me, "Exception when testing manager " + ex.toString());
+         log.severe("Exception when testing manager " + ex.toString());
       }
 */
    }
@@ -73,12 +74,12 @@ public class JdbcManagerCommonTableTest extends TestCase {
     */
    private void manager() {
       String me = ME + ".manager";
-      this.log.info(me, "starting testing");
+      log.info("starting testing");
       try {
          boolean hasTables = this.manager.tablesCheckAndSetup(false);
          assertEquals(me + " initially the tables should not exist yet", false, hasTables);
  
-         if (this.log.TRACE) this.log.trace(me, "going to set up");
+         if (log.isLoggable(Level.FINE)) log.fine("going to set up");
          this.manager.setUp();
  
          StorageId storageId = new StorageId(this.glob, "cb:queue1");
@@ -92,14 +93,14 @@ public class JdbcManagerCommonTableTest extends TestCase {
             assertTrue(me + " adding an entry with no queue nor node associated should fail", false);         
          }
          catch (XmlBlasterException ex) {
-            this.log.info(me, "the previous exception is expected and is OK in this context");
+            log.info("the previous exception is expected and is OK in this context");
          }
          try {
             this.manager.addEntry(queueName, entry);
             assertTrue(me + " adding an entry with no queue associated should fail", false);
          }
          catch (XmlBlasterException ex) {
-            this.log.info(me, "the previous exception is expected and is OK in this context");
+            log.info("the previous exception is expected and is OK in this context");
          }
          boolean ret = this.manager.addEntry(queueName, entry);
          assertEquals(me + " adding an entry should give back true", true, ret);
@@ -217,7 +218,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          // can be run manually by adding -numOfPings 10 at the command line ...
          int numOfPings = glob.getProperty().get("numOfPings", 0);
          for (int i=0; i < numOfPings; i++) {
-            this.log.info(ME, "going to ping");
+            log.info("going to ping");
             this.manager.ping();
             try {
                Thread.sleep(200L);
@@ -226,7 +227,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
             }
          }
 
-         this.log.info(me, "successfully completed the tests");
+         log.info("successfully completed the tests");
       }
       catch (Exception ex) {
          assertEquals(me + " exception occured when testing 'manager' " + ex.toString(), 0, 1);
@@ -239,7 +240,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          this.manager.wipeOutDB(false);
       }
       catch (Exception ex) {
-         this.log.error(me, "exception occured " + ex.toString());
+         log.severe("exception occured " + ex.toString());
       }
    }
 

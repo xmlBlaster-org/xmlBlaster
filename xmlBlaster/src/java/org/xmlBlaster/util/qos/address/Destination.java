@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.address;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.Constants;
@@ -17,11 +19,12 @@ import org.xmlBlaster.util.def.Constants;
  */
 public class Destination implements java.io.Serializable
 {
+   private static final long serialVersionUID = 1L;
+   private static Logger log = Logger.getLogger(Destination.class.getName());
    private String ME = "Destination";
 
    /** The destination address (==login name) or the XPath query string */
    private SessionName destination = null;
-   private String queryStr;
    /** EXACT is default */
    private String queryType = "EXACT";
    /** No queuing is default */
@@ -62,8 +65,7 @@ public class Destination implements java.io.Serializable
    public Destination(String address, String queryType) {
       setQueryType(queryType);
       if (isXPathQuery()) {
-         queryStr = address;
-         Global.instance().getLog("core").error(ME, "Query type " + queryType + " is not implemented");
+         log.severe("Query type " + queryType + " is not implemented");
          //throw new IllegalArgumentException(ME+": Query type " + queryType + " is not implemented");
       }
       else {
@@ -141,7 +143,7 @@ public class Destination implements java.io.Serializable
       if (queryType.equalsIgnoreCase("EXACT"))
          this.queryType = queryType;
       else if (queryType.equalsIgnoreCase("XPATH"))
-         Global.instance().getLog("core").error(ME, "Query type " + queryType + " is not implemented");
+         log.severe("Query type " + queryType + " is not implemented");
          //throw new IllegalArgumentException(ME+": Query type " + queryType + " is not implemented");
       else
          throw new IllegalArgumentException(ME+": Query type " + queryType + " is not implemented");

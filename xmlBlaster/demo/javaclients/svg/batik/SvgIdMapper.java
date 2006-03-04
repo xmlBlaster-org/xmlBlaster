@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -36,7 +37,7 @@ import javax.xml.parsers.DocumentBuilder;
 public class SvgIdMapper /*implements NodeFilter*/
 {
    private final static String ME = "SvgIdMapper";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(SvgIdMapper.class.getName());
 
    /**
     * The table containing the pairs
@@ -45,7 +46,7 @@ public class SvgIdMapper /*implements NodeFilter*/
 
    public SvgIdMapper ()
    {
-      this.log = org.xmlBlaster.util.Global.instance().getLog("batik");
+
       idTable = new Hashtable();
    }
 
@@ -66,7 +67,7 @@ public class SvgIdMapper /*implements NodeFilter*/
    /*
    public short acceptNode(Node node)
    {
-      log.info(ME, ".acceptNode " + node.toString());
+      log.info(".acceptNode " + node.toString());
       // this is probably not needed
       if (!(node instanceof Element)) return FILTER_REJECT;
       String idText = ((Element)node).getAttribute("id");
@@ -84,7 +85,7 @@ public class SvgIdMapper /*implements NodeFilter*/
     */
    protected void scanNode (Node node)
    {
-      log.trace(ME, ".scanNode started");
+      log.fine(".scanNode started");
       if (node instanceof Document) {
          node = ((Document)node).getDocumentElement();
       }
@@ -93,7 +94,7 @@ public class SvgIdMapper /*implements NodeFilter*/
          String idText = el.getAttribute("id");
          if (isDynamic(idText)) {
             this.idTable.put(idText, node);
-            log.trace(ME, ".scanNode: " + idText);
+            log.fine(".scanNode: " + idText);
          }
          // scan the child nodes if any
          NodeList nodeList = el.getChildNodes();
@@ -103,14 +104,14 @@ public class SvgIdMapper /*implements NodeFilter*/
             }
          }
       }
-      log.trace(ME, ".scanNode ended");
+      log.fine(".scanNode ended");
    }
 
 
 
    public Hashtable createIdTable (Document document)
    {
-      log.info(ME, "createIdTable");
+      log.info("createIdTable");
       this.idTable = new Hashtable();
 
       this.scanNode(document);

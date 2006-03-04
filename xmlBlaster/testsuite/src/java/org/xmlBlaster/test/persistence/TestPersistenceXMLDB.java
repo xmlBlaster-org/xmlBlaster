@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -38,7 +39,7 @@ import junit.framework.*;
 public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    private final static String ME = "TestPersistenceXMLDB";
    private Global glob = null;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestPersistenceXMLDB.class.getName());
 
    private final String senderName = "Benedikt";
    private final String senderPasswd = "secret";
@@ -65,7 +66,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
    }
 
    /**
@@ -94,7 +95,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       */
 
       st = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+      log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       return st;
    } // end of startServer
 
@@ -105,7 +106,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     */
    protected void stopServer(EmbeddedXmlBlaster st) {
          EmbeddedXmlBlaster.stopXmlBlaster(st);
-         log.info( ME, "Xmlblaster stopped");
+         log.info("Xmlblaster stopped");
          st = null;
    } // end of stopServer
 
@@ -117,15 +118,15 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @return The sender connection.
     */
    protected I_XmlBlasterAccess connectClient(String name, String passwd) {
-      log.info(ME, "connect to client: name='" + name + "' passwd='" + passwd + "'");
+      log.info("connect to client: name='" + name + "' passwd='" + passwd + "'");
          I_XmlBlasterAccess sc = null;
       try {
          sc = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd); // == "<qos></qos>";
          sc.connect(qos, this);
-         log.info( ME, name + " connected" );
+         log.info(name + " connected" );
       } catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
       return sc;
@@ -141,7 +142,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
          sc.disconnect(null);
          sc = null;
       } catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    } // end of disconnectClient
@@ -179,8 +180,8 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @param sc A connection of a client to xmlBlaster.
     */
    public void sendPersistent(I_XmlBlasterAccess sc) {
-        if (log.CALL) log.call(ME, "sendPersistent");
-      if (log.TRACE) log.trace(ME, "Testing a persistent message ...");
+        if (log.isLoggable(Level.FINER)) log.finer("sendPersistent");
+      if (log.isLoggable(Level.FINE)) log.fine("Testing a persistent message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                       "   <" + subscribeString + "/>\n" +
@@ -194,9 +195,9 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          String returnedOid = sc.publish(msgUnit).getKeyOid();
          assertEquals("Returned oid is invalid", publishOid, returnedOid);
-         log.info(ME, "Sending of '" + senderContent + "' done, returned oid '" + publishOid + "'");
+         log.info("Sending of '" + senderContent + "' done, returned oid '" + publishOid + "'");
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         log.severe("publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    } // end of sendPersistent
@@ -207,17 +208,17 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @param sc A connection of a client to xmlBlaster.
     */
    protected void subscribe(I_XmlBlasterAccess sc) {
-        if (log.CALL) log.call(ME, "subscribe");
+        if (log.isLoggable(Level.FINER)) log.finer("subscribe");
 
       String xmlKeySub = "<key oid='' queryType='XPATH'>\n" + "/xmlBlaster/key/" + subscribeString + " </key>";
-      log.info(ME, "Subscribe to '" + xmlKeySub + "' ...");
+      log.info("Subscribe to '" + xmlKeySub + "' ...");
 
       try {
          sc.subscribe(xmlKeySub, "<qos></qos>");
       } catch(XmlBlasterException e2) {
-         log.warn(ME, "XmlBlasterException: " + e2.getMessage());
+         log.warning("XmlBlasterException: " + e2.getMessage());
       }
-      //log.trace(ME, "Subscribed to '" + xmlKeySub + "' ...");
+      //log.fine("Subscribed to '" + xmlKeySub + "' ...");
    } // end of subscribe
 
 
@@ -250,14 +251,14 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      //log.info(ME, "Receiving update of a message ...");
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      //log.info("Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
 
       numReceived += 1;
 
-      log.plain("UpdateKey", updateKey.toXml());
-      log.plain("content", (new String(content)).toString());
-      log.plain("UpdateQos", updateQos.toXml());
+      System.out.println(updateKey.toXml());
+      System.out.println((new String(content)).toString());
+      System.out.println(updateQos.toXml());
 
       assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());

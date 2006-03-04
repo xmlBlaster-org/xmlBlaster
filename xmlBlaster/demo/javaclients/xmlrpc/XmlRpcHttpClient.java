@@ -9,7 +9,8 @@ Author:    Michele Laghi (laghi@swissinfo.org)
 
 package javaclients.xmlrpc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -45,7 +46,7 @@ import org.xmlBlaster.util.MsgUnit;
 public class XmlRpcHttpClient
 {
    private static final String ME = "XmlRpcHttpClient";
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(XmlRpcHttpClient.class.getName());
 
 
    /**
@@ -63,18 +64,18 @@ public class XmlRpcHttpClient
     */
    private void testWithHelperClasses(Global glob)
    {
-      this.log = glob.getLog("client");
+
       try {
          // force XMLRPC protocol:
          glob.getProperty().set("client.protocol", "XMLRPC");
          
          I_XmlBlasterAccess client = glob.getXmlBlasterAccess();
          
-         log.info(ME, "Going to invoke xmlBlaster using XmlRpc-I_XmlBlasterAccess");
+         log.info("Going to invoke xmlBlaster using XmlRpc-I_XmlBlasterAccess");
          String sessionId = "Session1";
          ConnectQos connectQos = new ConnectQos(glob, "LunaMia", "silence");
          client.connect(connectQos, null);
-         log.info(ME, "Connection successful");
+         log.info("Connection successful");
 
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
@@ -83,12 +84,12 @@ public class XmlRpcHttpClient
 
          MsgUnit msgUnit = new MsgUnit(xmlKey.toXml(), content, "<qos><forceUpdate /></qos>");
          client.publish(msgUnit);
-         log.info(ME, "Published a message");
+         log.info("Published a message");
 
          client.disconnect(null);
       }
       catch (XmlBlasterException ex) {
-         log.error(ME, "exception: " + ex.toString());
+         log.severe("exception: " + ex.toString());
       }
       catch (Throwable ex1) {
          System.err.println("exception:"  + ex1);

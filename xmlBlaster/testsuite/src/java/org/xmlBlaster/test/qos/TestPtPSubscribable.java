@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.address.Destination;
@@ -48,7 +49,7 @@ public class TestPtPSubscribable extends TestCase
 {
    private static String ME = "TestPtPSubscribable";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestPtPSubscribable.class.getName());
    private String passwd = "secret";
    private int serverPort = 7615;
    private String oid = "TestPtPSubscribable.Msg";
@@ -75,7 +76,7 @@ public class TestPtPSubscribable extends TestCase
    public TestPtPSubscribable(Global glob, String testName) {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -86,7 +87,7 @@ public class TestPtPSubscribable extends TestCase
    protected void setUp() {
       glob.init(Util.getOtherServerPorts(serverPort));
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing");
+      log.info("XmlBlaster is ready for testing");
    }
 
    /**
@@ -112,10 +113,10 @@ public class TestPtPSubscribable extends TestCase
     * </p>
     */
    public void testSubscribable() {
-      log.info(ME, "testSubscribable("+sessionNameRcv+") ...");
+      log.info("testSubscribable("+sessionNameRcv+") ...");
 
       try {
-         log.info(ME, "============ STEP 1: Start publisher client");
+         log.info("============ STEP 1: Start publisher client");
          Global globSnd = glob.getClone(null);
          conSnd = globSnd.getXmlBlasterAccess();
          ConnectQos qosSnd = new ConnectQos(globSnd);
@@ -125,18 +126,18 @@ public class TestPtPSubscribable extends TestCase
          qosSnd.getSessionCbQueueProperty().setCallbackAddress(addrSnd);
          this.updateInterceptorSnd = new MsgInterceptor(globSnd, log, null);
          ConnectReturnQos crqPub = conSnd.connect(qosSnd, this.updateInterceptorSnd);
-         log.info(ME, "Connect success as " + crqPub.getSessionName());
+         log.info("Connect success as " + crqPub.getSessionName());
 
-         log.info(ME, "============ STEP 2: Subscribe in Pub/Sub mode");
+         log.info("============ STEP 2: Subscribe in Pub/Sub mode");
          SubscribeKey sk = new SubscribeKey(globSnd, oid);
          SubscribeQos sq = new SubscribeQos(globSnd);
          sq.setWantInitialUpdate(false);
          sq.setWantLocal(true);
          SubscribeReturnQos srq = conSnd.subscribe(sk, sq);
-         log.info(ME, "Subscription to '" + oid + "' done");
+         log.info("Subscription to '" + oid + "' done");
          assertEquals("", 0, this.updateInterceptorSnd.waitOnUpdate(1000L, oid, Constants.STATE_OK));
 
-         log.info(ME, "============ STEP 3: Start receiver");
+         log.info("============ STEP 3: Start receiver");
          Global globRcv = glob.getClone(null);
          conRcv = globRcv.getXmlBlasterAccess();
          ConnectQos qosRcv = new ConnectQos(globRcv, sessionNameRcv, passwd);
@@ -147,10 +148,10 @@ public class TestPtPSubscribable extends TestCase
          qosRcv.getSessionCbQueueProperty().setCallbackAddress(addr);
          this.updateInterceptorRcv = new MsgInterceptor(globRcv, log, null);
          ConnectReturnQos crqRcv = conRcv.connect(qosRcv, this.updateInterceptorRcv); // Login to xmlBlaster
-         log.info(ME, "Connect as subscriber '" + crqRcv.getSessionName() + "' success");
+         log.info("Connect as subscriber '" + crqRcv.getSessionName() + "' success");
 
          {
-            log.info(ME, "============ STEP 4: Publish PtP message which is NOT subscribable");
+            log.info("============ STEP 4: Publish PtP message which is NOT subscribable");
             PublishKey pk = new PublishKey(globSnd, oid, "text/xml", "1.0");
             PublishQos pq = new PublishQos(globSnd);
             Destination dest = new Destination(globSnd, new SessionName(globSnd, sessionNameRcv));
@@ -159,7 +160,7 @@ public class TestPtPSubscribable extends TestCase
             byte[] content = "Hello".getBytes();
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             PublishReturnQos prq = conSnd.publish(msgUnit);
-            log.info(ME, "Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
+            log.info("Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
                          " for published message '" + prq.getKeyOid() + "'");
             assertEquals("", 1, this.updateInterceptorRcv.waitOnUpdate(1000L, oid, Constants.STATE_OK));
             assertEquals("", secretCbSessionId, this.updateInterceptorRcv.getMsg(oid, Constants.STATE_OK).getCbSessionId());
@@ -170,7 +171,7 @@ public class TestPtPSubscribable extends TestCase
          }
 
          {
-            log.info(ME, "============ STEP 5: Publish PtP message which IS subscribable");
+            log.info("============ STEP 5: Publish PtP message which IS subscribable");
             PublishKey pk = new PublishKey(globSnd, oid, "text/xml", "1.0");
             PublishQos pq = new PublishQos(globSnd);
             Destination dest = new Destination(globSnd, new SessionName(globSnd, sessionNameRcv));
@@ -179,7 +180,7 @@ public class TestPtPSubscribable extends TestCase
             byte[] content = "Hello".getBytes();
             MsgUnit msgUnit = new MsgUnit(pk, content, pq);
             PublishReturnQos prq = conSnd.publish(msgUnit);
-            log.info(ME, "Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
+            log.info("Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
                          " for published message '" + prq.getKeyOid() + "'");
 
             assertEquals("", 1, this.updateInterceptorRcv.waitOnUpdate(1000L, oid, Constants.STATE_OK));
@@ -192,15 +193,15 @@ public class TestPtPSubscribable extends TestCase
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          fail(e.toString());
       }
       finally { // clean up
-         log.info(ME, "Disconnecting '" + sessionNameRcv + "'");
+         log.info("Disconnecting '" + sessionNameRcv + "'");
          if (conRcv != null) conRcv.disconnect(null);
          if (conSnd != null) conSnd.disconnect(null);
       }
-      log.info(ME, "Success in testSubscribable()");
+      log.info("Success in testSubscribable()");
    }
 
    /**

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.runtime.ThreadLister;
 
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
@@ -45,7 +46,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    private final static String ME = "TestCorbaThreads";
 
    private Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestCorbaThreads.class.getName());
    private EmbeddedXmlBlaster serverThread;
    private final String loginName = "TestCorbaThreads";
    private String publishOid = "";
@@ -64,7 +65,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    public TestCorbaThreads(Global glob, String testName) {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog("test");
+
    }
 
    /**
@@ -98,7 +99,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
                         "-CbProtocolPlugin[IOR][1.0]", "org.xmlBlaster.protocol.corba.CallbackCorbaDriver" };
       glob.init(args);
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort 8116");
+      log.info("XmlBlaster is ready for testing on bootstrapPort 8116");
    }
 
    /**
@@ -124,7 +125,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
          corbaConnection.connect(connectQos.toXml());
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -134,7 +135,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
       this.serverThread = null;
       // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
       Util.resetPorts(glob);
-      log.info(ME, "Ports reset to default: " + glob.getProperty().toXml());
+      log.info("Ports reset to default: " + glob.getProperty().toXml());
    }
 
    /**
@@ -148,7 +149,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
          System.gc();
       }
       if (cbServer != null) {
-         try { cbServer.shutdown(); } catch(Exception e) { log.error(ME, "shutdownCb(): " + e.toString()); }
+         try { cbServer.shutdown(); } catch(Exception e) { log.severe("shutdownCb(): " + e.toString()); }
          cbServer = null;
          System.gc();
       }
@@ -161,25 +162,25 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
     * The returned subscribeOid is checked
     */
    public void testThread() {
-      log.info(ME, "Testing thread consume on multiple login/logouts, used threads before any login=" + ThreadLister.countThreads());
+      log.info("Testing thread consume on multiple login/logouts, used threads before any login=" + ThreadLister.countThreads());
       ThreadLister.listAllThreads(System.out);
       int threadsBefore = 0;
 
       for (int ii=0; ii<5; ii++) {
-         log.info(ME, "Testing login/logout no = " + ii);
+         log.info("Testing login/logout no = " + ii);
          login();
          logout();
          if (ii==0) {
             Util.gc(2);
             threadsBefore = ThreadLister.countThreads();
-            log.info(ME, "Testing thread consume on multiple login/logouts, used threads after first login=" + threadsBefore);
+            log.info("Testing thread consume on multiple login/logouts, used threads after first login=" + threadsBefore);
             ThreadLister.listAllThreads(System.out);
          }
       }
       Util.gc(2);
       ThreadLister.listAllThreads(System.out);
       int threadsAfter = ThreadLister.countThreads();
-      log.info(ME, "Currently used threads after 5 login/logout=" + threadsAfter);
+      log.info("Currently used threads after 5 login/logout=" + threadsAfter);
       assertTrue("We have a thread leak, threadsBefore=" + threadsBefore +
                  " threadsAfter=" + threadsAfter, threadsAfter <= threadsBefore);
    }
@@ -189,24 +190,24 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
     * These update() methods are enforced by I_CallbackExtended. 
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
       return "";
    }
    public String update(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral) {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
       return "";
    }
    public String[] update(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
       String[] retArr = new String[msgUnitArr.length];
       for (int ii=0; ii<retArr.length; ii++) retArr[ii] = "";
       return retArr;
    }
    public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral) {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
    }
    public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
    }
 
    /**

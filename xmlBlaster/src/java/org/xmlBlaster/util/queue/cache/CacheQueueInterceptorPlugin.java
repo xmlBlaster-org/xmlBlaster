@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue.cache;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.context.ContextNode;
@@ -44,9 +45,9 @@ import java.io.OutputStream;
  */
 public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_StorageProblemListener, CacheQueueInterceptorPluginMBean
 {
+   private static Logger log = Logger.getLogger(CacheQueueInterceptorPlugin.class.getName());
    private String ME;
    private ContextNode contextNode;
-   private LogChannel log;
    private QueuePropertyBase property;             // plugins via I_Queue
    private boolean notifiedAboutAddOrRemove = false;
    boolean isDown = true;
@@ -92,8 +93,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private final long checkSpaceAvailable(I_Queue queue, long valueToCheckAgainst, boolean ifFullThrowException, String extraTxt) 
       throws XmlBlasterException {
       long spaceLeft = queue.getMaxNumOfBytes() - queue.getNumOfBytes() - valueToCheckAgainst;
-      if (this.log.TRACE) this.log.trace(ME, "checkSpaceAvailable : maxNumOfBytes=" + queue.getMaxNumOfBytes() + "' numOfBytes='" + queue.getNumOfBytes() + "'. Occured at " + extraTxt);
-      if (spaceLeft < 0L && (this.log.TRACE || ifFullThrowException)) {
+      if (log.isLoggable(Level.FINE)) log.fine("checkSpaceAvailable : maxNumOfBytes=" + queue.getMaxNumOfBytes() + "' numOfBytes='" + queue.getNumOfBytes() + "'. Occured at " + extraTxt);
+      if (spaceLeft < 0L && (log.isLoggable(Level.FINE) || ifFullThrowException)) {
          String maxBytes = "maxBytes";
          String queueName = "Cache";
          if (queue == this.transientQueue) {
@@ -106,7 +107,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          String reason = queueName + " queue overflow, " + queue.getNumOfBytes() +
                          " bytes are in queue, try increasing '" + 
                          this.property.getPropName(maxBytes) + "' on client login.";
-         if (this.log.TRACE) this.log.trace(ME, reason + this.toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine(reason + this.toXml(""));
          if (ifFullThrowException)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -116,7 +117,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private final long checkEntriesAvailable(I_Queue queue, long valueToCheckAgainst, boolean ifFullThrowException, String extraTxt) 
       throws XmlBlasterException {
       long entriesLeft = queue.getMaxNumOfEntries() - queue.getNumOfEntries() - valueToCheckAgainst;
-      if (entriesLeft < 0L && (this.log.TRACE || ifFullThrowException)) {
+      if (entriesLeft < 0L && (log.isLoggable(Level.FINE) || ifFullThrowException)) {
          String maxEntries = "maxEntries";
          String queueName = "Cache";
          if (queue == this.transientQueue) {
@@ -129,7 +130,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          String reason = queueName + " queue overflow, " + queue.getNumOfEntries() +
                          " entries are in queue, try increasing '" + 
                          this.property.getPropName(maxEntries) + "' on client login.";
-         if (this.log.TRACE) this.log.trace(ME, reason + this.toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine(reason + this.toXml(""));
          if (ifFullThrowException)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -141,7 +142,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see I_StorageProblemListener#storageUnavailable(int)
     */
    synchronized public void storageUnavailable(int oldStatus) {
-      if (this.log.CALL) this.log.call(ME, "storageUnavailable");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("storageUnavailable");
       this.isConnected = false;
       // we could optimize this by providing a peekLast method to the I_Queue
       try {
@@ -150,7 +152,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          else this.referenceEntry = (I_QueueEntry)lst.get(lst.size()-1);
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "storageUnavailable: exception occured when peeking the transient queue: " + ex.getMessage());
+         log.severe("storageUnavailable: exception occured when peeking the transient queue: " + ex.getMessage());
          ex.printStackTrace();
       }
    }
@@ -161,7 +163,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    synchronized public void storageAvailable(int oldStatus) {
       if (oldStatus == I_StorageProblemListener.UNDEF) return;
-      if (this.log.CALL) this.log.call(ME, "storageAvailable");
+      if (log.isLoggable(Level.FINER)) log.finer("storageAvailable");
      /* remove all obsolete messages from the persitence. */
 
       if (this.persistentQueue == null) return; // should never happen
@@ -169,9 +171,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       try {
          boolean isInclusive = true; // if the reference is the original one then it is inclusive, if it is a new one then it is exclusive
          I_QueueEntry limitEntry = null; // this.referenceEntry;
-         if (this.log.TRACE) {
-            if (limitEntry == null) this.log.trace(ME, "storageAvailable: the reference entry is null");
-            else this.log.trace(ME, "storageAvailable: the reference entry is '" + limitEntry.getUniqueId() + "' and its flag 'stored' is '" + limitEntry.isStored() + "'");
+         if (log.isLoggable(Level.FINE)) {
+            if (limitEntry == null) log.fine("storageAvailable: the reference entry is null");
+            else log.fine("storageAvailable: the reference entry is '" + limitEntry.getUniqueId() + "' and its flag 'stored' is '" + limitEntry.isStored() + "'");
          }
          ArrayList list = null;
          this.referenceEntry = null;
@@ -179,9 +181,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          if (limitEntry == null || limitEntry.isStored()) {
             isInclusive = false;
             limitEntry = this.transientQueue.peek(); // get the first entry in the RAM queue as ref
-            if (this.log.TRACE) {
-               if (limitEntry == null) this.log.trace(ME, "storageAvailable: the new reference entry is null");
-               else this.log.trace(ME, "storageAvailable: the new reference entry is '" + limitEntry.getUniqueId() + "'");
+            if (log.isLoggable(Level.FINE)) {
+               if (limitEntry == null) log.fine("storageAvailable: the new reference entry is null");
+               else log.fine("storageAvailable: the new reference entry is '" + limitEntry.getUniqueId() + "'");
             }
          }
          if (limitEntry == null) { // then ram queue was empty when it lost connection and is empty now
@@ -220,7 +222,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          this.isConnected = true;
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "exception occured when reconnecting. " + ex.getMessage());
+         log.severe("exception occured when reconnecting. " + ex.getMessage());
          ex.printStackTrace();
       }
       finally {
@@ -228,7 +230,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             loadFromPersistence();
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "storageAvailable: exception when loading from persistence: " + ex.getMessage());
+            log.severe("storageAvailable: exception when loading from persistence: " + ex.getMessage());
             ex.printStackTrace();
          }
       }
@@ -253,9 +255,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
          this.property = null;
          this.glob = ((QueuePropertyBase)userData).getGlobal();
-         this.log = glob.getLog("queue");
+
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
-         if (this.log.CALL) this.log.call(ME, "initialized");
+         if (log.isLoggable(Level.FINER)) log.finer("initialized");
          this.queueId = uniqueQueueId;
 
          // For JMX instanceName may not contain ","
@@ -270,7 +272,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          //instantiate and initialize the underlying queues
          String defaultTransient = pluginProperties.getProperty("transientQueue", "RAM,1.0").trim();
          if (defaultTransient.startsWith(getType())) {
-            log.error(ME,"Cache queue configured with transientQueue=CACHE, to prevent recursion we set it to 'RAM,1.0'");
+            log.severe("Cache queue configured with transientQueue=CACHE, to prevent recursion we set it to 'RAM,1.0'");
             defaultTransient = "RAM,1.0";
          }
          this.transientQueue = pluginManager.getPlugin(defaultTransient, uniqueQueueId, createRamCopy(queuePropertyBase));
@@ -279,7 +281,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          try {
             String defaultPersistent = pluginProperties.getProperty("persistentQueue", "JDBC,1.0").trim();
             if (defaultPersistent.startsWith(getType())) {
-               log.error(ME,"Cache queue configured with persistentQueue=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
+               log.severe("Cache queue configured with persistentQueue=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
                defaultPersistent = "JDBC,1.0";
             }
             this.persistentQueue = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
@@ -290,7 +292,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             this.persistentQueue.registerStorageProblemListener(this);
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "Could not initialize the persistent queue '" + uniqueQueueId + "'. Is the JDBC Driver jar file in the CLASSPATH ?" +
+            log.severe("Could not initialize the persistent queue '" + uniqueQueueId + "'. Is the JDBC Driver jar file in the CLASSPATH ?" +
                 " Is the DB up and running ? We continue RAM based ..." + ex.getMessage() +
                 " The propery settings are:" + queuePropertyBase.toXml());
             // start a polling thread to see if the connection can be established later 
@@ -304,7 +306,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                this.persistentQueue.removeTransient();
             }
             catch (XmlBlasterException ex) {
-               this.log.error(ME, "could not remove transient entries (swapped entries) probably due to no connection to the DB, or the DB is down");
+               log.severe("could not remove transient entries (swapped entries) probably due to no connection to the DB, or the DB is down");
                ex.printStackTrace();
             }
 
@@ -318,7 +320,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
          } // persistentQueue!=null
          this.isDown = false;
-         if (log.TRACE) log.trace(ME, "Successful initialized");
+         if (log.isLoggable(Level.FINE)) log.fine("Successful initialized");
       } // isDown?
    }
 
@@ -342,7 +344,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          newProp = (QueuePropertyBase)userData;
       }
       catch(Throwable e) {
-         log.error(ME, "Can't configure queue, your properties are invalid: " + e.toString());
+         log.severe("Can't configure queue, your properties are invalid: " + e.toString());
          e.printStackTrace();
          return;
       }
@@ -487,11 +489,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                   this.persistentQueue.put((I_QueueEntry[])persistentsFromEntries.toArray(new I_QueueEntry[persistentsFromEntries.size()]), ignorePutInterceptor);
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue: " + persistentsFromEntries.size() + " persistent entries will temporarly be handled as transient. Is the DB up and running ? " + ex.getMessage() + "state "  + this.toXml(""));
+                  log.severe("put: an error occured when writing to the persistent queue: " + persistentsFromEntries.size() + " persistent entries will temporarly be handled as transient. Is the DB up and running ? " + ex.getMessage() + "state "  + this.toXml(""));
                   // should an exception be rethrown here ? No because it should be possible to work even if no persistence available
                }
                catch (Throwable ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue: " + persistentsFromEntries.size() + " persistent entries will temporarly be handled as transient. Is the DB up and running ? " + ex.toString() + "state "  + this.toXml(""));
+                  log.severe("put: an error occured when writing to the persistent queue: " + persistentsFromEntries.size() + " persistent entries will temporarly be handled as transient. Is the DB up and running ? " + ex.toString() + "state "  + this.toXml(""));
                   ex.printStackTrace();
                }
             }
@@ -510,7 +512,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                long exceedingEntries = -checkEntriesAvailable(this.transientQueue, 0L, false, "");
                if ( (exceedingSize >= 0L && this.persistentQueue.getMaxNumOfBytes() > this.transientQueue.getMaxNumOfBytes()) || 
                     (exceedingEntries >= 0L && this.persistentQueue.getMaxNumOfEntries() > this.transientQueue.getMaxNumOfEntries())) {
-                  if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size (in bytes): " + exceedingSize + " exceeding entries: " + exceedingEntries + " state: " + toXml(""));
+                  if (log.isLoggable(Level.FINE)) log.fine("put: swapping. Exceeding size (in bytes): " + exceedingSize + " exceeding entries: " + exceedingEntries + " state: " + toXml(""));
             
                   ArrayList transients = null;
                   try {
@@ -522,8 +524,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                         swaps = this.transientQueue.takeLowest(queueEntries.length, sizeOfEntries, null, true);
                         needsLoading = true;
                      }
-                     if (this.log.TRACE) {
-                        this.log.trace(ME, "put: swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
+                     if (log.isLoggable(Level.FINE)) {
+                        log.fine("put: swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
                      }
                      // get the transients
                      transients = new ArrayList();
@@ -538,11 +540,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                      if (needsLoading) loadFromPersistence();
                   }
                   catch (XmlBlasterException ex) {
-                     this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
+                     log.severe("put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
                      ex.printStackTrace();
                   }
                   catch (Throwable ex) {
-                     this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.toString());
+                     log.severe("put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.toString());
                      ex.printStackTrace();
                   }
                }
@@ -557,7 +559,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                queueEntries[i].added(this.queueId);
             }
             catch (Throwable ex) {
-               this.log.error(ME, "put: an error occured when notifying : " + ex.toString());
+               log.severe("put: an error occured when notifying : " + ex.toString());
                ex.printStackTrace();
             }
       }
@@ -632,7 +634,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                }
                catch (Throwable ex) {
                   handlePersistents = false;
-                  this.log.error(ME, "takeLowest: exception occured when taking the lowest entry from the persistent queue: " + ex.toString());
+                  log.severe("takeLowest: exception occured when taking the lowest entry from the persistent queue: " + ex.toString());
                   ex.printStackTrace();
                }
            
@@ -646,7 +648,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                   boolean[] hlp = this.transientQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
                   for (int i=0; i < hlp.length; i++) if (hlp[i]) num++;
                   if (num > 0L) {
-                     if (log.TRACE) log.trace(ME, "Didn't expect message " + ((I_Entry)list.get(0)).getLogId() + " in transient store." +
+                     if (log.isLoggable(Level.FINE)) log.fine("Didn't expect message " + ((I_Entry)list.get(0)).getLogId() + " in transient store." +
                                 " If the database was temporary unavailable this is possible " + this.toXml(""));
                   }
                }
@@ -779,11 +781,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             ret = this.persistentQueue.removeWithLimitEntry(limitEntry, inclusive);
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "removeWithLimitEntry: exception occured when removing from persistence. reason: " + ex.getMessage());
+            log.severe("removeWithLimitEntry: exception occured when removing from persistence. reason: " + ex.getMessage());
             ex.printStackTrace();
          }
          catch (Throwable ex) {
-            this.log.error(ME, "removeWithLimitEntry: exception occured when removing from persistence. reason: " + ex.toString());
+            log.severe("removeWithLimitEntry: exception occured when removing from persistence. reason: " + ex.toString());
             ex.printStackTrace();
          }
       }
@@ -886,7 +888,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * queue.
     */
    private final boolean[] removePossibleSwappedEntries(boolean[] ret, I_Entry[] queueEntries) {
-      if (this.log.CALL) this.log.call(ME, "removePossibleSwappedEntries");
+      if (log.isLoggable(Level.FINER)) log.finer("removePossibleSwappedEntries");
 
       // prepare the entries array
       if (!isPersistenceAvailable()) return ret;
@@ -895,7 +897,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       if (numUnremoved == 0) return ret;
       if (!hasTransientsSwapped()) return ret;
 
-      if (this.log.TRACE) this.log.trace(ME, "removePossibleSwappedEntries, there were entries '" + numUnremoved + "' to delete on persistence");
+      if (log.isLoggable(Level.FINE)) log.fine("removePossibleSwappedEntries, there were entries '" + numUnremoved + "' to delete on persistence");
       if (queueEntries == null || queueEntries.length < 1) return ret;
       
       I_Entry[] unremovedEntries = new I_Entry[numUnremoved];
@@ -914,12 +916,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             if (!ret[i]) {
                ret[i] = ret1[count];
                count++;
-               if (this.log.DUMP) this.log.dump(ME, "removePossibleSwappedEntries entry '" + unremovedEntries[count].getUniqueId() + "' has been deleted ? : " + ret1[count]);
+               if (log.isLoggable(Level.FINEST)) log.finest("removePossibleSwappedEntries entry '" + unremovedEntries[count].getUniqueId() + "' has been deleted ? : " + ret1[count]);
             }
          }
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "exception occured when trying to remove entries which have supposely been swapped since the last peek. reason: " + ex.getMessage());
+         log.severe("exception occured when trying to remove entries which have supposely been swapped since the last peek. reason: " + ex.getMessage());
          ex.printStackTrace();
          return ret;
       }
@@ -930,7 +932,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see I_Queue#removeRandom(I_Entry[])
     */
    private final boolean[] removeRandomNoNotify(I_Entry[] queueEntries) throws XmlBlasterException {
-      if (this.log.CALL) this.log.call(ME,"removeRandom(I_QueueEntry[])");
+      if (log.isLoggable(Level.FINER)) log.finer("removeRandom(I_QueueEntry[])");
       if (queueEntries == null || queueEntries.length < 1) return new boolean[0];
       boolean[] ret = null;
 
@@ -941,24 +943,24 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                for (int i=0; i < queueEntries.length; i++) {
                   if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
                }
-               if (this.log.TRACE) this.log.trace(ME, "removeRandom: remove " + persistents.size() + " persistent entries from persistent storage");
+               if (log.isLoggable(Level.FINE)) log.fine("removeRandom: remove " + persistents.size() + " persistent entries from persistent storage");
                try {
                   this.persistentQueue.removeRandom((I_Entry[])persistents.toArray(new I_Entry[persistents.size()]));
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "could not remove " + persistents.size() + " entries from the persistent queue. Probably due to failed connection to the DB exception: " +  ex.getMessage());
+                  log.severe("could not remove " + persistents.size() + " entries from the persistent queue. Probably due to failed connection to the DB exception: " +  ex.getMessage());
                   ex.printStackTrace();
                }
             }
            
             // and now the transient queue (the ram queue)
-            if (this.log.TRACE) this.log.trace(ME, "removeRandom: removing from transient queue " + queueEntries.length + " entries");
+            if (log.isLoggable(Level.FINE)) log.fine("removeRandom: removing from transient queue " + queueEntries.length + " entries");
             try {
                ret = this.transientQueue.removeRandom(queueEntries);
                ret = removePossibleSwappedEntries(ret, queueEntries);
             }
             catch (XmlBlasterException ex) {
-               this.log.error(ME, "could not remove " + queueEntries.length + " entries from the transient queue.: " + ex.getMessage());
+               log.severe("could not remove " + queueEntries.length + " entries from the transient queue.: " + ex.getMessage());
                ex.printStackTrace();
             }
          }
@@ -967,7 +969,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                loadFromPersistence();
             }
             catch (XmlBlasterException ex1) {
-               this.log.error(ME, "removeRandom exception occured when loading from persistence: " + ex1.getMessage());
+               log.severe("removeRandom exception occured when loading from persistence: " + ex1.getMessage());
                ex1.printStackTrace();
             }
          }
@@ -988,7 +990,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                  queueEntries[i].removed(this.queueId);
               }
               catch (Throwable ex) {
-                 this.log.error(ME, "removeRandom: exception when notifying about removal: " + ex.toString());
+                 log.severe("removeRandom: exception when notifying about removal: " + ex.toString());
                  ex.printStackTrace();
               }
             }
@@ -1013,16 +1015,16 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          long freeBytes = this.transientQueue.getMaxNumOfBytes() - this.transientQueue.getNumOfBytes();
 
          if (freeEntries <= 0L || freeBytes <= 0L) {
-            if (this.log.TRACE)
-               this.log.trace(ME, "loadFromPersistence: the transient queue is already full." +
+            if (log.isLoggable(Level.FINE))
+               log.fine("loadFromPersistence: the transient queue is already full." +
                           " numOfBytes=" + this.transientQueue.getNumOfBytes() +
                           " maxNumOfBytes=" + this.transientQueue.getMaxNumOfBytes() +
                           " numOfEntries=" + this.transientQueue.getNumOfEntries() +
                           " maxNumOfEntries=" + this.transientQueue.getMaxNumOfBytes());
-            if (this.log.DUMP) this.log.dump(ME, "loadFromPersistence: the real current size in bytes of transient queue is: " + ((RamQueuePlugin)this.transientQueue).getSynchronizedNumOfBytes());
+            if (log.isLoggable(Level.FINEST)) log.finest("loadFromPersistence: the real current size in bytes of transient queue is: " + ((RamQueuePlugin)this.transientQueue).getSynchronizedNumOfBytes());
             return 0;
          }
-         if (this.log.TRACE) this.log.trace(ME, "removeRandom: swapping: reloading from persistence for a length of " + freeBytes);
+         if (log.isLoggable(Level.FINE)) log.fine("removeRandom: swapping: reloading from persistence for a length of " + freeBytes);
 
          // 1. Look into persistent store ...
          ArrayList list = null;
@@ -1030,7 +1032,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             list = this.persistentQueue.peek((int)freeEntries, freeBytes);
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "could not read back data from persistence: " + ex.getMessage());
+            log.severe("could not read back data from persistence: " + ex.getMessage());
             ex.printStackTrace();
          }
 
@@ -1043,7 +1045,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             this.transientQueue.put((I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]), false);
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "loadFromPeristence: no space left on transient queue: " + ex.getMessage());
+            log.severe("loadFromPeristence: no space left on transient queue: " + ex.getMessage());
             ex.printStackTrace();
             return 0;
          }
@@ -1061,7 +1063,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                this.persistentQueue.removeRandom((I_Entry[])transients.toArray(new I_Entry[transients.size()]));
          }
          catch (XmlBlasterException ex) {
-            this.log.error(ME, "loadFromPeristence: Memory leak: problems removing " + transients.size() + " swapped transient entries form persistent store: " + ex.getMessage());
+            log.severe("loadFromPeristence: Memory leak: problems removing " + transients.size() + " swapped transient entries form persistent store: " + ex.getMessage());
             return list.size();
          }
 
@@ -1094,7 +1096,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                   ((I_Entry)list.get(i)).removed(this.queueId);
                }
                catch (Throwable ex) {
-                  this.log.error(ME, "removeWithPriority exception occured when notifying about removal. Reason: " + ex.toString());
+                  log.severe("removeWithPriority exception occured when notifying about removal. Reason: " + ex.toString());
                   ex.printStackTrace();  
                }
             }
@@ -1217,7 +1219,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          return remove(-1, -1);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Ignoring exception in clear(): " + e.toString());
+         log.severe("Ignoring exception in clear(): " + e.toString());
          return 0;
       }
    }
@@ -1235,7 +1237,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * Shutdown the implementation, sync with data store
     */
    synchronized public void shutdown() {
-      if (log.CALL) log.call(ME, "shutdown(isDown="+this.isDown+")");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown(isDown="+this.isDown+")");
       if (this.isDown) {
          return;
       }
@@ -1243,14 +1245,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       this.glob.unregisterMBean(this.mbeanHandle);
       long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
       if (numTransients > 0) {
-         log.warn(ME, "Shutting down cache queue which contains " + numTransients + " transient messages");
+         log.warning("Shutting down cache queue which contains " + numTransients + " transient messages");
       }
 
       try {
          this.transientQueue.shutdown();
       }
       catch (Throwable ex) {
-         this.log.error(ME, "shutdown: exception when processing transient queue. Reason: " + ex.toString());
+         log.severe("shutdown: exception when processing transient queue. Reason: " + ex.toString());
          ex.printStackTrace();
       }
 
@@ -1258,7 +1260,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          if (this.persistentQueue != null) this.persistentQueue.shutdown();
       }
       catch (Throwable ex) {
-         this.log.error(ME, "shutdown: exception when processing transient queue. Reason: " + ex.toString());
+         log.severe("shutdown: exception when processing transient queue. Reason: " + ex.toString());
          ex.printStackTrace();
       }
       try {
@@ -1266,7 +1268,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          if (this.persistentQueue != null) this.persistentQueue.unRegisterStorageProblemListener(this);
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+         log.severe("could not unregister listener. Cause: " + ex.getMessage());
          ex.printStackTrace();
       }
       removeQueueSizeListener(null);
@@ -1390,7 +1392,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          if (listener == null) this.queueSizeListeners = null;
          else {
             if (!this.queueSizeListeners.remove(listener))
-               this.log.warn(ME, "removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
+               log.warning("removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
             if (this.queueSizeListeners.size() == 0) this.queueSizeListeners = null;
          }
       }
@@ -1407,7 +1409,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes());
             }
             catch (NullPointerException e) {
-               if (log.TRACE) log.trace(ME, "invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
+               if (log.isLoggable(Level.FINE)) log.fine("invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
             }
          }
       }
@@ -1431,7 +1433,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       if (queue != null) {
          return queue.embeddedObjectsToXml(out, null);
       }
-      log.warn(ME, "Sorry, dumping transient entries to '" + out + "' is not implemented");
+      log.warning("Sorry, dumping transient entries to '" + out + "' is not implemented");
       return 0;
    }
    

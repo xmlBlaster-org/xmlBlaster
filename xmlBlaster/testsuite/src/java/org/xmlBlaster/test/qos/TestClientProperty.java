@@ -9,7 +9,8 @@ package org.xmlBlaster.test.qos;
 
 import java.util.Map;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -51,7 +52,7 @@ public class TestClientProperty extends TestCase implements I_Callback
 {
    private static String ME = "TestClientProperty";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestClientProperty.class.getName());
 
    private boolean messageArrived = false;
 
@@ -66,7 +67,7 @@ public class TestClientProperty extends TestCase implements I_Callback
    public TestClientProperty(Global glob, String name) {
       super(name);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
    }
 
 
@@ -97,7 +98,7 @@ public class TestClientProperty extends TestCase implements I_Callback
 
    public void testConnectQos()
    {
-      if (log.TRACE) log.trace(ME, "TestConnectQos");
+      if (log.isLoggable(Level.FINE)) log.fine("TestConnectQos");
       try {
          ConnectQos qos = new ConnectQos(this.glob);
          qos.addClientProperty("oneKey", "oneValue");
@@ -116,7 +117,7 @@ public class TestClientProperty extends TestCase implements I_Callback
 
    public void testDisconnectQos()
    {
-      if (log.TRACE) log.trace(ME, "TestDisconnectQos");
+      if (log.isLoggable(Level.FINE)) log.fine("TestDisconnectQos");
       DisconnectQos qos = new DisconnectQos(this.glob);
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
@@ -136,7 +137,7 @@ public class TestClientProperty extends TestCase implements I_Callback
 
    public void testPublishQos()
    {
-      if (log.TRACE) log.trace(ME, "TestPublishQos");
+      if (log.isLoggable(Level.FINE)) log.fine("TestPublishQos");
       PublishQos qos = new PublishQos(this.glob);
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
@@ -156,7 +157,7 @@ public class TestClientProperty extends TestCase implements I_Callback
 
    public void testSubscribeQos()
    {
-      if (log.TRACE) log.trace(ME, "TestSubscribeQos");
+      if (log.isLoggable(Level.FINE)) log.fine("TestSubscribeQos");
       SubscribeQos qos = new SubscribeQos(this.glob);
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
@@ -176,7 +177,7 @@ public class TestClientProperty extends TestCase implements I_Callback
 
    public void testUnSubscribeQos()
    {
-      if (log.TRACE) log.trace(ME, "TestUnSubscribeQos");
+      if (log.isLoggable(Level.FINE)) log.fine("TestUnSubscribeQos");
       UnSubscribeQos qos = new UnSubscribeQos(this.glob);
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
@@ -196,7 +197,7 @@ public class TestClientProperty extends TestCase implements I_Callback
 
    public void testGetQos()
    {
-      if (log.TRACE) log.trace(ME, "TestGetQos");
+      if (log.isLoggable(Level.FINE)) log.fine("TestGetQos");
       try {
          ConnectQos qos = new ConnectQos(this.glob);
          qos.addClientProperty("oneKey", "oneValue");
@@ -215,7 +216,7 @@ public class TestClientProperty extends TestCase implements I_Callback
 
    public void testEraseQos()
    {
-      if (log.TRACE) log.trace(ME, "TestEraseQos");
+      if (log.isLoggable(Level.FINE)) log.fine("TestEraseQos");
       EraseQos qos = new EraseQos(this.glob);
       qos.addClientProperty("oneKey", "oneValue");
       qos.addClientProperty("twoKey", "twoValue");
@@ -239,13 +240,13 @@ public class TestClientProperty extends TestCase implements I_Callback
     */
    public void testUpdateQos()
    {
-      if (log.TRACE) log.trace(ME, "Testing the update qos ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Testing the update qos ...");
 
       try {
          senderConnection = glob.getXmlBlasterAccess(); // Find orb
          String passwd = "secret";
          ConnectQos connQos = new ConnectQos(glob, "clientProperty", passwd);
-         if (log.TRACE) log.trace(ME, "the connect qos is: " + connQos.toXml());
+         if (log.isLoggable(Level.FINE)) log.fine("the connect qos is: " + connQos.toXml());
          senderConnection.connect(connQos, this); // Login to xmlBlaster
 
          // publish 
@@ -267,7 +268,7 @@ public class TestClientProperty extends TestCase implements I_Callback
          
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -281,7 +282,7 @@ public class TestClientProperty extends TestCase implements I_Callback
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + "...");
+      log.info("Receiving update of message oid=" + updateKey.getOid() + "...");
 
       if (updateQos.isErased()) return "";
 
@@ -315,7 +316,7 @@ public class TestClientProperty extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

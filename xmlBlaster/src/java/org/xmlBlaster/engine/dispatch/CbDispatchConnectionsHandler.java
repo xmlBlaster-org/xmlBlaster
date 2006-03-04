@@ -5,6 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.dispatch;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
@@ -25,6 +28,8 @@ import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
  */
 public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandler
 {
+   private static Logger log = Logger.getLogger(CbDispatchConnectionsHandler.class.getName());
+   
    public final String ME;
    
    /**
@@ -41,7 +46,7 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
     */
    public DispatchConnection createDispatchConnection(AddressBase address) throws XmlBlasterException {
       CbDispatchConnection c = new CbDispatchConnection(glob, this, address);
-      if (this.log.TRACE) this.log.trace(ME, "createDispatchConnection for address='" + address.toXml() + "'");
+      if (log.isLoggable(Level.FINE)) this.log.fine("createDispatchConnection for address='" + address.toXml() + "'");
       c.loadPlugin();
       return c;
    }
@@ -68,7 +73,7 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
             msgQueueEntry.setReturnObj(ret);
          }
          else {
-            log.error(ME, "Internal problem, MsgQueueEntry '" + msgQueueEntry.getEmbeddedType() + "' not expected here");
+            log.severe("Internal problem, MsgQueueEntry '" + msgQueueEntry.getEmbeddedType() + "' not expected here");
          }
       }
    }

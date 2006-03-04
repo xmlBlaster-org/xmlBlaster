@@ -5,7 +5,8 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.email;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -29,7 +30,7 @@ public class EmailCallbackImpl extends EmailExecutor implements
 
    private Global glob;
 
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(EmailCallbackImpl.class.getName());
 
    private CallbackAddress callbackAddress;
 
@@ -73,7 +74,7 @@ public class EmailCallbackImpl extends EmailExecutor implements
          CallbackAddress callbackAddress, I_CallbackExtended cbClient)
          throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
-      this.log = this.glob.getLog("email");
+
       this.ME = "EmailCallbackImpl-" + loginName;
       this.callbackAddress = callbackAddress;
       setLoginName(loginName);
@@ -104,7 +105,7 @@ public class EmailCallbackImpl extends EmailExecutor implements
       getPop3Driver().registerForEmail(super.getEmailSessionId(),
             "", this);
 
-      log.info(ME, "Initialized email callback, from '"
+      log.info("Initialized email callback, from '"
             + super.fromAddress.toString() + "' to="
             + super.toAddress.toString() + "'");
    }

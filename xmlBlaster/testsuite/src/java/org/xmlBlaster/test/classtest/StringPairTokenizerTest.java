@@ -4,7 +4,8 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -20,20 +21,20 @@ public class StringPairTokenizerTest extends TestCase {
    
    final static String ME = "StringPairTokenizerTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(StringPairTokenizerTest.class.getName());
    int counter = 0;
 
    public StringPairTokenizerTest(String name, String[] args) {
       super(name);
       this.glob = Global.instance();
       this.glob.init(args);
-      this.log = this.glob.getLog("test");
+
    }
 
    public StringPairTokenizerTest(String name) {
       super(name);
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
    }
 
    protected void setUp() {

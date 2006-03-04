@@ -8,7 +8,8 @@ Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -37,12 +38,12 @@ public class RecorderPluginManager extends PluginManagerBase {
    public static final String pluginPropertyName = "RecorderPlugin";
 
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(RecorderPluginManager.class.getName());
 
    public RecorderPluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = this.glob.getLog("recorder");
+
    }
 
    /**
@@ -56,7 +57,7 @@ public class RecorderPluginManager extends PluginManagerBase {
    public I_InvocationRecorder getPlugin(String type, String version, String fn, long maxEntries,
              I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException {
 
-      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + createPluginPropertyKey(type, version));
+      if (log.isLoggable(Level.FINER)) log.finer("Loading " + createPluginPropertyKey(type, version));
       I_InvocationRecorder plugin = null;
 
       PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
@@ -69,7 +70,7 @@ public class RecorderPluginManager extends PluginManagerBase {
          plugin.initialize(glob, fn, maxEntries, serverCallback); //, clientCallback);
       }
       catch(Throwable e) {
-         log.error(ME, "Can't load plugin: " + pluginInfo.toString());
+         log.severe("Can't load plugin: " + pluginInfo.toString());
          e.printStackTrace();
       }
 

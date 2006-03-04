@@ -15,7 +15,8 @@ import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 /**
@@ -28,7 +29,7 @@ public class StorableFigureHolder implements Storable {
    private Figure fig;
    private String figId;
    private String toFront;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(StorableFigureHolder.class.getName());
 
    /**
     * We pass the used own defined attributes here since for LineFigure these are not 
@@ -36,7 +37,7 @@ public class StorableFigureHolder implements Storable {
     * @param log
     * @param fig
     */
-   public StorableFigureHolder(LogChannel log, Figure fig, String figId, String toFront) {
+   public StorableFigureHolder(Figure fig, String figId, String toFront) {
       this.log = log;
       this.fig = fig;
       this.figId = figId;
@@ -44,8 +45,8 @@ public class StorableFigureHolder implements Storable {
    }
 
    public StorableFigureHolder() {
-      this(null, null, null, null);
-      this.log = Global.instance().getLog("graphical");
+      this(null, null, null);
+
    }
 
    public void write(StorableOutput out) {
@@ -81,8 +82,8 @@ public class StorableFigureHolder implements Storable {
    }
 
    public Figure getFigure() {
-      if (this.log.TRACE) {
-         this.log.trace(ME, "getFigure: figureId='" + this.figId + 
+      if (log.isLoggable(Level.FINE)) {
+         log.fine("getFigure: figureId='" + this.figId + 
                                       "' toFront='" + this.toFront +
                                       "' toFront='" + this.fig.displayBox().x +
                                       "' toFront='" + this.fig.displayBox().y +
@@ -113,7 +114,7 @@ public class StorableFigureHolder implements Storable {
       FigureEnumeration iter = fig.figures();
       while (iter.hasNextFigure()) {
          Figure child = iter.nextFigure();
-         this.log.error(ME, "recursiveErase " + child);
+         log.severe("recursiveErase " + child);
          recursiveErase(child);
       }
    }

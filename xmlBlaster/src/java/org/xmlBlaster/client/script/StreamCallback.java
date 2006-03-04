@@ -9,7 +9,8 @@ package org.xmlBlaster.client.script;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -32,7 +33,7 @@ public class StreamCallback implements I_Callback {
 
    private final String ME = "StreamCallback";
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(StreamCallback.class.getName());
    private OutputStream out;
    private String offset = "";
 
@@ -45,7 +46,7 @@ public class StreamCallback implements I_Callback {
     */
    public StreamCallback(Global global, OutputStream out, String offset) {
       this.global = global;
-      this.log = this.global.getLog("script");
+
       this.out = out;
       if (offset != null) this.offset = offset;
    }

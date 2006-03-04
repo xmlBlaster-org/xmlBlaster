@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.memoryleak;
 import org.jutils.runtime.ThreadLister;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -35,7 +36,7 @@ import java.io.BufferedReader;
 public class TestThreadLeak extends TestCase implements I_Callback {
    private static String ME = "TestThreadLeak";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestThreadLeak.class.getName());
    private String fileName;
    private int noConnections = 10;
    private boolean noError = true;
@@ -49,7 +50,7 @@ public class TestThreadLeak extends TestCase implements I_Callback {
    public TestThreadLeak (Global glob, String testName) throws Exception{
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       fileName = glob.getProperty().get("pidFileName", (String)null);
    }
 
@@ -94,7 +95,7 @@ public class TestThreadLeak extends TestCase implements I_Callback {
          Process p = runtime.exec("kill -3 " + pid);
          p.waitFor();
       } else {
-         log.info(ME,"Could not dump stack pid="+pid+" os="+osName);
+         log.info("Could not dump stack pid="+pid+" os="+osName);
       } // end of else
       
 
@@ -111,7 +112,7 @@ public class TestThreadLeak extends TestCase implements I_Callback {
       int round = 0;
       while ( noError ) {
          round++;
-         log.info(ME, "Doing a new connection round no " + round);
+         log.info("Doing a new connection round no " + round);
          for ( int i = 0; i< noConnections;i++) {
             ConnectorWorker conn = new ConnectorWorker(glob, cttl);
             connections.add(conn);
@@ -133,7 +134,7 @@ public class TestThreadLeak extends TestCase implements I_Callback {
             // Check how many since first round
             int firstDiff = noThreads - startNoThreads;
             int lastDiff = noThreads - lastNoThreads;
-            log.info(ME,"No of thread created since start:"+firstDiff+"; number of threads created since last round: " + lastDiff);
+            log.info("No of thread created since start:"+firstDiff+"; number of threads created since last round: " + lastDiff);
             lastNoThreads = noThreads;
             if ( firstDiff > maxThreadDiff) {
                ThreadLister.listAllThreads(System.out);
@@ -158,11 +159,11 @@ public class TestThreadLeak extends TestCase implements I_Callback {
                // We give it five rounds if its still in Connecting state we abort
                int j = 0;
                while (w.isAlive() && j < 4) {
-                  log.warn(ME,"Possible lock of connection " + w + " detected, waiting 30 s round "+j);
+                  log.warning("Possible lock of connection " + w + " detected, waiting 30 s round "+j);
                   j++;
                   Thread.sleep(30*1000);
                   if ( j > 3) {
-                     log.error(ME,"Possible lock of connection " + w + " detected, aborting");
+                     log.severe("Possible lock of connection " + w + " detected, aborting");
                      noError = false;
                      handleLock(w);
                   } // end of if ()
@@ -172,7 +173,7 @@ public class TestThreadLeak extends TestCase implements I_Callback {
             } // end of if ()
             Throwable t = w.getException();
             if ( t != null) {
-               log.error(ME,"Connection had exception, giving up : "+t);
+               log.severe("Connection had exception, giving up : "+t);
                t.printStackTrace();
                Assert.fail("Connection had exception, giving up : "+t);
             } // end of if ()
@@ -197,8 +198,8 @@ byte[], UpdateQos)
    public String update(String cbSessionId, UpdateKey updateKey, byte[]
 content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
-      log.trace(ME,"Got message " + new String(content));
+      log.info("Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
+      log.fine("Got message " + new String(content));
       return "";
    }
    /**
@@ -274,7 +275,7 @@ org.xmlBlaster.test.mime.TestXPathSubscribeFilter
             ConnectQos qos = new ConnectQos(glob, "test", "dummy");
 
             retQos = con.connect(qos, TestThreadLeak.this); // Login to xmlBlaster
-            log.info(ME,"Connected "+ this);
+            log.info("Connected "+ this);
             state = "CONNECTED";
             Thread.sleep(timeout);
 
@@ -287,7 +288,7 @@ org.xmlBlaster.test.mime.TestXPathSubscribeFilter
             glob = null;
          } catch (Throwable e) {
             ie = e;
-            log.error(ME,"Giving up " + e);
+            log.severe("Giving up " + e);
          } // end of try-catch
          
          

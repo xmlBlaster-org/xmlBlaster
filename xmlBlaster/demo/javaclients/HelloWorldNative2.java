@@ -1,6 +1,7 @@
 // xmlBlaster/demo/javaclients/HelloWorldNative2.java
 package javaclients;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
@@ -47,14 +48,14 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class HelloWorldNative2 implements I_Plugin
 {
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(HelloWorldNative2.class.getName());
    private final String ME = HelloWorldNative2.class.getName();
    private String loginName;
    private String topicName;
 
    private final void pubsub() {
       try {
-         log.info(ME, "Connecting with protocol 'LOCAL' to xmlBlaster");
+         log.info("Connecting with protocol 'LOCAL' to xmlBlaster");
          I_XmlBlasterAccess con = new XmlBlasterAccess(glob);
 
          ConnectQos qos = new ConnectQos(this.glob); /* Client side object */
@@ -63,22 +64,22 @@ public class HelloWorldNative2 implements I_Plugin
          con.connect(qos, new I_Callback() {
 
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               if (log.DUMP) log.dump(ME, "UpdateKey.toString()=" + updateKey.toString() +
+               if (log.isLoggable(Level.FINEST)) log.finest("UpdateKey.toString()=" + updateKey.toString() +
                                           "UpdateQos.toString()=" + updateQos.toString());
                if (updateKey.isInternal()) {
-                  log.error(ME, "Receiving unexpected asynchronous internal message '" + updateKey.getOid() +
+                  log.severe("Receiving unexpected asynchronous internal message '" + updateKey.getOid() +
                                 "' in default handler");
                   return "";
                }
                if (updateQos.isErased()) {
-                  log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
+                  log.info("Message '" + updateKey.getOid() + "' is erased");
                   return "";
                }
                if (updateKey.getOid().equals(topicName))
-                  log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
+                  log.info("Receiving asynchronous message '" + updateKey.getOid() +
                                "' state=" + updateQos.getState() + " in default handler");
                else
-                  log.error(ME, "Receiving unexpected asynchronous message '" + updateKey.getOid() +
+                  log.severe("Receiving unexpected asynchronous message '" + updateKey.getOid() +
                                    "' in default handler");
                return "";
             }
@@ -94,23 +95,23 @@ public class HelloWorldNative2 implements I_Plugin
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          PublishReturnQos retQos = con.publish(msgUnit);
-         log.info(ME, "Published message '" + pk.getOid() + "'");
+         log.info("Published message '" + pk.getOid() + "'");
 
          //con.disconnect(null);
       }
       catch (Exception e) {
-         log.error(ME, "We have a problem: " + e.toString());
+         log.severe("We have a problem: " + e.toString());
       }
    }
 
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = glob.getClone(glob.getNativeConnectArgs()); // Sets  "-protocol LOCAL" etc.
-      this.log = this.glob.getLog("plugin");
+
       this.glob.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
       this.loginName = glob.get("loginName", "NO_LOGIN_NAME_CONFIGURED", null, pluginInfo);
       this.topicName = glob.get("topicName", "NO_TOPIC_NAME_CONFIGURED", null, pluginInfo);
 
-      log.info(ME, "init(): The plugin is loaded, doing a publish and subscribe\n\n");
+      log.info("init(): The plugin is loaded, doing a publish and subscribe\n\n");
       pubsub();
    }
 
@@ -123,7 +124,7 @@ public class HelloWorldNative2 implements I_Plugin
    }
 
    public void shutdown() throws XmlBlasterException {
-      log.info(ME, "shutdown()\n\n");
+      log.info("shutdown()\n\n");
    }
 
    /** To start as a plugin */
@@ -132,7 +133,7 @@ public class HelloWorldNative2 implements I_Plugin
    /** To start as a standalone client: java javaclients.HelloWorldNative2 */
    public HelloWorldNative2(String args[]) {
       this.glob = new Global(args);
-      this.log = this.glob.getLog("plugin");
+
       this.loginName = "A-native-client";
       this.topicName = "A-native-message";
       pubsub();

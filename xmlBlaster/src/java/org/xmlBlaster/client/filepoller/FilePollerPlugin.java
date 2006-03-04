@@ -6,7 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.client.filepoller;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
@@ -24,6 +25,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *      client.filepoller requirement</a>
  */
 public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
+   private static Logger log = Logger.getLogger(FilePollerPlugin.class.getName());
    private final static String ME = "FilePollerPlugin";
    //private PluginInfo info;
    private Publisher publisherClient;
@@ -41,16 +43,16 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
-      LogChannel log = global.getLog("filepoller");
-      if (log.CALL)
-         log.call(ME, "init");
+
+      if (log.isLoggable(Level.FINER))
+         log.finer("init");
       this.glob = global;
       this.pluginConfig = pluginInfo;
       this.publisherClient = new Publisher(global, this.getType(), this.pluginConfig);
       this.publisherClient.init();
-      if (log.DUMP) {
-         log.dump(ME, "init: plugin paramenters: '" + this.pluginConfig.dumpPluginParameters() + "'");
-         log.dump(ME, "init: plugin user data  : '" + this.pluginConfig.getUserData() + "'");
+      if (log.isLoggable(Level.FINEST)) {
+         log.finest("init: plugin paramenters: '" + this.pluginConfig.dumpPluginParameters() + "'");
+         log.finest("init: plugin user data  : '" + this.pluginConfig.getUserData() + "'");
       }
       // For JMX instanceName may not contain ","
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,

@@ -13,7 +13,8 @@ import java.sql.SQLException;
 //import java.sql.PreparedStatement; Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
 import java.sql.Statement;
 import java.sql.ResultSet;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
@@ -21,7 +22,7 @@ import org.jutils.log.LogChannel;
 
 class PreparedQuery {
    public final static String ME = "PreparedQuery";
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PreparedQuery.class.getName());
    Connection conn;
    //private PreparedStatement st; Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
    private Statement st;
@@ -40,13 +41,13 @@ class PreparedQuery {
     * @param log
     * @param fetchSize
     */
-   public PreparedQuery(JdbcConnectionPool pool, String request, boolean isAutoCommit, LogChannel log, int fetchSize)
+   public PreparedQuery(JdbcConnectionPool pool, String request, boolean isAutoCommit, Logger log, int fetchSize)
       throws SQLException, XmlBlasterException {
       this.log = log;
       this.pool = pool;
       this.isClosed = false;
-      if (this.log.CALL)
-         this.log.call(ME, "Constructor. autocommit is '" + isAutoCommit + "'");
+      if (log.isLoggable(Level.FINER))
+         log.finer("Constructor. autocommit is '" + isAutoCommit + "'");
 
       try {
          this.conn = this.pool.getConnection();
@@ -60,7 +61,7 @@ class PreparedQuery {
       }
       catch (XmlBlasterException ex) {
          String additionalInfo = "request='" + request + "' isAutocommit='" + isAutoCommit + "' fetchSize='" + fetchSize + "' ";
-         this.log.trace(ME, "Constructor. Exception. " + additionalInfo + ": " + ex.getMessage());
+         log.fine("Constructor. Exception. " + additionalInfo + ": " + ex.getMessage());
          if (this.conn != null) {
             try {
                if (!this.conn.getAutoCommit()) {
@@ -69,14 +70,14 @@ class PreparedQuery {
                }
             }
             catch (Throwable ex2) {
-               this.log.warn(ME, "constructor exception occured when rolling back " + additionalInfo + ": " + ex2.toString());
+               log.warning("constructor exception occured when rolling back " + additionalInfo + ": " + ex2.toString());
             }
             finally {
                try {
                   if (this.st != null) st.close();
                }
                catch (Throwable ex3) {
-                  this.log.warn(ME, "constructor exception occured when closing statement " + additionalInfo + ": " + ex3.toString());
+                  log.warning("constructor exception occured when closing statement " + additionalInfo + ": " + ex3.toString());
                }
             }   
             if (this.conn != null) this.pool.releaseConnection(this.conn);
@@ -87,7 +88,7 @@ class PreparedQuery {
       }
       catch (SQLException ex) {
          String additionalInfo = "request='" + request + "' isAutocommit='" + isAutoCommit + "' fetchSize='" + fetchSize + "' ";
-         this.log.trace(ME, "Constructor. " + additionalInfo + " SQLException: " + ex.getMessage());
+         log.fine("Constructor. " + additionalInfo + " SQLException: " + ex.getMessage());
          if (this.conn != null) {
             try {
                if (!this.conn.getAutoCommit()) {
@@ -97,7 +98,7 @@ class PreparedQuery {
                if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
-               this.log.warn(ME, "constructor: exception occured when handling SQL Exception: " + additionalInfo + ex2.toString());
+               log.warning("constructor: exception occured when handling SQL Exception: " + additionalInfo + ex2.toString());
             }
             if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
@@ -107,7 +108,7 @@ class PreparedQuery {
       }
       catch (Throwable ex) {
          String additionalInfo = "request='" + request + "' isAutocommit='" + isAutoCommit + "' fetchSize='" + fetchSize + "' ";
-         this.log.warn(ME, "Constructor. Throwable: " + additionalInfo + ex.toString());
+         log.warning("Constructor. Throwable: " + additionalInfo + ex.toString());
          if (this.conn != null) {
             try {
                if (!this.conn.getAutoCommit()) {
@@ -117,7 +118,7 @@ class PreparedQuery {
                if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
-               this.log.warn(ME, "constructor: " + additionalInfo + " exception occured when handling SQL Exception: " + ex2.toString());
+               log.warning("constructor: " + additionalInfo + " exception occured when handling SQL Exception: " + ex2.toString());
             }
             if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
@@ -135,14 +136,14 @@ class PreparedQuery {
          }
       }
       catch (Throwable ex) {
-         this.log.warn(ME, "closeStatement: exception when closing statement:" + ex.getMessage());
+         log.warning("closeStatement: exception when closing statement:" + ex.getMessage());
       }
    }
 
    public final ResultSet inTransactionRequest(String request /*, int fetchSize */)
       throws XmlBlasterException, SQLException {
 
-      this.log.call(ME, "inTransactionRequest: " + request);
+      log.finer("inTransactionRequest: " + request);
       if (this.conn.getAutoCommit())
          throw new XmlBlasterException(pool.getGlobal(), ErrorCode.INTERNAL_UNKNOWN, ME, "inTransactionRequest should not be called if autocommit is on");
 
@@ -155,13 +156,13 @@ class PreparedQuery {
          this.rs = this.st.executeQuery(request);
       }
       catch (SQLException ex) {
-         this.log.trace(ME, "inTransactionRequest. Exception: " + ex.getMessage());
+         log.fine("inTransactionRequest. Exception: " + ex.getMessage());
          this.isException = true;
          close();
          throw ex;
       }
       catch (Throwable ex) {
-         this.log.warn(ME, "inTransactionRequest. Throwable: " + ex.toString());
+         log.warning("inTransactionRequest. Throwable: " + ex.toString());
          close();
          throw new XmlBlasterException(this.pool.getGlobal(), ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".inTransactionRequest", "", ex);
       }
@@ -169,7 +170,7 @@ class PreparedQuery {
    }
 
 
-   public PreparedQuery(JdbcConnectionPool pool, String request, LogChannel log, int fetchSize)
+   public PreparedQuery(JdbcConnectionPool pool, String request, Logger log, int fetchSize)
       throws SQLException, XmlBlasterException {
       this(pool, request, false, log, fetchSize);
    }
@@ -188,27 +189,27 @@ class PreparedQuery {
 
       try {
          if (!this.conn.getAutoCommit()) {
-            if (this.log.TRACE) this.log.trace(ME, "close with autocommit 'false'");
+            if (log.isLoggable(Level.FINE)) this.log.fine("close with autocommit 'false'");
             try {
                if (this.isException) {
-                  this.log.warn(ME, "close with autocommit 'false': rollback");
+                  log.warning("close with autocommit 'false': rollback");
                   this.conn.rollback();
                }
                else this.conn.commit();
             }
             catch (Throwable ex) {
-               this.log.warn(ME, "close: exception when closing statement: " + ex.toString());
+               log.warning("close: exception when closing statement: " + ex.toString());
             }
             try {
                this.conn.setAutoCommit(true);
             }
             catch (Throwable ex) {
-               this.log.warn(ME, "close: exception when setAutoCommit(true): " + ex.toString());
+               log.warning("close: exception when setAutoCommit(true): " + ex.toString());
             }
          }
       }
       catch(Throwable e) {
-         this.log.warn(ME, "close: exception in first phase when setAutoCommit(true): " + e.toString());
+         log.warning("close: exception in first phase when setAutoCommit(true): " + e.toString());
       }
 
       try {
@@ -218,7 +219,7 @@ class PreparedQuery {
          }
       }
       catch (Throwable ex) {
-         this.log.warn(ME, "close: exception when closing statement: " + ex.toString());
+         log.warning("close: exception when closing statement: " + ex.toString());
       }
 
      if (this.conn != null) this.pool.releaseConnection(this.conn);

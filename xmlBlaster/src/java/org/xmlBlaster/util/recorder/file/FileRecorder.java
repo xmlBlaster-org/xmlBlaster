@@ -7,7 +7,8 @@ Author:    astelzl@avitech.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.file;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -48,7 +49,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
 {
    private final String ME = "FileRecorder";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(FileRecorder.class.getName());
 
    private FileIO rb;
 
@@ -94,7 +95,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
       this.glob = glob;
       this.serverCallback = serverCallback;
       //this.clientCallback = clientCallback;
-      this.log = glob.getLog("recorder");
+
       StatusQosData statRetQos = new StatusQosData(glob, MethodName.PUBLISH);
       statRetQos.setStateInfo(Constants.INFO_QUEUED);
       this.dummyPubRet = new PublishReturnQos(glob, statRetQos);
@@ -111,26 +112,26 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
          if (rb.getNumUnread() > 0) {
             boolean destroyOld = glob.getProperty().get("recorder.destroyOld", false);
             if (destroyOld) {
-               log.warn(ME, "Destroyed " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "' as requested with option 'recorder.destroyOld=true'.");
+               log.warning("Destroyed " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "' as requested with option 'recorder.destroyOld=true'.");
                rb.destroy();
                rb.initialize();
             }
             else {
-               log.info(ME, "Found " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "'.");
+               log.info("Found " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "'.");
             }
          }
          else {
-            if (log.TRACE) log.trace(ME, "Using persistence file '" + fileName + "' for tail back messages.");
+            if (log.isLoggable(Level.FINE)) log.fine("Using persistence file '" + fileName + "' for tail back messages.");
          }
       }
       catch(IOException ex) {
-         log.error(ME,"Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
+         log.severe("Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
          throw new XmlBlasterException(ME, "Initializing FileRecorder failed: Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
       }
       if (maxEntries < 0)
-         log.info(ME, "FileRecorder is ready, unlimited tail back messages are stored in '" + fileName + "'");
+         log.info("FileRecorder is ready, unlimited tail back messages are stored in '" + fileName + "'");
       else
-         log.info(ME, "FileRecorder is ready, max=" + maxEntries + " tail back messages are stored in '" + fileName + "'");
+         log.info("FileRecorder is ready, max=" + maxEntries + " tail back messages are stored in '" + fileName + "'");
    }
 
    /**
@@ -211,10 +212,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
          this.rb.setModeDiscard();
       else if (mode.equals(Constants.ONOVERFLOW_EXCEPTION)) {
          this.rb.setModeException();
-         log.trace(ME, "Setting onOverflow mode to exception"); // default
+         log.fine("Setting onOverflow mode to exception"); // default
       }
       else
-         log.warn(ME, "Ignoring unknown onOverflow mode '" + mode + "', using default mode 'exception'."); // default
+         log.warning("Ignoring unknown onOverflow mode '" + mode + "', using default mode 'exception'."); // default
    }
 
   /**
@@ -240,7 +241,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
    */ 
    public void pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
-      log.info(ME, "Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ") numUnread=" + getNumUnread());
+      log.info("Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ") numUnread=" + getNumUnread());
 
       RequestContainer cont = null;
       long startOfPullback = System.currentTimeMillis();
@@ -258,7 +259,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
       }
  
       if (cont == null) {
-         log.warn(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
+         log.warning("Sorry, no invocations found, queue is empty or your start date is to late");
          return;
       }
 
@@ -278,7 +279,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
             { try 
                { Thread.currentThread().sleep(originalElapsed - actualElapsed);                } 
                catch(InterruptedException e) 
-               { log.warn(ME, "Thread sleep got interrupted, this invocation is not in sync");
+               { log.warning("Thread sleep got interrupted, this invocation is not in sync");
                }
             }
             callback(cont);
@@ -291,13 +292,13 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
 
       long elaps = System.currentTimeMillis()-startOfPullback;
       if (elaps > 0) {
-         log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) + " messages done - elapsed " +
+         log.info("Pullback of " + (numAtBeginning-getNumUnread()) + " messages done - elapsed " +
                org.jutils.time.TimeHelper.millisToNice(elaps) +
                " average rate was " + (numAtBeginning*1000L/elaps) + 
                " msg/sec, numUnread=" + getNumUnread());
       }
       else
-         log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) + " messages done very fast");
+         log.info("Pullback of " + (numAtBeginning-getNumUnread()) + " messages done very fast");
       // we are done, everything played back
    }
 
@@ -312,7 +313,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     */
    public void pullback(float msgPerSec) throws XmlBlasterException {
 
-      log.info(ME, "Invoking pullback(msgPerSec=" + msgPerSec + ") numUnread=" + getNumUnread());
+      log.info("Invoking pullback(msgPerSec=" + msgPerSec + ") numUnread=" + getNumUnread());
 
       RequestContainer cont = null;
 
@@ -339,7 +340,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
                   if (cont == null) {
                      long elaps = System.currentTimeMillis()-startOfPullback;
                      if (elaps == 0L) elaps = 1L;
-                     log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) +
+                     log.info("Pullback of " + (numAtBeginning-getNumUnread()) +
                          " messages done - elapsed " +
                          org.jutils.time.TimeHelper.millisToNice(elaps) +
                          " average rate was " + (numAtBeginning*1000L/elaps) + 
@@ -358,11 +359,11 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
                   String text;
                   if (rb.undo() == true) {
                      text = "Playback of tail back messages failed, " + getNumUnread() + " messages are kept savely in '" + fileName + "': " + e.toString();
-                     log.warn(ME, text);
+                     log.warning(text);
                   }
                   else {
                      text = "Playback of tail back messages failed, " + getNumUnread() + " messages are in queue, " + localCount + " are lost, check '" + fileName + "': " + e.toString();
-                     log.error(ME, text);
+                     log.severe(text);
                   }
                   throw new XmlBlasterException(ME, text);
                }
@@ -385,7 +386,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
             try {
                Thread.currentThread().sleep(timeToUse - actualElapsed);
             } catch( InterruptedException i) {
-               log.warn(ME, "Unexpected interrupt when sleeping for pullback");
+               log.warning("Unexpected interrupt when sleeping for pullback");
             }
          }
       }
@@ -403,7 +404,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
    */
   public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException {
       //Has to be implemented. Look at InvocationRecorder for further information
-      log.error(ME + ".NoImpl", "Sorry, playback() is not implemented, use pullback() or implement it");
+      log.severe("Sorry, playback() is not implemented, use pullback() or implement it");
       throw new XmlBlasterException(ME + ".NoImpl", "Sorry, only pullback is implemented");
   }
 
@@ -459,7 +460,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     }
     */
 
-    log.error(ME, "Internal error: Method '" + cont.method + "' is unknown");
+    log.severe("Internal error: Method '" + cont.method + "' is unknown");
     throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
   }
 
@@ -528,7 +529,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     { rb.writeNext(cont);
     }
     catch(IOException ex) {
-       log.error(ME, cont.method + " invocation failed: " + ex.toString());
+       log.severe(cont.method + " invocation failed: " + ex.toString());
     }
   }
 
@@ -622,10 +623,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     { rb.writeNext(cont);
     }
     catch(IOException ex) {
-       log.error(ME, cont.method + " invocation failed: " + ex.toString());
+       log.severe(cont.method + " invocation failed: " + ex.toString());
     }
     catch(XmlBlasterException ex) {
-       log.error(ME, cont.method + " invocation failed: " + ex.toString());
+       log.severe(cont.method + " invocation failed: " + ex.toString());
     }
   }
 

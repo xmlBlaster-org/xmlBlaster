@@ -7,7 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
@@ -27,7 +28,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
 {
    private String ME = "AvailabilityChecker";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(AvailabilityChecker.class.getName());
    private RunlevelManager runlevelManager;
    private boolean startup = true;
 
@@ -37,7 +38,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
     */
    public AvailabilityChecker(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       this.runlevelManager = glob.getRunlevelManager();
       this.runlevelManager.addRunlevelListener(this);
    }
@@ -97,7 +98,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
       String str = "The server is in run level " + RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel()) +
                      " and not ready for " + action.toString() + post;
 
-      if (this.log.TRACE) this.log.trace(ME, str);
+      if (log.isLoggable(Level.FINE)) this.log.fine(str);
       throw new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY, ME, str);
    }
 
@@ -121,7 +122,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
             if (e.isCommunication()) return e; // Is already how we want it
          }
 
-         this.log.warn(ME, "The server is in run level " + RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel()) + " and not ready for " + action.toString() + 
+         log.warning("The server is in run level " + RunlevelManager.toRunlevelStr(this.runlevelManager.getCurrentRunlevel()) + " and not ready for " + action.toString() + 
             "(): " + origEx.toString());
 
          return new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY, ME,
@@ -131,12 +132,12 @@ public final class AvailabilityChecker implements I_RunlevelListener
 
       if (origEx instanceof XmlBlasterException) {
          XmlBlasterException e = (XmlBlasterException)origEx;
-         if (e.isInternal()) log.error(ME, action.toString() + "() failed: " + e.getMessage());
+         if (e.isInternal()) log.severe(action.toString() + "() failed: " + e.getMessage());
          return e;
       }
 
       // Transform a Throwable to an XmlBlasterException ...
-      log.error(ME, "Internal problem in " + action.toString() + "(): " + origEx.getMessage());
+      log.severe("Internal problem in " + action.toString() + "(): " + origEx.getMessage());
       ErrorCode code = ErrorCode.INTERNAL_UNKNOWN;
       if (action == MethodName.PUBLISH) code = ErrorCode.INTERNAL_PUBLISH;
       else if (action == MethodName.PUBLISH_ARR) code = ErrorCode.INTERNAL_PUBLISH_ARR;

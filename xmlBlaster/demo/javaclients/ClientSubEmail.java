@@ -8,7 +8,8 @@ Version:   $Id$
 package javaclients;
 
 import org.xmlBlaster.util.Global;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.init.Args;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -70,13 +71,13 @@ public class ClientSubEmail implements I_Callback
 {
    private static String ME = "ClientSubEmail";
    private int numReceived = 0;         // error checking
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(ClientSubEmail.class.getName());
 
 
    public ClientSubEmail(String args[])
    {
       Global glob = initArgs(args); // Initialize command line argument handling (this is optional)
-      log = glob.getLog(null);
+
 
       try {
          // check if parameter -loginName <userName> is given at startup of client
@@ -103,7 +104,7 @@ public class ClientSubEmail implements I_Callback
 
          // Subscribe to messages with XPATH using some helper classes
          {
-            log.info(ME, "Subscribing using XPath syntax ...");
+            log.info("Subscribing using XPath syntax ...");
 
             // SubscribeKey helps us to create this string:
             //   "<key oid='' queryType='XPATH'>" +
@@ -116,18 +117,18 @@ public class ClientSubEmail implements I_Callback
 
             try {
                blasterConnection.subscribe(key.toXml(), qos.toXml());
-               log.info(ME, "Subscribe done, there should be no Callback");
+               log.info("Subscribe done, there should be no Callback");
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
          }
 
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          if (numReceived == 0)
-            log.info(ME, "Success, no Callback for a simple subscribe without a publish");
+            log.info("Success, no Callback for a simple subscribe without a publish");
          else
-            log.error(ME, "Got Callback, but didn't expect one after a simple subscribe without a publish");
+            log.severe("Got Callback, but didn't expect one after a simple subscribe without a publish");
          numReceived = 0;
 
 
@@ -143,21 +144,21 @@ public class ClientSubEmail implements I_Callback
                             "</key>";
             String content = Args.getArg(args, "-email.content", "Hello world");
             MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), "<qos></qos>");
-            log.info(ME, "Publishing ...");
+            log.info("Publishing ...");
             try {
                publishOid = blasterConnection.publish(msgUnit).getKeyOid();
-               log.info(ME, "Publishing done, returned oid=" + publishOid);
+               log.info("Publishing done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               log.warning("XmlBlasterException: " + e.getMessage());
             }
          }
 
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait a second
 
          if (numReceived == 1)
-            log.info(ME, "Success, got Callback after publishing");
+            log.info("Success, got Callback after publishing");
          else
-            log.error(ME, numReceived + " callbacks arrived, did expect one after a simple subscribe with a publish");
+            log.severe(numReceived + " callbacks arrived, did expect one after a simple subscribe with a publish");
          numReceived = 0;
 
 
@@ -168,8 +169,8 @@ public class ClientSubEmail implements I_Callback
                             "</key>";
             try {
                EraseReturnQos[] arr = blasterConnection.erase(xmlKey, "<qos></qos>");
-               if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-            } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
+               if (arr.length != 1) log.severe("Erased " + arr.length + " messages:");
+            } catch(XmlBlasterException e) { log.severe("XmlBlasterException: " + e.getMessage()); }
          }
 
          blasterConnection.disconnect(null);
@@ -177,7 +178,7 @@ public class ClientSubEmail implements I_Callback
          // blasterConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
       }
       catch (Exception e) {
-         log.error(ME, "Client failed: " + e.toString());
+         log.severe("Client failed: " + e.toString());
          // e.printStackTrace();
       }
    }
@@ -190,10 +191,10 @@ public class ClientSubEmail implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       numReceived++;
-      log.info(ME, "Received asynchronous callback-update " + numReceived + " from xmlBlaster from publisher " + updateQos.getSender() + ":");
-      log.plain("UpdateKey", updateKey.toXml());
-      log.plain("content", (new String(content)).toString());
-      log.plain("UpdateQos", updateQos.toXml());
+      log.info("Received asynchronous callback-update " + numReceived + " from xmlBlaster from publisher " + updateQos.getSender() + ":");
+      System.out.println(updateKey.toXml());
+      System.out.println((new String(content)).toString());
+      System.out.println(updateQos.toXml());
       return "";
    }
 
@@ -204,18 +205,18 @@ public class ClientSubEmail implements I_Callback
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         log.plain(ME, "\nAvailable options:");
-         log.plain(ME, "   -loginName          The login name [ClientSubEmail].");
-         log.plain(ME, "   -passwd             The login name [secret].");
-         log.plain(ME, "   -email              An email address to send updates [xmlBlaster@marcelruff.info].");
-         log.plain(ME, "   -email.content      The content of the email [Hello world].");
-         log.plain(ME, "NOTE:");
-         log.plain(ME, "   Activate the email callback plugin in xmlBlaster.properies first, for example:");
-         log.plain(ME, "   CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver");
-         log.plain(ME, "   EmailDriver.smtpHost=localhost");
-         log.plain(ME, "   EmailDriver.from=xmlblast@localhost");
+         System.out.println("\nAvailable options:");
+         System.out.println("   -loginName          The login name [ClientSubEmail].");
+         System.out.println("   -passwd             The login name [secret].");
+         System.out.println("   -email              An email address to send updates [xmlBlaster@marcelruff.info].");
+         System.out.println("   -email.content      The content of the email [Hello world].");
+         System.out.println("NOTE:");
+         System.out.println("   Activate the email callback plugin in xmlBlaster.properies first, for example:");
+         System.out.println("   CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver");
+         System.out.println("   EmailDriver.smtpHost=localhost");
+         System.out.println("   EmailDriver.from=xmlblast@localhost");
          System.out.println(glob.usage());
-         log.info(ME, "Example: java javaclients.ClientSubEmail -loginName Jeff -email et@universe.xy\n");
+         log.info("Example: java javaclients.ClientSubEmail -loginName Jeff -email et@universe.xy\n");
          System.exit(1);
       }
       return glob;

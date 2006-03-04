@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
@@ -44,7 +45,7 @@ public class TestPtD extends TestCase implements I_Callback
 {
    private final static String ME = "TestPtD";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestPtD.class.getName());
 
    private final String senderName = "Manuel";
    private String publishOid = "";
@@ -70,7 +71,7 @@ public class TestPtD extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
    }
 
 
@@ -100,7 +101,7 @@ public class TestPtD extends TestCase implements I_Callback
          senderConnection.connect(new ConnectQos(receiver3Glob, senderName, passwd), this);
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -127,7 +128,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public void testPtOneDestination()
    {
-      if (log.TRACE) log.trace(ME, "Testing point to one destination ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Testing point to one destination ...");
 
       // Construct a love message and send it to Ulrike
       String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
@@ -143,9 +144,9 @@ public class TestPtD extends TestCase implements I_Callback
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          publishOid = senderConnection.publish(msgUnit).getKeyOid();
-         log.info(ME, "Sending done, returned oid=" + publishOid);
+         log.info("Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         log.severe("publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -161,7 +162,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public void testPtManyDestinations()
    {
-      if (log.TRACE) log.trace(ME, "Testing point to many destinations ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Testing point to many destinations ...");
 
       // Construct a love message and send it to Ulrike
       String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
@@ -180,9 +181,9 @@ public class TestPtD extends TestCase implements I_Callback
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          publishOid = senderConnection.publish(msgUnit).getKeyOid();
-         log.info(ME, "Sending done, returned oid=" + publishOid);
+         log.info("Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         log.severe("publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -198,7 +199,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
 
       numReceived += 1;
 
@@ -232,7 +233,7 @@ public class TestPtD extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

@@ -7,7 +7,8 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -44,7 +45,7 @@ public class TestGetRegexFilter extends TestCase
 {
    private static String ME = "Tim";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestGetRegexFilter.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -62,7 +63,7 @@ public class TestGetRegexFilter extends TestCase
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.name = name;
    }
 
@@ -91,17 +92,17 @@ public class TestGetRegexFilter extends TestCase
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
-      log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
+      log.info("XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
    }
 
@@ -138,12 +139,12 @@ public class TestGetRegexFilter extends TestCase
    {
       String regPattern = "a*b"; // String with any numbers of 'a' and ending with one 'b'
 
-      log.info(ME, "TEST 1: The message content matches the pattern");
+      log.info("TEST 1: The message content matches the pattern");
       String content = "aaaab"; // check this string
       try {
          con.publish(new MsgUnit("<key oid='MSG'/>", content.getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -156,18 +157,18 @@ public class TestGetRegexFilter extends TestCase
          assertTrue("Expected exactly one returned message", msgUnits.length==1);
          assertTrue("Message content in corrupted '" + new String(msgUnits[0].getContent()) + "' versus '" + content + "'",
                 msgUnits[0].getContent().length == content.length());
-         log.info(ME, "Success: Got one message.");
+         log.info("Success: Got one message.");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("get - XmlBlasterException: " + e.getMessage(), false);
       }
 
 
-      log.info(ME, "TEST 2: The message content does NOT match the pattern");
+      log.info("TEST 2: The message content does NOT match the pattern");
       try {
          con.publish(new MsgUnit("<key oid='MSG'/>", new String("aaaaaac").getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -176,16 +177,16 @@ public class TestGetRegexFilter extends TestCase
          qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", regPattern));
 
          MsgUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         if (msgUnits.length > 0) log.info(ME, msgUnits[0].toXml());
+         if (msgUnits.length > 0) log.info(msgUnits[0].toXml());
          assertTrue("Expected zero returned message", msgUnits!=null);
          assertEquals("Expected zero returned message", 0, msgUnits.length);
-         log.info(ME, "Success: Got no message.");
+         log.info("Success: Got no message.");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("get - XmlBlasterException: " + e.getMessage(), false);
       }
 
-      log.info(ME, "Success in testFilter()");
+      log.info("Success in testFilter()");
    }
 
    /**

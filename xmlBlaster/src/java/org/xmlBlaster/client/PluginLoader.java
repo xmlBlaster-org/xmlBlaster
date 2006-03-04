@@ -1,6 +1,7 @@
 package org.xmlBlaster.client;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.jutils.io.FileUtil;
@@ -37,7 +38,7 @@ import java.util.StringTokenizer;
 public class PluginLoader {
    private  static final String  ME = "SecurityPluginLoader";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginLoader.class.getName());
    private  String pluginMechanism = null;
    private  String pluginVersion = null;
    private  I_ClientPlugin plugin = null;
@@ -45,7 +46,7 @@ public class PluginLoader {
    public PluginLoader(Global glob)
    {
       this.glob = glob;
-      this.log = glob.getLog("auth");
+
    }
 
    /**
@@ -90,7 +91,7 @@ public class PluginLoader {
     */
    public synchronized I_ClientPlugin getClientPlugin(String mechanism, String version) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME+".getClientPlugin", "type=" + mechanism + " version=" + version);
+      if (log.isLoggable(Level.FINER)) log.finer("type=" + mechanism + " version=" + version);
       if((pluginMechanism!=null) && (pluginMechanism.equals(mechanism))) {
         if (((pluginVersion==null) && (version==null)) ||
             ((version!=null) && (version.equals(pluginVersion)))) {
@@ -121,22 +122,22 @@ public class PluginLoader {
       I_ClientPlugin clntPlugin = null;
 
       try {
-         if (log.TRACE) log.trace(ME, "Trying Class.forName('"+param[0]+"') ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Trying Class.forName('"+param[0]+"') ...");
          Class cl = java.lang.Class.forName(param[0]);
          clntPlugin = (I_ClientPlugin)cl.newInstance();
          clntPlugin.init(glob, null);
-         if (log.TRACE) log.trace(ME, "Found I_ClientPlugin '"+param[0]+"'");
+         if (log.isLoggable(Level.FINE)) log.fine("Found I_ClientPlugin '"+param[0]+"'");
       }
       catch (IllegalAccessException e) {
-         if (log.TRACE) log.trace(ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
+         if (log.isLoggable(Level.FINE)) log.fine("The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH", e);
       }
       catch (SecurityException e) {
-         if (log.TRACE) log.trace(ME, "Couldn't load security plugin '"+param[0]+"'. Access Denied");
+         if (log.isLoggable(Level.FINE)) log.fine("Couldn't load security plugin '"+param[0]+"'. Access Denied");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "The plugin class '"+param[0]+"' couldn't be loaded!", e);
       }
       catch (Throwable e) {
-         if (log.TRACE) log.trace(ME, "The plugin class '"+param[0]+"'is invalid!" + e.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("The plugin class '"+param[0]+"'is invalid!" + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "The plugin class '"+param[0]+"'is invalid!", e);
       }
 
@@ -153,7 +154,7 @@ public class PluginLoader {
          }
       }
       */
-      if (log.TRACE) log.trace(ME, "Plugin '"+param[0]+"' successfully initialized");
+      if (log.isLoggable(Level.FINE)) log.fine("Plugin '"+param[0]+"' successfully initialized");
 
       return clntPlugin;
    }
@@ -176,7 +177,7 @@ public class PluginLoader {
 
       if((mechanism==null) || (mechanism.equals(""))) { // if the client application doesn't select the mechanism and version, we must check the configuartion
          tmp = glob.getProperty().get("Security.Client.DefaultPlugin", Constants.DEFAULT_SECURITYPLUGIN_TYPE+","+Constants.DEFAULT_SECURITYPLUGIN_VERSION);
-         if (log.TRACE) log.trace(ME, "Got Security.Client.DefaultPlugin=" + tmp);
+         if (log.isLoggable(Level.FINE)) log.fine("Got Security.Client.DefaultPlugin=" + tmp);
          if (tmp!=null) {
             int i = tmp.indexOf(',');
             if (i==-1) {  // version is optional

@@ -1,10 +1,10 @@
 package org.xmlBlaster.util.queuemsg;
 
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.def.PriorityEnum;
 
@@ -12,6 +12,8 @@ import org.xmlBlaster.util.def.PriorityEnum;
  */
 public class DummyEntry extends MsgQueueEntry {
 
+   private static final long serialVersionUID = 1L;
+   private static Logger log = Logger.getLogger(DummyEntry.class.getName());
    public static final String ME = "DummyEntry";
    public static final String ENTRY_TYPE = "DUMMY";
    private long sizeOfMsg = 0;
@@ -30,7 +32,7 @@ public class DummyEntry extends MsgQueueEntry {
       this.sizeOfMsg = sizeOfMsg;
       if (this.sizeOfMsg != 0) {
          if (this.sizeOfMsg >= Integer.MAX_VALUE)
-            this.log.warn(ME, "the size of the content has been reduced because it did not fit inside a byte[]");
+            log.warning("the size of the content has been reduced because it did not fit inside a byte[]");
          this.content = new byte[(int)this.sizeOfMsg];
       }
    }
@@ -51,7 +53,7 @@ public class DummyEntry extends MsgQueueEntry {
       this.sizeOfMsg = sizeOfMsg;
       if (this.sizeOfMsg != 0) {
          if (this.sizeOfMsg >= Integer.MAX_VALUE)
-            this.log.warn(ME, "the size of the content has been reduced because it did not fit inside a byte[]");
+            log.warning("the size of the content has been reduced because it did not fit inside a byte[]");
          this.content = new byte[(int)this.sizeOfMsg];
       }
    }

@@ -11,7 +11,8 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -54,7 +55,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
 {
    private String ME = "XmlRpcCallbackServer";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(XmlRpcCallbackServer.class.getName());
    private I_CallbackExtended client;
    private String loginName;
    /** Holds the XmlRpc URL string of the callback server */
@@ -95,14 +96,14 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    {
       this.ME = "XmlRpcCallbackServer-" + name;
       this.glob = glob;
-      this.log = glob.getLog("xmlrpc");
+
       this.callbackAddress = callbackAddress;
       if (this.pluginInfo != null)
          this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
       this.client = client;
       this.loginName = name;
       createCallbackServer();
-      log.info(ME, "Success, created XMLRPC callback server for " + loginName);
+      log.info("Success, created XMLRPC callback server for " + loginName);
    }
 
 
@@ -115,7 +116,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     */
    public void createCallbackServer() throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "createCallbackServer() ...");
+      if (log.isLoggable(Level.FINER)) log.finer("createCallbackServer() ...");
 
       this.xmlRpcUrlCallback = new XmlRpcUrl(glob, this.callbackAddress, false, DEFAULT_CALLBACK_PORT);
       try {
@@ -127,20 +128,20 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                   webServer = new WebServer(this.xmlRpcUrlCallback.getPort(), this.xmlRpcUrlCallback.getInetAddress());
                   break;
                } catch(java.net.BindException e) {
-                  log.warn(ME, "Port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server is in use already, trying with port " +  (this.xmlRpcUrlCallback.getPort()+1) + ": " + e.toString());
+                  log.warning("Port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server is in use already, trying with port " +  (this.xmlRpcUrlCallback.getPort()+1) + ": " + e.toString());
                   this.xmlRpcUrlCallback.setPort(this.xmlRpcUrlCallback.getPort() + 1);
                } catch(java.io.IOException e) {
                   if (e.getMessage().indexOf("Cannot assign requested address") != -1) {
-                     if (log.TRACE) log.warn(ME, "Host " + this.xmlRpcUrlCallback.getHostname() + " for XMLRPC callback server is invalid: " + e.toString());
+                     if (log.isLoggable(Level.FINE)) log.warning("Host " + this.xmlRpcUrlCallback.getHostname() + " for XMLRPC callback server is invalid: " + e.toString());
                      throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Local host IP '" + this.xmlRpcUrlCallback.getHostname() + "' for XMLRPC callback server is invalid: " + e.toString());
                   }
                   else {  // e.getMessage() = "Address already in use"
-                     log.warn(ME, "Port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server is in use already, trying with port " +  (this.xmlRpcUrlCallback.getPort()+1) + ": " + e.toString());
+                     log.warning("Port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server is in use already, trying with port " +  (this.xmlRpcUrlCallback.getPort()+1) + ": " + e.toString());
                   }
                   this.xmlRpcUrlCallback.setPort(this.xmlRpcUrlCallback.getPort() + 1);
                }
                if (ii == (numTries-1)) {
-                  log.error(ME, "Can't find free port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server, please use '-dispatch/callback/plugin/xmlrpc/port <port>' to specify a free one.");
+                  log.severe("Can't find free port " + this.xmlRpcUrlCallback.getPort() + " for XMLRPC callback server, please use '-dispatch/callback/plugin/xmlrpc/port <port>' to specify a free one.");
                }
             }
             webServer.addHandler("$default", new XmlRpcCallbackImpl(this));      // register update() method
@@ -149,7 +150,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             //log.info(ME, "Created XmlRpc callback http server");
          }
          else
-            log.info(ME, "XmlRpc callback http server not created, because of -dispatch/callback/plugin/xmlrpc/port is 0");
+            log.info("XmlRpc callback http server not created, because of -dispatch/callback/plugin/xmlrpc/port is 0");
       } catch (XmlBlasterException e) {
          throw e;
       } catch (Exception e) {
@@ -188,11 +189,11 @@ public class XmlRpcCallbackServer implements I_CallbackServer
             webServer.shutdown();
          }
          catch(Throwable e) {
-            log.warn(ME, "Problems during shutdown of XMLRPC callback web server: " + e.toString());
+            log.warning("Problems during shutdown of XMLRPC callback web server: " + e.toString());
             return;
          }
       }
-      log.info(ME, "The XMLRPC callback server is shutdown.");
+      log.info("The XMLRPC callback server is shutdown.");
    }
 
    /**
@@ -203,7 +204,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    public String update(String cbSessionId, String updateKey, byte[] content,
                        String updateQos) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering update(): sessionId: " + cbSessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering update(): sessionId: " + cbSessionId);
       return client.update(cbSessionId, updateKey, content, updateQos);
    }
 
@@ -217,12 +218,12 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    public void updateOneway(String cbSessionId, String updateKey, byte[] content,
                        String updateQos)
    {
-      if (log.CALL) log.call(ME, "Entering updateOneway(): sessionId: " + cbSessionId);
+      if (log.isLoggable(Level.FINER)) log.finer("Entering updateOneway(): sessionId: " + cbSessionId);
       try {
          client.updateOneway(cbSessionId, updateKey, content, updateQos);
       }
       catch (Throwable e) {
-         log.error(ME, "Caught exception which can't be delivered to xmlBlaster because of 'oneway' mode: " + e.toString());
+         log.severe("Caught exception which can't be delivered to xmlBlaster because of 'oneway' mode: " + e.toString());
       }
    }
 

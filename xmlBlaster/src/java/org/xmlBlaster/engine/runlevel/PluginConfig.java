@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.Constants;
@@ -35,7 +36,7 @@ public class PluginConfig
 {
    private String ME = "PluginConfig";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(PluginConfig.class.getName());
 
    /** the id specifying a given plugin configuration */
    private String id = "";
@@ -74,10 +75,10 @@ public class PluginConfig
    public PluginConfig(Global glob, String id, boolean create, String className, String jar, Properties attributes, Vector actions) {
       this.uniqueTimestamp = new Timestamp();
       this.glob = glob;
-      this.log = this.glob.getLog("runlevel");
-      //if (this.log.CALL) this.log.call(ME, "constructor");
-      //if (this.log.TRACE) 
-      //   this.log.trace(ME, "constructor id='" + id + "', className='" + className + "'");
+
+      //if (log.isLoggable(Level.FINER)) this.log.call(ME, "constructor");
+      //if (log.isLoggable(Level.FINE)) 
+      //   log.trace(ME, "constructor id='" + id + "', className='" + className + "'");
       this.id = id;
       this.create = create;
       this.className = className;
@@ -138,7 +139,7 @@ public class PluginConfig
 
    public void addAction(RunLevelAction action) {
       if (action == null ) {
-         this.log.warn(ME, "addAction the action is null");
+         log.warning("addAction the action is null");
          return;
       }
       if (action.getOnStartupRunlevel() > -1) this.upAction = action;

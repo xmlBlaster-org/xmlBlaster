@@ -6,7 +6,8 @@ Comment:   Test XPath filter.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -45,7 +46,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestXPathSubscribeFilter.class.getName());
 
    private I_XmlBlasterAccess con = null;
    private String name;
@@ -71,7 +72,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.name = name;
    }
 
@@ -108,17 +109,17 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
-      log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
+      log.info("XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
-         log.info(ME, "Connecting ...");
+         log.info("Connecting ...");
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
+         log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
 
       // Subscribe to a message with a supplied filter
@@ -129,14 +130,14 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          
          subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml()).getSubscriptionId();
          subscriberTable.put(subscribeOid, new Integer(0));
-         log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
+         log.info("Success: Subscribe subscription-id=" + subscribeOid + " done");
          // One culture subscriber
          qos = new SubscribeQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='culture']"));
          
          subscribeOid2 = con.subscribe("<key oid='MSG'/>", qos.toXml()).getSubscriptionId();
          subscriberTable.put(subscribeOid2, new Integer(1));
-         log.info(ME, "Success: Subscribe subscription-id2=" + subscribeOid2 + " done");
+         log.info("Success: Subscribe subscription-id2=" + subscribeOid2 + " done");
 
          // And one on another msg type but with the same xpath
          qos = new SubscribeQos(glob);
@@ -145,7 +146,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          
          subscribeOid3 = con.subscribe("<key oid='AnotherMsG'/>", qos.toXml()).getSubscriptionId();
          subscriberTable.put(subscribeOid3, new Integer(2));
-         log.info(ME, "Success: Subscribe subscription-id3=" + subscribeOid3 + " done");
+         log.info("Success: Subscribe subscription-id3=" + subscribeOid3 + " done");
 
          // Ad with extention functions
          qos = new SubscribeQos(glob);
@@ -154,10 +155,10 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          
          subscribeOid4 = con.subscribe("<key oid='AnotherMsG'/>", qos.toXml()).getSubscriptionId();
          subscriberTable.put(subscribeOid4, new Integer(3));
-         log.info(ME, "Success: Subscribe subscription-id4=" + subscribeOid4 + " done");
+         log.info("Success: Subscribe subscription-id4=" + subscribeOid4 + " done");
          
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -169,7 +170,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      log.info(ME, "TEST: tearing down");
+      log.info("TEST: tearing down");
       try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
       
       try {
@@ -204,46 +205,46 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
     */
    public void testFilter()
    {
-      log.info(ME, "testFilter() with XPath filter /news[@type='sport'] ...");
+      log.info("testFilter() with XPath filter /news[@type='sport'] ...");
 
-      log.info(ME, "TEST 1: Testing sport message");
+      log.info("TEST 1: Testing sport message");
       try {
          con.publish(new MsgUnit("<key oid='MSG' contentMime='text/xml'/>", "<news type='sport'></news>".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(subscribeOid,4000L, 1);
 
 
-      log.info(ME, "TEST 2: Testing culture message");
+      log.info("TEST 2: Testing culture message");
       try {
          con.publish(new MsgUnit("<key oid='MSG' contentMime='text/xml'/>", "<news type='culture'></news>".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(subscribeOid2,4000L, 1);
 
-      log.info(ME, "TEST 3: Testing AnotherMsG message");
+      log.info("TEST 3: Testing AnotherMsG message");
       try {
          con.publish(new MsgUnit("<key oid='AnotherMsG' contentMime='text/xml'/>", "<news type='culture'></news>".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(subscribeOid3,4000L, 1);
       
-      log.info(ME, "TEST 4: Testing extention functions");
+      log.info("TEST 4: Testing extention functions");
       try {
          con.publish(new MsgUnit("<key oid='AnotherMsG' contentMime='text/xml'/>", "<news><body><p>A little message</p><p>With a Needle in second paragraph wich normal XPath string function would not see</p></body></news>".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(subscribeOid4,4000L, 1);
       /* See TestSubscribeFilter.java for this test
-      log.info(ME, "TEST 4: Test what happens if the plugin throws an exception");
+      log.info("TEST 4: Test what happens if the plugin throws an exception");
       try {   
          con.publish(new MsgUnit("<key oid='MSG'/>", "<broken><xml></broken>".getBytes(), null));
          waitOnUpdate(subscribeOid,4000L, 1); // a dead message should come if we would subscribe on it
@@ -252,7 +253,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
       }
       */
       
-      log.info(ME, "Success in testFilter()");
+      log.info("Success in testFilter()");
    }
    
    /**
@@ -262,9 +263,9 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
+      log.info("Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
       int ii = ((Integer)subscriberTable.get(updateQos.getSubscriptionId())).intValue();
-      log.trace(ME,"Got message " + new String(content));
+      log.fine("Got message " + new String(content));
       subRec[ii]++;
       numReceived++;
       return "";
@@ -293,7 +294,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
       // check if too many are arriving
       try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, subRec[ii]);
-      log.info(ME,"Found correct rec messages for: " + subId);
+      log.info("Found correct rec messages for: " + subId);
       subRec[ii]= 0;
    }
 

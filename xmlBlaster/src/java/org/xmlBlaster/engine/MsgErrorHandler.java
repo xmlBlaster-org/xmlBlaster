@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -33,7 +34,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    private final long MAX_BYTES = 1000000L; // to avoid out of mem, max 1 MB during error handling
    
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(MsgErrorHandler.class.getName());
    private /*final -> shutdown*/ SessionInfo sessionInfo;
 
    /**
@@ -42,7 +43,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    public MsgErrorHandler(Global glob, SessionInfo sessionInfo) {
       this.ME = "MsgErrorHandler-" + ((sessionInfo==null) ? "" : sessionInfo.getId());
       this.glob = glob;
-      this.log = glob.getLog("core");
+
       this.sessionInfo = sessionInfo;
    }
 
@@ -84,7 +85,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       DispatchManager dispatchManager = (this.sessionInfo == null) ? null : this.sessionInfo.getDispatchManager();
       I_Queue msgQueue = msgErrorInfo.getQueue();  // is null if entry is not yet in queue
 
-      if (log.CALL) log.call(ME, "Error handling started: " + msgErrorInfo.toString());
+      if (log.isLoggable(Level.FINER)) log.finer("Error handling started: " + msgErrorInfo.toString());
 
       if (msgQueueEntries != null && msgQueueEntries.length > 0) {
          // 1. Generate dead letters from passed messages
@@ -93,29 +94,29 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          if (msgQueue != null) {
             // Remove the above published dead message from the queue
             try {
-               if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
+               if (log.isLoggable(Level.FINE)) log.fine("Removing " + msgQueueEntries.length + " dead messages from queue");
                long removed = 0L;
                boolean tmp[] = msgQueue.removeRandom(msgQueueEntries);
                for (int i=0; i < tmp.length; i++) if (tmp[i]) removed++;
                if (removed != msgQueueEntries.length) {
-                  log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
+                  log.warning("Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
                }
             }
             catch (XmlBlasterException e) {
-               log.warn(ME, "Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
+               log.warning("Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
             }
          }
       }
 
       if (xmlBlasterException.isUser()) {
          // The update() method from the client has thrown a ErrorCode.USER* error
-         if (log.TRACE) log.trace(ME, "Error handlig for exception " + errorCode.toString() + " done");
+         if (log.isLoggable(Level.FINE)) log.fine("Error handlig for exception " + errorCode.toString() + " done");
          return;
       }
 
       // 2. Generate dead letters if there are some entries in the queue
       long size = (msgQueue == null) ? 0 : msgQueue.getNumOfEntries();
-      if (log.TRACE) log.trace(ME, "Flushing " + size + " remaining message from queue");
+      if (log.isLoggable(Level.FINE)) log.fine("Flushing " + size + " remaining message from queue");
       if (size > 0) {
          try {
             QueuePropertyBase queueProperty = (QueuePropertyBase)msgQueue.getProperties();
@@ -132,20 +133,20 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                }
             }
             else {
-               log.error(ME, "PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADMESSAGE +
+               log.severe("PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADMESSAGE +
                      "' is implemented, " + msgQueue.getNumOfEntries() + " messages are lost: " + message);
             }
          }
          catch(Throwable e) {
             e.printStackTrace();
-            log.error(ME, "PANIC: givingUpDelivery failed, " + size +
+            log.severe("PANIC: givingUpDelivery failed, " + size +
                            " messages are lost: " + message + ": " + e.toString());
          }
       }
 
       // We do a auto logout if the callback is down
       if (dispatchManager == null || dispatchManager.isDead()) {
-         if (log.TRACE) log.trace(ME, "Doing error handling for dead connection state ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Doing error handling for dead connection state ...");
 
          if (dispatchManager!=null) dispatchManager.shutdown();
 
@@ -155,7 +156,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
             
             try {
                //if (address == null || address.getOnExhaustKillSession()) {
-                  log.warn(ME, "Callback server is lost, killing login session of client " +
+                  log.warning("Callback server is lost, killing login session of client " +
                                 ((msgQueue == null) ? "unknown" : msgQueue.getStorageId().toString()) +
                                 ": " + message);
                   try {
@@ -165,7 +166,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                                          this.sessionInfo.getSecretSessionId(), disconnectQos.toXml());
                   }
                   catch (Throwable e) {
-                     log.error(ME, "PANIC: givingUpDelivery error handling failed, " +
+                     log.severe("PANIC: givingUpDelivery error handling failed, " +
                                     size + " messages are lost: " + message + ": " + e.toString());
                   }
                //}
@@ -175,7 +176,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                //}
             }
             catch(Throwable e) {
-               log.error(ME, "PANIC: givingUpDelivery error handling failed, " + size +
+               log.severe("PANIC: givingUpDelivery error handling failed, " + size +
                               " messages are lost: " + message + ": " + e.toString());
             }
          }
@@ -188,7 +189,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
     * the client shall handle it himself
     */
    public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Unexpected sync error handling invocation, we try our best");
+      if (log.isLoggable(Level.FINE)) log.fine("Unexpected sync error handling invocation, we try our best");
       //Thread.currentThread().dumpStack();
       handleError(msgErrorInfo);
    }

@@ -13,7 +13,8 @@ import java.util.HashMap;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.qos.*;
@@ -36,7 +37,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 public class XmlScriptInterpreterTest extends XMLTestCase {
    protected final static String ME = "XmlScriptInterpreterTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(XmlScriptInterpreterTest.class.getName());
    protected XmlScriptInterpreter interpreter;
    private TestAccessor accessor;
    private ByteArrayOutputStream out;
@@ -77,7 +78,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
          throws XmlBlasterException {
          this.qos = qos;
          this.key = key;
-         this.log.trace(ME, "subscribe: " + key + " " + qos);
+         log.fine("subscribe: " + key + " " + qos);
          if (this.doRemoteCalls) return super.subscribe(key, qos);
          return null;
       }
@@ -86,7 +87,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
          throws XmlBlasterException {
          this.qos = qos;
          this.key = key;
-         this.log.trace(ME, "unSubscribe: " + key + " " + qos);
+         log.fine("unSubscribe: " + key + " " + qos);
          if (this.doRemoteCalls) return super.unSubscribe(key, qos);
          return null;
       }
@@ -96,7 +97,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
          this.qos = msgUnit.getQos();
          this.key = msgUnit.getKey();
          this.content = msgUnit.getContent();
-         this.log.trace(ME, "publish: " + key + " " + qos);
+         log.fine("publish: " + key + " " + qos);
          if (this.doRemoteCalls) return super.publish(msgUnit);
          return null;
       }
@@ -106,7 +107,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
          this.qos = msgUnits[0].getQos();
          this.key = msgUnits[0].getKey();
          this.content = msgUnits[0].getContent();
-         this.log.trace(ME, "publishArr: " + key + " " + qos);
+         log.fine("publishArr: " + key + " " + qos);
          if (this.doRemoteCalls) return super.publishArr(msgUnits);
          return null;
       }
@@ -114,7 +115,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       public MsgUnit[] get(String key, String qos) throws XmlBlasterException {
          this.qos = qos;
          this.key = key;
-         this.log.trace(ME, "get: " + key + " " + qos);
+         log.fine("get: " + key + " " + qos);
          if (this.doRemoteCalls) return super.get(key, qos);
          return null;
       }
@@ -122,14 +123,14 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       public EraseReturnQos[] erase(String key, String qos) throws XmlBlasterException {
          this.qos = qos;
          this.key = key;
-         this.log.trace(ME, "erase: " + key + " " + qos);
+         log.fine("erase: " + key + " " + qos);
          if (this.doRemoteCalls) return super.erase(key, qos);
          return null;
       }
 
       public boolean disconnect(DisconnectQos qos) {
          this.qos = qos.toXml();
-         this.log.trace(ME, "disconnect: " + key + " " + qos);
+         log.fine("disconnect: " + key + " " + qos);
          if (this.doRemoteCalls) return super.disconnect(qos);
          return false;
       }
@@ -153,7 +154,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
-      this.log = this.glob.getLog("test");
+
    }
 
    protected void testConnect() throws Exception {
@@ -224,8 +225,8 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
 
-      this.log.info(ME, "testSubscribe: qos: '" + qos + "'");
-      this.log.info(ME, "testSubscribe: key: '" + key + "'");
+      log.info("testSubscribe: qos: '" + qos + "'");
+      log.info("testSubscribe: key: '" + key + "'");
       assertXMLEqual(qosRef, qos);
       assertXMLEqual(keyRef, key);
    }
@@ -246,14 +247,14 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
       String content = new String(this.accessor.getContent()).trim();
-      this.log.info(ME, "testPublish: qos: '" + qos + "' '" + qosRef + "'");
-      this.log.info(ME, "testPublish: key: '" + key + "' '" + keyRef + "'");
-      this.log.info(ME, "testPublish: content: '" + content + "' and should be '" + contentRef);
+      log.info("testPublish: qos: '" + qos + "' '" + qosRef + "'");
+      log.info("testPublish: key: '" + key + "' '" + keyRef + "'");
+      log.info("testPublish: content: '" + content + "' and should be '" + contentRef);
       assertXMLEqual(keyRef, key);
       assertXMLEqual(qosRef, qos);
       assertEquals(contentRef, content);   
       String response = new String(this.out.toByteArray());
-      this.log.info(ME, "testPublish: response: '" + response + "'");
+      log.info("testPublish: response: '" + response + "'");
       assertXpathExists("/xmlBlasterResponse[@id='xxyyzz']", response);
    }
 
@@ -271,9 +272,9 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
       String content = new String(this.accessor.getContent()).trim();
-      this.log.info(ME, "testPublishArr: qos: '" + qos + "' '" + qosRef + "'");
-      this.log.info(ME, "testPublishArr: key: '" + key + "' '" + keyRef + "'");
-      this.log.info(ME, "testPublishArr: content: '" + content + "'");
+      log.info("testPublishArr: qos: '" + qos + "' '" + qosRef + "'");
+      log.info("testPublishArr: key: '" + key + "' '" + keyRef + "'");
+      log.info("testPublishArr: content: '" + content + "'");
 
       assertXMLEqual(keyRef, key);
       assertXMLEqual(qosRef, qos);
@@ -287,7 +288,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
       this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
-      this.log.info(ME, "testDisconnect: qos: '" + qos + "' '" + qosRef + "'");
+      log.info("testDisconnect: qos: '" + qos + "' '" + qosRef + "'");
       assertXMLEqual(qosRef, qos);
    }
 
@@ -304,8 +305,8 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
 
-      this.log.info(ME, "testUnSubscribe: qos: '" + qos + "'");
-      this.log.info(ME, "testUnSubscribe: key: '" + key + "'");
+      log.info("testUnSubscribe: qos: '" + qos + "'");
+      log.info("testUnSubscribe: key: '" + key + "'");
       assertXMLEqual(qosRef, qos);
       assertXMLEqual(keyRef, key);
    }
@@ -324,8 +325,8 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
 
-      this.log.info(ME, "testErase: qos: '" + qos + "'");
-      this.log.info(ME, "testErase: key: '" + key + "'");
+      log.info("testErase: qos: '" + qos + "'");
+      log.info("testErase: key: '" + key + "'");
       assertXMLEqual(qosRef, qos);
       assertXMLEqual(keyRef, key);
    }
@@ -344,8 +345,8 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
 
-      this.log.info(ME, "testGet: qos: '" + qos + "'");
-      this.log.info(ME, "testGet: key: '" + key + "'");
+      log.info("testGet: qos: '" + qos + "'");
+      log.info("testGet: key: '" + key + "'");
       assertXMLEqual(qosRef, qos);
       assertXMLEqual(keyRef, key);
    }

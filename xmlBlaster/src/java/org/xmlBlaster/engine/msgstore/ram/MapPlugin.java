@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore.ram;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -46,7 +47,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    private Set lruSet;                 // We could use a LinkedList for LRU but random access is slow
    private QueuePropertyBase property; // org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(MapPlugin.class.getName());
    private boolean isShutdown = false;
    private long sizeInBytes;
    private long persistentSizeInBytes;
@@ -60,7 +61,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    public void initialize(StorageId uniqueMapId, Object userData) throws XmlBlasterException {
       setProperties(userData); // sets this.property
       this.glob = this.property.getGlobal();
-      this.log = glob.getLog("persistence");
+
 
 
       this.mapId = uniqueMapId;
@@ -105,7 +106,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    }
 
    public void finalize() {
-      if (log.TRACE) log.trace(ME, "finalize - garbage collected");
+      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collected");
    }
 
    /**
@@ -113,7 +114,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     */
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
       final String key = ""+uniqueId;
-      if (log.CALL) log.call(ME, "get(" + key + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("get(" + key + ")");
       synchronized (this.storage) {
          I_MapEntry entry = (I_MapEntry)this.storage.get(key);
          touch(entry);
@@ -133,7 +134,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     * @see I_Map#getAll()
     */
    public I_MapEntry[] getAll(I_EntryFilter entryFilter) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "getAll()");
+      if (log.isLoggable(Level.FINER)) log.finer("getAll()");
       I_MapEntry[] entries = null;
       synchronized (this.storage) {
          // sortTimestamp remains as all entries are touched
@@ -158,18 +159,18 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       if (entry == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "put(I_MapEntry="+entry+")");
       }
-      if (log.CALL) log.call(ME, "put(" + entry.getLogId() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("put(" + entry.getLogId() + ")");
 
       if (getNumOfEntries() > property.getMaxEntries()) { // Allow superload one time only
          String reason = "Message store overflow, number of entries=" + property.getMaxEntries() +
                          ", try increasing '" + this.property.getPropName("maxEntries") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason);
+         if (log.isLoggable(Level.FINE)) log.fine(reason);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
       if (this.getNumOfBytes() > property.getMaxBytes()) { // Allow superload one time only
          String reason = "Message store overflow with " + this.getNumOfBytes() +
                          " bytes, try increasing '" + this.property.getPropName("maxBytes") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason);
+         if (log.isLoggable(Level.FINE)) log.fine(reason);
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
 
@@ -207,7 +208,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     */
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
       if (mapEntry == null) return 0;
-      if (log.CALL) log.call(ME, "remove(" + mapEntry.getLogId() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("remove(" + mapEntry.getLogId() + ")");
       synchronized (this.storage) {
          if (mapEntry.getSortTimestamp() != null)
             this.lruSet.remove(mapEntry);
@@ -229,7 +230,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     * @see I_Map#remove(long)
     */
    public int remove(final long uniqueId) throws XmlBlasterException {
-      if (log.CALL) this.log.call(ME, "remove(" + uniqueId + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("remove(" + uniqueId + ")");
       synchronized (this.storage) {
          I_MapEntry mapEntry = get(uniqueId);
          if (mapEntry == null) {
@@ -262,7 +263,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
          }
 
          if (this.storage.size() > 0) {
-            log.error(ME+".removeOldest", "LRU set has no entries, we remove an arbitrary entry from RAM map");
+            log.severe("LRU set has no entries, we remove an arbitrary entry from RAM map");
             it = this.storage.values().iterator();
             if (it.hasNext()) {
                I_MapEntry entry = (I_MapEntry)it.next();
@@ -276,7 +277,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    }
 
    public long clear() {
-      if (log.CALL) log.call(ME, "clear()");
+      if (log.isLoggable(Level.FINER)) log.finer("clear()");
       synchronized(this.storage) {
          long ret = this.storage.size();
 
@@ -342,16 +343,16 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    }
 
    public final void shutdown() {
-      if (log.CALL) log.call(ME, "Entering shutdown(" + this.storage.size() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown(" + this.storage.size() + ")");
       //Thread.currentThread().dumpStack();
       synchronized (this.storage) {
          if (this.storage.size() > 0) {
-            if (log.TRACE) log.trace(ME, "Shutting down RAM map which contains " + this.storage.size() + " messages");
+            if (log.isLoggable(Level.FINE)) log.fine("Shutting down RAM map which contains " + this.storage.size() + " messages");
          }
          this.lruSet.clear();
          isShutdown = true;
       }
-      if (log.CALL) log.call(ME, "shutdown() of RAM map " + this.getStorageId());
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown() of RAM map " + this.getStorageId());
 
    }
 
@@ -465,7 +466,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     * @see I_Map#embeddedObjectsToXml(OutputStream, Properties)
     */
    public long embeddedObjectsToXml(OutputStream out, Properties props) {
-      log.warn(ME, "Sorry, dumping transient entries is not implemented");
+      log.warning("Sorry, dumping transient entries is not implemented");
       return 0;
    }
 

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -34,7 +35,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 {
    private String ME = "CallbackXmlRpcDriver";
    private Global glob = null;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(CallbackXmlRpcDriver.class.getName());
    private CallbackAddress callbackAddress = null;
    private XmlRpcClient xmlRpcClient = null;
 
@@ -88,11 +89,11 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
    public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
       this.glob = glob;
-      this.log = glob.getLog("xmlrpc");
+
       this.callbackAddress = callbackAddress;
       try {
          xmlRpcClient = new XmlRpcClient(callbackAddress.getRawAddress());
-         if (log.TRACE) log.trace(ME, "Accessing client callback web server using given url=" + callbackAddress.getRawAddress());
+         if (log.isLoggable(Level.FINE)) log.fine("Accessing client callback web server using given url=" + callbackAddress.getRawAddress());
       }
       catch (IOException ex1) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "init() failed", ex1);
@@ -128,25 +129,25 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
           
-            if (log.TRACE) log.trace(ME, "Send an update to the client ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Send an update to the client ...");
 
             retVal[ii] = (String)xmlRpcClient.execute("update", args);
 
-            if (log.TRACE) log.trace(ME, "Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
          }
          return retVal;
       }
       catch (XmlRpcException ex) {
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed in client: " + ex.toString();
-         if (log.TRACE) log.trace(ME + ".sendUpdate", str);
+         if (log.isLoggable(Level.FINE)) log.fine(str);
          // The remote client is only allowed to throw USER* errors!
          throw XmlBlasterException.tranformCallbackException(e);
          //throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "CallbackFailed", e);
       }
       catch (Throwable e) { // e.g. IOException
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed: " + e.toString();
-         if (log.TRACE) log.trace(ME + ".sendUpdate", str);
+         if (log.isLoggable(Level.FINE)) log.fine(str);
          e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed", e);
       }
@@ -172,22 +173,22 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
           
-            if (log.TRACE) log.trace(ME, "Send an updateOneway to the client ...");
+            if (log.isLoggable(Level.FINE)) log.fine("Send an updateOneway to the client ...");
 
             xmlRpcClient.execute("updateOneway", args);
 
-            if (log.TRACE) log.trace(ME, "Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
+            if (log.isLoggable(Level.FINE)) log.fine("Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
          }
       }
       catch (XmlRpcException ex) {
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
          String str = "Sending oneway message to " + callbackAddress.getRawAddress() + " failed in client: " + ex.toString();
-         if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
+         if (log.isLoggable(Level.FINE)) log.fine(str);
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "CallbackFailed", e);
       }
       catch (Throwable e) {
          String str = "Sending oneway message to " + callbackAddress.getRawAddress() + " failed: " + e.toString();
-         if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
+         if (log.isLoggable(Level.FINE)) log.fine(str);
          //e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "CallbackFailed", e);
       }
@@ -218,7 +219,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
    }
 
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
-      if (log.TRACE) log.trace(ME, "Registering I_ProgressListener is not supported with this protocol plugin");
+      if (log.isLoggable(Level.FINE)) log.fine("Registering I_ProgressListener is not supported with this protocol plugin");
       return null;
    }
 
@@ -231,7 +232,7 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       //if (xmlRpcClient != null) xmlRpcClient.shutdown(); method is missing in XmlRpc package !!!
       callbackAddress = null;
       xmlRpcClient = null;
-      if (log.TRACE) log.trace(ME, "Shutdown implementation is missing");
+      if (log.isLoggable(Level.FINE)) log.fine("Shutdown implementation is missing");
    }
 
    /**

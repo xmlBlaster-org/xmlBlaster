@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.script;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -92,7 +93,7 @@ import java.io.File;
 public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    
    private final String ME = "XmlScriptInterpreter";
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XmlScriptInterpreter.class.getName());
    protected Global glob;
    
    /** a set of names of allowed commands */   
@@ -174,7 +175,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
     */
    public void initialize(Global glob, HashMap attachments, OutputStream out) {
       this.glob = glob;
-      this.log = glob.getLog("script");
+
       setUseLexicalHandler(true);
       this.commandsToFire.add(MethodName.GET.toString());
       this.commandsToFire.add(MethodName.CONNECT.toString());
@@ -505,7 +506,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          }   
       }
       catch (IOException ex) {
-         this.log.error(ME, "flushResponse exception occured " + ex.getMessage());
+         log.severe("flushResponse exception occured " + ex.getMessage());
          throw XmlBlasterException.convert(this.glob, ME, ErrorCode.INTERNAL_UNKNOWN.toString(), ex);
       }
       finally {
@@ -548,7 +549,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       /*
       if (sum > 1) {
          Thread.dumpStack();
-         this.log.error(ME, "check: there is an internal error!! Mismatch with the nested tags ...");
+         log.error(ME, "check: there is an internal error!! Mismatch with the nested tags ...");
       } 
       */
    }
@@ -586,7 +587,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
                this.messageList.add(buildMsgUnit());
             }
             catch(XmlBlasterException e) {
-               this.log.error(ME, "endElement '" + qName + "' exception occurred when trying to build message unit: " + e.getMessage());         }
+               log.severe("endElement '" + qName + "' exception occurred when trying to build message unit: " + e.getMessage());         }
             return;
          }
          // comes here since the end tag is not part of the content
@@ -599,7 +600,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          }
       }
       catch (XmlBlasterException e) {
-         if (this.log.TRACE) this.log.trace(ME, "endElement exception occured " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) this.log.fine("endElement exception occured " + e.getMessage());
          if (this.needsRootEndTag) { // is </xmlBlasterResponse> missing?
             this.response = new StringBuffer("\n</");
             this.response.append(ROOTRESPONSE_TAG).append(">\n");
@@ -626,17 +627,17 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    }
 
    public void startCDATA() {
-      if (this.log.CALL) this.log.call(ME, "startCDATA");
+      if (log.isLoggable(Level.FINER)) this.log.finer("startCDATA");
       this.inCDATA++;
       if (this.inContent == 0)
          this.cdata.append("<![CDATA[");
    }
    
    public void endCDATA() {
-      if (this.log.CALL) {
+      if (log.isLoggable(Level.FINER)) {
          String txt = "";
          if (this.qos != null) this.qos.toString();
-         this.log.call(ME, "endCDATA: " + txt);
+         log.finer("endCDATA: " + txt);
       }
       this.inCDATA--;
       if (this.inContent == 0) 

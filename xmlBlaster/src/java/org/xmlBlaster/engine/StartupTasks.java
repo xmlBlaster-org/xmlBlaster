@@ -14,7 +14,8 @@ import java.io.FileOutputStream;
 import java.net.URL;
 import java.net.MalformedURLException;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -68,7 +69,7 @@ public class StartupTasks implements I_Plugin {
    
    private PluginInfo pluginInfo;
    private Global global;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(StartupTasks.class.getName());
 
    private I_XmlBlasterAccess connection;
    private String directoryName = null; // (String)System.getProperty("user.home"); // + (String)System.getProperty("file.separator") + "tmp";
@@ -92,9 +93,9 @@ public class StartupTasks implements I_Plugin {
       this.global = glob.getClone(glob.getNativeConnectArgs());
       try {
          this.global.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
-         this.log = this.global.getLog("core");
 
-         if (this.log.CALL) this.log.call(ME, "init");
+
+         if (log.isLoggable(Level.FINER)) this.log.finer("init");
 
          this.directoryName = this.global.get("directoryName", this.directoryName, null, this.pluginInfo);
          this.scriptFileName = this.global.get("scriptFileName", this.scriptFileName, null, this.pluginInfo);
@@ -114,16 +115,16 @@ public class StartupTasks implements I_Plugin {
                try {
                   this.scriptFileUrl = f.toURL();
                } catch (MalformedURLException e) {
-                  log.warn(ME, e.toString());
+                  log.warning(e.toString());
                }
             }
          }
          
          if (this.scriptFileUrl != null) {
-            log.info(ME, "Using startup script file '" + this.scriptFileUrl.toString() + "'");
+            log.info("Using startup script file '" + this.scriptFileUrl.toString() + "'");
          }
          else {
-            log.warn(ME, "No startup script file '" + this.scriptFileName + "' found, we continue without.");
+            log.warning("No startup script file '" + this.scriptFileName + "' found, we continue without.");
             return;
          }
 
@@ -183,7 +184,7 @@ public class StartupTasks implements I_Plugin {
          if (this.doConnect) {
             this.connection.connect(this.connectQos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.warn(ME, "Ignoring received message '" + updateKey.getOid() + "'");
+                  log.warning("Ignoring received message '" + updateKey.getOid() + "'");
                   return Constants.RET_OK;
                }
             });
@@ -204,22 +205,22 @@ public class StartupTasks implements I_Plugin {
             interpreter.parse(new InputStreamReader(in));
          }
          finally {
-            try { in.close(); } catch(IOException e) { log.warn(ME, "Ignoring problem: " + e.toString()); }
+            try { in.close(); } catch(IOException e) { log.warning("Ignoring problem: " + e.toString()); }
             if (needsClosing) {
-               try { outStream.close(); } catch(IOException e) { log.warn(ME, "Ignoring problem: " + e.toString()); }
+               try { outStream.close(); } catch(IOException e) { log.warning("Ignoring problem: " + e.toString()); }
             }
          }
 
-         log.info(ME, "Successfully executed '" + this.scriptFileUrl.toString() + "'.");
+         log.info("Successfully executed '" + this.scriptFileUrl.toString() + "'.");
       }
       catch (java.io.FileNotFoundException e) {
-         log.warn(ME, "Can't execute  '" + this.scriptFileUrl.toString() + "': " + e.toString());
+         log.warning("Can't execute  '" + this.scriptFileUrl.toString() + "': " + e.toString());
       }
       catch (java.io.IOException e) {
-         log.warn(ME, "Can't open stream of '" + this.scriptFileUrl.toString() + "': " + e.toString());
+         log.warning("Can't open stream of '" + this.scriptFileUrl.toString() + "': " + e.toString());
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "Can't execute  '" + this.scriptFileUrl.toString() + "': " + e.getMessage());
+         log.warning("Can't execute  '" + this.scriptFileUrl.toString() + "': " + e.getMessage());
       }
       finally {
          try {
@@ -231,7 +232,7 @@ public class StartupTasks implements I_Plugin {
             }
          }
          catch (Throwable e) {
-            log.warn(ME, "Ignoring problem during disconnect: " + e.toString());
+            log.warning("Ignoring problem during disconnect: " + e.toString());
          }
       }
    }

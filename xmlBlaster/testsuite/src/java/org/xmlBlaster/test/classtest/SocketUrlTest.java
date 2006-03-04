@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -21,7 +22,7 @@ import junit.framework.*;
 public class SocketUrlTest extends TestCase {
    private String ME = "SocketUrlTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(SocketUrlTest.class.getName());
 
    public SocketUrlTest(String name) {
       super(name);
@@ -29,7 +30,7 @@ public class SocketUrlTest extends TestCase {
 
    protected void setUp() {
       glob = new Global();
-      log = glob.getLog(null);
+
    }
 
    protected void tearDown() {
@@ -44,7 +45,7 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", glob.getLocalIP(), s.getHostname());
             assertEquals("", port, s.getPort());
             assertEquals("", "socket://"+glob.getLocalIP()+":"+port, s.getUrl());
-            log.info(ME, "SUCCESS testBasic(): hostname=" + hostname + " port=" + port + " resultUrl=" + s.getUrl());
+            log.info("SUCCESS testBasic(): hostname=" + hostname + " port=" + port + " resultUrl=" + s.getUrl());
          }
 
          {
@@ -54,42 +55,42 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", hostname, s.getHostname());
             assertEquals("", port, s.getPort());
             assertEquals("", "socket://"+hostname+":"+port, s.getUrl());
-            log.info(ME, "SUCCESS testBasic(): hostname=" + hostname + " port=" + port + " resultUrl=" + s.getUrl());
+            log.info("SUCCESS testBasic(): hostname=" + hostname + " port=" + port + " resultUrl=" + s.getUrl());
          }
 
          {
             SocketUrl s = new SocketUrl(glob, "192.1.1.5:911");
             SocketUrl other = new SocketUrl(glob, "192.1.1.5", 911);
             assertTrue("", s.equals(other));
-            log.info(ME, "SUCCESS testBasic(): equals=true");
+            log.info("SUCCESS testBasic(): equals=true");
          }
 
          {
             SocketUrl s = new SocketUrl(glob, "192.1.1.5");
             SocketUrl other = new SocketUrl(glob, "192.1.1.5", SocketUrl.DEFAULT_SERVER_PORT);
             assertTrue("", s.equals(other));
-            log.info(ME, "SUCCESS testBasic(): equals=true");
+            log.info("SUCCESS testBasic(): equals=true");
          }
 
          {
             SocketUrl s = new SocketUrl(glob, "192.1.1.5:900");
             SocketUrl other = new SocketUrl(glob, "192.1.1.5", 911);
             assertTrue("", !s.equals(other));
-            log.info(ME, "SUCCESS testBasic(): equals=false");
+            log.info("SUCCESS testBasic(): equals=false");
          }
 
          {
             SocketUrl s = new SocketUrl(glob, "192.1.1.5:911");
             SocketUrl other = new SocketUrl(glob, "192.1.77.5", 911);
             assertTrue("", !s.equals(other));
-            log.info(ME, "SUCCESS testBasic(): equals=false");
+            log.info("SUCCESS testBasic(): equals=false");
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "ERROR: " + e.toString());
+         log.severe("ERROR: " + e.toString());
          fail(e.toString());
       }
-      log.info(ME, "SUCCESS testBasic()");
+      log.info("SUCCESS testBasic()");
    }
 
    public void testAddress() {
@@ -110,7 +111,7 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", hostname, s.getHostname());
             assertEquals("", port, s.getPort());
             assertEquals("", "socket://"+hostname+":"+port, s.getUrl());
-            log.info(ME, "SUCCESS testAddress(): resultUrl=" + s.getUrl());
+            log.info("SUCCESS testAddress(): resultUrl=" + s.getUrl());
          }
 
          {
@@ -123,14 +124,14 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", hostname, s.getHostname());
             assertEquals("", port, s.getPort());
             assertEquals("", "socket://"+hostname+":"+port, s.getUrl());
-            log.info(ME, "SUCCESS testAddress(): resultUrl=" + s.getUrl());
+            log.info("SUCCESS testAddress(): resultUrl=" + s.getUrl());
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "ERROR: " + e.toString());
+         log.severe("ERROR: " + e.toString());
          fail(e.toString());
       }
-      log.info(ME, "SUCCESS testAddress()");
+      log.info("SUCCESS testAddress()");
    }
 
    public void testParseUrl() {
@@ -140,7 +141,7 @@ public class SocketUrlTest extends TestCase {
             SocketUrl s = new SocketUrl(glob, url);
             fail("Null url is not allowed");
          } catch (XmlBlasterException e) {
-            log.info(ME, "SUCCESS testParseUrl(): expected exception: " + e.toString());
+            log.info("SUCCESS testParseUrl(): expected exception: " + e.toString());
          }
 
          {
@@ -149,7 +150,7 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", glob.getLocalIP(), s.getHostname());
             assertEquals("", SocketUrl.DEFAULT_SERVER_PORT, s.getPort());
             assertEquals("", "socket://"+glob.getLocalIP()+":"+SocketUrl.DEFAULT_SERVER_PORT, s.getUrl());
-            log.info(ME, "SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
+            log.info("SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
          }
 
          {
@@ -158,7 +159,7 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", url, s.getHostname());
             assertEquals("", SocketUrl.DEFAULT_SERVER_PORT, s.getPort());
             assertEquals("", "socket://"+url+":"+SocketUrl.DEFAULT_SERVER_PORT, s.getUrl());
-            log.info(ME, "SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
+            log.info("SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
          }
 
          {
@@ -167,7 +168,7 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", "127.1.1.1", s.getHostname());
             assertEquals("", 8080, s.getPort());
             assertEquals("", "socket://"+url, s.getUrl());
-            log.info(ME, "SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
+            log.info("SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
          }
 
          {
@@ -176,7 +177,7 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", "127.1.1.1", s.getHostname());
             assertEquals("", 8080, s.getPort());
             assertEquals("", "socket://127.1.1.1:8080", s.getUrl());
-            log.info(ME, "SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
+            log.info("SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
          }
 
          {
@@ -185,14 +186,14 @@ public class SocketUrlTest extends TestCase {
             assertEquals("", "127.1.1.1", s.getHostname());
             assertEquals("", 8080, s.getPort());
             assertEquals("", url, s.getUrl());
-            log.info(ME, "SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
+            log.info("SUCCESS testParseUrl(): url=" + url + " resultUrl=" + s.getUrl());
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "ERROR: " + e.toString());
+         log.severe("ERROR: " + e.toString());
          fail(e.toString());
       }
-      log.info(ME, "SUCCESS testParseUrl()");
+      log.info("SUCCESS testParseUrl()");
    }
 
    /**

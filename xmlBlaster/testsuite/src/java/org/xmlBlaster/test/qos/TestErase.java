@@ -6,7 +6,8 @@ Comment:   Demo code for a client using xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -39,7 +40,7 @@ public class TestErase extends TestCase implements I_Callback
 {
    private static String ME = "TestErase";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestErase.class.getName());
 
    private String subscribeId;
    private String oidExact = "HelloMessage";
@@ -60,7 +61,7 @@ public class TestErase extends TestCase implements I_Callback
    public TestErase(Global glob, String testName) {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog(null);
+
    }
 
    /**
@@ -97,7 +98,7 @@ public class TestErase extends TestCase implements I_Callback
     * The returned subscribeId is checked
     */
    private void subscribe(boolean exact) {
-      if (log.TRACE) log.trace(ME, "Subscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing ...");
 
       String xmlKey;
       if (exact)
@@ -110,10 +111,10 @@ public class TestErase extends TestCase implements I_Callback
          subscribeId = con.subscribe(xmlKey, qos).getSubscriptionId();
          assertTrue("returned null subscribeId", subscribeId != null);
          assertTrue("returned subscribeId is empty", 0 != subscribeId.length());
-         log.info(ME, "Success: Subscribe on " + subscribeId + " done");
+         log.info("Success: Subscribe on " + subscribeId + " done");
       }
       catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -124,16 +125,16 @@ public class TestErase extends TestCase implements I_Callback
     * The returned publishOid is checked
     */
    private void publish() {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
       String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "'/>";
       String senderContent = "Yeahh, i'm the new content";
       try {
          msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos/>");
          publishOid = con.publish(msgUnit).getKeyOid();
-         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         log.info("Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -146,14 +147,14 @@ public class TestErase extends TestCase implements I_Callback
     * unSubscribe three times to same message. 
     */
    private void unSubscribe() {
-      if (log.TRACE) log.trace(ME, "unSubscribing ...");
+      if (log.isLoggable(Level.FINE)) log.fine("unSubscribing ...");
 
       String qos = "<qos/>";
       try {
          con.unSubscribe("<key oid='" + subscribeId + "'/>", qos);
-         log.info(ME, "Success: unSubscribe on " + subscribeId + " done");
+         log.info("Success: unSubscribe on " + subscribeId + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -176,7 +177,7 @@ public class TestErase extends TestCase implements I_Callback
          con.connect(qos, this.updateInterceptor);
       }
       catch (Exception e) {
-          log.error(ME, "Login failed: " + e.toString());
+          log.severe("Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -189,7 +190,7 @@ public class TestErase extends TestCase implements I_Callback
     * <br />
     */
    public void testEraseEvent() throws Exception {
-      log.info(ME, "testEraseEvent ...");
+      log.info("testEraseEvent ...");
       
       connect();
 
@@ -219,7 +220,7 @@ public class TestErase extends TestCase implements I_Callback
          this.updateInterceptor.clear();
       }
 
-      log.info(ME, "testEraseEvent SUCCESS");
+      log.info("testEraseEvent SUCCESS");
    }
 
    /**
@@ -228,7 +229,7 @@ public class TestErase extends TestCase implements I_Callback
     * <br />
     */
    public void testXPathEraseEvent() throws Exception {
-      log.info(ME, "testXPathEraseEvent ...");
+      log.info("testXPathEraseEvent ...");
       
       connect();
 
@@ -248,7 +249,7 @@ public class TestErase extends TestCase implements I_Callback
       }
 
       {
-         log.info(ME, "Erasing now ...");
+         log.info("Erasing now ...");
          this.updateInterceptor.countErased(true);
 
          erase();
@@ -260,7 +261,7 @@ public class TestErase extends TestCase implements I_Callback
          this.updateInterceptor.clear();
       }
 
-      log.info(ME, "testXPathEraseEvent SUCCESS");
+      log.info("testXPathEraseEvent SUCCESS");
    }
 
    /**
@@ -269,7 +270,7 @@ public class TestErase extends TestCase implements I_Callback
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
       return "";
    }
 

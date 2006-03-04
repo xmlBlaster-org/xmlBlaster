@@ -8,7 +8,8 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.authentication;
 
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.TopicHandler;
@@ -73,7 +74,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 {
    private String ME = "SubjectInfo";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(SubjectInfo.class.getName());
    private final ContextNode contextNode;
 
    private final Authenticate authenticate;
@@ -147,13 +148,13 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          instanceCounter++;
       }
       this.glob = glob;
-      this.log = this.glob.getLog("auth");
+
       this.authenticate = authenticate;
       this.subjectInfoProtector = new SubjectInfoProtector(this);
 
       this.subjectName = subjectName; //new SessionName(glob, glob.getNodeId(), loginName);
       if (this.subjectName.isSession()) {
-         log.error(ME, "Didn't expect a session name for a subject: " + this.subjectName.toXml());
+         log.severe("Didn't expect a session name for a subject: " + this.subjectName.toXml());
          Thread.dumpStack();
       }
 
@@ -167,7 +168,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       // JMX register "client/joe"
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this.subjectInfoProtector);
 
-      if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
+      if (log.isLoggable(Level.FINE)) log.fine("Created new SubjectInfo");
    }
 
    /**
@@ -190,7 +191,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       if (this.state == DEAD)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".waitUntilAlive()", "Did not expect state DEAD, please try again.");
 
-      if (log.TRACE) log.trace(ME, "waitUntilAlive() is going to wait max. one minute");
+      if (log.isLoggable(Level.FINE)) log.fine("waitUntilAlive() is going to wait max. one minute");
       //log.error(ME, "DEBUG ONLY: waitUntilAlive() is going to wait max. one minute");
       long msecs = 1000 * 60;
       while (true) {
@@ -201,7 +202,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                break;
             }
             catch (InterruptedException e) {
-               log.error(ME, "waitUntilAlive() Ignoring unexpected exception: " + e.toString());
+               log.severe("waitUntilAlive() Ignoring unexpected exception: " + e.toString());
             }
          }
       }
@@ -268,10 +269,10 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             glob.getRequestBroker().updateInternalUserList();
          }
          catch (XmlBlasterException e) {
-            log.error(ME, "Publishing internal user list failed: " + e.getMessage());
+            log.severe("Publishing internal user list failed: " + e.getMessage());
          }
 
-         if (log.TRACE) log.trace(ME, "Transition from UNDEF to ALIVE done");
+         if (log.isLoggable(Level.FINE)) log.fine("Transition from UNDEF to ALIVE done");
       }
       finally {
          this.lock.release();
@@ -297,35 +298,35 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * @param forceIfEntries Shutdown even if there are messages in the queue
     */
    public void shutdown(boolean clearQueue, boolean forceIfEntries) {
-      if (log.CALL) log.call(ME, "shutdown(clearQueue=" + clearQueue + ", forceIfEntries=" + forceIfEntries + ") of subject " + getLoginName());
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown(clearQueue=" + clearQueue + ", forceIfEntries=" + forceIfEntries + ") of subject " + getLoginName());
 
       this.lock.lock();
       try {
 
          if (!this.isAlive()) {
-            if (log.TRACE) log.trace(ME, "Ignoring shutdown request as we are in state " + getStateStr());
+            if (log.isLoggable(Level.FINE)) log.fine("Ignoring shutdown request as we are in state " + getStateStr());
             return;
          }
 
          if (isLoggedIn()) {
-            if (log.TRACE) log.trace(ME, "Ignoring shutdown request as there are still login sessions");
+            if (log.isLoggable(Level.FINE)) log.fine("Ignoring shutdown request as there are still login sessions");
             return;
          }
 
          if (!forceIfEntries && !clearQueue && getSubjectQueue().getNumOfEntries() > 0) {
-            if (log.TRACE) log.trace(ME, "Ignoring shutdown request as there are still messages in the subject queue");
+            if (log.isLoggable(Level.FINE)) log.fine("Ignoring shutdown request as there are still messages in the subject queue");
             return;
          }
 
          this.glob.unregisterMBean(this.mbeanHandle);
 
          if (getSubjectQueue().getNumOfEntries() < 1)
-            log.info(ME, "Destroying SubjectInfo. Nobody is logged in and no queue entries available");
+            log.info("Destroying SubjectInfo. Nobody is logged in and no queue entries available");
          else {
             if (clearQueue)
-               log.warn(ME, "Destroying SubjectInfo. Lost " + getSubjectQueue().getNumOfEntries() + " messages in the subject queue as clearQueue is set to true");
+               log.warning("Destroying SubjectInfo. Lost " + getSubjectQueue().getNumOfEntries() + " messages in the subject queue as clearQueue is set to true");
             else
-               log.warn(ME, "Destroying SubjectInfo. The subject queue still contains " + getSubjectQueue().getNumOfEntries() + " messages, " +
+               log.warning("Destroying SubjectInfo. The subject queue still contains " + getSubjectQueue().getNumOfEntries() + " messages, " +
                             getSubjectQueue().getNumOfPersistentEntries() + " persistent messages remain on disk, the transients are lost");
          }
 
@@ -341,7 +342,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          }
 
          if (getSessions().length > 0) {
-            log.warn(ME, "shutdown() of subject " + getLoginName() + " has still " + getSessions().length + " sessions - memory leak?");
+            log.warning("shutdown() of subject " + getLoginName() + " has still " + getSessions().length + " sessions - memory leak?");
          }
          synchronized (this.sessionMap) {
             this.sessionArrCache = null;
@@ -368,7 +369,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     */
    public void finalize() {
       //log.error(ME, "DEBUG ONLY: finalize - garbage collected " + getLoginName());
-      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getLoginName());
+      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collected " + getLoginName());
       //boolean force = true;
       //this.subjectQueue.shutdown();
    }
@@ -440,7 +441,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    public final void setSubjectQueueProperty(CbQueueProperty prop) throws XmlBlasterException {
       CbQueueProperty origProp = (CbQueueProperty)this.subjectQueue.getProperties();
       if (origProp == null) {
-         log.error(ME+".setSubjectQueueProperty()", "Existing subject queue properties are null");
+         log.severe("Existing subject queue properties are null");
          return;
       }
 
@@ -458,7 +459,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          if (!this.subjectQueue.isTransient()) {
             I_Queue newQueue = createSubjectQueue(prop);
             if (newQueue.isTransient()) {
-               log.info(ME, "Reconfiguring subject queue: Copying " + this.subjectQueue.getNumOfEntries() + " entries from old " + origProp.getType() + " queue to " + prop.getTypeVersion() + " queue");
+               log.info("Reconfiguring subject queue: Copying " + this.subjectQueue.getNumOfEntries() + " entries from old " + origProp.getType() + " queue to " + prop.getTypeVersion() + " queue");
                java.util.ArrayList list = null;
                int lastSize = -99;
                while (this.subjectQueue.getNumOfEntries() > 0) {
@@ -466,13 +467,13 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                   try {
                      list = this.subjectQueue.peek(-1, -1);
                      if (this.subjectQueue.getNumOfEntries() == lastSize) {
-                        log.error(ME, "PANIC: " + this.subjectQueue.getNumOfEntries() + " entries from old queue " + this.subjectQueue.getStorageId() + " can't be copied, giving up!");
+                        log.severe("PANIC: " + this.subjectQueue.getNumOfEntries() + " entries from old queue " + this.subjectQueue.getStorageId() + " can't be copied, giving up!");
                         break;
                      }
                      lastSize = (int)this.subjectQueue.getNumOfEntries();
                   }
                   catch (XmlBlasterException e) {
-                     log.error(ME, "PANIC: Can't copy from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries: " + e.getMessage());
+                     log.severe("PANIC: Can't copy from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries: " + e.getMessage());
                      e.printStackTrace();
                      continue;
                   }
@@ -483,7 +484,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                      newQueue.put(queueEntries, false);
                   }
                   catch (XmlBlasterException e) {
-                     log.warn(ME, "flushHoldbackQueue() failed: " + e.getMessage());
+                     log.warning("flushHoldbackQueue() failed: " + e.getMessage());
                      // errorCode == "ONOVERFLOW"
                      getMsgErrorHandler().handleError(new MsgErrorInfo(glob, queueEntries, null, e));
                   }
@@ -491,11 +492,11 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                   try {
                      long num = this.subjectQueue.remove(list.size(), -1);
                      if (num != list.size()) {
-                        log.error(ME, "PANIC: Expected to remove from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
+                        log.severe("PANIC: Expected to remove from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries " + list.size() + " entries, but only " + num + " where removed");
                      }
                   }
                   catch (XmlBlasterException e) {
-                     log.error(ME, "PANIC: Expected to remove from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.getMessage());
+                     log.severe("PANIC: Expected to remove from subject queue '" + this.subjectQueue.getStorageId() + "' with " + this.subjectQueue.getNumOfEntries() + " entries " + list.size() + " entries: " + e.getMessage());
                   }
                }
 
@@ -510,7 +511,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          this.lock.release();
       }
 
-      log.error(ME+".setSubjectQueueProperty()", "Can't reconfigure subject queue type '" + origProp.getTypeVersion() + "' to '" + prop.getTypeVersion() + "'");
+      log.severe("Can't reconfigure subject queue type '" + origProp.getTypeVersion() + "' to '" + prop.getTypeVersion() + "'");
       return;
       //throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME+".setSubjectQueueProperty()", "Can't reconfigure subject queue type '" + origProps.getTypeVersion() + "' to '" + props.getTypeVersion() + "'");
    }
@@ -552,7 +553,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     */
    public boolean isAuthorized(MethodName actionKey, String key) {
       if (this.securityCtx == null) {
-         log.warn(ME, "No authorization for '" + actionKey + "' and msg=" + key);
+         log.warning("No authorization for '" + actionKey + "' and msg=" + key);
          return false;
       }
       return this.securityCtx.isAuthorized(actionKey, key);
@@ -564,8 +565,8 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * @param destination The Destination object of the receiver
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Queuing message for destination " + entry.getReceiver());
-      if (log.DUMP) log.dump(ME, "Putting PtP message to queue: " + entry.toXml(""));
+      if (log.isLoggable(Level.FINER)) log.finer("Queuing message for destination " + entry.getReceiver());
+      if (log.isLoggable(Level.FINEST)) log.finest("Putting PtP message to queue: " + entry.toXml(""));
       this.subjectQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
       //forwardToSessionQueue();
       // returns here with no waiting ...
@@ -583,14 +584,14 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
       long numMsgs = 0;
       MsgQueueUpdateEntry entry = null;
-      if (log.TRACE) log.trace(ME, "Trying to forward " + this.subjectQueue.getNumOfEntries() + " messages in subject queue to session queue ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Trying to forward " + this.subjectQueue.getNumOfEntries() + " messages in subject queue to session queue ...");
       while (true) {
          try {
             try {
                entry = (MsgQueueUpdateEntry)this.subjectQueue.peek(); // non-blocking
             }
             catch (Throwable ex) {
-               this.log.error(ME, "forwardToDestinationQueue: can't get entry from subject queue when trying to forward it to session queue " + ex.getMessage());
+               log.severe("forwardToDestinationQueue: can't get entry from subject queue when trying to forward it to session queue " + ex.getMessage());
                // TODO toDead from the subject may be necessary to avoid looping
                break;
             }
@@ -614,14 +615,14 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                this.subjectQueue.removeRandom(entry); // Remove the entry
             }
             catch (XmlBlasterException ex) {
-               this.log.error(ME, "forwardToDestinationQueue: can't empty queue when removing '" + entry.getLogId() + "' " + ex.getMessage());
+               log.severe("forwardToDestinationQueue: can't empty queue when removing '" + entry.getLogId() + "' " + ex.getMessage());
                // TODO toDead from the subject may be necessary to avoid looping
                break;
             }
          }
       }
 
-      if (log.TRACE) log.trace(ME, "Forwarded " + numMsgs + " messages from subject queue to session queue");
+      if (log.isLoggable(Level.FINE)) log.fine("Forwarded " + numMsgs + " messages from subject queue to session queue");
       
       if (!isLoggedIn()) { // Check if we can shutdown now
          shutdown(false, false);
@@ -650,7 +651,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                       this.subjectQueue.getStorageId() + " size=" + 
                       this.subjectQueue.getNumOfEntries() + " to unknown session '" + 
                       entry.getReceiver().getAbsoluteName() + "'"; 
-         log.warn(ME, tmp);
+         log.warning(tmp);
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, tmp);
       }
 
@@ -659,19 +660,19 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];
          if (sessionInfo.getConnectQos().isPtpAllowed() && sessionInfo.hasCallback()) {
-            if (log.TRACE) log.trace(ME, "Forwarding msg " + entry.getLogId() + " from " +
+            if (log.isLoggable(Level.FINE)) log.fine("Forwarding msg " + entry.getLogId() + " from " +
                           this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
                           " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
                           " size=" + sessionInfo.getSessionQueue().getNumOfEntries() + " ...");
             try {
                TopicHandler topicHandler = ((ReferenceEntry)entry).getTopicHandler();
                if (topicHandler == null) {
-                  if (log.TRACE) log.trace(ME, "forwardToSessionQueue: TopicHandler is null for '" + entry.getLogId() + "'");
+                  if (log.isLoggable(Level.FINE)) log.fine("forwardToSessionQueue: TopicHandler is null for '" + entry.getLogId() + "'");
                   break;
                }
                I_Map cache = topicHandler.getMsgUnitCache();
                if (cache == null) {
-                  if (log.TRACE) log.trace(ME, "forwardToSessionQueue: MsgUnitStore is null for '" + entry.getLogId() + "'");
+                  if (log.isLoggable(Level.FINE)) log.fine("forwardToSessionQueue: MsgUnitStore is null for '" + entry.getLogId() + "'");
                   break;
                }
                MsgQueueUpdateEntry entryCb = null;
@@ -685,11 +686,11 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
                countForwarded++;
             }
             catch (XmlBlasterException e) {
-               if (log.TRACE) log.trace(ME, "Can't forward message from subject queue '" + this.subjectQueue.getStorageId() + "' to session '" + sessionInfo.getId() + "', we keep it in the subject queue: " + e.getMessage());
+               if (log.isLoggable(Level.FINE)) log.fine("Can't forward message from subject queue '" + this.subjectQueue.getStorageId() + "' to session '" + sessionInfo.getId() + "', we keep it in the subject queue: " + e.getMessage());
             }
             catch (Throwable e) {
                e.printStackTrace();
-               log.warn(ME, "Can't forward message from subject queue '" + this.subjectQueue.getStorageId() + "' to session '" + sessionInfo.getId() + "', we keep it in the subject queue: " + e.toString());
+               log.warning("Can't forward message from subject queue '" + this.subjectQueue.getStorageId() + "' to session '" + sessionInfo.getId() + "', we keep it in the subject queue: " + e.toString());
             }
          }
       }
@@ -705,7 +706,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          this.lock.lock();
          try {
             if (this.msgErrorHandler == null) {
-               log.error(ME, "INTERNAL: Support for MsgErrorHandler is not implemented");
+               log.severe("INTERNAL: Support for MsgErrorHandler is not implemented");
                this.msgErrorHandler = new MsgErrorHandler(glob, null);
             }
          }
@@ -790,7 +791,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          }
          this.callbackAddressCache = (CallbackAddress[])set.toArray(new CallbackAddress[set.size()]);
       }
-      if (log.TRACE) log.trace(ME, "Accessing " + this.callbackAddressCache.length + " callback addresses from " + getSessions().length + " sessions for '" + getLoginName() + "' queue");
+      if (log.isLoggable(Level.FINE)) log.fine("Accessing " + this.callbackAddressCache.length + " callback addresses from " + getSessions().length + " sessions for '" + getLoginName() + "' queue");
       return this.callbackAddressCache;
    }
 
@@ -817,7 +818,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          this.maxSessions = qos.getSessionQos().getMaxSessions();
 
       if (getSessions().length >= this.maxSessions) {
-         log.warn(ME, "Max sessions = " + this.maxSessions + " for user " + getLoginName() + " exhausted, login denied.");
+         log.warning("Max sessions = " + this.maxSessions + " for user " + getLoginName() + " exhausted, login denied.");
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_MAXSESSION, ME, "Max sessions = " + this.maxSessions + " exhausted, login denied.");
       }
    }
@@ -834,16 +835,16 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo is shutdown, try to login again");
       }
       
-      if (log.CALL) log.call(ME, "notifyAboutLogin(" + sessionInfo.getSecretSessionId() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("notifyAboutLogin(" + sessionInfo.getSecretSessionId() + ")");
       synchronized (this.sessionMap) {
          this.sessionMap.put(sessionInfo.getId(), sessionInfo);
          this.sessionArrCache = null;
          this.callbackAddressCache = null;
       }
-      if (log.DUMP) log.dump(ME, this.subjectQueue.toXml(""));
+      if (log.isLoggable(Level.FINEST)) log.finest(this.subjectQueue.toXml(""));
 
       if (this.subjectQueue.getNumOfEntries() > 0) {
-         if (log.TRACE) log.trace(ME, "Flushing " + this.subjectQueue.getNumOfEntries() + " messages");
+         if (log.isLoggable(Level.FINE)) log.fine("Flushing " + this.subjectQueue.getNumOfEntries() + " messages");
          this.glob.getSubjectInfoShuffler().shuffle(this); // Background thread
       }
    }
@@ -860,7 +861,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo is shutdown, no logout");
       }
-      if (log.CALL) log.call(ME, "Entering notifyAboutLogout(" + absoluteSessionName + ", " + clearQueue + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering notifyAboutLogout(" + absoluteSessionName + ", " + clearQueue + ")");
       SessionInfo sessionInfo = null;
       synchronized (this.sessionMap) {
          sessionInfo = (SessionInfo)sessionMap.remove(absoluteSessionName);
@@ -871,10 +872,10 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          this.dispatchStatistic.incrNumUpdate(sessionInfo.getNumUpdate());
       }
       else {
-         log.warn(ME, "Lookup of session with absoluteSessionName=" + absoluteSessionName + " failed");
+         log.warning("Lookup of session with absoluteSessionName=" + absoluteSessionName + " failed");
       }
 
-      if (log.DUMP) log.dump(ME, this.subjectQueue.toXml(null));
+      if (log.isLoggable(Level.FINEST)) log.finest(this.subjectQueue.toXml(null));
 
       //if (!isLoggedIn()) {
       //   if (clearQueue || getSubjectQueue().getNumOfEntries() < 1) {

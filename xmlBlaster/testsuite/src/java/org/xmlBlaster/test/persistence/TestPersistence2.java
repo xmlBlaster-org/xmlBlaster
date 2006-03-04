@@ -17,7 +17,8 @@ package org.xmlBlaster.test.persistence;
 
 import org.jutils.io.FileUtil;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -52,7 +53,7 @@ public class TestPersistence2 extends TestCase
 {
    private final static String ME = "TestPersistence2";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestPersistence2.class.getName());
 
    private final String senderName = "Gesa";
    private final String senderPasswd = "secret";
@@ -76,7 +77,7 @@ public class TestPersistence2 extends TestCase
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
    }
 
 
@@ -89,7 +90,7 @@ public class TestPersistence2 extends TestCase
    protected void setUp()
    {
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
-      log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+      log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
 
       doLogin();
    }
@@ -104,10 +105,10 @@ public class TestPersistence2 extends TestCase
          this.senderConnection.connect(qos, this.updateInterceptor);
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed");
+          log.warning("setUp() - login failed");
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -126,8 +127,8 @@ public class TestPersistence2 extends TestCase
       String qos = "<qos></qos>";
       try {
          EraseReturnQos[] arr = this.senderConnection.erase(xmlKey, qos);
-         if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
+         if (arr.length != 1) log.severe("Erased " + arr.length + " messages:");
+      } catch(XmlBlasterException e) { log.severe("XmlBlasterException: " + e.getMessage()); }
       //checkContent(false);
 
       this.senderConnection.disconnect(null);
@@ -147,7 +148,7 @@ public class TestPersistence2 extends TestCase
     */
    public void sendPersistent()
    {
-      if (log.TRACE) log.trace(ME, "Testing a persistent message ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Testing a persistent message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain' contentMimeExtended='2.0' domain='RUGBY'/>";
 
@@ -159,9 +160,9 @@ public class TestPersistence2 extends TestCase
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          String returnedOid = this.senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
-         log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
+         log.info("Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         log.severe("publish() XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -187,9 +188,9 @@ public class TestPersistence2 extends TestCase
 
       try {
          this.senderConnection.subscribe("<key oid='" + publishOid + "'/>", "<qos/>");
-         log.info(ME, "Subscribe done");
+         log.info("Subscribe done");
       } catch(XmlBlasterException e) {
-         log.error(ME, "subscribe() XmlBlasterException: " + e.getMessage());
+         log.severe("subscribe() XmlBlasterException: " + e.getMessage());
          fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
 
@@ -222,7 +223,7 @@ public class TestPersistence2 extends TestCase
     */
    public void RestartTestServer() {
       long    delay4Server = 4000L ;
-      log.info( ME, "Restarting Test Server" );
+      log.info("Restarting Test Server" );
 
       try {
          this.senderConnection.disconnect(null);
@@ -240,10 +241,10 @@ public class TestPersistence2 extends TestCase
          this.senderConnection.connect(qos, this.updateInterceptor);
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "setUp() - login failed");
+         log.warning("setUp() - login failed");
       }
       catch (Exception e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
       }
    }
@@ -256,19 +257,19 @@ public class TestPersistence2 extends TestCase
    {
       String driverType = glob.getProperty().get("Persistence.Driver.Type", (String)null);
       if (driverType == null || !driverType.equals("filestore")) {
-         log.info(ME, "Sorry, can't check persistence store, only checks for FileDriver is implemented");
+         log.info("Sorry, can't check persistence store, only checks for FileDriver is implemented");
          return;
       }
 
       String path = glob.getProperty().get("Persistence.Path", (String)null);
       if (path == null) {
-         log.info(ME, "Sorry, xmlBlaster is running memory based only, no checks possible");
+         log.info("Sorry, xmlBlaster is running memory based only, no checks possible");
          return;
       }
 
       if (checkContent) {
 
-         log.info(ME, "Checking content of message " + publishOid);
+         log.info("Checking content of message " + publishOid);
 
          try {
             String persistenceContent = FileUtil.readAsciiFile(path, publishOid);

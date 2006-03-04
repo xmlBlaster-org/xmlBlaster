@@ -15,7 +15,8 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.net.URL;
 
 
@@ -23,14 +24,14 @@ public class FileLocator
 {
    private final static String ME = "FileLocator";
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(FileLocator.class.getName());
 
    /**
     * Constructor. It does nothing but initializing the log and assigning the global.
     */
    public FileLocator(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog("core");
+
    }
 
    /**
@@ -48,7 +49,7 @@ public class FileLocator
    public final String findFile(String[] path, String filename) throws XmlBlasterException {
       File file = new File(filename);
       if (file.isAbsolute()) {
-         this.log.warn(ME, "the filename '" + filename + "' is absolute, I will ignore the given search path '" + path + "'");
+         log.warning("the filename '" + filename + "' is absolute, I will ignore the given search path '" + path + "'");
          if (file.exists()) {
             if (file.isDirectory()) {
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".findFile", "the given name '" + file.getAbsolutePath() + "' is a directory");
@@ -139,25 +140,25 @@ public class FileLocator
     * @return URL the URL for the given file or null if no file found.
     */
    private final URL findFileInSinglePath(String path, String filename) {
-      if (this.log.CALL) this.log.call(ME, "findFileInSinglePath with path='" +
+      if (log.isLoggable(Level.FINER)) this.log.finer("findFileInSinglePath with path='" +
          path + "' and filename='" + filename + "'");
       File file = null;
       if (path != null) file = new File(path, filename);
       else file = new File(filename);
       if (file.exists()) {
          if (file.isDirectory()) {
-            this.log.warn(ME, "findFileInSinglePath: the given name '" + file.getAbsolutePath() + "' is not a file, it is a directory");
+            log.warning("findFileInSinglePath: the given name '" + file.getAbsolutePath() + "' is not a file, it is a directory");
             return null;
          }
          if (!file.canRead()) {
-            this.log.warn(ME, "findFileInSinglePath: don't have the rights to read the file '" + file.getAbsolutePath() + "'");
+            log.warning("findFileInSinglePath: don't have the rights to read the file '" + file.getAbsolutePath() + "'");
             return null;
          }
          try {
             return file.toURL();
          }
          catch (java.net.MalformedURLException ex) {
-            this.log.warn(ME, "findFileInSinglePath: path='" + path + "', filename='" + filename + " exception: " + ex.getMessage());
+            log.warning("findFileInSinglePath: path='" + path + "', filename='" + filename + " exception: " + ex.getMessage());
             return null;
          }
       }
@@ -193,7 +194,7 @@ public class FileLocator
       URL ret = null;
       path = this.glob.getProperty().get(propertyName, (String)null);
       if (path != null) {
-         if (this.log.TRACE) this.log.trace(ME, "findFileInXmlBlasterSearchPath: the path: '" + path + "' and the filename to search: '" + filename + "'");
+         if (log.isLoggable(Level.FINE)) this.log.fine("findFileInXmlBlasterSearchPath: the path: '" + path + "' and the filename to search: '" + filename + "'");
 //         ret = findFileInSinglePath(path, filename);
          ret = findFileInSinglePath(null, path);
          if (ret != null) return ret;
@@ -227,7 +228,7 @@ public class FileLocator
          if (url != null) return url;
       }
       catch (XmlBlasterException ex) {
-         this.log.warn(ME, "findFileInXmlBlasterSearchPath: " + ex.getMessage());
+         log.warning("findFileInXmlBlasterSearchPath: " + ex.getMessage());
       }
 
       // java.ext.dirs

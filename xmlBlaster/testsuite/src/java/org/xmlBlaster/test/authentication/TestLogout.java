@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.authentication;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -26,7 +27,7 @@ public class TestLogout extends TestCase implements I_Callback
 {
    private static String ME = "TestLogout";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestLogout.class.getName());
 
    private I_XmlBlasterAccess con;
 
@@ -36,7 +37,7 @@ public class TestLogout extends TestCase implements I_Callback
    public TestLogout(Global glob) {
       super("TestLogout");
       this.glob = glob;
-      this.log = glob.getLog(null);
+
    }
 
    /**
@@ -45,7 +46,7 @@ public class TestLogout extends TestCase implements I_Callback
    public TestLogout(String name) {
       super(name);
       this.glob = new Global();
-      this.log = glob.getLog(null);
+
    }
 
    /**
@@ -57,24 +58,24 @@ public class TestLogout extends TestCase implements I_Callback
          /*
          con.initFailSave(new I_ConnectionStateListener() {
                public void reConnected() {
-                  log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to " + glob.getId());
+                  log.info("I_ConnectionStateListener: We were lucky, reconnected to " + glob.getId());
                   try {
                      con.flushQueue();    // send all tailback messages
                   } catch (XmlBlasterException e) {
-                     log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
+                     log.severe("Exception during reconnection recovery: " + e.getMessage());
                   }
                }
                public void lostConnection() {
-                  log.warn(ME, "I_ConnectionStateListener: Lost connection to " + glob.getId());
+                  log.warning("I_ConnectionStateListener: Lost connection to " + glob.getId());
                }
             });
          */
          ConnectQos qos = new ConnectQos(glob, ME, "secret");
          con.connect(qos, this); // Login to xmlBlaster
-         log.info(ME, "Successful login");
+         log.info("Successful login");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
+         log.severe(e.toString());
          e.printStackTrace();
       }
    }
@@ -92,17 +93,17 @@ public class TestLogout extends TestCase implements I_Callback
    /**
     */
    public void testDisconnect() {
-      log.info(ME, "*** Enter testDisconnect() ...");
+      log.info("*** Enter testDisconnect() ...");
       if (con.disconnect(null) == false) {
-         log.error(ME, "Expected successful disconnect");
+         log.severe("Expected successful disconnect");
          fail("Expected successful disconnect");
       }
       if (con.disconnect(null) == true) {
-         log.error(ME, "Expected disconnect to fail, we have disconnected already");
+         log.severe("Expected disconnect to fail, we have disconnected already");
          fail("Expected disconnect to fail, we have disconnected already");
       }
       con = null;
-      log.info(ME, "*** Leave testDisconnect() ...");
+      log.info("*** Leave testDisconnect() ...");
    }
 
    /**

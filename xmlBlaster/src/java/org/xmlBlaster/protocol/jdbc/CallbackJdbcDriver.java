@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -31,7 +32,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
 {
    private String ME = "CallbackJdbcDriver";
    private Global glob = null;
-   private LogChannel log = null;
+   private static Logger log = Logger.getLogger(CallbackJdbcDriver.class.getName());
    private CallbackAddress callbackAddress = null;
 
 
@@ -70,7 +71,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
     * @return null
     */
    public String getRawAddress() {
-      if (log.TRACE) log.trace(ME+".getRawAddress()", "No external access address available");
+      if (log.isLoggable(Level.FINE)) log.fine("No external access address available");
       return null;
    }
 
@@ -85,8 +86,8 @@ public class CallbackJdbcDriver implements I_CallbackDriver
    public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
       this.glob = glob;
-      this.log = glob.getLog("jdbc");
-      if (log.CALL) log.call(ME, "Entering init");
+
+      if (log.isLoggable(Level.FINER)) log.finer("Entering init");
       this.callbackAddress = callbackAddress;
    }
 
@@ -106,7 +107,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
          String id ="JdbcDriver-"+glob.getId(); 
          JdbcDriver driver = (JdbcDriver)glob.getObjectEntry(id);
          if (driver == null) {
-            log.error(ME, "Can't find JdbcDriver instance");
+            log.severe("Can't find JdbcDriver instance");
             Thread.currentThread().dumpStack();
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal error, can't find JdbcDriver instance '" + id + "'");
          }
@@ -146,7 +147,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
       String id = "JdbcDriver-"+glob.getId();
       JdbcDriver driver = (JdbcDriver)glob.getObjectEntry(id);
       if (driver == null) {
-         log.error(ME, "Can't find JdbcDriver instance");
+         log.severe("Can't find JdbcDriver instance");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal error, can't find JdbcDriver instance '" + id + "'");
       }
@@ -171,7 +172,7 @@ public class CallbackJdbcDriver implements I_CallbackDriver
    }
 
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
-      if (log.TRACE) log.trace(ME, "Registering I_ProgressListener is not supported with this protocol plugin");
+      if (log.isLoggable(Level.FINE)) log.fine("Registering I_ProgressListener is not supported with this protocol plugin");
       return null;
    }
 

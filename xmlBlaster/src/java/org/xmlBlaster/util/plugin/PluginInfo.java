@@ -1,6 +1,7 @@
 package org.xmlBlaster.util.plugin;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.property.PropString;
@@ -19,7 +20,7 @@ import org.xmlBlaster.util.def.ErrorCode;
  */
 public class PluginInfo implements I_PluginConfig {
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(PluginInfo.class.getName());
    private String ME;
 
    /** e.g. "ProtocolPlugin" */ // can be removed ...
@@ -41,8 +42,8 @@ public class PluginInfo implements I_PluginConfig {
    public PluginInfo(Global glob, String type, String className, Properties params) {
       ME = "PluginInfo-" + type;
       this.glob = glob;
-      this.log = glob.getLog("core");
-      if (this.log.CALL) this.log.call(ME, "constructor type='" + type + "' className='" + className + "'");
+
+      if (log.isLoggable(Level.FINER)) this.log.finer("constructor type='" + type + "' className='" + className + "'");
       this.type = type.trim();
       this.className = className;
       this.params = params;
@@ -132,9 +133,9 @@ public class PluginInfo implements I_PluginConfig {
    private void init(Global glob, I_PluginManager manager, String type_, String version_,
                      ContextNode contextNode) throws XmlBlasterException {
       this.glob = glob;
-      log = glob.getLog("plugin");
+
       if (type_ == null) {
-         if (log.TRACE) log.trace(ME, "Plugin type is null, ignoring plugin");
+         if (log.isLoggable(Level.FINE)) log.fine("Plugin type is null, ignoring plugin");
          return;
       }
       this.type = type_.trim();
@@ -146,7 +147,7 @@ public class PluginInfo implements I_PluginConfig {
       ME = "PluginInfo-"+propertyName;
 
       if (ignorePlugin()) {
-         if (log.TRACE) log.trace(ME, "Plugin type set to 'undef', ignoring plugin");
+         if (log.isLoggable(Level.FINE)) log.fine("Plugin type set to 'undef', ignoring plugin");
          return;
       }
 
@@ -158,13 +159,13 @@ public class PluginInfo implements I_PluginConfig {
       PropString prop = new PropString(defaultClass);
       /*String usedPropertyKey =*/prop.setFromEnv(glob, contextNode, propertyKey);
       
-      if (log.TRACE) log.trace(ME, "Trying contextNode=" + ((contextNode==null)?"null":contextNode.getRelativeName()) + " propertyKey=" + propertyKey);
+      if (log.isLoggable(Level.FINE)) log.fine("Trying contextNode=" + ((contextNode==null)?"null":contextNode.getRelativeName()) + " propertyKey=" + propertyKey);
 
       String rawString = prop.getValue();// "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
 
       if (rawString==null) {
          if (this.type != null) {
-            if (log.TRACE) log.trace(ME, "Plugin '" + toString() + "' not found, giving up.");
+            if (log.isLoggable(Level.FINE)) log.fine("Plugin '" + toString() + "' not found, giving up.");
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Plugin '" + toString() + "' not found, please check your configuration");
          }
          rawString = manager.getDefaultPluginName(this.type, this.version);   // "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
@@ -192,7 +193,7 @@ public class PluginInfo implements I_PluginConfig {
             }
             int pos = tok.indexOf("=");
             if (pos < 0) {
-               log.info(ME, "Accepting param '" + tok + "' without value (missing '=')");
+               log.info("Accepting param '" + tok + "' without value (missing '=')");
                this.params.put(tok, "");
             }
             else

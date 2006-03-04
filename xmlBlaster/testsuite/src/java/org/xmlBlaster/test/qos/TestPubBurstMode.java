@@ -9,7 +9,8 @@ package org.xmlBlaster.test.qos;
 
 import org.jutils.time.StopWatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -43,7 +44,7 @@ public class TestPubBurstMode extends TestCase
 {
    private static String ME = "TestPubBurstMode";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(TestPubBurstMode.class.getName());
 
    private boolean messageArrived = false;
 
@@ -69,7 +70,7 @@ public class TestPubBurstMode extends TestCase
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
+
       this.senderName = loginName;
    }
 
@@ -89,7 +90,7 @@ public class TestPubBurstMode extends TestCase
          senderConnection.connect(connectQos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
       }
    }
@@ -120,7 +121,7 @@ public class TestPubBurstMode extends TestCase
     */
    public void testPublish()
    {
-      if (log.TRACE) log.trace(ME, "Publishing messages ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Publishing messages ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
                       "   <TestPubBurstMode-AGENT id='192.168.124.10' subId='1' type='generic'>" +
@@ -142,14 +143,14 @@ public class TestPubBurstMode extends TestCase
 
       PublishReturnQos[] publishOidArr = null;
       try {
-         log.info(ME, "Publishing " + numPublish + " messages in burst mode ...");
+         log.info("Publishing " + numPublish + " messages in burst mode ...");
          stopWatch = new StopWatch();
          publishOidArr = senderConnection.publishArr(msgUnitArr);
          double elapsed = (double)stopWatch.elapsed()/1000.; // msec -> sec
-         log.info(ME, "Published " + numPublish + " messages in burst mode in " + elapsed + " sec: " +
+         log.info("Published " + numPublish + " messages in burst mode in " + elapsed + " sec: " +
                        (long)(numPublish/elapsed) + " messages/sec");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned publishOidArr == null", publishOidArr != null);
@@ -164,9 +165,9 @@ public class TestPubBurstMode extends TestCase
    public void testPublishMany()
    {
       testPublish();
-      log.plain(ME, "");
+      System.out.println("");
       testPublish();
-      log.plain(ME, "");
+      System.out.println("");
       testPublish();
    }
 

@@ -5,7 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import java.lang.reflect.Method;
@@ -21,7 +22,7 @@ import java.lang.reflect.Method;
 public class SignalCatcher implements Runnable
 {
    private String ME = "SignalCatcher";
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(SignalCatcher.class.getName());
    private Thread thread;
    private I_SignalListener listener;
    private boolean runDummy = false;
@@ -42,7 +43,7 @@ public class SignalCatcher implements Runnable
     * </pre>
     */
    public SignalCatcher(Global glob, I_SignalListener listener) {
-      this.log = glob.getLog("core");
+
       this.listener = listener;
       this.thread = new Thread(this, "XmlBlaster signal catcher thread for controlled shudown");
       this.thread.setDaemon(true);
@@ -70,7 +71,7 @@ public class SignalCatcher implements Runnable
          return false;
       }
       catch (java.lang.NoSuchMethodException e) {
-         if (log.TRACE) log.trace(ME, "No shutdown hook established");
+         if (log.isLoggable(Level.FINE)) log.fine("No shutdown hook established");
          return false;
       }
 
@@ -110,11 +111,11 @@ public class SignalCatcher implements Runnable
             method = cls.getDeclaredMethod("removeShutdownHook", paramCls);
          }
          catch (java.lang.ClassNotFoundException e) {
-            if (log.TRACE) log.trace(ME, "Shutdown hook not removed: " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Shutdown hook not removed: " + e.toString());
             return false;
          }
          catch (java.lang.NoSuchMethodException e) {
-            if (log.TRACE) log.trace(ME, "No shutdown hook removed");
+            if (log.isLoggable(Level.FINE)) log.fine("No shutdown hook removed");
             return false;
          }
 
@@ -128,18 +129,18 @@ public class SignalCatcher implements Runnable
             }
          }
          catch (java.lang.reflect.InvocationTargetException e) {
-            if (log.TRACE) log.trace(ME, "Shutdown hook not removed which is OK when we are in shutdown process already: " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Shutdown hook not removed which is OK when we are in shutdown process already: " + e.toString());
             return false;
          }
          catch (java.lang.IllegalAccessException e) {
-            if (log.TRACE) log.trace(ME, "Shutdown hook not removed: " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Shutdown hook not removed: " + e.toString());
             return false;
          }
-         if (log.TRACE) log.trace(ME, "Shutdown hook removed");
+         if (log.isLoggable(Level.FINE)) log.fine("Shutdown hook removed");
       }
       finally {
          this.listener = null;
-         if (log.TRACE) log.trace(ME, "Removed = " + removed + " in removeSignalCatcher()");
+         if (log.isLoggable(Level.FINE)) log.fine("Removed = " + removed + " in removeSignalCatcher()");
 
          // This is a hack to allow the garbage collector to destroy SignalCatcher
          // (An unrun thread can't be garbage collected)
@@ -148,7 +149,7 @@ public class SignalCatcher implements Runnable
             this.thread.start(); // Run the Thread to allow the garbage collector to clean it up
          }
          catch (IllegalThreadStateException e) {
-            if (log.TRACE) log.trace(ME, "Thread has run already: " + e.toString());
+            if (log.isLoggable(Level.FINE)) log.fine("Thread has run already: " + e.toString());
          }
          
          this.log = null;
@@ -166,7 +167,7 @@ public class SignalCatcher implements Runnable
          return;
       }
       if (this.log != null) {
-         this.log.info(ME, "Shutdown forced by user or signal (Ctrl-C).");
+         log.info("Shutdown forced by user or signal (Ctrl-C).");
       }
       if (this.listener != null)
          this.listener.shutdownHook();

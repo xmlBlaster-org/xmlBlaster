@@ -8,9 +8,9 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.corba.authenticateIdl.*;
@@ -20,9 +20,7 @@ import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
-import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerPOATie;
 
@@ -72,7 +70,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
    private final static String ME = "AuthServerImpl";
    private final Global glob;
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(AuthServerImpl.class.getName());
    private final org.omg.CORBA.ORB orb;
    private final I_Authenticate authenticate;
    /**  This specialized POA controlles the xmlBlaster server */
@@ -108,11 +106,11 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public AuthServerImpl(Global glob, org.omg.CORBA.ORB orb, AddressServer addressServer, I_Authenticate authenticate, I_XmlBlaster blaster)
    {
       this.glob = glob;
-      this.log = glob.getLog("corba");
+
       this.orb = orb;
       this.authenticate = authenticate;
       this.addressServer = addressServer;
-      if (log.CALL) log.call(ME, "Entering constructor with ORB argument");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering constructor with ORB argument");
 
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
@@ -145,14 +143,14 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
          // orb.run();
          // log.info(ME, "Default Active Object Map ID=" + default_oid);
-         if (log.TRACE) log.trace(ME, "Default xmlBlasterServant activated");
+         if (log.isLoggable(Level.FINE)) log.fine("Default xmlBlasterServant activated");
       }
       catch ( Exception e ) {
          e.printStackTrace();
-         log.error(ME, e.toString());
+         log.severe(e.toString());
       }
 
-      if (log.CALL) log.trace(ME, "Leaving constructor");
+      if (log.isLoggable(Level.FINER)) log.fine("Leaving constructor");
    }
 
 
@@ -175,10 +173,10 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public org.xmlBlaster.protocol.corba.serverIdl.Server login(String loginName, String passwd,
                        String qos_literal) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
 
       if (loginName==null || passwd==null || qos_literal==null) {
-         log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
+         log.severe("login failed: please use no null arguments for login()");
          throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
                      ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME,
                      "Login failed: please use no null arguments for login()"));
@@ -216,7 +214,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     */
    public String ping(String qos)
    {
-      if (log.CALL) log.call(ME, "Entering ping("+qos+") ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering ping("+qos+") ...");
       return authenticate.ping(this.addressServer, qos);
    }
 
@@ -240,8 +238,6 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       ConnectReturnQosServer returnQos = null;
       String sessionId = null;
 
-      StopWatch stop = null; if (log.TIME) stop = new StopWatch();
-
       org.omg.CORBA.Object certificatedServerRef = null;
       try {
          // set up a association between the new created object reference (oid is sufficient)
@@ -249,10 +245,10 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          certificatedServerRef = xmlBlasterPOA.create_reference(ServerHelper.id());
          sessionId = getSessionId(certificatedServerRef);
          // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
-         if (log.TRACE) log.trace(ME, "Created sessionId="+sessionId);
+         if (log.isLoggable(Level.FINE)) log.fine("Created sessionId="+sessionId);
       } catch (Exception e) {
          e.printStackTrace();
-         log.error(ME+".Corba", e.toString());
+         log.severe(e.toString());
          throw new org.xmlBlaster.util.XmlBlasterException(glob, ErrorCode.INTERNAL_CONNECTIONFAILURE,
                                 ME, "connect failed: " + e.toString());
       }
@@ -262,7 +258,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       if (returnQos.isReconnected()) {
          // How to detect outdated server IORs??
          // Here we assume max one connection of type=CORBA which is probably wrong?
-         if (log.TRACE) log.trace(ME, "Destroying old server addresses because of reconnect");
+         if (log.isLoggable(Level.FINE)) log.fine("Destroying old server addresses because of reconnect");
          returnQos.removeServerRef("IOR");
       }
 
@@ -270,21 +266,20 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       String serverIOR = orb.object_to_string(xmlBlaster);
       returnQos.addServerRef(new ServerRef("IOR", serverIOR));
 
-      if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
-      if (log.DUMP) log.dump(ME, "Returning from login-connect()" + returnQos.toXml());
+      if (log.isLoggable(Level.FINEST)) log.finest("Returning from login-connect()" + returnQos.toXml());
 
       return returnQos;
    }
 
    public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering disconnect()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering disconnect()");
       try {
          authenticate.disconnect(this.addressServer, sessionId, qos_literal); // throws XmlBlasterException (eg if not connected (init not called, timeout etc.) or someone else than the session owner called disconnect!)
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
-      if (log.CALL) log.call(ME, "Exiting disconnect()");
+      if (log.isLoggable(Level.FINER)) log.finer("Exiting disconnect()");
    }
 
    /**
@@ -293,7 +288,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     */
    public void logout(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering logout()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering logout()");
       disconnect(getSessionId(xmlServer), (new DisconnectQosServer(glob)).toXml());
    }
 
@@ -307,9 +302,9 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       try {
          byte[] oid = xmlBlasterPOA.reference_to_id(xmlServer);
          sessionId = ServerImpl.convert(oid);
-         if (log.TRACE) log.trace(ME, "POA oid=<" + sessionId + ">");
+         if (log.isLoggable(Level.FINE)) log.fine("POA oid=<" + sessionId + ">");
       } catch (Exception e) {
-         log.error(ME+".Unknown", "Sorry, you are unknown. No logout possible.");
+         log.severe("Sorry, you are unknown. No logout possible.");
          throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
                      ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED,
                      ME,
@@ -318,16 +313,18 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       return sessionId;
    }
 
+   /*
    private String addToQoS(String qos, String add) {
       qos = qos.substring(0, qos.lastIndexOf("</qos>"));
       qos += add + "\n</qos>\n";
       return qos;
    }
-
+   */
+   
    public void shutdown() {
-      if (log.TRACE) this.log.trace(ME, "shutdown has been invoked");
+      if (log.isLoggable(Level.FINE)) log.fine("shutdown has been invoked");
       if (this.xmlBlasterPOA != null) {
-         if (log.TRACE) this.log.trace(ME, "shutdown has been invoked and servant is not null");
+         if (log.isLoggable(Level.FINE)) log.fine("shutdown has been invoked and servant is not null");
 //         xmlBlasterPOA.deactivate_object(xmlBlasterPOA.reference_to_id(xmlBlasterServant));
          // deserialize object, wait for competion
          /*
@@ -335,7 +332,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
             this.xmlBlasterPOA.deactivate_object(xmlBlasterPOA.servant_to_id(xmlBlasterServant));
          }
          catch (Exception ex) {
-            this.log.warn(ME, "shutdown:exception occured when deactivating the servant: " + ex.toString());
+            log.warn(ME, "shutdown:exception occured when deactivating the servant: " + ex.toString());
          shutdown:exception occured when deactivating the servant: org.omg.PortableServer.POAPackage.ServantNotActive: IDL:omg.org/PortableServer/POA/ServantNotActive:1.0
          }
          */
@@ -343,14 +340,14 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
             xmlBlasterPOA.the_POAManager().deactivate(true, true);
          }
          catch (Exception ex) {
-            this.log.warn(ME, "shutdown:exception occured deactivate(): " + ex.toString());
+            log.warning("shutdown:exception occured deactivate(): " + ex.toString());
          }
          /*
          try {
             this.xmlBlasterPOA._release();
          }
          catch (Exception ex) {
-            this.log.warn(ME, "shutdown:exception occured _release(): " + ex.toString());
+            log.warn(ME, "shutdown:exception occured _release(): " + ex.toString());
          shutdown:exception occured _release(): org.omg.CORBA.NO_IMPLEMENT: This is a locally constrained object.  vmcid: 0x0  minor code: 0  completed: No
          }
          */
@@ -358,7 +355,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
             this.xmlBlasterPOA.destroy(true, true);
          }
          catch (Exception ex) {
-            this.log.warn(ME, "shutdown:exception occured destroy(): " + ex.toString());
+            log.warning("shutdown:exception occured destroy(): " + ex.toString());
          }
       }
    }

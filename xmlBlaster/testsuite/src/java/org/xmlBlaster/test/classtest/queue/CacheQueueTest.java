@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -68,7 +69,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class CacheQueueTest extends TestCase {
    private String ME = "CacheQueueTest";
    protected Global glob;
-   protected LogChannel log;
+   private static Logger log = Logger.getLogger(CacheQueueTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
    private CacheQueueInterceptorPlugin queue = null;
    private I_Queue[] queues;
@@ -85,7 +86,7 @@ public class CacheQueueTest extends TestCase {
 
    protected void setUp() {
       glob = Global.instance();
-      log = glob.getLog("test");
+
       QueuePropertyBase cbProp = null;
 
       try {
@@ -115,7 +116,7 @@ public class CacheQueueTest extends TestCase {
          for (int i=0; i < 3; i++) this.queues[i].shutdown(); // to allow to initialize again
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not propertly set up the database: " + ex.getMessage());
+         log.severe("could not propertly set up the database: " + ex.getMessage());
       }
 
    }
@@ -129,7 +130,7 @@ public class CacheQueueTest extends TestCase {
          }
       }
       catch (Exception ex) {
-         this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp");
+         log.warning("error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp");
       }
    }
 
@@ -169,7 +170,7 @@ public class CacheQueueTest extends TestCase {
       assertEquals("Wrong persistent size", 500L, persistentSize);
       assertEquals("Wrong persistent num of msg", 20L, persistentMsg);
       if (200L != transientSize)
-         log.error(ME, "ERROR: Wrong transient size" + this.queue.getTransientQueue().toXml(""));
+         log.severe("ERROR: Wrong transient size" + this.queue.getTransientQueue().toXml(""));
       assertEquals("Wrong transient size" + this.queue.getTransientQueue().toXml(""), 200L, transientSize);
       assertEquals("Wrong num of transient msg", 10L, transientMsg);
 
@@ -181,7 +182,7 @@ public class CacheQueueTest extends TestCase {
     */
    private boolean checkIfPossible(long transientNumOfBytes, long persistentNumOfBytes,
       long maxTransientNumOfBytes, long maxPersistentNumOfBytes) {
-      this.log.trace(ME, "checkIfPossible: transient number of bytes: " + transientNumOfBytes + " of (max) " + maxTransientNumOfBytes + " , persistent number of bytes: " + persistentNumOfBytes + " of (max) " + maxPersistentNumOfBytes);
+      log.fine("checkIfPossible: transient number of bytes: " + transientNumOfBytes + " of (max) " + maxTransientNumOfBytes + " , persistent number of bytes: " + persistentNumOfBytes + " of (max) " + maxPersistentNumOfBytes);
       if (transientNumOfBytes > maxTransientNumOfBytes) return false;
       if (persistentNumOfBytes > maxPersistentNumOfBytes) return false;
       return true;
@@ -190,8 +191,8 @@ public class CacheQueueTest extends TestCase {
 
    public void testPutPeekRemove() {
       String queueType = this.glob.getProperty().get("queueType", "CACHE");
-      this.log.info(ME, "testPutPeekRemove will be done with a queue of type '" + queueType + "'");
-      this.log.info(ME, "if you want to test with another queue type invoke '-queueType $TYPE' on the cmd line where $TYPE is either RAM JDBC or CACHE");
+      log.info("testPutPeekRemove will be done with a queue of type '" + queueType + "'");
+      log.info("if you want to test with another queue type invoke '-queueType $TYPE' on the cmd line where $TYPE is either RAM JDBC or CACHE");
       int index = 2;
       if ("RAM".equalsIgnoreCase(queueType)) index = 0;
       else if ("JDBC".equalsIgnoreCase(queueType)) index = 1;
@@ -224,7 +225,7 @@ public class CacheQueueTest extends TestCase {
 //      try {
          for (int ic=0; ic < maxNumOfBytesCache.length; ic++) {
             for (int is=0; is < maxNumOfBytes.length; is++) {
-               log.info(ME, "**** TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is]);
+               log.info("**** TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is]);
                // a new queue each time here ...
                QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
                prop.setMaxEntries(2000L);
@@ -243,7 +244,7 @@ public class CacheQueueTest extends TestCase {
                   // entry.setPrio(4+(it%3));
                   for (int id=0; id < numOfPersistentEntries.length; id++) {
 
-                     log.info(ME, "**** SUB-TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is] +
+                     log.info("**** SUB-TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is] +
                                    " -> numOfTransientEntries["+it+"]=" + numOfTransientEntries[it] + " numOfPersistentEntries["+id+"]=" + numOfPersistentEntries[id]);
                      if (!refQueue.isShutdown()) refQueue.shutdown();
                      refQueue.initialize(queueId, prop);
@@ -273,7 +274,7 @@ public class CacheQueueTest extends TestCase {
                         DummyEntry[] transients = new DummyEntry[numOfTransientEntries[it]];
                         DummyEntry[] persistentEntries    = new DummyEntry[numOfPersistentEntries[id]];
 
-                        this.log.info(ME, "putPeekRemove " + queueId + " persistent: " + persistentEntries.length + " transient: " + transients.length);
+                        log.info("putPeekRemove " + queueId + " persistent: " + persistentEntries.length + " transient: " + transients.length);
 
                         boolean persistent = false;
                         for (int i=0; i < transients.length; i++) {
@@ -324,13 +325,13 @@ public class CacheQueueTest extends TestCase {
 
 
                         long totNumOfBytes = entrySize * (numOfPersistentEntries[id]+numOfTransientEntries[it]);
-                        this.log.trace(ME, "total number of bytes: " + totNumOfBytes + " maxNumOfBytes: " + maxNumOfBytes[is]);
-                        this.log.trace(ME, "entries must be: " + mustEntries);
+                        log.fine("total number of bytes: " + totNumOfBytes + " maxNumOfBytes: " + maxNumOfBytes[is]);
+                        log.fine("entries must be: " + mustEntries);
 
                         assertTrue("Overflow is not allowed " + refQueue.toXml("") + "total number of bytes " + totNumOfBytes + " max number of bytes: " + maxNumOfBytes[is], totNumOfBytes <= maxNumOfBytes[is]);
 //                        assertTrue(ME + " Overflow is not allowed " + refQueue.toXml("") , checkIfPossible(transientNumOfBytes, persistentNumOfBytes, maxTransientNumOfBytes, maxPersistentNumOfBytes));
                         assertEquals(ME + " number of returned values differe from input values " + refQueue.toXml(""), mustEntries, total.size());
-                        log.info(ME, "SUCCESS: cacheSize=" + maxNumOfBytesCache[ic] + " maxBytes=" + maxNumOfBytes[is] + " .... looks OK");
+                        log.info("SUCCESS: cacheSize=" + maxNumOfBytesCache[ic] + " maxBytes=" + maxNumOfBytes[is] + " .... looks OK");
 
                         int count = 0;
                         for (int j=0; j < 3; j++) {
@@ -345,9 +346,9 @@ public class CacheQueueTest extends TestCase {
                         }
                      }
                      catch(XmlBlasterException e) {
-                        log.dump(ME, "Exception (might be ok): " + e.toString());
+                        log.finest("Exception (might be ok): " + e.toString());
                         assertTrue("Overflow is not allowed on location '"+ lastSuccessfulLocation + "' " + refQueue.toXml("") + "total number of bytes " + entrySize*(numOfPersistentEntries[id]+numOfTransientEntries[it]) + " max muber of bytes: " + maxNumOfBytes[is], entrySize*(numOfPersistentEntries[id]+numOfTransientEntries[it]) > maxNumOfBytes[is]);
-                        log.info(ME, "SUCCESS: Exception is OK: " + e.toString());
+                        log.info("SUCCESS: Exception is OK: " + e.toString());
                      }
                   }
                }
@@ -494,7 +495,7 @@ public class CacheQueueTest extends TestCase {
       testSub.tearDown();
 
       long usedTime = System.currentTimeMillis() - startTime;
-      testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
+      testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
    }
 }
 

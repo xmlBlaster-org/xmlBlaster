@@ -1,6 +1,7 @@
 package org.xmlBlaster.test.memoryleak;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
@@ -25,7 +26,7 @@ import java.io.*;
 public class Volatile
 {
    private final String ME = "Volatile";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(Volatile.class.getName());
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
@@ -33,7 +34,7 @@ public class Volatile
 
    public Volatile(final Global glob) {
       
-      log = glob.getLog(null);
+
       bulkSize = glob.getProperty().get("bulkSize", bulkSize);
       long lCount = 0L;
 
@@ -43,7 +44,7 @@ public class Volatile
          conRetQos = con.connect(qos, new I_Callback() {
 
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
+               log.info("Receiving asynchronous message '" + updateKey.getOid() +
                                "' state=" + updateQos.getState() + " in default handler");
                return "";
             }
@@ -63,7 +64,7 @@ public class Volatile
             con.publish(new MsgUnit(xmlKey,b,qw.toXml()));
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
             if ((lCount % bulkSize) == 0) {
-               log.info(ME, "Sent " + lCount + " different topics, enter return to continue, enter 'q' to quit");
+               log.info("Sent " + lCount + " different topics, enter return to continue, enter 'q' to quit");
                try {
                   BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
                   String line = in.readLine(); // Blocking in I/O
@@ -74,7 +75,7 @@ public class Volatile
                   }
                }
                catch(Exception e) {
-                  log.error(ME, e.toString());
+                  log.severe(e.toString());
                   break;
                }
             }
@@ -83,10 +84,10 @@ public class Volatile
          }
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Houston, we have a problem count=" + lCount + ": " + e.toString());
+         log.severe("Houston, we have a problem count=" + lCount + ": " + e.toString());
       }
       finally {
-         log.info(ME, "Success, hit a key to logout and exit");
+         log.info("Success, hit a key to logout and exit");
          try { System.in.read(); } catch(java.io.IOException e) {}
          con.disconnect(new DisconnectQos(glob));
       }

@@ -18,7 +18,6 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.http.HttpIORServer;
 import org.xmlBlaster.util.http.I_HttpRequest;
 import org.xmlBlaster.util.http.HttpResponse;
-import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -96,16 +95,6 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
     */
    public void init(org.xmlBlaster.util.Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
       this.global = (Global)global_; // .getClone(null); -> is done in XmlBlasterPublisher
-
-      boolean jdk14loggingCapture = this.global.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
-      if (jdk14loggingCapture) {
-         try {
-            XmlBlasterJdk14LoggingHandler.initLogManager(this.global);
-         }
-         catch (Throwable e) {
-            log.warning("Capturing JDK 1.4 logging output failed: " + e.toString());
-         }
-      }
 
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;

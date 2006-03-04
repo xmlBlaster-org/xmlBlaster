@@ -6,7 +6,8 @@ Comment:   xmlBlaster to SNMP proxy class
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin.extern.snmp;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 /*
@@ -33,7 +34,7 @@ import org.xmlBlaster.util.Global;
 public class NodeScalarProxy extends NodeScalar
 {
    private final String ME = "NodeScalarProxy";
-   private final LogChannel log;
+   private static Logger log = Logger.getLogger(NodeScalarProxy.class.getName());
 
    /**
    * NodeScalarProxy
@@ -42,7 +43,7 @@ public class NodeScalarProxy extends NodeScalar
    public NodeScalarProxy(Global glob)
    {
       super();
-      this.log = glob.getLog("admin");
+
    }
 
    /**
@@ -53,7 +54,7 @@ public class NodeScalarProxy extends NodeScalar
    */
    public long get_numNodes() {
       
-      log.error(ME, "DEBUG only: Entering get_numNodes(), returning ");
+      log.severe("DEBUG only: Entering get_numNodes(), returning ");
       return numNodes;
    }
 }

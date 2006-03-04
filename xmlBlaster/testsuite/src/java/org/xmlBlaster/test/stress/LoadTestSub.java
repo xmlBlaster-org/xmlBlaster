@@ -9,7 +9,8 @@ package org.xmlBlaster.test.stress;
 
 import org.jutils.time.StopWatch;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
@@ -43,7 +44,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    private boolean messageArrived = false;
    private StopWatch stopWatch = null;
    private Global glob;
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(LoadTestSub.class.getName());
 
    private String subscribeOid;
    private String publishOid = "LoadTestSub";
@@ -78,7 +79,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    {
        super(testName);
        this.glob = glob;
-       this.log = glob.getLog("test");
+
        this.senderName = loginName;
        this.receiverName = loginName;
        this.passwd = passwd;
@@ -103,12 +104,12 @@ public class LoadTestSub extends TestCase implements I_Callback
          if (burstModePublish > numPublish)
             burstModePublish = numPublish;
          if ((numPublish % burstModePublish) != 0)
-            log.error(ME, "numPublish should by dividable by publish.burstMode");
-         log.info(ME, "Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " dispatch/callback/burstMode/collectTime=" 
+            log.severe("numPublish should by dividable by publish.burstMode");
+         log.info("Connected to xmlBlaster, numPublish=" + numPublish + " burstModePublish=" + burstModePublish + " dispatch/callback/burstMode/collectTime=" 
               + glob.getProperty().get("dispatch/callback/burstMode/collectTime", 0L));
       }
       catch (Exception e) {
-          log.error(ME, e.toString());
+          log.severe(e.toString());
           e.printStackTrace();
           assertTrue(e.toString(), false);
       }
@@ -127,7 +128,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       double elapsed = stopWatch.elapsed();
       if (elapsed > 0.)
          avg = (long)(1000.0 * numPublish / elapsed);
-      log.info(ME, numPublish + " messages updated, average messages/second = " + avg + stopWatch.nice());
+      log.info(numPublish + " messages updated, average messages/second = " + avg + stopWatch.nice());
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
@@ -135,8 +136,8 @@ public class LoadTestSub extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       try {
          EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
-         if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
+         if (arr.length != 1) log.severe("Erased " + arr.length + " messages:");
+      } catch(XmlBlasterException e) { log.severe("XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -149,7 +150,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public void doSubscribeXPath()
    {
-      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using XPath syntax ...");
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='' queryType='XPATH'>\n" +
@@ -160,9 +161,9 @@ public class LoadTestSub extends TestCase implements I_Callback
       subscribeOid = null;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info("Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          // assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -175,7 +176,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public void doPublish()
    {
-      log.info(ME, "Publishing " + numPublish + " messages ...");
+      log.info("Publishing " + numPublish + " messages ...");
 
       numReceived = 0;
       String xmlKey = "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -210,17 +211,17 @@ public class LoadTestSub extends TestCase implements I_Callback
                publishOids = senderConnection.publishArr(arr);
             /*
             if (((ii+1) % 1) == 0)
-               log.info(ME, "Success: Publishing done: '" + someContent + "'");
+               log.info("Success: Publishing done: '" + someContent + "'");
             */
          }
          long avg = 0;
          double elapsed = stopWatch.elapsed();
          if (elapsed > 0.)
             avg = (long)(1000.0 * numPublish / elapsed);
-         log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
+         log.info("Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
          //assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
@@ -248,23 +249,23 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
 
       numReceived++;
       if ((numReceived % 1000) == 0) {
          long avg = (long)((double)numReceived / (double)(stopWatch.elapsed()/1000.));
          String contentStr = new String(content);
          String tok = "... " + contentStr.substring(contentStr.length() - 10);
-         log.info(ME, "Success: Update #" + numReceived + " received: '" + tok + "', average messages/second = " + avg);
+         log.info("Success: Update #" + numReceived + " received: '" + tok + "', average messages/second = " + avg);
       }
       messageArrived = true;
       String currentContent = new String(content);
       int val = -1;
       if (lastContentNumber >= 0) {
          String number = currentContent.substring(someContent.length());
-         try { val = new Integer(number).intValue(); } catch (NumberFormatException e) { log.error(ME, e.toString()); }
+         try { val = new Integer(number).intValue(); } catch (NumberFormatException e) { log.severe(e.toString()); }
          if (val <= lastContentNumber) {
-            log.error(ME, "lastContent=" + lastContentNumber + " currentContent=" + currentContent);
+            log.severe("lastContent=" + lastContentNumber + " currentContent=" + currentContent);
             //assertTrue("Sequence of received message is broken", false);
          }
       }
@@ -293,7 +294,7 @@ public class LoadTestSub extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warning("Timeout of " + timeout + " occurred");
             break;
          }
       }

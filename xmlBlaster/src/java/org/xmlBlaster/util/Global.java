@@ -9,14 +9,12 @@ package org.xmlBlaster.util;
 import org.jutils.JUtilsException;
 import org.jutils.init.Property;
 import org.jutils.text.StringHelper;
-import org.jutils.log.LogChannel;
-import org.jutils.log.LogDeviceConsole;
-import org.jutils.log.LogDeviceFile;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
@@ -46,12 +44,7 @@ import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.client.protocol.CbServerPluginManager;
 import org.xmlBlaster.util.http.HttpIORServer;
-import org.xmlBlaster.util.log.LogDevicePluginManager;
-import org.xmlBlaster.util.log.I_LogDeviceFactory;
-import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
-import org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
-import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -69,14 +62,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
-import java.util.Enumeration;
 
 import java.net.Socket;
 
@@ -162,9 +153,7 @@ public class Global implements Cloneable
 
    protected String addressNormalized = null;
 
-   // deprecated
-   //protected org.xmlBlaster.util.Log log;
-   protected final LogChannel log;
+   private static Logger log = Logger.getLogger(Global.class.getName());
 
    /** The xmlBlaster class loader factory */
    private ClassLoaderFactory classLoaderFactory = null;
@@ -187,10 +176,7 @@ public class Global implements Cloneable
 
    private HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
 
-   protected LogNotifierDeviceFactory logNotifierDeviceFactory;
-
    protected Hashtable logChannels = new Hashtable();
-   protected LogChannel logDefault;
 
    protected SAXParserFactory saxFactory;
    protected DocumentBuilderFactory docBuilderFactory;
@@ -209,10 +195,6 @@ public class Global implements Cloneable
    protected Timeout messageTimer;
    protected Timeout jdbcConnectionPoolTimer;
    protected DispatchWorkerPool dispatchWorkerPool;
-
-   protected LogDevicePluginManager logDevicePluginManager = null;
-   /** used to guard agains log device plugin loading making cirkular calls*/
-   private boolean creatingLogInstance = false;
 
    protected static int counter = 0;
 
@@ -298,24 +280,8 @@ public class Global implements Cloneable
       }
       initProps(args,loadPropFile);
       initId();
-      logDevicePluginManager = new LogDevicePluginManager(this);
-      logDefault = new LogChannel(null, getProperty());
-      log = logDefault;
-      //log = new org.xmlBlaster.util.Log(); // old style
-      initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = new HashMap();
-
-      boolean jdk14loggingCapture = getProperty().get("xmlBlaster/jdk14loggingCapture", true);
-      if (jdk14loggingCapture) {
-         try { // since JKD 1.4:
-            URL url = XmlBlasterJdk14LoggingHandler.initLogManager(this);
-            log.info(ME, "Capturing JDK 1.4 logging with configuration '" + url.toString() + "'");
-         }
-         catch (XmlBlasterException e) {
-            log.warn(ME, "Capturing JDK 1.4 logging output failed: " + e.toString());
-         }
-      }
    }
 
    public static int getCounter() { return counter; }
@@ -390,10 +356,10 @@ public class Global implements Cloneable
             getJmxWrapper().unregisterMBean((ObjectName)objectName);
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
+         log.warning("unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
       }
       catch (Throwable e) {
-         log.error(ME, "unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
+         log.severe("unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
       }
    }
 
@@ -493,290 +459,6 @@ public class Global implements Cloneable
       this.bootstrapAddress = utilGlob.bootstrapAddress;
       this.clientSecurityLoader = utilGlob.clientSecurityLoader;
       this.logChannels = utilGlob.logChannels;
-      this.logDefault = utilGlob.logDefault;
-      this.logDevicePluginManager = utilGlob.logDevicePluginManager;
-   }
-
-   /**
-    * Initialize logging.
-    *
-    * <p>The pluggable loggers is tested first, see {@link org.xmlBlaster.util.log.LogDevicePluginManager}.
-    * <p>If no pluggable loggers is configured the logging is initialized
-    * with environment variables.</p>
-    * <pre>
-    *   -logFile  output.txt
-    *   -logFile[cluster] cluster-output.txt
-    *   -logConsole false
-    *   -logConsole[cluster] true
-    * </pre>
-    */
-   private void initLog(LogChannel lc) {
-      String key = lc.getChannelKey();
-      boolean useOld = true;//Used to guaranty some logging
-
-      // There are situations where the manager is actually not there because
-      // its parent sets up logging
-      if (logDevicePluginManager != null) {
-         // We have to protect this part, if the plugin bootstrapping makes us
-         // call this stuff
-         synchronized(this) {
-            if (creatingLogInstance) {
-               // We simply use an oldtimer ;-)
-               lc.addLogDevice(new LogDeviceConsole(lc) );
-               return;// Get out if here quick!
-            }
-            creatingLogInstance=true;
-
-            // Get the plugins for the lc.key, first try with key, then global
-            String[] devices = null;
-            if (key != null)
-               devices = getProperty().get("logDevice[" + key + "]", new String[0], ",");
-            if (devices == null  ||  devices.length == 0)
-               devices = getProperty().get("logDevice", new String[0], ",");
-
-            try {
-               LogableDevice devNoti = getLogNotifierDeviceFactory().getLogDevice(lc);
-               lc.addLogDevice(devNoti);
-            }
-            catch(XmlBlasterException ex) {
-               System.out.println(ME+".initLog(): Error in getting LogNotifierDeviceFactory: " + ex.toString());
-            }
-
-            if (devices != null && devices.length > 0) {
-               for(int i = 0;i<devices.length;i++) {
-                  try {
-                     I_LogDeviceFactory fac = logDevicePluginManager.getFactory(devices[i],"1.0");
-                     LogableDevice dev = fac.getLogDevice(lc);
-                     if (log != null && log.TRACE) log.trace(ME,"Setting logDevice " +key+"[" + devices[i]+"]="+((dev!=null && dev.getClass()!=null)?dev.getClass().getName():"null"));
-                     if (dev != null)
-                        lc.addLogDevice(dev);
-                  }catch(XmlBlasterException ex) {
-                     if (log != null)
-                        log.error(ME,"initLog(): Error in getting LogDeviceFactory '" + devices[i] + ",1.0' for " + key +  ": " + ex.getMessage());
-                     else
-                        System.out.println(ME+".initLog(): Error in getting LogDeviceFactory for " + key + ": " + ex.getMessage());
-                     continue;
-                  }
-                  //If we ever reach here, we have some logging device set up
-                  useOld=false;
-               }
-
-
-            }
-            creatingLogInstance = false;
-         }
-      }
-
-      if (useOld) {
-         if (log.TRACE) log.trace(ME,"Using old logging behaviour for '" + key + "'");
-         //System.err.println("Using old logging behaviour");
-         //Old behaviour
-         boolean bVal = getProperty().get("logConsole", true);
-         if (key != null) getProperty().get("logConsole[" + key + "]", bVal);
-         if (bVal == true) {
-            LogDeviceConsole ldc = new LogDeviceConsole(lc);
-            lc.addLogDevice(ldc);
-         }
-
-         String strFilename = getProperty().get("logFile", (String)null);
-         if (key != null) strFilename = getProperty().get("logFile[" + key + "]", strFilename);
-         if (strFilename != null) {
-            LogDeviceFile ldf = new LogDeviceFile(lc, strFilename);
-            int max = getProperty().get("maxLogFileLines", -1);
-            if (max > 0) {
-               ldf.setMaxLogFileLines(max);
-            }
-            max = getProperty().get("maxLogFileCounter", -1);
-            if (max > 0) {
-               ldf.setMaxLogFileCounter(max);
-            }
-            lc.addLogDevice(ldf);
-            System.out.println("Global: Redirected logging output to file '" + strFilename + "'");
-         }
-      }
-
-      //lc.setDefaultLogLevel();
-
-
-
-      // Old logging style:
-      //log.initialize(this);
-   }
-
-   /**
-    * Add a new logging output channel.
-    * <pre>
-    *   glob.addLogChannel(new LogChannel("cluster", glob.getProperty()));
-    *   ...
-    *   LogChannel log = glob.getLog("cluster");
-    *   if (log.TRACE) log.trace("ClusterManager", "Problems with cluster node frodo");
-    * </pre>
-    * Start your application and switch on trace logging for classes using the "cluster" logging key:
-    * <pre>
-    *  java MyApp -trace[cluster] true
-    * </pre>
-    * @param log The channel must contain a none null channel key (here it is "cluster")
-    * @return true if channel is accepted
-    */
-   public boolean addLogChannel(LogChannel log) {
-      if (log == null) {
-         Thread.dumpStack();
-         throw new IllegalArgumentException("Global.addLogChannel(null)");
-      }
-      String key = log.getChannelKey();
-      if (key != null && key.length() > 0) {
-         initLog(log);
-         logChannels.put(key, log);
-         //log.info(ME, "New log channel '" + key + "' ready: " + LogChannel.bitToLogLevel(log.getLogLevel()));
-         if (log.TRACE) log.trace(ME, "New log channel '" + key + "' ready: " + LogChannel.bitToLogLevel(log.getLogLevel()));
-         return true;
-      }
-      return false;
-   }
-
-   /**
-    * If the log channel for the given key is not known, a new channel is created.
-    * @param if null, the default log channel is returned
-    * @see #addLogChannel(LogChannel)
-    */
-   public LogChannel getLog(String key) {
-      if (key == null)
-         return logDefault;
-      Object obj = logChannels.get(key);
-      if (obj != null)
-         return (LogChannel)obj;
-
-      LogChannel lc = new LogChannel(key, getProperty());
-      addLogChannel(lc);
-      return lc;
-   }
-
-   /**
-    * Access all log channels. 
-    * For example key="core" -> value=LogChannel
-    */
-   public Map getLogChannels() {
-      return this.logChannels;
-   }
-
-   /**
-   * Changes the given loglevel to given state.
-   * <p />
-   * See org.jutils.init.Property#toBool(boolean) at www.jutils.org
-   *
-   * @param logLevel e.g. "trace" or "trace[core]"
-   * @param bool A string like "true" or "false"
-   * @return true/false to witch bool was parsed
-   * @exception XmlBlasterException if your bool is strange
-   */
-   public boolean changeLogLevel(String logLevel, String bool) throws XmlBlasterException {
-      try {
-         boolean b = org.jutils.init.Property.toBool(bool);
-         changeLogLevel(logLevel, b);
-         return b;
-      }
-      catch (JUtilsException e) {
-         throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "changeLogLevel failed", e);
-      }
-   }
-
-   /**
-   * Changes the given loglevel to given state.
-   *
-   * @param logLevel e.g. "trace" or "trace[core]"
-   */
-   public void changeLogLevel(String logLevel, boolean value) throws XmlBlasterException {
-      if (logLevel == null || logLevel.length() < 1) return;
-
-      try {
-         int start = logLevel.indexOf("[");
-         if (start == -1) {
-            start = logLevel.indexOf("/"); // JMX interpretes [ as index, so we use info/core syntax there
-         }
-
-         if (start != -1) { // Syntax is for example "info[core]"
-            int end = logLevel.indexOf("]");
-            if (end == -1 ) {
-               end = logLevel.length();    // info/auth
-            }
-            if (start < 1 || end == -1 || end <= (start+1)) {
-               throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + logLevel + "'");
-            }
-            String key = logLevel.substring(start+1, end);
-            Object obj = logChannels.get(key);
-            if (obj == null)
-               throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "LogChannel '" + key + "' is not known");
-            LogChannel log = (LogChannel)obj;
-            if (value == true)
-               log.addLogLevelChecked(logLevel.substring(0, start));
-            else
-               log.removeLogLevelChecked(logLevel.substring(0, start));
-            return;
-         }
-
-         if (value == true) {
-            logDefault.addLogLevelChecked(logLevel);
-            //Log.addLogLevel(logLevel); // deprecated
-         }
-         else {
-            logDefault.removeLogLevelChecked(logLevel);
-            //Log.removeLogLevel(logLevel); // deprecated
-         }
-
-         for (Enumeration e = logChannels.elements(); e.hasMoreElements();) {
-            LogChannel log = (LogChannel)e.nextElement();
-            if (value == true) {
-               log.info(ME, "Setting logLevel '" + logLevel + "' for '" + log.getChannelKey() + "' to true");
-               log.addLogLevelChecked(logLevel);
-            }
-            else {
-               log.info(ME, "Removing logLevel '" + logLevel + "' for '" + log.getChannelKey() + "'");
-               log.removeLogLevelChecked(logLevel);
-            }
-         }
-      }
-      catch (JUtilsException e) {
-         throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "", e);
-      }
-   }
-
-   /**
-   * Get the current loglevel.
-   *
-   * @param @param logLevel e.g. "trace" or "trace[core]"
-   * @return true is given log level is set, false otherwise.
-   */
-   public boolean getLogLevel(String logLevel) throws XmlBlasterException {
-      if (logLevel == null || logLevel.length() < 1)
-         throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + logLevel + "'");
-
-      try {
-         int start = logLevel.indexOf("[");
-         if (start == -1) {
-            start = logLevel.indexOf("/"); // JMX interpretes [ as index, so we use info/core syntax there
-         }
-
-         if (start != -1) { // Syntax is for example "info[core]"
-            int end = logLevel.indexOf("]");
-            if (end == -1 ) {
-               end = logLevel.length();    // info/auth
-            }
-            if (start < 1 || end == -1 || end <= (start+1)) {
-               throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + logLevel + "'");
-            }
-            String key = logLevel.substring(start+1, end);
-            Object obj = logChannels.get(key);
-            if (obj == null)
-               throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "LogChannel '" + key + "' is not known");
-            LogChannel log = (LogChannel)obj;
-            return log.isLoglevelEnabled(logLevel.substring(0, start));
-         }
-
-         return logDefault.isLoglevelEnabled(logLevel);
-      }
-      catch (JUtilsException e) {
-         throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "", e);
-      }
    }
 
    /**
@@ -847,18 +529,10 @@ public class Global implements Cloneable
 
       try {
          property.addArgs2Props(args);
-
          initId();
-
-         logDefault.initialize(property);
-         // TODO: loop through logChannels Hashtable!!!
-
-         // Old style:
-         //log.setLogLevel(property);   // Initialize logging as well.
-         //log.initialize(this);
-
          return property.wantsHelp() ? 1 : 0;
-      } catch (JUtilsException e) {
+      } 
+      catch (JUtilsException e) {
          errorText = ME + " ERROR: " + e.toString();
          System.err.println(errorText); // Log probably not initialized yet.
          return -1;
@@ -1201,7 +875,7 @@ public class Global implements Cloneable
     */
    public final I_CallbackDriver getNativeCallbackDriver(String key)
    {
-      if (log.CALL) log.call(ME, "getNativeCallbackDriver(" + key + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("getNativeCallbackDriver(" + key + ")");
       return (I_CallbackDriver)nativeCallbackDriverMap.get(key);
    }
 
@@ -1213,7 +887,7 @@ public class Global implements Cloneable
     */
    public final void addNativeCallbackDriver(String key, I_CallbackDriver driver)
    {
-      if (log.CALL) log.call(ME, "addNativeCallbackDriver(" + key + "," + driver.getName() + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("addNativeCallbackDriver(" + key + "," + driver.getName() + ")");
       nativeCallbackDriverMap.put(key, driver);
    }
 
@@ -1225,7 +899,7 @@ public class Global implements Cloneable
     */
    public final void removeNativeCallbackDriver(String key)
    {
-      if (log.CALL) log.call(ME, "removeNativeCallbackDriver(" + key + ")");
+      if (log.isLoggable(Level.FINER)) log.finer("removeNativeCallbackDriver(" + key + ")");
       nativeCallbackDriverMap.remove(key);
    }
 
@@ -1299,9 +973,9 @@ public class Global implements Cloneable
       if (this.bootstrapAddress == null) {
          synchronized (this) {
             if (this.bootstrapAddress == null) {
-               if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
+               if (log.isLoggable(Level.FINER)) log.finer("Entering getBootstrapAddress(), trying to resolve one ...");
                this.bootstrapAddress = new Address(this);
-               if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + this.bootstrapAddress.getBootstrapHostname() +
+               if (log.isLoggable(Level.FINE)) log.fine("Initialized bootstrapAddress to host=" + this.bootstrapAddress.getBootstrapHostname() +
                               " port=" + this.bootstrapAddress.getBootstrapPort() + ", rawAddress='" + this.bootstrapAddress.getRawAddress()+"'");
                this.bootstrapAddress.setRawAddress(this.bootstrapAddress.getBootstrapUrl());
             }
@@ -1352,10 +1026,10 @@ public class Global implements Cloneable
             cbHostname = sock.getLocalAddress().getHostAddress();
             sock.close();
             sock = null;
-            if (log.TRACE) log.trace(ME, "Default cb host is " + this.cbHostname);
+            if (log.isLoggable(Level.FINE)) log.fine("Default cb host is " + this.cbHostname);
          }
          catch (java.io.IOException e) {
-            log.trace(ME, "Can't find default cb hostname: " + e.toString());
+            log.fine("Can't find default cb hostname: " + e.toString());
          }
       }
       if (cbHostname == null)
@@ -1377,7 +1051,8 @@ public class Global implements Cloneable
     */
    public String accessFromInternalHttpServer(Address address, String urlPath, boolean verbose) throws XmlBlasterException
    {
-      if (logDefault.CALL) logDefault.call(ME, "Entering accessFromInternalHttpServer(" + ((address==null)?"null":address.getRawAddress()) + ") ...");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("Entering accessFromInternalHttpServer(" + ((address==null)?"null":address.getRawAddress()) + ") ...");
       //log.info(ME, "accessFromInternalHttpServer address=" + address.toXml());
       Address addr = address;
       if (addr != null && addr.getBootstrapPort() > 0) {
@@ -1393,7 +1068,8 @@ public class Global implements Cloneable
          if (urlPath != null && urlPath.startsWith("/") == false)
             urlPath = "/" + urlPath;
 
-         if (logDefault.TRACE) logDefault.trace(ME, "Trying internal http server on " + 
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("Trying internal http server on " + 
                                addr.getBootstrapHostname() + ":" + addr.getBootstrapPort() + "" + urlPath);
          java.net.URL nsURL = new java.net.URL("http", addr.getBootstrapHostname(), addr.getBootstrapPort(), urlPath);
          java.io.InputStream nsis = nsURL.openStream();
@@ -1401,7 +1077,7 @@ public class Global implements Cloneable
          java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
          int numbytes;
          for (int ii=0; ii<20 && (nsis.available() <= 0); ii++) {
-            if (logDefault.TRACE) logDefault.trace(ME, "XmlBlaster on host " + addr.getBootstrapHostname() + " and bootstrapPort " + addr.getBootstrapPort() + " returns empty data, trying again after sleeping 10 milli ...");
+            if (log.isLoggable(Level.FINE)) log.fine("XmlBlaster on host " + addr.getBootstrapHostname() + " and bootstrapPort " + addr.getBootstrapPort() + " returns empty data, trying again after sleeping 10 milli ...");
             org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
          }
          while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
@@ -1409,17 +1085,17 @@ public class Global implements Cloneable
          }
          nsis.close();
          String data = bos.toString();
-         if (logDefault.TRACE) logDefault.trace(ME, "Retrieved http data='" + data + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Retrieved http data='" + data + "'");
          return data;
       }
       catch(MalformedURLException e) {
          String text = "XmlBlaster not found on host " + addr.getBootstrapHostname() + " and bootstrap port " + addr.getBootstrapPort() + ".";
-         logDefault.error(ME, text + e.toString());
+         log.severe(text + e.toString());
          e.printStackTrace();
          throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME+"NoHttpServer", text, e);
       }
       catch(IOException e) {
-         if (verbose) logDefault.warn(ME, "XmlBlaster not found on host " + addr.getBootstrapHostname() + " and bootstrapPort " + addr.getBootstrapPort() + ": " + e.toString());
+         if (verbose) log.warning("XmlBlaster not found on host " + addr.getBootstrapHostname() + " and bootstrapPort " + addr.getBootstrapPort() + ": " + e.toString());
          throw new XmlBlasterException(this, ErrorCode.COMMUNICATION_NOCONNECTION, ME+"NoHttpServer",
                    "XmlBlaster not found on host " + addr.getBootstrapHostname() + " and bootstrap port " + addr.getBootstrapPort() + ".", e);
       }
@@ -1443,7 +1119,7 @@ public class Global implements Cloneable
             try {
                this.ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
             } catch (java.net.UnknownHostException e) {
-               logDefault.warn(ME, "Can't determine local IP address, try e.g. '-bootstrapHostname 192.168.10.1' on command line: " + e.toString());
+               log.warning("Can't determine local IP address, try e.g. '-bootstrapHostname 192.168.10.1' on command line: " + e.toString());
             }
             if (this.ip_addr == null) this.ip_addr = "127.0.0.1";
          }
@@ -1506,7 +1182,7 @@ public class Global implements Cloneable
                   return classLoaderFactory;
                   
                } catch (Exception e) {
-                  log.warn(ME,"Could not load custom classLoaderFactory " + clf + " using StandaloneClassLoaderFactory");
+                  log.warning("Could not load custom classLoaderFactory " + clf + " using StandaloneClassLoaderFactory");
                } // end of try-catch
             } // end of if ()
             
@@ -1535,7 +1211,7 @@ public class Global implements Cloneable
          httpServer = null;
       }
       catch (Throwable e) {
-         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+         log.warning("Problems during ORB cleanup: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -1557,7 +1233,7 @@ public class Global implements Cloneable
     public SAXParserFactory getSAXParserFactory() throws XmlBlasterException{
       if ( saxFactory == null) {
          try {
-            if (log.DUMP) log.dump(ME, getProperty().toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest(getProperty().toXml());
             saxFactory = JAXPFactory.newSAXParserFactory(
                getProperty().get(
                   "javax.xml.parsers.SAXParserFactory",
@@ -1593,7 +1269,7 @@ public class Global implements Cloneable
    public DocumentBuilderFactory getDocumentBuilderFactory() throws XmlBlasterException {
       if ( docBuilderFactory == null) {
          try {
-            if (log.DUMP) log.dump(ME, getProperty().toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest(getProperty().toXml());
             docBuilderFactory =JAXPFactory.newDocumentBuilderFactory(
                getProperty().get(
                   "javax.xml.parsers.DocumentBuilderFactory",
@@ -1794,7 +1470,7 @@ public class Global implements Cloneable
    }
 
    public void finalize() {
-      if (log.TRACE) log.trace(ME, "Entering finalize");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
       shutdown();
    }
 
@@ -1804,7 +1480,7 @@ public class Global implements Cloneable
       }
       this.isDoingShutdown = true;
 
-      if (log.TRACE) log.trace(ME, "Destroying util.Global handle");
+      if (log.isLoggable(Level.FINE)) log.fine("Destroying util.Global handle");
 
       /* This is a singleton, so only the last Global instance may do a shutdown
       try {
@@ -2295,18 +1971,6 @@ public class Global implements Cloneable
       throw new IllegalArgumentException("Can't handle unknown " + file);
    }
 
-   public LogNotifierDeviceFactory getLogNotifierDeviceFactory() throws XmlBlasterException {
-      if (this.logNotifierDeviceFactory == null) {
-         synchronized(this) {
-            if (this.logNotifierDeviceFactory == null) {
-               this.logNotifierDeviceFactory = new LogNotifierDeviceFactory();
-               this.logNotifierDeviceFactory.init(this, new PluginInfo(this, null, "notification", "1.0"));
-            }
-         }
-      }
-      return this.logNotifierDeviceFactory;
-   }
-
    /**
     * Build a nice, human readable string for the size in MB/KB/Bytes.
     * <br><b>Example:</b><br>
@@ -2379,7 +2043,7 @@ public class Global implements Cloneable
     * @throws XmlBlasterException
     */
    public Map getPersistentMap(String id) throws XmlBlasterException {
-      log.error(ME, "Not yet implemented");
+      log.severe("Not yet implemented");
       return null;
       /*
       if (id == null | id.trim().length() < 1)

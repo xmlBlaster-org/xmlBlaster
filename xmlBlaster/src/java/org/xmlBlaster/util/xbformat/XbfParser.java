@@ -6,7 +6,8 @@ Comment:   XbfParser class for raw socket messages
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.xbformat;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -84,7 +85,7 @@ public class XbfParser implements I_MsgInfoParser
    private static final String ME = "xbformat.XbfParser";
    private Global glob;
 
-   private LogChannel log;
+   private static Logger log = Logger.getLogger(XbfParser.class.getName());
 
    public static final int NUM_FIELD_LEN = 10;
    public static final int FLAG_FIELD_LEN = 6;
@@ -129,7 +130,7 @@ public class XbfParser implements I_MsgInfoParser
    public void init(Global glob, I_ProgressListener progressListener,
          I_PluginConfig pluginConfig) {
       this.glob = glob;
-      this.log = glob.getLog("xfb");
+
       this.progressListener = progressListener;
       //this.someConfig = glob.get("someConfig", (String)null, null, pluginConfig);
    }
@@ -165,7 +166,7 @@ public class XbfParser implements I_MsgInfoParser
     */
    private final Buf readOneMsg(MsgInfo msgInfo, InputStream in) throws IOException
    {
-      if (log.TRACE) log.trace(ME, "Entering readOneMsg(), waiting on inputStream");
+      if (log.isLoggable(Level.FINE)) log.fine("Entering readOneMsg(), waiting on inputStream");
 
       // First we extract the first 10 bytes to get the msgLength ...
       int remainLength = NUM_FIELD_LEN;
@@ -200,7 +201,7 @@ public class XbfParser implements I_MsgInfoParser
             listener.progressRead("", 10, msgLength);
          }
 
-         if (log.TRACE) log.trace(ME, "Got first 10 bytes of total length=" + msgLength);
+         if (log.isLoggable(Level.FINE)) log.fine("Got first 10 bytes of total length=" + msgLength);
          if (msgLength == NUM_FIELD_LEN)
             return null; // An empty message only contains the header 10 bytes
          else if (msgLength < (NUM_FIELD_LEN+FLAG_FIELD_LEN))
@@ -258,7 +259,7 @@ public class XbfParser implements I_MsgInfoParser
     * @return Guaranteed to be always an array of length=1
     */
    public final MsgInfo[] parse(InputStream in) throws  IOException, IllegalArgumentException {
-      if (log.CALL) log.call(ME, "Entering parse()");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering parse()");
       MsgInfo msgInfo = new MsgInfo(this.glob);
       msgInfo.setMsgInfoParser(this);
       initialize();
@@ -270,22 +271,22 @@ public class XbfParser implements I_MsgInfoParser
          return new MsgInfo[] { msgInfo }; // The shortest ping ever
       }
 
-      if (log.DUMP) log.dump(ME, "Raw message of length " + buf.buf.length + " received >" + toLiteral(buf.buf) + "<");
+      if (log.isLoggable(Level.FINEST)) log.finest("Raw message of length " + buf.buf.length + " received >" + toLiteral(buf.buf) + "<");
 
       msgInfo.setChecksum(buf.buf[NUM_FIELD_LEN] > 0);
       if (msgInfo.isChecksum()) {
-         log.warn(ME, "Ignoring checksum flag");
+         log.warning("Ignoring checksum flag");
       }
       msgInfo.setCompressed(buf.buf[NUM_FIELD_LEN+1] > 0);
       if (msgInfo.isCompressed()) {
-         log.warn(ME, "Ignoring compress flag");
+         log.warning("Ignoring compress flag");
       }
       msgInfo.setType(buf.buf[NUM_FIELD_LEN+2]);
       msgInfo.setByte4(buf.buf[NUM_FIELD_LEN+3]);
       msgInfo.setByte5(buf.buf[NUM_FIELD_LEN+4]);
       msgInfo.setVersion(buf.buf[NUM_FIELD_LEN+5] - 48);
       if (msgInfo.getVersion() != 1) {
-         log.warn(ME, "Ignoring version=" + msgInfo.getVersion() + " on 1 is supported");
+         log.warning("Ignoring version=" + msgInfo.getVersion() + " on 1 is supported");
       }
 
       buf.offset = NUM_FIELD_LEN+FLAG_FIELD_LEN;
@@ -296,7 +297,7 @@ public class XbfParser implements I_MsgInfoParser
 
       lenUnzipped = toInt0(buf, -1);
       if (lenUnzipped != -1) {
-         if (log.TRACE) log.trace(ME, "Ignoring given unzipped message length of size " + lenUnzipped);
+         if (log.isLoggable(Level.FINE)) log.fine("Ignoring given unzipped message length of size " + lenUnzipped);
       }
 
       String qos = null;
@@ -317,7 +318,7 @@ public class XbfParser implements I_MsgInfoParser
             break;
          }
 
-         if (log.TRACE) log.trace(ME, "Getting messageUnit #" + ii);
+         if (log.isLoggable(Level.FINE)) log.fine("Getting messageUnit #" + ii);
          MsgUnitRaw msgUnit = new MsgUnitRaw(key, toByte(buf), qos);
          msgInfo.addMessage(msgUnit);
 
@@ -332,7 +333,7 @@ public class XbfParser implements I_MsgInfoParser
          throw new IOException(ME + ": " + str);
       }
 
-      if (log.TRACE) log.trace(ME, "Leaving parse(), message successfully parsed");
+      if (log.isLoggable(Level.FINE)) log.fine("Leaving parse(), message successfully parsed");
       return new MsgInfo[] { msgInfo };
    }
 
@@ -431,7 +432,7 @@ public class XbfParser implements I_MsgInfoParser
       }
       catch(IOException e) {
          String text = "Creation of message failed.";
-         log.warn(ME, text + " " + e.toString());
+         log.warning(text + " " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, text, e);
       }
    }
@@ -463,7 +464,7 @@ public class XbfParser implements I_MsgInfoParser
       }
       catch (NumberFormatException e) {
          e.printStackTrace();
-         log.error(ME, "toLong0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
+         log.severe("toLong0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
          throw new IOException(ME + ": Format is corrupted '" + toString() + "', expected long integral value");
       }
    }
@@ -480,7 +481,7 @@ public class XbfParser implements I_MsgInfoParser
       }
       catch (NumberFormatException e) {
          e.printStackTrace();
-         log.error(ME, "toInt0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
+         log.severe("toInt0(" + niceAndShort(tmp) + ") " + buf.toLiteral());
          throw new IOException(ME + ": Format is corrupted '" + toString() + "', expected integral value");
       }
    }

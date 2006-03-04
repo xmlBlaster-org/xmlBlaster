@@ -7,7 +7,8 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.event.*;
 
-import org.jutils.log.LogChannel;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 public class MainFrame extends JFrame {
@@ -25,7 +26,7 @@ public class MainFrame extends JFrame {
   private JTree jTree1 = new JTree();
   private JPanel jPanel1 = new JPanel();
 
-  private LogChannel log = null;
+   private static Logger log = Logger.getLogger(MainFrame.class.getName());
   private Global glob = null;
   private final String ME = "MainFrame";
 //  private ConnectorClient connectorClient = null;
@@ -39,7 +40,7 @@ public class MainFrame extends JFrame {
 
   public MainFrame(Global glob) {
     this.glob = glob;
-    log = glob.getLog("jmxGUI");
+
     try {
       jbInit();
     }
@@ -85,7 +86,7 @@ public class MainFrame extends JFrame {
               }
           });
 
-      log.info(ME,"jbinit() called");
+      log.info("jbinit() called");
       //placing the window on screen
       Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
       Dimension labelSize = new Dimension(screenSize.height/3, screenSize.width/3);
@@ -99,14 +100,14 @@ public class MainFrame extends JFrame {
       if(img != null)
       {
         this.setIconImage(img);
-        log.info(ME,"Image found " + img.toString());
+        log.info("Image found " + img.toString());
       }
       else
       {
-        log.warn(ME,"AppIcon.gif not found");
+        log.warning("AppIcon.gif not found");
       }
 
-      log.info(ME,"Trying to build model");
+      log.info("Trying to build model");
       try {
         myModel = new DataModel(glob);
       }
@@ -181,8 +182,8 @@ public class MainFrame extends JFrame {
         options,
         options[0]);
     if (n == JOptionPane.YES_OPTION) {
-      log.info(ME,"Exit handeled by WindowManager...");
-      log.info(ME, "Logging out from XmlBlaster..");
+      log.info("Exit handeled by WindowManager...");
+      log.info("Logging out from XmlBlaster..");
 //              connectorClient.logout();
        System.exit(0);
     }
