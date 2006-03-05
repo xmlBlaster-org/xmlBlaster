@@ -10,7 +10,6 @@ import org.jutils.JUtilsException;
 import org.jutils.init.Property;
 import org.jutils.text.StringHelper;
 
-import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -23,7 +22,7 @@ import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
 import org.xmlBlaster.util.key.I_QueryKeyFactory;
 import org.xmlBlaster.util.key.QueryKeySaxFactory;
-import org.xmlBlaster.util.log.XbFilter;
+// import org.xmlBlaster.util.log.XbFilter;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
@@ -535,8 +534,6 @@ public class Global implements Cloneable
       try {
          InputStream in = url.openStream();
          LogManager.getLogManager().readConfiguration(in);
-         Handler[] handlers = log.getHandlers();
-         if (handlers != null && handlers.length > 0) handlers[0].setFilter(new XbFilter("glob"));
          in.close();
          return url;
       }
