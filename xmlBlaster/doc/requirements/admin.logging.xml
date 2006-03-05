@@ -30,9 +30,10 @@
      If you have written your own plugins and are upgrading from xmlBlaster before 1.1.1,
      your plugins will not compile anymore as the org.jutils package is removed.
      You can manually change your logging code to java.utils.logging, or if you prefer,
-     try our helper script <code>$XMLBLASTER_HOME/bin/convertJutilsToJavaLogging.sh MyPluing.java</code>.
+     try our helper script<br />
+      <code>$XMLBLASTER_HOME/bin/convertJutilsToJavaLogging.sh MyPluing.java</code>.<br />
      It will do its best to convert your java code. Just keep a backup of your java files in case
-     the script does not what you expect it to do.
+     the script does not do what you expect it to do.
      </p>
    </description>
 
@@ -62,8 +63,6 @@
 #  -/node/heron/logging FINE
 #  -logging/org.xmlBlaster.engine.level FINE
 #  -/node/heron/logging/org.xmlBlaster.engine.level FINE
-
-#->Main::main()->LogManager.readConfiguration(Input)  
 #-----------------------------------------------------------------------------
 
 # "handlers" specifies a comma separated list of log Handler
