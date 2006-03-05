@@ -24,6 +24,16 @@
                <a href="admin.events.html"
              target="others">admin.events requirement</a>.
      </p>
+
+     <h3>Upgrading from jutils logging</h3>
+     <p>
+     If you have written your own plugins and are upgrading from xmlBlaster before 1.1.1,
+     your plugins will not compile anymore as the org.jutils package is removed.
+     You can manually change your logging code to java.utils.logging, or if you prefer,
+     try our helper script <code>$XMLBLASTER_HOME/bin/convertJutilsToJavaLogging.sh MyPluing.java</code>.
+     It will do its best to convert your java code. Just keep a backup of your java files in case
+     the script does not what you expect it to do.
+     </p>
    </description>
 
    <example lang="Java" type="HTML">
