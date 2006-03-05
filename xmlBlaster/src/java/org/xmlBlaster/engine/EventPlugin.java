@@ -9,13 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.logging.Level;
 
 import javax.mail.internet.InternetAddress;
 import javax.management.NotificationBroadcasterSupport;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.jutils.log.LogableDevice;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
@@ -31,7 +30,8 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.key.MsgKeyData;
-// import org.xmlBlaster.util.log.LogNotifierDeviceFactory;
+import org.xmlBlaster.util.log.I_LogListener;
+import org.xmlBlaster.util.log.XbNotifyHandler;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -164,7 +164,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  */
 public class EventPlugin extends NotificationBroadcasterSupport implements
       I_Plugin, EventPluginMBean, I_ClientListener, I_RunlevelListener,
-      LogableDevice, I_SubscriptionListener, I_TopicListener,
+      I_LogListener, I_SubscriptionListener, I_TopicListener,
       I_ConnectionStatusListener, I_RemotePropertiesListener, Comparable {
    private final static String ME = EventPlugin.class.getName();
 
@@ -502,25 +502,19 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          
          try {
             // "logging/severe/*"
-            if (event.startsWith(ContextNode.LOGGING_MARKER_TAG+"/severe/") // TODO: support specific channels as "logging/severe/*" -> "logging/severe/core"
-                  || event.startsWith("log/error/")) {
-               // Please use JDK14 notation for configuration
+            // TODO: support specific channels as "logging/severe/*" -> "logging/severe/core"
+            if (event.startsWith(ContextNode.LOGGING_MARKER_TAG+"/severe/")
+                  || event.startsWith("logging/error/")) {
                // We want to be notified if a log.error() is called, this will
                // notify our LogableDevice.log() method
-               log.severe("NOT IMPLEMENTED Register logging status " + event);
-               //LogNotifierDeviceFactory lf = this.engineGlob
-               //      .getLogNotifierDeviceFactory();
-               //lf.register(Logger.LOG_ERROR, this);
+               XbNotifyHandler.instance().register(Level.SEVERE.intValue(), this);
                if (this.loggingSet == null) this.loggingSet = new TreeSet();
                this.loggingSet.add(event);
             }
             // "logging/warning/*"
             else if (event.startsWith(ContextNode.LOGGING_MARKER_TAG+"/warning/")
                   || event.startsWith("logging/warn/")) {
-               log.severe("NOT IMPLEMENTED: Register logging status " + event);
-               //LogNotifierDeviceFactory lf = this.engineGlob
-               //      .getLogNotifierDeviceFactory();
-               //lf.register(Logger.LOG_WARN, this);
+               XbNotifyHandler.instance().register(Level.WARNING.intValue(), this);
                if (this.loggingSet == null) this.loggingSet = new TreeSet();
                this.loggingSet.add(event);
             }
@@ -825,7 +819,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          str = ReplaceVariable.replaceAll(str, "$_{versionInfo}", e.getVersionInfo());
       }
       if (str.indexOf("$_{xml}") != -1) {
-         str = ReplaceVariable.replaceAll(str, "$_{xml}", createStatusDump(this.engineGlob, summary, null,
+         str = ReplaceVariable.replaceAll(str, "$_{xml}", createStatusDump(this.engineGlob, summary, description,
             eventType, errorCode));
          return str;
       }
@@ -866,10 +860,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.loggingSet != null)
          this.loggingSet = null;
       
-      //LogNotifierDeviceFactory lf = this.engineGlob
-      //      .getLogNotifierDeviceFactory();
-      //lf.unregister(Logger.LOG_WARN, this);
-      //lf.unregister(Logger.LOG_ERROR, this);
+      XbNotifyHandler hh = XbNotifyHandler.instance();
+      hh.unregister(Level.WARNING.intValue(), this);
+      hh.unregister(Level.SEVERE.intValue(), this);
       
       if (this.engineGlob != null && this.mbeanHandle != null)
          this.engineGlob.unregisterMBean(this.mbeanHandle);
@@ -923,18 +916,19 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /**
     * Redirect logging.
     * 
-    * @see org.jutils.log.LogableDevice#log(int, java.lang.String,
-    *      java.lang.String)
+    * @see org.xmlBlaster.util.log.I_LogListener#log(LogRecord)
     */
-   public void log(int level, String source, String str) {
+   public void log(LogRecord record) {
       // We may not do any log.xxx() call here because of recursion!!
       //if (Logger.LOG_WARN != level && LogChannel.LOG_ERROR != level)
       //   return;
 
+      if (record == null) return;
       if (this.loggingSet == null) return;
-      // FIXME TODO
-      //String found = (Logger.LOG_WARN == level) ? "logging/warning/" : "logging/severe/";
-      String found = "dummy";
+      Level level = record.getLevel();
+      String source = record.getSourceClassName()+"."+record.getSourceMethodName();
+      String str = record.getMessage();
+      String found = (Level.WARNING.equals(level)) ? "logging/warning/" : "logging/severe/";
       String foundEvent = found + "*"; // "logging/warning/*"
       if (!this.loggingSet.contains(foundEvent))
          return;
@@ -946,7 +940,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          String summary = 
              "[" + new java.sql.Timestamp(new java.util.Date().getTime()).toString()
-           // + " " + Logger.bitToLogLevel(level)
+           + " " + level.toString()
            + " " + Thread.currentThread().getName()
            + " " + source + "]";
 
