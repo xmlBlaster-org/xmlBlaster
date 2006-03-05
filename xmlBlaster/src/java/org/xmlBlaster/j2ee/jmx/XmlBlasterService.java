@@ -31,10 +31,10 @@ import javax.naming.NamingException;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.util.property.Property;
+import org.xmlBlaster.util.property.Property.FileInfo;
 import org.xmlBlaster.j2ee.util.JacorbUtil;
 import org.xmlBlaster.j2ee.util.GlobalUtil;
-import org.jutils.init.Property;
-import org.jutils.init.Property.FileInfo;
 import org.jutils.JUtilsException;
 import java.util.logging.Logger;
 import java.util.logging.Level;

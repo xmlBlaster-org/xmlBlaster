@@ -106,9 +106,14 @@ private final static String ME = "ReplicationWriter";
       this.recreateTables =  this.info.getBoolean("replication.recreateTables", false);
       
       this.importLocation = this.info.get("replication.importLocation", "${java.io.tmpdir}");
+      // clean from ending separators
+      if (this.importLocation.endsWith(File.separator) || this.importLocation.endsWith("/"))
+         this.importLocation = this.importLocation.substring(0, this.importLocation.length()-1);
+      
+      String tmpImportLocation = this.info.get("replication.importLocationChunks", this.importLocation + "/chunks");
       boolean overwriteDumpFiles = true;
       String lockExtention =  null;
-      this.callback = new FileWriterCallback(this.importLocation, lockExtention, overwriteDumpFiles);
+      this.callback = new FileWriterCallback(this.importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles);
       this.info = info;
       this.pool = (I_DbPool)info.getObject(DbWriter.DB_POOL_KEY);
       if (this.pool == null)

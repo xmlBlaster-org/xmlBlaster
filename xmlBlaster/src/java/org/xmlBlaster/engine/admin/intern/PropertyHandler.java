@@ -152,8 +152,8 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
             log.info("Changed property '" + key + "' to " + ret);
             return ret;
          }
-         catch (JUtilsException e) {
-            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".set", e.id + " " + e.getMessage());
+         catch (XmlBlasterException e) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".set", e.getErrorCodeStr() + " " + e.getMessage());
          }
       // }
    }

@@ -143,7 +143,7 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
       if (creationOrigin == CREATED_BY_SETTER)
          return "";
       
-      org.jutils.init.Property props = glob.getProperty();
+      org.xmlBlaster.util.property.Property props = glob.getProperty();
 
       StringBuffer name = new StringBuffer(100);
       String usedName = name.toString();

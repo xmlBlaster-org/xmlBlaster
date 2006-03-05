@@ -15,11 +15,11 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.property.Args;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.jutils.JUtilsException;
-import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 import org.jutils.time.StopWatch;
 

@@ -111,7 +111,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          try {
             this.glob.getProperty().set("protocol", "SOCKET");
          }
-         catch (org.jutils.JUtilsException e) {
+         catch (XmlBlasterException e) {
             log.severe("Failed setting SOCKET protocol, we continue nevertheless: " + e.toString());
          }
       }

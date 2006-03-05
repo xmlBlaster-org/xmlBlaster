@@ -9,7 +9,6 @@ package org.xmlBlaster.client.reader;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -22,6 +21,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.property.Args;
 
 
 /**

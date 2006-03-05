@@ -25,9 +25,9 @@ import java.net.URL;
 import java.rmi.RMISecurityManager;
 
 import org.xmlBlaster.util.Global;
-import org.jutils.init.Property;
-import org.jutils.init.Property.FileInfo;
-import org.jutils.JUtilsException;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.property.Property;
+import org.xmlBlaster.util.property.Property.FileInfo;
 
 /**
  * A Global helper class to make it easier to work with Global in an embedded
@@ -40,6 +40,10 @@ import org.jutils.JUtilsException;
  */
 
 public class GlobalUtil implements java.io.Serializable {
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
    private transient org.xmlBlaster.engine.Global engineGlobal;
 
    /**
@@ -84,7 +88,7 @@ public class GlobalUtil implements java.io.Serializable {
          String[] args = Property.propsToArgs(engineGlobal.getProperty().getProperties() );
          try {
             p.addArgs2Props( args != null ? args : new String[0] );
-         } catch (JUtilsException e) {
+         } catch (XmlBlasterException e) {
             IllegalStateException x = new IllegalStateException("Could not engine properties into global: " + e);
          throw x;
          } // end of try-catch
@@ -154,7 +158,7 @@ public class GlobalUtil implements java.io.Serializable {
          IllegalStateException x = new IllegalStateException("Could not load properties from file " + propFile + " :"+e);
          throw x;
          
-      } catch (JUtilsException e) {
+      } catch (XmlBlasterException e) {
          IllegalStateException x = new IllegalStateException("Could not load properties into Property: " + e);
          throw x;
       } // end of try-catch
@@ -175,7 +179,7 @@ public class GlobalUtil implements java.io.Serializable {
          Property p = glob.getProperty();
          String[] args = Property.propsToArgs(props);
          p.addArgs2Props( args != null ? args : new String[0] );
-      } catch (JUtilsException e) {
+      } catch (XmlBlasterException e) {
          IllegalStateException x = new IllegalStateException("Could not load properties into Property: " + e);
          throw x;
       } // end of try-catch
@@ -184,12 +188,12 @@ public class GlobalUtil implements java.io.Serializable {
    /**
     * Ad typical properties needed to run embedded in a J2EE/JBoss server.
     */
-   public void addServerProperties(Global glob) throws IllegalStateException{
+   public void addServerProperties(Global glob) throws IllegalStateException {
       try {
          glob.getProperty().set("classLoaderFactory","org.xmlBlaster.util.classloader.ContextClassLoaderFactory");
          glob.getProperty().set("xmlBlaster.isEmbedded", "true");
          glob.getProperty().set("useSignalCatcher","false");
-      } catch (JUtilsException e) {
+      } catch (XmlBlasterException e) {
          IllegalStateException x = new IllegalStateException("Could not set serverside properties: " + e);
          throw x;
       } // end of try-catch

@@ -21,11 +21,11 @@ package org.xmlBlaster.j2ee.util;
 import java.util.Properties;
 import java.io.InputStream;
 
-import org.jutils.init.Property;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.property.Property;
 /**
  * Helpers class to work with Jacorb in embedded J2EE environment.
  *

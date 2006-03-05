@@ -23,6 +23,7 @@ import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.engine.dispatch.CbDispatchConnectionsHandler;
 import org.xmlBlaster.engine.distributor.plugins.MsgDistributorPluginManager;
+import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
@@ -39,7 +40,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jutils.init.Property;
 
 /**
  * This holds global needed data of one xmlBlaster instance.

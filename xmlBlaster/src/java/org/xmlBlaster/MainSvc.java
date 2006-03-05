@@ -10,23 +10,10 @@ package org.xmlBlaster;
 import com.silveregg.wrapper.WrapperManager;
 import com.silveregg.wrapper.WrapperListener;
 
-//import java.util.logging.Logger;
 import java.util.logging.Level;
-//import org.jutils.JUtilsException;
-//import org.jutils.io.FileUtil;
-//import org.jutils.runtime.Memory;
-//import org.jutils.runtime.ThreadLister;
 
 import org.xmlBlaster.engine.*;
-//import org.xmlBlaster.engine.helper.Constants;
-//import org.xmlBlaster.util.XmlBlasterException;
-//import org.xmlBlaster.util.SignalCatcher;
-//import org.xmlBlaster.protocol.I_XmlBlaster;
-//import org.xmlBlaster.authentication.Authenticate;
-
-//import java.io.BufferedReader;
-//import java.io.InputStreamReader;
-//import java.io.IOException;
+import org.xmlBlaster.util.XmlBlasterException;
 
 public class MainSvc implements WrapperListener 
 {
@@ -46,7 +33,7 @@ public class MainSvc implements WrapperListener
                 Global glob = new Global(myArgs);
                 try {
                     glob.getProperty().set("doBlocking", "false");
-                }catch(org.jutils.JUtilsException ex) {
+                }catch(XmlBlasterException ex) {
                 }
                 main = new Main(glob);
                 while (!main.isHalted()) try { Thread.sleep(60*1000); } catch (Exception e) {}

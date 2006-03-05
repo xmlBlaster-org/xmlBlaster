@@ -6,8 +6,6 @@ Comment:   Properties for xmlBlaster, using org.jutils
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.JUtilsException;
-import org.jutils.init.Property;
 import org.jutils.text.StringHelper;
 
 import java.util.logging.LogManager;
@@ -22,7 +20,6 @@ import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
 import org.xmlBlaster.util.key.I_QueryKeyFactory;
 import org.xmlBlaster.util.key.QueryKeySaxFactory;
-// import org.xmlBlaster.util.log.XbFilter;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
@@ -55,6 +52,7 @@ import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginRegistry;
+import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
@@ -491,19 +489,19 @@ public class Global implements Cloneable
                   else
                      property = new Property(null, true, args, true);
                }
-               catch (JUtilsException e) {
+               catch (XmlBlasterException e) {
                   errorText = ME + ": Error in xmlBlaster.properties: " + e.toString();
                   System.err.println(errorText);
                   try {
                      property = new Property(null, true, args, true);  // initialize without properties file!
                   }
-                  catch (JUtilsException e2) {
+                  catch (XmlBlasterException e2) {
                      errorText = ME + " ERROR: " + e2.toString();
                      System.err.println(errorText);
                      try {
                         property = new Property(null, true, new String[0], true);  // initialize without args
                      }
-                     catch (JUtilsException e3) {
+                     catch (XmlBlasterException e3) {
                         errorText = ME + " ERROR: " + e3.toString();
                         System.err.println(errorText);
                         e3.printStackTrace();
@@ -569,7 +567,7 @@ public class Global implements Cloneable
          initId();
          return property.wantsHelp() ? 1 : 0;
       } 
-      catch (JUtilsException e) {
+      catch (XmlBlasterException e) {
          errorText = ME + " ERROR: " + e.toString();
          System.err.println(errorText); // Log probably not initialized yet.
          return -1;
@@ -1790,7 +1788,7 @@ public class Global implements Cloneable
             ret = map.getProperty(shortKey, ret);
          return getProperty().replaceVariableWithException(shortKey, ret);
       }
-      catch (JUtilsException ex) {
+      catch (XmlBlasterException ex) {
          throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME + ".get", "exception when getting property '" + shortKey + "'", ex);
       }
    }

@@ -276,7 +276,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       if (log.isLoggable(Level.FINE)) this.log.fine("initialize");
 
       // could these also be part of the properties specific to the invoking plugin ?
-      org.jutils.init.Property prop = glob.getProperty();
+      org.xmlBlaster.util.property.Property prop = glob.getProperty();
       String xmlBlasterJdbc = prop.get("JdbcDriver.drivers", "org.postgresql.Driver:sun.jdbc.odbc.JdbcOdbcDriver:ORG.as220.tinySQL.dbfFileDriver:oracle.jdbc.driver.OracleDriver");
 
       // in xmlBlaster.properties file we separate the drivers with a ',' but
@@ -481,7 +481,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
 
    /** This method is used in the init method */
-   private Hashtable parseMapping(org.jutils.init.Property prop)
+   private Hashtable parseMapping(org.xmlBlaster.util.property.Property prop)
          throws XmlBlasterException, SQLException {
       if (log.isLoggable(Level.FINER)) this.log.finer("parseMapping");
       if (this.isShutdown) connect(false);
@@ -755,7 +755,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          log.info("starting the application: The Tests start here ");
 
          String prefix = "cb.queue.persistent";
-         org.jutils.init.Property prop = glob.getProperty();
+         org.xmlBlaster.util.property.Property prop = glob.getProperty();
          String xmlBlasterJdbc = prop.get("JdbcDriver.drivers", "org.postgresql.Driver");
          System.setProperty("jdbc.drivers", xmlBlasterJdbc);
          String url = prop.get(prefix + ".url", "");

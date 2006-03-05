@@ -12,9 +12,6 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.authentication.plugins.I_Manager;
-import org.xmlBlaster.authentication.plugins.I_Session;
-import org.xmlBlaster.authentication.Authenticate;
 
 /**
  * Title: PluginManager
@@ -23,25 +20,15 @@ import org.xmlBlaster.authentication.Authenticate;
 
 public class PersistencePluginManager extends PluginManagerBase
 {
-   private final Global glob;
-
-   private static final String ME = "PersistencePluginManager";
    private static final String defaultPluginName = "org.xmlBlaster.engine.persistence.filestore.FileDriver";
    private static final String pluginPropertyName = "Persistence.Driver";
 
    public PersistencePluginManager(Global glob) throws XmlBlasterException {
       super(glob);
-      this.glob = glob;
-
-      try {
-         // super.choosePlugin reads pluginName and parameters from properties
-         // so read property file, if it's not there, write it to the properties
-         glob.getProperty().set(pluginPropertyName + "[filestore][1.0]",
-            glob.getProperty().get(pluginPropertyName + "[filestore][1.0]", "org.xmlBlaster.engine.persistence.filestore.FileDriver") );
-      } catch (org.jutils.JUtilsException e) {
-         throw new XmlBlasterException( e.id, e.getMessage() );
-      }
-
+      // super.choosePlugin reads pluginName and parameters from properties
+      // so read property file, if it's not there, write it to the properties
+      glob.getProperty().set(pluginPropertyName + "[filestore][1.0]",
+         glob.getProperty().get(pluginPropertyName + "[filestore][1.0]", "org.xmlBlaster.engine.persistence.filestore.FileDriver") );
    }
 
    /**
