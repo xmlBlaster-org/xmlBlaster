@@ -27,8 +27,6 @@ import java.util.StringTokenizer;
  */
 public class BigXmlKeyDOM extends XmlKeyDom
 {
-   final private static String ME = "BigXmlKeyDOM";
-
    private static Logger log = Logger.getLogger(BigXmlKeyDOM.class.getName());
 
    /**
@@ -37,7 +35,6 @@ public class BigXmlKeyDOM extends XmlKeyDom
    BigXmlKeyDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       super(requestBroker);
-
    }
 
 
