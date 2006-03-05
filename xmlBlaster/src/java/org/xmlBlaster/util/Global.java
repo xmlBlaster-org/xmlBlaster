@@ -9,6 +9,9 @@ package org.xmlBlaster.util;
 import org.jutils.JUtilsException;
 import org.jutils.init.Property;
 import org.jutils.text.StringHelper;
+
+import java.util.logging.Handler;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -20,6 +23,7 @@ import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
 import org.xmlBlaster.util.key.I_QueryKeyFactory;
 import org.xmlBlaster.util.key.QueryKeySaxFactory;
+import org.xmlBlaster.util.log.XbFilter;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
@@ -62,6 +66,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -282,6 +287,14 @@ public class Global implements Cloneable
       initId();
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = new HashMap();
+
+      try { // since JKD 1.4:
+         URL url = initLogManager();
+         log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
+      }
+      catch (XmlBlasterException e) {
+         System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
+      }
    }
 
    public static int getCounter() { return counter; }
@@ -504,6 +517,33 @@ public class Global implements Cloneable
          }
       }
       return 0;
+   }
+
+   /**
+    * Configure JDK 1.4 java.util.logging. 
+    * </p>
+    * @return The used configuration file (can be used for user notification)
+    * @throws XmlBlasterException if redirection fails
+    */
+   public URL initLogManager() throws XmlBlasterException {
+      FileLocator fl = new FileLocator(this);
+      URL url = fl.findFileInXmlBlasterSearchPath("xmlBlaster/jdk14LogFile", "logging.properties");
+      if (url == null) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION,
+         "Global", "Can't find xmlBlaster/jdk14LogFile=logging.properties");
+      }
+      try {
+         InputStream in = url.openStream();
+         LogManager.getLogManager().readConfiguration(in);
+         Handler[] handlers = log.getHandlers();
+         if (handlers != null && handlers.length > 0) handlers[0].setFilter(new XbFilter("glob"));
+         in.close();
+         return url;
+      }
+      catch (Exception e) {
+         throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION,
+                   "Global", url.toString(), e);
+      }
    }
 
    /**
