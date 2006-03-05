@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE filep
 package org.xmlBlaster.contrib.filewriter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
@@ -30,18 +31,21 @@ public class FileWriterCallback implements I_Update {
    private String lockExtention;
    private File directory;
    private boolean overwrite;
-   private String tmpDir;
+   private String tmpDirName;
+   private File tmpDirectory;
+   
    
    /**
     * Creates a callback
     * @param dirName The name of the directory where to store the files.
+    * @param tmpDirName the name of the directory where to store the temporary files.
     * @param lockExtention The extention to use to lock the reading of the file. This is used if the
     * entries have to be retrieved by the filepoller. Until such a file exists, the entry is not 
     * processed by the file poller.
     * @param overwrite if set to true it will overwrite existing files.
     * @throws Exception
     */
-   public FileWriterCallback(String dirName, String lockExtention, boolean overwrite) throws Exception {
+   public FileWriterCallback(String dirName, String tmpDirName, String lockExtention, boolean overwrite) throws Exception {
       this.dirName = dirName;
       if (dirName == null)
          throw new Exception ("The directory where to store the files is null, can not continue");
@@ -49,22 +53,34 @@ public class FileWriterCallback implements I_Update {
       this.directory = new File(this.dirName);
       if (this.directory == null)
          throw new Exception("The created directory '" + dirName + "' resulted in a null File object");
-      if (!this.directory.exists())
-         throw new Exception(" '" + dirName + "'");
+      if (!this.directory.exists()) {
+         if (this.directory.mkdir())
+            throw new Exception("The directory '" + dirName + "' could not be created");
+      }
       if (!this.directory.canWrite())
          throw new Exception("Can not write to the directory '" + dirName + "'");
       if (!this.directory.isDirectory())
          throw new Exception("'" + dirName + "' is not a directory, can not use it to store files");
-      this.tmpDir = "tmpChunks";
-      File subDir = new File(this.directory, this.tmpDir);
-      boolean ret = subDir.mkdir();
-      if (!ret)
-         throw new Exception("Could not create directory 'tmpChunks' as a subdirectory of '" + this.directory + "'");
+      this.tmpDirName = tmpDirName;
+      
+      this.tmpDirectory = new File(this.tmpDirName);
+      
+      if (this.tmpDirectory == null)
+         throw new Exception("The created temporary directory '" + tmpDirName + "' resulted in a null File object");
+      if (!this.tmpDirectory.exists()) {
+         if (!this.tmpDirectory.mkdir())
+            throw new Exception("The temporary directory '" + tmpDirName + "' could not be created");
+      }
+      if (!this.tmpDirectory.canWrite())
+         throw new Exception("Can not write to the temporary directory '" + tmpDirName + "'");
+      if (!this.tmpDirectory.isDirectory())
+         throw new Exception("The temporary '" + tmpDirName + "' is not a directory, can not use it to store files");
+
       this.overwrite = overwrite;
    }
 
    
-   private static void storeChunk(String tmpDir, String fileName, long chunkNumber, char sep, boolean overwrite, byte[] content) throws Exception {
+   private static void storeChunk(File tmpDir, String fileName, long chunkNumber, char sep, boolean overwrite, byte[] content) throws Exception {
       fileName = fileName + sep + chunkNumber;
       File file = new File(tmpDir, fileName);
       if (file == null)
@@ -81,7 +97,7 @@ public class FileWriterCallback implements I_Update {
          }
       }
       try {
-         log.info("storing file '" + fileName + "' on directory '" + tmpDir + "', size: " + content.length + " bytes");
+         log.info("storing file '" + fileName + "' on directory '" + tmpDir.getName() + "', size: " + content.length + " bytes");
          
          FileOutputStream fos = new FileOutputStream(file);
          fos.write(content);
@@ -128,16 +144,10 @@ public class FileWriterCallback implements I_Update {
     * @throws Exception
     */
    private File[] getChunkFilenames(String fileName, char sep) throws Exception {
-      File dir = new File(this.tmpDir);
-      if (dir == null)
-         throw new Exception("the directory where the chunks should be stored does not exist");
-      if (!dir.isDirectory())
-         throw new Exception("the directory '" + this.tmpDir + "' is not a directory");
-
       // scan for all chunks:
       String prefix = fileName + sep;
       String expression = prefix + '*';
-      File[] files = dir.listFiles(new FilenameFilter(expression, false));
+      File[] files = this.tmpDirectory.listFiles(new FilenameFilter(expression, false));
       
       if (files.length > 0) {
          TreeMap map = new TreeMap();
@@ -160,8 +170,20 @@ public class FileWriterCallback implements I_Update {
       return new File[0];
    }
 
-   
-   private void putAllChunksTogheter(String fileName) throws Exception {
+   /**
+    * Puts all chunks stored in separate files toghether in one single one.
+    * 
+    * @param fileName The name of the complete (destination) file.
+    * @param expectedChunks The number of expected chunks. If the number of chunks found is
+    * bigger, the exceeding ones are ignored and a warning is written to the logs. If the number
+    * is too low an exception is thrown. Keeps also track of locking the file.
+    * @param lastContent the content of the last chunk of the message (can be null).
+    * @param isCompleteMsg is true if the content of the message is contained in one single
+    * chunk (i.e. if the message is not chunked).
+    * @throws Exception If an error occurs when writing / reading the files. This method tries
+    * to clean up the destination file in case of an exception when writing.
+    */
+   private void putAllChunksTogheter(String fileName, long expectedChunks, byte[] lastContent, boolean isCompleteMsg) throws Exception {
       File file = new File(this.directory, fileName);
       if (file == null)
          throw new Exception("the file for '" + fileName + "' was null");
@@ -184,98 +206,62 @@ public class FileWriterCallback implements I_Update {
             lock.createNewFile();
          }
          log.info("storing file '" + fileName + "' on directory '" + this.directory + "'");
-         
-         // retrieve all chunks here
-         File[] files = getChunkFilenames(fileName, '.');
 
-         // FIXME add here the code to chunk all togheter
-         
-         if (lock != null) {
-            boolean deleted = lock.delete();
-            if (!deleted)
-               throw new Exception("can not delete lock file '" + lockName + "' in directory '" + this.directory + "'");
+         File[] files = null;
+         long numChunks = 0L;
+         if (!isCompleteMsg) {
+            files = getChunkFilenames(fileName, '.'); // retrieves the chunks in correct order
+            if (files.length > expectedChunks)
+               log.warning("Too many chunks belonging to '" + fileName + "' are found. They are '" + files.length + "' but should be '" + expectedChunks + "'");
+            else if (files.length < expectedChunks)
+               throw new Exception("Too few chunks belonging to '" + fileName + "' are found. They are '" + files.length + "' but should be '" + expectedChunks + "'");
+            numChunks = files.length > expectedChunks ? expectedChunks : files.length; 
          }
-      }
-      catch (IOException ex) {
-         throw new Exception("update: an exception occured when storing the file '" + fileName + "'", ex);
-      }
-      
-      
-   }
-   
-   public void updateNEW(String topic, byte[] content, Map attrMap) throws Exception {
-      String fileName = null;
-      if (attrMap != null) {
-         ClientProperty prop = (ClientProperty)attrMap.get("_filename"); 
-         if (prop != null)
-            fileName = prop.getStringValue(); 
-      }
-      if (fileName == null) {
-         ClientProperty prop = (ClientProperty)attrMap.get("_timestamp"); 
-         if (prop != null) {
-            String timestamp = prop.getStringValue();
-            fileName = "xbl" + timestamp + ".msg";
-         }
-         else
-            throw new Exception("update: the message '" + topic + "' should contain either the filename or the timestamp in the properties, but none was found. Can not create a filename to store the data on.");
-      }
-      log.fine("storing file '" + fileName + "' on directory '" + this.directory + "', size: " + content.length + " bytes");
+         // put all chunks toghether in one single file
+         int bufSize = 300000;
+         byte[] buf = new byte[bufSize];
 
-      boolean isLastMsg = false;
-      String exMsg = null;
-      long chunkCount = 0L;
-      ClientProperty prop = (ClientProperty)attrMap.get(Constants.CHUNK_SEQ_NUM);
-      if (prop != null) {
-         chunkCount = prop.getLongValue();
-         prop = (ClientProperty)attrMap.get(Constants.CHUNK_EOF);
-         if (prop != null) {
-            isLastMsg = prop.getBooleanValue();
-            prop = (ClientProperty)attrMap.get(Constants.CHUNK_EXCEPTION);
-            if (prop != null)
-               exMsg = prop.getStringValue();
-         }
-      }
-      else
-         isLastMsg = true;
-      
-      storeChunk(tmpDir, fileName, chunkCount, '.', this.overwrite, content);
-      if (isLastMsg) {
-         // put all chunks together
-      }
-      
-      
-      File file = new File(this.directory, fileName);
-      if (file == null)
-         throw new Exception("the file for '" + fileName + "' was null");
-      if (file.exists()) {
-         if (file.isDirectory())
-            throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it is a directory");
-         if (chunkCount == 0L && !this.overwrite)
-            throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it exists already and the 'overwrite' flag is set to 'false'");
-      }
-      try {
-         File lock = null;
-         String lockName = null;
-         if (this.lockExtention != null && chunkCount == 0L) {
-            lockName = fileName + this.lockExtention;
-            lock = new File(this.directory, lockName);
-            lock.createNewFile();
-         }
-
-         log.info("storing file '" + fileName + "' on directory '" + this.directory + "', size: " + content.length + " bytes msgNr.='" + chunkCount + "' isLastMsg='" + isLastMsg + "'");
-         
-         if (exMsg == null) {
-            boolean doAppend = !(chunkCount == 0L);
-            FileOutputStream fos = new FileOutputStream(file, doAppend);
-            fos.write(content);
+         FileOutputStream fos = null;
+         try {
+            fos = new FileOutputStream(file);
+            for (int i=0; i < numChunks; i++) {
+               log.info("adding chunk '" + i + "' to file '" + fileName + "'");
+               FileInputStream fis = new FileInputStream(files[i]);
+               int ret = 0;
+               while ( (ret=fis.read(buf)) > -1) {
+                  fos.write(buf, 0, ret);
+               }
+               fis.close();
+            }
+            
+            if (lastContent != null && lastContent.length != 0)
+               fos.write(lastContent);
             fos.close();
          }
-         else {
-            log.severe("An exception occured '" + exMsg + "' will delete the file and interrupt initial update");
-            file.delete();
+         catch (Throwable ex) {
+            if (fos != null) {
+               if (file.exists()) {
+                  if (file.canWrite()) {
+                     if (!file.delete())
+                        log.warning("An exception occured when putting all chunks toghether for '" + fileName + "' but could not delete the file for an unknown reason. The original exception was '" + ex.getMessage() + "'");
+                  }
+                  else
+                     log.warning("An exception occured when putting all chunks toghether for '" + fileName + "' but could not delete the file since it is not writable. The original exception was '" + ex.getMessage() + "'");
+               }
+            }
+            if (ex instanceof Exception)
+               throw (Exception)ex;
+            else
+               throw new Exception(ex);
          }
          
-         if (lock != null && (isLastMsg || exMsg != null)) {
+         // clean up all chunks since complete file created
+         if (!isCompleteMsg) {
+            for (int i=0; i < files.length; i++)
+               deleteFile(files[i]);
+         }
+         
+         if (lock != null) {
             boolean deleted = lock.delete();
             if (!deleted)
                throw new Exception("can not delete lock file '" + lockName + "' in directory '" + this.directory + "'");
@@ -287,9 +273,94 @@ public class FileWriterCallback implements I_Update {
    }
 
    /**
+    * Deletes the specified file from the file system.
+    * Never throws Exceptions
+    * @param file the file object to be deleted.
+    * @return if it can not delete the file it returns false, true otherwise.
+    */
+   private final static boolean deleteFile(File file) {
+      if (file.exists()) {
+         if (file.canWrite()) {
+            try {
+               if (!file.delete())
+                  log.warning("The file '" + file.getName() + "' could not be deleted (unknown reason)");
+               else
+                  return true;
+            }
+            catch (Throwable ex) {
+               log.warning("An Exception occured when trying to delete file '" + file.getName() + "': " + ex.getMessage());
+            }
+         }
+         else
+            log.warning("The file '" + file.getName() + "' could not be deleted since it does not exist");
+      }
+      else
+         log.warning("The file '" + file.getName() + "' could not be deleted since it does not exist");
+      return false;
+   }
+   
+   
+   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+
+      String fileName = null;
+      boolean isLastMsg = true;
+      String exMsg = null;
+      long chunkCount = 0L;
+     
+      if (attrMap != null) {
+         ClientProperty prop = (ClientProperty)attrMap.get("_filename"); 
+         if (prop != null)
+            fileName = prop.getStringValue(); 
+         if (fileName == null) {
+            prop = (ClientProperty)attrMap.get("_timestamp"); 
+            if (prop != null) {
+               String timestamp = prop.getStringValue();
+               fileName = "xbl" + timestamp + ".msg";
+            }
+            else
+               throw new Exception("update: the message '" + topic + "' should contain either the filename or the timestamp in the properties, but none was found. Can not create a filename to store the data on.");
+         }
+
+         prop = (ClientProperty)attrMap.get(Constants.CHUNK_SEQ_NUM);
+         if (prop != null) {
+            isLastMsg = false;
+            chunkCount = prop.getLongValue();
+            prop = (ClientProperty)attrMap.get(Constants.CHUNK_EOF);
+            if (prop != null) {
+               isLastMsg = prop.getBooleanValue();
+               prop = (ClientProperty)attrMap.get(Constants.CHUNK_EXCEPTION);
+               if (prop != null)
+                  exMsg = prop.getStringValue();
+            }
+         }
+         else
+            isLastMsg = true;
+      }
+      if (fileName == null) {
+         // fileName = topic + (new Timestamp()).getTimestamp() + ".msg";
+         fileName = topic;
+         log.warning("The message did not contain any filename nor timestamp. Will write to '" + fileName + "'");
+      }
+      log.fine("storing file '" + fileName + "' on directory '" + this.directory.getName() + "', size: " + content.length + " bytes");
+
+      boolean isCompleteMsg = isLastMsg && chunkCount == 0L;
+      if (exMsg == null) { // no exception
+         if (isLastMsg)
+            putAllChunksTogheter(fileName, chunkCount, content, isCompleteMsg);
+         else
+            storeChunk(this.tmpDirectory, fileName, chunkCount, '.', this.overwrite, content);
+      }
+      else if (!isCompleteMsg) { // clean up old chunks
+         File[] files = getChunkFilenames(fileName, '.'); // retrieves the chunks in correct order
+         for (int i=0; i < files.length; i++)
+            deleteFile(files[i]);
+      }
+   }
+
+   /**
     * @deprecated
     */
-   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+   public void updateOLD(String topic, byte[] content, Map attrMap) throws Exception {
       String fileName = null;
       if (attrMap != null) {
          ClientProperty prop = (ClientProperty)attrMap.get("_filename"); 
