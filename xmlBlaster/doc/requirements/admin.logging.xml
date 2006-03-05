@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.logging' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>XmlBlaster uses the JDK 1.4 logging framework</topic>
+   <description>
+     <p>
+     All logging output from xmlBlaster is done with the JDK 1.4 logging framework.
+     This was introduced to xmlBlaster version 1.1.2, replacing the outdated <i>jutils</i> logging framework.
+     Our configuration file is <code>xmlBlaster/config/logging.properties</code>.
+     </p>
+     
+     <p>We provide two xmlBlaster specific components to adjust the logging to our needs.</p>
+
+     <p>The first is an own formatter called <code>org.xmlBlaster.util.log.XbFormatter</code>,
+     using this in <code>logging.properties</code> prints colorful logging
+     messages to your Unix/Linux console, errors are marked red to be easy spotted.
+     </p>
+
+     <p>The other extension is a log event listener called <code>org.xmlBlaster.util.log.XbNotifyHandler</code>.
+     You should not remove it, it is needed for our <code>EventPlugin</code> to receive
+     logging events about log.severe and log.warning occurrences.
+     For details consult the
+               <a href="admin.events.html"
+             target="others">admin.events requirement</a>.
+     </p>
+   </description>
+
+   <example lang="Java" type="HTML">
+      <p id="props" class="celltitel">Example of logging.properties</p>
+<pre>
+#-----------------------------------------------------------------------------
+# Name:      xmlBlasterJdk14Logging.properties
+# Project:   xmlBlaster.org
+# Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+#
+# Comment:   Configure JDK 1.4 java.util.logging output
+#
+# Levels:    FINEST  
+#            FINER   
+#            FINE    
+#            INFO    
+#            WARNING 
+#            SEVERE  
+#            CONFIG
+#
+# Force the logging property file:
+#  java -Djava.util.logging.config.file=$XMLBLASTER_HOME/config/logging.properties ...
+#
+# Configure logging from command line:
+#  -logging FINE
+#  -/node/heron/logging FINE
+#  -logging/org.xmlBlaster.engine.level FINE
+#  -/node/heron/logging/org.xmlBlaster.engine.level FINE
+
+#->Main::main()->LogManager.readConfiguration(Input)  
+#-----------------------------------------------------------------------------
+
+# "handlers" specifies a comma separated list of log Handler
+# classes.  These handlers will be installed during VM startup.
+# Note that these classes must be on the system classpath.
+# By default we only configure a ConsoleHandler, which will only
+# show messages at the INFO and above levels.
+handlers= java.util.logging.ConsoleHandler, org.xmlBlaster.util.log.XbNotifyHandler
+
+# To also add the FileHandler, use the following line instead.
+#handlers= java.util.logging.FileHandler, java.util.logging.ConsoleHandler
+
+# Default global logging level.
+# This specifies which kinds of events are logged across
+# all loggers.  For any given facility this global level
+# can be overriden by a facility specific level
+# Note that the ConsoleHandler also has a separate level
+# setting to limit messages printed to the console.
+.level= INFO
+
+############################################################
+# Handler specific properties.
+# Describes specific configuration info for Handlers.
+############################################################
+
+# default file output is in user's home directory.
+java.util.logging.FileHandler.pattern = %h/java%u.log
+java.util.logging.FileHandler.limit = 50000
+java.util.logging.FileHandler.count = 1
+java.util.logging.FileHandler.formatter = java.util.logging.XMLFormatter
+
+# Limit the message that are printed on the console to INFO and above.
+java.util.logging.ConsoleHandler.level = INFO
+#java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
+java.util.logging.ConsoleHandler.formatter = org.xmlBlaster.util.log.XbFormatter
+
+
+############################################################
+# Facility specific properties.
+# Provides extra control for each logger.
+############################################################
+
+# For example, set the com.xyz.foo logger to only log SEVERE
+org.xmlBlaster.engine.level = INFO
+#org.xmlBlaster.engine.handlers=org.xmlBlaster.util.log.XbHandler
+#org.xmlBlaster.engine.useParentHandlers=false
+#org.xmlBlaster.engine.config=org.xmlBlaster.util.log.XbConfig
+</pre>
+   </example>
+
+   <configuration>
+   </configuration>
+
+   <see type="API" label="Colorful formatting">org.xmlBlaster.util.log.XbFormatter</see>
+   <see type="API" label="Listener for SEVERE and WARNING events">org.xmlBlaster.util.log.I_LogListener</see>
+   <see type="INTERNET" label="JDK 1.4 logging intro">http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/overview.html</see>
+
+   <author>xmlblast@marcelruff.info</author>
+   <date>2006 03 05</date>
+   <revision>$Revision: 1.2 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <!--<test tool="SUITE">org.xmlBlaster.test.mime.TestXPathSubscribeFilter</test>-->
+   </testcase>
+</requirement>
