@@ -25,13 +25,18 @@
              target="others">admin.events requirement</a>.
      </p>
 
+     <p>The logging.properties file can be set on command line with</p>
+<pre>
+  java -Djava.util.logging.config.file=myLog.properties
+</pre>
+
      <h3>Upgrading from jutils logging</h3>
      <p>
      If you have written your own plugins and are upgrading from xmlBlaster before 1.1.1,
      your plugins will not compile anymore as the org.jutils package is removed.
      You can manually change your logging code to java.utils.logging, or if you prefer,
      try our helper script<br />
-      <code>$XMLBLASTER_HOME/bin/convertJutilsToJavaLogging.sh MyPluing.java</code>.<br />
+      <code>$XMLBLASTER_HOME/bin/convertJutilsToJavaLogging.sh MyPlugin.java</code>.<br />
      It will do its best to convert your java code. Just keep a backup of your java files in case
      the script does not do what you expect it to do.
      </p>
@@ -111,6 +116,21 @@ org.xmlBlaster.engine.level = INFO
 #org.xmlBlaster.engine.useParentHandlers=false
 #org.xmlBlaster.engine.config=org.xmlBlaster.util.log.XbConfig
 </pre>
+   </example>
+
+   <example>
+<code>
+java -Djava.util.logging.config.file=$XMLBLASTER_HOME/config/logging.properties
+     -Dcom.sun.management.jmxremote org.xmlBlaster.Main
+     -logging/org.xmlBlaster.engine.RequestBroker FINE
+</code>
+<code>
+java -Djava.util.logging.config.file=$XMLBLASTER_HOME/config/logging.properties
+     -Dcom.sun.management.jmxremote org.xmlBlaster.Main
+     -logging FINE
+     -logging/org.xmlBlaster.engine INFO
+     -logging/org.xmlBlaster.engine.RequestBroker FINEST
+</code>
    </example>
 
    <configuration>
