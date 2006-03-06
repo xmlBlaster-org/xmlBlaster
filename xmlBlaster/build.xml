@@ -618,10 +618,8 @@ TODO
    <!-- Compiles the contrib/dbwatcher source directory                     -->
    <!-- =================================================================== -->
    <target name="DbWatcher" depends="xmlBlaster" description="Compile xmlBlaster contrib DbWatcher.jar">
-      <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties"/>
       <jar destfile="${build.dir}/DbWatcher.jar" basedir="${build.dest}"
-           includes="xmlBlasterJdk14Logging.properties,org/xmlBlaster/contrib/I_Info*,org/xmlBlaster/contrib/dbwatcher/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
-
+           includes="org/xmlBlaster/contrib/I_Info*,org/xmlBlaster/contrib/dbwatcher/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
 
@@ -629,12 +627,11 @@ TODO
    <!-- Compiles the contrib/dbwatcher source directory                     -->
    <!-- =================================================================== -->
    <target name="contrib" depends="xmlBlaster" description="Compile complete xmlBlaster contrib directory">
-      <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties"/>
       <copy todir="${build.dest}/org/xmlBlaster/contrib/replication/setup">
          <fileset dir="${src.java.dir}/org/xmlBlaster/contrib/replication/setup"/>
       </copy>
       <jar destfile="${build.dir}/xmlBlasterContrib.jar" basedir="${build.dest}"
-           includes="xmlBlasterJdk14Logging.properties,org/xmlBlaster/contrib/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
+           includes="org/xmlBlaster/contrib/**,org/xmlBlaster/util/log/XmlBlasterJdk14LoggingHandler*"/>
       <copy file="${build.dir}/xmlBlasterContrib.jar" tofile="${lib.dir}/xmlBlasterContrib.jar"/>
    </target>
 
@@ -682,7 +679,7 @@ TODO
       <copy file="${config.dir}/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
-      <copy file="${config.dir}/xmlBlasterJdk14Logging.properties" tofile="${build.dest}/xmlBlasterJdk14Logging.properties" filtering="true"/>
+      <copy file="${config.dir}/logging.properties" tofile="logging.properties" filtering="true"/>
 
       <javac srcdir="${build.src}/xmlBlaster"
             destdir="${build.dest}"
@@ -703,7 +700,7 @@ TODO
       <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
 
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,xmlBlasterPlugins.xml,xmlBlasterJdk14Logging.properties,manifest.xmlBlaster,*.xml"/>
+           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,xmlBlasterPlugins.xml,logging.properties,manifest.xmlBlaster,*.xml"/>
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
 
