@@ -10,7 +10,6 @@ package org.xmlBlaster.test.qos;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
@@ -23,6 +22,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.property.Args;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;

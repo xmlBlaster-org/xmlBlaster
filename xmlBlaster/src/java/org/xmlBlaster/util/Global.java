@@ -8,6 +8,7 @@ package org.xmlBlaster.util;
 
 import org.jutils.text.StringHelper;
 
+import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -57,6 +58,7 @@ import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
 
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.ArrayList;
 import java.util.Map;
@@ -531,8 +533,62 @@ public class Global implements Cloneable
       }
       try {
          InputStream in = url.openStream();
-         LogManager.getLogManager().readConfiguration(in);
+         
+         LogManager logManager = LogManager.getLogManager();
+         logManager.readConfiguration(in);
          in.close();
+         
+         // init from command line (or xmlBlaster.properties)
+         Map map = this.property.getPropertiesForContextNode(this.contextNode, ContextNode.LOGGING_MARKER_TAG, "__default");
+         String defVal = (String)map.get("__default");
+         if (defVal != null) {
+            try {
+               Level defaultLevel = Level.parse(defVal);
+               Logger defLogger = logManager.getLogger("");
+               if (defLogger != null) {
+                  defLogger.setLevel(defaultLevel);
+                  log.info("Setting default log level to '" + defaultLevel.getName() + "'");
+               }
+               else
+                  log.warning("Setting default log level to '" + defaultLevel.getName() + "' failed since default log level is null");
+            }
+            catch (Throwable ex) {
+               log.warning("An exception occured when parsing '" + defVal + "' as a log level");
+            }
+         }
+         Iterator iter = map.entrySet().iterator();
+         
+         Logger defLogger = logManager.getLogger("");
+         // Handler[] tmpHandlers = defLogger.getHandlers();
+         // Handler[] refHandlers = new Handler[tmpHandlers.length];
+         Handler[] refHandlers = defLogger.getHandlers();
+         for (int i=0; i < refHandlers.length; i++) {
+            refHandlers[i].setLevel(Level.FINEST);
+         }
+         
+         while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            String key = (String)entry.getKey();
+            String val = (String)entry.getValue();
+            try {
+               Level level = Level.parse(val);
+               Logger tmpLogger = Logger.getLogger(key);
+               if (tmpLogger != null) {
+                  tmpLogger.setLevel(level);
+                  tmpLogger.setUseParentHandlers(false);
+                  for (int i=0; i < refHandlers.length; i++) {
+                     // handlers[i].setLevel(level);
+                     tmpLogger.addHandler(refHandlers[i]);
+                  }
+                  log.info("Setting log level for '" + key + "' to '" + level.getName() + "'");
+               }
+               else
+                  log.info("Setting log level for '" + key + "' to '" + level.getName() + "' failed since logger was null");
+            }
+            catch (Throwable ex) {
+               log.warning("An exception occured when parsing '" + val + "' as a log level for '" + key + "'");
+            }
+         }
          return url;
       }
       catch (Exception e) {

@@ -19,11 +19,9 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -111,7 +109,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
 
 
 
-      }catch(org.jutils.JUtilsException ex) {
+      }catch(XmlBlasterException ex) {
          assertTrue("Could not setup test: " + ex, false);
       }
       ME = ME+":"+clientProtocol+(useOneConnection ? ":oneCon":":manyCon")+":"+numSubscribers + (maxSubPerCon>0?"/"+maxSubPerCon:"");
@@ -518,7 +516,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       try {
          glob.getProperty().set("client.protocol",proto);
          glob.getProperty().set("maxSubPerCon",max);
-      }catch(org.jutils.JUtilsException ex) {
+      }catch(XmlBlasterException ex) {
          assertTrue("Could not setup test: " + ex, false);
       }
    }

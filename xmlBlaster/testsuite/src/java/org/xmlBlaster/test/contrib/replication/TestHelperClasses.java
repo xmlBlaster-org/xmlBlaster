@@ -6,8 +6,10 @@
 package org.xmlBlaster.test.contrib.replication;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -22,8 +24,11 @@ import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
+import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.contrib.replication.impl.DefaultMapper;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * Test helper classes as for example beans used for the configuration.
@@ -46,6 +51,11 @@ public class TestHelperClasses extends XMLTestCase {
       
       TestHelperClasses test = new TestHelperClasses();
       try {
+         
+         test.setUp();
+         test.testFileWriterCallback();
+         test.tearDown();
+
          test.setUp();
          test.testVersionTransformerCache();
          test.tearDown();
@@ -136,6 +146,61 @@ public class TestHelperClasses extends XMLTestCase {
       
       System.out.println("TEST");
    }      
+   
+
+   public void testFileWriterCallback() {
+      String importLocation = "/tmp";
+      String tmpImportLocation = "/tmp/tmpFiles";
+      String lockExtention = ".lock";
+      boolean overwriteDumpFiles = true;
+      try {
+         FileWriterCallback callback = new FileWriterCallback(importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles);
+         byte[] content = new byte[100000];
+         File checkFile = new File("/tmp/dummy");
+         checkFile.delete();
+         callback.update("dummy", content, null);
+         assertTrue("The file 'dummy' must exist", checkFile.exists());
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("An exception should not occur. " + ex.getMessage(), false);
+      }
+      
+      try {
+         FileWriterCallback callback = new FileWriterCallback(importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles);
+         String filename = "second.dat";
+         File checkFile = new File("/tmp/" + filename);
+         checkFile.delete();
+         HashMap map = new HashMap();
+         map.put("_filename", new ClientProperty("_filename", null, null, filename));
+         map.put(Constants.CHUNK_SEQ_NUM, new ClientProperty(Constants.CHUNK_SEQ_NUM, null, null, "" + 0L));
+         callback.update("dummy", "first".getBytes(), map);
+
+         map.clear();
+         map.put("_filename", new ClientProperty("_filename", null, null, filename));
+         map.put(Constants.CHUNK_SEQ_NUM, new ClientProperty(Constants.CHUNK_SEQ_NUM, null, null, "" + 1L));
+         callback.update("dummy", "second".getBytes(), map);
+         
+         map.clear();
+         map.put("_filename", new ClientProperty("_filename", null, null, filename));
+         map.put(Constants.CHUNK_SEQ_NUM, new ClientProperty(Constants.CHUNK_SEQ_NUM, null, null, "" + 2L));
+         map.put(Constants.CHUNK_EOF, new ClientProperty(Constants.CHUNK_EOF, null, null, "true"));
+         callback.update("dummy", "third".getBytes(), map);
+         
+         assertTrue("The file 'dummy' must exist", checkFile.exists());
+         FileInputStream fis = new FileInputStream(checkFile);
+         byte[] buf = new byte[100];
+         fis.read(buf);
+         String ret = new String(buf).trim();
+         assertEquals("The length of the string of combined files must match", "firstsecondthird".length(), ret.length());
+         assertEquals("The string of the combined files is ", "firstsecondthird", ret);
+         log.info("content of message is '" + ret + "'");
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("An exception should not occur. " + ex.getMessage(), false);
+      }
+   }
    
    
    public void testVersionTransformerCache() {

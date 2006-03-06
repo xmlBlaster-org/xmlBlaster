@@ -1,8 +1,6 @@
 package org.xmlBlaster.test.classtest;
 
 import org.custommonkey.xmlunit.XMLTestCase;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -22,7 +20,6 @@ import org.xmlBlaster.util.def.Constants;
  */
 public class ClientPropertyTest extends XMLTestCase {
    protected Global glob;
-   private static Logger log = Logger.getLogger(ClientPropertyTest.class.getName());
    int counter = 0;
 
    public ClientPropertyTest(String name) {

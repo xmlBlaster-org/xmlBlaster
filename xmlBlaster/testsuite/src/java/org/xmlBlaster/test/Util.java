@@ -7,8 +7,8 @@ Comment:   Some helper methods for test clients
 package org.xmlBlaster.test;
 
 import org.xmlBlaster.util.Global;
-import org.jutils.init.Args;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.property.Args;
 
 import java.util.Vector;
 

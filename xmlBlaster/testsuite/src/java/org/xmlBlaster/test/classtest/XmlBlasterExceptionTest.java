@@ -171,7 +171,7 @@ public class XmlBlasterExceptionTest extends TestCase {
          globTmp.getProperty().set("XmlBlasterException.logFormat", logFormat);
          globTmp.getProperty().set("XmlBlasterException.logFormat.internal", logFormat);
       }
-      catch (org.jutils.JUtilsException e) {
+      catch (XmlBlasterException e) {
          fail(e.toString());
       }
 

@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.topic;
 
-import org.jutils.init.Property;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -36,6 +35,7 @@ import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnit;
