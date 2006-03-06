@@ -282,7 +282,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   </route>\n" +
             "</qos>\n";
 
-         PublishQosServer qos = new PublishQosServer(new org.xmlBlaster.engine.Global(), xml);
+         PublishQosServer qos = new PublishQosServer(new org.xmlBlaster.engine.ServerScope(), xml);
 
          assertEquals("", true, qos.isSubscribable());
          assertEquals("", true, qos.isPtp());

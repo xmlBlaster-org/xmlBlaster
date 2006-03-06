@@ -9,7 +9,7 @@ package org.xmlBlaster.engine.admin.extern;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
@@ -40,7 +40,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 public final class MomClientGateway implements I_ExternGateway
 {
    private String ME;
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(MomClientGateway.class.getName());
    private CommandManager commandManager;
    private static int instanceCounter = 0;
@@ -48,7 +48,7 @@ public final class MomClientGateway implements I_ExternGateway
    /**
     * Creates the remote console server. 
     */
-   public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
+   public boolean initialize(ServerScope glob, CommandManager commandManager) throws XmlBlasterException {
       this.glob = glob;
 
 

@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.admin.intern;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.MsgUnit;
@@ -30,7 +30,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 final public class MsgHandler implements I_CommandHandler, I_Plugin {
 
    private String ME = "MsgHandler";
-   private Global glob = null;
+   private ServerScope glob = null;
    private static Logger log = Logger.getLogger(MsgHandler.class.getName());
    private CommandManager commandManager = null;
 
@@ -39,7 +39,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
     * @param glob The Global handle of this xmlBlaster server instance.
     * @param commandManager My big brother taking care of me
     */
-   public void initialize(Global glob, CommandManager commandManager) {
+   public void initialize(ServerScope glob, CommandManager commandManager) {
       this.glob = glob;
 
       this.commandManager = commandManager;

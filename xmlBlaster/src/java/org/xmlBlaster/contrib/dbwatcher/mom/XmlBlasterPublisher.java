@@ -200,7 +200,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          this.glob = new Global();
       }
       else {
-         if (globOrig instanceof org.xmlBlaster.engine.Global) {
+         if (globOrig instanceof org.xmlBlaster.engine.ServerScope) {
             this.glob = globOrig.getClone(globOrig.getNativeConnectArgs());
             this.glob.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
          }

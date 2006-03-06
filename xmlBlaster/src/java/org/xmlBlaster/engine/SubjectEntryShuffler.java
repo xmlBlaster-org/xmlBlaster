@@ -25,7 +25,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 public class SubjectEntryShuffler implements Runnable {
 
    private final static String ME = "SubjectEntryShuffler";
-   private Global global;
+   private ServerScope global;
    private static Logger log = Logger.getLogger(SubjectEntryShuffler.class.getName());
    
    private Channel channel;
@@ -35,7 +35,7 @@ public class SubjectEntryShuffler implements Runnable {
     * The constructor starts the thread as a daemon and waits for
     * shuffle invocations.
     */
-   SubjectEntryShuffler(Global global) {
+   SubjectEntryShuffler(ServerScope global) {
       this.global = global;
 
       if (log.isLoggable(Level.FINER)) this.log.finer("constructor");

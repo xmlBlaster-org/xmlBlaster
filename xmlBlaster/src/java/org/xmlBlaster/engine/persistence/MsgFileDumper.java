@@ -52,7 +52,7 @@ public final class MsgFileDumper
    /**
     * Initializes an instance, creates and checks harddisk path
     * <p />
-    * @param Global Global object holding logging and property informations
+    * @param ServerScope Global object holding logging and property informations
     */
    public void init(org.xmlBlaster.util.Global glob) throws XmlBlasterException {
       init(glob, null);

@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.TopicHandler;
@@ -35,7 +35,7 @@ public class ReferenceEntry extends MsgQueueEntry
    private static Logger log = Logger.getLogger(ReferenceEntry.class.getName());
    private static final long serialVersionUID = 1L;
    private final String ME; // for logging
-   protected final transient Global glob; // engine.Global
+   protected final transient ServerScope glob; // engine.Global
 
    /** Weak reference on the MsgUnit with key/content/qos (raw struct) */
    private transient WeakReference weakMsgUnitWrapper;
@@ -62,7 +62,7 @@ public class ReferenceEntry extends MsgQueueEntry
     * A new message object is fed by method update(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
-   public ReferenceEntry(String ME, Global glob_, String entryType, MsgUnitWrapper msgUnitWrapper,
+   public ReferenceEntry(String ME, ServerScope glob_, String entryType, MsgUnitWrapper msgUnitWrapper,
                          Timestamp timestamp, StorageId storageId, SessionName receiver) throws XmlBlasterException {
       super(glob_, entryType, 
             (msgUnitWrapper==null) ? PriorityEnum.NORM_PRIORITY : msgUnitWrapper.getMsgQosData().getPriority(),
@@ -84,7 +84,7 @@ public class ReferenceEntry extends MsgQueueEntry
     * A new message object is fed by method publish(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
-   public ReferenceEntry(String ME, Global glob, String entryType, MsgUnitWrapper msgUnitWrapper, StorageId storageId) throws XmlBlasterException {
+   public ReferenceEntry(String ME, ServerScope glob, String entryType, MsgUnitWrapper msgUnitWrapper, StorageId storageId) throws XmlBlasterException {
       this(ME, glob, entryType, msgUnitWrapper, (Timestamp)null, storageId, (SessionName)null);
    }
 
@@ -92,7 +92,7 @@ public class ReferenceEntry extends MsgQueueEntry
     * For persistence recovery
     * @param msgUnitWrapperUniqueId The unique timestamp of the MsgUnitWrapper instance (need to lookup MsgUnitWrapper)
     */
-   public ReferenceEntry(String ME, Global glob, String entryType, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
+   public ReferenceEntry(String ME, ServerScope glob, String entryType, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
                         String keyOid, long msgUnitWrapperUniqueId, boolean persistent, SessionName receiver,
                         String qos, String key, byte[] content) throws XmlBlasterException {
       super(glob, entryType, priority, entryTimestamp, storageId, persistent);
@@ -158,7 +158,7 @@ public class ReferenceEntry extends MsgQueueEntry
       return false;
    }
 
-   public final Global getGlobal() {
+   public final ServerScope getGlobal() {
       return this.glob;
    }
 

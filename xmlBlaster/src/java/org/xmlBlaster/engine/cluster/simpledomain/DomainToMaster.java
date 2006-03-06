@@ -13,7 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
@@ -39,14 +39,14 @@ import org.xmlBlaster.authentication.SessionInfo;
  */
 final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
    private String ME = "DomainToMaster";
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(DomainToMaster.class.getName());
 
    /**
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob, ClusterManager clusterManager) {
+   public void initialize(ServerScope glob, ClusterManager clusterManager) {
       this.glob = glob;
 
       this.ME = this.ME + "-" + this.glob.getId();

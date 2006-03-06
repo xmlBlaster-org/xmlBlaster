@@ -6,12 +6,10 @@ Comment:   Implementation for the I_EntryFactory
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queuemsg;
 
-import org.xmlBlaster.util.PersistentEntry;
-import org.xmlBlaster.util.PersistentMap;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
@@ -48,7 +46,7 @@ import java.io.IOException;
 public class ServerEntryFactory implements I_EntryFactory
 {
    private final static String ME = "ServerEntryFactory";
-   private Global glob = null;
+   private ServerScope glob = null;
    private static Logger log = Logger.getLogger(ServerEntryFactory.class.getName());
 
    public static final String ENTRY_TYPE_MSG_SERIAL = "MSG_SER"; // msgUnit was serialized with java.io.Serializable
@@ -60,7 +58,6 @@ public class ServerEntryFactory implements I_EntryFactory
    public static final String ENTRY_TYPE_TOPIC_XML = "TOPIC_XML";
    public static final String ENTRY_TYPE_SESSION = "SESSION";
    public static final String ENTRY_TYPE_SUBSCRIBE = "SUBSCRIBE";
-   public static final String ENTRY_TYPE_PROPERTY = "PROPERTY";
    public static final String ENTRY_TYPE_DUMMY = DummyEntry.ENTRY_TYPE;
 
    /**
@@ -278,26 +275,6 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
-      else if (ENTRY_TYPE_PROPERTY.equals(type)) {
-         try {
-            ObjectInputStream objStream = new ObjectInputStream(is);
-            Object[] obj = (Object[])objStream.readObject();
-            Object key = obj[0];
-            Object val = obj[1];
-            if (obj.length < 2) {
-               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
-                         "Expected 2 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
-            }
-            PersistentEntry persistentEntry = new PersistentEntry(timestamp, key, val);
-            return persistentEntry;
-         }
-         catch (Exception ex) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
-         }
-      }
-
-      
-      
       else if (ENTRY_TYPE_DUMMY.equals(type)) {
          DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, persistent);
          //entry.setUniqueId(timestamp);
@@ -312,9 +289,9 @@ public class ServerEntryFactory implements I_EntryFactory
     * @param name A name identifying this plugin.
     */
    public void initialize(org.xmlBlaster.util.Global glob) {
-      this.glob = (org.xmlBlaster.engine.Global)glob;
+      this.glob = (org.xmlBlaster.engine.ServerScope)glob;
 
-      if (log.isLoggable(Level.FINE)) this.log.fine("Successfully initialized");
+      if (log.isLoggable(Level.FINE)) log.fine("Successfully initialized");
    }
 
    /**
@@ -338,7 +315,7 @@ public class ServerEntryFactory implements I_EntryFactory
     * </pre> 
     */
    public static void main(String[] args) {
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
 
       try {
          String[] persistType = new String[] { ENTRY_TYPE_MSG_SERIAL, ENTRY_TYPE_MSG_XML };

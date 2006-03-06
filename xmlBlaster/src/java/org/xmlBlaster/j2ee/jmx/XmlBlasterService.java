@@ -153,7 +153,7 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    /**
     * Bind a GlobalLookup into jndi.
     */
-   private void bind(org.xmlBlaster.engine.Global engineGlobal) throws Exception{
+   private void bind(org.xmlBlaster.engine.ServerScope engineGlobal) throws Exception{
       if ( jndiName == null) {
          return;
       } // end of if ()

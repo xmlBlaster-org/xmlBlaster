@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
@@ -45,7 +45,7 @@ public final class NodeDomainInfo implements Comparable
 {
    /** Unique name for logging */
    private String ME = "NodeDomainInfo";
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(NodeDomainInfo.class.getName());
    private final ClusterNode clusterNode;
 
@@ -82,7 +82,7 @@ public final class NodeDomainInfo implements Comparable
     * <p />
     * One instance of this is created for each &lt;master> tag
     */
-   public NodeDomainInfo(Global glob, ClusterNode clusterNode) {
+   public NodeDomainInfo(ServerScope glob, ClusterNode clusterNode) {
       this.glob = glob;
 
       this.clusterNode = clusterNode;

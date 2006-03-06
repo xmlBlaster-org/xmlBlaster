@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.key.KeyData;
@@ -33,7 +33,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
 {
    private final String ME;
 
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(ClientSubscriptions.class.getName());
 
    /**
@@ -75,7 +75,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     * @param requestBroker my master (singleton)
     * @param authenticate another master
     */
-   ClientSubscriptions(Global glob, RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
+   ClientSubscriptions(ServerScope glob, RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       this.glob = glob;
       this.ME = "ClientSubscriptions" + this.glob.getLogPrefixDashed();

@@ -30,7 +30,7 @@ import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -84,7 +84,7 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_ChangeCallback
 {
    private String ME = "TopicHandler";
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(TopicHandler.class.getName());
    private final ContextNode contextNode;
 
@@ -2495,11 +2495,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
    /** JMX */
    public java.lang.String usage() {
-      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
    /** JMX */
    public java.lang.String getUsageUrl() {
-      return Global.getJavadocUrl(this.getClass().getName(), null);
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}

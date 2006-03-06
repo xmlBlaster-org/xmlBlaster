@@ -8,7 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 
 import java.util.Set;
@@ -25,7 +25,7 @@ public interface I_LoadBalancer {
     * @param glob The Global handle of this xmlBlaster server instance.
     * @param clusterManager My manager
     */
-   public void initialize(Global glob, ClusterManager clusterManager);
+   public void initialize(ServerScope glob, ClusterManager clusterManager);
 
    /**
     * Your plugin should determine which xmlBlaster node to choose. 

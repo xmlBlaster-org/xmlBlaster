@@ -48,7 +48,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private final RequestBroker requestBroker;
    private final Authenticate authenticate;
    private final AvailabilityChecker availabilityChecker;
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(XmlBlasterImpl.class.getName());
    private final byte[] EMPTY_BYTEARR = null;
 

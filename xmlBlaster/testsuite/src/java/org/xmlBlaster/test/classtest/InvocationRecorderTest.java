@@ -3,7 +3,7 @@ package org.xmlBlaster.test.classtest;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.jutils.time.StopWatch;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -34,7 +34,7 @@ import junit.framework.*;
  */
 public class InvocationRecorderTest extends TestCase {
    private String ME = "InvocationRecorderTest";
-   protected Global glob;
+   protected ServerScope glob;
    private static Logger log = Logger.getLogger(InvocationRecorderTest.class.getName());
    private int numSubscribe, numUnSubscribe, numGet, numPublish, numPublishOneway, numPublishArr, numErase, numUpdate, numUpdateOneway;
    private StopWatch stopWatch = new StopWatch();
@@ -45,7 +45,7 @@ public class InvocationRecorderTest extends TestCase {
    }
 
    protected void setUp() {
-      glob = new Global();
+      glob = new ServerScope();
 
    }
 
@@ -511,7 +511,7 @@ public class InvocationRecorderTest extends TestCase {
     * <pre>
     */
    public static void main(String args[]) {
-      Global glob = new Global();
+      ServerScope glob = new ServerScope();
       if (glob.init(args) != 0) {
          System.exit(0);
       }

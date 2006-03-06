@@ -7,7 +7,7 @@ Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -23,7 +23,7 @@ public class PersistencePluginManager extends PluginManagerBase
    private static final String defaultPluginName = "org.xmlBlaster.engine.persistence.filestore.FileDriver";
    private static final String pluginPropertyName = "Persistence.Driver";
 
-   public PersistencePluginManager(Global glob) throws XmlBlasterException {
+   public PersistencePluginManager(ServerScope glob) throws XmlBlasterException {
       super(glob);
       // super.choosePlugin reads pluginName and parameters from properties
       // so read property file, if it's not there, write it to the properties

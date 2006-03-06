@@ -17,7 +17,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 
 /**
@@ -38,7 +38,7 @@ import org.xmlBlaster.engine.Global;
 public class ContentLenFilter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "ContentLenFilter";
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(ContentLenFilter.class.getName());
    /** Limits max message size to 1 MB as a default */
    private long DEFAULT_MAX_LEN = 1000000;
@@ -49,7 +49,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob) {
+   public void initialize(ServerScope glob) {
       this.glob = glob;
 
       log.info("Filter is initialized, we check all mime types if content is not too long");
@@ -57,7 +57,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 
    /**
     * This method is called by the PluginManager.
-    * @see org.xmlBlaster.util.plugin.I_Plugin#init(Global,PluginInfo)
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(ServerScope,PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
 

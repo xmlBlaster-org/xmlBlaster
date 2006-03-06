@@ -46,9 +46,9 @@ import java.util.logging.Logger;
  * <p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class Global extends org.xmlBlaster.util.Global implements I_RunlevelListener
+public final class ServerScope extends org.xmlBlaster.util.Global implements I_RunlevelListener
 {
-   private static Logger log = Logger.getLogger(Global.class.getName());
+   private static Logger log = Logger.getLogger(ServerScope.class.getName());
    
    private RunlevelManager runlevelManager;
 
@@ -106,7 +106,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       removeTelnetSessionTimer();
    }
 
-    public Global() {
+    public ServerScope() {
        this(null, true);
     }
 
@@ -114,13 +114,13 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * One instance of this represents one xmlBlaster server.
     * @param args Environment arguments (key/value pairs)
     */
-   public Global(String[] args) {
+   public ServerScope(String[] args) {
       super(args);
       init(args);
       addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
    }
 
-   public Global(Properties p, boolean loadPropFile) {
+   public ServerScope(Properties p, boolean loadPropFile) {
       super(Property.propsToArgs(p), loadPropFile, false);
       initThis();
       addObjectEntry("ServerNodeScope", this); // registers itself in util.Global

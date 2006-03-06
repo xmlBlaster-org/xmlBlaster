@@ -72,7 +72,7 @@ public class GlobalTest extends TestCase {
          assertEquals("Argument not set", "bilbo", Global.instance().getProperty().get("cluster.node.id", (String)null));
          assertEquals("Invalid cluster node id", "bilbo", Global.instance().getId());
 
-         org.xmlBlaster.engine.Global eGlobal = new org.xmlBlaster.engine.Global(Global.instance().getProperty().getProperties(), false);
+         org.xmlBlaster.engine.ServerScope eGlobal = new org.xmlBlaster.engine.ServerScope(Global.instance().getProperty().getProperties(), false);
          assertEquals("Argument not set after creating engine.Global", true, eGlobal.getProperty().get("test.xy", false));
          assertEquals("Argument not set after creating engine.Global", "aa", eGlobal.getProperty().get("oo", (String)null));
          assertEquals("Argument not set", "bilbo", eGlobal.getProperty().get("cluster.node.id", (String)null));
@@ -92,7 +92,7 @@ public class GlobalTest extends TestCase {
       System.out.println("***GlobalTest: testUtilToEngine ...");
       
       assertEquals("Argument not set", true, Global.instance().getProperty().get("test.xy", false));
-      org.xmlBlaster.engine.Global eGlobal = new org.xmlBlaster.engine.Global(Global.instance().getProperty().getProperties(), false);
+      org.xmlBlaster.engine.ServerScope eGlobal = new org.xmlBlaster.engine.ServerScope(Global.instance().getProperty().getProperties(), false);
       assertEquals("Argument not set after creating engine.Global", true, eGlobal.getProperty().get("test.xy", false));
       
       System.out.println("***GlobalTest: testUtilToEngine [SUCCESS]");

@@ -16,7 +16,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -75,7 +75,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
    public static final String XPATH_MIME_TYPES = "engine.mime.xpath.types";
 
    private final String ME = "XPathFilter";
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(XPathFilter.class.getName());
    private int maxCacheSize = 10;
    private LinkedList domCache;
@@ -85,7 +85,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob) {
+   public void initialize(ServerScope glob) {
       this.glob = glob;
 
       log.info("Filter is initialized, we check xml mime types");

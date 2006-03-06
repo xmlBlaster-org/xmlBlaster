@@ -2,7 +2,7 @@ package org.xmlBlaster.test.classtest.msgstore;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queue.StorageId;
@@ -30,7 +30,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  */
 public class I_MapTest extends TestCase {
    private String ME = "I_MapTest";
-   protected Global glob;
+   protected ServerScope glob;
    private static Logger log = Logger.getLogger(I_MapTest.class.getName());
 
    private final boolean IS_DURABLE = true;
@@ -57,7 +57,7 @@ public class I_MapTest extends TestCase {
          "-persistence.persistentQueue", "JDBC,1.0",
          "-persistence.transientQueue", "RAM,1.0" };
 
-      this.glob = new Global(args);
+      this.glob = new ServerScope(args);
 
       //this.ME = "I_MapTest[" + this.currMap.getClass().getName() + "]";
    }
@@ -728,7 +728,7 @@ public class I_MapTest extends TestCase {
    public static Test suite()
    {
       TestSuite suite= new TestSuite();
-      Global glob = new Global();
+      ServerScope glob = new ServerScope();
       suite.addTest(new I_MapTest("testByteOverflow", 2)); // For CACHE only
       for (int i=0; i<PLUGIN_TYPES.length; i++) {
          suite.addTest(new I_MapTest("testConfig", i));
@@ -748,7 +748,7 @@ public class I_MapTest extends TestCase {
     */
    public static void main(String args[]) {
 
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
 
       I_MapTest testSub = new I_MapTest("I_MapTest", 1); // JDBC check
       //I_MapTest testSub = new I_MapTest("I_MapTest", 2); // CACHE check

@@ -8,7 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.MsgUnit;
 
 /**
@@ -23,7 +23,7 @@ public interface I_MapMsgToMasterId
     * the util.Global passed by I_Plugin (we could have down casted though).
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob, ClusterManager clusterManager);
+   public void initialize(ServerScope glob, ClusterManager clusterManager);
 
    /**
     * Is called when new configuration arrived, notify the plugin to empty its

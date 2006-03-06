@@ -14,7 +14,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -63,7 +63,7 @@ import org.jacorb.poa.gui.beans.FillLevelBar;
 public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDevice
 {
    private static final long serialVersionUID = 1L;
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(MainGUI.class.getName());
 
    private Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -119,7 +119,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    /**
     * Construct the xmlBlaster GUI.
     */
-   public MainGUI(Global glob, org.xmlBlaster.Main main)
+   public MainGUI(ServerScope glob, org.xmlBlaster.Main main)
    {
       this.xmlBlasterMain = main;
       this.glob = glob;
@@ -561,7 +561,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
     */
    static public void main(String[] args)
    {
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
       Main.controlPanel = new MainGUI(glob, null);
       Main.controlPanel.run();
    }

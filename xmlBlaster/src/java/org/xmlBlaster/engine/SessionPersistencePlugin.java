@@ -53,7 +53,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private final static String ORIGINAL_INITIAL_UPDATES = "__originalInitialUpdates";
    
    private PluginInfo info;
-   private Global global;
+   private ServerScope global;
    private static Logger log = Logger.getLogger(SessionPersistencePlugin.class.getName());
    
    /** flag indicating the status: true means initialized and not yet shut down) */
@@ -238,7 +238,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       synchronized (this.sync) {   
          if (this.isOK) return;
          this.info = pluginInfo;
-         this.global = (org.xmlBlaster.engine.Global)glob;
+         this.global = (org.xmlBlaster.engine.ServerScope)glob;
 
          if (log.isLoggable(Level.FINER)) this.log.finer("init");
 

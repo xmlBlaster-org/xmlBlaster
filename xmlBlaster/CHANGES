@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
 
+ o #14840 Renamed engine.Global to engine.ServerScope
+   This is an incompatible change which touches low level native plugins only
+
  o #14812 - #14839 Incompatible changes from jutils logging to java.util logging. 
    see helper script xmlBlaster/bin/convertJutilsToJavaLogging.sh
 

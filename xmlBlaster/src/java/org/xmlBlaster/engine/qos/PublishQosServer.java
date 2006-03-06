@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.qos;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -32,7 +32,7 @@ import java.util.ArrayList;
  */
 public final class PublishQosServer
 {
-   private final Global glob;
+   private final ServerScope glob;
    private final MsgQosData msgQosData;
    private boolean isClusterUpdate = false;
    private TopicEntry topicEntry;
@@ -40,7 +40,7 @@ public final class PublishQosServer
    /**
     * Constructor which accepts parsed object. 
     */
-   public PublishQosServer(Global glob, QosData msgQosData) {
+   public PublishQosServer(ServerScope glob, QosData msgQosData) {
       this(glob, (MsgQosData)msgQosData, false);
    }
 
@@ -48,7 +48,7 @@ public final class PublishQosServer
     * Constructor which accepts parsed object.
     * @param fromPersistenceStore true if recovered from persistency
     */
-   public PublishQosServer(Global glob, MsgQosData msgQosData, boolean fromPersistenceStore) {
+   public PublishQosServer(ServerScope glob, MsgQosData msgQosData, boolean fromPersistenceStore) {
       this.glob = glob;
       this.msgQosData = msgQosData;
       this.msgQosData.setFromPersistenceStore(fromPersistenceStore);
@@ -63,7 +63,7 @@ public final class PublishQosServer
     * and parses the given XML string.
     * @param the XML based ASCII string
     */
-   public PublishQosServer(Global glob, String xmlQos) throws XmlBlasterException {
+   public PublishQosServer(ServerScope glob, String xmlQos) throws XmlBlasterException {
       this(glob, xmlQos, false);
    }
 
@@ -73,7 +73,7 @@ public final class PublishQosServer
     * @param xmlQos The XML based ASCII string
     * @param fromPersistenceStore true if recovered from persistency
     */
-   public PublishQosServer(Global glob, String xmlQos, boolean fromPersistenceStore) throws XmlBlasterException {
+   public PublishQosServer(ServerScope glob, String xmlQos, boolean fromPersistenceStore) throws XmlBlasterException {
       this(glob, glob.getMsgQosFactory().readObject(xmlQos), fromPersistenceStore);
    }
 

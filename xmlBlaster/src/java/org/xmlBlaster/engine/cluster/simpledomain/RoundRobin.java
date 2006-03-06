@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.cluster.I_LoadBalancer;
 import org.xmlBlaster.engine.cluster.NodeDomainInfo;
 import org.xmlBlaster.engine.cluster.ClusterManager;
@@ -27,7 +27,7 @@ import java.util.Iterator;
 final public class RoundRobin implements I_LoadBalancer, I_Plugin {
 
    private String ME = "RoundRobin";
-   private Global glob = null;
+   private ServerScope glob = null;
    private static Logger log = Logger.getLogger(RoundRobin.class.getName());
    private int counter = 0;
 
@@ -35,7 +35,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob, ClusterManager clusterManager) {
+   public void initialize(ServerScope glob, ClusterManager clusterManager) {
       this.glob = glob;
 
       this.ME = this.ME + "-" + glob.getId();

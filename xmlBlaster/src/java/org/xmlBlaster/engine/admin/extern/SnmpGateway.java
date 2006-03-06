@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.engine.qos.AddressServer;
@@ -36,7 +36,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
 {
    private String ME;
 
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(SnmpGateway.class.getName());
    private CommandManager manager;
    private String sessionId = null;
@@ -58,7 +58,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
     * @param commandManager My manager
     * @return false Ignore this implementation (gateway is switched off)
     */
-   public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
+   public boolean initialize(ServerScope glob, CommandManager commandManager) throws XmlBlasterException {
       this.glob = glob;
 
       this.ME = "SnmpGateway" + this.glob.getLogPrefixDashed();

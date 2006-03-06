@@ -12,7 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.authentication.Authenticate;
 
 import java.util.Set;
@@ -33,7 +33,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 public final class RunlevelManager implements RunlevelManagerMBean
 {
    private String ME = "RunlevelManager";
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(RunlevelManager.class.getName());
    private int currRunlevel = 0;
 
@@ -70,7 +70,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
     * <p />
     * You need to call initPluginManagers() after creation.
     */
-   public RunlevelManager(Global glob) {
+   public RunlevelManager(ServerScope glob) {
       this.glob = glob;
 
       this.ME = "RunlevelManager" + this.glob.getLogPrefixDashed();
@@ -508,13 +508,13 @@ public final class RunlevelManager implements RunlevelManagerMBean
     * @see org.xmlBlaster.util.admin.I_AdminUsage#usage()
     */
    public java.lang.String usage() {
-      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.admin.I_AdminUsage#getUsageUrl()
     */
    public java.lang.String getUsageUrl() {
-      return Global.getJavadocUrl(this.getClass().getName(), null);
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
    }
    /* (non-Javadoc)
     * JMX dummy to have a copy/paste functionality in jconsole

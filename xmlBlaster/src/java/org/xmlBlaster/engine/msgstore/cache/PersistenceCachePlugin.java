@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
@@ -42,7 +42,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 {
    private String ME;
    private ContextNode contextNode;
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(PersistenceCachePlugin.class.getName());
 
 //   private java.util.Properties pluginProperties; // properties via I_Plugin
@@ -761,14 +761,14 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     */
    public java.lang.String usage() {
       return "Manipulating the storage directly will most certainly destroy your data."
-      +Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      +ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
 
    /**
     * @return A link for JMX usage
     */
    public java.lang.String getUsageUrl() {
-      return Global.getJavadocUrl(this.getClass().getName(), null);
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
    }
    
    /* dummy to have a copy/paste functionality in jconsole */
@@ -805,7 +805,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
 //      this.pluginProperties = pluginInfo.getParameters();
-      this.glob = (org.xmlBlaster.engine.Global)glob;
+      this.glob = (org.xmlBlaster.engine.ServerScope)glob;
 
       this.pluginInfo = pluginInfo;
    }

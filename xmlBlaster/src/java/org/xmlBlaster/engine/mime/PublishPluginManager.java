@@ -16,7 +16,7 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.def.Constants;
 
 import java.util.Map;
@@ -36,7 +36,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
    private static final String defaultPluginName = null; // "org.xmlBlaster.engine.mime.demo.DemoFilter
    public static final String pluginPropertyName = "MimePublishPlugin";
 
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(PublishPluginManager.class.getName());
 
    /** Map holds the known plugins */
@@ -48,7 +48,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
    /** To avoid huge caches if every message sends crazy different mime types */
    private final int maxMimeCacheSize;
 
-   public PublishPluginManager(Global glob) throws XmlBlasterException {
+   public PublishPluginManager(ServerScope glob) throws XmlBlasterException {
       super(glob);
       this.glob = glob;
       this.ME = "PublishPluginManager" + this.glob.getLogPrefixDashed();

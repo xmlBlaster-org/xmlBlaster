@@ -16,7 +16,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 import gnu.regexp.RE;
 
@@ -54,14 +54,14 @@ import gnu.regexp.RE;
 public class GnuRegexFilter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "GnuRegexFilter";
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(GnuRegexFilter.class.getName());
 
    /**
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob) {
+   public void initialize(ServerScope glob) {
       this.glob = glob;
 
       log.info("Filter is initialized, regular expression checks for all mime types");

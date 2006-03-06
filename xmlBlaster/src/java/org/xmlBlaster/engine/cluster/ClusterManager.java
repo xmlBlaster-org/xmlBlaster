@@ -15,7 +15,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.qos.address.Address;
@@ -69,7 +69,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
    private String ME;
 
    // The following 3 declarations are 'final' but the SUN JDK 1.3.1 does not like it
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(ClusterManager.class.getName());
    private SessionInfo sessionInfo;
 
@@ -121,7 +121,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     *                    NOTE: We (the cluster code) are responsible for security checks
     *                    as we directly write into RequestBroker.
     */
-   public ClusterManager(Global glob, SessionInfo sessionInfo) {
+   public ClusterManager(ServerScope glob, SessionInfo sessionInfo) {
       this.glob = glob;
       this.sessionInfo = sessionInfo;
 
@@ -159,7 +159,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
       this.ME = "ClusterManager";
-      this.glob = (org.xmlBlaster.engine.Global)globUtil.getObjectEntry("ServerNodeScope");
+      this.glob = (org.xmlBlaster.engine.ServerScope)globUtil.getObjectEntry("ServerNodeScope");
       if (this.glob == null)
          throw new XmlBlasterException(globUtil, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
 
@@ -976,7 +976,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     * @return A link for JMX usage
     */
    public java.lang.String getUsageUrl() {
-      return Global.getJavadocUrl(this.getClass().getName(), null);
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
    }
 
    /* dummy to have a copy/paste functionality in jconsole */

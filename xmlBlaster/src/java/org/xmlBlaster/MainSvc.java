@@ -30,7 +30,7 @@ public class MainSvc implements WrapperListener
         
         Thread startThread = new Thread() {
             public void run() {
-                Global glob = new Global(myArgs);
+                ServerScope glob = new ServerScope(myArgs);
                 try {
                     glob.getProperty().set("doBlocking", "false");
                 }catch(XmlBlasterException ex) {

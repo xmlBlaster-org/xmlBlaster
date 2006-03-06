@@ -23,7 +23,7 @@ import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.AvailabilityChecker;
 
 
@@ -33,12 +33,12 @@ import org.xmlBlaster.engine.AvailabilityChecker;
 final public class AuthenticateProtector implements I_Authenticate
 {
    final private String ME;
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(AuthenticateProtector.class.getName());
    private final Authenticate authenticate;
    private final AvailabilityChecker availabilityChecker;
 
-   public AuthenticateProtector(Global global, Authenticate authenticate) throws XmlBlasterException {
+   public AuthenticateProtector(ServerScope global, Authenticate authenticate) throws XmlBlasterException {
       this.glob = global;
 
       this.ME = "AuthenticateProtector" + glob.getLogPrefixDashed();
@@ -48,7 +48,7 @@ final public class AuthenticateProtector implements I_Authenticate
       this.availabilityChecker = new AvailabilityChecker(this.glob);
    }
 
-   public Global getGlobal() {
+   public ServerScope getGlobal() {
       return this.glob;
    }
 

@@ -9,7 +9,7 @@ package org.xmlBlaster.engine.cluster;
 
 import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.SaxHandlerBase;
@@ -82,7 +82,7 @@ public class NodeParser extends SaxHandlerBase
    private static Logger log = Logger.getLogger(NodeParser.class.getName());
    private String ME = "NodeParser";
 
-   private final Global glob;
+   private final ServerScope glob;
    private final ClusterManager clusterManager;
 
    /** The unique node id */
@@ -111,7 +111,7 @@ public class NodeParser extends SaxHandlerBase
     * @param xml  The XML based ASCII string
     * @param sessionInfo The sessionInfo needs to be passed through to ClusterNode
     */
-   public NodeParser(Global glob, ClusterManager clusterManager, String xml, SessionInfo sessionInfo) throws XmlBlasterException {
+   public NodeParser(ServerScope glob, ClusterManager clusterManager, String xml, SessionInfo sessionInfo) throws XmlBlasterException {
       this.glob = glob;
       this.clusterManager = clusterManager;
       this.sessionInfo = sessionInfo;
@@ -278,7 +278,7 @@ public class NodeParser extends SaxHandlerBase
    /** For testing: java org.xmlBlaster.engine.cluster.NodeParser */
    public static void main(String[] args)
    {
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
       try {
          String xml =
             "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +

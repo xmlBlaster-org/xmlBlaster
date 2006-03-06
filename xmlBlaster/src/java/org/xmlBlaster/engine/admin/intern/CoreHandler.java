@@ -14,7 +14,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
@@ -40,7 +40,7 @@ import java.beans.PropertyDescriptor;
 final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
    private String ME = "CoreHandler";
-   private Global glob = null;
+   private ServerScope glob = null;
    private static Logger log = Logger.getLogger(CoreHandler.class.getName());
    private CommandManager commandManager = null;
    private String listSeparator = "\n";
@@ -50,7 +50,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     * @param glob The Global handle of this xmlBlaster server instance.
     * @param commandManager My big brother taking care of me
     */
-   public void initialize(Global glob, CommandManager commandManager) {
+   public void initialize(ServerScope glob, CommandManager commandManager) {
       this.glob = glob;
 
       this.commandManager = commandManager;

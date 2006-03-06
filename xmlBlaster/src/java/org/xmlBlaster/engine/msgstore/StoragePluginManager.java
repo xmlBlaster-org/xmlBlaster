@@ -12,7 +12,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.context.ContextNode;
 
@@ -48,7 +48,7 @@ import org.xmlBlaster.util.context.ContextNode;
 public class StoragePluginManager extends PluginManagerBase
 {
    private final String ME;
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(StoragePluginManager.class.getName());
    private final String pluginEnvClass = "persistence"; // Used for env lookup like "persistence/topicStore/StoragePlugin[JDBC][1.0]=..."
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.engine.msgstore.ram.MapPlugin"},
@@ -56,7 +56,7 @@ public class StoragePluginManager extends PluginManagerBase
                                                           {"CACHE", "org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin"} };
    public static final String pluginPropertyName = "StoragePlugin";
 
-   public StoragePluginManager(Global glob) {
+   public StoragePluginManager(ServerScope glob) {
       super(glob);
       this.glob = glob;
 

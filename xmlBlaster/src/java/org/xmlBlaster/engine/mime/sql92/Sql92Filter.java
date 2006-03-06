@@ -17,7 +17,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 /**
  * This sql92 plugin allows to filter the client properties of the qos expressions of the
@@ -37,14 +37,14 @@ import org.xmlBlaster.engine.Global;
 public class Sql92Filter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "Sql92Filter";
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(Sql92Filter.class.getName());
 
    /**
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob) {
+   public void initialize(ServerScope glob) {
       this.glob = glob;
 
       log.info("Filter is initialized, we check all mime types");

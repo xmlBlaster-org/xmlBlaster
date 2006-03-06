@@ -39,12 +39,12 @@ import java.util.StringTokenizer;
 public class CbProtocolManager extends PluginManagerBase
 {
    private final String ME;
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(CbProtocolManager.class.getName());
    private static final String defaultPluginName = "org.xmlBlaster.protocol.corba.CallbackCorbaDriver";
    public static final String pluginPropertyName = "CbProtocolPlugin";
 
-   public CbProtocolManager(Global glob) {
+   public CbProtocolManager(ServerScope glob) {
       super(glob);
       this.glob = glob;
 

@@ -3,7 +3,6 @@ package org.xmlBlaster.authentication.plugins;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.engine.Global;
 
 /**
  * Interface declaring methods to intercept messages in the security layer

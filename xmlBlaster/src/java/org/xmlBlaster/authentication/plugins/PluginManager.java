@@ -4,17 +4,13 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.SessionInfo;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.StringTokenizer;
 
 /**
  * Title: PluginManager
@@ -28,10 +24,10 @@ public class PluginManager extends PluginManagerBase {
    private static final String defaultPluginType = "htpasswd";
    private static final String defaultPluginVersion = "1.0";
    private              Authenticate        auth = null;
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(PluginManager.class.getName());
 
-   public PluginManager(Global glob) {
+   public PluginManager(ServerScope glob) {
       super(glob);
       this.glob = glob;
 

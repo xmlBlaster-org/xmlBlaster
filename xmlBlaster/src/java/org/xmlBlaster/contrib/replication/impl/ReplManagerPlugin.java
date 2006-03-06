@@ -374,8 +374,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       log.info("Loaded ReplManagerPlugin '" + getType() + "'");
    }
 
-   private org.xmlBlaster.engine.Global getEngineGlobal(Global glob) {
-      return (org.xmlBlaster.engine.Global)glob.getObjectEntry(ORIGINAL_ENGINE_GLOBAL);
+   private org.xmlBlaster.engine.ServerScope getEngineGlobal(Global glob) {
+      return (org.xmlBlaster.engine.ServerScope)glob.getObjectEntry(ORIGINAL_ENGINE_GLOBAL);
    }
    
    
@@ -1003,7 +1003,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    }
 
    void setEngineGlobalProperty(String key, String val) {
-      org.xmlBlaster.engine.Global engineGlobal = (org.xmlBlaster.engine.Global)this.global.getObjectEntry(ORIGINAL_ENGINE_GLOBAL);
+      org.xmlBlaster.engine.ServerScope engineGlobal = (org.xmlBlaster.engine.ServerScope)this.global.getObjectEntry(ORIGINAL_ENGINE_GLOBAL);
       if (engineGlobal != null)
          engineGlobal.getProperty().getProperties().setProperty(key, val);
    }

@@ -36,7 +36,7 @@ public class LocalCallbackImpl implements I_CallbackServer
    /** The id (raw address of this object */
    private String callbackId;
    /** The serverside engine global, used as a naming store */
-   private org.xmlBlaster.engine.Global engineGlob;
+   private org.xmlBlaster.engine.ServerScope engineGlob;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -79,7 +79,7 @@ public class LocalCallbackImpl implements I_CallbackServer
       
       // Set this object an the engine.Global so that the server cb handler
       // can find it.
-      engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
+      engineGlob = (org.xmlBlaster.engine.ServerScope)glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       

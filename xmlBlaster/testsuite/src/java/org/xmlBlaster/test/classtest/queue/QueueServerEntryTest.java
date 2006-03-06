@@ -2,7 +2,7 @@ package org.xmlBlaster.test.classtest.queue;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -44,7 +44,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  */
 public class QueueServerEntryTest extends TestCase {
    private String ME = "QueueServerEntryTest";
-   protected Global glob;
+   protected ServerScope glob;
    private static Logger log = Logger.getLogger(QueueServerEntryTest.class.getName());
 
    private I_Queue queue = null;
@@ -59,7 +59,7 @@ public class QueueServerEntryTest extends TestCase {
    }
    */
 
-   public QueueServerEntryTest(Global glob, String name, int currImpl) {
+   public QueueServerEntryTest(ServerScope glob, String name, int currImpl) {
       super(name);
       this.glob        = glob;
       ME = "QueueServerEntryTest with class: " + PLUGIN_TYPES[this.count];
@@ -169,7 +169,7 @@ public class QueueServerEntryTest extends TestCase {
          String subscriptionId = "subid";
          int redeliverCounter = 2;
          boolean updateOneway = true;
-         org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
+         org.xmlBlaster.engine.ServerScope global = new org.xmlBlaster.engine.ServerScope();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, queue.getStorageId());
          MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(global, msgWrapper, queue.getStorageId(),
                                          receiver, subscriptionId, updateOneway);
@@ -294,7 +294,7 @@ public class QueueServerEntryTest extends TestCase {
 
          log.fine("Testing" + msgQosData.toXml());
 
-         org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
+         org.xmlBlaster.engine.ServerScope global = new org.xmlBlaster.engine.ServerScope();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, queue.getStorageId());
          MsgQueueHistoryEntry entry = new MsgQueueHistoryEntry(global, msgWrapper, queue.getStorageId());
 
@@ -361,7 +361,7 @@ public class QueueServerEntryTest extends TestCase {
     */
    public static Test suite() {
       TestSuite suite= new TestSuite();
-      Global glob = new Global();
+      ServerScope glob = new ServerScope();
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
          suite.addTest(new QueueServerEntryTest(glob, "testUpdateEntry", i));
          suite.addTest(new QueueServerEntryTest(glob, "testHistoryEntry", i));
@@ -376,7 +376,7 @@ public class QueueServerEntryTest extends TestCase {
     */
    public static void main(String args[]) {
 
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
 
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
 

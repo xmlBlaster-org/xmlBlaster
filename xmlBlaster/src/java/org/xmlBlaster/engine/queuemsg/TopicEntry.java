@@ -7,7 +7,7 @@ package org.xmlBlaster.engine.queuemsg;
 
 import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -62,7 +62,7 @@ public final class TopicEntry implements I_MapEntry
     * <p />
     * @param msgUnit The raw data
     */
-   public TopicEntry(Global glob, MsgUnit msgUnit) throws XmlBlasterException {
+   public TopicEntry(ServerScope glob, MsgUnit msgUnit) throws XmlBlasterException {
       this(glob, msgUnit, (String)null, -1L);
    }
 
@@ -74,7 +74,7 @@ public final class TopicEntry implements I_MapEntry
     * @param sizeInByte The estimated size of the entry in RAM (can be totally different on HD). 
     *                   If -1L it is estimated for you
     */
-   public TopicEntry(Global glob, MsgUnit msgUnit, String embeddedType, long sizeInBytes) throws XmlBlasterException {
+   public TopicEntry(ServerScope glob, MsgUnit msgUnit, String embeddedType, long sizeInBytes) throws XmlBlasterException {
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "TopicEntry", "Invalid constructor parameter msgUnit==null");
       }
@@ -313,7 +313,7 @@ public final class TopicEntry implements I_MapEntry
     * </p>
     */
    public static void main(String[] args) {
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
       String fileName = "TopicEntry.ser";
       try {
          org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "HA");

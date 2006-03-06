@@ -17,7 +17,7 @@ import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlNotPortable;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Attr;
@@ -88,7 +88,7 @@ import java.util.Enumeration;
 public final class XmlKey
 {
    private String ME = "XmlKey";
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(XmlKey.class.getName());
 
    private XmlToDom xmlToDom = null;
@@ -123,7 +123,7 @@ public final class XmlKey
     * @param The original key in XML syntax, for example:<br>
     *        <pre><key oid="This is the unique attribute"></key></pre>
     */
-   public XmlKey(Global glob, KeyData keyData) {
+   public XmlKey(ServerScope glob, KeyData keyData) {
       this.glob = glob;
 
       this.keyData = keyData;
@@ -135,7 +135,7 @@ public final class XmlKey
     * @param The original key in XML syntax, for example:<br>
     *        <pre><key oid="This is the unique attribute"></key></pre>
     */
-   public XmlKey(Global glob, String xmlKey_literal) throws XmlBlasterException {
+   public XmlKey(ServerScope glob, String xmlKey_literal) throws XmlBlasterException {
       this.glob = glob;
 
       

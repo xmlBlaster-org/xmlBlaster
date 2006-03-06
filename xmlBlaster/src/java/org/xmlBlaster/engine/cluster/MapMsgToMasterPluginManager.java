@@ -14,7 +14,7 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.def.Constants;
 
 import java.util.Map;
@@ -40,13 +40,13 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
    /** Entry name for xmlBlaster.properties: "MapMsgToMasterPlugin" */
    public static final String pluginPropertyName = "MapMsgToMasterPlugin";
 
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(MapMsgToMasterPluginManager.class.getName());
    private final ClusterManager clusterManager;
 
    private final Map mapMsgToMasterIdMap = Collections.synchronizedMap(new HashMap());
 
-   public MapMsgToMasterPluginManager(Global glob, ClusterManager clusterManager) {
+   public MapMsgToMasterPluginManager(ServerScope glob, ClusterManager clusterManager) {
       super(glob);
       this.glob = glob;
 

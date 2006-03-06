@@ -56,7 +56,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
 {
    private String ME = "Main";
 
-   private Global glob = null;
+   private ServerScope glob = null;
 
    private static Logger log = Logger.getLogger(Main.class.getName());
 
@@ -84,7 +84,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     }
 
 
-   public Main(Global glob, MainGUI controlPanel_) {
+   public Main(ServerScope glob, MainGUI controlPanel_) {
       controlPanel = controlPanel_;
       controlPanel.xmlBlasterMain = this;
       init(glob);
@@ -106,10 +106,10 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * @param args The command line parameters
     */
    public Main(String[] args) {
-      init(new Global(args));
+      init(new ServerScope(args));
    }
 
-   public Global getGlobal() {
+   public ServerScope getGlobal() {
       return this.glob;
    }
 
@@ -119,8 +119,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * @param utilGlob The environment for this server instance
     */
    public void init(org.xmlBlaster.util.Global utilGlob) {
-      org.xmlBlaster.engine.Global gg = 
-          new org.xmlBlaster.engine.Global(utilGlob.getProperty().getProperties(), false);
+      org.xmlBlaster.engine.ServerScope gg = 
+          new org.xmlBlaster.engine.ServerScope(utilGlob.getProperty().getProperties(), false);
       utilGlob.setId(gg.getId()); // Inherit backwards the cluster node id
       init(gg);
    }
@@ -131,10 +131,10 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * @param props The environment for this server instance
     */
    public void init(java.util.Properties props) {
-      this.init(new org.xmlBlaster.engine.Global(props, true));
+      this.init(new org.xmlBlaster.engine.ServerScope(props, true));
    }
 
-   public final void init(Global glob)
+   public final void init(ServerScope glob)
    {
       this.glob = glob;
 

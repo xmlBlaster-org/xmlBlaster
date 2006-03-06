@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.xml2java;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.I_MergeDomNode;
@@ -48,7 +48,7 @@ public class XmlKeyDom implements I_MergeDomNode
 {
    final private static String ME = "XmlKeyDom";
 
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(XmlKeyDom.class.getName());
 
    protected Document xmlKeyDoc = null;

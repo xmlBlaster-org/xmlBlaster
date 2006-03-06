@@ -27,7 +27,7 @@ import org.xmlBlaster.util.SessionName;
 public final class AvailabilityChecker implements I_RunlevelListener
 {
    private String ME = "AvailabilityChecker";
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(AvailabilityChecker.class.getName());
    private RunlevelManager runlevelManager;
    private boolean startup = true;
@@ -36,7 +36,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
     * Ctor
     * @param glob
     */
-   public AvailabilityChecker(Global glob) {
+   public AvailabilityChecker(ServerScope glob) {
       this.glob = glob;
 
       this.runlevelManager = glob.getRunlevelManager();

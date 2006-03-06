@@ -3,7 +3,7 @@ package org.xmlBlaster.test.classtest.queue;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.jutils.time.StopWatch;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.queue.StorageId;
@@ -30,11 +30,11 @@ import org.xmlBlaster.client.key.SubscribeKey;
  */
 public class EntrySize {
    private String ME = "EntrySize";
-   protected Global glob;
+   protected ServerScope glob;
    private static Logger log = Logger.getLogger(EntrySize.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
-   public EntrySize(Global glob) {
+   public EntrySize(ServerScope glob) {
       this.glob = glob;
       this.ME = "EntrySize";
 
@@ -76,7 +76,7 @@ public class EntrySize {
          SessionName receiver = new SessionName(glob, "receiver1");
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
          MsgUnit msgUnit = new MsgUnit(glob, "<key oid='XX'/>", new byte[0], publishQosServer.toXml());
-         org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
+         org.xmlBlaster.engine.ServerScope global = new org.xmlBlaster.engine.ServerScope();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, storageId);
 
          int step = 1000;
@@ -119,7 +119,7 @@ public class EntrySize {
       try {
          PublishQosServer publishQosServer = new PublishQosServer(glob, "<qos/>");
          MsgUnit msgUnit = new MsgUnit(glob, "<key oid='XX'/>", new byte[0], publishQosServer.toXml());
-         org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
+         org.xmlBlaster.engine.ServerScope global = new org.xmlBlaster.engine.ServerScope();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, storageId);
 
          int step = 1000;
@@ -334,7 +334,7 @@ public class EntrySize {
     * </pre>
     */
    public static void main(String args[]) {
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
       EntrySize testSub = new EntrySize(glob);
       //   long startTime = System.currentTimeMillis();
       //   long usedTime = System.currentTimeMillis() - startTime;

@@ -49,7 +49,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 {
    private static final long serialVersionUID = -3883804885824516337L;
    private transient final static String ME = "MsgUnitWrapper-";
-   private transient final Global glob;
+   private transient final ServerScope glob;
    private static Logger log = Logger.getLogger(MsgUnitWrapper.class.getName());
    private transient int historyReferenceCounter; // if is in historyQueue, is swapped to persistence as well
    private transient int referenceCounter;        // total number of references, is swapped to persistence as well
@@ -87,14 +87,14 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    /**
     * Testsuite
     */
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
+   public MsgUnitWrapper(ServerScope glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
       this(glob, msgUnit, (I_Map)null, storageId, 0, 0, (String)null, -1);
    }
 
    /**
     * Used when message comes from persistence, the owning I_Map is unknown
     */
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, I_Map ownerCache, int referenceCounter,
+   public MsgUnitWrapper(ServerScope glob, MsgUnit msgUnit, I_Map ownerCache, int referenceCounter,
                         int historyReferenceCounter, long sizeInBytes) throws XmlBlasterException {
       this(glob, msgUnit, ownerCache, ownerCache.getStorageId(), referenceCounter, historyReferenceCounter, (String)null, sizeInBytes);
    }
@@ -102,7 +102,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    /**
     * Used when message comes from persistence, the owning I_Map is unknown
     */
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter,
+   public MsgUnitWrapper(ServerScope glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter,
                         int historyReferenceCounter, long sizeInBytes) throws XmlBlasterException {
       this(glob, msgUnit, (I_Map)null, storageId, referenceCounter, historyReferenceCounter, (String)null, sizeInBytes);
    }
@@ -114,7 +114,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     *         ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL Dump object with java.io.Serializable
     * @param sizeInBytes The estimated size of this entry in RAM, if -1 we estimate it for you
     */
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, I_Map ownerCache, StorageId storageId, int referenceCounter,
+   public MsgUnitWrapper(ServerScope glob, MsgUnit msgUnit, I_Map ownerCache, StorageId storageId, int referenceCounter,
                          int historyReferenceCounter, String embeddedType, long sizeInBytes) throws XmlBlasterException {
       this.glob = glob;
 

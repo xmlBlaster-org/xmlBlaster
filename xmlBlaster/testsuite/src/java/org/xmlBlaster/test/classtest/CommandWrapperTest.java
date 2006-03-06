@@ -4,7 +4,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.key.QueryKeyData;
@@ -23,7 +23,7 @@ import junit.framework.*;
  */
 public class CommandWrapperTest extends TestCase {
    private String ME = "CommandWrapperTest";
-   protected Global glob;
+   protected ServerScope glob;
    private static Logger log = Logger.getLogger(CommandWrapperTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
@@ -32,7 +32,7 @@ public class CommandWrapperTest extends TestCase {
    }
 
    protected void setUp() {
-      glob = new Global();
+      glob = new ServerScope();
 
       glob.setId("heron");
    }
@@ -219,7 +219,7 @@ public class CommandWrapperTest extends TestCase {
     */
    public static void main(String args[])
    {
-      Global glob = new Global();
+      ServerScope glob = new ServerScope();
       if (glob.init(args) != 0) {
          System.out.println("Init failed");
          System.exit(1);

@@ -7,7 +7,7 @@ Comment:   Interface to hide extern gateway implementations
 package org.xmlBlaster.engine.admin;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 /**
  * Interface to allow different external gateway implementations. 
@@ -25,7 +25,7 @@ public interface I_ExternGateway {
     * @param commandManager My manager
     * @return false Ignore this implementation (gateway is switched off)
     */
-   public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException;
+   public boolean initialize(ServerScope glob, CommandManager commandManager) throws XmlBlasterException;
 
    /** Get a human readable name of this filter implementation */
    public String getName();

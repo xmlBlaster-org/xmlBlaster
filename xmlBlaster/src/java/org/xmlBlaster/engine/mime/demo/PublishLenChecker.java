@@ -17,7 +17,7 @@ import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 
 /**
@@ -36,7 +36,7 @@ import org.xmlBlaster.engine.Global;
 public class PublishLenChecker implements I_Plugin, I_PublishFilter
 {
    private final String ME = "PublishLenChecker";
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(PublishLenChecker.class.getName());
    /** Limits max message size to 1 MB as a default */
    private long DEFAULT_MAX_LEN = 1000000;
@@ -47,7 +47,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob) {
+   public void initialize(ServerScope glob) {
       this.glob = glob;
 
       log.info("Filter is initialized, we check all mime types if content is not too long");

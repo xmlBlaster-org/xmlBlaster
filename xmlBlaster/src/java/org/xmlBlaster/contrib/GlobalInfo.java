@@ -16,6 +16,7 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher]=true
 package org.xmlBlaster.contrib;
 
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -112,7 +113,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    public final void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
       this.global = global_.getClone(global_.getNativeConnectArgs());
       this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));
-      if (global_ instanceof org.xmlBlaster.engine.Global) {
+      if (global_ instanceof ServerScope) {
          //this.global = global_.getClone(global_.getNativeConnectArgs());
          // this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));
          

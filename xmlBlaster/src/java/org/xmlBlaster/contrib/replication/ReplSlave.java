@@ -195,7 +195,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          log.warning("session name '" + this.slaveSessionId + "' does not start with '" + client + "'");
       else {
          String key = "__" + this.slaveSessionId.substring(pos + client.length());
-         org.xmlBlaster.engine.Global engineGlob = this.getEngineGlobal(this.global);
+         org.xmlBlaster.engine.ServerScope engineGlob = this.getEngineGlobal(this.global);
          if (engineGlob == null)
             log.warning("Can not write status since no engine global found");
          else {
@@ -216,7 +216,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          log.warning("session name '" + this.slaveSessionId + "' does not start with '" + client + "'");
       else {
          String key = "__" + this.slaveSessionId.substring(pos + client.length()) + "_MaxReplKey";
-         org.xmlBlaster.engine.Global engineGlob = this.getEngineGlobal(this.global);
+         org.xmlBlaster.engine.ServerScope engineGlob = this.getEngineGlobal(this.global);
          if (engineGlob == null)
             log.warning("Can not write status since no engine global found");
          else {
@@ -327,8 +327,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       conn.publish(msg);
    }
 
-   private org.xmlBlaster.engine.Global getEngineGlobal(Global glob) {
-      return (org.xmlBlaster.engine.Global)glob.getObjectEntry(GlobalInfo.ORIGINAL_ENGINE_GLOBAL);
+   private org.xmlBlaster.engine.ServerScope getEngineGlobal(Global glob) {
+      return (org.xmlBlaster.engine.ServerScope)glob.getObjectEntry(GlobalInfo.ORIGINAL_ENGINE_GLOBAL);
    }
    
    private I_AdminSession getSession() throws Exception {

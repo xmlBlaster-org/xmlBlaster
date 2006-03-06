@@ -9,7 +9,7 @@ package org.xmlBlaster.engine.admin.extern;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 import org.xmlBlaster.engine.admin.SetReturn;
@@ -44,7 +44,7 @@ import java.io.IOException;
 public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, I_Timeout
 {
    private String ME;
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(TelnetGateway.class.getName());
    private CommandManager commandManager;
    private int port;
@@ -83,7 +83,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
     * Is called by CommandManager on startup
     * @return true if started and active
     */
-   public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
+   public boolean initialize(ServerScope glob, CommandManager commandManager) throws XmlBlasterException {
       initializeVariables(glob, commandManager, true);
       return initListener();
    }
@@ -92,7 +92,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
     * @param isBootstrap The first instance has no timer set
     * @return true if started and active
     */
-   private boolean initializeVariables(Global glob, CommandManager commandManager, boolean isBootstrap) {
+   private boolean initializeVariables(ServerScope glob, CommandManager commandManager, boolean isBootstrap) {
       this.glob = glob;
 
       this.ME = "TelnetGateway" + instanceCounter + this.glob.getLogPrefixDashed();

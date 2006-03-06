@@ -7,7 +7,7 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -38,7 +38,7 @@ import java.util.Iterator;
 public final class ClusterNode implements java.lang.Comparable, I_Callback, I_ConnectionStateListener
 {
    private final String ME;
-   private final Global fatherGlob;
+   private final ServerScope fatherGlob;
    /** 
     * This util global instance is used for I_XmlBlasterAccess, it
     * uses the specific settings from NodeInfo to connect to the remote node
@@ -69,7 +69,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * Create an object holding all informations about a node
     */
-   public ClusterNode(Global glob, NodeId nodeId, SessionInfo sessionInfo) throws XmlBlasterException {
+   public ClusterNode(ServerScope glob, NodeId nodeId, SessionInfo sessionInfo) throws XmlBlasterException {
       this.fatherGlob = glob;
       this.sessionInfo = sessionInfo;
 

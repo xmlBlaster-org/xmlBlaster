@@ -15,7 +15,7 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -38,7 +38,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    private ContextNode contextNode;
 
    /** The global handle */
-   private Global glob;
+   private ServerScope glob;
    /** Logging to channel "core" */
    private static Logger log = Logger.getLogger(SubscriptionInfo.class.getName());
    /** The initiatior of this subscription */
@@ -78,7 +78,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * @param keyData     The message meta info
     * @param qos         This may be a SubscribeQosServer or a UnSubscribeQosServer instance
     */
-   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, KeyData keyData, SubscribeQosServer qos) throws XmlBlasterException {
+   public SubscriptionInfo(ServerScope glob, SessionInfo sessionInfo, KeyData keyData, SubscribeQosServer qos) throws XmlBlasterException {
       init(glob, sessionInfo, keyData, qos);
    }
 
@@ -88,12 +88,12 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * @param querySub    The XPATH query subscription which is has us as a child
     * @param keyData     The matching key for the above querySub
     */
-   public SubscriptionInfo(Global glob, SessionInfo sessionInfo, SubscriptionInfo querySub, KeyData keyData) throws XmlBlasterException {
+   public SubscriptionInfo(ServerScope glob, SessionInfo sessionInfo, SubscriptionInfo querySub, KeyData keyData) throws XmlBlasterException {
       this.querySub = querySub;
       init(glob, sessionInfo, keyData, querySub.subscribeQos);
    }
 
-   private void init(Global glob, SessionInfo sessionInfo, KeyData keyData, SubscribeQosServer qos) throws XmlBlasterException {
+   private void init(ServerScope glob, SessionInfo sessionInfo, KeyData keyData, SubscribeQosServer qos) throws XmlBlasterException {
       this.glob = glob;
 
       this.sessionInfo = sessionInfo;
@@ -602,11 +602,11 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    }
    /** JMX */
    public java.lang.String usage() {
-      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
    /** JMX */
    public java.lang.String getUsageUrl() {
-      return Global.getJavadocUrl(this.getClass().getName(), null);
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}

@@ -9,7 +9,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
@@ -30,7 +30,7 @@ public interface I_Authenticate
 {
    public boolean sessionExists(String sessionId);
 
-   public Global getGlobal();
+   public ServerScope getGlobal();
 
    public I_XmlBlaster getXmlBlaster();
 

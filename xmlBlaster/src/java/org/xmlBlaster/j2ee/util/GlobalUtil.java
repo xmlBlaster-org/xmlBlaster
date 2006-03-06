@@ -44,7 +44,7 @@ public class GlobalUtil implements java.io.Serializable {
     * 
     */
    private static final long serialVersionUID = 1L;
-   private transient org.xmlBlaster.engine.Global engineGlobal;
+   private transient org.xmlBlaster.engine.ServerScope engineGlobal;
 
    /**
     * Create a utility class without any engine global.
@@ -57,7 +57,7 @@ public class GlobalUtil implements java.io.Serializable {
     * Create a utility class with access to engine global, use this to
     * bind into jndi.
     */
-   public GlobalUtil(org.xmlBlaster.engine.Global engineGlobal) {
+   public GlobalUtil(org.xmlBlaster.engine.ServerScope engineGlobal) {
       this.engineGlobal = engineGlobal;
    }
 

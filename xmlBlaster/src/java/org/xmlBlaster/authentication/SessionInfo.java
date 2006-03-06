@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
@@ -89,7 +89,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private ConnectQosServer connectQos;
    private Timeout expiryTimer;
    private Timestamp timerKey;
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(SessionInfo.class.getName());
    /** Do error recovery if message can't be delivered and we give it up */
    private final MsgErrorHandler msgErrorHandler;
@@ -130,7 +130,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * <p />
     * @param subjectInfo the SubjectInfo with the login informations for this client
     */
-   public SessionInfo(SubjectInfo subjectInfo, I_Session securityCtx, ConnectQosServer connectQos, Global glob)
+   public SessionInfo(SubjectInfo subjectInfo, I_Session securityCtx, ConnectQosServer connectQos, ServerScope glob)
           throws XmlBlasterException {
       this.glob = glob;
 
@@ -950,11 +950,11 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    
    /** JMX */
    public java.lang.String usage() {
-      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
    /** JMX */
    public java.lang.String getUsageUrl() {
-      return Global.getJavadocUrl(this.getClass().getName(), null);
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}

@@ -3,7 +3,7 @@ package org.xmlBlaster.test.classtest.msgstore;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.jutils.time.StopWatch;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
@@ -29,13 +29,13 @@ import junit.framework.*;
  */
 public class MsgUnitWrapperTest extends TestCase {
    private String ME = "MsgUnitWrapperTest";
-   protected Global glob;
+   protected ServerScope glob;
    private static Logger log = Logger.getLogger(MsgUnitWrapperTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
    public MsgUnitWrapperTest(String name) {
       super(name);
-      this.glob = new Global();
+      this.glob = new ServerScope();
 
    }
 
@@ -168,7 +168,7 @@ public class MsgUnitWrapperTest extends TestCase {
     * </pre>
     */
    public static void main(String args[]) {
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
       MsgUnitWrapperTest testSub = new MsgUnitWrapperTest("MsgUnitWrapperTest");
       long startTime = System.currentTimeMillis();
 

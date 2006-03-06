@@ -350,7 +350,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       String sent = prop.getProperty("sent", null);
       String discarded = prop.getProperty("discarded", null);
       
-      org.xmlBlaster.engine.Global engineGlobal = new org.xmlBlaster.engine.Global();
+      org.xmlBlaster.engine.ServerScope engineGlobal = new org.xmlBlaster.engine.ServerScope();
       prop.put("connectQos", this.getConnectQos(engineGlobal));
       
       Publisher publisher = null;

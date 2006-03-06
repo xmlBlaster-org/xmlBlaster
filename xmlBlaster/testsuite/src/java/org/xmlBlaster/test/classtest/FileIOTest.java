@@ -3,7 +3,7 @@ package org.xmlBlaster.test.classtest;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.jutils.time.StopWatch;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.recorder.file.FileIO;
@@ -22,7 +22,7 @@ import junit.framework.*;
  */
 public class FileIOTest extends TestCase {
    private String ME = "FileIOTest";
-   protected Global glob;
+   protected ServerScope glob;
    private static Logger log = Logger.getLogger(FileIOTest.class.getName());
    private String fileName = null;
    private StopWatch stopWatch = new StopWatch();
@@ -33,7 +33,7 @@ public class FileIOTest extends TestCase {
    }
 
    protected void setUp() {
-      glob = new Global();
+      glob = new ServerScope();
 
    }
 
@@ -396,7 +396,7 @@ public class FileIOTest extends TestCase {
     */
    public static void main(String args[])
    {
-      Global glob = new Global();
+      ServerScope glob = new ServerScope();
       if (glob.init(args) != 0) {
          System.err.println("******* FileIOTest: Init failed");
       }

@@ -12,7 +12,7 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 /**
  * Loads the plugin to support cluster load balancing. 
@@ -30,10 +30,10 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
    private static final String defaultPluginName = "org.xmlBlaster.engine.cluster.simpledomain.RoundRobin";
    public static final String pluginPropertyName = "LoadBalancerPlugin";
 
-   private final Global glob;
+   private final ServerScope glob;
    private final ClusterManager clusterManager;
 
-   public LoadBalancerPluginManager(Global glob, ClusterManager clusterManager) {
+   public LoadBalancerPluginManager(ServerScope glob, ClusterManager clusterManager) {
       super(glob);
       this.glob = glob;
       this.clusterManager = clusterManager;

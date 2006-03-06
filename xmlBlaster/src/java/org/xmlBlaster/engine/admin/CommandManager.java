@@ -12,7 +12,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
@@ -37,7 +37,7 @@ public final class CommandManager implements I_RunlevelListener
    private final String ME;
 
    // The following 3 declarations are 'final' but the SUN JDK 1.3.1 does not like it
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(CommandManager.class.getName());
    private final SessionInfo sessionInfo;
 
@@ -54,7 +54,7 @@ public final class CommandManager implements I_RunlevelListener
     *                    NOTE: We (the command code) are responsible for security checks
     *                    as we directly write into RequestBroker.
     */
-   public CommandManager(Global glob, SessionInfo sessionInfo) {
+   public CommandManager(ServerScope glob, SessionInfo sessionInfo) {
       this.glob = glob;
 
       this.ME = "CommandManager" + this.glob.getLogPrefixDashed();

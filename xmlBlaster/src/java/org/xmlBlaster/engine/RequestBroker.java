@@ -90,7 +90,7 @@ import javax.management.MBeanNotificationInfo;
 public final class RequestBroker extends NotificationBroadcasterSupport implements I_ClientListener, /*I_AdminNode,*/ RequestBrokerMBean, I_RunlevelListener, LogableDevice
 {
    private String ME = "RequestBroker";
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(RequestBroker.class.getName());
 
    /**
@@ -351,7 +351,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * Access the global handle.
     * @return The Global instance of this xmlBlaster server
     */
-   public final Global getGlobal() {
+   public final ServerScope getGlobal() {
       return this.glob;
    }
 
@@ -2271,14 +2271,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       return Runtime.getRuntime().freeMemory();
    }
    public String getFreeMemStr() {
-      return Global.byteString(getFreeMem());
+      return ServerScope.byteString(getFreeMem());
    }
    /** Free memory in bytes */
    public long getMaxFreeMem() {
-      return Global.heapMemoryUsage-getUsedMem();
+      return ServerScope.heapMemoryUsage-getUsedMem();
    }
    public String getMaxFreeMemStr() {
-      return Global.byteString(getMaxFreeMem());
+      return ServerScope.byteString(getMaxFreeMem());
    }
 /*   public void setFreeMem(long freeMem) throws XmlBlasterException {
       throw new XmlBlasterException(ME, "Setting of property 'freeMem' is not supported");
@@ -2287,19 +2287,19 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       return Runtime.getRuntime().totalMemory();
    }
    public String getTotalMemStr() {
-      return Global.byteString(getTotalMem());
+      return ServerScope.byteString(getTotalMem());
    }
    public long getMaxMem() {
       return Runtime.getRuntime().maxMemory();
    }
    public String getMaxMemStr() {
-      return Global.byteString(getMaxMem());
+      return ServerScope.byteString(getMaxMem());
    }
    public long getUsedMem() {
       return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
    }
    public String getUsedMemStr() {
-      return Global.byteString(getUsedMem());
+      return ServerScope.byteString(getUsedMem());
    }
    public String getGc() {
       if (log.isLoggable(Level.FINE)) log.fine("Garbage collector is activated");
@@ -2442,11 +2442,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
    
    /** JMX */
    public java.lang.String usage() {
-      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
    /** JMX */
    public java.lang.String getUsageUrl() {
-      return Global.getJavadocUrl(this.getClass().getName(), null);
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}

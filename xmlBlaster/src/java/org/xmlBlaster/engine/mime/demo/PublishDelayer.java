@@ -17,7 +17,7 @@ import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 
 /**
@@ -34,7 +34,7 @@ import org.xmlBlaster.engine.Global;
 public class PublishDelayer implements I_Plugin, I_PublishFilter
 {
    private final String ME = "PublishDelayer";
-   private Global glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(PublishDelayer.class.getName());
    /** How long to delay an incoming publish message */
    private long delayMillis = 0;
@@ -43,7 +43,7 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob) {
+   public void initialize(ServerScope glob) {
       this.glob = glob;
 
       log.info("Filter is initialized, we check all mime types if content is not too long");

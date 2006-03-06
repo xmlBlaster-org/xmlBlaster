@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.admin;
 
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.qos.AddressServer;
 
 /**
@@ -26,7 +26,7 @@ public interface I_CommandHandler {
     * @param glob The Global handle of this xmlBlaster server instance.
     * @param commandManager My manager
     */
-   public void initialize(Global glob, CommandManager commandManager);
+   public void initialize(ServerScope glob, CommandManager commandManager);
 
    /**
     * Your plugin should process the command. 

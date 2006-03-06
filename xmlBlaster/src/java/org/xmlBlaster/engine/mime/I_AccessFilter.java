@@ -11,7 +11,7 @@ package org.xmlBlaster.engine.mime;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.mime.Query;
 
 
@@ -54,7 +54,7 @@ public interface I_AccessFilter
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
-   public void initialize(Global glob);
+   public void initialize(ServerScope glob);
 
    /** Get a human readable name of this filter implementation */
    public String getName();

@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 
 import java.util.StringTokenizer;
 
@@ -34,7 +34,7 @@ import java.util.StringTokenizer;
 public final class CommandWrapper
 {
    private final String ME;
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(CommandWrapper.class.getName());
 
    //private final static String PROP_SEPARATOR = "&";
@@ -84,7 +84,7 @@ public final class CommandWrapper
     * @param command the oid must be adjusted inside if the qosData is null.
     * @throws XmlBlasterException
     */
-   public CommandWrapper(Global glob, String command) throws XmlBlasterException {
+   public CommandWrapper(ServerScope glob, String command) throws XmlBlasterException {
       this.glob = glob;
 
       this.ME = "CommandWrapper-" + this.glob.getId();
@@ -380,7 +380,7 @@ public final class CommandWrapper
     * @return
     * @throws XmlBlasterException
     */
-   public static String stripCommand(Global glob, String command) throws XmlBlasterException {
+   public static String stripCommand(ServerScope glob, String command) throws XmlBlasterException {
       if (command == null) {
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, "CommandWrapper.stripCommand", "Ignoring your empty command.");
       }

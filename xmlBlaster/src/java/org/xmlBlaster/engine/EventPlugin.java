@@ -179,7 +179,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
    protected I_PluginConfig pluginConfig;
 
-   protected org.xmlBlaster.engine.Global engineGlob;
+   protected org.xmlBlaster.engine.ServerScope engineGlob;
 
    protected RequestBroker requestBroker;
 
@@ -424,7 +424,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       this.glob.addObjectEntry("ServerNodeScope", utilGlob
             .getObjectEntry("ServerNodeScope"));
 
-      this.engineGlob = (org.xmlBlaster.engine.Global) utilGlob
+      this.engineGlob = (org.xmlBlaster.engine.ServerScope) utilGlob
             .getObjectEntry("ServerNodeScope");
       this.requestBroker = engineGlob.getRequestBroker();
       this.sessionInfo = requestBroker.getInternalSessionInfo();
@@ -709,7 +709,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * @return The XML dump
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">The admin.commands requirement</a>
     */
-   public static String createStatusDump(org.xmlBlaster.engine.Global g,
+   public static String createStatusDump(org.xmlBlaster.engine.ServerScope g,
          String summary, String description,
          String eventType, String errorCode) {
       // Change to be configurable with ${amdincommands} replacements

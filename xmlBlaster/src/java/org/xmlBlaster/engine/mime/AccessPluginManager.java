@@ -13,7 +13,7 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.def.Constants;
@@ -35,10 +35,10 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
    private final String ME;
    public static final String pluginPropertyName = "MimeAccessPlugin";
 
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(AccessPluginManager.class.getName());
 
-   public AccessPluginManager(Global glob)
+   public AccessPluginManager(ServerScope glob)
    {
       super(glob);
       this.glob = glob;

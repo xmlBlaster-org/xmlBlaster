@@ -85,7 +85,7 @@ public final class CbDispatchConnection extends DispatchConnection
       this.cbDriver = glob.getNativeCallbackDriver(this.cbKey);
 
       if (this.cbDriver == null) { // instantiate the callback plugin ...
-         this.cbDriver = ((org.xmlBlaster.engine.Global)glob).getCbProtocolManager().getNewCbProtocolDriverInstance(address.getType());
+         this.cbDriver = ((org.xmlBlaster.engine.ServerScope)glob).getCbProtocolManager().getNewCbProtocolDriverInstance(address.getType());
          if (this.cbDriver == null)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, callback protocol type='" + address.getType() + "' is not supported");
             

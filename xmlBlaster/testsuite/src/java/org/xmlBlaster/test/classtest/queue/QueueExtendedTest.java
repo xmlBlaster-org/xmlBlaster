@@ -3,7 +3,7 @@ package org.xmlBlaster.test.classtest.queue;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.jutils.time.StopWatch;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 // import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
@@ -80,7 +80,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  */
 public class QueueExtendedTest extends TestCase {
    private String ME = "QueueExtendedTest";
-   protected Global glob;
+   protected ServerScope glob;
    private static Logger log = Logger.getLogger(QueueExtendedTest.class.getName());
    private StopWatch stopWatch = new StopWatch();
 
@@ -100,7 +100,7 @@ public class QueueExtendedTest extends TestCase {
    }
    */
 
-   public QueueExtendedTest(Global glob, String name, int currImpl) {
+   public QueueExtendedTest(ServerScope glob, String name, int currImpl) {
       super(name);
       this.glob = glob;
 
@@ -290,7 +290,7 @@ public class QueueExtendedTest extends TestCase {
     */
    public static Test suite() {
       TestSuite suite= new TestSuite();
-      Global glob = new Global();
+      ServerScope glob = new ServerScope();
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
          suite.addTest(new QueueExtendedTest(glob, "testPerfomancePut", i));
          suite.addTest(new QueueExtendedTest(glob, "testPerfomanceMultiPut", i));
@@ -305,7 +305,7 @@ public class QueueExtendedTest extends TestCase {
     */
    public static void main(String args[]) {
 
-      Global glob = new Global(args);
+      ServerScope glob = new ServerScope(args);
 
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
 

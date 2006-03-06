@@ -20,5 +20,5 @@ public interface I_Main
    /** Release all resources */
    public void shutdown();
    public boolean isHalted();
-   public org.xmlBlaster.engine.Global getGlobal();
+   public org.xmlBlaster.engine.ServerScope getGlobal();
 }

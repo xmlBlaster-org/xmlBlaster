@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.queuemsg;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
@@ -37,7 +37,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * A new message object is fed by method publish(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
-   public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver,
+   public MsgQueueUpdateEntry(ServerScope glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId, SessionName receiver,
                               String subscriptionId, boolean wantUpdateOneway) throws XmlBlasterException {
       this(glob, msgUnitWrapper, (Timestamp)null, storageId, receiver, subscriptionId, wantUpdateOneway);                           
    }   
@@ -53,7 +53,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * @param wantUpdateOneway
     * @throws XmlBlasterException
     */
-   public MsgQueueUpdateEntry(Global glob, MsgUnitWrapper msgUnitWrapper, Timestamp timestamp, StorageId storageId, SessionName receiver,
+   public MsgQueueUpdateEntry(ServerScope glob, MsgUnitWrapper msgUnitWrapper, Timestamp timestamp, StorageId storageId, SessionName receiver,
                               String subscriptionId, boolean wantUpdateOneway) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, msgUnitWrapper, timestamp, storageId, receiver);
       this.getMsgQosData().setSender(msgUnitWrapper.getMsgQosData().getSender());
@@ -71,7 +71,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
     * For persistence recovery
     * The params qos, key, content can be null (the unparsed raw message)
     */
-   public MsgQueueUpdateEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
+   public MsgQueueUpdateEntry(ServerScope glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
                               String keyOid, long msgUnitWrapperUniqueId, boolean persistent, long sizeInBytes,
                               SessionName receiver, String subscriptionId, String flag,
                               int redeliverCount,

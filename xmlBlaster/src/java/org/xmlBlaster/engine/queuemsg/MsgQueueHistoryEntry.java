@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.queuemsg;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
@@ -32,7 +32,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     * A new message object is fed by method publish(). 
     * @param msgUnit The raw data, we keep a weak reference only on this data so it can be garbage collected
     */
-   public MsgQueueHistoryEntry(Global glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId) throws XmlBlasterException {
+   public MsgQueueHistoryEntry(ServerScope glob, MsgUnitWrapper msgUnitWrapper, StorageId storageId) throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, msgUnitWrapper, (Timestamp)null, storageId, (SessionName)null);
       this.forceDestroy = msgUnitWrapper.getMsgQosData().getForceDestroyProp().getValue();
       if (log.isLoggable(Level.FINE)) log.fine("Created new MsgQueueHistoryEntry for published message, id=" + getUniqueId() + " prio=" + priority.toString());
@@ -41,7 +41,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
    /**
     * For persistence recovery
     */
-   public MsgQueueHistoryEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
+   public MsgQueueHistoryEntry(ServerScope glob, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
                               String keyOid, long msgUnitWrapperUniqueId, boolean persistent, long sizeInBytes)
                               throws XmlBlasterException {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, priority, storageId,

@@ -7,7 +7,7 @@ package org.xmlBlaster.engine;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -33,14 +33,14 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    private final String ME;
    private final long MAX_BYTES = 1000000L; // to avoid out of mem, max 1 MB during error handling
    
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(MsgErrorHandler.class.getName());
    private /*final -> shutdown*/ SessionInfo sessionInfo;
 
    /**
     * @param sessionInfo Can be null (e.g. for Subject errors)
     */
-   public MsgErrorHandler(Global glob, SessionInfo sessionInfo) {
+   public MsgErrorHandler(ServerScope glob, SessionInfo sessionInfo) {
       this.ME = "MsgErrorHandler-" + ((sessionInfo==null) ? "" : sessionInfo.getId());
       this.glob = glob;
 

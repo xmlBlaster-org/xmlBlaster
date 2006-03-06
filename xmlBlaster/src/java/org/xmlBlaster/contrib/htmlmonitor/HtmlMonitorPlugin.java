@@ -8,7 +8,7 @@ trace[org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin]=true
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.htmlmonitor;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -65,7 +65,7 @@ import java.net.URLDecoder;
  */
 public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
    private static Logger log = Logger.getLogger(HtmlMonitorPlugin.class.getName());
-   private Global global;
+   private ServerScope global;
    private PluginInfo pluginInfo;
    private HttpIORServer httpServer;
    private Set urlPathClasspathSet = new HashSet();
@@ -94,7 +94,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
-      this.global = (Global)global_; // .getClone(null); -> is done in XmlBlasterPublisher
+      this.global = (ServerScope)global_; // .getClone(null); -> is done in XmlBlasterPublisher
 
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;
@@ -201,7 +201,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
                // "status.html": lookup where the java class resides in xmlBlaster.jar
                urlPath = urlPath.substring(1);
             }
-            text = Global.getFromClasspath(urlPath, this);
+            text = ServerScope.getFromClasspath(urlPath, this);
             if (log.isLoggable(Level.FINE)) log.fine("Reading '" + urlPath + "' from CLASSPATH");
          }
          else {

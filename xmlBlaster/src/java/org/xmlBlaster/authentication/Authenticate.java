@@ -22,7 +22,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.engine.XmlBlasterImpl;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -46,7 +46,7 @@ final public class Authenticate implements I_RunlevelListener
    /** Unique counter to generate IDs */
    private long counter = 1;
 
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(Authenticate.class.getName());
 
    /**
@@ -78,7 +78,7 @@ final public class Authenticate implements I_RunlevelListener
 
    /**
     */
-   public Authenticate(Global global) throws XmlBlasterException
+   public Authenticate(ServerScope global) throws XmlBlasterException
    {
       this.glob = global;
 
@@ -104,7 +104,7 @@ final public class Authenticate implements I_RunlevelListener
 
 
 
-   public Global getGlobal()
+   public ServerScope getGlobal()
    {
       return this.glob;
    }
@@ -308,7 +308,7 @@ final public class Authenticate implements I_RunlevelListener
          throw e;
       }
       catch (Throwable e) {
-         log.severe("PANIC: Access is denied: " + e.getMessage() + "\n" + Global.getStackTraceAsString(e));
+         log.severe("PANIC: Access is denied: " + e.getMessage() + "\n" + ServerScope.getStackTraceAsString(e));
          // On error: cleanup resources
          securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);

@@ -11,7 +11,7 @@ package org.xmlBlaster.authentication;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.def.Constants;
@@ -73,7 +73,7 @@ import javax.management.MBeanNotificationInfo;
 public final class SubjectInfo extends NotificationBroadcasterSupport /* implements I_AdminSubject, SubjectInfoMBean -> is delegated to SubjectInfoProtector */
 {
    private String ME = "SubjectInfo";
-   private final Global glob;
+   private final ServerScope glob;
    private static Logger log = Logger.getLogger(SubjectInfo.class.getName());
    private final ContextNode contextNode;
 
@@ -141,7 +141,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * @param securityCtx  The security context of this subject
     * @param prop         The property from the subject queue, usually from connectQos.getSubjectQueueProperty()
     */
-   public SubjectInfo(Global glob, Authenticate authenticate, SessionName subjectName) //, I_Subject securityCtx, CbQueueProperty prop)
+   public SubjectInfo(ServerScope glob, Authenticate authenticate, SessionName subjectName) //, I_Subject securityCtx, CbQueueProperty prop)
           throws XmlBlasterException {
       synchronized (SubjectInfo.class) {
          this.instanceId = instanceCounter;
@@ -1145,11 +1145,11 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
    /** JMX */
    public java.lang.String usage() {
-      return Global.getJmxUsageLinkInfo(this.getClass().getName(), null);
+      return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
    }
    /** JMX */
    public java.lang.String getUsageUrl() {
-      return Global.getJavadocUrl(this.getClass().getName(), null);
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}
