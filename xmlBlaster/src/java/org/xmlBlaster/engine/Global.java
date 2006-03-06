@@ -115,6 +115,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * @param args Environment arguments (key/value pairs)
     */
    public Global(String[] args) {
+      super(args);
       init(args);
       addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
    }

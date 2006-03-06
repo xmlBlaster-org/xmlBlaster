@@ -12,14 +12,11 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.protocol.I_Authenticate;
-import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -57,7 +54,6 @@ public final class XmlBlasterNativeClient implements I_Callback
    private String ME = "dispatch.plugins.prio.XmlBlasterNativeClient";
    private Global glob;
    private static Logger log = Logger.getLogger(XmlBlasterNativeClient.class.getName());
-   private PriorizedDispatchPlugin plugin;
    /* // Native xmlBlaster access currently not implemented, using remote client xmlBlasterConnection access instead
    private final I_Authenticate authenticate;
    private final I_XmlBlaster xmlBlasterImpl;
@@ -81,7 +77,6 @@ public final class XmlBlasterNativeClient implements I_Callback
    public XmlBlasterNativeClient(final Global glob_, PriorizedDispatchPlugin plugin, String sessionId) throws XmlBlasterException {
       this.glob = glob_.getClone(null);
 
-      this.plugin = plugin;
       /*
       this.authenticate = (I_Authenticate)this.glob.getObjectEntry(Constants.I_AUTHENTICATE_PROPERTY_KEY);
       if (this.authenticate == null) {
@@ -365,8 +360,6 @@ public final class XmlBlasterNativeClient implements I_Callback
       log.info("Native xmlBlaster access stopped, resources released.");
 
       this.glob = null;
-      this.log = null;
-      this.plugin = null;
       //this.authenticate = null;
       //this.xmlBlasterImpl = null;
       this.connectQos = null;

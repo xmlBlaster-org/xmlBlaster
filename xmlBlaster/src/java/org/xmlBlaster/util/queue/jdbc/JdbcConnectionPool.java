@@ -144,7 +144,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     * returns null if no connection available
     */
    private Connection get(long delay) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("get invoked");
+      if (log.isLoggable(Level.FINER)) log.finer("get invoked");
       Connection ret = null;
       if (this.connections.size() > this.capacity)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, "get: Inconsistency in connection index: a negative one is not possible: '" + this.connections.size() + "'");
@@ -164,7 +164,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
 
    private boolean put(Connection conn) {
-      if (log.isLoggable(Level.FINER)) this.log.finer("put invoked");
+      if (log.isLoggable(Level.FINER)) log.finer("put invoked");
       if (conn == null) return false;
       if (log.isLoggable(Level.FINE)) {
          try {
@@ -227,7 +227,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       synchronized(this) {
          if (disconnectFirst) disconnect();
          for (int i = 0; i < this.capacity; i++) {
-            if (log.isLoggable(Level.FINE)) this.log.fine("initializing DB connection "+ i + " url=" + url + " user=" + user); // + " password=" + password);
+            if (log.isLoggable(Level.FINE)) log.fine("initializing DB connection "+ i + " url=" + url + " user=" + user); // + " password=" + password);
             //Logging since JDK 1.3:
             //java.io.OutputStream buf = new java.io.ByteArrayOutputStream();
             //java.io.PrintStream pr = new java.io.PrintStream(buf);
@@ -239,7 +239,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             catch (InterruptedException e) {
                log.severe("connect: an interrupted exception occured " + e.getMessage());
             }
-            if (log.isLoggable(Level.FINE)) this.log.fine("initialized DB connection "+ i + " success");
+            if (log.isLoggable(Level.FINE)) log.fine("initialized DB connection "+ i + " success");
          }
          oldStatus = this.status;
          this.status = I_StorageProblemListener.AVAILABLE;
@@ -273,7 +273,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.glob = glob;
       this.pluginProp = pluginProperties;
 
-      if (log.isLoggable(Level.FINE)) this.log.fine("initialize");
+      if (log.isLoggable(Level.FINE)) log.fine("initialize");
 
       // could these also be part of the properties specific to the invoking plugin ?
       org.xmlBlaster.util.property.Property prop = glob.getProperty();
@@ -443,7 +443,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             ex.printStackTrace();
          }
          else {
-            if (log.isLoggable(Level.FINE)) this.log.fine(" connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
+            if (log.isLoggable(Level.FINE)) log.fine(" connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
          }
 
          // clean up the connections which might have been established
@@ -483,7 +483,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    /** This method is used in the init method */
    private Hashtable parseMapping(org.xmlBlaster.util.property.Property prop)
          throws XmlBlasterException, SQLException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("parseMapping");
+      if (log.isLoggable(Level.FINER)) log.finer("parseMapping");
       if (this.isShutdown) connect(false);
 
 
@@ -529,7 +529,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 //                " is wrong: no equality sign between key and value");
          String key = singleMapping.substring(0, pos);
          String value = singleMapping.substring(pos + 1, singleMapping.length());
-         if (log.isLoggable(Level.FINE)) this.log.fine("parseMapping: mapping " + key + " to " + value);
+         if (log.isLoggable(Level.FINE)) log.fine("parseMapping: mapping " + key + " to " + value);
          this.mapping.put(key, value);
       }
       if (ex != null) {
@@ -557,7 +557,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             conn = get(waitTime);            
             if (conn == null) break;
             conn.close();
-            if (log.isLoggable(Level.FINE)) this.log.fine("connection " + conn + " disconnected ( object address: " + conn + ")");
+            if (log.isLoggable(Level.FINE)) log.fine("connection " + conn + " disconnected ( object address: " + conn + ")");
          }
          catch (Throwable ex) {
             if (silent) {
@@ -577,7 +577,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     * layer are catched and logged. When this occurs, the affected connections are set to null.
     */
    synchronized public void disconnect() {
-      if (log.isLoggable(Level.FINER)) this.log.finer("disconnect invoked");
+      if (log.isLoggable(Level.FINER)) log.finer("disconnect invoked");
       disconnect(-1L, false);
    }
 
@@ -635,7 +635,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       synchronized (this) {
          this.waitingCalls++;
       }
-      if (log.isLoggable(Level.FINER)) this.log.finer("getConnection " + this.connections.size() + " waiting calls: " + this.waitingCalls);
+      if (log.isLoggable(Level.FINER)) log.finer("getConnection " + this.connections.size() + " waiting calls: " + this.waitingCalls);
       try {
          if (this.isShutdown) connect(false);
          return get(this.connectionBusyTimeout);
@@ -660,7 +660,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     * it will throw an exception.
     */
    public void releaseConnection(Connection conn) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("releaseConnection " + this.connections.size() + " waiting calls: " + this.waitingCalls);
+      if (log.isLoggable(Level.FINER)) log.finer("releaseConnection " + this.connections.size() + " waiting calls: " + this.waitingCalls);
       try {
          SQLWarning warns = conn.getWarnings();
          /*
@@ -746,7 +746,6 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    public static void main(String[] args) {
 
       //here starts the main method ...
-      Logger log = null;
       Connection conn = null;
       try {
          Global glob = Global.instance();
@@ -796,20 +795,20 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    }
 
    public synchronized void shutdown() {
-      if (log.isLoggable(Level.FINER)) this.log.finer("shutdown");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown");
       disconnect();
 //      this.initialized = false;
       this.isShutdown = true;
    }
 
    synchronized public void registerManager(JdbcManagerCommonTable manager) {
-      if (log.isLoggable(Level.FINER)) this.log.finer("registerManager, number of managers registered (before registering this one): '" + this.managerCount + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("registerManager, number of managers registered (before registering this one): '" + this.managerCount + "'");
       if (manager == null) return;
       this.managerCount++;
    }
 
    synchronized public void unregisterManager(JdbcManagerCommonTable manager) {
-      if (log.isLoggable(Level.FINER)) this.log.finer("unregisterManager, number of managers registered (still including this one): '" + this.managerCount + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("unregisterManager, number of managers registered (still including this one): '" + this.managerCount + "'");
       if (manager == null) return;
       this.managerCount--;
       if (this.managerCount == 0) shutdown();

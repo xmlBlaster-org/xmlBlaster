@@ -119,7 +119,6 @@ public class DispatchWorkerPool //implements I_RunlevelListener
       }
       //this.pool = null;
       //this.glob = null;
-      //this.log = null;
    }
 
    /**

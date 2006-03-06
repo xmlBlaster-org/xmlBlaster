@@ -140,7 +140,8 @@ public class SignalCatcher implements Runnable
       }
       finally {
          this.listener = null;
-         if (log.isLoggable(Level.FINE)) log.fine("Removed = " + removed + " in removeSignalCatcher()");
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("Removed = " + removed + " in removeSignalCatcher()");
 
          // This is a hack to allow the garbage collector to destroy SignalCatcher
          // (An unrun thread can't be garbage collected)
@@ -152,7 +153,6 @@ public class SignalCatcher implements Runnable
             if (log.isLoggable(Level.FINE)) log.fine("Thread has run already: " + e.toString());
          }
          
-         this.log = null;
          this.thread = null;
       }
       return removed;
