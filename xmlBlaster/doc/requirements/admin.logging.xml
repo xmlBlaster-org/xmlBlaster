@@ -61,8 +61,8 @@
 # Configure logging from command line:
 #  -logging FINE
 #  -/node/heron/logging FINE
-#  -logging/org.xmlBlaster.engine.level FINE
-#  -/node/heron/logging/org.xmlBlaster.engine.level FINE
+#  -logging/org.xmlBlaster.engine FINE
+#  -/node/heron/logging/org.xmlBlaster.engine FINE
 #-----------------------------------------------------------------------------
 
 # "handlers" specifies a comma separated list of log Handler
