@@ -248,7 +248,6 @@ public class Property implements Cloneable {
          Enumeration iter = this.properties.keys();
          while (iter.hasMoreElements()) {
             String key = ((String)iter.nextElement()).trim();
-            log.info("Testing key '" + key + "' from properties");
             if (prefix == null || key.startsWith(prefix)) {
                Object val = this.properties.get(key);
                if (prefix != null)
@@ -262,7 +261,6 @@ public class Property implements Cloneable {
          while (iter.hasNext()) {
             Map.Entry entry = ((Map.Entry)iter.next());
             String key = (String)entry.getKey();
-            log.info("Testing key '" + key + "' from propMap");
             Object val = entry.getValue();
             if (prefix == null || key.startsWith(prefix)) {
                if (prefix != null)

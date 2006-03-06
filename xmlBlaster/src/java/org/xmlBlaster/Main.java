@@ -487,7 +487,6 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       System.out.println("   -xmlBlaster/acceptWrongSenderAddress/<subjectId>  <subjectId> is for example 'joe' [false]");
       System.out.println("                              true: Allows user 'joe' to send wrong sender address in PublishQos");
       System.out.println("   -xmlBlaster/sleepOnStartup Number of milli seconds to sleep before startup [0]");
-      System.out.println("   -xmlBlaster/jdk14loggingCapture Capture JDK 1.4 logging into our jutils logging framework [true]");
       System.out.println("   -useKeyboard false         Switch off keyboard input, to allow xmlBlaster running in background [true]");
       System.out.println("   -doBlocking  false         Switch off blocking, the main method is by default never returning [true]");
       System.out.println("   -admin.remoteconsole.port  If port > 1000 a server is started which is available with telnet [2702]");

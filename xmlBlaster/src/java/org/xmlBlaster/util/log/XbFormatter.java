@@ -39,7 +39,10 @@ public class XbFormatter extends Formatter {
 
    // private static final String BOLD = "\033[1m";
 
-   /** color foreground/background (for xterm) */
+   /** color foreground/background (for xterm). 
+      The ESC [30m ... ESC [38m should set the foreground
+      color, and ESC [40m .. ESC [48m should set the background color
+   */
    private static final String RED_BLACK = "\033[31;40m";
 
    private static final String GREEN_BLACK = "\033[32;40m";
@@ -72,30 +75,29 @@ public class XbFormatter extends Formatter {
    private final String finest;
 
    /** Output text for different logging levels */
-   public static final String severeX = new String("SEVERE");
+   public static final String severeX =  new String("SEVERE ");
 
-   public static final String warningX = new String("WARN  ");
+   public static final String warningX = new String("WARNING");
 
-   public static final String infoX = new String("INFO  ");
+   public static final String infoX =    new String(" INFO  ");
 
-   public static final String fineX = new String("FINE  ");
+   public static final String fineX =    new String(" FINE  ");
 
-   public static final String finerX = new String("FINER ");
+   public static final String finerX =   new String(" FINER ");
 
-   public static final String finestX = new String("FINEST");
+   public static final String finestX =  new String("FINEST ");
 
-   public static final String severeE = new String(RED_BLACK + "SEVERE" + ESC);
+   public static final String severeE = new String(RED_BLACK +     "SEVERE " + ESC);
 
-   public static final String warningE = new String(YELLOW_BLACK + "WARN  "
-         + ESC);
+   public static final String warningE = new String(YELLOW_BLACK + "WARNING" + ESC);
 
-   public static final String infoE = new String(GREEN_BLACK + "INFO  " + ESC);
+   public static final String infoE = new String(GREEN_BLACK +     " INFO  " + ESC);
 
-   public static final String fineE = new String(LTGREEN_BLACK + "FINE  " + ESC);
+   public static final String fineE = new String(LTGREEN_BLACK +   " FINE  " + ESC);
 
-   public static final String finerE = new String(PINK_BLACK + "FINER " + ESC);
+   public static final String finerE = new String(PINK_BLACK +     " FINER " + ESC);
 
-   public static final String finestE = new String(WHITE_BLACK + "TRACE " + ESC);
+   public static final String finestE = new String(WHITE_BLACK +   "FINEST " + ESC);
 
    public XbFormatter() {
       this("default");

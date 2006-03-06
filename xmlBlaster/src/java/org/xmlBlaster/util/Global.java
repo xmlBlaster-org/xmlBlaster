@@ -289,8 +289,9 @@ public class Global implements Cloneable
       objectMap = new HashMap();
 
       try { // since JKD 1.4:
-         URL url = initLogManager();
-         log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
+         URL url = initLogManager(args);
+         if (url != null)
+            log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
       }
       catch (XmlBlasterException e) {
          System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
@@ -521,16 +522,19 @@ public class Global implements Cloneable
 
    /**
     * Configure JDK 1.4 java.util.logging. 
-    * </p>
-    * @return The used configuration file (can be used for user notification)
+    * </p> 
+    * @return The used configuration file (can be used for user notification) or null
     * @throws XmlBlasterException if redirection fails
     */
-   private URL initLogManager() throws XmlBlasterException {
+   private URL initLogManager(String[] args) throws XmlBlasterException {
+      if (args == null) return null;
+      if (logIsInitialized) return null;
+      
       FileLocator fl = new FileLocator(this);
-      URL url = fl.findFileInXmlBlasterSearchPath("xmlBlaster/jdk14LogFile", "logging.properties");
+      URL url = fl.findFileInXmlBlasterSearchPath("java.util.logging.config.file", "logging.properties");
       if (url == null) {
          throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION,
-         "Global", "Can't find xmlBlaster/jdk14LogFile=logging.properties");
+         "Global", "Can't find java.util.logging.config.file=logging.properties");
       }
       try {
          InputStream in = url.openStream();
@@ -540,61 +544,59 @@ public class Global implements Cloneable
          in.close();
          
          // init from command line (or xmlBlaster.properties)
-         if (!logIsInitialized) {
-            synchronized (Global.class) {
-               if (!logIsInitialized) {
-                  Map map = this.property.getPropertiesForContextNode(this.contextNode, ContextNode.LOGGING_MARKER_TAG, "__default");
-                  String defVal = (String)map.get("__default");
-                  if (defVal != null) {
-                     try {
-                        Level defaultLevel = Level.parse(defVal);
-                        Logger defLogger = logManager.getLogger("");
-                        if (defLogger != null) {
-                           defLogger.setLevel(defaultLevel);
-                           log.info("Setting default log level to '" + defaultLevel.getName() + "'");
-                        }
-                        else
-                           log.warning("Setting default log level to '" + defaultLevel.getName() + "' failed since default log level is null");
+         synchronized (Global.class) {
+            if (!logIsInitialized) {
+               Map map = this.property.getPropertiesForContextNode(this.contextNode, ContextNode.LOGGING_MARKER_TAG, "__default");
+               String defVal = (String)map.get("__default");
+               if (defVal != null) {
+                  try {
+                     Level defaultLevel = Level.parse(defVal);
+                     Logger defLogger = logManager.getLogger("");
+                     if (defLogger != null) {
+                        defLogger.setLevel(defaultLevel);
+                        log.info("Setting default log level to '" + defaultLevel.getName() + "'");
                      }
-                     catch (Throwable ex) {
-                        log.warning("An exception occured when parsing '" + defVal + "' as a log level");
-                     }
+                     else
+                        log.warning("Setting default log level to '" + defaultLevel.getName() + "' failed since default log level is null");
                   }
-                  Iterator iter = map.entrySet().iterator();
-                  
-                  Logger defLogger = logManager.getLogger("");
-                  // Handler[] tmpHandlers = defLogger.getHandlers();
-                  // Handler[] refHandlers = new Handler[tmpHandlers.length];
-                  Handler[] refHandlers = defLogger.getHandlers();
-                  for (int i=0; i < refHandlers.length; i++) {
-                     refHandlers[i].setLevel(Level.FINEST);
+                  catch (Throwable ex) {
+                     log.warning("An exception occured when parsing '" + defVal + "' as a log level");
                   }
-                  
-                  while (iter.hasNext()) {
-                     Map.Entry entry = (Map.Entry)iter.next();
-                     String key = (String)entry.getKey();
-                     String val = (String)entry.getValue();
-                     try {
-                        Level level = Level.parse(val);
-                        Logger tmpLogger = Logger.getLogger(key);
-                        if (tmpLogger != null) {
-                           tmpLogger.setLevel(level);
-                           tmpLogger.setUseParentHandlers(false);
-                           for (int i=0; i < refHandlers.length; i++) {
-                              // handlers[i].setLevel(level);
-                              tmpLogger.addHandler(refHandlers[i]);
-                           }
-                           log.info("Setting log level for '" + key + "' to '" + level.getName() + "'");
-                        }
-                        else
-                           log.info("Setting log level for '" + key + "' to '" + level.getName() + "' failed since logger was null");
-                     }
-                     catch (Throwable ex) {
-                        log.warning("An exception occured when parsing '" + val + "' as a log level for '" + key + "'");
-                     }
-                  }
-                  logIsInitialized = true;
                }
+               Iterator iter = map.entrySet().iterator();
+               
+               Logger defLogger = logManager.getLogger("");
+               // Handler[] tmpHandlers = defLogger.getHandlers();
+               // Handler[] refHandlers = new Handler[tmpHandlers.length];
+               Handler[] refHandlers = defLogger.getHandlers();
+               for (int i=0; i < refHandlers.length; i++) {
+                  refHandlers[i].setLevel(Level.FINEST);
+               }
+               
+               while (iter.hasNext()) {
+                  Map.Entry entry = (Map.Entry)iter.next();
+                  String key = (String)entry.getKey();
+                  String val = (String)entry.getValue();
+                  try {
+                     Level level = Level.parse(val);
+                     Logger tmpLogger = Logger.getLogger(key);
+                     if (tmpLogger != null) {
+                        tmpLogger.setLevel(level);
+                        tmpLogger.setUseParentHandlers(false);
+                        for (int i=0; i < refHandlers.length; i++) {
+                           // handlers[i].setLevel(level);
+                           tmpLogger.addHandler(refHandlers[i]);
+                        }
+                        log.info("Setting log level for '" + key + "' to '" + level.getName() + "'");
+                     }
+                     else
+                        log.info("Setting log level for '" + key + "' to '" + level.getName() + "' failed since logger was null");
+                  }
+                  catch (Throwable ex) {
+                     log.warning("An exception occured when parsing '" + val + "' as a log level for '" + key + "'");
+                  }
+               }
+               logIsInitialized = true;
             }
          }
          return url;
@@ -629,6 +631,14 @@ public class Global implements Cloneable
       try {
          property.addArgs2Props(args);
          initId();
+         try { // since JKD 1.4:
+            URL url = initLogManager(args);
+            if (url != null)
+               log.info("Configuring JDK 1.4 logging with configuration '" + url.toString() + "'");
+         }
+         catch (XmlBlasterException e) {
+            System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
+         }
          return property.wantsHelp() ? 1 : 0;
       } 
       catch (XmlBlasterException e) {
