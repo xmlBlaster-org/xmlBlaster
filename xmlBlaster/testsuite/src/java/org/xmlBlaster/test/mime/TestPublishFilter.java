@@ -123,12 +123,12 @@ public class TestPublishFilter extends TestCase
     */
    protected void tearDown()
    {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(200L); } catch( InterruptedException i) {} // Wait some time
 
       con.disconnect(null);
       con=null;
 
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(500L); } catch( InterruptedException i) {} // Wait some time
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
 
@@ -260,7 +260,7 @@ public class TestPublishFilter extends TestCase
          log.warning("TEST 3: SUCCESS XmlBlasterException: " + e.getMessage());
       }
 
-      try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
       assertEquals("PtP updates is not one", 1, numUpdated);
 
       log.info("Success in testPtPFilter()");

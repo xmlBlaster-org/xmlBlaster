@@ -110,7 +110,7 @@ public class TestSessionReconnect extends TestCase
     * Cleaning up. 
     */
    protected void tearDown() {
-      try { Thread.currentThread().sleep(1000);} catch(Exception ex) {} 
+      try { Thread.sleep(1000);} catch(Exception ex) {} 
       if (serverThread != null)
          serverThread.stopServer(true);
       // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).

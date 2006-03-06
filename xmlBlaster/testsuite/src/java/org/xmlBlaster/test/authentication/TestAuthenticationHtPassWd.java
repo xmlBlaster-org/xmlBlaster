@@ -89,13 +89,13 @@ public class TestAuthenticationHtPassWd extends TestCase
   }
 
   protected void tearDown() {
-     try { Thread.currentThread().sleep(1000);} catch(Exception ex) {} 
+     try { Thread.sleep(1000);} catch(Exception ex) {} 
      if (serverThread != null)
        serverThread.stopServer(true);
      glob.init(Util.getDefaultServerPorts());
      Util.resetPorts(glob);
      this.glob = null;
-     this.log = null;
+    
      this.con = null;
      Global.instance().shutdown();
   }

@@ -127,7 +127,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
    protected void setUp() {
       try {
          this.connGlobal = this.global.getClone(null);
-         this.updateInterceptor = new MsgInterceptor(this.connGlobal, this.log, null);
+         this.updateInterceptor = new MsgInterceptor(this.connGlobal, log, null);
          this.connGlobal.getXmlBlasterAccess().connect(new ConnectQos(this.connGlobal), this.updateInterceptor);
          SubscribeQos subQos = new SubscribeQos(this.connGlobal);
          subQos.setWantInitialUpdate(false);

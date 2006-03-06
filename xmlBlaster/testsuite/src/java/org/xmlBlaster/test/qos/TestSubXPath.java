@@ -80,7 +80,7 @@ public class TestSubXPath extends TestCase
       try {
          senderConnection = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(this.glob, this.senderName, "secret");
-         this.updateInterceptor = new MsgInterceptor(this.glob, this.log, null);
+         this.updateInterceptor = new MsgInterceptor(this.glob, log, null);
          senderConnection.connect(qos, this.updateInterceptor); // Login to xmlBlaster
       }
       catch (Exception e) {

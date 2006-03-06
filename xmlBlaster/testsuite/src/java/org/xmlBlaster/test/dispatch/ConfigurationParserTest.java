@@ -41,7 +41,7 @@ public class ConfigurationParserTest extends TestCase {
 
    protected void tearDown() {
       this.glob = null;
-      this.log = null;
+     
       Global.instance().shutdown();
    }
 

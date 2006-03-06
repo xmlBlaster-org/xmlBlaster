@@ -203,13 +203,13 @@ public class TestCallback extends TestCase implements I_Callback
       long sum = 0L;
       // check if too few are arriving
       while (numReceived < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
+         try { Thread.sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
          assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
+      try { Thread.sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, numReceived);
 
       numReceived = 0;

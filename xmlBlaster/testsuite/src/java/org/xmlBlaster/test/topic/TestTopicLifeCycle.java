@@ -118,7 +118,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          String passwd = "secret";
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         this.updateInterceptor = new MsgInterceptor(this.glob, this.log, this);
+         this.updateInterceptor = new MsgInterceptor(this.glob, log, this);
          con.connect(qos, this.updateInterceptor);
       }
       catch (Exception e) {
@@ -134,7 +134,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * cleaning up .... logout
     */
    protected void tearDown() {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
@@ -150,7 +150,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       con=null;
 
       if (this.startEmbedded) {
-         try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(500L); } catch( InterruptedException i) {} // Wait some time
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
       }
@@ -158,7 +158,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();
       this.glob = null;
-      this.log = null;
+     
    }
 
    public EraseReturnQos[] sendErase(boolean forceDestroy) {
@@ -354,7 +354,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
 
 
       {  // topic transition from ALIVE -> [6] -> UNREFERENCED (3 sec)
-         try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
+         try { Thread.sleep(3500L); } catch( InterruptedException i) {}
          String dump = getDump();
          // Expecting something like:
          // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNREFERENCED'>
@@ -365,7 +365,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
 
       {  // topic transition from UNREFERENCED -> [11] -> DEAD
          log.info("Sleeping for another 5 sec, the topic (with destroyDelay=6sec) should be dead then");
-         try { Thread.currentThread().sleep(6000); } catch( InterruptedException i) {}
+         try { Thread.sleep(6000); } catch( InterruptedException i) {}
          // Topic should be destroyed now
 
          String dump = getDump();
@@ -409,7 +409,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       }
 
       {  log.info("topic transition from ALIVE -> [6] -> UNREFERENCED (3 sec)");
-         try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
+         try { Thread.sleep(3500L); } catch( InterruptedException i) {}
          String dump = getDump();
          // Expecting something like:
          // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNREFERENCED'>
@@ -523,10 +523,10 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       }
 
       {  // topic transition from ALIVE -> [6] -> UNREFERENCED
-         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
+         try { Thread.sleep(1000L); } catch( InterruptedException i) {}
          unSubscribeMsg();
          // topic transition from UNREFERENCED -> [11] DEAD (wait 200 millis as this is done by timeout thread (async))
-         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+         try { Thread.sleep(200L); } catch( InterruptedException i) {}
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
@@ -572,7 +572,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          log.info("erase num=" + erq.length);
          assertEquals("erase failed", 1, erq.length);
          assertEquals("", 2, this.updateInterceptor.waitOnUpdate(1000L, publishOid, Constants.STATE_ERASED, 2)); // Expecting two erase events (for the above subscriptions)
-         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
+         try { Thread.sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          this.updateInterceptor.countErased(false);
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
@@ -621,14 +621,14 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
          this.updateInterceptor.waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
-         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
+         try { Thread.sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          String dump = getDump();
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='SOFTERASED'") != -1);
       }
 
       {  // topic transition from SOFTERASED -> [12] --> DEAD
-         try { Thread.currentThread().sleep(4500L); } catch( InterruptedException i) {}
+         try { Thread.sleep(4500L); } catch( InterruptedException i) {}
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
@@ -713,7 +713,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
          this.updateInterceptor.waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
-         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
+         try { Thread.sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
       }
@@ -764,7 +764,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
 
       if (this.blockUpdateTime > 0L) {
          log.info("Blocking the update callback for " + this.blockUpdateTime + " millis");
-         try { Thread.currentThread().sleep(this.blockUpdateTime); } catch( InterruptedException i) {}
+         try { Thread.sleep(this.blockUpdateTime); } catch( InterruptedException i) {}
          this.blockUpdateTime = 0L;
          log.info("Block released, reset blockTimer");
       }

@@ -81,7 +81,7 @@ public class Embedded
          ThreadLister.listAllThreads(System.out);
 
          if (!interactive) {
-            try { Thread.currentThread().sleep(sleep); } catch( InterruptedException e) {}
+            try { Thread.sleep(sleep); } catch( InterruptedException e) {}
          }
       }
       log.info("Done");

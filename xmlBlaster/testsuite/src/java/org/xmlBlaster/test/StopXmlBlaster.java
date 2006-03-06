@@ -47,7 +47,7 @@ public class StopXmlBlaster extends TestCase
          con.disconnect(null);
 
          // xmlBlaster shuts down 2 sec later + time to process shutdown
-         try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
+         try { Thread.sleep(4000L); } catch( InterruptedException i) {}
 
          try {
             Global glob2 = this.glob.getClone(null);

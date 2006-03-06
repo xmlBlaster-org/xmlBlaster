@@ -107,7 +107,7 @@ public class Util
    public static void delay(long millis)
    {
       try {
-          Thread.currentThread().sleep(millis);
+          Thread.sleep(millis);
       }
       catch( InterruptedException i)
       {}
@@ -133,7 +133,7 @@ public class Util
    public static void gc(int numGc) {
       for (int ii=0; ii<numGc; ii++) {
          System.gc();
-         try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
+         try { Thread.sleep(100L); } catch( InterruptedException i) {}
       }
    }
 

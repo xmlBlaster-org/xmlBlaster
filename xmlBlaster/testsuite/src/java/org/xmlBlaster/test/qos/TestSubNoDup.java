@@ -215,18 +215,18 @@ public class TestSubNoDup extends TestCase implements I_Callback
       connect();
 
       subscribe();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       publish();
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(2000L); } catch( InterruptedException i) {}
       assertEquals("numReceived after publishing", 1, numReceived); // only one message arrived?
 
       unSubscribe();
 
       numReceived = 0;
       publish();
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(2000L); } catch( InterruptedException i) {}
       assertEquals("numReceived after publishing", 0, numReceived); // no message arrived?
    }
 
@@ -242,18 +242,18 @@ public class TestSubNoDup extends TestCase implements I_Callback
       connect();
 
       subscribe();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       publish();
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(2000L); } catch( InterruptedException i) {}
       assertEquals("numReceived after publishing", 3, numReceived); // only one message arrived?
 
       unSubscribe();
 
       numReceived = 0;
       publish();
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(2000L); } catch( InterruptedException i) {}
       assertEquals("numReceived after publishing", 0, numReceived); // no message arrived?
    }
 
@@ -268,7 +268,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
       numReceived += 1;
 
       // Wait that publish() returns and set 'publishOid' properly
-      try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
+      try { Thread.sleep(200); } catch( InterruptedException i) {}
 
       if (!duplicates)
          assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeId1, updateQos.getSubscriptionId());

@@ -133,7 +133,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       try {
          EraseReturnQos[] arr = con.erase("<key oid='MSG'/>", "<qos/>");
@@ -143,7 +143,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       con.disconnect(null);
       con=null;
 
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
+      try { Thread.sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
 
@@ -220,13 +220,13 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       long sum = 0L;
       // check if too few are arriving
       while (numReceived < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
+         try { Thread.sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
          assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
+      try { Thread.sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, numReceived);
 
       numReceived = 0;

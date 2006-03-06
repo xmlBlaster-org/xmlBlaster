@@ -225,7 +225,7 @@ public class TestXmlBlasterAccessMultiThreaded extends TestCase implements I_Con
       this.updateInterceptor.waitOnUpdate(3000L, numPublish * numThreads);
       Msg[] msgs = this.updateInterceptor.getMsgs(oid, Constants.STATE_OK);
       //msg.compareMsg(sentMsgVec.elementAt[i]);
-      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(3000L); } catch( InterruptedException i) {}
       assertEquals("Too many messages arrived", numPublish * numThreads, this.updateInterceptor.count());
 
       HashSet set = new HashSet();

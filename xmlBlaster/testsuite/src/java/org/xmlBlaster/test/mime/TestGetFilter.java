@@ -111,7 +111,7 @@ public class TestGetFilter extends TestCase
     */
    protected void tearDown()
    {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       try {
          EraseReturnQos[] arr = con.erase("<key oid='MSG'/>", null);
@@ -121,7 +121,7 @@ public class TestGetFilter extends TestCase
       con.disconnect(null);
       con=null;
 
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
+      try { Thread.sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
 

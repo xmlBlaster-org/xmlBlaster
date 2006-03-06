@@ -184,7 +184,7 @@ public class CacheQueueDisconnectTest extends TestCase {
             entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), sizeOfMsg, true);
             queue.put(entries[i], false);
             try {
-               Thread.currentThread().sleep(sleepDelay);
+               Thread.sleep(sleepDelay);
             }
             catch (Exception ex) {
             }

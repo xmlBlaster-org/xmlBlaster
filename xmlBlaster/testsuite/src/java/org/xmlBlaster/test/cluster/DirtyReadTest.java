@@ -1,7 +1,6 @@
 package org.xmlBlaster.test.cluster;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 // for client connections:
@@ -14,13 +13,8 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
-
-
-import java.util.Vector;
-import java.io.File;
 
 import junit.framework.*;
 
@@ -42,7 +36,7 @@ public class DirtyReadTest extends TestCase {
    private static Logger log = Logger.getLogger(DirtyReadTest.class.getName());
    private ServerHelper serverHelper;
 
-   private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon;
+   private I_XmlBlasterAccess heronCon, frodoCon;
 
    private int updateCounterFrodo = 0;
    private String contentStr = "Lets have another game.";
@@ -75,7 +69,7 @@ public class DirtyReadTest extends TestCase {
     */
    protected void tearDown() {
       log.info("Entering tearDown(), test is finished");
-      try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (frodoCon != null) { frodoCon.disconnect(null); frodoCon = null; }
       if (heronCon != null) { heronCon.disconnect(null); heronCon = null; }
@@ -107,7 +101,6 @@ public class DirtyReadTest extends TestCase {
 
       SubscribeKey sk;
       SubscribeQos sq;
-      SubscribeReturnQos srq;
 
       PublishKey pk;
       PublishQos pq;
@@ -122,7 +115,7 @@ public class DirtyReadTest extends TestCase {
                   return "";
                }
             });
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
 
 
@@ -130,7 +123,7 @@ public class DirtyReadTest extends TestCase {
          sk = new SubscribeKey(glob, oid);
          sk.setDomain(domain);
          sq = new SubscribeQos(glob);
-         srq = frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info("Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
                updateCounterFrodo++;
@@ -138,7 +131,7 @@ public class DirtyReadTest extends TestCase {
                return "";
             }
          });  // subscribe with our specific update handler
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -152,7 +145,7 @@ public class DirtyReadTest extends TestCase {
                                     "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
-         try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(2000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo has not received message", 1, updateCounterFrodo);
 
          System.err.println("Query heron if he did not send any update message ...");

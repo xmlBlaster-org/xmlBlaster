@@ -6,36 +6,22 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.MsgInterceptor;
-
-import junit.framework.*;
 
 
 /**
@@ -61,7 +47,6 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
    private static Logger log = Logger.getLogger(TestReconnectSameClientOnly.class.getName());
 
    private I_XmlBlasterAccess con = null;
-   private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 9560;
    private boolean startEmbedded = true;
@@ -119,7 +104,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
          this.con.connect(qos, this);
       }
       catch (Exception e) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          fail(ME+": Can't connect to xmlBlaster: " + e.toString());
       }
 
@@ -148,7 +133,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
          fail("Can't setup test: " + e.getMessage());
       }
 
-      try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait
+      try { Thread.sleep(2000); } catch( InterruptedException i) {} // Wait
 
       try {
          log.info("Connecting other ...");
@@ -189,7 +174,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
       this.con = null;
 
       if (this.startEmbedded) {
-         try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(500L); } catch( InterruptedException i) {} // Wait some time
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
       }
@@ -197,7 +182,6 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts(glob);
       this.glob = null;
-      this.log = null;
       this.con = null;
       Global.instance().shutdown();
    }

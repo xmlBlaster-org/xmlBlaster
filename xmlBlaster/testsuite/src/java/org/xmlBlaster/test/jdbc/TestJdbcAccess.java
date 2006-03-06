@@ -119,7 +119,7 @@ public class TestJdbcAccess extends TestCase
       con.disconnect(null);
       con=null;
 
-      try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
+      try { Thread.sleep(100L); } catch( InterruptedException i) {}
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
 

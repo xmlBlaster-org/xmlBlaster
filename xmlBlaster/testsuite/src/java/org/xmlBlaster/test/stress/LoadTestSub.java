@@ -288,7 +288,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       long sum = 0L;
       while (numReceived < numWait) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

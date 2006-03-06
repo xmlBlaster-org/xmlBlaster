@@ -278,7 +278,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       log.info("TEST 1, many publishers, one subscriber ...");
 
       subcribeMany();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       publishOne();
@@ -291,7 +291,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       log.info("TEST 2, many publishers, one subscriber ...");
 
       subcribeOne();
-      try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}                                             // Wait some time ...
+      try { Thread.sleep(100L); } catch( InterruptedException i) {}                                             // Wait some time ...
 
       numReceived = 0;
       publishMany();

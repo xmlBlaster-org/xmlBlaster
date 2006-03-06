@@ -287,7 +287,7 @@ public class TestLogin extends TestCase implements I_Callback
       } catch(XmlBlasterException e) {
          log.info("Success got exception for publishing after logout: " + e.toString());
       }
-      try { Thread.currentThread().sleep(1000L); } catch (Exception e) { } // wait a second
+      try { Thread.sleep(1000L); } catch (Exception e) { } // wait a second
       assertEquals("Didn't expect an update", 0, numReceived);
 
       log.info("SUCCESS in testLoginLogout()");
@@ -326,7 +326,7 @@ public class TestLogin extends TestCase implements I_Callback
       long sum = 0L;
       // check if too few are arriving
       while (numReceived < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
+         try { Thread.sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
          if (sum > timeout) {
             log.severe("Timeout of " + timeout + " occurred without update");
@@ -336,7 +336,7 @@ public class TestLogin extends TestCase implements I_Callback
       }
 
       // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
+      try { Thread.sleep(timeout); } catch( InterruptedException i) {}
       if (numWait != numReceived) {
          log.severe("Wrong number of messages arrived, expected numWait=" + numWait + " but got numReceived=" + numReceived);
          Thread.currentThread().dumpStack();

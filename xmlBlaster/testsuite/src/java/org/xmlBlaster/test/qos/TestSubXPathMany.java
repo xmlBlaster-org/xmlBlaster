@@ -220,7 +220,7 @@ public class TestSubXPathMany extends TestCase
    public void testIt()
    {
       doSubscribe();
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}                                             // Wait some time for callback to arrive ...
+      try { Thread.sleep(2000L); } catch( InterruptedException i) {}                                             // Wait some time for callback to arrive ...
       assertEquals("numReceived1 after subscribe", 0, numReceived1); // there should be no Callback
       assertEquals("numReceived2 after subscribe", 0, numReceived2); // there should be no Callback
       assertEquals("numReceived3 after subscribe", 0, numReceived3); // there should be no Callback
@@ -265,7 +265,7 @@ public class TestSubXPathMany extends TestCase
       long sum = 0L;
       while (messageArrived.length() < 1) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

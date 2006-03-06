@@ -150,7 +150,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
       Util.resetPorts(this.glob);
       Global.instance().shutdown();
       this.glob = null;
-      this.log = null;
+     
       this.serverThread = null;
       this.updateInterceptor = null;
       this.msgUnitArr = null;
@@ -206,7 +206,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
       for (int i=0; i<3; i++) {
          this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
          // Wait some time, to allow the login poller to reconnect
-         try { Thread.currentThread().sleep(2000L); } catch( InterruptedException ie) {}
+         try { Thread.sleep(2000L); } catch( InterruptedException ie) {}
 
          // reachedAlive published a msg on reconnect, check it here:
          assertEquals("", 1, this.updateInterceptor.waitOnUpdate(2000L, 1));
@@ -216,7 +216,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
          // Wait some time, ping should activate login polling
-         try { Thread.currentThread().sleep(2000L); } catch( InterruptedException ie) {}
+         try { Thread.sleep(2000L); } catch( InterruptedException ie) {}
       }
    }
 

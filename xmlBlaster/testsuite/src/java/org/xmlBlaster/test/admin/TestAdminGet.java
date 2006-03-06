@@ -101,7 +101,7 @@ public class TestAdminGet extends TestCase implements I_Callback
    protected void setUp() {
       this.glob = (this.glob == null) ? Global.instance() : this.glob;
 
-      this.updateInterceptor = new MsgInterceptor(this.glob, this.log, null);
+      this.updateInterceptor = new MsgInterceptor(this.glob, log, null);
       
       try {
          I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess(); // Find orb

@@ -119,7 +119,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
     * cleaning up .... logout
     */
    protected void tearDown() {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
@@ -134,7 +134,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
       con.disconnect(null);
 
       if (this.startEmbedded) {
-         try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(500L); } catch( InterruptedException i) {} // Wait some time
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
       }
@@ -291,7 +291,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
 
 
       {  // topic transition from ALIVE -> [6] -> UNREFERENCED (3 sec)
-         try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
+         try { Thread.sleep(3500L); } catch( InterruptedException i) {}
          String dump = getDump();
          // Expecting something like:
          // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicHistoryMsg' state='UNREFERENCED'>
@@ -302,7 +302,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
 
       {  // topic transition from UNREFERENCED -> [11] -> DEAD
          log.info("Sleeping for another 5 sec, the topic (with destroyDelay=6sec) should be dead then");
-         try { Thread.currentThread().sleep(6000); } catch( InterruptedException i) {}
+         try { Thread.sleep(6000); } catch( InterruptedException i) {}
          // Topic should be destroyed now
 
          String dump = getDump();
@@ -330,7 +330,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
 
       if (this.blockUpdateTime > 0L) {
          log.info("Blocking the update callback for " + this.blockUpdateTime + " millis");
-         try { Thread.currentThread().sleep(this.blockUpdateTime); } catch( InterruptedException i) {}
+         try { Thread.sleep(this.blockUpdateTime); } catch( InterruptedException i) {}
          this.blockUpdateTime = 0L;
          log.info("Block released, reset blockTimer");
       }
@@ -350,7 +350,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
       long sum = 0L;
       while (numReceived < numWait) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

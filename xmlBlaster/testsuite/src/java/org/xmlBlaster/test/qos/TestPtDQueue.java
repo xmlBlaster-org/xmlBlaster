@@ -100,7 +100,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
       receiverConnection.disconnect(null);
       senderConnection.disconnect(null);
    }
@@ -218,7 +218,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
       long sum = 0L;
       while (!messageArrived) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

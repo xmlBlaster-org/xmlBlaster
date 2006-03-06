@@ -194,7 +194,7 @@ public class TestSub extends TestCase implements I_Callback
    public void testPublishAfterSubscribeXPath()
    {
       testSubscribeXPath();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       testPublish();
@@ -223,7 +223,7 @@ public class TestSub extends TestCase implements I_Callback
       for (int ii=0; ii<5; ii++) {
          if (subscribeOid != null) 
             break;
-         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
+         try { Thread.sleep(1000L); } catch( InterruptedException i) {}
          log.info("waiting ...");
       }
 
@@ -257,7 +257,7 @@ public class TestSub extends TestCase implements I_Callback
       long sum = 0L;
       while (!messageArrived) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

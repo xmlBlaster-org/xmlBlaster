@@ -143,7 +143,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
     */
    private void logout() {
       if (corbaConnection != null) {
-         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+         try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
          corbaConnection.disconnect(null);
          corbaConnection = null;
          System.gc();

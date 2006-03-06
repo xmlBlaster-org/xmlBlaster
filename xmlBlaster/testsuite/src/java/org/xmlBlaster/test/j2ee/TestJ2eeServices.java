@@ -147,7 +147,7 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
       // FIXME: how do we destroy the managed connections?
 
 
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
       
       try {
          con.unSubscribe("<key oid='"+subscribeOid+"'/>",
@@ -161,7 +161,7 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
       con.disconnect(null);
       con=null;
       
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
+      try { Thread.sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       server.stop();
       
 
@@ -228,13 +228,13 @@ public class TestJ2eeServices extends TestCase implements I_Callback {
       int ii = ((Integer)subscriberTable.get(subId)).intValue();
       // check if too few are arriving
       while (subRec[ii] < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
+         try { Thread.sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
          assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
+      try { Thread.sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, subRec[ii]);
       log.info("Found correct rec messages for: " + subId);
       subRec[ii]= 0;

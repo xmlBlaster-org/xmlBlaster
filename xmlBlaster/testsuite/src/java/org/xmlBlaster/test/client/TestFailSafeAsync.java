@@ -191,14 +191,14 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
          con.disconnect(null);
       }
       finally {
-         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}    // Wait some time
+         try { Thread.sleep(200L); } catch( InterruptedException i) {}    // Wait some time
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
 
          // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
          Util.resetPorts(glob);
          this.glob = null;
-         this.log = null;
+        
          this.con = null;
          this.updateInterceptor = null;
          Global.instance().shutdown();

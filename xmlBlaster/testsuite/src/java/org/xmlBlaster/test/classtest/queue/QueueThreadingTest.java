@@ -200,7 +200,7 @@ public class QueueThreadingTest extends TestCase {
          }
          try {
             for (int j=0; j < threadsPerQueue; j++) 
-               queueThreads[i*threadsPerQueue+j] = new QueueThread(glob, "queue"+i, queues[i], this.log, numOfMsg, sizeOfMsg);
+               queueThreads[i*threadsPerQueue+j] = new QueueThread(glob, "queue"+i, queues[i], log, numOfMsg, sizeOfMsg);
          }
          catch (Exception ex) {
             log.severe("Exception when instantiating the thread " + i + " " + ex.getMessage());
@@ -216,7 +216,7 @@ public class QueueThreadingTest extends TestCase {
 
       try {
          while (QueueThread.counter > 0) {
-            Thread.currentThread().sleep(100L);
+            Thread.sleep(100L);
          }
       }
       catch (Exception ex) {

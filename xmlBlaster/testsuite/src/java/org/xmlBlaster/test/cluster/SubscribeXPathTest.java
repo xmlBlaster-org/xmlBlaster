@@ -87,7 +87,7 @@ public class SubscribeXPathTest extends TestCase {
     */
    protected void tearDown() {
       log.info("Entering tearDown(), test is finished");
-      try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (bilboCon != null) { bilboCon.disconnect(null); bilboCon = null; }
       if (frodoCon != null) { frodoCon.disconnect(null); frodoCon = null; }
@@ -141,7 +141,7 @@ public class SubscribeXPathTest extends TestCase {
          assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 
 
-         try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
+         try { Thread.sleep(2000); } catch( InterruptedException i) {}
          if (1 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
          assertEquals("message from avalon", 1, updateCounterBilbo);
          updateCounterBilbo = 0;
@@ -183,7 +183,7 @@ public class SubscribeXPathTest extends TestCase {
       long sum = 0L;
       while (updateCounterBilbo < numWait) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

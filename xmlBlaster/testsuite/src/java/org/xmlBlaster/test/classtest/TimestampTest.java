@@ -78,7 +78,7 @@ public class TimestampTest extends TestCase {
          threadArr[iThread].start();
          System.out.println("Started #" + iThread);
       }
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(2000L); } catch( InterruptedException i) {}
       for(int i=0; i<n; i++) {
          try {
             threadArr[i].join();

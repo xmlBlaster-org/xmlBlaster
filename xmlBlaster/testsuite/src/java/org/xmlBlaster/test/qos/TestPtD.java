@@ -114,7 +114,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
       receiverConnection.disconnect(null);
       receiver2Connection.disconnect(null);
       senderConnection.disconnect(null);
@@ -204,7 +204,7 @@ public class TestPtD extends TestCase implements I_Callback
       numReceived += 1;
 
       // Wait that publish() returns and set 'publishOid' properly
-      try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
+      try { Thread.sleep(200); } catch( InterruptedException i) {}
 
       assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
@@ -227,7 +227,7 @@ public class TestPtD extends TestCase implements I_Callback
       long sum = 0L;
       while (numReceived < numWait) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

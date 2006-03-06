@@ -44,10 +44,6 @@ public class TestGet extends TestCase
    private String loginName;
    private String senderContent = "A test message";
 
-   private int numReceived = 0;         // error checking
-   private final String contentMime = "text/xml";
-   private final String contentMimeExtended = "1.0";
-
    /**
     * Constructs the TestGet object.
     * <p />
@@ -93,7 +89,7 @@ public class TestGet extends TestCase
    {
       connection.disconnect(null);
       // Give the server some millis to finish the iiop handshake ...
-      try { Thread.currentThread().sleep(200); } catch (InterruptedException e) {}
+      try { Thread.sleep(200); } catch (InterruptedException e) {}
       log.info("Success, logged out");
    }
 

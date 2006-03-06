@@ -226,7 +226,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       oneConnection = null;
       log.info("Logout done");
       if (withEmbedded) {
-         try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
+         try { Thread.sleep(100L); } catch( InterruptedException i) {}
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
          
@@ -235,7 +235,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       }
 
       this.glob = null;
-      this.log = null;
+     
       this.updateInterceptor = null;
       this.oneConnection = null;
       this.manyClients = null;
@@ -357,7 +357,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          log.info("Time " + (long)(numSubscribers/timeForLogins) + " logins/sec");
          log.info("Threads created " + tDiff + ", threads per connection " + tPerConn + ", sub  per thread " + subPerT);
          //ThreadLister.listAllThreads(System.out);
-         //try { Thread.currentThread().sleep(5000000L); } catch( InterruptedException i) {}
+         //try { Thread.sleep(5000000L); } catch( InterruptedException i) {}
          
       } catch (Error e) {
          e.printStackTrace();
@@ -442,7 +442,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       log.info("TEST 1, many clients, useOneConnection="+useOneConnection);
       
       subcribeMany();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
       
       publish();

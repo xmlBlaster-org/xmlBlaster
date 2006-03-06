@@ -166,7 +166,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
          PublishReturnQos rq = con.publish(new MsgUnit(glob, "<key oid='" + oid + "'/>", state, null));
          log.info("SUCCESS for state change to '" + state + "', " + rq.getState());
          // Sleep to be shure the plugin has got and processed the message
-         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
+         try { Thread.sleep(1000L); } catch( InterruptedException i) {}
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish bandwidth state - XmlBlasterException: " + e.getMessage());
@@ -413,7 +413,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
       subscribe(msgOid);
 
       changeStatus(statusOid, BACKUP_LINE);
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {} // Wait some time
 
       int priority = 6;
       log.info(text + ": Expecting notify");
@@ -439,13 +439,13 @@ public class TestPriorizedDispatchPlugin extends TestCase
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(200L); } catch( InterruptedException i) {} // Wait some time
 
       this.con.disconnect(null);
       this.con = null;
 
       if (this.startEmbedded) {
-         try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(500L); } catch( InterruptedException i) {} // Wait some time
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
       }
@@ -453,7 +453,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts(glob);
       this.glob = null;
-      this.log = null;
+     
       this.con = null;
       this.update = null;
       Global.instance().shutdown();

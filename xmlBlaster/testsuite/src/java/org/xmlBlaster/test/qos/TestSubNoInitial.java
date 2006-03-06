@@ -192,12 +192,12 @@ public class TestSubNoInitial extends TestCase implements I_Callback
    public void testNoInitialUpdate()
    {
       publish();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}
       assertTrue(assertInUpdate, assertInUpdate == null);
       assertEquals("numReceived after subscribe", 0, numReceived);
 
       subscribeXPath();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}
       assertTrue(assertInUpdate, assertInUpdate == null);
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
@@ -267,7 +267,7 @@ public class TestSubNoInitial extends TestCase implements I_Callback
       long sum = 0L;
       while (!messageArrived) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

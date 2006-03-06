@@ -1,7 +1,6 @@
 package org.xmlBlaster.test.classtest;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -45,7 +44,7 @@ public class TimeoutTest extends TestCase {
             },
             0L, null);
 
-         try { Thread.currentThread().sleep(100L); } catch (InterruptedException e) {}
+         try { Thread.sleep(100L); } catch (InterruptedException e) {}
          assertEquals("Timeout not occurred after 0 msec.", true, event);
       }
       
@@ -60,7 +59,7 @@ public class TimeoutTest extends TestCase {
             },
             500L, null);
 
-         try { Thread.currentThread().sleep(800L); } catch (InterruptedException e) {}
+         try { Thread.sleep(800L); } catch (InterruptedException e) {}
          assertEquals("Timeout not occurred after 1 sec.", true, event);
       }
       
@@ -75,10 +74,10 @@ public class TimeoutTest extends TestCase {
             },
             1000L, null);
 
-         try { Thread.currentThread().sleep(200L); } catch (InterruptedException e) {}
+         try { Thread.sleep(200L); } catch (InterruptedException e) {}
          assertEquals("Timeout occurred unexpected", false, event);
          timeout.removeTimeoutListener(timeoutHandle);
-         try { Thread.currentThread().sleep(1000L); } catch (InterruptedException e) {}
+         try { Thread.sleep(1000L); } catch (InterruptedException e) {}
          assertEquals("Timeout occurred unexpected", false, event);
       }
 
@@ -136,7 +135,7 @@ public class TimeoutTest extends TestCase {
 
       assertEquals("Should not be expired", false, timeout.isExpired(keyArr[2]));
 
-      try { Thread.currentThread().sleep(7000L); } catch (Exception e) { fail("*****ERROR: main interrupt: " + e.toString()); }
+      try { Thread.sleep(7000L); } catch (Exception e) { fail("*****ERROR: main interrupt: " + e.toString()); }
 
       assertEquals("Should be expired", true, timeout.isExpired(keyArr[2]));
 
@@ -180,7 +179,7 @@ public class TimeoutTest extends TestCase {
       log.info("Feeding of " + numTimers + " done, " + (long) (1000 * (double) numTimers / (System.currentTimeMillis() - start)) + " adds/sec");
 
       while (counter != numTimers) {
-         try { Thread.currentThread().sleep(500L); } catch (Exception e) { fail("*****ERROR:main interrupt: " + e.toString()); }
+         try { Thread.sleep(500L); } catch (Exception e) { fail("*****ERROR:main interrupt: " + e.toString()); }
       }
 
       System.out.println("***TimeoutTest: testStressLoad [SUCCESS]");

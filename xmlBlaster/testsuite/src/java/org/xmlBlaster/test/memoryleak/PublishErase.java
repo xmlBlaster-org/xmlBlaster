@@ -63,7 +63,7 @@ public class PublishErase
                            "</key>";
             con.publish(new MsgUnit(xmlKey,b,qw.toXml()));
 
-            try { Thread.currentThread().sleep(5L); } catch( InterruptedException i) {}
+            try { Thread.sleep(5L); } catch( InterruptedException i) {}
 
             EraseKey ek = new EraseKey(glob, "" + lCount);
             EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());

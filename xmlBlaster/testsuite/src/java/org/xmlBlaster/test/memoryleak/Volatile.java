@@ -80,7 +80,7 @@ public class Volatile
                }
             }
 
-            try { Thread.currentThread().sleep(5L); } catch( InterruptedException i) {}
+            try { Thread.sleep(5L); } catch( InterruptedException i) {}
          }
       }
       catch (XmlBlasterException e) {

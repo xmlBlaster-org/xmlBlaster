@@ -187,7 +187,7 @@ public class TestPub extends TestCase implements I_Callback
    public void testPublishAfterSubscribeXPath()
    {
       testSubscribe();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       log.info("*** Test #1");
@@ -201,7 +201,7 @@ public class TestPub extends TestCase implements I_Callback
       log.info("*** Test #2");
       senderContent = "Yeahh, i'm the new content 2";
       testPublish(false);
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after publishing", 0, numReceived); // message arrived?
       assertTrue(assertInUpdate, assertInUpdate == null);
       assertInUpdate = null;
@@ -254,7 +254,7 @@ public class TestPub extends TestCase implements I_Callback
       long sum = 0L;
       while (!messageArrived) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

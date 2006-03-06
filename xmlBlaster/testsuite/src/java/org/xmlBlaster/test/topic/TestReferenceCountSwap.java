@@ -122,7 +122,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
       Util.resetPorts(this.glob);
       Global.instance().shutdown();
       this.glob = null;
-      this.log = null;
+     
       this.serverThread = null;
    }
 
@@ -141,7 +141,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
          connectQos.addCallbackAddress(cbAddress);
          client.con = gg.getXmlBlasterAccess();
          client.con.registerConnectionListener(this);
-         client.updateInterceptor = new MsgInterceptor(gg, this.log, cb); // Collect received msgs
+         client.updateInterceptor = new MsgInterceptor(gg, log, cb); // Collect received msgs
          client.con.connect(connectQos, client.updateInterceptor); // Login to xmlBlaster
          return client;
       }
@@ -225,7 +225,7 @@ public class TestReferenceCountSwap extends TestCase implements I_ConnectionStat
                            " priority=" + updateQos.getPriority() +
                            " state=" + updateQos.getState() +
                            " we going to sleep and don't return control to server");
-            try { Thread.currentThread().sleep(1000000L); } catch( InterruptedException i) {}
+            try { Thread.sleep(1000000L); } catch( InterruptedException i) {}
             log.severe("Waiking up from sleep");
             fail("Waiking up from sleep");
             return "";

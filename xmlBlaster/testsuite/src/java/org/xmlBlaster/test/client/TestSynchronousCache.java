@@ -117,7 +117,7 @@ public class TestSynchronousCache extends TestCase {
     * cleaning up .... logout
     */
    protected void tearDown() {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       for (int i=0; i<publishOidArr.length; i++) {
          // Erase if not all have been destroyed during test
@@ -132,7 +132,7 @@ public class TestSynchronousCache extends TestCase {
       this.con = null;
 
       if (this.startEmbedded) {
-         try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(500L); } catch( InterruptedException i) {} // Wait some time
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
       }
@@ -141,7 +141,7 @@ public class TestSynchronousCache extends TestCase {
       Util.resetPorts(glob);
 
       this.glob = null;
-      this.log = null;
+     
       this.updateInterceptor = null;
       this.synchronousCache = null;
    }
@@ -156,7 +156,7 @@ public class TestSynchronousCache extends TestCase {
          EraseKey ek = new EraseKey(glob, publishOid);
          EraseReturnQos[] er = con.erase(ek, eq);
          // Wait 200 milli seconds, until erase event is processed and cache is cleared ...
-         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+         try { Thread.sleep(200L); } catch( InterruptedException i) {}
          return er;
       } catch(XmlBlasterException e) {
          fail("Erase XmlBlasterException: " + e.getMessage());
@@ -198,7 +198,7 @@ public class TestSynchronousCache extends TestCase {
          try {
             publishMsg(publishOidArr[0], contentArr[0]);
             publishMsg(publishOidArr[2], contentArr[2]);
-            try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+            try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
             GetKey gk = new GetKey(glob, publishOidArr[0]);
             GetQos gq = new GetQos(glob);
@@ -245,7 +245,7 @@ public class TestSynchronousCache extends TestCase {
             // Now publish again an check if cache is updated
             String contentNew = contentArr[0]+"-NEW";
             publishReturnQos = publishMsg(publishOidArr[0], contentNew);
-            try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+            try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
             for (int i=0; i<5; i++) {
                MsgUnit[] msgs = con.getCached(gk, gq);
                GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
@@ -274,7 +274,7 @@ public class TestSynchronousCache extends TestCase {
             PublishReturnQos publishReturnQos0 = publishMsg(publishOidArr[0], contentArr[0]);
             PublishReturnQos publishReturnQos1 = publishMsg(publishOidArr[1], contentArr[1]);
             publishMsg(publishOidArr[2], contentArr[2]);
-            try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+            try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
             // This should match [0] and [1] msg:
             GetKey gk = new GetKey(glob, "//key[starts-with(@oid,'oid-')]", Constants.XPATH);

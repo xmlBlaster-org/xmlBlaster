@@ -136,7 +136,7 @@ public class TestLoginLogoutEvent extends TestCase
          this.secondConnection = null;
       }
       this.glob = null;
-      this.log = null;
+     
       Global.instance().shutdown();
    }
 
@@ -183,7 +183,7 @@ public class TestLoginLogoutEvent extends TestCase
       numReceived = 0;
       expectedName = null;        // no check (the logout event exists with AllTests but not when this test is run alone
       subscribe("__sys__Logout");
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}          // no check
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}          // no check
       this.updateInterceptFirst.clear();
 
       numReceived = 0;
@@ -280,13 +280,13 @@ public class TestLoginLogoutEvent extends TestCase
       long sum = 0L;
       // check if too few are arriving
       while (numReceived < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
+         try { Thread.sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
          assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
+      try { Thread.sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, numReceived);
 
       numReceived = 0;

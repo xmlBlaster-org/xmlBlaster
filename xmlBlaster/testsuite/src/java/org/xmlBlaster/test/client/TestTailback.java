@@ -123,7 +123,7 @@ public class TestTailback extends TestCase implements I_ConnectionStateListener
       Util.resetPorts(this.glob);
       Global.instance().shutdown();
       this.glob = null;
-      this.log = null;
+     
       this.serverThread = null;
    }
 
@@ -141,7 +141,7 @@ public class TestTailback extends TestCase implements I_ConnectionStateListener
          connectQos.setSessionName(sessionName);
          client.con = gg.getXmlBlasterAccess();
          client.con.registerConnectionListener(this);
-         client.updateInterceptor = new MsgInterceptor(gg, this.log, cb); // Collect received msgs
+         client.updateInterceptor = new MsgInterceptor(gg, log, cb); // Collect received msgs
          client.con.connect(connectQos, client.updateInterceptor); // Login to xmlBlaster
          return client;
       }

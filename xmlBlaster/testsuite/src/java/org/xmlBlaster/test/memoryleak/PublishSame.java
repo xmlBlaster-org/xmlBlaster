@@ -75,7 +75,7 @@ public class PublishSame
                   }
                   else {
                      log.info("Sent " + lCount + " identical messages, sleeping 10 sec");
-                     Thread.currentThread().sleep(10000);
+                     Thread.sleep(10000);
                   }
                }
                catch(Exception e) {
@@ -84,7 +84,7 @@ public class PublishSame
                }
             }
 
-            try { Thread.currentThread().sleep(5L); } catch( InterruptedException i) {}
+            try { Thread.sleep(5L); } catch( InterruptedException i) {}
          }
       }
       catch (XmlBlasterException e) {

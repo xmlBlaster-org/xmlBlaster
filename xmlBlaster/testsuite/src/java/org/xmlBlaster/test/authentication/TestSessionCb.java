@@ -6,11 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.authentication;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -23,8 +21,6 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -46,7 +42,6 @@ import junit.framework.*;
  */
 public class TestSessionCb extends TestCase
 {
-   private static String ME = "TestSessionCb";
    private final Global glob;
    private static Logger log = Logger.getLogger(TestSessionCb.class.getName());
    private I_XmlBlasterAccess con1 = null;
@@ -126,7 +121,7 @@ public class TestSessionCb extends TestCase
          SubscribeQos sq = new SubscribeQos(glob1);
          SubscribeReturnQos sr1 = con1.subscribe(sk.toXml(), sq.toXml());
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          con1.getCbServer().shutdown();
 
@@ -169,7 +164,7 @@ public class TestSessionCb extends TestCase
 
          log.info("############ Con2 is waiting for msg and for DEAD letter ...");
 
-         try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(2000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("DeadMessage is missing", 1, deadMessageCounter);
          assertTrue("Update is missing", assertInUpdate != null);
 

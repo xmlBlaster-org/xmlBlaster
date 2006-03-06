@@ -82,7 +82,7 @@ public class PtPTest extends TestCase {
     */
    protected void tearDown() {
       log.info("Entering tearDown(), test is finished");
-      try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (bilboCon != null) { bilboCon.disconnect(null); bilboCon = null; }
       if (frodoCon != null) { frodoCon.disconnect(null); frodoCon = null; }
@@ -114,7 +114,7 @@ public class PtPTest extends TestCase {
                   return "";
                }
             });
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdateHeron, assertInUpdateHeron == null);
          assertInUpdateHeron = null;
 
@@ -126,7 +126,7 @@ public class PtPTest extends TestCase {
                   return "";
                }
             });
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdateBilbo, assertInUpdateBilbo == null);
          assertInUpdateBilbo = null;
 
@@ -148,7 +148,7 @@ public class PtPTest extends TestCase {
                                        ", the returned QoS is: " + prq.getKeyOid());
          }
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdateHeron, assertInUpdateHeron == null);
          assertEquals("Heron client did not receive PtP message", num, updateCounterHeron);
       }

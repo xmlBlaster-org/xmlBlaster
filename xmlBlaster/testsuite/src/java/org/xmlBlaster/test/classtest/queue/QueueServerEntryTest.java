@@ -103,7 +103,7 @@ public class QueueServerEntryTest extends TestCase {
          try {
             this.queue.clear();
             this.queue.shutdown();
-            this.queue = null;
+            // this.queue = null;
          }
          catch (Exception ex) {
             log.warning("error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
@@ -386,11 +386,11 @@ public class QueueServerEntryTest extends TestCase {
          testSub.setUp();
          testSub.testUpdateEntry();
          testSub.tearDown();
-         /*
+
          testSub.setUp();
          testSub.testHistoryEntry();
          testSub.tearDown();
-         */
+
          long usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
       }

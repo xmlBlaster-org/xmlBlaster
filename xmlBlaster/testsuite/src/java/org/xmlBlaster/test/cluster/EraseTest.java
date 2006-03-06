@@ -88,7 +88,7 @@ public class EraseTest extends TestCase {
     */
    protected void tearDown() {
       log.info("Entering tearDown(), test is finished");
-      try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (bilboCon != null) { bilboCon.disconnect(null); bilboCon = null; }
       if (frodoCon != null) { frodoCon.disconnect(null); frodoCon = null; }
@@ -149,7 +149,7 @@ public class EraseTest extends TestCase {
          assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 
 
-         try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
+         try { Thread.sleep(2000); } catch( InterruptedException i) {}
          if (1 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
          assertEquals("message from avalon", 1, updateCounterBilbo);
          assertTrue(assertInUpdate, assertInUpdate == null);
@@ -164,7 +164,7 @@ public class EraseTest extends TestCase {
          EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.toXml());
          assertEquals("Erase", 1, arr.length);
 
-         try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
+         try { Thread.sleep(2000); } catch( InterruptedException i) {}
          assertEquals("message erase event for bilbo", 1, updateCounterBilbo);
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;

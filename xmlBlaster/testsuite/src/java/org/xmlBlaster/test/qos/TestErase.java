@@ -19,7 +19,6 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
 
-import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
 
@@ -171,7 +170,7 @@ public class TestErase extends TestCase implements I_Callback
 
    private void connect() {
       try {
-         this.updateInterceptor = new MsgInterceptor(this.glob, this.log, this);
+         this.updateInterceptor = new MsgInterceptor(this.glob, log, this);
          con = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(glob);
          con.connect(qos, this.updateInterceptor);

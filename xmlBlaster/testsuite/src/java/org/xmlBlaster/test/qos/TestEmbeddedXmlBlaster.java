@@ -149,7 +149,7 @@ public class TestEmbeddedXmlBlaster extends TestCase
       log.info("XmlBlaster is ready for testing JDBC access");
 
       // Stop xmlBlaster
-      try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
+      try { Thread.sleep(100L); } catch( InterruptedException i) {}
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
 

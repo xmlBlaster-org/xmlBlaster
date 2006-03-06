@@ -235,7 +235,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       senderConnection = connectClient(senderName, senderPasswd);
 
       subscribe(senderConnection);
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(2000L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       disconnectClient(senderConnection);
       stopServer(serverThread2);

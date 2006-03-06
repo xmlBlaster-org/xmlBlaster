@@ -238,7 +238,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
       log.info("TEST 1, many subscribers, one publisher ...");
 
       susbcribeMany();
-      try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
+      try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       publishOne();

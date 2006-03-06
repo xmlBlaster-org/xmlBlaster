@@ -167,7 +167,7 @@ public class TestSession extends TestCase implements I_Callback
             assertTrue("Login failed" + e.toString(), false);
          }
 
-         try { Thread.currentThread().sleep(timeout*2); } catch (Exception e) { } // wait until session expires
+         try { Thread.sleep(timeout*2); } catch (Exception e) { } // wait until session expires
 
          try {
             log.info("Check that session has dissapeared ...");
@@ -217,11 +217,11 @@ public class TestSession extends TestCase implements I_Callback
          }
 
          log.info("Wait " + timeout*2 + " sec if session expires (because of inactivity)");
-         try { Thread.currentThread().sleep(timeout*2); } catch (Exception e) { }
+         try { Thread.sleep(timeout*2); } catch (Exception e) { }
 
          try {
             for (int ii=0; ii<1; ii++) {
-               try { Thread.currentThread().sleep(timeout/2); } catch (Exception e) { }
+               try { Thread.sleep(timeout/2); } catch (Exception e) { }
                log.info("Check access #" + ii + " ...");
                con.get("<key oid='__cmd:?freeMem'/>", null);
                log.info("Check access #" + ii + " OK");
@@ -269,7 +269,7 @@ public class TestSession extends TestCase implements I_Callback
 
          try {
             for (int ii=0; ii<4; ii++) {
-               try { Thread.currentThread().sleep(timeout/2); } catch (Exception e) { }
+               try { Thread.sleep(timeout/2); } catch (Exception e) { }
                log.info("Check access #" + ii + " ...");
                con.get("<key oid='__cmd:?freeMem'/>", null);
                log.info("Check access #" + ii + " OK");
@@ -371,13 +371,13 @@ public class TestSession extends TestCase implements I_Callback
       long sum = 0L;
       // check if too few are arriving
       while (numReceived < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
+         try { Thread.sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
          assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
 
       // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
+      try { Thread.sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, numReceived);
 
       numReceived = 0;

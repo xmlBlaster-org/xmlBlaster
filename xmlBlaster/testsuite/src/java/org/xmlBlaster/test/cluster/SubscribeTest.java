@@ -91,7 +91,7 @@ public class SubscribeTest extends TestCase {
     */
    protected void tearDown() {
       log.info("Entering tearDown(), test is finished");
-      try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (bilboCon != null) { bilboCon.disconnect(null); bilboCon = null; }
       if (bilboCon2 != null) { bilboCon2.disconnect(null); bilboCon2 = null; }
@@ -174,7 +174,7 @@ public class SubscribeTest extends TestCase {
             assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 
 
-            try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
+            try { Thread.sleep(2000); } catch( InterruptedException i) {}
             if (1 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
             assertEquals("message from avalon", 1, updateCounterBilbo);
             if (1 != updateCounterBilbo2) log.severe("Did not expect " + updateCounterBilbo2 + " updates");
@@ -202,7 +202,7 @@ public class SubscribeTest extends TestCase {
             assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 
 
-            try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
+            try { Thread.sleep(2000); } catch( InterruptedException i) {}
             if (0 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
             assertEquals("message from avalon", 0, updateCounterBilbo);
             if (1 != updateCounterBilbo2) log.severe("Did not expect " + updateCounterBilbo2 + " updates");
@@ -257,7 +257,7 @@ public class SubscribeTest extends TestCase {
       try {
          System.err.println("->Connect to avalon ...");
          avalonCon = serverHelper.connect(serverHelper.getAvalonGlob(), null);
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
          for (int ii=0; ii<num; ii++) {
             final int counter = ii;
@@ -287,7 +287,7 @@ public class SubscribeTest extends TestCase {
             PublishReturnQos avalon_prq = avalonCon.publish(avalon_msgUnit);
             assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 
-            try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
+            try { Thread.sleep(1000L); } catch( InterruptedException i) {}
             
             System.err.println("->Subscribe from bilbo #" + ii + ", the message from avalon should arrive ...");
             SubscribeKey sk = new SubscribeKey(glob, oid);
@@ -296,7 +296,7 @@ public class SubscribeTest extends TestCase {
             SubscribeReturnQos srq = bilboCons[ii].subscribe(sk.toXml(), sq.toXml());
 
             waitOnUpdate(2000L, 1);
-            try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // wait longer to check if too many arrive
+            try { Thread.sleep(1000); } catch( InterruptedException i) {} // wait longer to check if too many arrive
             if (1 != updateCounterBilbo) log.severe("Did not expect " + updateCounterBilbo + " updates");
             assertEquals("message from avalon", 1, updateCounterBilbo);
             updateCounterBilbo = 0;
@@ -309,7 +309,7 @@ public class SubscribeTest extends TestCase {
             assertEquals("Erase", 1, arr.length);
 
             // Wait on erase events
-            try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+            try { Thread.sleep(1000); } catch( InterruptedException i) {}
             updateCounterBilbo = 0;
             updateCounterBilbo2 = 0;
 
@@ -346,7 +346,7 @@ public class SubscribeTest extends TestCase {
       long sum = 0L;
       while (updateCounterBilbo < numWait) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

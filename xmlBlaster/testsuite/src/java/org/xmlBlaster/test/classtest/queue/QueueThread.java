@@ -34,7 +34,7 @@ class QueueThread extends Thread {
       this.queue = queue;
       this.sweeps = sweeps;
       this.sizeOfMsg = sizeOfMsg;
-//      this.log = log;
+//      log = log;
       this.counter++;
    }
 

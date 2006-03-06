@@ -83,7 +83,7 @@ public class PublishTest extends TestCase {
     */
    protected void tearDown() {
       log.info("Entering tearDown(), test is finished");
-      try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
       if (bilboCon != null) { bilboCon.disconnect(null); bilboCon = null; }
       if (frodoCon != null) { frodoCon.disconnect(null); frodoCon = null; }
@@ -110,7 +110,7 @@ public class PublishTest extends TestCase {
                   return "";
                }
             });
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -131,7 +131,7 @@ public class PublishTest extends TestCase {
                   return "";
                }
             });
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -182,7 +182,7 @@ public class PublishTest extends TestCase {
                return "";
             }
          });  // subscribe with our specific update handler
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -210,7 +210,7 @@ public class PublishTest extends TestCase {
 
          serverHelper.startFrodo();
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("heron has not received message", 1, updateCounterHeron);
          updateCounterHeron = 0;
 
@@ -221,7 +221,7 @@ public class PublishTest extends TestCase {
                   return "";
                }
             });
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
@@ -237,11 +237,11 @@ public class PublishTest extends TestCase {
                return "";
             }
          });  // subscribe with our specific update handler
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
-         try { Thread.currentThread().sleep(5000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(5000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo is reachable again, subscribe should work", 1, updateCounterFrodo);
         
          updateCounterHeron = 0;
@@ -262,7 +262,7 @@ public class PublishTest extends TestCase {
                                     "' to xmlBlaster node frodo with IP=" + serverHelper.getFrodoGlob().getProperty().get("bootstrapPort",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo is unSubscribed and should not receive message", 0, updateCounterFrodo);
          assertEquals("heron has not received message", 1, updateCounterHeron);
 

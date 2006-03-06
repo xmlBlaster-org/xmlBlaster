@@ -131,7 +131,7 @@ public class TestPoolManager extends TestCase {
 
       // The resources are swapped to idle in 2 seconds, lets wait 3 seconds ...
       try {
-         Thread.currentThread().sleep(3000);
+         Thread.sleep(3000);
       }
       catch (InterruptedException i) {
       }
@@ -142,7 +142,7 @@ public class TestPoolManager extends TestCase {
       if (testPool.poolManager.getNumBusy() != 1 || testPool.poolManager.getNumIdle() != 2)
          fail("TEST 1.4 FAILED: Wrong number of busy/idle resources");
       try {
-         Thread.currentThread().sleep(1000);
+         Thread.sleep(1000);
       }
       catch (InterruptedException i) {
       }
@@ -171,7 +171,7 @@ public class TestPoolManager extends TestCase {
 
       // The resources are swapped to idle in 2 seconds, lets wait 3 seconds ...
       try {
-         Thread.currentThread().sleep(3000);
+         Thread.sleep(3000);
       }
       catch (InterruptedException i) {
       }
@@ -190,7 +190,7 @@ public class TestPoolManager extends TestCase {
       if (testPool.poolManager.getNumBusy() != 1 || testPool.poolManager.getNumIdle() != 0)
          fail("TEST 2.6 FAILED: Wrong number of busy/idle resources");
       try {
-         Thread.currentThread().sleep(1000);
+         Thread.sleep(1000);
       }
       catch (InterruptedException i) {
       }
@@ -210,7 +210,7 @@ public class TestPoolManager extends TestCase {
 
       // The resources are swapped to idle in 2 seconds, lets wait 3 seconds ...
       try {
-         Thread.currentThread().sleep(3000);
+         Thread.sleep(3000);
       }
       catch (InterruptedException i) {
       }
@@ -221,7 +221,7 @@ public class TestPoolManager extends TestCase {
 
       // The resources are erased after 3 seconds in idle state, lets wait 4 seconds ...
       try {
-         Thread.currentThread().sleep(4000);
+         Thread.sleep(4000);
       }
       catch (InterruptedException i) {
       }
@@ -229,7 +229,7 @@ public class TestPoolManager extends TestCase {
       if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 0)
          fail("TEST 3.3 FAILED: Wrong number of busy/idle resources");
       try {
-         Thread.currentThread().sleep(1000);
+         Thread.sleep(1000);
       }
       catch (InterruptedException i) {
       }

@@ -175,7 +175,7 @@ public class BigMessage extends TestCase implements I_Callback
       assertEquals("Message not arrived", true, messageArrived);
 
       // Allow the update to return to xmlBlaster ...
-      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}
+      try { Thread.sleep(3000L); } catch( InterruptedException i) {}
       log.info("######## End testBigMessage()");
    }
 
@@ -231,7 +231,7 @@ public class BigMessage extends TestCase implements I_Callback
       long sum = 0L;
       while (!messageArrived) {
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}

@@ -121,7 +121,7 @@ public class TestPersistence2 extends TestCase
     */
    protected void tearDown()
    {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
+      try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
@@ -134,7 +134,7 @@ public class TestPersistence2 extends TestCase
       this.senderConnection.disconnect(null);
       this.senderConnection = null;
 
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
+      try { Thread.sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
       // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).

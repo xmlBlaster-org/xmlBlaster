@@ -46,7 +46,7 @@ public class ServerHelper {
    public ServerHelper(Global glob, Logger log, String name) {
       ME = "ServerHelper-"+name;
       this.glob_ = glob;
-      this.log = log;
+      log = log;
       setUp();
    }
 
@@ -224,7 +224,7 @@ public class ServerHelper {
    public void tearDown() {
       log.info("Entering tearDown(), test is finished");
 
-      try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(200); } catch( InterruptedException i) {} // Wait some time
 
       stopHeron();
       stopAvalon();

@@ -170,7 +170,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          PublishReturnQos rq = con.publish(new MsgUnit(glob, "<key oid='" + oid + "'/>", state, null));
          log.info("SUCCESS for state change to '" + state + "', " + rq.getState());
          // Sleep to be shure the plugin has got and processed the message
-         try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}
+         try { Thread.sleep(1000L); } catch( InterruptedException i) {}
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());
          fail("publish bandwidth state - XmlBlasterException: " + e.getMessage());
@@ -324,7 +324,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          }
 
          log.info("Waiting long enough that xmlBlaster reconnected to us and expecting the 6 queued messages ...");
-         try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}
+         try { Thread.sleep(3000L); } catch( InterruptedException i) {}
          assertEquals(text, 0, this.updateInterceptor.getMsgs().length);
          assertEquals(text, 6, updateMsgs.getMsgs(msgOid, Constants.STATE_OK).length);
          Msg[] msgArr = updateMsgs.getMsgs();
@@ -359,19 +359,19 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(200L); } catch( InterruptedException i) {} // Wait some time
 
       con.disconnect(null);
       con = null;
       
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
+      try { Thread.sleep(500L); } catch( InterruptedException i) {} // Wait some time
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts(glob);
       this.glob = null;
-      this.log = null;
+     
       this.connectQos = null;
       this.connectReturnQos = null;
       this.con = null;

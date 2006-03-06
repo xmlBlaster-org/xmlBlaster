@@ -86,7 +86,7 @@ public class TestCallbackConfig extends TestCase
          cbProps.setPtpAllowed(true);
          qos.addCallbackAddress(cbProps);
 
-         this.updateInterceptor = new MsgInterceptor(this.glob, this.log, null);
+         this.updateInterceptor = new MsgInterceptor(this.glob, log, null);
          con.connect(qos, this.updateInterceptor); // Login to xmlBlaster and collect update messages with interceptor
       }
       catch (Exception e) {
