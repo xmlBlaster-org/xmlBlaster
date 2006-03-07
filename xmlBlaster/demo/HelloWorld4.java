@@ -18,12 +18,9 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
@@ -39,7 +36,6 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  */
 public class HelloWorld4
 {
-   private final String ME = "HelloWorld4";
    private final Global glob;
    private static Logger log = Logger.getLogger(HelloWorld4.class.getName());
    private I_XmlBlasterAccess con = null;
@@ -185,10 +181,10 @@ public class HelloWorld4
                   EraseQos eq = new EraseQos(glob);
 
                   EraseKey ek = new EraseKey(glob, "HelloWorld4");
-                  EraseReturnQos[] er = con.erase(ek, eq);
+                  con.erase(ek, eq);
                   
                   ek = new EraseKey(glob, "Banking");
-                  er = con.erase(ek, eq);
+                  con.erase(ek, eq);
 
                   // Wait on message erase events
                   try { Thread.sleep(1000); } catch( InterruptedException i) {}
@@ -213,13 +209,13 @@ public class HelloWorld4
          SubscribeKey sk = new SubscribeKey(glob, "Banking");
          SubscribeQos sq = new SubscribeQos(glob);
          sq.setWantInitialUpdate(false);
-         SubscribeReturnQos sr1 = con.subscribe(sk, sq);
+         con.subscribe(sk, sq);
 
 
          sk = new SubscribeKey(glob, "HelloWorld4");
          sq = new SubscribeQos(glob);
          sq.setWantInitialUpdate(false);
-         SubscribeReturnQos sr2 = con.subscribe(sk, sq, new I_Callback() {
+         con.subscribe(sk, sq, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (updateKey.getOid().equals("HelloWorld4"))
                   log.info("Receiving asynchronous message '" + updateKey.getOid() +
@@ -246,7 +242,7 @@ public class HelloWorld4
          PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
-         PublishReturnQos retQos = con.publish(msgUnit);
+         con.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
 
 
@@ -254,7 +250,7 @@ public class HelloWorld4
          pk.setClientTags("<Account><withdraw/></Account>"); // Add banking specific meta data
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
-         retQos = con.publish(msgUnit);
+         con.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
 
          // Wait a second for messages to arrive before we logout
