@@ -13,12 +13,10 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.ConnectQos;
 
-import java.awt.event.*;
 
 
 public class SimpleReader implements I_Callback  {
@@ -26,9 +24,6 @@ public class SimpleReader implements I_Callback  {
 
    private static final String USR_LOGIN  = ME;
    private static final String USR_PASSWD = "secret";
-
-   private static final String SECPLUGIN_MECHANISM = "simple";
-   private static final String SECPLUGIN_VERSION   = "1.0";
 
    private              I_XmlBlasterAccess xmlBlaster = null;
    private              Global glob = null;
@@ -57,7 +52,7 @@ public class SimpleReader implements I_Callback  {
          }
 
          I_XmlBlasterAccess xmlBlaster = new XmlBlasterAccess(args);
-         SimpleReader sr = new SimpleReader(xmlBlaster, args[1]);
+         new SimpleReader(xmlBlaster, args[1]);
 
          while (true) {
             try {

@@ -22,13 +22,15 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 public class SimpleReaderGui extends JFrame implements I_Callback {
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 8368002446068669824L;
+
    private static final String ME = "SimpleReaderGui";
 
    private static final String USR_LOGIN  = ME;
    private static final String USR_PASSWD = "secret";
-
-   private static final String SECPLUGIN_MECHANISM = "simple";
-   private static final String SECPLUGIN_VERSION   = "1.0";
 
    private ImageIcon image = null;
 
@@ -231,7 +233,6 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
    public void loadImage() {
       try {
          String filename = "red.gif";
-         String description = "Knoepfle";
          Image img = Toolkit.getDefaultToolkit().createImage(getClass().getResource(filename));
          image = new ImageIcon( img );
       }
@@ -243,6 +244,11 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
    }
 
    class MyCellRenderer extends DefaultListCellRenderer {
+      /**
+       * 
+       */
+      private static final long serialVersionUID = 5678672570993331767L;
+
       public Component getListCellRendererComponent(
           JList list,
           Object value,
