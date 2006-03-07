@@ -871,10 +871,10 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the environment properties.
+    * Access the environment properties, is never null. 
     */
    public final Property getProperty() {
-      return property;
+      return (this.property == null) ? new Property() : this.property;
    }
 
    /**
