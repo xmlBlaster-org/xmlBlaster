@@ -11,17 +11,11 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.Constants;
 
-import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;

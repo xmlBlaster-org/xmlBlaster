@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.authentication;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -15,33 +14,18 @@ import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
 import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;

@@ -1,7 +1,6 @@
 package org.xmlBlaster.test.cluster;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 // for client connections:
@@ -20,10 +19,6 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
-
-
-import java.util.Vector;
-import java.io.File;
 
 import junit.framework.*;
 

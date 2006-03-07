@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.test.classtest;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 
@@ -17,7 +16,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xmlBlaster.util.Global;
