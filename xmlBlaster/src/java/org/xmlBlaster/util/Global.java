@@ -658,7 +658,7 @@ public class Global implements Cloneable
      * @exception XmlBlasterException if your bool is strange
      */
    public Level changeLogLevel(String loggerName, Level level) throws XmlBlasterException {
-      // TODO FIXME implement this
+      log.fine("TODO FIXME implement this");
       return level;
    }
    
