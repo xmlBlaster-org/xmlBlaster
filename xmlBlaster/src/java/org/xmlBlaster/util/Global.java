@@ -608,6 +608,61 @@ public class Global implements Cloneable
    }
 
    /**
+    * Get the current loglevel.
+    *
+    * @param loggerName e.g. "logging" or "/node/heron/logging/org.xmlBlaster.util.Timestamp"
+    * @return The logging level, for example "WARNING" or "FINE"
+    */
+    public Level getLogLevel(String loggerName) throws XmlBlasterException {
+       if (loggerName == null || loggerName.length() < 1)
+          throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + loggerName + "'");
+       log.fine("Please implement me");
+       return Level.INFO;
+
+/*
+       try {
+          int start = loggerName.indexOf("[");
+          if (start == -1) {
+             start = loggerName.indexOf("/"); // JMX interpretes [ as index, so we use info/core syntax there
+          }
+
+          if (start != -1) { // Syntax is for example "info[core]"
+             int end = loggerName.indexOf("]");
+             if (end == -1 ) {
+                end = loggerName.length();    // info/auth
+             }
+             if (start < 1 || end == -1 || end <= (start+1)) {
+                throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + loggerName + "'");
+             }
+             String key = loggerName.substring(start+1, end);
+             Object obj = logChannels.get(key);
+             if (obj == null)
+                throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "LogChannel '" + key + "' is not known");
+             LogChannel log = (LogChannel)obj;
+             return log.isLoglevelEnabled(loggerName.substring(0, start));
+          }
+
+          return logDefault.isLoglevelEnabled(loggerName);
+       }
+       catch (JUtilsException e) {
+          throw new XmlBlasterException(this, ErrorCode.INTERNAL_UNKNOWN, ME, "", e);
+       }
+ */
+    }
+    
+    /**
+     * Changes the given logger to given level. 
+     * @param loggerName e.g. "logging" or "logging/org.xmlBlaster.util.StopWatch"
+     * @param level For example "FINE"
+     * @return The set level
+     * @exception XmlBlasterException if your bool is strange
+     */
+   public Level changeLogLevel(String loggerName, Level level) throws XmlBlasterException {
+      // TODO FIXME implement this
+      return level;
+   }
+   
+   /**
     * Calls init(String[] args), the props keys have no leading "-". 
     * @return 1 Show usage, 0 OK, -1 error
     */
