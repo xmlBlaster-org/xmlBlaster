@@ -220,8 +220,8 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    }
 
    /**
-    * Parses the given input stream and executes the specified commands.
-    * @param in the input stream from which to read the xml input.
+    * Parses the given reader and executes the specified commands.
+    * @param in the reader from which to read the xml input.
     * @throws XmlBlasterException
     */
    public synchronized void parse(Reader in) throws XmlBlasterException {
@@ -600,7 +600,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          }
       }
       catch (XmlBlasterException e) {
-         if (log.isLoggable(Level.FINE)) this.log.fine("endElement exception occured " + e.getMessage());
+         if (log.isLoggable(Level.FINE)) XmlScriptInterpreter.log.fine("endElement exception occured " + e.getMessage());
          if (this.needsRootEndTag) { // is </xmlBlasterResponse> missing?
             this.response = new StringBuffer("\n</");
             this.response.append(ROOTRESPONSE_TAG).append(">\n");
@@ -627,7 +627,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    }
 
    public void startCDATA() {
-      if (log.isLoggable(Level.FINER)) this.log.finer("startCDATA");
+      if (log.isLoggable(Level.FINER)) XmlScriptInterpreter.log.finer("startCDATA");
       this.inCDATA++;
       if (this.inContent == 0)
          this.cdata.append("<![CDATA[");

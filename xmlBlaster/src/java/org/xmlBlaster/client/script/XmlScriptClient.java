@@ -126,7 +126,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
    public boolean fireMethod(MethodName methodName,
          String sessionId, String requestId, byte type)
          throws XmlBlasterException {
-      if (log.isLoggable(Level.FINE)) this.log.fine("fireMethod "
+      if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("fireMethod "
             + MsgInfo.getTypeStr(type)
             + ": " + methodName.toString()
             + ": " + this.key.toString()
@@ -172,7 +172,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
             if (this.msgUnitCb != null) {
                this.msgUnitCb.intercept(msgUnit);
             }
-            if (log.isLoggable(Level.FINE)) this.log.fine("appendEndOfElement publish: " + msgUnit.toXml());
+            if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("appendEndOfElement publish: " + msgUnit.toXml());
             PublishReturnQos ret = this.access.publish(msgUnit);
             writeResponse(methodName, (ret != null)?ret.toXml("  "):null);
             return true;
@@ -181,7 +181,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
             int size = this.messageList.size();
             MsgUnit[] msgs = new MsgUnit[size];
             for (int i=0; i < size; i++) {
-               if (log.isLoggable(Level.FINE)) this.log.fine("appendEndOfElement publishArr: " + msgs[i].toXml());
+               if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("appendEndOfElement publishArr: " + msgs[i].toXml());
                msgs[i] = (MsgUnit)this.messageList.get(i);
             }
             PublishReturnQos[] ret = this.access.publishArr(msgs);
@@ -194,7 +194,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
             int size = this.messageList.size();
             MsgUnit[] msgs = new MsgUnit[size];
             for (int i=0; i < size; i++) {
-               if (log.isLoggable(Level.FINE)) this.log.fine("appendEndOfElement publishArr: " + msgs[i].toXml());
+               if (log.isLoggable(Level.FINE)) XmlScriptClient.log.fine("appendEndOfElement publishArr: " + msgs[i].toXml());
                msgs[i] = (MsgUnit)this.messageList.get(i);
             }
             this.access.publishOneway(msgs);
@@ -303,7 +303,7 @@ public class XmlScriptClient extends XmlScriptInterpreter {
       if (methodName != null) super.response.append("\n</").append(methodName.toString()).append(">\n");
       flushResponse();
    }
-
+   
    public static void main(String[] args) {
       /*
       String request = "<xmlBlaster>\n" +
@@ -329,9 +329,9 @@ public class XmlScriptClient extends XmlScriptInterpreter {
          
          glob.init(tmp);
          FileOutputStream out = new FileOutputStream(args[1]);
-         XmlScriptClient interpreter = new XmlScriptClient(glob, out);
+         XmlScriptClient client = new XmlScriptClient(glob, out);
          FileReader in = new FileReader(args[0]);
-         interpreter.parse(in);
+         client.parse(in);
       }
       catch (Exception ex) {
          ex.printStackTrace();

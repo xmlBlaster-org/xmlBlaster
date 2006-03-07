@@ -259,7 +259,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                         driver.getGlobal().removeNativeCallbackDriver(cbKey);
                         oldCallback = null;
                      }
-                     if (log.isLoggable(Level.FINE)) this.log.fine("run: register new callback driver: '" + cbKey + "'");
+                     if (log.isLoggable(Level.FINE)) HandleClient.log.fine("run: register new callback driver: '" + cbKey + "'");
                      driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
                   }
                   else {
