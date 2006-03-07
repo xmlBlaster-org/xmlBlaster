@@ -1,6 +1,5 @@
 // xmlBlaster/demo/HelloWorld5.java
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;

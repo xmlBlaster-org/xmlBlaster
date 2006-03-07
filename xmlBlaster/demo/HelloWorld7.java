@@ -1,6 +1,5 @@
 // xmlBlaster/demo/HelloWorld7.java
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;

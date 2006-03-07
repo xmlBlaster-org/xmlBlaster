@@ -5,7 +5,6 @@ import org.xmlBlaster.client.protocol.http.common.I_CallbackRaw;
 import org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw;
 
 import java.applet.Applet;
-import java.awt.Graphics;
 import java.awt.TextArea;
 import java.awt.Color;
 import java.util.Hashtable;
