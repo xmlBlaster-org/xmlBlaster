@@ -17,11 +17,6 @@
 */
 package org.xmlBlaster.j2ee.jmx;
 import java.util.Properties;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.File;
-import java.net.URL;
-import java.rmi.RMISecurityManager;
 
 import javax.naming.InitialContext;
 import javax.naming.Context;
@@ -31,12 +26,9 @@ import javax.naming.NamingException;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.util.property.Property;
-import org.xmlBlaster.util.property.Property.FileInfo;
 import org.xmlBlaster.j2ee.util.JacorbUtil;
 import org.xmlBlaster.j2ee.util.GlobalUtil;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 /**
  * XmlBlaster for embedded use in a JMX server.
  *

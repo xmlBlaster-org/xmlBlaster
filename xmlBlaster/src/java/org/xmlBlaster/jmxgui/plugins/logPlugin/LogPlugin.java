@@ -11,7 +11,6 @@ import org.xmlBlaster.jmxgui.*;
 import javax.management.*;
 import org.xmlBlaster.client.jmx.*;
 import javax.swing.*;
-import java.awt.event.*;
 import org.xmlBlaster.util.Global;
 import java.rmi.*;
 

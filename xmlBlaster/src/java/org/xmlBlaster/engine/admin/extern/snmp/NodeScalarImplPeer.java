@@ -1,7 +1,5 @@
 package org.xmlBlaster.engine.admin.extern.snmp;
  
-
-import java.io.*;
 import java.util.*;
 
 /** 

@@ -12,10 +12,8 @@ import org.w3c.dom.Document;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.*;

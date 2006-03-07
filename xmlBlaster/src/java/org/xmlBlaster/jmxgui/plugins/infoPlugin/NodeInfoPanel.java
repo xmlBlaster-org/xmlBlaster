@@ -8,17 +8,12 @@ package org.xmlBlaster.jmxgui.plugins.infoPlugin;
 import org.xmlBlaster.jmxgui.*;
 
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.table.*;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 
-import javax.management.*;
 import org.xmlBlaster.client.jmx.*;
-import java.rmi.*;
 
-import java.util.Vector;
 import org.xmlBlaster.jmxgui.plugins.GenericJmxModel;
 import org.xmlBlaster.util.Global;
 

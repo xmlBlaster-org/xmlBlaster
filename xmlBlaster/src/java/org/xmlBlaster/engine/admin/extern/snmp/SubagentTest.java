@@ -6,10 +6,6 @@ Comment:   xmlBlaster to SNMP proxy class
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin.extern.snmp;
 
-import java.io.*;
-import java.util.Vector;
-import java.util.Enumeration;
-import java.net.*;
 import java.lang.Integer;
 
 import jax.*;
@@ -52,8 +48,6 @@ public class SubagentTest
         int testCase = 0;
 	long[] value = { 1, 3, 6, 1, 4, 1, 11662 };
         NodeScalarImpl nodeScalarImpl;
-        NodeEntryImpl nodeEntryImpl;
-        NodeTable nodeTable;
         boolean sleep = true;
 
         //System.setProperty("jax.debug", "true");
@@ -219,7 +213,6 @@ public class SubagentTest
         ClientEntryImplPeer clientEntryImplPeer2;
         SessionEntryImplPeer sessionEntryImplPeer1;
         SessionEntryImplPeer sessionEntryImplPeer2;
-        SessionEntryImplPeer sessionEntryImplPeer3;
 
         nodeEntryImplPeer1 = new NodeEntryImplPeer("node1", "host1", 111, 1111, 11, "err1.log", 1);
         nodeEntryImplPeer2 = new NodeEntryImplPeer("node2", "host2", 222, 2222, 22, "err2.log", 2);

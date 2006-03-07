@@ -17,19 +17,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
-
-import java.sql.ResultSet;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.SQLException;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.IOException;
 
 /**
  * For every database access, an instance of this class does the work in a dedicated thread.

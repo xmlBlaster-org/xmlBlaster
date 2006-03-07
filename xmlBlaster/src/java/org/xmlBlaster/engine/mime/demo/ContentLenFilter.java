@@ -7,7 +7,6 @@ Comment:   Interface hiding the real callback protocol
 package org.xmlBlaster.engine.mime.demo;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;

@@ -7,7 +7,6 @@ Comment:   xmlBlaster to SNMP proxy class
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 /*

@@ -7,14 +7,10 @@ package org.xmlBlaster.jmxgui;
 
 import javax.swing.event.*;
 import javax.swing.tree.*;
-import javax.swing.*;
-
-import java.awt.event.*;
 
 import java.util.Hashtable;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 
