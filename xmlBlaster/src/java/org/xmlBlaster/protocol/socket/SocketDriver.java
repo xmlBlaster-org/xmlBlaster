@@ -372,7 +372,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       }
 
       if (this.socketUrl.getPort() < 1) {
-         log.info("Option protocl/socket/port set to " + this.socketUrl.getPort() + ", socket server not started");
+         log.info("Option protocol/socket/port set to " + this.socketUrl.getPort() + ", socket server not started");
          return;
       }
    }
