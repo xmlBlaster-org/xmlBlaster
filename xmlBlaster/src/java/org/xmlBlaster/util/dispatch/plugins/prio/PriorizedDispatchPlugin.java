@@ -7,8 +7,8 @@ package org.xmlBlaster.util.dispatch.plugins.prio;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.init.I_PropertyChangeListener;
-import org.jutils.init.PropertyChangeEvent;
+import org.xmlBlaster.util.property.I_PropertyChangeListener;
+import org.xmlBlaster.util.property.PropertyChangeEvent;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;

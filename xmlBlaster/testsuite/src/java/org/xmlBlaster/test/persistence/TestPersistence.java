@@ -9,8 +9,9 @@ package org.xmlBlaster.test.persistence;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
-import org.jutils.io.FileUtil;
 
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -19,9 +20,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.property.Args;
 
 import junit.framework.*;
 
@@ -170,17 +169,17 @@ public class TestPersistence extends TestCase implements I_Callback
 
       if (checkContent) {
          try {
-            String persistenceContent = FileUtil.readAsciiFile(path, publishOid);
+            String persistenceContent = FileLocator.readAsciiFile(path, publishOid);
             assertEquals("Written content is corrupted", senderContent, persistenceContent);
          }
          catch (Exception e) {
-            assertTrue("Couldn't read file " + FileUtil.concatPath(path, publishOid), false);
+            assertTrue("Couldn't read file " + FileLocator.concatPath(path, publishOid), false);
          }
       }
       else { // Check if erased
          java.io.File f = new java.io.File(path, publishOid);
          if (f.exists())
-            assertTrue("File " + FileUtil.concatPath(path, publishOid) + " is not erased properly", false);
+            assertTrue("File " + FileLocator.concatPath(path, publishOid) + " is not erased properly", false);
       }
    }
 

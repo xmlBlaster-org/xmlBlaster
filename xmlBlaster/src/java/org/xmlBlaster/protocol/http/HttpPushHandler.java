@@ -8,7 +8,7 @@ package org.xmlBlaster.protocol.http;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -482,8 +482,8 @@ public class HttpPushHandler implements I_Callback
       StringBuffer retStr = new StringBuffer();
       retStr.append("<html><body>\n");
       retStr.append("<script language='JavaScript' type='text/javascript'>\n");
-      String tmp = StringHelper.replaceAll(text, "'", "\\'");
-      retStr.append("alert(\'" + StringHelper.replaceAll(tmp, "\n", "\\n'+\n'") + "');\n");
+      String tmp = ReplaceVariable.replaceAll(text, "'", "\\'");
+      retStr.append("alert(\'" + ReplaceVariable.replaceAll(tmp, "\n", "\\n'+\n'") + "');\n");
       retStr.append("</script>\n");
       retStr.append("</body></html>\n");
       log.warning("Sending alert to browser: " + text);
@@ -566,7 +566,6 @@ public class HttpPushHandler implements I_Callback
     */
    private class HttpPingThread extends Thread
    {
-      private String ME = "HttpPingThread";
       private HttpPushHandler pushHandler;
       private final long PING_INTERVAL;
       private boolean pingRunning = true;
@@ -598,7 +597,6 @@ public class HttpPushHandler implements I_Callback
        * @param loginName For debugging only
        */
       HttpPingThread(HttpPushHandler pushHandler, long pingInterval, String loginName) {
-         this.ME = "HttpPingThread-" + loginName;
          this.pushHandler = pushHandler;
          this.PING_INTERVAL = pingInterval;
          if (log.isLoggable(Level.FINER)) log.finer("Entering constructor HTTP ping interval=" + pingInterval + " millis");
@@ -608,7 +606,7 @@ public class HttpPushHandler implements I_Callback
          while (pingRunning) {
 
             try {
-               Thread.currentThread().sleep(PING_INTERVAL);
+               Thread.sleep(PING_INTERVAL);
                if (pingRunning == false)
                   break;
                counter++;

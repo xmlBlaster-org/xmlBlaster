@@ -7,24 +7,20 @@ package org.xmlBlaster.engine.persistence;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
-import org.jutils.io.FileUtil;
-import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.Enumeration;
-import java.util.Vector;
 
 
 /**
@@ -73,12 +69,12 @@ public final class MsgFileDumper
          this.path = path_;
       }
       else {
-         String defaultPath = (String)System.getProperty("user.home") + (String)System.getProperty("file.separator") + "tmp";
+         String defaultPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tmp";
          this.path = glob.getProperty().get("Persistence.Path", defaultPath);
          if (this.path == null) {
-            throw new XmlBlasterException(ME, "xmlBlaster will run memory based only, no persistence path is avalailable, please specify 'Persistence.Path' in xmlBlaster.properties");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "xmlBlaster will run memory based only, no persistence path is avalailable, please specify 'Persistence.Path' in xmlBlaster.properties");
          }
-         this.path = this.path + (String)System.getProperty("file.separator") + glob.getStrippedId();
+         this.path = this.path + System.getProperty("file.separator") + glob.getStrippedId();
       }
 
       File pp = new File(this.path);
@@ -88,11 +84,11 @@ public final class MsgFileDumper
       }
       if (!pp.isDirectory()) {
          log.severe(this.path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
-         throw new XmlBlasterException(ME, this.path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, this.path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
       if (!pp.canWrite()) {
          log.severe("Sorry, no access permissions to " + this.path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
-         throw new XmlBlasterException(ME, "Sorry, no access permissions to " + this.path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, no access permissions to " + this.path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
    }
 
@@ -118,7 +114,7 @@ public final class MsgFileDumper
    }
 
    public String getPersistenceFileName(String fileName) {
-      return this.path + (String)System.getProperty("file.separator") + fileName;
+      return this.path + System.getProperty("file.separator") + fileName;
    }
 
    /**
@@ -137,17 +133,13 @@ public final class MsgFileDumper
 
       String fileName = createFileName(msgUnitWrapper.getKeyOid(), msgUnitWrapper.getUniqueId());
 
-      try {
-         if (!updateOnly) {
-            FileUtil.writeFile(this.path, fileName + this.XMLKEY_TOKEN, msgUnitWrapper.getMsgKeyData().toXml());
-         }
-         FileUtil.writeFile(this.path, fileName, msgUnitWrapper.getMsgUnit().getContent());
-         FileUtil.writeFile(this.path, fileName + this.XMLQOS_TOKEN, msgUnitWrapper.getMsgQosData().toXml());
-         if (log.isLoggable(Level.FINE)) log.fine("Successfully stored " + fileName);
-         return getPersistenceFileName(fileName);
-      } catch (JUtilsException e) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Storage of message " + msgUnitWrapper.getLogId() + " failed", e);
+      if (!updateOnly) {
+         FileLocator.writeFile(this.path, fileName + this.XMLKEY_TOKEN, msgUnitWrapper.getMsgKeyData().toXml().getBytes());
       }
+      FileLocator.writeFile(this.path, fileName, msgUnitWrapper.getMsgUnit().getContent());
+      FileLocator.writeFile(this.path, fileName + this.XMLQOS_TOKEN, msgUnitWrapper.getMsgQosData().toXml().getBytes());
+      if (log.isLoggable(Level.FINE)) log.fine("Successfully stored " + fileName);
+      return getPersistenceFileName(fileName);
    }
 
    /**
@@ -173,19 +165,14 @@ public final class MsgFileDumper
       MsgUnit msgUnit = null;
       String fileName = createFileName(oid, timestamp);
 
-      try {
-         String xmlKey_literal = FileUtil.readAsciiFile(this.path, fileName + this.XMLKEY_TOKEN);
-         byte[] content = FileUtil.readFile(this.path, fileName);
-         String xmlQos_literal = FileUtil.readAsciiFile(this.path, fileName + this.XMLQOS_TOKEN);
+      String xmlKey_literal = FileLocator.readAsciiFile(this.path, fileName + this.XMLKEY_TOKEN);
+      byte[] content = FileLocator.readFile(this.path, fileName);
+      String xmlQos_literal = FileLocator.readAsciiFile(this.path, fileName + this.XMLQOS_TOKEN);
 
-         msgUnit = new MsgUnit(glob, xmlKey_literal, content, xmlQos_literal);
+      msgUnit = new MsgUnit(glob, xmlKey_literal, content, xmlQos_literal);
 
-         if (log.isLoggable(Level.FINE)) log.fine("Successfully fetched message " + fileName);
-         if (log.isLoggable(Level.FINEST)) log.finest("Successfully fetched message\n" + msgUnit.toXml());
-      } catch (JUtilsException e) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Fetching message " + 
-                       getPersistenceFileName(fileName) + " failed", e);
-      }
+      if (log.isLoggable(Level.FINE)) log.fine("Successfully fetched message " + fileName);
+      if (log.isLoggable(Level.FINEST)) log.finest("Successfully fetched message\n" + msgUnit.toXml());
 
       return msgUnit;
    }
@@ -228,18 +215,6 @@ public final class MsgFileDumper
       FileUtil.deleteFile(this.path, oid);
       FileUtil.deleteFile(this.path, oid + this.XMLQOS_TOKEN);
       */
-   }
-
-   /**
-    * Filter only the xy-XmlKey.xml files.
-    */
-   private class XmlKeyFilter implements FilenameFilter
-   {
-      public boolean accept(File dir, String name) {
-         if (name.endsWith(XMLKEY_TOKEN))
-            return true;
-         return false;
-      }
    }
 
    /** Invoke:  java org.xmlBlaster.engine.persistence.MsgFileDumper */

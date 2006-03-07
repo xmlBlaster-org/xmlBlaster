@@ -23,6 +23,10 @@ public class XbNotifyHandler extends Handler {
    private I_LogListener[] errorCache;
    private Set warnListenerSet = new HashSet();
    private I_LogListener[] warnCache;
+   private Set allListenerSet = new HashSet();
+   private I_LogListener[] allCache;
+   private final I_LogListener[] emptyArr = new I_LogListener[0];
+   private boolean hasAllListener;
    
    public XbNotifyHandler() {
       this("default-"+instanceCounter++);
@@ -70,6 +74,12 @@ public class XbNotifyHandler extends Handler {
             arr[i].log(record);
          }
       }
+      if (this.hasAllListener) {
+         I_LogListener[] arr = getAllListeners();
+         for (int i=0; i<arr.length; i++) {
+            arr[i].log(record);
+         }
+      }
    }
 
    /**
@@ -90,6 +100,11 @@ public class XbNotifyHandler extends Handler {
          ret = this.errorListenerSet.add(logNotification);
          this.errorCache = null;
       }
+      else if (Level.ALL.intValue() == level) {
+         ret = this.allListenerSet.add(logNotification);
+         this.allCache = null;
+         this.hasAllListener = true;
+      }
       return ret;
    }
 
@@ -104,9 +119,15 @@ public class XbNotifyHandler extends Handler {
          ret = this.warnListenerSet.remove(logNotification);
          this.warnCache = null;
       }
-      if (Level.SEVERE.intValue() == level) {
+      else if (Level.SEVERE.intValue() == level) {
          ret = this.errorListenerSet.remove(logNotification);
          this.errorCache = null;
+      }
+      else if (Level.ALL.intValue() == level) {
+         ret = this.allListenerSet.remove(logNotification);
+         this.allCache = null;
+         if (this.allListenerSet.size() == 0)
+            this.hasAllListener = false;
       }
       return ret;
    }
@@ -144,6 +165,21 @@ public class XbNotifyHandler extends Handler {
          }
       }
       return this.errorCache;
+   }
+
+   /**
+    * Get a snapshot of all listeners. 
+    */
+   public I_LogListener[] getAllListeners() {
+      if (!this.hasAllListener) return emptyArr;
+      if (this.allCache == null) {
+         synchronized (this) {
+            if (this.allCache == null) {
+               this.allCache = (I_LogListener[])this.allListenerSet.toArray(new I_LogListener[this.allListenerSet.size()]);
+            }
+         }
+      }
+      return this.allCache;
    }
 
    public static void main(String[] args) {

@@ -8,7 +8,7 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -164,8 +164,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          // prepare the argument vector for the xml-rpc method call
 
          String qosOrig = connectQos;
-         String qosStripped = StringHelper.replaceAll(qosOrig, "<![CDATA[", "");
-         connectQos = StringHelper.replaceAll(qosStripped, "]]>", "");
+         String qosStripped = org.xmlBlaster.util.ReplaceVariable.replaceAll(qosOrig, "<![CDATA[", "");
+         connectQos = org.xmlBlaster.util.ReplaceVariable.replaceAll(qosStripped, "]]>", "");
          if (!connectQos.equals(qosOrig)) {
             log.fine("Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
                            "This shouldn't be a problem as long as your credentials doesn't contain '<'");
@@ -640,7 +640,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    {
    /*
       final String ME = "XmlRpcHttpClient";
-      try { XmlBlasterProperty.init(args); } catch(org.jutils.JUtilsException e) { log.panic(ME, e.toString()); }
+      try { Global.init(args); } catch(XmlBlasterException e) { log.severe(e.toString()); }
       // build the proxy
       try {
          XmlRpcConnection proxy = new XmlRpcConnection("http://localhost:8080", 8081);

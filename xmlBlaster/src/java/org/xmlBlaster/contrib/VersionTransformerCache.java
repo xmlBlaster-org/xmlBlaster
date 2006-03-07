@@ -23,7 +23,7 @@ import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 
 
@@ -180,16 +180,16 @@ public class VersionTransformerCache {
     */
    public static final String getStrippedString(String text) {
       if (text == null) return null;
-      String strippedId = StringHelper.replaceAll(text, "/", "");
+      String strippedId = org.xmlBlaster.util.ReplaceVariable.replaceAll(text, "/", "");
       // JMX does not like commas, but we can't introduce this change in 1.0.5
       // as the persistent queue names would change and this is not backward compatible
-      //strippedId = StringHelper.replaceAll(strippedId, ",", "_");
-      strippedId = StringHelper.replaceAll(strippedId, " ", "_");
-      strippedId = StringHelper.replaceAll(strippedId, ".", "_");
-      strippedId = StringHelper.replaceAll(strippedId, ":", "_");
-      strippedId = StringHelper.replaceAll(strippedId, "[", "_");
-      strippedId = StringHelper.replaceAll(strippedId, "]", "_");
-      return StringHelper.replaceAll(strippedId, "\\", "");
+      //strippedId = org.xmlBlaster.util.ReplaceVariable.replaceAll(strippedId, ",", "_");
+      strippedId = org.xmlBlaster.util.ReplaceVariable.replaceAll(strippedId, " ", "_");
+      strippedId = org.xmlBlaster.util.ReplaceVariable.replaceAll(strippedId, ".", "_");
+      strippedId = org.xmlBlaster.util.ReplaceVariable.replaceAll(strippedId, ":", "_");
+      strippedId = org.xmlBlaster.util.ReplaceVariable.replaceAll(strippedId, "[", "_");
+      strippedId = org.xmlBlaster.util.ReplaceVariable.replaceAll(strippedId, "]", "_");
+      return org.xmlBlaster.util.ReplaceVariable.replaceAll(strippedId, "\\", "");
    }
    
    /**

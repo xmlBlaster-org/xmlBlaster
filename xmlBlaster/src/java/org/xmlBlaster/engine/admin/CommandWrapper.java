@@ -151,7 +151,7 @@ public final class CommandWrapper
     * @return "http:myserver:3412" instead of "http://myserver:3412", names like "heron.mycomp.com" are untouched
     */
    public final String getStrippedClusterNodeId() {
-      return org.jutils.text.StringHelper.replaceAll(glob.getId(), "/", "");
+      return org.xmlBlaster.util.ReplaceVariable.replaceAll(glob.getId(), "/", "");
    }
 
    /**

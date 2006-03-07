@@ -1,11 +1,11 @@
 package org.xmlBlaster.util.property;
 
-import org.jutils.text.StringHelper;
-import org.jutils.init.I_PropertyChangeListener;
-import org.jutils.init.PropertyChangeEvent;
-import org.jutils.io.FileUtil;
+import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import java.io.*;
 import java.util.Properties;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 import java.net.URL;
 import java.applet.Applet;
 
@@ -152,7 +152,7 @@ import java.applet.Applet;
  */
 public class Property implements Cloneable {
    private final static String ME = "Property";
-   private static Logger log = Logger.getLogger(Property.class.getName());
+   //private static Logger log = Logger.getLogger(Property.class.getName());
 
    private static String separator = null;
 
@@ -364,7 +364,7 @@ public class Property implements Cloneable {
       while (e.hasMoreElements()) {
          String name = (String)e.nextElement();
          buffer.add(new String("-" + name));
-         buffer.add((String)extraProps.getProperty(name));
+         buffer.add(extraProps.getProperty(name));
       }
 
       String[] arr = new String[buffer.size()];
@@ -411,13 +411,13 @@ public class Property implements Cloneable {
             if (verbose>=1) System.out.println("Property: found " + projectname + " in " + projectFileName);
          }
          else {
-            throw new XmlBlasterException(ME + ".Error", "Unable to find " + projectname + " in " + projectFileName);
+            throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".Error", "Unable to find " + projectname + " in " + projectFileName);
          }
          if (fis != null)
             fis.close();
       }
       catch (IOException e) {
-         throw new XmlBlasterException(ME + ".Error", "Unable to find " + projectFileName + ": " + e);
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".Error", "Unable to find " + projectFileName + ": " + e);
       }
    }
    /**
@@ -508,7 +508,7 @@ public class Property implements Cloneable {
       }
       catch (CloneNotSupportedException e) {
          if (verbose>=1) System.err.println("Property clone failed: " + e.toString());
-         throw new RuntimeException("org.jutils.init.Property clone failed: " + e.toString());
+         throw new RuntimeException("org.xmlBlaster.util.property.Property clone failed: " + e.toString());
       }
    }
 
@@ -543,12 +543,12 @@ public class Property implements Cloneable {
       this.scanSystemProperties = scanSystemProperties;
       this.replaceVariables = replaceVariables;
       this.supportArrays = supportArrays;
-      this.separator = System.getProperty("file.separator");
-      this.userHome = System.getProperty("user.home");
+      separator = System.getProperty("file.separator");
+      userHome = System.getProperty("user.home");
       this.currentPath = System.getProperty("user.dir");
       this.projectHomePath = System.getProperty("PROJECT_HOME");
-      this.javaHomeExt = System.getProperty("java.ext.dirs");
-      this.javaHome = System.getProperty("java.home");
+      javaHomeExt = System.getProperty("java.ext.dirs");
+      javaHome = System.getProperty("java.home");
 
       loadProps(findGivenFile(propertyFileName), argsProps);
 
@@ -803,7 +803,7 @@ public class Property implements Cloneable {
    */
    public final String removeProperty(String key) {
       String oldValue = (String)properties.remove(key);
-      fireChangeEvent(key, (String)oldValue, (String)null);
+      fireChangeEvent(key, oldValue, (String)null);
       return oldValue;
    }
 
@@ -881,7 +881,7 @@ public class Property implements Cloneable {
          scanArrays();
       }
       catch (IOException e) {
-        throw new XmlBlasterException(ME + ".Error", "Unable to initialize " + propertyFileName + ": " + e);
+        throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".Error", "Unable to initialize " + propertyFileName + ": " + e);
       }
       return properties;
    }
@@ -949,7 +949,7 @@ public class Property implements Cloneable {
 
       int posClose = key.indexOf("]", posOpen);
       if (posClose < 0)
-         throw new XmlBlasterException(ME + ".scanArrays", "Invalid array, missing closing ']' braket for key='" + key + "'");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".scanArrays", "Invalid array, missing closing ']' braket for key='" + key + "'");
       String praefix = key.substring(0, posOpen);
 
       if (propMap == null) propMap = new TreeMap(); // The global map holding the array maps
@@ -957,7 +957,7 @@ public class Property implements Cloneable {
       Map map = getMap_(praefix);
       if (map == null) {
          map = new TreeMap();
-         String oldValue = (String)propMap.put(praefix, map);
+         /*String oldValue = (String)*/propMap.put(praefix, map);
       }
 
       String arg = key.substring(posOpen+1, posClose);
@@ -966,7 +966,7 @@ public class Property implements Cloneable {
       if (posOpen2 >= 0) {
          int posClose2 = key.indexOf("]", posOpen2);
          if (posClose2 < 0)
-            throw new XmlBlasterException(ME + ".scanArrays", "Invalid array, missing closing ']' braket for key='" + key + "'");
+            throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".scanArrays", "Invalid array, missing closing ']' braket for key='" + key + "'");
          arg += ":";
          arg += key.substring(posOpen2+1, posClose2);
       }
@@ -1029,15 +1029,15 @@ public class Property implements Cloneable {
          if (from != -1) {
             int to = value.indexOf("}", from);
             if (to == -1) {
-               throw new XmlBlasterException(ME + ".InvalidVariable", "Invalid variable '" + value.substring(from) + "', expecting ${} syntax.");
+               throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".InvalidVariable", "Invalid variable '" + value.substring(from) + "', expecting ${} syntax.");
             }
             String sub = value.substring(from, to + 1); // "${XY}"
             String subKey = sub.substring(2, sub.length() - 1); // "XY"
             String subValue = get_(subKey);
             if (subValue == null) {
-               throw new XmlBlasterException(ME + ".UnknownVariable", "Unknown variable " + sub + "");
+               throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".UnknownVariable", "Unknown variable " + sub + "");
             }
-            value = StringHelper.replaceAll(value, sub, subValue);
+            value = ReplaceVariable.replaceAll(value, sub, subValue);
          }
          else {
             if (ii > 0 && verbose>=2) {
@@ -1046,7 +1046,7 @@ public class Property implements Cloneable {
             return value;
          }
          if (ii > MAX_NEST) {
-            throw new XmlBlasterException(ME + ".MaxNest", "Maximum nested depth of " + MAX_NEST + " reached for variable '" + get_(key) + "'.");
+            throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".MaxNest", "Maximum nested depth of " + MAX_NEST + " reached for variable '" + get_(key) + "'.");
          }
       }
    }
@@ -1069,7 +1069,7 @@ public class Property implements Cloneable {
          if (from != -1) {
             int to = value.indexOf("}", from);
             if (to == -1) {
-               throw new XmlBlasterException(ME + ".InvalidVariable", "Invalid variable '" + value.substring(from) + "', expecting ${} syntax.");
+               throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".InvalidVariable", "Invalid variable '" + value.substring(from) + "', expecting ${} syntax.");
             }
             String sub = value.substring(from, to + 1); // "$_{XY}"
             String subKey = sub.substring(3, sub.length() - 1); // "XY"
@@ -1078,7 +1078,7 @@ public class Property implements Cloneable {
                if (verbose>=2) System.out.println("Property: Unknown variable " + sub + " is not replaced");
                return value;
             }
-            value = StringHelper.replaceAll(value, sub, subValue);
+            value = org.xmlBlaster.util.ReplaceVariable.replaceAll(value, sub, subValue);
          }
          else {
             if (ii > 0 && verbose>=2) {
@@ -1103,12 +1103,12 @@ public class Property implements Cloneable {
    */
    static public final boolean toBool(String token) throws XmlBlasterException {
       if (token == null)
-        throw new XmlBlasterException(ME, "Can't parse <null> to true or false");
+        throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't parse <null> to true or false");
       if (token.equalsIgnoreCase("true") || token.equalsIgnoreCase("1") || token.equalsIgnoreCase("ok") || token.equalsIgnoreCase("yes"))
         return true;
       if (token.equalsIgnoreCase("false") || token.equalsIgnoreCase("0") || token.equalsIgnoreCase("no"))
         return false;
-      throw new XmlBlasterException(ME, "Can't parse <" + token + "> to true or false");
+      throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't parse <" + token + "> to true or false");
    }
 
 
@@ -1319,12 +1319,6 @@ public class Property implements Cloneable {
    * The leading - are stripped (to match the property variable)
    * args must be a tuple (key / value pairs).
    * <p />
-   * Example:
-   * <pre>
-   *   java org.jutils.Main  isCool true -iorPort 3400
-   * </pre>
-   * This would overwrite a properties file variable "iorPort" (if there was one)
-   * and set the variable isCool to "true"
    */
    public void addArgs2Props(String[] args) throws XmlBlasterException {
 
@@ -1439,11 +1433,11 @@ public class Property implements Cloneable {
                key = arg.substring(1); // strip "-"
 
             if (key.length() < 1) {
-               throw new XmlBlasterException(ME + ".Invalid", "Ignoring argument <" + arg + ">.");
+               throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".Invalid", "Ignoring argument <" + arg + ">.");
             }
             if ((ii + 1) >= args.length) {
                // System.err.println("Property: The property '" + arg + "' has no value");
-               throw new XmlBlasterException(ME + ".MissingValue", "The property '" + arg + "' has no value.");
+               throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".MissingValue", "The property '" + arg + "' has no value.");
             }
             String arg2 = args[ii + 1];
             if (arg2 == null) arg2 = "";
@@ -1456,7 +1450,7 @@ public class Property implements Cloneable {
             // System.out.println("Property: Setting command line argument " + key + " with value " + arg2);
          }
          else {
-            throw new XmlBlasterException(ME + ".Invalid", "Ignoring unknown argument <" + arg + ">, it should start with '-'.");
+            throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".Invalid", "Ignoring unknown argument <" + arg + ">, it should start with '-'.");
          }
       }
       return props;
@@ -1540,10 +1534,10 @@ public class Property implements Cloneable {
         // Avoid illegal characters in tag name:
         if (key.indexOf("[") != -1) 
           continue; // Will be dumped later in <arrays> section
-        key = StringHelper.replaceAll(key, "/", ".");
+        key = org.xmlBlaster.util.ReplaceVariable.replaceAll(key, "/", ".");
         sb.append(offset).append("  <");
         sb.append(key).append(">");
-        sb.append(StringHelper.replaceAll(value, "<", "&lt;"));
+        sb.append(org.xmlBlaster.util.ReplaceVariable.replaceAll(value, "<", "&lt;"));
         sb.append("</").append(key).append(">");
       }
       if (propMap != null) {
@@ -1552,12 +1546,12 @@ public class Property implements Cloneable {
          while (it.hasNext()) {
             String key = (String) it.next();
             Map map = get(key, (Map)null);
-            key = StringHelper.replaceAll(key, "/", ".");
+            key = org.xmlBlaster.util.ReplaceVariable.replaceAll(key, "/", ".");
             Iterator iter = map.keySet().iterator();
             while (iter.hasNext()) {
                String arg = (String) iter.next();
                sb.append(offset).append("    <").append(key).append(" index='").append(arg).append("'>");
-               sb.append(StringHelper.replaceAll((String)map.get(arg), "<", "&lt;"));
+               sb.append(org.xmlBlaster.util.ReplaceVariable.replaceAll((String)map.get(arg), "<", "&lt;"));
                sb.append("</").append(key).append(">");
             }
          }
@@ -1573,17 +1567,15 @@ public class Property implements Cloneable {
 * For testing only
 * <p />
 * <pre>
-* java -Djava.compiler= org.jutils.init.Property -Persistence.Driver myDriver -isCool true -xml "<hello>world</hello>"
-* java -Djava.compiler= org.jutils.init.Property -dump true -uu "You are the user \${user.name}" -double "\${uu} using \${java.vm.name}"
-* java -Djava.compiler= org.jutils.init.Property -NameList Josua,David,Ken,Abel
-* java -Djava.compiler= org.jutils.init.Property -urlVariant true -url http://localhost/xy.properties
-* java -Djava.compiler= org.jutils.init.Property -hashVariant true
-* java -Djava.compiler= org.jutils.init.Property -dump true -val[A] aaaa -val[B] bbbb -val[C][1] cccc -val[C][2] c2c2
+* java -Djava.compiler= org.xmlBlaster.util.property.Property -Persistence.Driver myDriver -isCool true -xml "<hello>world</hello>"
+* java -Djava.compiler= org.xmlBlaster.util.property.Property -dump true -uu "You are the user \${user.name}" -double "\${uu} using \${java.vm.name}"
+* java -Djava.compiler= org.xmlBlaster.util.property.Property -NameList Josua,David,Ken,Abel
+* java -Djava.compiler= org.xmlBlaster.util.property.Property -urlVariant true -url http://localhost/xy.properties
+* java -Djava.compiler= org.xmlBlaster.util.property.Property -hashVariant true
+* java -Djava.compiler= org.xmlBlaster.util.property.Property -dump true -val[A] aaaa -val[B] bbbb -val[C][1] cccc -val[C][2] c2c2
 * </pre>
 */
 public static void main(String args[]) {
-   String ME = "Property";
-
   try {
       boolean dump = Args.getArg(args, "-dump", false);
       if (dump) {
@@ -1735,7 +1727,7 @@ public void saveProps(String fileName) throws java.io.IOException {
             return fileName;
          if (fileName == null)
             return path;
-         return FileUtil.concatPath(path, fileName);
+         return FileLocator.concatPath(path, fileName);
       }
 
       public boolean isLocalDisk() {
@@ -1764,7 +1756,7 @@ public void saveProps(String fileName) throws java.io.IOException {
             return in;
          }
          catch (IOException e) {
-            throw new XmlBlasterException("Property.FileInfo", e.toString());
+            throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, "Property.FileInfo", e.toString());
          }
       }
 

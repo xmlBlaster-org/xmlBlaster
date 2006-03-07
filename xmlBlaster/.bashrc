@@ -71,9 +71,6 @@ fi
 export XMLBLASTER_HOME
 
 
-JUTILS_HOME=${XMLBLASTER_HOME}
-export JUTILS_HOME
-
 if [ -d ${XMLBLASTER_HOME} ]; then
 
    # OK, know we know where xmlBlaster is installed ...
@@ -96,10 +93,6 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    # CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH}
    # CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/ant/xercesImpl.jar
-   # jutils.jar is now included in xmlBlaster.jar
-   #if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
-      CLASSPATH=${XMLBLASTER_HOME}/lib/jutils.jar:${CLASSPATH}
-   #fi
    CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/junit.jar:${CLASSPATH}
@@ -203,12 +196,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${XMLBLASTER_HOME}/lib
    export LD_LIBRARY_PATH
 
-   alias cdj='cd $JUTILS_HOME/src/java/org/jutils'
    alias cdx='cd $XMLBLASTER_HOME'
    alias cdxs='cd $XMLBLASTER_HOME/src'
    alias cdxi='cd $XMLBLASTER_HOME/src/idl'
    alias cdxj='cd $XMLBLASTER_HOME/src/java/org/xmlBlaster'
-   alias cdxu='cd $XMLBLASTER_HOME/src/java/org/jutils'
    alias cdxd='cd $XMLBLASTER_HOME/demo'
    alias cdxdj='cd $XMLBLASTER_HOME/demo/javaclients'
    alias cdxt='cd $XMLBLASTER_HOME/testsuite/src'

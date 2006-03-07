@@ -6,8 +6,11 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
@@ -22,7 +25,6 @@ import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -77,7 +79,6 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
  */
 public class HelloWorldPublish
 {
-   private final String ME = "HelloWorldPublish";
    private final Global glob;
    private static Logger log = Logger.getLogger(HelloWorldPublish.class.getName());
 
@@ -120,7 +121,7 @@ public class HelloWorldPublish
 
          log.info("Used settings are:");
          log.info("   -interactive    " + interactive);
-         log.info("   -sleep          " + org.jutils.time.TimeHelper.millisToNice(sleep));
+         log.info("   -sleep          " + Timestamp.millisToNice(sleep));
          log.info("   -oneway         " + oneway);
          log.info("   -erase          " + erase);
          log.info("   -disconnect     " + disconnect);
@@ -143,7 +144,7 @@ public class HelloWorldPublish
          }
          log.info("   -priority       " + priority.toString());
          log.info("   -persistent     " + persistent);
-         log.info("   -lifeTime       " + org.jutils.time.TimeHelper.millisToNice(lifeTime));
+         log.info("   -lifeTime       " + Timestamp.millisToNice(lifeTime));
          log.info("   -forceUpdate    " + forceUpdate);
          log.info("   -forceDestroy   " + forceDestroy);
          if (clientPropertyMap != null) {
@@ -158,7 +159,7 @@ public class HelloWorldPublish
          }
          log.info(" Topic settings");
          log.info("   -readonly       " + readonly);
-         log.info("   -destroyDelay   " + org.jutils.time.TimeHelper.millisToNice(destroyDelay));
+         log.info("   -destroyDelay   " + Timestamp.millisToNice(destroyDelay));
          log.info("   -createDomEntry " + createDomEntry);
          log.info("   -queue/history/maxEntries " + historyMaxMsg);
          log.info(" PtP settings");
@@ -213,10 +214,10 @@ public class HelloWorldPublish
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
          log.info("Connect success as " + crq.toXml());
 
-         org.jutils.time.StopWatch stopWatch = new org.jutils.time.StopWatch();
+         org.xmlBlaster.util.StopWatch stopWatch = new org.xmlBlaster.util.StopWatch();
          for(int i=0; i<numPublish; i++) {
 
-            String currOid = org.jutils.text.StringHelper.replaceAll(oid, "%counter", ""+(i+1));
+            String currOid = org.xmlBlaster.util.ReplaceVariable.replaceAll(oid, "%counter", ""+(i+1));
 
             if (interactive) {
                Global.waitOnKeyboardHit("Hit a key to publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
@@ -230,7 +231,7 @@ public class HelloWorldPublish
 
             PublishKey pk = new PublishKey(glob, currOid, "text/xml", "1.0");
             if (domain != null) pk.setDomain(domain);
-            pk.setClientTags(org.jutils.text.StringHelper.replaceAll(clientTags, "%counter", ""+(i+1)));
+            pk.setClientTags(org.xmlBlaster.util.ReplaceVariable.replaceAll(clientTags, "%counter", ""+(i+1)));
             PublishQos pq = new PublishQos(glob);
             pq.setPriority(priority);
             pq.setPersistent(persistent);
@@ -280,10 +281,10 @@ public class HelloWorldPublish
                }
             }
             else if (contentFile != null && contentFile.length() > 0) {
-               content = org.jutils.io.FileUtil.readFile(contentFile);
+               content = FileLocator.readFile(contentFile);
             }
             else {
-               content = org.jutils.text.StringHelper.replaceAll(contentStr, "%counter", ""+(i+1)).getBytes();
+               content = org.xmlBlaster.util.ReplaceVariable.replaceAll(contentStr, "%counter", ""+(i+1)).getBytes();
             }
 
             if (log.isLoggable(Level.FINEST)) log.finest("Going to parse publish message: " + pk.toXml() + " : " + content + " : " + pq.toXml());
@@ -317,7 +318,7 @@ public class HelloWorldPublish
             EraseQos eq = new EraseQos(glob);
             eq.setForceDestroy(eraseForceDestroy);
             if (log.isLoggable(Level.FINEST)) log.finest("Going to erase the topic: " + ek.toXml() + eq.toXml());
-            EraseReturnQos[] eraseArr = con.erase(ek, eq);
+            /*EraseReturnQos[] eraseArr =*/con.erase(ek, eq);
             log.info("Erase success");
          }
 

@@ -12,7 +12,6 @@ import org.xmlBlaster.util.def.ErrorCode;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.runtime.Sleeper;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
@@ -383,7 +382,7 @@ public class NamedConnectionPool
                // id.equals("ResourceExhaust")
                if (e.getErrorCode() == ErrorCode.RESOURCE_EXHAUST && ii < this.maxResourceExhaustRetries) {
                   if (ii == 0) log.warning("Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
-                  Sleeper.sleep(resourceExhaustSleepGap);
+                  Timestamp.sleep(resourceExhaustSleepGap);
                   ii++;
                }
                else {
@@ -526,7 +525,7 @@ public class NamedConnectionPool
                try {
                   for (int ii=0; ii<50; ii++) {
                      log.info(ME, " query run=" + ii + "\n");
-                     org.jutils.time.StopWatch watch = new org.jutils.time.StopWatch();
+                     org.xmlBlaster.util.StopWatch watch = new org.xmlBlaster.util.StopWatch();
                      Connection con = np.reserve(dbUrl, user, pw, timeToDeath, 100, 40*1000L);
                      log.info(ME, "Reserved connection id=" + con + watch.toString());
                      //log.info(ME, np.toXml());
@@ -538,7 +537,7 @@ public class NamedConnectionPool
                      } finally {
                         if (rs!=null) rs.close();
                         if (stmt!=null) stmt.close();
-                        watch = new org.jutils.time.StopWatch();
+                        watch = new org.xmlBlaster.util.StopWatch();
                         if (con!=null) np.release(dbUrl, user, pw, con);
                         log.info(ME, "Query successful done, connection released" + watch.toString());
                         //log.info(ME, np.toXml());

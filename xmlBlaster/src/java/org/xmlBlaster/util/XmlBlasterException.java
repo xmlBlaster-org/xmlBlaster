@@ -16,7 +16,6 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
-import org.jutils.JUtilsException;
 
 
 /**
@@ -412,13 +411,6 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
     */
    public XmlBlasterException(String location, String message) {
       this((Global)null, ErrorCode.LEGACY, location, message, (Throwable)null);
-   }
-
-   /**
-    * @deprecated Please use constructor which uses ErrorCode
-    */
-   public XmlBlasterException(JUtilsException e) {
-      this((Global)null, ErrorCode.LEGACY, e.id, e.reason);
    }
 
    /**

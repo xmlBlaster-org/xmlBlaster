@@ -20,7 +20,7 @@ import com.jclark.xsl.om.*;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 
 import java.io.File;
 import java.io.IOException;

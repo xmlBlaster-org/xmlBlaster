@@ -5,36 +5,24 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
-import org.jutils.JUtilsException;
-import org.jutils.io.FileUtil;
-import org.jutils.time.TimeHelper;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.GetKey;
-import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 
+import java.util.logging.Logger;
 import java.awt.event.*;
 import java.awt.*;
-import java.util.Enumeration;
-import java.util.Vector;
 import java.util.StringTokenizer;
 import java.text.DateFormat;
-import java.text.DateFormat;
-import java.util.Locale;
-import java.util.Date;
-
 
 /**
  * This client is a simple chat application using xmlBlaster.
@@ -46,12 +34,11 @@ import java.util.Date;
  */
 public class SimpleChat extends Frame implements I_Callback, ActionListener, I_ConnectionStateListener {
 
+   private static final long serialVersionUID = 1L;
    // XmlBlaster attributes
    private final Global glob;
    private static Logger log = Logger.getLogger(SimpleChat.class.getName());
    private I_XmlBlasterAccess xmlBlasterConnection = null;
-   private static String ME = "Mike's TestClient";
-   private static String passwd ="some";
    private static String qos = "<qos></qos>";
    private String publishOid = "javaclients.chat.SimpleChat";
    private String xmlKey = null;
@@ -201,7 +188,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    // event-handler
    public void actionPerformed(ActionEvent ev) {
       String command = ev.getActionCommand();
-      Object obj = ev.getSource();
+      //Object obj = ev.getSource();
 
       if ("whoisThere".equals(command)) {
         getUserList();
@@ -256,7 +243,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       output.append(text);
 //      output.insert(text, 0);
 
-      try { FileUtil.appendToFile(logFileName, text); } catch(JUtilsException e) { log.warning("Can't log message:" + e.toString()); }
+      try { FileLocator.appendToFile(logFileName, text); } catch(XmlBlasterException e) { log.warning("Can't log message:" + e.toString()); }
       //output.repaint();
       this.repaint();
    }
@@ -316,13 +303,13 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    {
       // Read old messages from log file ...
       try {
-         String data = FileUtil.readAsciiFile(logFileName);
+         String data = FileLocator.readAsciiFile(logFileName);
          StringTokenizer st = new StringTokenizer(data, "\n");
          while (st.hasMoreTokens()) {
             String tmp = st.nextToken();
             output.append(tmp+System.getProperty("line.separator"));
          }
-      } catch (JUtilsException e) {
+      } catch (XmlBlasterException e) {
          log.warning("Can't read old logs from " + logFileName + ": " + e.toString());
       }
    }

@@ -5,7 +5,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 
 /**
  * Parse the default security handling with loginName and password
@@ -45,8 +45,8 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public void parse(String xmlQoS_literal) throws XmlBlasterException
    {
       // Strip CDATA tags that we are able to parse it:
-      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "<![CDATA[", "");
-      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "]]>", "");
+      xmlQoS_literal = org.xmlBlaster.util.ReplaceVariable.replaceAll(xmlQoS_literal, "<![CDATA[", "");
+      xmlQoS_literal = org.xmlBlaster.util.ReplaceVariable.replaceAll(xmlQoS_literal, "]]>", "");
 
       init(xmlQoS_literal);
    }

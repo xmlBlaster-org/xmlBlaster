@@ -7,7 +7,7 @@ package org.xmlBlaster.test.stress;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;

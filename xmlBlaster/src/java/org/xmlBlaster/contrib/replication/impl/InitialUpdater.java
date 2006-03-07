@@ -24,7 +24,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
@@ -579,7 +579,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private void osExecute(String slaveName, String cmd, ConnectionInfo connInfo) throws Exception {
       try {
          // if (Execute.isWindows()) cmd = "cmd " + cmd;
-         String[] args = StringHelper.toArray(cmd, " ");
+         String[] args = ReplaceVariable.toArray(cmd, " ");
          log.info("running for '" + slaveName + "' for cmd '" + cmd + "'");
          Execute execute = new Execute(args, null);
          synchronized (this) {

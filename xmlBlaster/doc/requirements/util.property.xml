@@ -11,11 +11,11 @@
         properties file:
      </p>
      <p>To monitor the lookup sequence (outputs with System.out), use the property <code>property.debug</code>, whereat
-	0=nothing, 1=info and 2=trace.
-	<pre>
-	java -Dproperty.verbose 2
-	java MyApp -property.verbose 2
-	</pre>
+        0=nothing, 1=info and 2=trace.
+        <pre>
+        java -Dproperty.verbose 2
+        java MyApp -property.verbose 2
+        </pre>
      </p>
      <table border="1">
       <tr>
@@ -58,17 +58,12 @@
           <td>/opt/jdk1.2.2/jre/trb</td>
           <td>Your JVM installation (JAVA_HOME)</td>
        </tr>
-       <tr>
-          <td>Default</td>
-          <td>\jutils or /usr/local/jutils</td>
-          <td>Fallback</td>
-       </tr>
      </table>
    </description>
    <example lang="Java">
    </example>
    <see type="REQ">util.property.env</see>
-   <!-- see type="API">org.jutils.init.Property</see -->
+   <see type="API">org.xmlBlaster.util.property.Property</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 24</date>
    <revision>$Revision: 1.18 $</revision>

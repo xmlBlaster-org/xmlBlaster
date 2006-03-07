@@ -8,6 +8,9 @@ package org.xmlBlaster.util.def;
 import java.util.TreeMap;
 import java.util.Iterator;
 
+import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.ReplaceVariable;
+
 /**
  * This class holds an enumeration error codes. 
  * <p>
@@ -733,9 +736,9 @@ public final class ErrorCode implements java.io.Serializable
          sb.append(offset).append(" <td><a name='").append(errorCode.getErrorCode()).append("'></a>");
          sb.append(errorCode.getErrorCode()).append("</td>");
 
-         String desc = org.jutils.text.StringHelper.replaceAll(errorCode.getDescription(),
+         String desc = ReplaceVariable.replaceAll(errorCode.getDescription(),
                               "&", "&amp;");
-         desc = org.jutils.text.StringHelper.replaceAll(errorCode.getDescription(),
+         desc = ReplaceVariable.replaceAll(errorCode.getDescription(),
                               "<", "&lt;");
          sb.append(offset).append(" <td>").append(desc).append("</td>");
          
@@ -745,7 +748,7 @@ public final class ErrorCode implements java.io.Serializable
             if (i>0)
                sb.append("<br />");
 
-            String resource = org.jutils.text.StringHelper.replaceAll(resourceInfos[i].getResource(),
+            String resource = ReplaceVariable.replaceAll(resourceInfos[i].getResource(),
                               "<", "&lt;"); 
             String url=null;
 
@@ -754,7 +757,7 @@ public final class ErrorCode implements java.io.Serializable
             else if (ResourceInfo.URL.equals(resourceInfos[i].getType()))
                url= resource;
             else if (ResourceInfo.API.equals(resourceInfos[i].getType())) {
-               String replace = org.jutils.text.StringHelper.replaceAll(resource, ".", "/"); 
+               String replace = ReplaceVariable.replaceAll(resource, ".", "/"); 
                url="http://www.xmlBlaster.org/xmlBlaster/doc/api/"+replace+".html";
             }
             else {
@@ -871,7 +874,7 @@ public final class ErrorCode implements java.io.Serializable
       else {
          String req = toRequirement();
          try {
-            org.jutils.io.FileUtil.writeFile(file, req);
+            FileLocator.writeFile(file, req);
             System.out.println("Created requirement file '" + file + "'");
          }
          catch (Exception e) {

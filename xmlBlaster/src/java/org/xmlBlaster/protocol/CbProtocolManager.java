@@ -7,7 +7,6 @@ package org.xmlBlaster.protocol;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.JUtilsException;
 
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.plugin.PluginManagerBase;

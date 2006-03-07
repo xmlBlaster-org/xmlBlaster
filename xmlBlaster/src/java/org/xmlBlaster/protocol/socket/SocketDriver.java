@@ -568,8 +568,6 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    public void shutdown() throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown");
 
-      //System.out.println(org.jutils.runtime.StackTrace.getStackTrace());
-
       try {
          deActivate();
       } catch (Exception e) {

@@ -1,5 +1,6 @@
 package org.xmlBlaster.test.classtest;
 
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 
 import junit.framework.*;
@@ -62,8 +63,8 @@ public class GlobalTest extends TestCase {
       System.out.println("***GlobalTest: testPropertyFile ...");
       
       try {
-         org.jutils.io.FileUtil.writeFile(System.getProperty("user.home"), "_tmp.properties", "oo=aa\ncluster.node.id=bilbo");
-         String path = org.jutils.io.FileUtil.concatPath(System.getProperty("user.home"), "_tmp.properties");
+         FileLocator.writeFile(System.getProperty("user.home"), "_tmp.properties", "oo=aa\ncluster.node.id=bilbo".getBytes());
+         String path = FileLocator.concatPath(System.getProperty("user.home"), "_tmp.properties");
          String[] args = { "-propertyFile", path };
          System.err.println("***GlobalTest: testPropertyFile -propertyFile " + path);
          Global.instance().init(args);
@@ -81,7 +82,7 @@ public class GlobalTest extends TestCase {
          assertEquals("Argument not set", "bilbo", eGlobal.getProperty().get("cluster.node.id", (String)null));
          assertEquals("Invalid cluster node id", "bilbo", bilboGlob.getId());
       }
-      catch(org.jutils.JUtilsException e) {
+      catch(Exception e) {
          fail("property file check failed: " + e.toString());
       }
       

@@ -5,10 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.jutils.runtime.ThreadLister;
-
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
@@ -16,6 +12,7 @@ import org.xmlBlaster.client.protocol.corba.CorbaCallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
@@ -28,6 +25,10 @@ import org.omg.CORBA.ORB;
 import org.omg.PortableServer.POA;
 
 import org.xmlBlaster.test.Util;
+
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 import junit.framework.*;
 
 

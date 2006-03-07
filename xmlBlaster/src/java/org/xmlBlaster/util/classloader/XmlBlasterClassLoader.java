@@ -46,13 +46,6 @@ public class XmlBlasterClassLoader extends URLClassLoader {
          if (log.isLoggable(Level.FINE)) log.fine("Using default JVM class loader for " + name);
          return parent.loadClass(name);
       }
-      /*
-      if (name.startsWith("org.xmlBlaster.I_Main") || name.startsWith("org.jutils") ||
-            name.startsWith("org.xmlBlaster.util.Global")) {
-         if (log.isLoggable(Level.FINE)) log.trace(ME, "Using default JVM class loader for " + name);
-         return parent.loadClass(name);
-      }
-      */
          
       Class clazz = findLoadedClass(name);
       if (clazz != null) {

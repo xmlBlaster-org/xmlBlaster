@@ -8,10 +8,8 @@ Version:   $Id$
 package org.xmlBlaster.test.stress;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.jutils.time.StopWatch;
-import org.jutils.runtime.Memory;
+import org.xmlBlaster.util.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
@@ -19,8 +17,6 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 import junit.framework.*;
 
@@ -44,12 +40,10 @@ import junit.framework.*;
  */
 public class RamTest extends TestCase
 {
-   private static String ME = "Tim";
    private final Global glob;
    private static Logger log = Logger.getLogger(RamTest.class.getName());
    private StopWatch stopWatch = null;
 
-   private String publishOid = "";
    private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
@@ -171,7 +165,7 @@ public class RamTest extends TestCase
          assertTrue("returned msgArr[0].msgUnit.content.length == 0", 0 != msgArr[0].getContent().length);
          String mem = new String(msgArr[0].getContent());
          usedMemBefore = new Long(mem).longValue();
-         log.info("xmlBlaster used allocated memory before publishing = " + Memory.byteString(usedMemBefore));
+         log.info("xmlBlaster used allocated memory before publishing = " + Global.byteString(usedMemBefore));
 
 
          stopWatch = new StopWatch();
@@ -191,8 +185,8 @@ public class RamTest extends TestCase
          // 3. Query the memory allocated in xmlBlaster after publishing all the messages
          msgArr = senderConnection.get(xmlKey, qos);
          long usedMemAfter = new Long(new String(msgArr[0].getContent())).longValue();
-         log.info("xmlBlaster used allocated memory after publishing = " + Memory.byteString(usedMemAfter));
-         log.info("Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/numPublish));
+         log.info("xmlBlaster used allocated memory after publishing = " + Global.byteString(usedMemAfter));
+         log.info("Consumed memory for each message = " + Global.byteString((usedMemAfter-usedMemBefore)/numPublish));
 
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());

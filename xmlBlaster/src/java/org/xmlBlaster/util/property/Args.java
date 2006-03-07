@@ -207,7 +207,7 @@ public class Args
    /**
    * For testing only
    * <p />
-   * java org.jutils.init.Args
+   * java org.xmlBlaster.util.property.Args
    */
    public static void main(String args[]) {
       String ME = "Property";

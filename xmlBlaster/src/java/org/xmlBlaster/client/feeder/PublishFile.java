@@ -12,16 +12,14 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.property.Args;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.JUtilsException;
-import org.jutils.io.FileUtil;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 
 import java.io.File;
 
@@ -62,7 +60,7 @@ public class PublishFile
     *
     * @param args      Command line arguments
     */
-   public PublishFile(String[] args) throws JUtilsException
+   public PublishFile(String[] args) throws XmlBlasterException
    {
       glob = new Global();
       if (glob.init(args) != 0) {
@@ -93,15 +91,15 @@ public class PublishFile
       if (contentFile != null) {
          File contentHandle = new File(contentFile);
          String name = contentHandle.getPath();
-         body = FileUtil.getBody(name);      // filename without extension
-         exte = FileUtil.getExtension(name);
+         body = FileLocator.getBody(name);      // filename without extension
+         exte = FileLocator.getExtension(name);
       }
 
       // Determine content ...
       byte[] content = null;
       if (contentFile != null) {
-         try { content = FileUtil.readFile(contentFile); }
-         catch (JUtilsException e) {
+         try { content = FileLocator.readFile(contentFile); }
+         catch (XmlBlasterException e) {
             log.severe(e.toString());
          }
       }
@@ -117,8 +115,8 @@ public class PublishFile
       // Determine XmlKey ...
       String xmlKey = null;
       if (keyFile != null) {
-         try { xmlKey = FileUtil.readAsciiFile(keyFile); }
-         catch (JUtilsException e) {
+         try { xmlKey = FileLocator.readAsciiFile(keyFile); }
+         catch (XmlBlasterException e) {
             log.severe(e.toString());
          }
       }
@@ -126,7 +124,7 @@ public class PublishFile
          xmlKey = xmlKeyGiven;
       }
       if (contentMime == null && exte != null) {
-         contentMime = FileUtil.extensionToMime(exte, null);
+         contentMime = FileLocator.extensionToMime(exte, null);
       }
       if (xmlKey == null && body != null) { // The filename will be the key-oid ...
          if (contentMime == null) {
@@ -144,8 +142,8 @@ public class PublishFile
       // Determine XmlQoS ...
       String xmlQos = null;
       if (qosFile != null) {
-         try { xmlQos = FileUtil.readAsciiFile(qosFile); }
-         catch (JUtilsException e) {
+         try { xmlQos = FileLocator.readAsciiFile(qosFile); }
+         catch (XmlBlasterException e) {
             log.severe(e.toString());
          }
       }
@@ -280,7 +278,7 @@ public class PublishFile
    public static void main(String args[])
    {
       try {
-         PublishFile publishFile = new PublishFile(args);
+         new PublishFile(args);
       } catch (Throwable e) {
          e.printStackTrace();
          System.err.println(PublishFile.ME + ": " + e.toString());

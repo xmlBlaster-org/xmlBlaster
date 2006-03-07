@@ -5,10 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch.plugins.prio;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.StringPairTokenizer;
 
 /**
  * This class holds all actions of one specific status. 
@@ -20,8 +18,6 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public final class DispatchAction
 {
-   private String ME = "DispatchAction";
-   private static Logger log = Logger.getLogger(DispatchAction.class.getName());
    private String action;
    public static final String SEND = "send";
    private boolean doSend = false;
@@ -42,7 +38,7 @@ public final class DispatchAction
          throw new IllegalArgumentException("The given dispatch action is null");
       }
       action = action.trim();
-      String[] arr = org.jutils.text.StringHelper.toArray(action, "|, ");
+      String[] arr = StringPairTokenizer.toArray(action, "|, ");
       if (arr.length < 1) {
          throw new IllegalArgumentException("The given dispatch action '" + action + "' is invalid");
       }                                                                                                                                           

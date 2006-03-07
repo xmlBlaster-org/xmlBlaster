@@ -92,12 +92,8 @@ public class Util
 
    public static void resetPorts(Global glob)
    {
-      //try {
-         glob.init(getDefaultServerPorts()); // Restes bootstrap address which this call doesn't: glob.getProperty().addArgs2Props(getDefaultServerPorts());
-         glob.shutdownHttpServer();
-      //} catch(org.jutils.JUtilsException e) {
-      //   glob.getLog("test").severe(e.toString());
-      //}
+      glob.init(getDefaultServerPorts()); // Restes bootstrap address which this call doesn't: glob.getProperty().addArgs2Props(getDefaultServerPorts());
+      glob.shutdownHttpServer();
    }
 
    /**

@@ -274,6 +274,36 @@ public class StringPairTokenizer {
 
 
    /**
+    * Convert a separator based string to an array of strings. 
+    * <p />
+    * Example:<br />
+    * NameList=Josua,David,Ken,Abel<br />
+    * Will return each name separately in the array.
+    * @param key the key to look for
+    * @param defaultVal The default value to return if key is not found
+    * @param separator  The separator, typically ","
+    * @return The String array for the given key, the elements are trimmed (no leading/following white spaces), is never null
+    */
+    public static final String[] toArray(String str, String separator) {
+       if (str == null) {
+          return new String[0];
+       }
+       if (separator == null) {
+          String[] a = new String[1];
+          a[0] = str;
+          return a;
+       }
+       StringTokenizer st = new StringTokenizer(str, separator);
+       int num = st.countTokens();
+       String[] arr = new String[num];
+       int ii=0;
+       while (st.hasMoreTokens()) {
+         arr[ii++] = st.nextToken().trim();
+       }
+       return arr;
+    }
+
+   /**
     * If a value is missing then a null object will be put into the map as value.
     * The map returns pairs 'String,ClientProperty' if wantClientProperties is true,
     * otherwise it returns 'String,String' pairs. 

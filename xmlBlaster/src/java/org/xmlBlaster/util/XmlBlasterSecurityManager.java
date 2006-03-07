@@ -13,7 +13,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.JdkCompatible;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.jutils.io.FileUtil;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import java.rmi.RMISecurityManager;
 
@@ -76,7 +76,7 @@ public class XmlBlasterSecurityManager
                            data += tmp;
                            data += sep;
                         }
-                        FileUtil.writeFile("xmlBlaster.policy", data);
+                        FileLocator.writeFile("xmlBlaster.policy", data);
                         JdkCompatible.setSystemProperty("java.security.policy", "xmlBlaster.policy");
                         log.info("Using security policy " + serverPolicy + ", found it in your CLASSPATH.");
                         if (log.isLoggable(Level.FINE)) log.fine("Wrote xmlBlaster.policy temporary into local directory to be useful for security manager");
@@ -84,7 +84,7 @@ public class XmlBlasterSecurityManager
                         createdTemporary = true;
                      } catch (java.io.IOException e) {
                         log.warning("Can't read xmlBlaster.policy:" + e.toString());
-                     } catch (org.jutils.JUtilsException e) {
+                     } catch (XmlBlasterException e) {
                         log.warning("Can't write xmlBlaster.policy temporary to local directory:" + e.toString());
                      }
                   }
@@ -103,17 +103,17 @@ public class XmlBlasterSecurityManager
                String data = "grant {" + sep +
                              "   permission java.security.AllPermission;" + sep +
                              "};";
-               FileUtil.writeFile("xmlBlaster.policy", data);
+               FileLocator.writeFile("xmlBlaster.policy", data);
                JdkCompatible.setSystemProperty("java.security.policy", "xmlBlaster.policy");
                log.info("java.security.policy is not set, please include config/xmlBlaster.policy into your CLASSPATH or pass the file on startup like 'java -Djava.security.policy=<path>xmlBlaster.policy'...");
                log.info("Caution: granting all rights for now ...");
                if (log.isLoggable(Level.FINE)) log.fine("Wrote xmlBlaster.policy temporary into local directory to be useful for security manager");
                if (log.isLoggable(Level.FINEST)) log.finest(data);
                createdTemporary = true;
-            } catch (org.jutils.JUtilsException e) {
+            } catch (XmlBlasterException e) {
                log.warning("Can't write xmlBlaster.policy temporary to local directory:" + e.toString());
                String text = "java.security.policy is not set, please include config/xmlBlaster.policy into your CLASSPATH or pass the file on startup like 'java -Djava.security.policy=<path>xmlBlaster.policy'...";
-               throw new XmlBlasterException("XmlBlasterSecurityManagerFailed", text);
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, "XmlBlasterSecurityManagerFailed", text);
             }
          }
 
@@ -121,7 +121,7 @@ public class XmlBlasterSecurityManager
          if (log.isLoggable(Level.FINE)) log.fine("Started RMISecurityManager");
          if (createdTemporary) {
             if (log.isLoggable(Level.FINE)) log.fine("Removed temporary xmlBlaster.policy from local directory.");
-            FileUtil.deleteFile(".", "xmlBlaster.policy");
+            FileLocator.deleteFile(".", "xmlBlaster.policy");
          }
       }
       else

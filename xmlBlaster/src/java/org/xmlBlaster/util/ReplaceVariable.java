@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.util.StringTokenizer;
+
 /**
  * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.ReplaceVariableTest
@@ -34,6 +36,23 @@ public final class ReplaceVariable
    }
 
    /**
+    * returns a String that contains <tt>count</tt> time the passed character
+    * @author Michael Winkler, doubleSlash GmbH
+    *
+    * @return java.lang.String
+    * @param oneChar char
+    * @param count int
+    */
+   public String charChain(char oneChar, int count) {
+     StringBuffer returnValue = new StringBuffer();
+     if (count > 0)
+       for (int index = 0; index < count; index++) {
+         returnValue.append(oneChar);
+       }
+     return returnValue.toString();
+   }
+
+    /**
     * Replace dynamic variables, e.g. ${XY} with their values.
     * <p />
     * The maximum replacement (nesting) depth is 50.
@@ -139,6 +158,54 @@ public final class ReplaceVariable
    }
 
    /**
+    * Replace exactly one occurrence of "from" with to "to"
+    */
+    public final static String replaceFirst(String str, String from, String to) {
+      if (str == null || str.length() < 1 || from == null || to == null)
+        return str;
+      int index = str.indexOf(from);
+      if (index >= 0) {
+        StringBuffer tmp = new StringBuffer("");
+        if (index > 0)
+          tmp.append(str.substring(0, index));
+        tmp.append(to);
+        tmp.append(str.substring(index + from.length()));
+        return tmp.toString();
+      }
+      else
+        return str;
+    }
+
+    /**
+     * Convert a separator based string to an array of strings. 
+     * <p />
+     * Example:<br />
+     * NameList=Josua,David,Ken,Abel<br />
+     * Will return each name separately in the array.
+     * @param key the key to look for
+     * @param defaultVal The default value to return if key is not found
+     * @param separator  The separator, typically ","
+     * @return The String array for the given key, the elements are trimmed (no leading/following white spaces), is never null
+     */
+     public static final String[] toArray(String str, String separator) {
+        if (str == null) {
+           return new String[0];
+        }
+        if (separator == null) {
+           String[] a = new String[1];
+           a[0] = str;
+           return a;
+        }
+        StringTokenizer st = new StringTokenizer(str, separator);
+        int num = st.countTokens();
+        String[] arr = new String[num];
+        int ii=0;
+        while (st.hasMoreTokens()) {
+          arr[ii++] = st.nextToken().trim();
+        }
+        return arr;
+     }
+    /**
     * Find the given tag from the given xml string and return its value.  
     * Does not work if the tag exists multiple time or occures somewhere else in the text 
     * @param tag For example "nodeId" for a tag &lt;nodeId>value&lt;/nodeId>

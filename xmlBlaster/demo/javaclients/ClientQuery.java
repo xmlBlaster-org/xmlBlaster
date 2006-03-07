@@ -9,7 +9,6 @@ package javaclients;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.init.Args;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -44,10 +43,10 @@ public class ClientQuery
       if (glob.init(args) != 0) usage("Aborted");
 
       try {
-         String loginName = Args.getArg(args, "-session.name", ME); // check if parameter -session.name <userName> is given at startup of client
-         String passwd = Args.getArg(args, "-passwd", "secret");
+         String loginName = glob.getProperty().get("session.name", ME); // check if parameter -session.name <userName> is given at startup of client
+         String passwd = glob.getProperty().get("passwd", "secret");
 
-         queryString = Args.getArg(args, "-queryXpath", (String)null);
+         queryString = glob.getProperty().get("queryXpath", (String)null);
          if (queryString != null)
             queryType = "XPATH";
          else
@@ -74,10 +73,6 @@ public class ClientQuery
          }
 
          con.disconnect(null);
-      }
-      catch (org.jutils.JUtilsException e) {
-          log.severe("Error occurred: " + e.toString());
-          e.printStackTrace();
       }
       catch (XmlBlasterException e) {
           log.severe("Error occurred: " + e.toString());

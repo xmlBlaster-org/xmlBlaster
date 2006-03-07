@@ -258,12 +258,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                //this.pingPrepared = conn.prepareStatement("SELECT count(nodeid) from " + this.nodesTableName);
                this.pingPrepared = conn.prepareStatement("SELECT nodeid from " + this.nodesTableName + " where nodeid='bla'");
             }
-            org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+            org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
             this.pingPrepared.executeQuery();
             log.info(ME, "ping on Prepared select nodeid elapsed=" + stopWatchToBlob.nice());
          }
          {  // Postgres: 1 millis   Oracle: 4 millis
-            org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+            org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
             Statement st = null;
             st = conn.createStatement();
             st.setQueryTimeout(this.pool.getQueryTimeout());
@@ -271,12 +271,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             log.info(ME, "ping on select nodeid elapsed=" + stopWatchToBlob.nice());
          }
          {  // Postgres: 6 millis    Oracle: 9 millis
-            org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+            org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
             ResultSet rs = conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
             log.info(ME, "ping xy elapsed=" + stopWatchToBlob.nice());
          }
          {  // Postgres: 14 millis   Oracle: 2 sec 527
-            org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+            org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
             conn.getMetaData().getTables(null, null, null, null);
             log.info(ME, "ping null elapsed=" + stopWatchToBlob.nice());
          }

@@ -385,15 +385,6 @@ public class TestPriorizedDispatchPlugin extends TestCase
          log.warning("XmlBlasterException: " + e.toString());
          fail("publish of configuration data - XmlBlasterException: " + e.getMessage());
       }
-
-      /* Does not work as Main.java creates a new engine.Global for the server
-      try {
-         glob.getProperty().set(configKey, config);
-      }
-      catch (org.jutils.JUtilsException e) {
-         fail(e.toString());
-      }
-      */
    }
 
    /**

@@ -67,6 +67,10 @@ public class IsoDateParser {
          return utcFmt.format(date)+"Z";
       }
    }
+
+   public static String getUTCTimestamp(long millis) {
+      return IsoDateParser.getUTCTimestamp(new Date(millis));
+   }
    
    /**
     * @return The ISO 8601 UTC-time string, precision is currently millis (three fraction digits)

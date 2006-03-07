@@ -5,7 +5,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol.email;
 
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ResponseListener;
 import org.xmlBlaster.util.SessionName;
@@ -572,7 +572,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       if (subject != null && subject.length() > 0) {
          // Transport messageId in subject if token "${xmlBlaster/email/messageId}" is present:
          // The responseQos gets it already replaced and the messageId remains same (which we must assure)
-         subject = StringHelper.replaceFirst(subject, SUBJECT_MESSAGEID_TOKEN, messageId); 
+         subject = ReplaceVariable.replaceFirst(subject, SUBJECT_MESSAGEID_TOKEN, messageId); 
          // and for testing as attachment, for example this.messageIdFileName="messageId.mid"
       }
 

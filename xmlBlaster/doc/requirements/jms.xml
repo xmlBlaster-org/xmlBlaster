@@ -31,7 +31,6 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.jms.XBConnectionFactory;
 import org.xmlBlaster.jms.XBTopic;
 import org.xmlBlaster.util.Global;

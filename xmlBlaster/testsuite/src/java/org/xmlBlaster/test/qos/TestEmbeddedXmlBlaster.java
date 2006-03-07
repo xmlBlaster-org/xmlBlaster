@@ -6,10 +6,10 @@ Comment:   Test start/stop xmlBlaster in a thread
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.runtime.ThreadLister;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;

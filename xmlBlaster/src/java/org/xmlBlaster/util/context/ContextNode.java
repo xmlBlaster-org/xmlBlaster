@@ -17,7 +17,7 @@ import javax.management.ObjectName;
 
 /**
  * This represents one node in the administrative hierarchy, and is a linked
- * list to its parent and its chields. 
+ * list to its parent and its childs. 
  *
  * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">The admin.commands requirement</a>
@@ -117,10 +117,6 @@ public final class ContextNode
          instanceName = QUOTE + instanceName + QUOTE;
       }
       
-      //See valueOf(), we use parseLine already which can handle quoted tokens:
-      //   String[] toks = StringPairTokenizer.parseLine(url, '/', QUOTE, true);
-      //   //String[] toks = org.jutils.text.StringHelper.toArray(url, "/");
-      //   
       //For the time being we suppress '/' in JmxWrapper.validateJmxValue()
       */
       this.instanceName = instanceName;
@@ -521,7 +517,6 @@ public final class ContextNode
       }
       if (url.startsWith("/xmlBlaster/node/") || url.startsWith("/node/")) {
          String[] toks = StringPairTokenizer.parseLine(url, '/', QUOTE, true);
-         //String[] toks = org.jutils.text.StringHelper.toArray(url, "/");
          ContextNode node = ROOT_NODE;
          for (int i=0; i<toks.length; i++) {
             String className = toks[i];
@@ -555,7 +550,6 @@ public final class ContextNode
          int index = url.indexOf(":");
          String tmp = url.substring(index+1);
          String[] toks = StringPairTokenizer.parseLine(tmp, ',', QUOTE, true);
-         //String[] toks = org.jutils.text.StringHelper.toArray(tmp, ",");
          ContextNode node = ROOT_NODE;
          for (int i=0; i<toks.length; i++) {
             index = toks[i].indexOf("=");

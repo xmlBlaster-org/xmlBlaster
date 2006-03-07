@@ -109,7 +109,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
       if (!isBootstrap) { // Ignore the first bootstrap instance
          if (sessionTimeout > 0L) {
-            log.info("New connection from telnet client accepted, session timeout is " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
+            log.info("New connection from telnet client accepted, session timeout is " + Timestamp.millisToNice(sessionTimeout));
             timerKey = glob.getTelnetSessionTimer().addTimeoutListener(this, sessionTimeout, null);
          }
          else
@@ -145,9 +145,9 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       synchronized (this) {
          timerKey = null;
          if (isLogin)
-            log.warning("Session timeout " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + " for telnet client " + loginName + " occurred, autologout.");
+            log.warning("Session timeout " + Timestamp.millisToNice(sessionTimeout) + " for telnet client " + loginName + " occurred, autologout.");
          else
-            log.warning("Session timeout " + org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + " for not authorized telnet client occurred, autologout.");
+            log.warning("Session timeout " + Timestamp.millisToNice(sessionTimeout) + " for not authorized telnet client occurred, autologout.");
       }
       //disconnect(); This happens automatically in Authenticate.java at the same time
       connectRetQos = null;
@@ -281,10 +281,10 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             String passwd = st.nextToken();
             connect(loginName, passwd); // throws Exception or sets isLogin=true  
             log.info("Successful login for telnet client '" + loginName + "', session timeout is " +
-                     org.jutils.time.TimeHelper.millisToNice(sessionTimeout));
+                     Timestamp.millisToNice(sessionTimeout));
             lastCommand = cmd;
             return "Successful login for user " + loginName + ", session timeout is " +
-                     org.jutils.time.TimeHelper.millisToNice(sessionTimeout) + CRLF;
+                     Timestamp.millisToNice(sessionTimeout) + CRLF;
          }
 
          if (!isLogin) {

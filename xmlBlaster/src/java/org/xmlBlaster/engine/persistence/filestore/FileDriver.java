@@ -9,19 +9,18 @@ package org.xmlBlaster.engine.persistence.filestore;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
-import org.jutils.io.FileUtil;
-import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.RequestBroker;
 
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 
@@ -87,10 +86,10 @@ public class FileDriver implements I_PersistenceDriver
 
       if (log.isLoggable(Level.FINER)) log.finer("Entering init()");
       
-      String defaultPath = (String)System.getProperty("user.home") + (String)System.getProperty("file.separator") + "tmp";
+      String defaultPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tmp";
       path = glob.getProperty().get("Persistence.Path", defaultPath);
       if (path == null) {
-         throw new XmlBlasterException(ME, "xmlBlaster will run memory based only, no persistence path is avalailable, please specify 'Persistence.Path' in xmlBlaster.properties");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "xmlBlaster will run memory based only, no persistence path is avalailable, please specify 'Persistence.Path' in xmlBlaster.properties");
       }
       File pp = new File(path);
       if (!pp.exists()) {
@@ -99,11 +98,11 @@ public class FileDriver implements I_PersistenceDriver
       }
       if (!pp.isDirectory()) {
          log.severe(path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
-         throw new XmlBlasterException(ME, path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, path + " is no directory, please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
       if (!pp.canWrite()) {
          log.severe("Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
-         throw new XmlBlasterException(ME, "Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Sorry, no access permissions to " + path + ", please specify another 'Persistence.Path' in xmlBlaster.properties");
       }
    }
 
@@ -128,18 +127,14 @@ public class FileDriver implements I_PersistenceDriver
    {
       MsgKeyData xmlKey = messageWrapper.getMsgKeyData();
       MsgQosData qos = messageWrapper.getMsgQosData();
-      String mime = messageWrapper.getContentMime();
+      //String mime = messageWrapper.getContentMime();
       byte[] content = messageWrapper.getMsgUnit().getContent();
 
       String oid = xmlKey.getOid(); // The file name
 
-      try {
-         FileUtil.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.toXml());
-         FileUtil.writeFile(path, oid, content);
-         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml());
-      } catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
-      }
+      FileLocator.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.toXml().getBytes());
+      FileLocator.writeFile(path, oid, content);
+      FileLocator.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml().getBytes());
 
       if (log.isLoggable(Level.FINE)) log.fine("Successfully stored " + oid);
    }
@@ -155,16 +150,10 @@ public class FileDriver implements I_PersistenceDriver
     */
    public final void update(MsgUnitWrapper messageWrapper)throws XmlBlasterException
    {
-
-      try {
-         String oid = messageWrapper.getKeyOid();
-         FileUtil.writeFile(path, oid, messageWrapper.getMsgUnit().getContent());
-         // Store the sender as well:
-         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getMsgQosData().toXml());
-      } catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
-      }
-
+      String oid = messageWrapper.getKeyOid();
+      FileLocator.writeFile(path, oid, messageWrapper.getMsgUnit().getContent());
+      // Store the sender as well:
+      FileLocator.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getMsgQosData().toXml().getBytes());
       if (log.isLoggable(Level.FINE)) log.fine("Successfully updated store " + messageWrapper.getKeyOid());
    }
 
@@ -178,22 +167,16 @@ public class FileDriver implements I_PersistenceDriver
    public MsgUnit fetch(String oid) throws XmlBlasterException
    {
       MsgUnit msgUnit = null;
+      String xmlKey_literal = FileLocator.readAsciiFile(path, oid + XMLKEY_TOKEN);
 
-      try {
-         String xmlKey_literal = FileUtil.readAsciiFile(path, oid + XMLKEY_TOKEN);
+      byte[] content = FileLocator.readFile(path, oid);
 
-         byte[] content = FileUtil.readFile(path, oid);
+      String xmlQos_literal = FileLocator.readAsciiFile(path, oid + XMLQOS_TOKEN);
 
-         String xmlQos_literal = FileUtil.readAsciiFile(path, oid + XMLQOS_TOKEN);
+      msgUnit = new MsgUnit(glob, xmlKey_literal, content, xmlQos_literal);
 
-         msgUnit = new MsgUnit(glob, xmlKey_literal, content, xmlQos_literal);
-
-         if (log.isLoggable(Level.FINE)) log.fine("Successfully fetched message " + oid);
-         if (log.isLoggable(Level.FINEST)) log.finest("Successfully fetched message\n" + msgUnit.toXml());
-      } catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
-      }
-
+      if (log.isLoggable(Level.FINE)) log.fine("Successfully fetched message " + oid);
+      if (log.isLoggable(Level.FINEST)) log.finest("Successfully fetched message\n" + msgUnit.toXml());
       return msgUnit;
    }
 
@@ -230,10 +213,10 @@ public class FileDriver implements I_PersistenceDriver
     */
    public void erase(XmlKey xmlKey) throws XmlBlasterException
    {
-      String oid = xmlKey.getKeyOid(); // The file name
-      FileUtil.deleteFile(path, oid + XMLKEY_TOKEN);
-      FileUtil.deleteFile(path, oid);
-      FileUtil.deleteFile(path, oid + XMLQOS_TOKEN);
+      String oid = xmlKey.getOid(); // The file name
+      FileLocator.deleteFile(path, oid + XMLKEY_TOKEN);
+      FileLocator.deleteFile(path, oid);
+      FileLocator.deleteFile(path, oid + XMLQOS_TOKEN);
    }
 
 
@@ -285,7 +268,7 @@ public class FileDriver implements I_PersistenceDriver
    public static void main(String args[])
    {
       try {
-         FileDriver driver = new FileDriver();
+         /*FileDriver driver = */new FileDriver();
       } catch (Exception e) {
          System.out.println(e.toString());
          e.printStackTrace();

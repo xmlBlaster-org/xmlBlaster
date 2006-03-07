@@ -8,8 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
 
-import org.jutils.collection.Queue;
-import org.jutils.JUtilsException;
+import org.xmlBlaster.util.SimpleXbQueue;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -21,14 +20,12 @@ import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.def.MethodName;
-import java.util.*;
 
 
 /**
@@ -57,7 +54,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
     * The queue to hold the method invocations
     * TODO: Allow persistence store e.g. via JDBC bridge into Orcale.
     */
-   private Queue queue;
+   private SimpleXbQueue queue;
 
    /**
     * Callback which the client must implement.
@@ -67,8 +64,6 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
    //private I_CallbackRaw clientCallback = null;
 
    private final MsgUnit[] dummyMArr = new MsgUnit[0];
-   private final String[] dummySArr = new String[0];
-   private final String dummyS = new String();
    private final PublishReturnQos[] dummyPubRetQosArr = new PublishReturnQos[0];
    private PublishReturnQos dummyPubRet;
    private SubscribeReturnQos dummySubRet;
@@ -100,7 +95,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
          log.warning("Stripping queue size to Integer.MAX_VALUE");
          maxEntries = Integer.MAX_VALUE;
       }
-      this.queue = new Queue(ME, (int)maxEntries);
+      this.queue = new SimpleXbQueue(ME, (int)maxEntries);
       this.serverCallback = serverCallback;
       //this.clientCallback = clientCallback;
       log.info("Invocation recorder is initialized to queue max=" + maxEntries + " tail back messages on failure");
@@ -161,12 +156,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
     */
    public final boolean isFull() throws XmlBlasterException
    {
-      try {
-         return queue.isFull();
-      }
-      catch (JUtilsException e) {
-         throw convert(e);
-      }
+      return queue.isFull();
    }
 
 
@@ -197,7 +187,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       }
       if (cont == null) {
          log.warning("Sorry, no invocations found, queue is empty or your start date is to late");
-         throw new XmlBlasterException(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE, "RamRecorder.NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
       }
 
       long startTime = cont.timestamp;
@@ -214,7 +204,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
             long originalElapsed = cont.timestamp - startTime;
             if (originalElapsed > actualElapsed) {
                try {
-                  Thread.currentThread().sleep(originalElapsed - actualElapsed);
+                  Thread.sleep(originalElapsed - actualElapsed);
                } catch(InterruptedException e) {
                   log.warning("Thread sleep got interrupted, this invocation is not in sync");
                }
@@ -324,7 +314,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       */
 
       log.severe("Internal error: Method '" + cont.method + "' is unknown");
-      throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal error: Method '" + cont.method + "' is unknown");
    }
 
 
@@ -339,22 +329,9 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       cont.method = "subscribe";
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
-      try {
-         queue.push(cont);
-      }
-      catch (JUtilsException e) {
-         throw convert(e);
-      }
+      queue.push(cont);
       return dummySubRet;
    }
-
-   private XmlBlasterException convert(JUtilsException e) {
-      if (e.id.indexOf(".MaxSize") >= 0)
-         return new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, e.id, e.reason);
-      else 
-         return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, e.id, e.reason);
-   }
-
 
    /**
     * For I_XmlBlaster interface
@@ -367,12 +344,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       cont.method = "unSubscribe";
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
-      try {
-         queue.push(cont);
-      }
-      catch (JUtilsException e) {
-         throw convert(e);
-      }
+      queue.push(cont);
       return dummyUbSubRetQosArr;
    }
 
@@ -388,12 +360,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       cont.method = "publish";
       cont.msgUnit = msgUnit;
       cont.xmlQos = msgUnit.getQos();
-      try {
-         queue.push(cont);
-      }
-      catch (JUtilsException e) {
-         throw convert(e);
-      }
+      queue.push(cont);
       return dummyPubRet;
    }
 
@@ -405,8 +372,8 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       try {
          queue.push(cont);
       }
-      catch (JUtilsException e) {
-         log.severe(e.toString());
+      catch (XmlBlasterException e) {
+         log.severe(e.getMessage());
       }
    }
 
@@ -421,12 +388,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publishArr";
       cont.msgUnitArr = msgUnitArr;
-      try {
-         queue.push(cont);
-      }
-      catch (JUtilsException e) {
-         throw convert(e);
-      }
+      queue.push(cont);
       return dummyPubRetQosArr;
    }
 
@@ -442,12 +404,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       cont.method = "erase";
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
-      try {
-         queue.push(cont);
-      }
-      catch (JUtilsException e) {
-         throw convert(e);
-      }
+      queue.push(cont);
       return dummyEraseReturnQosArr;
    }
 
@@ -463,12 +420,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       cont.method = "get";
       cont.xmlKey = xmlKey_literal;
       cont.xmlQos = qos_literal;
-      try {
-         queue.push(cont);
-      }
-      catch (JUtilsException e) {
-         throw convert(e);
-      }
+      queue.push(cont);
       return dummyMArr;
    }
 
@@ -494,11 +446,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       cont.method = "update";
       cont.cbSessionId = cbSessionId;
       cont.msgUnitArr = msgUnitArr;
-      try {
-         queue.push(cont);
-      } catch (JUtilsException e) {
-         throw convert(e);
-      }
+      queue.push(cont);
       String[] ret=new String[msgUnitArr.length];
       for (int i=0; i<ret.length; i++) ret[i] = "";
       return ret;
@@ -517,7 +465,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_Callback
       cont.msgUnitArr = msgUnitArr;
       try {
          queue.push(cont);
-      } catch (JUtilsException e) {
+      } catch (XmlBlasterException e) {
          log.severe("Can't push updateOneway(): " + e.getMessage());
       }
    }

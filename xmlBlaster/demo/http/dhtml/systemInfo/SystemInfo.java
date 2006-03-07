@@ -10,7 +10,7 @@ package http.dhtml.systemInfo;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.http.Util;

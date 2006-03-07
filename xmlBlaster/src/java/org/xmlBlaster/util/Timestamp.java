@@ -307,7 +307,42 @@ public class Timestamp implements Comparable, java.io.Serializable
       return sb.toString();
    }
 
+   /**
+    * Convert milliseconds to some more human readable representation.
+    * @param millis An amount of elapsed milliseconds
+    * @return A human readable time string
+    */
+    public final static String millisToNice(long millis) {
+       long seconds = millis / 1000;
+       long sec = (seconds % 3600) % 60;
+       long min = (seconds % 3600) / 60;
+       long hour = seconds / 3600;
+       StringBuffer strbuf = new StringBuffer(60);
+       strbuf.append(" [ ");
+       if (hour > 0L)
+          strbuf.append(hour + " h ");
+       if (min > 0L)
+          strbuf.append(min + " min ");
+       if (sec > 0L)
+          strbuf.append(sec + " sec ");
+       strbuf.append((millis % 1000) + " millis");
+       strbuf.append(" ]");
+       return strbuf.toString();
+    }
 
+   /**
+    * Stop execution for some given milliseconds. 
+    * Returns earlier on Interrupted exception
+    *
+    * @param millis amount of milliseconds to wait
+    */
+   public static void sleep(long millis) {
+      try {
+         Thread.sleep(millis);
+      }
+      catch (InterruptedException i) {
+      }
+   }
 
    /**
     * Test only. 

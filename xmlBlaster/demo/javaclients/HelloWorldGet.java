@@ -2,7 +2,8 @@
 package javaclients;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -17,7 +18,6 @@ import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.XmlBlasterAccess;
 
 
 /**
@@ -55,13 +55,9 @@ import org.xmlBlaster.client.XmlBlasterAccess;
  */
 public class HelloWorldGet
 {
-   private final String ME = "HelloWorldGet";
-   private final Global glob;
    private static Logger log = Logger.getLogger(HelloWorldGet.class.getName());
-   private int updateCounter = 0;
 
    public HelloWorldGet(Global glob) {
-      this.glob = glob;
 
       try {
          boolean interactive = glob.getProperty().get("interactive", true);
@@ -131,7 +127,6 @@ public class HelloWorldGet
          for(int imsg=0; imsg<msgs.length; imsg++) {
             GetReturnKey grk = new GetReturnKey(glob, msgs[imsg].getKey());
             GetReturnQos grq = new GetReturnQos(glob, msgs[imsg].getQos());
-            String contentStr = msgs[imsg].getContentStr();
 
             System.out.println("");
             System.out.println("============= START #" + (imsg+1) + " '" + grk.getOid() + "' =======================");
@@ -145,9 +140,9 @@ public class HelloWorldGet
             if (saveToFile) {
                String fileName = grk.getOid()+"-"+grq.getRcvTimestamp().getTimestamp();
                try {
-                  org.jutils.io.FileUtil.writeFile(fileName, msgs[imsg].toXml("").getBytes());
+                  FileLocator.writeFile(fileName, msgs[imsg].toXml("").getBytes());
                }
-               catch (org.jutils.JUtilsException e) {
+               catch (XmlBlasterException e) {
                   System.out.println("Can't dump content to file '" + fileName + "': " + e.toString());
                }
             }

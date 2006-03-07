@@ -7,7 +7,8 @@ package org.xmlBlaster.engine.runlevel;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.time.TimeHelper;
+
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.util.context.ContextNode;
@@ -229,7 +230,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
                if (dest > from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
-                     log.info("Successful startup to run level " + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
+                     log.info("Successful startup to run level " + toRunlevelStr(dest) + Timestamp.millisToNice(elapsed));
                   else
                      log.info("Startup to run level " + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
                }
@@ -251,7 +252,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
                if (dest < from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
-                     log.info("Successful shutdown to run level=" + toRunlevelStr(dest) + TimeHelper.millisToNice(elapsed));
+                     log.info("Successful shutdown to run level=" + toRunlevelStr(dest) + Timestamp.millisToNice(elapsed));
                   else
                      log.info("Shutdown to run level=" + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
                }
@@ -269,7 +270,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
     */
    private void startupPlugins(int from, int to) throws XmlBlasterException {
       TreeSet pluginSet = this.glob.getPluginHolder().getStartupSequence(this.glob.getStrippedId(), from+1, to);
-      if (log.isLoggable(Level.FINER)) this.log.finer("startupPlugins. the size of the plugin set is '" + pluginSet.size() + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("startupPlugins. the size of the plugin set is '" + pluginSet.size() + "'");
       Iterator iter = pluginSet.iterator();
       while (iter.hasNext()) {
          PluginConfig pluginConfig = (PluginConfig)iter.next();
@@ -281,7 +282,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
             log.fine("startupPlugins. the plugin + " + pluginConfig.getId() + " is ignored, create='false'");
             continue;
          }
-         if (log.isLoggable(Level.FINEST)) this.log.finest("startupPlugins " + pluginConfig.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest("startupPlugins " + pluginConfig.toXml());
          try {
             PluginInfo pluginInfo = pluginConfig.getPluginInfo();
             if (log.isLoggable(Level.FINER)) {

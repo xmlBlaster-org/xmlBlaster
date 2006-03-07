@@ -6,6 +6,7 @@
 */
 package org.xmlBlaster.authentication.plugins.htpasswd;
 
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -159,7 +160,7 @@ public class HtPasswd {
             for (Enumeration e = this.htpasswd.keys();e.hasMoreElements() ; ) {
                key = (String)e.nextElement();
                if (key.equals("*")) {
-                  pws.addElement((String)this.htpasswd.get(key));
+                  pws.addElement(this.htpasswd.get(key));
                }
             }
          }
@@ -196,7 +197,7 @@ public class HtPasswd {
       }
 
       try {
-         String rawString = org.jutils.io.FileUtil.readAsciiFile(htpasswdFilename);
+         String rawString = FileLocator.readAsciiFile(htpasswdFilename);
          java.util.Map map = org.xmlBlaster.util.StringPairTokenizer.parseToStringStringPairs(rawString, "\n", ":");
          java.util.Iterator it = map.keySet().iterator();
          while (it.hasNext()) {

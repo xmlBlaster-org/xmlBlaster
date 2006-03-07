@@ -5,7 +5,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.jutils.text.StringHelper;
 
 /**
  * Helper class for Java clients. 
@@ -24,12 +23,8 @@ import org.jutils.text.StringHelper;
  */
 public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 {
-   private static String ME = "SecurityQos-gui";
-
    // helper flags for SAX parsing
    private transient boolean inSecurityService = false;
-   private transient boolean inUser = false;
-   private transient boolean inPasswd = false;
 
    private String type = "gui";
    private String version = "1.0";
@@ -51,8 +46,8 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public void parse(String xmlQos_literal) throws XmlBlasterException
    {
       // Strip CDATA tags that we are able to parse it:
-      xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "<![CDATA[", "");
-      xmlQos_literal = StringHelper.replaceAll(xmlQos_literal, "]]>", "");
+      xmlQos_literal = org.xmlBlaster.util.ReplaceVariable.replaceAll(xmlQos_literal, "<![CDATA[", "");
+      xmlQos_literal = org.xmlBlaster.util.ReplaceVariable.replaceAll(xmlQos_literal, "]]>", "");
 
       init(xmlQos_literal);
    }
@@ -115,16 +110,12 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       }
 
       if (name.equalsIgnoreCase("user")) {
-         inUser = true;
          character.setLength(0);
-
          return;
       }
 
       if (name.equalsIgnoreCase("passwd")) {
-         inPasswd = true;
          character.setLength(0);
-
          return;
       }
 
@@ -138,18 +129,14 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public void endElement(String uri, String localName, String name)
    {
       if (name.equalsIgnoreCase("user")) {
-         inUser = false;
          user = character.toString().trim();
          character.setLength(0);
-
          return;
       }
 
       if (name.equalsIgnoreCase("passwd")) {
-         inPasswd = false;
          passwd = character.toString().trim();
          character.setLength(0);
-
          return;
       }
 

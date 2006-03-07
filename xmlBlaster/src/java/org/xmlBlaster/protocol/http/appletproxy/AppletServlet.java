@@ -5,17 +5,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http.appletproxy;
 
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
-import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.log.I_LogListener;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -77,7 +78,7 @@ import org.apache.commons.codec.binary.Base64;
  * @see http.applet.HelloWorld3
  * @author Marcel Ruff xmlBlaster@marcelruff.info
  */
-public class AppletServlet extends HttpServlet implements org.jutils.log.LogableDevice
+public class AppletServlet extends HttpServlet implements I_LogListener
 {
    private static Logger log = Logger.getLogger(HttpServlet.class.getName());
    private static final long serialVersionUID = 1L;
@@ -109,8 +110,8 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       // Use xmlBlaster/demo/http/WEB-INF/web.xml to configure logging.
 
       // To redirect your Logging output into the servlet logfile (jserv.log),
-      // outcomment this line:
-      //log.addLogableDevice(this);
+      // outcomment this line (the logging.properties need the XbNotifyHandler configured):
+      //org.xmlBlaster.util.log.XbNotifyHandler.instance().register(Level.ALL.intValue(), this);
 
       log.info("Initialize ...");
 
@@ -206,7 +207,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       throws ServletException, IOException {
       res.setContentType("text/plain");
 
-      if (log.isLoggable(Level.FINER)) log.finer("Entering doGet() ... " + Memory.getStatistic());
+      if (log.isLoggable(Level.FINER)) log.finer("Entering doGet() ... " + Global.getMemoryStatistic());
 
       if (actionType.equalsIgnoreCase("NONE")) {
          String str = "Please call servlet with some ActionType";
@@ -665,10 +666,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
     * We set the properties to choose JacORB and Suns XML parser as a default.
     */
    static public final void initSystemProperties(ServletConfig conf) {
-      String ME  = "AppletServlet";
-
       Properties props = System.getProperties();
-
 
       // Check for orb configuration
       if (conf.getInitParameter("org.omg.CORBA.ORBClass") != null) { // "org.jacorb.orb.ORB"
@@ -745,7 +743,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
    }
 
    /**
-    * Event fired by Logger.java through interface LogableDevice.
+    * Event fired by Logger.java through interface I_LogListener.
     * <p />
     * Log output from log.info(); etc. into Servlet log file.
     * <p />
@@ -756,8 +754,8 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
     * System.out.println("Hello"); will be printed to the console
     * where you started the servlet engine.
     */
-   public void log(int level, String source, String str) {
-      getServletContext().log(str);
+   public void log(LogRecord record) {
+      getServletContext().log(record.getMessage());
    }
 
    /**

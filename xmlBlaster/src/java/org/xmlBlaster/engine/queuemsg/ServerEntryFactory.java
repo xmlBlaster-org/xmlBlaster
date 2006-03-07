@@ -342,7 +342,7 @@ public class ServerEntryFactory implements I_EntryFactory
                ME = persistType[jj];
 
                int numTransform = 1000;
-               org.jutils.time.StopWatch stopWatchToBlob = new org.jutils.time.StopWatch();
+               org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
                for(int kk=0; kk<numTransform; kk++) {
                   /*byte[] blob =*/ factory.toBlob(msgUnitWrapper);
                }
@@ -351,7 +351,7 @@ public class ServerEntryFactory implements I_EntryFactory
 
                byte[] blob = factory.toBlob(msgUnitWrapper);
                MsgUnitWrapper newWrapper = null;
-               org.jutils.time.StopWatch stopWatchToObj = new org.jutils.time.StopWatch();
+               org.xmlBlaster.util.StopWatch stopWatchToObj = new org.xmlBlaster.util.StopWatch();
                for(int kk=0; kk<numTransform; kk++) {
                   newWrapper = (MsgUnitWrapper)factory.createEntry(priority,
                                               timestamp, type, persistent, sizeInBytes, new ByteArrayInputStream(blob), storageId);

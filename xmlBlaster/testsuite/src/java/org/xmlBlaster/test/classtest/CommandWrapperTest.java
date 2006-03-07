@@ -2,7 +2,7 @@ package org.xmlBlaster.test.classtest;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;

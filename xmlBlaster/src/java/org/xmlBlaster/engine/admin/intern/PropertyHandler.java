@@ -8,7 +8,6 @@ package org.xmlBlaster.engine.admin.intern;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.JUtilsException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.MsgUnit;

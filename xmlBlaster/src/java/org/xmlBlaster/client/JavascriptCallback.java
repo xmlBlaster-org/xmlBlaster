@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 
@@ -136,17 +137,17 @@ public class JavascriptCallback implements I_Callback
                         final byte[] content, final UpdateQos updateQos) throws XmlBlasterException
    {
       //System.out.println("*****RECEIVING updateKey=" + updateKey.toXml());
-      String key = org.jutils.text.StringHelper.replaceAll(updateKey.toXml(), "\n", " ");
-      //key = org.jutils.text.StringHelper.replaceAll(key, "\"", "\\\"");
-      String con = org.jutils.text.StringHelper.replaceAll(new String(content), "\n", " ");
+      String key = ReplaceVariable.replaceAll(updateKey.toXml(), "\n", " ");
+      //key = ReplaceVariable.replaceAll(key, "\"", "\\\"");
+      String con = ReplaceVariable.replaceAll(new String(content), "\n", " ");
       // This code escapes all quotation marks in the XML content.
       // This is required to fix an error caused when the XML tags include
       // attributes, which causes an exception to be thrown because of malformed
       // javascript (in the 'script' variable).
       // (Paul Wujek Xp2 Telecom Inc.)
-      con = org.jutils.text.StringHelper.replaceAll(con, "\"", "\\\"");
-      String qos = org.jutils.text.StringHelper.replaceAll(updateQos.toXml(), "\n", " ");
-      //qos = org.jutils.text.StringHelper.replaceAll(qos, "\"", "\\\"");
+      con = ReplaceVariable.replaceAll(con, "\"", "\\\"");
+      String qos = ReplaceVariable.replaceAll(updateQos.toXml(), "\n", " ");
+      //qos = ReplaceVariable.replaceAll(qos, "\"", "\\\"");
       final String script =  "update(\"" + cbSessionId + "\", \"" + key + "\", \"" + con + "\", \"" + qos + "\");";
       //final String script =  "update(\"sdkfjs\", \"<key oid='11A'/>\", \"<chess><id>11A</id><transform>translate(166,210)</transform></chess>\", \"<qos/>\");";
 

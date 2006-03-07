@@ -7,18 +7,21 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.log.I_LogListener;
+import org.xmlBlaster.util.log.XbNotifyHandler;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.MethodName;
@@ -87,7 +90,9 @@ import javax.management.MBeanNotificationInfo;
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class RequestBroker extends NotificationBroadcasterSupport implements I_ClientListener, /*I_AdminNode,*/ RequestBrokerMBean, I_RunlevelListener, LogableDevice
+public final class RequestBroker extends NotificationBroadcasterSupport
+        implements I_ClientListener, /*I_AdminNode,*/ RequestBrokerMBean,
+                     I_RunlevelListener, I_LogListener
 {
    private String ME = "RequestBroker";
    private final ServerScope glob;
@@ -205,11 +210,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       this.startupTime = System.currentTimeMillis();
       this.mbeanHandle = this.glob.registerMBean(this.glob.getContextNode(), this);
 
-      // We want to be notified if a log.error() is called, this will notify our LogableDevice.log() method
-      
-      // FIXME TODO
-      //LogNotifierDeviceFactory lf = this.glob.getLogNotifierDeviceFactory();
-      //lf.register(Logger.LOG_ERROR|LogChannel.LOG_WARN, this);
+      XbNotifyHandler.instance().register(Level.WARNING.intValue(), this);
+      XbNotifyHandler.instance().register(Level.SEVERE.intValue(), this);
 
       this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", false);
       if (this.useOldStylePersistence) {
@@ -342,6 +344,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
 
       if (to < from) { // shutdown
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
+            XbNotifyHandler.instance().unregister(Level.WARNING.intValue(), this);
+            XbNotifyHandler.instance().unregister(Level.SEVERE.intValue(), this);
             this.glob.unregisterMBean(this.mbeanHandle);
          }
       }
@@ -2227,14 +2231,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
       return glob.getDump();
    }
    public void setDump(String fn) throws XmlBlasterException{
-      try {
-         org.jutils.io.FileUtil.writeFile(fn, glob.getDump());
-         log.info("Dumped internal state to " + fn);
-      }
-      catch (org.jutils.JUtilsException e) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_FILEIO, e.id, e.getMessage());
-      }
-
+      FileLocator.writeFile(fn, glob.getDump());
+      log.info("Dumped internal state to " + fn);
    }
    public String getRunlevel() {
       return ""+glob.getRunlevelManager().getCurrentRunlevel();
@@ -2455,23 +2453,22 @@ public final class RequestBroker extends NotificationBroadcasterSupport implemen
     * Redirect logging, configure in xmlBlaster.properties. 
     * Enforced by interface LogableDevice
     */
-   public void log(int level, String source, String str) {
+   public void log(LogRecord record) {
       // We may not do any log.xxx() call here because of recursion!!
-      /* FIXME (TODO)
-      String newLog = "[" + source + "] " + str;
+      String newLog = "[" + record.getSourceClassName() + "." + record.getSourceMethodName() + "] " + record.getMessage();
 
       // Remember error text
-      if (Logger.LOG_WARN == level) {
+      if (Level.WARNING.intValue() == record.getLevel().intValue()) {
          this.lastWarning = newLog;
       }
-      else if (Logger.LOG_ERROR == level) {
+      else if (Level.SEVERE.intValue() == record.getLevel().intValue()) {
          // Emit JMX notification
-         this.glob.sendNotification(this, "New " + Logger.bitToLogLevel(level) + " logging occurred",
+         this.glob.sendNotification(this, "New " + record.getLevel().toString() + " logging occurred",
             "lastError", "java.lang.String", this.lastError, newLog);
          this.lastError = newLog;
       }
-      */
    }
+   
    /**
     * Declare available notification event types. 
     */

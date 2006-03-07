@@ -8,11 +8,11 @@ package org.xmlBlaster;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.JUtilsException;
-import org.jutils.io.FileUtil;
-import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.engine.*;
+import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
@@ -35,7 +35,7 @@ import java.io.IOException;
  * <br />
  * Every parameter may be set in the xmlBlaster.property file as a system property or at the command line,
  * the command line is strongest, xmlBlaster.properties weakest. The leading "-" from the command line key
- * parameters are stripped (see org.jutils.init.XmlBlasterProperty.java).
+ * parameters are stripped (see Property.java).
  * <p />
  * Examples how to start the xmlBlaster server:
  * <p />
@@ -314,15 +314,15 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                      log.info("Dump done");
                   }
                   else {
-                     FileUtil.writeFile(fileName, glob.getDump());
+                     FileLocator.writeFile(fileName, glob.getDump());
                      log.info("Dumped internal state to '" + fileName + "'");
                   }
                }
                catch(XmlBlasterException e) {
                   log.severe("Sorry, dump failed: " + e.getMessage());
                }
-               catch(JUtilsException e) {
-                  log.severe("Sorry, dump failed: " + e.getMessage());
+               catch(Throwable e) {
+                  log.severe("Sorry, dump failed: " + e.toString());
                }
             }
             else if (line.toLowerCase().equals("q")) {
@@ -393,14 +393,14 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          if (to == RunlevelManager.RUNLEVEL_RUNNING) {
          }
          if (to == RunlevelManager.RUNLEVEL_RUNNING_POST) {
-            log.info(Memory.getStatistic());
+            log.info(Global.getMemoryStatistic());
             if (controlPanel == null) {
                if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.WHITE_RED);
                final String bound = "|";
                String ver = bound + " XmlBlaster cluster node <" + glob.getId() + "> v" + glob.getReleaseId() + " " + glob.getBuildTimestamp();
                int width = ver.length() + 6;
                if (width < 48) width = 48;
-               org.jutils.text.StringHelper sh = new org.jutils.text.StringHelper();
+               ReplaceVariable sh = new ReplaceVariable();
                String line = sh.charChain('-', width-2);
                System.out.println("");
                System.out.println(" "+line+" ");

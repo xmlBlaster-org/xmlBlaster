@@ -12,7 +12,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -185,7 +185,7 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
       }
       //if (log.isLoggable(Level.FINE)) log.trace(ME, "plugin '" + plugin + "' has resource path " + classResource );
 
-      String pluginSlashed = StringHelper.replaceAll(plugin, ".", "/"); // replace '.' by fileSeperator (windows wants "/" as well)
+      String pluginSlashed = ReplaceVariable.replaceAll(plugin, ".", "/"); // replace '.' by fileSeperator (windows wants "/" as well)
       // plugin.replaceAll("\\.", "/"); // since JDK 1.4 :-(
 
       String jarPath = null;

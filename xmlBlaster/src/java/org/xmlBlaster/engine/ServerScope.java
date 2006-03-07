@@ -6,7 +6,9 @@ Comment:   Handling global data on server side
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.cluster.NodeId;
@@ -728,12 +730,12 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       sb.append(" freeMemory='").append(Runtime.getRuntime().freeMemory()).append("'");
       sb.append(" totalMemory='").append(Runtime.getRuntime().totalMemory()).append("'");
       sb.append("\n   ");
-      sb.append(" dumpTimestamp='").append(org.jutils.time.TimeHelper.getDateTimeDump(0)).append("'");
+      sb.append(" dumpTimestamp='").append(IsoDateParser.getCurrentUTCTimestamp()).append("'");
       //sb.append(" ='").append(get()).append("'");
       sb.append(">");
       sb.append(getProperty().toXml());
       sb.append(offset).append(" <ThreadDump><![CDATA[");
-      sb.append(org.jutils.runtime.ThreadLister.listAllThreads());
+      sb.append(ThreadLister.listAllThreads());
       sb.append(offset).append(" ]]></ThreadDump>");
       if (getAuthenticate() != null) {
          sb.append(getAuthenticate().toXml());

@@ -5,38 +5,28 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.jutils.runtime.Memory;
-import org.jutils.time.TimeHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 
-import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
-import java.net.URLEncoder;
-import java.net.URLDecoder;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
-
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * This servlet doesn't leave the doGet() method after an invocation
@@ -53,8 +43,9 @@ import org.apache.commons.codec.binary.Base64;
  *    http://localhost/xmlBlaster/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff xmlBlaster@marcelruff.info
  */
-public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
+public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.log.I_LogListener
 {
+   private static final long serialVersionUID = 1L;
    private static boolean propertyRead = false;
    private final String header = "<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'>";
    private Global glob = null;
@@ -91,7 +82,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                args[count++] = "-" + name;
             else
                args[count++] = name;
-            args[count++] = (String)conf.getInitParameter(name);
+            args[count++] = conf.getInitParameter(name);
             //Global.instance().getLog(null).info("", "Reading web.xml property " + args[count-2] + "=" + args[count-1]);
          }
 
@@ -134,9 +125,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
    {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering doGet() ... " + Memory.getStatistic());
+      if (log.isLoggable(Level.FINER)) log.finer("Entering doGet() ... " + Global.getMemoryStatistic());
       res.setContentType("text/html");
-      String errorText="";
       String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr();
 
       String actionType = Util.getParameter(req, "ActionType", "");
@@ -232,7 +222,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
             while (!pushHandler.closed()) {
                try {
-                  Thread.currentThread().sleep(10000L);
+                  Thread.sleep(10000L);
                }
                catch (InterruptedException i) {
                   log.severe("Error in Thread handling, don't know what to do: "+i.toString());
@@ -245,7 +235,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             /*
             System.out.println("Currently consumed threads:");
             System.out.println("===========================");
-            org.jutils.runtime.ThreadLister.listAllThreads(System.out);
+            ThreadLister.listAllThreads(System.out);
             */
          }
 
@@ -407,15 +397,13 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       PrintWriter out = res.getWriter();
 
       //HttpSession session = req.getSession();
-      HttpSession session = req.getSession(false);
+      /*HttpSession session =*/ req.getSession(false);
       String sessionId = req.getRequestedSessionId();
 
-      String ME  = "BlasterHttpProxyServlet-" + req.getRemoteAddr() + "-" + sessionId;
       log.info("Entering servlet doPost() ...");
 
       I_XmlBlasterAccess xmlBlaster = null;
       HttpPushHandler pushHandler = null;
-      Object returnObject = null;
 
       try {
          pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
@@ -484,14 +472,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          else if (action.equals(MethodName.UNSUBSCRIBE)) { // "unSubscribe"
             log.fine("unSubscribe arrived ...");
-            UnSubscribeReturnQos[] ret;
+            //UnSubscribeReturnQos[] ret;
 
             if (oid != null) {
                UnSubscribeKey xmlKey = new UnSubscribeKey(glob, oid);
-               ret = xmlBlaster.unSubscribe(xmlKey.toXml(), qos);
+               /*ret = */xmlBlaster.unSubscribe(xmlKey.toXml(), qos);
             }
             else if (key != null) {
-               ret = xmlBlaster.unSubscribe(key, qos);
+               /*ret = */xmlBlaster.unSubscribe(key, qos);
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when unsubscribing";
@@ -528,14 +516,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          else if (action.equals(MethodName.ERASE)) { // "erase"
             log.fine("erase arrived ...");
-            EraseReturnQos[] ret;
+            //EraseReturnQos[] ret;
 
             if (oid != null) {
                EraseKey ek = new EraseKey(glob, oid);
-               ret = xmlBlaster.erase(ek.toXml(), qos);
+               /*ret =*/ xmlBlaster.erase(ek.toXml(), qos);
             }
             else if (key != null) {
-               ret = xmlBlaster.erase(key, qos);
+               /*ret =*/ xmlBlaster.erase(key, qos);
             }
             else {
                String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";
@@ -575,10 +563,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     */
    static public final void initSystemProperties(ServletConfig conf)
    {
-      String ME  = "BlasterHttpProxyServlet";
-
       Properties props = System.getProperties();
-
 
       // Check for orb configuration
       if (conf.getInitParameter("org.omg.CORBA.ORBClass") != null) { // "org.jacorb.orb.ORB"
@@ -608,7 +593,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
 
    /**
-    * Event fired by Logger.java through interface LogableDevice.
+    * Event fired by Logger.java through interface I_LogListener.
     * <p />
     * Log output from log.info(); etc. into Servlet log file.
     * <p />
@@ -619,9 +604,9 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     * System.out.println("Hello"); will be printed to the console
     * where you started the servlet engine.
     */
-   public void log(int level, String source, String str)
+   public void log(LogRecord record)
    {
-      getServletContext().log(str);
+      getServletContext().log(record.getMessage());
    }
 
 
@@ -633,7 +618,6 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     */
    public void htmlOutput(String htmlData, HttpServletResponse response) throws ServletException
    {
-      String ME  = "BlasterHttpProxyServlet";
       response.setContentType("text/html");
       try {
          PrintWriter pw;
@@ -655,7 +639,6 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     */
    public void popupError(HttpServletResponse response, String error)
    {
-      String ME  = "BlasterHttpProxyServlet";
       try {
          response.setContentType("text/html");
          PrintWriter pw;
@@ -677,7 +660,6 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     */
    public void xmlOutput( String xmlData, HttpServletResponse response ) throws ServletException
    {
-      String ME  = "BlasterHttpProxyServlet";
       response.setContentType("text/xml");
 
       try {

@@ -7,8 +7,6 @@ package org.xmlBlaster.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.jutils.text.StringHelper;
-
 /**
  * Convenience wrapper to parse an URI. 
  * 
@@ -90,7 +88,7 @@ public class XbUri
          }
       }
       for (int i=1; i<count; i++) {
-         uriStr = StringHelper.replaceFirst(uriStr, "@", placeHolder);
+         uriStr = ReplaceVariable.replaceFirst(uriStr, "@", placeHolder);
       }
 
       this.uri = new URI(uriStr);
@@ -104,8 +102,8 @@ public class XbUri
             this.user = this.uri.getUserInfo().substring(0,i);
             this.password = this.uri.getUserInfo().substring(i+1);
             if (count > 1) {
-               this.user = StringHelper.replaceAll(this.user, placeHolder, "@");
-               this.password = StringHelper.replaceAll(this.password, placeHolder, "@");
+               this.user = ReplaceVariable.replaceAll(this.user, placeHolder, "@");
+               this.password = ReplaceVariable.replaceAll(this.password, placeHolder, "@");
             }
          }
       }

@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -379,7 +379,7 @@ public final class XmlKey
          try {
             if (log.isLoggable(Level.FINE)) log.fine("Creating tiny DOM tree and a query manager ...");
             // Add the <xmlBlaster> root element ...
-            String tmp = StringHelper.replaceFirst(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
+            String tmp = ReplaceVariable.replaceFirst(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
             this.xmlKeyDoc = XmlToDom.parseToDomTree(glob, tmp);
          } catch (Exception e) {
             String text = "Problems building tiny key DOM tree\n" + xmlKey_literal + "\n for XPath subscriptions check: " + e.getMessage();

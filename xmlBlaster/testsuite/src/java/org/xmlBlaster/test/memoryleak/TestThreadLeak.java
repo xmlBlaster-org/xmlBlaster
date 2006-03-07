@@ -1,7 +1,5 @@
 package org.xmlBlaster.test.memoryleak;
-import org.jutils.runtime.ThreadLister;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -17,6 +15,8 @@ import org.xmlBlaster.test.Util;
 
 import junit.framework.*;
 
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.io.File;

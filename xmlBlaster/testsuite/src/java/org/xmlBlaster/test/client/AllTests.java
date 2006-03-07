@@ -6,7 +6,6 @@ Comment:   Start all tests
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
-import org.jutils.JUtilsException;
 import junit.framework.*;
 
 

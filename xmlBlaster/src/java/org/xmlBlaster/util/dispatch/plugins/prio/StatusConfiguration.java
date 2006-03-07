@@ -8,7 +8,7 @@ package org.xmlBlaster.util.dispatch.plugins.prio;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
@@ -25,7 +25,6 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 public final class StatusConfiguration
 {
    private String ME = "StatusConfiguration";
-   private final Global glob;
    private static Logger log = Logger.getLogger(StatusConfiguration.class.getName());
    private final DispatchAction[] dispatchActionArr = new DispatchAction[PriorityEnum.MAX_PRIORITY.getInt()+1];
    private DispatchAction defaultDispatchAction;
@@ -40,7 +39,6 @@ public final class StatusConfiguration
       if (defaultAction == null) {
          throw new IllegalArgumentException("Missing defaultAction for connectionState=" + connectionState);
       }
-      this.glob = glob;
 
       setOid(oid);
       setContent(content);
@@ -117,7 +115,7 @@ public final class StatusConfiguration
          if (log.isLoggable(Level.FINE)) log.fine("Given priorityRange is empty, setting it to '" + priorityRange + "'");
       }
       priorityRange = priorityRange.trim();
-      String[] lowerUpper = org.jutils.text.StringHelper.toArray(priorityRange, "- ");
+      String[] lowerUpper = StringPairTokenizer.toArray(priorityRange, "- ");
       if (lowerUpper.length == 0) {
          throw new IllegalArgumentException(ME + ": Given priorityRange is empty, ignoring action=" + action.getAction());
       }

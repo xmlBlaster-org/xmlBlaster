@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;

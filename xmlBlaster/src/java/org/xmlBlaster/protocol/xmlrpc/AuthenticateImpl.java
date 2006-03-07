@@ -15,7 +15,7 @@ import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
@@ -115,8 +115,8 @@ public class AuthenticateImpl
 
       returnValue = authenticate.connect(this.addressServer, qos_literal);
 
-      returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
-      returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
+      returnValueStripped = ReplaceVariable.replaceAll(returnValue, "<![CDATA[", "");
+      returnValueStripped = ReplaceVariable.replaceAll(returnValueStripped, "]]>", "");
       if (!returnValueStripped.equals(returnValue)) {
          log.fine("Stripped CDATA tags surrounding security credentials, XMLRPC does not like it (Helma does not escape ']]>'). " +
                         "This shouldn't be a problem as long as your credentials doesn't contain '<'");

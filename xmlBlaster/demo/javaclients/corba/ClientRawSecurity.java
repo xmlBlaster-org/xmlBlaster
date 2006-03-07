@@ -9,10 +9,10 @@ package javaclients.corba;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
-import org.jutils.io.FileUtil;
+import org.xmlBlaster.util.StopWatch;
 
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
@@ -66,13 +66,13 @@ public class ClientRawSecurity
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
-         ME = Args.getArg(args, "-loginName", ME);
+         ME = glob.getProperty().get("loginName", ME);
          String loginName = ME;
 
-         String fileName = Args.getArg(args, "-dispatch/connection/plugin/ior/iorFile", (String)null); // a file with the IOR string
-         String authServerIOR = Args.getArg(args, "-dispatch/connection/plugin/ior/iorString", (String)null); // the IOR string
+         String fileName = glob.getProperty().get("dispatch/connection/plugin/ior/iorFile", (String)null); // a file with the IOR string
+         String authServerIOR = glob.getProperty().get("dispatch/connection/plugin/ior/iorString", (String)null); // the IOR string
 
-         if (fileName != null) authServerIOR = FileUtil.readAsciiFile(fileName);
+         if (fileName != null) authServerIOR = FileLocator.readAsciiFile(fileName);
 
          if (authServerIOR != null) {
             authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));

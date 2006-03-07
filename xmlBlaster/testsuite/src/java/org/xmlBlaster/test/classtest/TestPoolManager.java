@@ -1,5 +1,6 @@
 package org.xmlBlaster.test.classtest;
 
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.pool.PoolManager;
 import org.xmlBlaster.util.pool.ResourceWrapper;
 import org.xmlBlaster.util.pool.I_PoolManager;
@@ -253,7 +254,7 @@ public class TestPoolManager extends TestCase {
                TestResource r2 = testPool.reserve(PoolManager.USE_OBJECT_REF);
                TestResource r3 = testPool.reserve(PoolManager.USE_OBJECT_REF);
                TestResource r4 = testPool.reserve(PoolManager.USE_OBJECT_REF);
-               org.jutils.runtime.Sleeper.sleep(20L);
+               Timestamp.sleep(20L);
 
                // multi thread access
                testPool.poolManager.isBusy("unknown");
@@ -292,13 +293,13 @@ public class TestPoolManager extends TestCase {
             p.setDaemon(true);
             p.start();
          }
-         org.jutils.runtime.Sleeper.sleep(2000L);
+         Timestamp.sleep(2000L);
          if (testPool.poolManager.getNumBusy() != 3 * numThreads)
             fail("TEST 4.2 FAILED: Wrong number " + testPool.poolManager.getNumBusy() + " of busy resources");
          if (jj == 0)
-            org.jutils.runtime.Sleeper.sleep(4000L); // now all busy resources are idle
+            Timestamp.sleep(4000L); // now all busy resources are idle
       }
-      org.jutils.runtime.Sleeper.sleep(1000L);
+      Timestamp.sleep(1000L);
       testPool.poolManager.destroy();
       System.out.println(testPool.poolManager.toXml());
       if (testPool.poolManager.getNumBusy() != 0 || testPool.poolManager.getNumIdle() != 0)

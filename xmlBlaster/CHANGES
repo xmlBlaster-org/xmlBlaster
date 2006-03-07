@@ -4,6 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
 
+ o #14845 Removed jutils completely, if you have used org.jutils code in your clients
+   please port it, for some time you can download jutils.jar from
+   http://www.xmlBlaster.org/jutils.jar
+   The XML dump shows some timestamps now in ISO_8601 format.
+
  o #14840 Renamed engine.Global to engine.ServerScope
    This is an incompatible change which touches low level native plugins only
 

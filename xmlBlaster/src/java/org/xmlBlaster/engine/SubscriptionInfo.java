@@ -16,12 +16,14 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-import org.jutils.time.TimeHelper;
+
+import java.util.Date;
 import java.util.Vector;
 
 
@@ -487,7 +489,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       if (childrenSubs != null) {
          sb.append(" numChilds='").append(childrenSubs.length).append("'");
       }
-      sb.append(" creationTime='" + TimeHelper.getDateTimeDump(this.creationTime) + "'");
+      sb.append(" creationTime='" + IsoDateParser.getUTCTimestamp(this.creationTime) + "'");
       sb.append(">");
 
       //sb.append(offset).append("<SubscriptionInfo id='").append(getSubscriptionId()).append("'>");
@@ -499,7 +501,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       else 
          sb.append(extraOffset+Constants.INDENT).append("<!-- subscribe qos is null ERROR -->");
       //sb.append(offset).append(" <topicHandler id='").append((topicHandler==null ? "null" : topicHandler.getUniqueKey())).append("'/>");
-      //sb.append(offset).append(" <creationTime>").append(TimeHelper.getDateTimeDump(this.creationTime)).append("</creationTime>");
+      //sb.append(offset).append(" <creationTime>").append(IsoDate...(this.creationTime)).append("</creationTime>");
       if (childrenSubs != null) {
          for (int ii=0; ii<childrenSubs.length; ii++) {
             sb.append(offset).append(" <child>").append(childrenSubs[ii].getSubscriptionId()).append("</child>");
@@ -533,7 +535,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       if (this.childrenVec != null) {
          sb.append(" numChilds='").append(this.childrenVec.size()).append("'");
       }
-      sb.append(" creationTime='" + TimeHelper.getDateTimeDump(this.creationTime) + "'");
+      sb.append(" creationTime='" + IsoDateParser.getUTCTimestamp(this.creationTime) + "'");
       sb.append("/>");
       return sb.toString();
    }
@@ -574,7 +576,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       return this.querySub.getSubscriptionId();
    }
    public String getCreationTimestamp() {
-      return org.jutils.time.TimeHelper.getDateTimeDump(this.creationTime);
+      return IsoDateParser.getUTCTimestamp(this.creationTime);
    }
    public String getSubscribeQosStr() {
       return (this.subscribeQos==null) ? "" : this.subscribeQos.toXml();

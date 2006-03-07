@@ -2,11 +2,11 @@
 Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Properties for xmlBlaster, using org.jutils
+Comment:   Properties for xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
@@ -748,16 +748,16 @@ public class Global implements Cloneable
     */
    public static final String getStrippedString(String text) {
       if (text == null) return null;
-      String strippedId = StringHelper.replaceAll(text, "/", "");
+      String strippedId = ReplaceVariable.replaceAll(text, "/", "");
       // JMX does not like commas, but we can't introduce this change in 1.0.5
       // as the persistent queue names would change and this is not backward compatible
-      //strippedId = StringHelper.replaceAll(strippedId, ",", "_");
-      strippedId = StringHelper.replaceAll(strippedId, " ", "_");
-      strippedId = StringHelper.replaceAll(strippedId, ".", "_");
-      strippedId = StringHelper.replaceAll(strippedId, ":", "_");
-      strippedId = StringHelper.replaceAll(strippedId, "[", "_");
-      strippedId = StringHelper.replaceAll(strippedId, "]", "_");
-      return StringHelper.replaceAll(strippedId, "\\", "");
+      //strippedId = ReplaceVariable.replaceAll(strippedId, ",", "_");
+      strippedId = ReplaceVariable.replaceAll(strippedId, " ", "_");
+      strippedId = ReplaceVariable.replaceAll(strippedId, ".", "_");
+      strippedId = ReplaceVariable.replaceAll(strippedId, ":", "_");
+      strippedId = ReplaceVariable.replaceAll(strippedId, "[", "_");
+      strippedId = ReplaceVariable.replaceAll(strippedId, "]", "_");
+      return ReplaceVariable.replaceAll(strippedId, "\\", "");
    }
 
    /**
@@ -1187,7 +1187,7 @@ public class Global implements Cloneable
          int numbytes;
          for (int ii=0; ii<20 && (nsis.available() <= 0); ii++) {
             if (log.isLoggable(Level.FINE)) log.fine("XmlBlaster on host " + addr.getBootstrapHostname() + " and bootstrapPort " + addr.getBootstrapPort() + " returns empty data, trying again after sleeping 10 milli ...");
-            org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
+            Timestamp.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
          }
          while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
             bos.write(bytes, 0, numbytes);
@@ -2127,7 +2127,7 @@ public class Global implements Cloneable
     */
    public static String getJavadocUrl(String className, String methodName) {
       String prefix = "http://www.xmlblaster.org/xmlBlaster/doc/api/";
-      className = StringHelper.replaceAll(className, ".", "/");
+      className = ReplaceVariable.replaceAll(className, ".", "/");
       String url = prefix + className + ".html";
       if (methodName != null)
          url += "#" + methodName;
@@ -2161,5 +2161,19 @@ public class Global implements Cloneable
       return map;
       */
    }
-   
+
+  /**
+   * Access a nice, human readable string with the current RAM memory situation.
+   * @return a nice readable memory statistic string
+   */
+   public static final String getMemoryStatistic() {
+      StringBuffer statistic = new StringBuffer();
+      statistic.append("Total memory allocated = ");
+      statistic.append(byteString(Runtime.getRuntime().totalMemory()));
+      statistic.append(".");
+      statistic.append(" Free memory available = ");
+      statistic.append(byteString(Runtime.getRuntime().freeMemory()));
+      statistic.append(".");
+      return statistic.toString();
+   }
 }

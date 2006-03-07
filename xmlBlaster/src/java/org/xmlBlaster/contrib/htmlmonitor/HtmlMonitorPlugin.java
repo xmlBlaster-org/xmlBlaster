@@ -20,6 +20,7 @@ import org.xmlBlaster.util.http.I_HttpRequest;
 import org.xmlBlaster.util.http.HttpResponse;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.I_ReplaceVariable;
 
@@ -176,24 +177,24 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
     * @return The HTML page to return
     */
    public HttpResponse service(String urlPath, Map properties) {
-	  if (log.isLoggable(Level.FINE)) {
+          if (log.isLoggable(Level.FINE)) {
          log.fine("Invoking with '" + urlPath + "' urlPath, properties='" + properties + "'");
-	  }
+          }
       if (urlPath == null || urlPath.length() < 1) {
          return new HttpResponse("<html><h2>Empty request, please provide a URL path</h2></html>");
       }
       try {
          String path;
          String parameter = null;
-    	  if (urlPath.indexOf('?') > -1) {
-			 // has Parameter
-    		 path = urlPath.substring(0, urlPath.indexOf('?'));
+          if (urlPath.indexOf('?') > -1) {
+                         // has Parameter
+                 path = urlPath.substring(0, urlPath.indexOf('?'));
           parameter = URLDecoder.decode(urlPath.substring(urlPath.indexOf('?') + 1,
- 					urlPath.length()), Constants.UTF8_ENCODING);
-		 } else {
-			// has no parameter 
-			path = urlPath;
-		 }
+                                        urlPath.length()), Constants.UTF8_ENCODING);
+                 } else {
+                        // has no parameter 
+                        path = urlPath;
+                 }
          byte[] text;
          String mimeType = getMimeType(path.toString());
          if (this.urlPathClasspathSet.contains(path)) { // "/status.html"
@@ -211,7 +212,7 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
             String name = f.getName();
             if (log.isLoggable(Level.FINE)) log.fine("Invoking with '" + urlPath + "' urlPath, name='" + name + "'");
             File template = new File(this.documentRoot, name);
-            text = org.jutils.io.FileUtil.readFile(template.toString());
+            text = FileLocator.readFile(template.toString());
             if (log.isLoggable(Level.FINE)) log.fine("Reading template  '" + template.toString() + "'");
          }
          if (parameter != null && !(parameter.length() < 0)) {
@@ -236,9 +237,9 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
     *           contains the parameter given in the URL.
     */
    private void invokeAction(String parameter) {
-		if (log.isLoggable(Level.FINE)) {
-			log.fine("Using '" + parameter + "'");
-		}
+                if (log.isLoggable(Level.FINE)) {
+                        log.fine("Using '" + parameter + "'");
+                }
 
       JmxWrapper jmxwrapper = null;
       try {

@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -11,7 +12,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.jutils.io.FileUtil;
 
 import org.xmlBlaster.test.Util;
 
@@ -42,9 +42,9 @@ public class TestAuthenticationHtPassWd extends TestCase
 
     this.userhome = glob.getProperty().get("user.home","/home/astelzl")+java.io.File.separatorChar;
     try
-    { FileUtil.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
-      FileUtil.writeFile(userhome+"test.htpasswd2","existing:yZum5CYzDk.EE\n");
-      FileUtil.writeFile(userhome+"test.htpasswd1","*");
+    { FileLocator.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
+      FileLocator.writeFile(userhome+"test.htpasswd2","existing:yZum5CYzDk.EE\n");
+      FileLocator.writeFile(userhome+"test.htpasswd1","*");
     }
     catch(Exception ex)
     { assertTrue("Could not create password files in directory '" + userhome + "'. Tests won't work!",false);

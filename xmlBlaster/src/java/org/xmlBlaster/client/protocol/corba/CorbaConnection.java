@@ -11,6 +11,8 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -19,9 +21,6 @@ import org.xmlBlaster.util.qos.address.Address;
 
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
-
-import org.jutils.io.FileUtil;
-import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -308,9 +307,9 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          String authServerIORFile = glob.getProperty().get("dispatch/connection/plugin/ior/iorFile", (String)null);  // -dispatch/connection/plugin/ior/iorFile IOR string is given through a file
          if (authServerIORFile != null) {
             try {
-               authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
-            } catch (JUtilsException e) {
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "dispatch/connection/plugin/ior/iorFile", e);
+               authServerIOR = FileLocator.readAsciiFile(authServerIORFile);
+            } catch (XmlBlasterException e) {
+               log.warning("Accessing xmlBlaster given IOR file '" + authServerIORFile + "' failed, please check 'dispatch/connection/plugin/ior/iorFile'");
             }
             this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
             log.info("Accessing xmlBlaster using your given IOR file " + authServerIORFile);

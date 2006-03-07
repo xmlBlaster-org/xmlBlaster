@@ -10,7 +10,7 @@ package org.xmlBlaster.test.qos;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_XmlBlasterAccess;

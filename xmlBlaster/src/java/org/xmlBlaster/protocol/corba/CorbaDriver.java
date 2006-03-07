@@ -9,6 +9,8 @@ package org.xmlBlaster.protocol.corba;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -21,7 +23,6 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerPOATie;
 import org.xmlBlaster.protocol.corba.AuthServerImpl;
 import org.xmlBlaster.engine.qos.AddressServer;
-import org.jutils.io.FileUtil;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.File;
@@ -242,7 +243,7 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
                   }
                   MyNameServer thr = new MyNameServer();
                   thr.start();
-                  org.jutils.runtime.Sleeper.sleep(500);
+                  Timestamp.sleep(500);
                   log.info(ME, "Started CORBA naming service");
                }
             }
@@ -392,7 +393,7 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
       }
 
       try {
-         if (iorFile != null) FileUtil.deleteFile(null, iorFile);
+         if (iorFile != null) FileLocator.deleteFile(null, iorFile);
          iorFile = null;
       }
       catch (Throwable e) {

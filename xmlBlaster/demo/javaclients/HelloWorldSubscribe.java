@@ -3,6 +3,8 @@ package javaclients;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -422,7 +424,7 @@ public class HelloWorldSubscribe implements I_Callback
          }
          try {
             if (lckFile.length() > 0) {
-               org.jutils.io.FileUtil.writeFile(lckFile, "Writing " + fileName + " ...");
+               FileLocator.writeFile(lckFile, "Writing " + fileName + " ...");
             }
             //byte[] tmp = "<?xml version='1.0' encoding='UTF-8' ?>\n".getBytes() + content;
             byte[] tmp = content;
@@ -433,10 +435,10 @@ public class HelloWorldSubscribe implements I_Callback
                System.arraycopy(content, 0, tmp, fh.length, content.length);
             }
 
-            org.jutils.io.FileUtil.writeFile(fileName, tmp);
+            FileLocator.writeFile(fileName, tmp);
             log.info("Dumped content #" + updateCounter + " of topic '" + updateKey.getOid() + "' to file '" + fileName + "'");
          }
-         catch (org.jutils.JUtilsException e) {
+         catch (XmlBlasterException e) {
             log.severe("Can't dump content to file '" + fileName + "': " + e.toString());
          }
          finally {

@@ -7,12 +7,12 @@ package javaclients.corba;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.key.UpdateKey; // To SAX parse the received XML key
-import org.xmlBlaster.client.qos.UpdateQos; // To SAX parse the received XML QoS
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
-import org.jutils.io.FileUtil;
+//import org.xmlBlaster.client.qos.UpdateQos; // To SAX parse the received XML QoS
+import org.xmlBlaster.util.StopWatch;
 
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
@@ -62,13 +62,13 @@ public class ClientRaw
       orb = org.omg.CORBA.ORB.init(this.args,null);
       try {
          AuthServer authServer;
-         ME = Args.getArg(this.args, "-loginName", ME);
+         ME = glob.getProperty().get("loginName", ME);
          String loginName = ME;
 
-         String fileName = Args.getArg(this.args, "-dispatch/connection/plugin/ior/iorFile", (String)null); // a file with the IOR string
-         String authServerIOR = Args.getArg(this.args, "-dispatch/connection/plugin/ior/iorString", (String)null); // the IOR string "IOR:00405..."
+         String fileName = glob.getProperty().get("dispatch/connection/plugin/ior/iorFile", (String)null); // a file with the IOR string
+         String authServerIOR = glob.getProperty().get("dispatch/connection/plugin/ior/iorString", (String)null); // the IOR string "IOR:00405..."
 
-         if (fileName != null) authServerIOR = FileUtil.readAsciiFile(fileName);
+         if (fileName != null) authServerIOR = FileLocator.readAsciiFile(fileName);
 
          if (authServerIOR != null) {
             authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
@@ -265,10 +265,10 @@ class RawCallback implements BlasterCallbackOperations
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MessageUnit msgUnit = msgUnitArr[ii];
          UpdateKey key = null;
-         UpdateQos qos = null;
+         //UpdateQos qos = null;
          try { // SAX parse the received message key and QoS:
             key = new UpdateKey(glob, msgUnit.xmlKey);
-            qos = new UpdateQos(glob, msgUnit.qos);
+            //qos = new UpdateQos(glob, msgUnit.qos);
          } catch (org.xmlBlaster.util.XmlBlasterException e) {
             log.severe(e.getMessage());
          }

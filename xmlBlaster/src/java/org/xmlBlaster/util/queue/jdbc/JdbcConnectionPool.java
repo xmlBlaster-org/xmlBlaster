@@ -11,7 +11,7 @@ package org.xmlBlaster.util.queue.jdbc;
 import org.apache.commons.lang.Tokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import java.util.Properties;
@@ -321,7 +321,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       // the property settings specific to this plugin type / version
       this.url = pluginProp.getProperty("url", this.url);
       String dbInstanceName = glob.getStrippedId();
-      this.url = StringHelper.replaceFirst(this.url, "$_{xmlBlaster_uniqueId}", dbInstanceName);
+      this.url = ReplaceVariable.replaceFirst(this.url, "$_{xmlBlaster_uniqueId}", dbInstanceName);
       ME = "JdbcConnectionPool-" + this.url;
       this.user = pluginProp.getProperty("user", this.user);
       this.password = pluginProp.getProperty("password", this.password);
@@ -496,7 +496,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             mappingKey = conn.getMetaData().getDatabaseProductName();
             // replace "Microsoft SQL Server" to "MicrosoftSQLServer"
             // blanks are not allowed, thanks to zhang zhi wei
-            mappingKey = StringHelper.replaceAll(mappingKey, " ", "");
+            mappingKey = ReplaceVariable.replaceAll(mappingKey, " ", "");
             if (log.isLoggable(Level.FINE)) 
                log.fine("parseMapping: the mapping will be done for the keyword (which is here is the DB product name)'" + mappingKey + "'");
          }

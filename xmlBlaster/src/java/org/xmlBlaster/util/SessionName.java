@@ -7,7 +7,7 @@ package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
-import org.jutils.text.StringHelper;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 
@@ -77,7 +77,7 @@ public final class SessionName implements java.io.Serializable
 
       // parse absolute part
       if (name.startsWith("/")) {
-         String[] arr = StringHelper.toArray(name, "/");
+         String[] arr = ReplaceVariable.toArray(name, "/");
          if (arr.length == 0) {
             throw new IllegalArgumentException(ME+": '" + name + "': The root tag must be '/node'.");
          }
@@ -132,7 +132,7 @@ public final class SessionName implements java.io.Serializable
       }
 
       int ii=0;
-      String[] arr = StringHelper.toArray(relative, ContextNode.SEP); //"/"
+      String[] arr = org.xmlBlaster.util.ReplaceVariable.toArray(relative, ContextNode.SEP); //"/"
       if (arr.length > ii) {
          String tmp = arr[ii++];
          if (SUBJECT_MARKER_TAG.equals(tmp)) { // "client"

@@ -968,8 +968,8 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
          <td>null</td>
          <td>
          Here you can define an update statement to perform in the same transaction after
-	 having processed the detected data. For example you could do some cleanup here
-	 with a DELETE statement.
+         having processed the detected data. For example you could do some cleanup here
+         with a DELETE statement.
          </td>
        </tr>
 
@@ -1005,15 +1005,6 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
          </td>
        </tr>
 
-       <tr>
-         <td>xmlBlaster/jdk14loggingCapture</td>
-         <td>boolean</td>
-         <td>no</td>
-         <td>true</td>
-         <td>
-         Redirects JDK 1.4 logging output of this plugin into xmlBlasters jutils logging framework.
-         </td>
-       </tr>
      </table>   
 
   <p>

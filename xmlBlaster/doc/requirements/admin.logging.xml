@@ -40,7 +40,41 @@
      It will do its best to convert your java code. Just keep a backup of your java files in case
      the script does not do what you expect it to do.
      </p>
+     <p>
+     Note that the old command line settings to change the logging level
+     are not supported anymore:</p>
+<pre>
+ # Is NOT supported anymore:
+ java org.xmlBlaster.Main -trace[core] true -dump true
+</pre>
+     <p>The new command line syntax is shown in the 
+     example section below.
+     </p>
    </description>
+
+   <example type="HTML">
+      <p id="commandline" class="celltitel">Command line configuration</p>
+   <p>It is possible to set all logging levels on command line, those settings
+   have precedence over the settings in <code>logging.properties</code>, here
+   are some examples:
+   </p>
+   <p>Dump all calls into the core and dumps all <code>SOCKET</code> or <code>email</code> protocol messages:<br/>
+<code>
+java  org.xmlBlaster.Main -logging/org.xmlBlaster.engine.RequestBroker FINE -logging/org.xmlBlaster.util.protocol FINEST
+</code>
+</p>
+<p>
+Switches on logging but limits the output of the <code>engine</code> package to logging level INFO (except RequestBroker),
+additionally we choose explicitly the logging configuration file and add JMX for observation with jconsole:<br/>
+<code>java -Djava.util.logging.config.file=$XMLBLASTER_HOME/config/logging.properties
+     -Dcom.sun.management.jmxremote org.xmlBlaster.Main
+     -logging FINE
+     -logging/org.xmlBlaster.engine INFO
+     -logging/org.xmlBlaster.engine.RequestBroker FINEST
+</code>
+</p>
+   </example>
+
 
    <example lang="Java" type="HTML">
       <p id="props" class="celltitel">Example of logging.properties</p>
@@ -116,21 +150,6 @@ org.xmlBlaster.engine.level = INFO
 #org.xmlBlaster.engine.useParentHandlers=false
 #org.xmlBlaster.engine.config=org.xmlBlaster.util.log.XbConfig
 </pre>
-   </example>
-
-   <example>
-<code>
-java -Djava.util.logging.config.file=$XMLBLASTER_HOME/config/logging.properties
-     -Dcom.sun.management.jmxremote org.xmlBlaster.Main
-     -logging/org.xmlBlaster.engine.RequestBroker FINE
-</code>
-<code>
-java -Djava.util.logging.config.file=$XMLBLASTER_HOME/config/logging.properties
-     -Dcom.sun.management.jmxremote org.xmlBlaster.Main
-     -logging FINE
-     -logging/org.xmlBlaster.engine INFO
-     -logging/org.xmlBlaster.engine.RequestBroker FINEST
-</code>
    </example>
 
    <configuration>

@@ -54,7 +54,6 @@ import junit.framework.*;
  * @see org.xmlBlaster.client.SynchronousCache
  */
 public class TestSynchronousCache extends TestCase {
-   private String ME = "TestSynchronousCache";
    private Global glob;
    private static Logger log = Logger.getLogger(TestSynchronousCache.class.getName());
 
@@ -67,8 +66,6 @@ public class TestSynchronousCache extends TestCase {
    private SynchronousCache synchronousCache;
    private String[] publishOidArr = new String[] { "oid-0", "oid-1", "xx-oid-2" };
    private String[] contentArr = new String[] { "content-oid-0", "content-oid-1", "content-oid-2" };
-
-   private int numReceived = 0;
 
    /**
     * Constructs the TestSynchronousCache object.
@@ -121,11 +118,7 @@ public class TestSynchronousCache extends TestCase {
 
       for (int i=0; i<publishOidArr.length; i++) {
          // Erase if not all have been destroyed during test
-         //try {
-            EraseReturnQos[] arr = sendErase(publishOidArr[i]);
-         //} catch(XmlBlasterException e) {
-         //   fail("Erase XmlBlasterException: " + e.getMessage());
-         //}
+         sendErase(publishOidArr[i]);
       }
 
       this.con.disconnect(null);
@@ -192,7 +185,6 @@ public class TestSynchronousCache extends TestCase {
     * </p>
     */
    public void testCachedAccess() {
-      this.ME = "TestSynchronousCache-testCachedAccess";
       {
          log.info("Entering testCachedAccess ...");
          try {
@@ -258,7 +250,7 @@ public class TestSynchronousCache extends TestCase {
                               "' and status=" + grq.getState() + " rcv=" + grq.getRcvTimestamp());
             }
 
-            EraseReturnQos[] arr0 = sendErase(publishOidArr[0]);
+            sendErase(publishOidArr[0]);
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
          }
          catch (XmlBlasterException e) {
@@ -304,16 +296,16 @@ public class TestSynchronousCache extends TestCase {
 
             log.info("Current cache:" + this.synchronousCache.toXml(""));
             assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
-            EraseReturnQos[] arr0 = sendErase(publishOidArr[0]);
+            /*EraseReturnQos[] arr0 =*/ sendErase(publishOidArr[0]);
             assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
-            EraseReturnQos[] arr1 = sendErase(publishOidArr[1]);
+            sendErase(publishOidArr[1]);
             log.info("Current cache:" + this.synchronousCache.toXml(""));
 
             // The cache is not cleared automatically for XPATH, we do it manually
             this.synchronousCache.removeEntryByQueryString(this.synchronousCache.getQueryString(gk));
             log.info("Current cache:" + this.synchronousCache.toXml(""));
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
-            EraseReturnQos[] arr2 = sendErase(publishOidArr[2]);
+            sendErase(publishOidArr[2]);
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
          }
          catch (XmlBlasterException e) {

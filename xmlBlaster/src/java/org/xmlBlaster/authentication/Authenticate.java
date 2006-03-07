@@ -16,6 +16,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.SessionName;
@@ -73,8 +74,8 @@ final public class Authenticate implements I_RunlevelListener
    /** The singleton handle for this xmlBlaster server */
    private final I_XmlBlaster xmlBlasterImpl;
 
-   /** My security delegate layer which is exposed to the protocol plugins */
-   private final AuthenticateProtector encapsulator;
+   // My security delegate layer which is exposed to the protocol plugins
+   //private final AuthenticateProtector encapsulator;
 
    /**
     */
@@ -85,7 +86,7 @@ final public class Authenticate implements I_RunlevelListener
       this.ME = "Authenticate" + glob.getLogPrefixDashed();
 
       if (log.isLoggable(Level.FINER)) log.finer("Entering constructor");
-      this.encapsulator = new AuthenticateProtector(glob, this); // my security layer (delegate)
+      /*this.encapsulator = */new AuthenticateProtector(glob, this); // my security layer (delegate)
       
       glob.getRunlevelManager().addRunlevelListener(this);
 
@@ -371,7 +372,7 @@ final public class Authenticate implements I_RunlevelListener
 
             sessionInfo = getSessionInfo(connectQos.getSessionName());
             if (sessionInfo != null && !sessionInfo.isShutdown() && sessionInfo.getConnectQos().bypassCredentialCheck()) {
-               if (log.isLoggable(Level.FINE)) this.log.fine("connect: Reused session with had bypassCredentialCheck=true");
+               if (log.isLoggable(Level.FINE)) log.fine("connect: Reused session with had bypassCredentialCheck=true");
                String oldSecretSessionId = sessionInfo.getSecretSessionId();
                sessionInfo.setSecuritySession(sessionCtx);
                if (secretSessionId == null || secretSessionId.length() < 2) {
@@ -387,7 +388,7 @@ final public class Authenticate implements I_RunlevelListener
             }
             else {
                // Create the new sessionInfo instance
-               if (log.isLoggable(Level.FINE)) this.log.fine("connect: sessionId='" + secretSessionId + "' connectQos='"  + connectQos.toXml() + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("connect: sessionId='" + secretSessionId + "' connectQos='"  + connectQos.toXml() + "'");
                sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
                synchronized(this.sessionInfoMap) {
                   this.sessionInfoMap.put(secretSessionId, sessionInfo);
@@ -417,7 +418,7 @@ final public class Authenticate implements I_RunlevelListener
          sb.append(sessionInfo.getSessionName().getAbsoluteName());
          sb.append(", session");
          sb.append(((connectQos.getSessionTimeout() > 0L) ?
-                         " expires after"+org.jutils.time.TimeHelper.millisToNice(connectQos.getSessionTimeout()) :
+                         " expires after"+Timestamp.millisToNice(connectQos.getSessionTimeout()) :
                          " lasts forever"));
          sb.append(", ").append(subjectInfo.getNumSessions()).append(" of ");
          sb.append(connectQos.getMaxSessions()).append(" sessions are in use.");

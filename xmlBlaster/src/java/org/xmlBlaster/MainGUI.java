@@ -7,13 +7,15 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.log.XbNotifyHandler;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -60,7 +62,7 @@ import org.jacorb.poa.gui.beans.FillLevelBar;
  * </p>
  * @see org.xmlBlaster.Main
  */
-public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDevice
+public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.I_LogListener
 {
    private static final long serialVersionUID = 1L;
    private ServerScope glob;
@@ -77,6 +79,10 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
 
    /** TextArea with scroll bars for logging output. */
    private TextArea logOutput = null;
+   /** To save memory consumption, limit number of logging lines to this value. */
+   private final long MAX_LOG_LINES = 3000;
+   /** The actual number of logged lines in the TextArea. */
+   private long numLogLines = 0;
 
    /** Approximate elapsed time since startup of this server. */
    private long elapsedTime = 0L;
@@ -162,20 +168,29 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          this.xmlBlasterMain = new org.xmlBlaster.Main(glob, this);
    }
 
-
    /**
-    * Event fired by Logger.java through interface LogableDevice.
+    * Event fired by Logger.java through interface I_LogListener. 
     * <p />
     * log.addLogDevice(this);
     * <p />
     * Log output into TextArea<br />
     * If the number of lines displayed is too big, cut half of them
     */
-   public void log(int level, String source, String str)
+   public void log(LogRecord record)
    {
-      logOutput.append("changing log level is not implemented\n");
+      String str = record.getLevel().toString() + " [" + record.getLoggerName() + "] " + record.getMessage();
+      if (logOutput == null) {
+         System.err.println(str + "\n");
+         return;
+      }
+      if (numLogLines > MAX_LOG_LINES) {
+         String text = logOutput.getText();
+         text = text.substring(text.length()/2, text.length());
+         logOutput.setText(text);
+      }
+      numLogLines++;
+      logOutput.append(str + "\n");
    }
-
 
    /**
     * Event fired every 1 seconds by the PollingThread.
@@ -242,12 +257,20 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       }
    }
 
+   private void registerLogEvents() {
+      XbNotifyHandler.instance().register(Level.ALL.intValue(), this);
+   }
 
+   private void unregisterLogEvents() {
+      XbNotifyHandler.instance().unregister(Level.ALL.intValue(), this);
+   }
+   
    /**
     * Build the GUI layout.
     */
    private void init()
    {
+      registerLogEvents();
       setLayout(new GridBagLayout());
       GridBagConstraints gbc = new GridBagConstraints();
       gbc.fill = GridBagConstraints.BOTH;
@@ -260,7 +283,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
             toolkit.beep();
             if (clientQuery != null)
                clientQuery.logout();
-            //log.getLogger().removeLogDevice(this);
+            //unregisterLogEvents();
             log.info("Good bye!");
             System.exit(0);
          }
@@ -353,7 +376,8 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
                I_Authenticate auth = xmlBlasterMain.getAuthenticate();
                StringBuffer buf = new StringBuffer(auth.toXml());
                buf.append(xmlBlasterMain.getXmlBlaster().toXml());
-               log(org.jutils.log.LogConstants.LOG_DUMP, "MainGUI", buf.toString());
+               LogRecord record = new LogRecord(Level.INFO, buf.toString());
+               log(record);
                log.info("Dump end");
             }
             catch(XmlBlasterException ee) {
@@ -386,6 +410,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
     */
    private void hideWindow()
    {
+      unregisterLogEvents();
       if (isShowing()) {
          log.info("Press <g> and <Enter> to popup the GUI again (press ? for other options).");
          setVisible(false); // dispose(); would clean up all resources
@@ -400,6 +425,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
    void showWindow()
    {
       if (!isShowing()) {
+         registerLogEvents();
          if (log.isLoggable(Level.FINE)) log.fine("Show window again ...");
          show();
       }

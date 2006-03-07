@@ -10,20 +10,20 @@ package org.xmlBlaster.util.recorder.file;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
-import org.xmlBlaster.util.def.MethodName;
 
 import java.io.IOException;
 
@@ -59,15 +59,11 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
    //private I_CallbackRaw clientCallback = null;
 
    private final MsgUnit[] dummyMArr = new MsgUnit[0];
-   private final String[] dummySArr = new String[0];
-   private final String dummyS = "";
    private final PublishReturnQos[] dummyPubRetQosArr = new PublishReturnQos[0];
    private PublishReturnQos dummyPubRet;
    private SubscribeReturnQos dummySubRet;
    private UnSubscribeReturnQos[] dummyUnSubRet = new UnSubscribeReturnQos[0];
    private final EraseReturnQos[] dummyEraseReturnQosArr = new EraseReturnQos[0];
-
-   private long maxEntries;
 
    /** Automatically write curr pos to file? */
    private boolean autoCommit = true; // only true is supported
@@ -126,7 +122,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
       }
       catch(IOException ex) {
          log.severe("Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
-         throw new XmlBlasterException(ME, "Initializing FileRecorder failed: Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Initializing FileRecorder failed: Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
       }
       if (maxEntries < 0)
          log.info("FileRecorder is ready, unlimited tail back messages are stored in '" + fileName + "'");
@@ -277,7 +273,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
             long originalElapsed = cont.timestamp - startTime;
             if (originalElapsed > actualElapsed) 
             { try 
-               { Thread.currentThread().sleep(originalElapsed - actualElapsed);                } 
+               { Thread.sleep(originalElapsed - actualElapsed);                } 
                catch(InterruptedException e) 
                { log.warning("Thread sleep got interrupted, this invocation is not in sync");
                }
@@ -293,7 +289,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
       long elaps = System.currentTimeMillis()-startOfPullback;
       if (elaps > 0) {
          log.info("Pullback of " + (numAtBeginning-getNumUnread()) + " messages done - elapsed " +
-               org.jutils.time.TimeHelper.millisToNice(elaps) +
+               Timestamp.millisToNice(elaps) +
                " average rate was " + (numAtBeginning*1000L/elaps) + 
                " msg/sec, numUnread=" + getNumUnread());
       }
@@ -342,7 +338,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
                      if (elaps == 0L) elaps = 1L;
                      log.info("Pullback of " + (numAtBeginning-getNumUnread()) +
                          " messages done - elapsed " +
-                         org.jutils.time.TimeHelper.millisToNice(elaps) +
+                         Timestamp.millisToNice(elaps) +
                          " average rate was " + (numAtBeginning*1000L/elaps) + 
                          " msg/sec, numUnread=" + getNumUnread());
                      return;    // we are done, everything played back
@@ -365,7 +361,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
                      text = "Playback of tail back messages failed, " + getNumUnread() + " messages are in queue, " + localCount + " are lost, check '" + fileName + "': " + e.toString();
                      log.severe(text);
                   }
-                  throw new XmlBlasterException(ME, text);
+                  throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, text);
                }
             }
 
@@ -384,7 +380,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
 
          if (actualElapsed < timeToUse) {
             try {
-               Thread.currentThread().sleep(timeToUse - actualElapsed);
+               Thread.sleep(timeToUse - actualElapsed);
             } catch( InterruptedException i) {
                log.warning("Unexpected interrupt when sleeping for pullback");
             }
@@ -405,7 +401,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
   public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException {
       //Has to be implemented. Look at InvocationRecorder for further information
       log.severe("Sorry, playback() is not implemented, use pullback() or implement it");
-      throw new XmlBlasterException(ME + ".NoImpl", "Sorry, only pullback is implemented");
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, "FileRecorder.NoImpl", "Sorry, only pullback is implemented");
   }
 
   //appropriate client function will be called depending on the request method
@@ -461,7 +457,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     */
 
     log.severe("Internal error: Method '" + cont.method + "' is unknown");
-    throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
+    throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal error: Method '" + cont.method + "' is unknown");
   }
 
   /**
@@ -477,7 +473,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     { rb.writeNext(cont);
     }
     catch(IOException ex) {
-       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
+       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, cont.method + " invocation: " + ex.toString());
     }
     return dummySubRet;
   }
@@ -495,7 +491,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     { rb.writeNext(cont);
     }
     catch(IOException ex) {
-       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
+       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyUnSubRet;
   }
@@ -512,7 +508,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     { rb.writeNext(cont);
     }
     catch(IOException ex) {
-       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
+       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyPubRet;
   }
@@ -545,7 +541,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     { rb.writeNext(cont);
     }
     catch(IOException ex) {
-       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
+       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyPubRetQosArr;
   }
@@ -563,7 +559,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     { rb.writeNext(cont);
     }
     catch(IOException ex) {
-       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
+       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyEraseReturnQosArr;
   }
@@ -581,7 +577,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
     { rb.writeNext(cont);
     }
     catch(IOException ex) {
-       throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
+       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, cont.method + " invocation: " + ex.toString());
     }
     return dummyMArr;
   }
@@ -603,7 +599,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_Callbac
          rb.writeNext(cont);
       }
       catch(IOException ex) {
-         throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, cont.method + " invocation: " + ex.toString());
       }
       String[] ret=new String[msgUnitArr.length];
       for (int i=0; i<ret.length; i++) ret[i] = "";

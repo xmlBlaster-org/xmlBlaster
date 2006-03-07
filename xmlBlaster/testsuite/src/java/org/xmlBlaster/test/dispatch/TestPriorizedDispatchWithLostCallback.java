@@ -212,15 +212,6 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          e.printStackTrace();
          fail("publish of configuration data - XmlBlasterException: " + e.getMessage());
       }
-
-      /* Does not work as Main.java creates a new engine.Global for the server
-      try {
-         glob.getProperty().set(PriorizedDispatchPlugin.CONFIG_PROPERTY_KEY, config);
-      }
-      catch (org.jutils.JUtilsException e) {
-         fail(e.toString());
-      }
-      */
    }
 
    private void subscribe(String oid) {

@@ -140,7 +140,7 @@ public class FileLocator
     * @return URL the URL for the given file or null if no file found.
     */
    private final URL findFileInSinglePath(String path, String filename) {
-      if (log.isLoggable(Level.FINER)) this.log.finer("findFileInSinglePath with path='" +
+      if (log.isLoggable(Level.FINER)) log.finer("findFileInSinglePath with path='" +
          path + "' and filename='" + filename + "'");
       File file = null;
       if (path != null) file = new File(path, filename);
@@ -194,7 +194,7 @@ public class FileLocator
       URL ret = null;
       path = this.glob.getProperty().get(propertyName, (String)null);
       if (path != null) {
-         if (log.isLoggable(Level.FINE)) this.log.fine("findFileInXmlBlasterSearchPath: the path: '" + path + "' and the filename to search: '" + filename + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("findFileInXmlBlasterSearchPath: the path: '" + path + "' and the filename to search: '" + filename + "'");
 //         ret = findFileInSinglePath(path, filename);
          ret = findFileInSinglePath(null, path);
          if (ret != null) return ret;
@@ -350,6 +350,178 @@ public class FileLocator
       catch (Exception e) {
          throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't write file " + child + ":" + e.toString());
       }
+   }
+
+   /**
+   * Write data from <code>StringBuffer</code> into a file.
+   * @param outName  name of file including path
+   * @param str      data
+   */
+   public static final void writeFile(String name, String str) throws XmlBlasterException {
+      writeFile(null, name, str.getBytes());
+   }
+
+   /**
+    * Write data from <code>StringBuffer</code> into a file.
+    * @param outName  name of file including path
+    * @param str      some binary data
+    */
+    public static final void writeFile(String name, byte[] arr) throws XmlBlasterException {
+       writeFile(null, name, arr);
+    }
+
+   /**
+   * Append data from into a file.
+   * @param outName  name of file including path
+   * @param str      Text
+   */
+   public static final void appendToFile(String outName, String str) throws XmlBlasterException {
+      try {
+         boolean append = true;
+         FileOutputStream to = new FileOutputStream(outName, true);
+         to.write(str.getBytes());
+         to.close();
+      }
+      catch (Exception e) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE, ME, "Can't write file " + e.toString());
+      }
+   }
+
+   /**
+   * Read a file into <code>String</code>.
+   * @param fileName Complete name of file
+   * @return ASCII data from the file<br />
+   *         null on error
+   */
+   public static final String readAsciiFile(String fileName) throws XmlBlasterException {
+      return readAsciiFile(null, fileName);
+   }
+
+
+   /**
+   * Read a file into <code>String</code>.
+   * <br><b>Example:</b><br>
+   *    <code>String data=FileUtil.readAsciiFile("/tmp/hello");</code>
+   * @param parent Path to the file
+   * @param fileName name of file
+   * @return ASCII data from the file<br />
+   *         null on error
+   */
+   public static final String readAsciiFile(String parent, String child) throws XmlBlasterException {
+      byte[] bb = readFile(parent, child);
+      if (bb == null)
+         return null;
+      return new String(bb);
+   }
+
+
+   /**
+    * Read a file into <code>byte[]</code>.
+    *
+    * @param      fileName
+    *             Complete name of file
+    * @return     data from the file
+    * @exception  JUtilsException
+    *             if the file is not readable or any error occured while reading the file.
+    */
+   public static final byte[] readFile(String fileName)
+      throws XmlBlasterException
+   {
+      return readFile(null, fileName);
+   }
+
+   public static final void deleteFile(String parent, String fileName) {
+      File f = new File(parent, fileName);
+      if (f.exists())
+         f.delete();
+   }
+
+    /**
+     * Concatenate a filename to a path (DOS and UNIX, checks for separator).
+     * @param path for example "/tmp"
+     * @param name for example "hello.txt"
+     * @return "/tmp/hello.txt"
+     */
+   public static String concatPath(String path, String name) {
+      if (path == null)
+         return name;
+      if (name == null)
+         return path;
+      if (path.endsWith(File.separator) && name.startsWith(File.separator))
+         return path + name.substring(1);
+      if (path.endsWith(File.separator))
+         return path + name;
+      if (name.startsWith(File.separator))
+         return path + name;
+      return path + File.separator + name;
+   }
+
+   /**
+   * Return the file name extension.
+   * @param fileName for example "/tmp/hello.txt"
+   * @return extension of the filename "txt"
+   */
+   public static String getExtension(String fileName) {
+      if (fileName == null)
+         return null;
+      int dot = fileName.lastIndexOf(".");
+      if (dot == -1)
+         return null;
+      return fileName.substring(dot + 1);
+   }
+
+   /**
+   * Strip the path and the file name extension.
+   * @param fileName for example "/tmp/hello.txt"
+   * @return filename without extension "hello"
+   */
+   public static String getBody(String fileName) {
+      if (fileName == null)
+         return null;
+      int dot = fileName.lastIndexOf(".");
+      String body = null;
+      if (dot == -1)
+         body = fileName;
+      else
+         body = fileName.substring(0, dot);
+      int sep = body.lastIndexOf(File.separator);
+      if (sep == -1)
+         return body;
+      return body.substring(sep + 1);
+   }
+
+   /**
+   * Convert some file extensions to MIME types.
+   * <p />
+   * A candidate for a property file like /etc/httpd/mime.types
+   * @param extension for example "xml"
+   * @param defaultVal for example "text/plain"
+   * @return for example "text/xml"
+   */
+   public static String extensionToMime(String extension, String defaultVal) {
+      if (extension == null)
+         return defaultVal;
+      if (extension.equalsIgnoreCase("xml"))
+         return "text/xml";
+      if (extension.equalsIgnoreCase("html"))
+         return "text/html";
+      if (extension.equalsIgnoreCase("gml"))
+         return "text/gml"; // grafic markup language http://infosun.fmi.uni-passau.de/Graphlet/GML
+      if (extension.equalsIgnoreCase("sgml"))
+         return "text/sgml";
+      if (extension.equalsIgnoreCase("gif"))
+         return "image/gif";
+      if (extension.equalsIgnoreCase("png"))
+         return "image/png";
+      if (extension.equalsIgnoreCase("jpeg"))
+         return "image/jpeg";
+      if (extension.equalsIgnoreCase("jpg"))
+         return "image/jpg";
+      if (extension.equalsIgnoreCase("pdf"))
+         return "application/pdf";
+      if (extension.equalsIgnoreCase("rtf"))
+         return "text/rtf";
+      return defaultVal;
    }
 }
 

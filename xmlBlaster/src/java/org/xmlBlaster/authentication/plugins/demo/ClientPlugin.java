@@ -7,7 +7,6 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.def.MethodName;
-//import org.jutils.JUtilsException;
 
 /**
  * Class for java clients, decrypting messages which

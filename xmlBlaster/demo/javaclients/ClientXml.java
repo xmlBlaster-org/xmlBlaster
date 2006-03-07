@@ -8,7 +8,7 @@ Version:   $Id$
 package javaclients;
 
 import org.xmlBlaster.util.Global;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.StopWatch;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
