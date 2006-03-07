@@ -2,7 +2,6 @@
 package javaclients;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;

@@ -31,13 +31,9 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlToDom;
-import org.xmlBlaster.util.XmlNotPortable;
-
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.FileInputStream;
-
-import org.apache.batik.dom.svg.SVGDocumentFactory;
 
 import java.util.StringTokenizer;
 

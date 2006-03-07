@@ -10,8 +10,6 @@ package javaclients;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.StopWatch;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
