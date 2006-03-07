@@ -35,7 +35,7 @@ public class XbFormatter extends Formatter {
    private String lineSeparator;
 
    /** Reset color to original values */
-   private static final String ESC = "\033[0m";
+   public static final String ESC = "\033[0m";
 
    // private static final String BOLD = "\033[1m";
 
@@ -43,24 +43,25 @@ public class XbFormatter extends Formatter {
       The ESC [30m ... ESC [38m should set the foreground
       color, and ESC [40m .. ESC [48m should set the background color
    */
-   private static final String RED_BLACK = "\033[31;40m";
+   public static final String RED_BLACK = "\033[31;40m";
 
-   private static final String GREEN_BLACK = "\033[32;40m";
+   public static final String GREEN_BLACK = "\033[32;40m";
 
-   private static final String YELLOW_BLACK = "\033[33;40m";
+   public static final String YELLOW_BLACK = "\033[33;40m";
 
-   // private static final String BLUE_BLACK = "\033[34;40m";
-   private static final String PINK_BLACK = "\033[35;40m";
+   public static final String BLUE_BLACK = "\033[34;40m";
+   public static final String PINK_BLACK = "\033[35;40m";
 
-   private static final String LTGREEN_BLACK = "\033[36;40m";
+   public static final String LTGREEN_BLACK = "\033[36;40m";
 
-   private static final String WHITE_BLACK = "\033[37;40m";
+   public static final String WHITE_BLACK = "\033[37;40m";
+   public static final String WHITE_GREEN = "\033[37;42m";
 
-   // private static final String WHITE_RED = "\033[37;41m";
-   // private static final String BLACK_RED = "\033[30;41m";
-   // private static final String BLACK_GREEN = "\033[40;42m";
-   // private static final String BLACK_PINK = "\033[40;45m";
-   // private static final String BLACK_LTGREEN= "\033[40;46m";
+   public static final String WHITE_RED = "\033[37;41m";
+   public static final String BLACK_RED = "\033[30;41m";
+   public static final String BLACK_GREEN = "\033[40;42m";
+   public static final String BLACK_PINK = "\033[40;45m";
+   public static final String BLACK_LTGREEN= "\033[40;46m";
 
    private final String severe;
 
@@ -105,16 +106,7 @@ public class XbFormatter extends Formatter {
 
    public XbFormatter(String id) {
       this.id = id + "-" + instanceCounter++;
-      String osName = System.getProperty("os.name"); // "Linux" "Windows NT"...
-      if (osName == null || osName.startsWith("Window")) {
-         this.withXtermEscapeColor = false;
-         this.severe = severeX;
-         this.warning = warningX;
-         this.info = infoX;
-         this.fine = fineX;
-         this.finer = finerX;
-         this.finest = finestX;
-      } else {
+      if (withXtermColors()) {
          this.withXtermEscapeColor = true;
          this.severe = severeE;
          this.warning = warningE;
@@ -122,8 +114,28 @@ public class XbFormatter extends Formatter {
          this.fine = fineE;
          this.finer = finerE;
          this.finest = finestE;
+      } else {
+         this.withXtermEscapeColor = false;
+         this.severe = severeX;
+         this.warning = warningX;
+         this.info = infoX;
+         this.fine = fineX;
+         this.finer = finerX;
+         this.finest = finestX;
       }
       this.lineSeparator = System.getProperty("line.separator", "\n");
+   }
+   
+   /**
+    * If we may switch on xterm colors. 
+    * java -DxmlBlaster/supressXtermColors ... suppresses those
+    * @return true for none Linux systems
+    */
+   public static boolean withXtermColors() {
+      String suppress = System.getProperty("xmlBlaster/supressXtermColors");
+      if (suppress != null) return false;
+      String osName = System.getProperty("os.name"); // "Linux" "Windows NT"...
+      return !(osName == null || osName.startsWith("Window"));
    }
 
    public String convertLevelToString(int level) {

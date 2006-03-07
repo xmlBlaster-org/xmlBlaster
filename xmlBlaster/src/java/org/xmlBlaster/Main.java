@@ -16,6 +16,7 @@ import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
+import org.xmlBlaster.util.log.XbFormatter;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
@@ -394,22 +395,26 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          if (to == RunlevelManager.RUNLEVEL_RUNNING_POST) {
             log.info(Memory.getStatistic());
             if (controlPanel == null) {
-               int width = 48;
+               if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.WHITE_RED);
+               final String bound = "|";
+               String ver = bound + " XmlBlaster cluster node <" + glob.getId() + "> v" + glob.getReleaseId() + " " + glob.getBuildTimestamp();
+               int width = ver.length() + 6;
+               if (width < 48) width = 48;
                org.jutils.text.StringHelper sh = new org.jutils.text.StringHelper();
                String line = sh.charChain('-', width-2);
-               String bound = "|";
-               log.info(" "+line+" ");
-               String ver = bound + " " + glob.getReleaseId() + " " + glob.getBuildTimestamp();
-               log.info(ver + sh.charChain(' ', width-ver.length()-1) + bound);
+               System.out.println("");
+               System.out.println(" "+line+" ");
+               System.out.println(ver + sh.charChain(' ', width-ver.length()-1) + bound);
                boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
                if (useKeyboard) {
-                 String help = bound + " READY - press <?> and <enter> for options";
-                 log.info(help + sh.charChain(' ', width-help.length()-1) + bound);
+                 String help = bound + " READY - press <enter> for options";
+                 System.out.println(help + sh.charChain(' ', width-help.length()-1) + bound);
                } else {
                  String help = bound + " READY - no keyboard input available";
-                 log.info(help + sh.charChain(' ', width-help.length()-1) + bound);
+                 System.out.println(help + sh.charChain(' ', width-help.length()-1) + bound);
                }
-               log.info(" "+line+" ");
+               System.out.println(" "+line+" ");
+               if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.ESC);
             }
             else
                log.info("xmlBlaster is ready for requests");
@@ -451,6 +456,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * Keyboard input usage.
     */
    private void keyboardUsage() {
+      if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.WHITE_GREEN);
       System.out.println("----------------------------------------------------------");
       System.out.println("XmlBlaster " + ((glob != null) ? glob.getVersion() : "") +
                     ((glob != null) ? (" build " + glob.getBuildTimestamp()) : ""));
@@ -461,6 +467,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       System.out.println("   d <file name> Dump internal state of xmlBlaster to file.");
       System.out.println("   q             Quit xmlBlaster.");
       System.out.println("----------------------------------------------------------");
+      if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.ESC);
    }
 
    /**
