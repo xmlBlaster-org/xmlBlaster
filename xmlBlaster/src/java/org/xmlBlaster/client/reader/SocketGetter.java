@@ -24,6 +24,8 @@ import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+
 
 /**
  * SocketGetter
@@ -32,7 +34,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * </p>
  * <p>
  * <tt>
- * java org.xmlBlaster.client.script.SocketGetter -myPort <port>
+ * java org.xmlBlaster.client.reader.SocketGetter -myPort <port>
  * </tt>
  * </p>
  * Launches a client which runns on the given socket and delivers the
@@ -127,7 +129,7 @@ class SocketConnectorThread extends Thread {
       GetKey xmlKeyWr = null;
 
       try {
-         xmlKeyWr = new GetKey(glob, xmlKey, "EXACT");
+         xmlKeyWr = new GetKey(glob, xmlKey, Constants.EXACT);
       } catch (XmlBlasterException xe) {
          log.throwing(this.getClass().getName(), "run", xe);
       }
@@ -217,5 +219,3 @@ class SocketConnectorThread extends Thread {
       return xmlKey;
    }
 }
-
-
