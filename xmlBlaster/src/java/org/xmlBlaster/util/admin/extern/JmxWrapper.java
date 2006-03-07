@@ -102,7 +102,7 @@ public class JmxWrapper
    /** Export Global.getProperty() to JMX */
    private JmxProperties jmxProperties;
    private JmxMBeanHandle jmxPropertiesHandle;
-   // private JmxLogLevel jmxLogLevel;
+   private JmxLogLevel jmxLogLevel;
    private JmxMBeanHandle jmxLogLevelHandle;
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
@@ -138,9 +138,9 @@ public class JmxWrapper
          ContextNode propNode = new ContextNode(ContextNode.SYSPROP_MARKER_TAG, null, this.glob.getContextNode());
          this.jmxPropertiesHandle = registerMBean(propNode, jmxProperties); // "sysprop"
 
-         // this.jmxLogLevel = new JmxLogLevel(this.glob);
-         // ContextNode logNode = new ContextNode(ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
-         // this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
+         this.jmxLogLevel = new JmxLogLevel(this.glob);
+         ContextNode logNode = new ContextNode(ContextNode.LOGGING_MARKER_TAG, null, this.glob.getContextNode());
+         this.jmxLogLevelHandle = registerMBean(logNode, jmxLogLevel); // "logging"
       }
 
       if (useJmx > 0 && this.mbeanServer != null) {
