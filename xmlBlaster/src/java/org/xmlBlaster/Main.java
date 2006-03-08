@@ -74,7 +74,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
     * Comma separate list of errorCodes which to an immediate System.exit(1);
     * Used by our default implementation of I_XmlBlasterExceptionHandler
     */
-   private String panicErrorCodes = ""; // ErrorCode.RESOURCE_DB_UNKNOWN.getErrorCode()+","+ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
+   private String panicErrorCodes = "";// ErrorCode.RESOURCE_DB_UNKNOWN.getErrorCode()+","+ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
 
    /**
     * true: If instance created by control panel<br />

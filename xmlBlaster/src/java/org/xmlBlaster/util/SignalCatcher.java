@@ -7,7 +7,6 @@ package org.xmlBlaster.util;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
 
 import java.lang.reflect.Method;
 
@@ -21,11 +20,26 @@ import java.lang.reflect.Method;
  */
 public class SignalCatcher implements Runnable
 {
-   private String ME = "SignalCatcher";
    private static Logger log = Logger.getLogger(SignalCatcher.class.getName());
+   private static SignalCatcher theSignalCatcher;
    private Thread thread;
    private I_SignalListener listener;
    private boolean runDummy = false;
+   
+   public static SignalCatcher instance() {
+      if (theSignalCatcher == null) {
+         synchronized (SignalCatcher.class) {
+            if (theSignalCatcher == null) {
+               theSignalCatcher = new SignalCatcher();
+            }
+         }
+      }
+      return theSignalCatcher;
+   }
+   
+   public boolean hasListener() {
+      return this.listener != null;
+   }
 
    /**
     * You need to call init() after construction. 
@@ -36,14 +50,17 @@ public class SignalCatcher implements Runnable
     *       System.exit(0);
     *    }
     *  }
-    *  SignalCatcher c = new SignalCatcher(Global glob, new Shutdown());
+    *  SignalCatcher c = SignalCatcher.instance();
+    *  c.register(new Shutdown());
     *  c.catchSignals();
     *  ...
     *  c.removeSignalCatcher();
     * </pre>
+    * @throws IllegalArgumentException if other listener exists
     */
-   public SignalCatcher(Global glob, I_SignalListener listener) {
-
+   public synchronized void register(I_SignalListener listener) {
+      if (this.listener != null) // Should we implement multiple listeners?
+         throw new IllegalArgumentException("SignalCatcher.register: There is already a listener");
       this.listener = listener;
       this.thread = new Thread(this, "XmlBlaster signal catcher thread for controlled shudown");
       this.thread.setDaemon(true);
@@ -166,11 +183,12 @@ public class SignalCatcher implements Runnable
          this.listener = null;
          return;
       }
-      if (this.log != null) {
+      if (log != null) {
          log.info("Shutdown forced by user or signal (Ctrl-C).");
       }
-      if (this.listener != null)
-         this.listener.shutdownHook();
+      I_SignalListener ll = this.listener;
+      if (ll != null)
+         ll.shutdownHook();
       this.listener = null;
    }
 }
