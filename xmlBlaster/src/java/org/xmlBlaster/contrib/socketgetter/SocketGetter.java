@@ -214,6 +214,22 @@ class SocketConnectorThread extends Thread {
          log.throwing(this.getClass().getName(), "run", xe);
       }
       
+      if (msgs == null || msgs.length < 1) {
+         // if no message is given ...
+         log.finer("No message given for oid [" + oid + "] => abort.");
+
+         try {
+            if (log.isLoggable(Level.FINER)) {
+               log.finer("Connection will be closed.");
+            }
+            // ... close this connection now!
+            socket.close();
+         } catch (IOException e) {
+            log.throwing(this.getClass().getName(), "run", e);
+         }
+
+      }
+      
       if (log.isLoggable(Level.FINER)) {
          log.finer("Got " + msgs.length + " messages for '" + oid + "'");
 
@@ -234,7 +250,10 @@ class SocketConnectorThread extends Thread {
       try {
          // obtain the first! message, given in the message ...
          // ... and write it to the client
-         bw.write(msgs[0].toXml());
+         if (msgs != null && msgs.length > 0) {
+            bw.write(msgs[0].toXml());
+         }
+            
          bw.flush();
          bw.close();
       } catch (IOException e) {
