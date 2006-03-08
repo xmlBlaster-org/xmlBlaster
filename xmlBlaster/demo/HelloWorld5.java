@@ -53,7 +53,7 @@ public class HelloWorld5
                }
             });  // Login to xmlBlaster, default handler for updates
 
-            log.info("Sender connected to xmlBlaster.");
+            log.info("Sender connected to xmlBlaster " + conRetQos.getSessionName().getRelativeName());
          }
 
 
@@ -84,7 +84,7 @@ public class HelloWorld5
                      }
                      else {
                         receiver.publish(msgUnit);
-                        log.info("Published message '" + pk.getOid() + "' to " + updateQos.getSender());
+                        log.info("Published message '" + retQos.getKeyOid() + "' to " + updateQos.getSender());
                      }
                   }
                   catch (XmlBlasterException e) {
@@ -94,7 +94,7 @@ public class HelloWorld5
                }
             });  // Login to xmlBlaster, default handler for updates
 
-            log.info("Receiver connected to xmlBlaster.");
+            log.info("Receiver connected to xmlBlaster " + conRetQos.getSessionName().getRelativeName());
          }
 
          // Send a message to 'receiver'

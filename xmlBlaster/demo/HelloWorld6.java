@@ -146,6 +146,7 @@ public class HelloWorld6
          SubscribeKey sk = new SubscribeKey(glob, "Banking");
          SubscribeQos sq = new SubscribeQos(glob);
          con.subscribe(sk, sq);
+         log.info("Subsrcibed with id " + sr1.getSubscriptionId());
 
 
          sk = new SubscribeKey(glob, "HelloWorld6");
@@ -161,13 +162,14 @@ public class HelloWorld6
                return "";
             }
          });  // subscribe with our specific update handler
+         log.info("Subsrcibed with id " + sr2.getSubscriptionId());
 
 
          PublishKey pk = new PublishKey(glob, "HelloWorld6", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi".getBytes(), pq);
          con.publish(msgUnit);
-         log.info("Published message '" + pk.getOid() + "'");
+         log.info("Published message '" + pk.getOid() + "' " + retQos.getState());
 
 
          pk = new PublishKey(glob, "Banking", "text/plain", "1.0");
@@ -194,6 +196,8 @@ public class HelloWorld6
 
                ek = new EraseKey(glob, "Banking");
                con.erase(ek, eq);
+               if (er.length > 0)
+                  log.info("Eased topic '" + er[0].getKeyOid() + "'");
 
                // Wait on message erase events
                try { Thread.sleep(1000); } catch( InterruptedException i) {}

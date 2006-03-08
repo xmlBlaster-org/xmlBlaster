@@ -23,6 +23,7 @@ import java.util.Hashtable;
  */
 public class HelloWorld3 extends Applet implements I_CallbackRaw
 {
+   private static final long serialVersionUID = 1L;
    I_XmlBlasterAccessRaw xb;
    HelloWorld3 applet;
    TextArea textArea;
