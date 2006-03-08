@@ -183,12 +183,12 @@ public class XmlParserBase extends SaxHandlerBase {
    }
    
    public void startCDATA() {
-      if (this.inClientProperty > 0)
+      if (this.inClientProperty > 1)
          this.character.append("<![CDATA[");
    }
 
    public void endCDATA() {
-      if (this.inClientProperty > 0)
+      if (this.inClientProperty > 1)
          this.character.append("]]>");
    }
    
