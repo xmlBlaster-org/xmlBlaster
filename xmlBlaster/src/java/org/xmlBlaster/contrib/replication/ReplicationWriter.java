@@ -155,6 +155,9 @@ private final static String ME = "ReplicationWriter";
       else
          log.severe("Couldn't initialize I_Parser, please configure 'parser.class'");
       this.nirvanaClient = this.info.getBoolean("replication.nirvanaClient", false);
+      
+      
+      
    }
 
    public void shutdown() throws Exception {
@@ -536,8 +539,10 @@ private final static String ME = "ReplicationWriter";
     * This is invoked for dump files
     */
    public void update(String topic, byte[] content, Map attrMap) throws Exception {
-      if (this.nirvanaClient)
+      if (this.nirvanaClient) {
+         log.warning("The content of the data for this writer ' is sent to nirvana since 'replication.nirvanaClient' is set to 'true'");
          return;
+      }
       ClientProperty prop = (ClientProperty)attrMap.get("_filename");
       String filename = null;
       if (prop == null) {
