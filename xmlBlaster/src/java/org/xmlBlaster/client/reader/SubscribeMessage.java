@@ -70,11 +70,11 @@ public class SubscribeMessage implements I_Callback
       String queryType;
       if (oidString != null) {
          xmlKey = oidString;
-         queryType = "EXACT";
+         queryType = Constants.EXACT;
       }
       else {
          xmlKey = xpathString;
-         queryType = "XPATH";
+         queryType = Constants.XPATH;
       }
 
       setUp();  // login
@@ -217,7 +217,7 @@ public class SubscribeMessage implements I_Callback
          System.exit(1);
       }
       try {
-         SubscribeMessage publishFile = new SubscribeMessage(glob);
+         new SubscribeMessage(glob);
       } catch (Throwable e) {
          e.printStackTrace();
          System.err.println(SubscribeMessage.ME + ": " + e.toString());
