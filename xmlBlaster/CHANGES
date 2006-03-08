@@ -4,11 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
 
- o #14874 Added XmlBlasterException hook to react customized on XmlBlasterExceptions
+ o #14874 - #14876 Added XmlBlasterException hook to react customized on XmlBlasterExceptions
    The default implementation (see Main.java) does an immediate exit of xmlBlaster for error codes 
    defined, for example "-xmlBlaster/panicErrorCodes resource.db.unknown,resource.db.unavailable"
    The exit does not shutdown with the RunlevelManager but kills the instance immediately.
-   You can add your own hook with
+   You can add your own hook implementation (here MyHandler.java) with
      java -Dorg.xmlBlaster.util.I_XmlBlasterExceptionHandler=MyHandler org.xmlBlaster.Main
    -Changed to load signal catcher already in HALTED_POST
 
