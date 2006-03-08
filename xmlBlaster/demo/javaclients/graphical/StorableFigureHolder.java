@@ -17,7 +17,6 @@ import java.io.ByteArrayInputStream;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
 
 /**
  * This is a placeholder for the Figure when it is sent over xmlBlaster
@@ -38,7 +37,7 @@ public class StorableFigureHolder implements Storable {
     * @param fig
     */
    public StorableFigureHolder(Figure fig, String figId, String toFront) {
-      this.log = log;
+      StorableFigureHolder.log = log;
       this.fig = fig;
       this.figId = figId;
       this.toFront = toFront;

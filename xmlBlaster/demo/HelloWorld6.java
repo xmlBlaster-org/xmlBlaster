@@ -1,30 +1,28 @@
 // xmlBlaster/demo/HelloWorld6.java
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 
 
 /**
@@ -41,7 +39,6 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  */
 public class HelloWorld6
 {
-   private final String ME = "HelloWorld6";
    private static Logger log = Logger.getLogger(HelloWorld6.class.getName());
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
@@ -148,12 +145,12 @@ public class HelloWorld6
 
          SubscribeKey sk = new SubscribeKey(glob, "Banking");
          SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos sr1 = con.subscribe(sk, sq);
+         con.subscribe(sk, sq);
 
 
          sk = new SubscribeKey(glob, "HelloWorld6");
          sq = new SubscribeQos(glob);
-         SubscribeReturnQos sr2 = con.subscribe(sk, sq, new I_Callback() {
+         con.subscribe(sk, sq, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (updateKey.getOid().equals("HelloWorld6"))
                   log.info("Receiving asynchronous message '" + updateKey.getOid() +
@@ -169,7 +166,7 @@ public class HelloWorld6
          PublishKey pk = new PublishKey(glob, "HelloWorld6", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi".getBytes(), pq);
-         PublishReturnQos retQos = con.publish(msgUnit);
+         con.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
 
 
@@ -177,7 +174,7 @@ public class HelloWorld6
          pk.setClientTags("<Account><withdraw/></Account>"); // Add banking specific meta data
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
-         retQos = con.publish(msgUnit);
+         con.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
       }
       catch (XmlBlasterException e) {
@@ -193,10 +190,10 @@ public class HelloWorld6
                EraseQos eq = new EraseQos(glob);
 
                EraseKey ek = new EraseKey(glob, "HelloWorld6");
-               EraseReturnQos[] er = con.erase(ek, eq);
+               con.erase(ek, eq);
 
                ek = new EraseKey(glob, "Banking");
-               er = con.erase(ek, eq);
+               con.erase(ek, eq);
 
                // Wait on message erase events
                try { Thread.sleep(1000); } catch( InterruptedException i) {}

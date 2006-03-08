@@ -46,7 +46,7 @@ public class ServerHelper {
    public ServerHelper(Global glob, Logger log, String name) {
       ME = "ServerHelper-"+name;
       this.glob_ = glob;
-      log = log;
+      ServerHelper.log = log;
       setUp();
    }
 

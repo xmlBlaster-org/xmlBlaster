@@ -1,66 +1,21 @@
 package org.xmlBlaster.test.classtest;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.dispatch.DispatchManager;
-import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.util.error.MsgErrorInfo;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.client.protocol.I_XmlBlaster;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
-import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.PublishKey;
+
+import junit.framework.TestCase;
+
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.XmlBlasterAccess;
+import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.qos.GetReturnQos;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
-import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.client.I_ConnectionHandler;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.XmlBlasterAccess;
-
-import junit.framework.*;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.address.Address;
 
 /**
  * Test the client lib XmlBlasterAccess without a connection to a server. 
@@ -119,7 +74,7 @@ public class XmlBlasterAccessTest extends TestCase {
             address.setBootstrapPort(8999); // a wrong port to avoid connection
             address.setRetries(0);       // switch off polling
             connectQos.setAddress(address);
-            ConnectReturnQos connectReturnQos = xmlBlasterAccess.connect(connectQos, null);
+            xmlBlasterAccess.connect(connectQos, null);
             fail("Not expected successful connect");
          }
          catch (XmlBlasterException e) {
