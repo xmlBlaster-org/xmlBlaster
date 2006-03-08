@@ -289,7 +289,7 @@ class SocketConnectorThread extends Thread {
       
       StringTokenizer st = new StringTokenizer(line);
       
-      // check for a least 2 arguments in the straeam
+      // check for at least 2 arguments in the straeam
       if (st.countTokens() < 2) {
          log.severe("To few arguments in String [" + line + "]");
          return null;
