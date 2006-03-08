@@ -26,7 +26,7 @@ public class DbWriterPlugin extends GlobalInfo {
    private DbWriter dbWriter;
 
    /**
-    * Default constructor, you need to call <tt>init()<tt> thereafter.
+    * Default constructor, you need to call {@link #doInit(Global, PluginInfo)} thereafter.
     */
    public DbWriterPlugin() {
       super(new String[] {"dbPool.class", "mom.class", "parser.class", "dbWriter.writer.class"});
