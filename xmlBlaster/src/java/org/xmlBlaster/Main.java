@@ -17,7 +17,6 @@ import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.log.XbFormatter;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Authenticate;
