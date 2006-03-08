@@ -97,7 +97,7 @@ public class FileWriterCallback implements I_Update {
          }
       }
       try {
-         log.info("storing file '" + fileName + "' on directory '" + tmpDir.getName() + "', size: " + content.length + " bytes");
+         log.info("storing file '" + fileName + "' on directory '" + tmpDir.getName() + "', size: " + content.length + " bytes and chunk number '" + chunkNumber + "'");
          
          FileOutputStream fos = new FileOutputStream(file);
          fos.write(content);
