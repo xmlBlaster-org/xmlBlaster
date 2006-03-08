@@ -395,7 +395,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          if (to == RunlevelManager.RUNLEVEL_RUNNING_POST) {
             log.info(Global.getMemoryStatistic());
             if (controlPanel == null) {
-               if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.WHITE_RED);
+               if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.BLACK_GREEN);
                final String bound = "|";
                String ver = bound + " XmlBlaster cluster node <" + glob.getId() + "> v" + glob.getReleaseId() + " " + glob.getBuildTimestamp();
                int width = ver.length() + 6;
@@ -456,7 +456,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * Keyboard input usage.
     */
    private void keyboardUsage() {
-      if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.WHITE_GREEN);
+      if (XbFormatter.withXtermColors()) System.out.println(XbFormatter.BLACK_LTGREEN);
+      System.out.println("");
       System.out.println("----------------------------------------------------------");
       System.out.println("XmlBlaster " + ((glob != null) ? glob.getVersion() : "") +
                     ((glob != null) ? (" build " + glob.getBuildTimestamp()) : ""));
