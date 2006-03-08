@@ -13,8 +13,11 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
@@ -145,13 +148,13 @@ public class HelloWorld6
 
          SubscribeKey sk = new SubscribeKey(glob, "Banking");
          SubscribeQos sq = new SubscribeQos(glob);
-         con.subscribe(sk, sq);
+         SubscribeReturnQos sr1 = con.subscribe(sk, sq);
          log.info("Subsrcibed with id " + sr1.getSubscriptionId());
 
 
          sk = new SubscribeKey(glob, "HelloWorld6");
          sq = new SubscribeQos(glob);
-         con.subscribe(sk, sq, new I_Callback() {
+         SubscribeReturnQos sr2 = con.subscribe(sk, sq, new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (updateKey.getOid().equals("HelloWorld6"))
                   log.info("Receiving asynchronous message '" + updateKey.getOid() +
@@ -168,7 +171,7 @@ public class HelloWorld6
          PublishKey pk = new PublishKey(glob, "HelloWorld6", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi".getBytes(), pq);
-         con.publish(msgUnit);
+         PublishReturnQos retQos = con.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "' " + retQos.getState());
 
 
@@ -195,7 +198,7 @@ public class HelloWorld6
                con.erase(ek, eq);
 
                ek = new EraseKey(glob, "Banking");
-               con.erase(ek, eq);
+               EraseReturnQos[] er = con.erase(ek, eq);
                if (er.length > 0)
                   log.info("Eased topic '" + er[0].getKeyOid() + "'");
 
