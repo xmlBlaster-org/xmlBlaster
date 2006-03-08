@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      SocketGetter.java
-Project:   xmlBlaster.org
-Comment:   Code to get a message using a telnet.
-Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-------------------------------------------------------------------------------*/
+ Name:      SocketGetter.java
+ Project:   xmlBlaster.org
+ Comment:   Code to get a message using a telnet.
+ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+ ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.socketgetter;
 
 import java.io.BufferedReader;
@@ -36,7 +36,7 @@ import org.xmlBlaster.util.def.Constants;
  * Usage:
  * <br/>
  * <code>
- * java org.xmlBlaster.client.socketgetter.SocketGetter -myPort &lt;port&gt;
+ * java org.xmlBlaster.client.socketgetter.SocketGetter -port &lt;port&gt;
  * </code>
  * </p>
  * 
@@ -44,7 +44,7 @@ import org.xmlBlaster.util.def.Constants;
  * Example for usage:
  * <br/>
  * <code>
- * java org.xmlBlaster.client.socketgetter.SocketGetter -myPort 9876 -plugin/socket/hostname server
+ * java org.xmlBlaster.client.socketgetter.SocketGetter -port 9876 -plugin/socket/hostname server
  * </code>
  * <br/>
  * <code>
@@ -57,14 +57,27 @@ import org.xmlBlaster.util.def.Constants;
  * In this example, the xmlBlaster runns on the host called <b>server</b>, where at the SocketGetter
  * runns on the <b>localhost</b> on port 9876.
  * </p>
+ * This class may be configured as a native plugin as well, see {@link org.xmlBlaster.contrib.socketgetter.SocketGetterPlugin}.
  * 
- * @author goetzger@xmlblaster.org
+ * @author <a href="mailto:goetzger@xmlblaster.org">Heinrich G&ouml;tzger</a>
  * 
  */
-public class SocketGetter {
-   
+public class SocketGetter extends Thread {
+
    /** Holds the logger for this class. */
    private static Logger log = Logger.getLogger(SocketGetter.class.getName());
+
+   /** Holds the connection to the xmlBlaster server. */
+   private I_XmlBlasterAccess xmlBlasterConnection;
+
+   /** The util.Global instance for this client. */
+   private Global glob;
+
+   /** The port where the socket listens on. */
+   private int port;
+   
+   /** Holds the socket server. */
+   private ServerSocket socketServer;
 
    /**
     * Starts the SocketGetter. 
@@ -83,29 +96,36 @@ public class SocketGetter {
     * <p>
     * <code>java.util.logging.Level.FINER</code> is good for debugging purposes.
     * </p>
+    * @param global The Global instance created in main.
+    * @param port The port where the socket listens on.
     */
-   public static void main(String[] args) {
+   public SocketGetter(final Global global, final int port) {
+      glob = global;
+      this.port = port;
+   }
+
+   /**
+    * Convenience constructor dor the use from the main method.
+    * @param global The Global instance created in main.
+    */
+   public SocketGetter(final Global global) {
+      this(global, global.getProperty().get("port", 0));
+   }
+
+   /**
+    * Starts the socket getter task.
+    */
+   public void run() {
 
       try {
-         /** Holds the connection to the xmlBlaster server. */
-         I_XmlBlasterAccess xmlBlasterConnection;
-         
-         /** The util.Global instance for this client. */
-         Global glob = new Global(args);
-
-         /** The port where this client listens. */
-         int port = glob.getProperty().get("myPort", 0);
-
-         
          // establish a connection to xmlBlaster server
          xmlBlasterConnection = null;
-         
+
          try {
             xmlBlasterConnection = glob.getXmlBlasterAccess();
             ConnectQos qos = new ConnectQos(glob);
             xmlBlasterConnection.connect(qos, null); // Login to xmlBlaster
-         }
-         catch (Exception e) {
+         } catch (Exception e) {
             log.severe(e.toString());
             e.printStackTrace();
          }
@@ -115,17 +135,18 @@ public class SocketGetter {
                log.info("Wait for connection on port " + port);
             }
             // start the socket server
-            ServerSocket socketServer = new ServerSocket(port);
+            socketServer = new ServerSocket(port);
             while (true) {
                // wait for a new client
                Socket socket = socketServer.accept();
                // a client has been accepted, create a thread ...
-               Thread thread = new SocketConnectorThread(glob, xmlBlasterConnection, socket);
+               Thread thread = new SocketConnectorThread(glob,
+                     xmlBlasterConnection, socket);
                // ... and start it
                thread.start();
             }
          } catch (IOException ioe) {
-            log.throwing(SocketGetter.class.getName(), "main", ioe);
+            log.throwing(SocketGetter.class.getName(), "init", ioe);
             System.exit(1);
          } finally {
             if (log.isLoggable(Level.INFO)) {
@@ -134,13 +155,47 @@ public class SocketGetter {
             xmlBlasterConnection.disconnect(null);
          }
 
-      }
-      catch (Exception e) {
-         log.throwing(SocketGetter.class.getName(), "main", e);
+      } catch (Exception e) {
+         log.throwing(SocketGetter.class.getName(), "init", e);
       }
    }
+
+   /**
+    * Closes the connectionto xmlBlaster server.
+    */
+   public void shutdown() {
+      if (log.isLoggable(Level.INFO)) {
+         log.info("Close connection to xmlBlaster.");
+      }
+      
+      try {
+         // close the socket server
+         socketServer.close();
+      } catch (IOException e) {
+         log.throwing(SocketGetter.class.getName(), "shutdown", e);
+      }
+      
+      // close connection to xmlBlaster server
+      xmlBlasterConnection.disconnect(null);
+   }
+
+   /**
+    * The main method.
+    * @param args The command-line arguments.
+    */
+   public static void main(String[] args) {
+      Global global = new Global(args);
+
+      Thread sg = new SocketGetter(global);
+      sg.start();
+      
+      try { Thread.sleep(1000); } catch(Exception e) { }
+      Global.waitOnKeyboardHit("Thread started, Hit key to exit.");
+      
+      ((SocketGetter)sg).shutdown();
+   }
+
 }
-   
 
 /**
  * The socket thread which handles a single request from a client.
@@ -150,7 +205,7 @@ public class SocketGetter {
  * <br/>
  * The request must start with <b>get</b> otherwise no message will be delivered.
  * 
- * @author goetzger@xmlblaster.org
+ * @author <a href="mailto:goetzger@xmlblaster.org">Heinrich G&ouml;tzger</a>
  * 
  */
 class SocketConnectorThread extends Thread {
@@ -160,10 +215,10 @@ class SocketConnectorThread extends Thread {
 
    /** The actual socket. */
    private Socket socket;
-   
+
    /** The user global. */
    private Global glob;
-   
+
    /** The connection to the xmlBlaster server. */
    private I_XmlBlasterAccess connection;
 
@@ -173,7 +228,8 @@ class SocketConnectorThread extends Thread {
     * @param connection the connection to the xmlBlaster server.
     * @param socket the accepted socket for tha actual (telnet) client.
     */
-   public SocketConnectorThread(final Global glob, final I_XmlBlasterAccess connection, final Socket socket) {
+   public SocketConnectorThread(final Global glob,
+         final I_XmlBlasterAccess connection, final Socket socket) {
       this.socket = socket;
       this.glob = glob;
       this.connection = connection;
@@ -186,9 +242,9 @@ class SocketConnectorThread extends Thread {
       if (log.isLoggable(Level.FINER)) {
          log.finer("Connection established");
       }
-      
+
       // parses the oid from the request
-      final String oid = getOID();
+      final String oid = getOID(socket);
       if (oid == null) {
          // no oid is given ...
          log.severe("No oid given, abort!");
@@ -197,8 +253,10 @@ class SocketConnectorThread extends Thread {
             if (log.isLoggable(Level.FINER)) {
                log.finer("Connection will be closed.");
             }
-            // ... close this connection now!
+            // ... close this connection now! ...
             socket.close();
+            // ... and return to caller.
+            return;
          } catch (IOException e) {
             log.throwing(this.getClass().getName(), "run", e);
          }
@@ -209,11 +267,12 @@ class SocketConnectorThread extends Thread {
 
       try {
          // starts the get request for the given oid
-         msgs = connection.get(new GetKey(glob, oid, Constants.EXACT).toXml(), new GetQos(glob).toXml());
+         msgs = connection.get(new GetKey(glob, oid, Constants.EXACT).toXml(),
+               new GetQos(glob).toXml());
       } catch (XmlBlasterException xe) {
          log.throwing(this.getClass().getName(), "run", xe);
       }
-      
+
       if (msgs == null || msgs.length < 1) {
          // if no message is given ...
          log.finer("No message given for oid [" + oid + "] => abort.");
@@ -222,27 +281,29 @@ class SocketConnectorThread extends Thread {
             if (log.isLoggable(Level.FINER)) {
                log.finer("Connection will be closed.");
             }
-            // ... close this connection now!
+            // ... close this connection now! ...
             socket.close();
+            // ... and return to caller.
+            return;
          } catch (IOException e) {
             log.throwing(this.getClass().getName(), "run", e);
          }
 
       }
-      
+
       if (log.isLoggable(Level.FINER)) {
          log.finer("Got " + msgs.length + " messages for '" + oid + "'");
 
-         for (int ii=0; ii<msgs.length; ii++) {
+         for (int ii = 0; ii < msgs.length; ii++) {
             log.finer(ii + ": [" + msgs[ii].toXml() + "]");
          }
       }
-      
 
       // create a convenience writer to the socket outputstream
       BufferedWriter bw = null;
       try {
-         bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+         bw = new BufferedWriter(new OutputStreamWriter(socket
+               .getOutputStream()));
       } catch (IOException e) {
          log.throwing(this.getClass().getName(), "run", e);
       }
@@ -253,19 +314,22 @@ class SocketConnectorThread extends Thread {
          if (msgs != null && msgs.length > 0) {
             bw.write(msgs[0].toXml());
          }
-            
+
          bw.flush();
          bw.close();
       } catch (IOException e) {
          log.throwing(this.getClass().getName(), "run", e);
       }
-      
+
       // close the clients socket connection
       try {
          if (log.isLoggable(Level.FINER)) {
             log.finer("Connection will be closed.");
          }
+         // ... close this connection ...
          socket.close();
+         // ... and return to caller.
+         return;
       } catch (IOException e) {
          log.throwing(this.getClass().getName(), "run", e);
       }
@@ -277,9 +341,9 @@ class SocketConnectorThread extends Thread {
     * The request must start with <b>get</b> otherwise null will be returned.
     * @return An oid or null, if no oid was given.
     */
-   private final String getOID() {
+   private final static String getOID(final Socket socket) {
       String oid = null;
-      
+
       InputStream is = null;
 
       // get the input stream from the clients socket
@@ -290,7 +354,7 @@ class SocketConnectorThread extends Thread {
       }
 
       // create a conveninece reader
-      BufferedReader br = new BufferedReader(new InputStreamReader(is) );
+      BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
       String line = null;
       try {
@@ -305,9 +369,9 @@ class SocketConnectorThread extends Thread {
          log.severe("EOF reached");
          return null;
       }
-      
+
       StringTokenizer st = new StringTokenizer(line);
-      
+
       // check for at least 2 arguments in the straeam
       if (st.countTokens() < 2) {
          log.severe("To few arguments in String [" + line + "]");
@@ -317,7 +381,7 @@ class SocketConnectorThread extends Thread {
       if (st.nextToken().equalsIgnoreCase("get")) {
          oid = st.nextToken();
       }
-      
+
       if (log.isLoggable(Level.FINER)) {
          log.finer("key is [" + oid + "]");
       }
