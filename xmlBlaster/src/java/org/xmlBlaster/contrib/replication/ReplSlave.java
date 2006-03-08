@@ -639,7 +639,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
 
    public String reInitiateReplication() throws Exception {
-      return this.manager.initiateReplication(this.slaveSessionId, this.replPrefix, this.cascadedReplSlave, this.cascadedReplPrefix);
+      return this.manager.initiateReplication(this.slaveSessionId, this.replPrefix + "_Ver_" + this.ownVersion, this.cascadedReplSlave, this.cascadedReplPrefix);
    }
    
    public String getReplPrefix() {
