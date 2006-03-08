@@ -6,6 +6,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
@@ -45,7 +46,7 @@ public class HelloWorld5
             sender = glob.getXmlBlasterAccess();
 
             ConnectQos qos = new ConnectQos(sender.getGlobal(), senderName, "secret");
-            sender.connect(qos, new I_Callback() {
+            ConnectReturnQos conRetQos = sender.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info("Receiving asynchronous message '" + updateKey.getOid() + "' in sender default handler" );
                   log.info("Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
@@ -62,7 +63,7 @@ public class HelloWorld5
             receiver = globReceiver.getXmlBlasterAccess();
 
             ConnectQos qos = new ConnectQos(receiver.getGlobal(), receiverName, "secret");
-            receiver.connect(qos, new I_Callback() {
+            ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info("Receiving asynchronous message '" + updateKey.getOid() + "' in receiver default handler");
                   log.info("Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
@@ -83,7 +84,7 @@ public class HelloWorld5
                         log.info("Published message '" + pk.getOid() + "' to " + updateQos.getSender());
                      }
                      else {
-                        receiver.publish(msgUnit);
+                        PublishReturnQos retQos = receiver.publish(msgUnit);
                         log.info("Published message '" + retQos.getKeyOid() + "' to " + updateQos.getSender());
                      }
                   }
