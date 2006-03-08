@@ -12,10 +12,12 @@ import java.util.logging.Level;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_XmlBlasterExceptionHandler;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.log.XbFormatter;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -53,7 +55,7 @@ import java.io.IOException;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" target="others">admin.telnet</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html" target="others">util.property</a>
  */
-public class Main implements I_RunlevelListener, I_Main, I_SignalListener
+public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_XmlBlasterExceptionHandler
 {
    private String ME = "Main";
 
@@ -68,7 +70,11 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
 
    private boolean inShutdownProcess = false;
    private SignalCatcher signalCatcher;
-
+   /**
+    * Comma separate list of errorCodes which to an immediate System.exit(1);
+    * Used by our default implementation of I_XmlBlasterExceptionHandler
+    */
+   private String panicErrorCodes = ""; // ErrorCode.RESOURCE_DB_UNKNOWN.getErrorCode()+","+ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
 
    /**
     * true: If instance created by control panel<br />
@@ -163,6 +169,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
         } catch(InterruptedException e) { log.warning("Caught exception during xmlBlaster/sleepOnStartup=" + sleepOnStartup + ": " + e.toString()); }
       }
 
+      this.panicErrorCodes = glob.getProperty().get("xmlBlaster/panicErrorCodes", this.panicErrorCodes);
+      log.fine("Following errorCodes do an immediate exit: " + this.panicErrorCodes);
+      
       int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
       try {
          runlevelManager = glob.getRunlevelManager();
@@ -360,7 +369,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * Enforced by I_RunlevelListener
     * @see org.xmlBlaster.engine.runlevel.I_RunlevelListener#runlevelChange(int, int, boolean)
     */
-   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+   public void runlevelChange(int from, int to, boolean force) throws XmlBlasterException {
       //if (log.isLoggable(Level.FINER)) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
          return;
@@ -371,12 +380,21 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          //   if (glob.getNodeId() == null)
          //      glob.setUniqueNodeIdName(createNodeId());
          //}
-         if (to == RunlevelManager.RUNLEVEL_STANDBY_PRE) {
+         if (to == RunlevelManager.RUNLEVEL_HALTED_POST) {
             boolean useSignalCatcher = glob.getProperty().get("useSignalCatcher", true);
             if (useSignalCatcher) {
-               this.signalCatcher = new SignalCatcher(glob, this);
-               this.signalCatcher.catchSignals();
+               try {
+                  this.signalCatcher = SignalCatcher.instance();
+                  this.signalCatcher.register(this);
+                  this.signalCatcher.catchSignals();
+               }
+               catch (Throwable e) {
+                  log.warning("Can't register signal catcher: " + e.toString());
+               }
             }
+            // Add us as an I_XmlBlasterExceptionHandler ...
+            if (XmlBlasterException.getExceptionHandler() == null)
+               XmlBlasterException.setExceptionHandler(this); // see public void newException(XmlBlasterException e);
          }
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
          }
@@ -444,6 +462,19 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       }
    }
 
+   public void newException(XmlBlasterException e) {
+      // Typically if the DB is lost: ErrorCode.RESOURCE_DB_UNKNOWN
+      if (panicErrorCodes.indexOf(e.getErrorCodeStr()) != -1) {
+         log.severe("PANIC: Doing immediate shutdown caused by excetion: " + e.getMessage());
+         e.printStackTrace();
+         SignalCatcher sc = this.signalCatcher;
+         if (sc != null) {
+            sc.removeSignalCatcher();
+         }
+         System.exit(1);
+      }
+   }
+   
    /**
    * You will be notified when the runtime exits. 
    * @see I_SignalListener#shutdownHook()

@@ -50,6 +50,12 @@ import org.xmlBlaster.util.def.Constants;
  *  // {10} = transactionInfo       IBM's JDK MakeFormat only supports 9 digits
  *  // {11} = lang                  IBM's JDK MakeFormat only supports 9 digits
  * </pre>
+ * <p>
+ * You can register your own exception handler which intercepts all XmlBlasterException creations
+ * and for example do a shutdown on certain ErrorCodes</p>
+ * <pre>
+ * java -Dorg.xmlBlaster.util.I_XmlBlasterExceptionHandler=MyHandler org.xmlBlaster.Main
+ * </pre>
  * @author "Marcel Ruff" <xmlBlaster@marcelruff.info>
  * @since 0.8+ with extended attributes
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html">The admin.errorcodes requirement</a>
@@ -59,6 +65,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 {
    private static Logger log = Logger.getLogger(XmlBlasterException.class.getName());
    private static final long serialVersionUID = -973794183539996697L;
+   private static I_XmlBlasterExceptionHandler exceptionHandler;
    transient private final Global glob;
    transient private ErrorCode errorCodeEnum;
    private String errorCodeStr;
@@ -88,6 +95,25 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    //private final String logFormatTransaction;
    private final String logFormatLegacy;
    private final String logFormat;
+   
+   static {
+      String cname = null;
+      try {
+         cname = System.getProperty("org.xmlBlaster.util.I_XmlBlasterExceptionHandler");
+         if (cname != null) {
+               try {
+                  Class clz = ClassLoader.getSystemClassLoader().loadClass(cname);
+                  exceptionHandler = (I_XmlBlasterExceptionHandler) clz.newInstance();
+               } catch (ClassNotFoundException ex) {
+                  Class clz = Thread.currentThread().getContextClassLoader().loadClass(cname);
+                  exceptionHandler = (I_XmlBlasterExceptionHandler) clz.newInstance();
+               }
+         }
+      } catch (Exception ex) {
+         System.err.println("Could not load I_XmlBlasterExceptionHandler \"" + cname + "\"");
+         ex.printStackTrace();
+      }
+   }
 
    /**
     * The errorCodeEnum.getDescription() is used as error message. 
@@ -146,6 +172,9 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                                 ((this.cause == null) ? "" : this.cause.toString()) : embeddedMessage; // cause.toString() is <classname>:getMessage()
       this.transactionInfo = (transcationInfo == null) ? "<transaction/>" : transcationInfo;
       this.isServerSide = isServerSide;
+      I_XmlBlasterExceptionHandler eh = exceptionHandler;
+      if (eh != null)
+         eh.newException(this);
    }
 
    public final void changeErrorCode(ErrorCode errorCodeEnum) {
@@ -735,5 +764,20 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
       e = XmlBlasterException.convert(glob, null, null, new IllegalArgumentException("wrong args"));
       System.out.println("\ngetMessage:\n" + e.getMessage());
+   }
+
+   /**
+    * @return Returns the exceptionHandler.
+    */
+   public static I_XmlBlasterExceptionHandler getExceptionHandler() {
+      return exceptionHandler;
+   }
+
+   /**
+    * @param exceptionHandler The exceptionHandler to set.
+    */
+   public static void setExceptionHandler(
+         I_XmlBlasterExceptionHandler exceptionHandler) {
+      XmlBlasterException.exceptionHandler = exceptionHandler;
    }
 }
