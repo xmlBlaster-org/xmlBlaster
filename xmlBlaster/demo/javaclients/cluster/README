@@ -6,7 +6,7 @@ Please read the cluster requirement
 
 first.
 
-NOTE 1: You need to start all examples in the current directory
+NOTE 1: You HAVE TO start all examples in the current directory
    xmlBlaster/demo/javaclients/cluster
    to assure the xmlBlasterPlugins.xml and *.properties files are found.
 
@@ -15,7 +15,7 @@ NOTE 2: Assure that xmlBlasterPlugins.xml has the plugin 'cluster' configured
 
 NOTE 3: You can switch on specific logging to get a better idea what
    happens, typically this is a good choice:
-   -call[core] true -call[cluster] true -trace[cluster] true -trace[client] true -call[client] true
+   -logging/org.xmlBlaster.engine.RequestBroker FINE -logging/org.xmlBlaster.engine.cluster FINE -logging/org.xmlBlaster.client FINE
 
 NOTE 4: The demo below has following setup.
    'avalon' is a slave to 'heron' for 'RUGBY_NEWS' messages.
@@ -31,7 +31,7 @@ NOTE 4: The demo below has following setup.
  Edit avalon.properties and change the IP variable
  to your host (the host where golan runs later).
   
-   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile avalon.properties -call[core] true
+   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile avalon.properties -logging/org.xmlBlaster.engine.RequestBroker FINE
 
  'avalon.mycomp.com' listens now on bootstrapPort 7601.
  We have switched on logging of method calls in the 'core'
@@ -56,7 +56,7 @@ NOTE 4: The demo below has following setup.
 4. Start heron (the master):
 ============================
 
-   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile heron.properties -call[core] true
+   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile heron.properties -logging/org.xmlBlaster.engine.RequestBroker FINE
 
  Heron should be contacted by avalon and receive the
  tailed back message sent by pubisher/2
@@ -125,9 +125,9 @@ cluster.node.master[golan.mycomp.com]=\
 Example setup with publisher to heron and subscriber at avalon
 ========================================
 
-java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile heron.properties -call[core] true -call[cluster] true -trace[cluster] true
+java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile heron.properties
 
-java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile avalon.properties -call[core] true -call[cluster] true -trace[cluster] true
+java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile avalon.properties
 
 java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -bootstrapPort 7600 -numPublish 5 -interactivePublish true -session.name pubisher/2 -persistent true -erase.forceDestroy true -protocol IOR -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win"
 
