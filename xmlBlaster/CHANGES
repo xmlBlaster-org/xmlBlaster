@@ -12,6 +12,8 @@ Current svn repository
      java -Dorg.xmlBlaster.util.I_XmlBlasterExceptionHandler=MyHandler org.xmlBlaster.Main
    -Changed to load signal catcher already in HALTED_POST
 
+ o #14867 Added SocketGetter to the contrib package.
+
  o #14845 Removed jutils completely, if you have used org.jutils code in your clients
    please port it, for some time you can download jutils.jar from
    http://www.xmlBlaster.org/jutils.jar
