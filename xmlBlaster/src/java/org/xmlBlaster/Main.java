@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.I_XmlBlasterExceptionHandler;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -73,7 +74,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
     * Comma separate list of errorCodes which to an immediate System.exit(1);
     * Used by our default implementation of I_XmlBlasterExceptionHandler
     */
-   private String panicErrorCodes = "";// ErrorCode.RESOURCE_DB_UNKNOWN.getErrorCode()+","+ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
+   private String panicErrorCodes = ErrorCode.RESOURCE_DB_UNKNOWN.getErrorCode()+","+ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
 
    /**
     * true: If instance created by control panel<br />
@@ -463,9 +464,10 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
 
    public void newException(XmlBlasterException e) {
       // Typically if the DB is lost: ErrorCode.RESOURCE_DB_UNKNOWN
-      if (panicErrorCodes.indexOf(e.getErrorCodeStr()) != -1) {
-         log.severe("PANIC: Doing immediate shutdown caused by excetion: " + e.getMessage());
+      if (this.panicErrorCodes.indexOf(e.getErrorCodeStr()) != -1) {
+         log.severe("PANIC: Doing immediate shutdown caused by exception: " + e.getMessage());
          e.printStackTrace();
+         log.severe(Global.getStackTraceAsString(e));
          SignalCatcher sc = this.signalCatcher;
          if (sc != null) {
             sc.removeSignalCatcher();
