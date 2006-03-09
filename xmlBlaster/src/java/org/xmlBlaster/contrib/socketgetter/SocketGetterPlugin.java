@@ -47,7 +47,7 @@ public class SocketGetterPlugin extends GlobalInfo {
    public SocketGetterPlugin() {
       super((String[]) null);
    }
-
+   
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,
     *      org.xmlBlaster.util.plugin.PluginInfo)

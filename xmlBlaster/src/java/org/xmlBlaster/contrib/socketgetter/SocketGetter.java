@@ -36,7 +36,7 @@ import org.xmlBlaster.util.def.Constants;
  * Usage:
  * <br/>
  * <code>
- * java org.xmlBlaster.client.socketgetter.SocketGetter -port &lt;port&gt;
+ * java org.xmlBlaster.contrib.socketgetter.SocketGetter -port &lt;port&gt;
  * </code>
  * </p>
  * 
@@ -44,7 +44,7 @@ import org.xmlBlaster.util.def.Constants;
  * Example for usage:
  * <br/>
  * <code>
- * java org.xmlBlaster.client.socketgetter.SocketGetter -port 9876 -plugin/socket/hostname server
+ * java org.xmlBlaster.contrib.socketgetter.SocketGetter -port 9876 -plugin/socket/hostname server
  * </code>
  * <br/>
  * <code>
