@@ -455,31 +455,6 @@ XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] serverSideExce
 
 
 #------------------------------------------------------------------------------
-# How to format Date and Time in logging output
-#
-# Choose one of SHORT, MEDIUM, LONG, FULL
-#   SHORT is completely numeric, such as 12.13.52 or 3:30pm
-#   MEDIUM is longer, such as Jan 12, 1952
-#   LONG is longer, such as January 12, 1952 or 3:30:32pm
-#   FULL is pretty completely specified, such as Tuesday, April 12, 1952 AD or 3:30:42pm PST.
-LogFormat.Date=MEDIUM
-LogFormat.Time=MEDIUM
-
-# Choose language - lowercase two-letter ISO-639 code.
-# Choose country - uppercase two-letter ISO-3166 code
-# Defaults to local computer setting
-#LogFormat.Language=en
-#LogFormat.Country=US
-
-#LogFormat.Language=fr
-#LogFormat.Country=FR
-
-#LogFormat.Language=de
-#LogFormat.Country=DE
-#------------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------------
 # JAXP parsers.
 # See http://www.xmlblaster.org/FAQ.html#xml-parser
 # See http://java.sun.com/j2se/1.5.0/docs/api/javax/xml/parsers/DocumentBuilderFactory.html#newInstance()
