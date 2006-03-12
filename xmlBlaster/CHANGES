@@ -3,7 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn repository
 ======================
- o 14909# Cluster fixes
+
+ o #14913 Refactored common CORBA classes to org.xmlBlaster.util package
+
+ o #14909 Cluster fixes
    - Setting retries=-1 as a default for remote cluster login
    - Default is now to not disconnect at the remote clusters during shutdown
      The old behavior can be forced by adding a <diconnect/> tag.

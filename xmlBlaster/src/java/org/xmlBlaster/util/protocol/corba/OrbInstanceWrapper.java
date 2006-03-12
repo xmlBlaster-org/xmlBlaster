@@ -5,15 +5,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   OrbInstanceWrapper class to invoke the xmlBlaster server using CORBA.
 Version:   $Id$
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.protocol.corba;
+package org.xmlBlaster.util.protocol.corba;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.Constants;
 import java.util.Properties;
 
 /**

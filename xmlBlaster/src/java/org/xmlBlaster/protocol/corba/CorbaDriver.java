@@ -12,11 +12,11 @@ import java.util.logging.Level;
 
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.protocol.corba.OrbInstanceFactory;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -272,7 +272,7 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
                   }
                   catch (org.omg.CosNaming.NamingContextPackage.AlreadyBound ex) {
                      if (log.isLoggable(Level.FINE)) log.fine("Can't register CORBA NameService context '" +
-                                    getString(nameXmlBlaster) + "': " + ex.toString());
+                                    OrbInstanceFactory.getString(nameXmlBlaster) + "': " + ex.toString());
                      try {
                         org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
                         relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
@@ -280,12 +280,12 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
                      }
                      catch (Throwable e) {
                         log.severe("Can't register CORBA NameService context '" +
-                                   getString(nameXmlBlaster) + "', #"+i+"/"+numTries+": " + e.toString());
+                                   OrbInstanceFactory.getString(nameXmlBlaster) + "', #"+i+"/"+numTries+": " + e.toString());
                      }
                   }
                   catch (org.omg.CORBA.NO_IMPLEMENT ex) {  // JacORB 1.3.x bug (remove this catch when updated to JacORB 1.4x)
                      if (log.isLoggable(Level.FINE)) log.fine("Can't register CORBA NameService context '" +
-                                    getString(nameXmlBlaster) + "': " + ex.toString());
+                                    OrbInstanceFactory.getString(nameXmlBlaster) + "': " + ex.toString());
                      try {
                         org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
                         relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
@@ -293,7 +293,7 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
                      }
                      catch (Throwable e) {
                         log.severe("Can't register CORBA NameService context '" +
-                                   getString(nameXmlBlaster) + "', #"+i+"/"+numTries+": " + e.toString());
+                                   OrbInstanceFactory.getString(nameXmlBlaster) + "', #"+i+"/"+numTries+": " + e.toString());
                      }
                   }
                }
@@ -309,7 +309,7 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
                }
 
                log.info("Published AuthServer IOR to NameService ORBInitRef='" + System.getProperty("ORBInitRef") +
-                            "' with name '" + getString(nameXmlBlaster) + "/" + getString(nameNode) + "'");
+                            "' with name '" + OrbInstanceFactory.getString(nameXmlBlaster) + "/" + OrbInstanceFactory.getString(nameNode) + "'");
             }
             catch (XmlBlasterException e) {
                log.warning(e.getMessage());
@@ -401,22 +401,6 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
       }
 
       this.authRef._release();
-   }
-
-   /**
-    * Creates a string representation of a NameService name hierarchy. 
-    * This is useful for logging
-    * @return e.g. "xmlBlaster.MOM/heron.MOM"
-    */ 
-   public static String getString(NameComponent [] nameComponent) {
-      String ret = "";
-      for(int i=0; i<nameComponent.length; i++) {
-         if (i > 0) {
-            ret += "/";
-         }
-         ret += nameComponent[i].id + ((nameComponent[i].kind != null && nameComponent[i].kind.length()>0) ? "." + nameComponent[i].kind : "");
-      }
-      return ret;
    }
 
    /**
@@ -542,85 +526,6 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
          throw XmlBlasterException.convert(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> and specify <-ORBInitRef NameService=...> if you want one.", e);
          //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
-   }
-
-   /**
-    * Converts the internal CORBA XmlBlasterException to the util.XmlBlasterException. 
-    */
-   public static final org.xmlBlaster.util.XmlBlasterException convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba) {
-      boolean isServerSide = !glob.isServerSide();
-      org.xmlBlaster.util.XmlBlasterException ex = 
-         new XmlBlasterException(glob, ErrorCode.toErrorCode(eCorba.errorCodeStr),
-                               eCorba.node, eCorba.location, eCorba.lang, eCorba.message, eCorba.versionInfo,
-                               Timestamp.valueOf(eCorba.timestampStr),
-                               eCorba.stackTrace, eCorba.embeddedMessage,
-                               eCorba.transactionInfo, isServerSide);
-      return ex;
-   }
-
-   /**
-    * Converts the util.XmlBlasterException to the internal CORBA XmlBlasterException. 
-    */
-   public static final org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException convert(org.xmlBlaster.util.XmlBlasterException eUtil) {
-      return new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException(
-                 eUtil.getErrorCodeStr(),
-                 eUtil.getNode(),
-                 eUtil.getLocation(),
-                 eUtil.getLang(),
-                 eUtil.getRawMessage(),
-                 eUtil.getVersionInfo(),
-                 eUtil.getTimestamp().toString(),
-                 eUtil.getStackTraceStr(),
-                 eUtil.getEmbeddedMessage(),
-                 eUtil.getTransactionInfo(),
-                 ""
-                 /*eUtil.isServerSide() IS MISSING */); // transform native exception to Corba exception
-   }
-
-   /**
-    * Converts the internal CORBA message unit to the internal representation.
-    */
-   public static final org.xmlBlaster.util.MsgUnitRaw convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit mu) throws XmlBlasterException
-   {
-      return new org.xmlBlaster.util.MsgUnitRaw(mu.xmlKey, mu.content, mu.qos);
-   }
-
-
-   /**
-    * Converts the internal CORBA message unit array to the internal representation.
-    */
-   public static final org.xmlBlaster.util.MsgUnitRaw[] convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
-               throws XmlBlasterException
-   {
-      // convert Corba to internal ...
-      org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = new org.xmlBlaster.util.MsgUnitRaw[msgUnitArr.length];
-      for (int ii=0; ii<msgUnitArr.length; ii++) {
-         internalUnitArr[ii] = CorbaDriver.convert(glob, msgUnitArr[ii]);
-      }
-      return internalUnitArr;
-   }
-
-
-   /**
-    * Converts the internal MsgUnitRaw to the CORBA message unit.
-    */
-   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit convert(org.xmlBlaster.util.MsgUnitRaw mu)
-   {
-      return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.getKey(), mu.getContent(), mu.getQos());
-   }
-
-
-   /**
-    * Converts the internal MsgUnitRaw array to the CORBA message unit array.
-    */
-   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] convert(org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr)
-   {
-      // convert internal to Corba ...
-      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msgUnitArr.length];
-      for (int ii=0; ii<msgUnitArr.length; ii++) {
-         corbaUnitArr[ii] = CorbaDriver.convert(msgUnitArr[ii]);
-      }
-      return corbaUnitArr;
    }
 
    /**

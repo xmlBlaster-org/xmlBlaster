@@ -3,15 +3,20 @@ Name:      OrbInstanceFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.protocol.corba;
+package org.xmlBlaster.util.protocol.corba;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.omg.CosNaming.NameComponent;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
 //import org.xmlBlaster.util.JdkCompatible;
 import java.util.Properties;
 import java.util.Enumeration;
+
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.AddressBase;
 
 /**
@@ -216,10 +221,10 @@ public final class OrbInstanceFactory
       if (glob == null) throw new IllegalArgumentException("You called OrbInstanceFactory.getOrbInstanceWrapper() with glob==null");
       synchronized (glob) {
          OrbInstanceWrapper orbInstanceWrapper =
-               (OrbInstanceWrapper)glob.getObjectEntry(prefix+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper");
+               (OrbInstanceWrapper)glob.getObjectEntry(prefix+":org.xmlBlaster.util.protocol.corba.OrbInstanceWrapper");
          if (orbInstanceWrapper == null) {
             orbInstanceWrapper = new OrbInstanceWrapper(glob);
-            glob.addObjectEntry(prefix+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper", orbInstanceWrapper);
+            glob.addObjectEntry(prefix+":org.xmlBlaster.util.protocol.corba.OrbInstanceWrapper", orbInstanceWrapper);
          }
          return orbInstanceWrapper;
       }
@@ -316,5 +321,98 @@ public final class OrbInstanceFactory
       }.start();
       nameServiceStarted = true;
       try { Thread.sleep(2000L); } catch( InterruptedException i) {}
+   }
+
+   /**
+    * Converts the internal CORBA message unit to the internal representation.
+    */
+   public static final org.xmlBlaster.util.MsgUnitRaw convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit mu) throws XmlBlasterException
+   {
+      return new org.xmlBlaster.util.MsgUnitRaw(mu.xmlKey, mu.content, mu.qos);
+   }
+
+   /**
+    * Converts the internal MsgUnitRaw to the CORBA message unit.
+    */
+   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit convert(org.xmlBlaster.util.MsgUnitRaw mu)
+   {
+      return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.getKey(), mu.getContent(), mu.getQos());
+   }
+
+   /**
+    * Converts the internal CORBA XmlBlasterException to the util.XmlBlasterException. 
+    */
+   public static final org.xmlBlaster.util.XmlBlasterException convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba) {
+      boolean isServerSide = !glob.isServerSide();
+      org.xmlBlaster.util.XmlBlasterException ex = 
+         new XmlBlasterException(glob, ErrorCode.toErrorCode(eCorba.errorCodeStr),
+                               eCorba.node, eCorba.location, eCorba.lang, eCorba.message, eCorba.versionInfo,
+                               Timestamp.valueOf(eCorba.timestampStr),
+                               eCorba.stackTrace, eCorba.embeddedMessage,
+                               eCorba.transactionInfo, isServerSide);
+      return ex;
+   }
+
+   /**
+    * Converts the util.XmlBlasterException to the internal CORBA XmlBlasterException. 
+    */
+   public static final org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException convert(org.xmlBlaster.util.XmlBlasterException eUtil) {
+      return new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException(
+                 eUtil.getErrorCodeStr(),
+                 eUtil.getNode(),
+                 eUtil.getLocation(),
+                 eUtil.getLang(),
+                 eUtil.getRawMessage(),
+                 eUtil.getVersionInfo(),
+                 eUtil.getTimestamp().toString(),
+                 eUtil.getStackTraceStr(),
+                 eUtil.getEmbeddedMessage(),
+                 eUtil.getTransactionInfo(),
+                 ""
+                 /*eUtil.isServerSide() IS MISSING */); // transform native exception to Corba exception
+   }
+
+   /**
+    * Converts the internal CORBA message unit array to the internal representation.
+    */
+   public static final org.xmlBlaster.util.MsgUnitRaw[] convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+               throws XmlBlasterException
+   {
+      // convert Corba to internal ...
+      org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = new org.xmlBlaster.util.MsgUnitRaw[msgUnitArr.length];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         internalUnitArr[ii] = OrbInstanceFactory.convert(glob, msgUnitArr[ii]);
+      }
+      return internalUnitArr;
+   }
+
+
+   /**
+    * Converts the internal MsgUnitRaw array to the CORBA message unit array.
+    */
+   public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] convert(org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr)
+   {
+      // convert internal to Corba ...
+      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msgUnitArr.length];
+      for (int ii=0; ii<msgUnitArr.length; ii++) {
+         corbaUnitArr[ii] = OrbInstanceFactory.convert(msgUnitArr[ii]);
+      }
+      return corbaUnitArr;
+   }
+
+   /**
+    * Creates a string representation of a NameService name hierarchy. 
+    * This is useful for logging
+    * @return e.g. "xmlBlaster.MOM/heron.MOM"
+    */ 
+   public static String getString(NameComponent [] nameComponent) {
+      String ret = "";
+      for(int i=0; i<nameComponent.length; i++) {
+         if (i > 0) {
+            ret += "/";
+         }
+         ret += nameComponent[i].id + ((nameComponent[i].kind != null && nameComponent[i].kind.length()>0) ? "." + nameComponent[i].kind : "");
+      }
+      return ret;
    }
 }

@@ -15,6 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.protocol.corba.OrbInstanceFactory;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
@@ -63,7 +64,7 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
       log.info("cbSessionId=" + cbSessionId);
       String[] ret = new String[corbaMsgUnitArr.length];
       try {
-         MsgUnitRaw[] msgUnitArr = org.xmlBlaster.protocol.corba.CorbaDriver.convert(glob, corbaMsgUnitArr);
+         MsgUnitRaw[] msgUnitArr = OrbInstanceFactory.convert(glob, corbaMsgUnitArr);
          for (int ii=0; ii<msgUnitArr.length; ii++) {
             MsgUnitRaw msgUnit = msgUnitArr[ii];
             UpdateKey xmlKey = null;

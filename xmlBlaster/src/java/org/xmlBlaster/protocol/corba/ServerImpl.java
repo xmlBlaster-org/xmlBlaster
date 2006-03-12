@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.protocol.corba.OrbInstanceFactory;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -74,7 +75,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          return oid;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw CorbaDriver.convert(e); // transform native exception to Corba exception
+         throw OrbInstanceFactory.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -95,7 +96,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          return strArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw CorbaDriver.convert(e); // transform native exception to Corba exception
+         throw OrbInstanceFactory.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -109,12 +110,12 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          if (log.isLoggable(Level.FINER)) log.finer("Entering publish() ...");
          if (log.isLoggable(Level.FINEST)) log.finest("publish()\n" + msgUnit.xmlKey + "\n" + msgUnit.qos);
 
-         String retVal = blaster.publish(this.addressServer, getSecretSessionId(), CorbaDriver.convert(glob, msgUnit));
+         String retVal = blaster.publish(this.addressServer, getSecretSessionId(), OrbInstanceFactory.convert(glob, msgUnit));
 
          return retVal;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw CorbaDriver.convert(e); // transform native exception to Corba exception
+         throw OrbInstanceFactory.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -138,14 +139,14 @@ public class ServerImpl implements ServerOperations {    // TIE approach
             return returnArr;
          }
 
-         org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
+         org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = OrbInstanceFactory.convert(glob, msgUnitArr);   // convert Corba to internal ...
 
          String[] strArr = blaster.publishArr(this.addressServer, getSecretSessionId(), internalUnitArr);
 
          return strArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw CorbaDriver.convert(e); // transform native exception to Corba exception
+         throw OrbInstanceFactory.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -162,7 +163,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          }
          if (log.isLoggable(Level.FINER)) log.finer("Entering publishOneway(" + msgUnitArr.length + ") ...");
 
-         org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
+         org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = OrbInstanceFactory.convert(glob, msgUnitArr);   // convert Corba to internal ...
          blaster.publishOneway(this.addressServer, getSecretSessionId(), internalUnitArr);
       }
       catch (Throwable e) {
@@ -186,7 +187,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          return retArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw CorbaDriver.convert(e); // transform native exception to Corba exception
+         throw OrbInstanceFactory.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -203,14 +204,14 @@ public class ServerImpl implements ServerOperations {    // TIE approach
 
          org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr = blaster.get(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
-         org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = CorbaDriver.convert(msgUnitArr);  // convert internal to Corba ...
+         org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = OrbInstanceFactory.convert(msgUnitArr);  // convert internal to Corba ...
 
          // if (log.isLoggable(Level.FINEST)) log.finest("Elapsed time in get()" + stop.nice());
 
          return corbaUnitArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw CorbaDriver.convert(e); // transform native exception to Corba exception
+         throw OrbInstanceFactory.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -235,7 +236,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          sessionId = convert(active_oid);
       } catch (Exception e) {
          log.severe("Sorry, can't find out who you are, access denied");
-         throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
+         throw OrbInstanceFactory.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
                         ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
                         "Sorry, can't find out who you are, access denied"));
       }

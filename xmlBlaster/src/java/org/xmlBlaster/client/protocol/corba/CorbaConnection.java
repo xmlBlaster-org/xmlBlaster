@@ -21,11 +21,10 @@ import org.xmlBlaster.util.qos.address.Address;
 
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.protocol.corba.OrbInstanceFactory;
 
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.protocol.corba.OrbInstanceFactory;
-import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
@@ -373,7 +372,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                NameComponent [] nameXmlBlaster = new NameComponent[] { new NameComponent(contextId, contextKind) };
                if (log.isLoggable(Level.FINE)) log.fine("Query NameServer -ORBInitRef NameService=" + glob.getProperty().get("ORBInitRef","") +
                              ((System.getProperty("ORBInitRef.NameService") != null) ? System.getProperty("ORBInitRef.NameService") : "") +
-                             " to find the xmlBlaster root context " + CorbaDriver.getString(nameXmlBlaster));
+                             " to find the xmlBlaster root context " + OrbInstanceFactory.getString(nameXmlBlaster));
                org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
                NamingContext relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
 
@@ -393,7 +392,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                   this.authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNode));
                }
                catch (Exception ex) {
-                  if (log.isLoggable(Level.FINE)) log.fine("Query NameServer to find a suitable xmlBlaster server for " + CorbaDriver.getString(nameXmlBlaster) + "/" + CorbaDriver.getString(nameNode));
+                  if (log.isLoggable(Level.FINE)) log.fine("Query NameServer to find a suitable xmlBlaster server for " + OrbInstanceFactory.getString(nameXmlBlaster) + "/" + OrbInstanceFactory.getString(nameNode));
                   BindingListHolder bl = new BindingListHolder();
                   BindingIteratorHolder bi = new BindingIteratorHolder();
                   relativeContext.list(0, bl, bi);
@@ -412,14 +411,14 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
                         tmpId = id;
                         countServerFound++;
-                        tmpServerName = CorbaDriver.getString(nameXmlBlaster)+"/"+CorbaDriver.getString(nameNodeTmp);
+                        tmpServerName = OrbInstanceFactory.getString(nameXmlBlaster)+"/"+OrbInstanceFactory.getString(nameNodeTmp);
                         if (i>0) serverNameList += ", ";
                         i++;
                         serverNameList += tmpServerName;
 
                         if (clusterId.equals(id) && clusterKind.equals(kind)) {
                            try {
-                              if (log.isLoggable(Level.FINE)) log.fine("Trying to resolve NameService entry '"+CorbaDriver.getString(nameNodeTmp)+"'");
+                              if (log.isLoggable(Level.FINE)) log.fine("Trying to resolve NameService entry '"+OrbInstanceFactory.getString(nameNodeTmp)+"'");
                               this.authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
                               break; // found a matching server
                            }
@@ -499,7 +498,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          throw e;
       }
       catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         XmlBlasterException xmlBlasterException = CorbaDriver.convert(glob, e);
+         XmlBlasterException xmlBlasterException = OrbInstanceFactory.convert(glob, e);
          //xmlBlasterException.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION);
          throw xmlBlasterException; // Wrong credentials 
       }
@@ -575,7 +574,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          this.xmlBlaster = null;
          return true;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         log.warning("Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
+         log.warning("Remote exception: " + OrbInstanceFactory.convert(glob, e).getMessage());
       } catch(org.omg.CORBA.OBJ_ADAPTER e) {
          log.warning("No disconnect possible, no CORBA connection available: " + e.toString());
       } catch(org.omg.CORBA.TRANSIENT e) {
@@ -643,7 +642,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       try {
          return getXmlBlaster().subscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
+         throw OrbInstanceFactory.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "subscribe", e);
       }
@@ -658,7 +657,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       try {
          return getXmlBlaster().unSubscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
+         throw OrbInstanceFactory.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "unSubscribe", e);
       }
@@ -678,10 +677,10 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Publishing ...");
       try {
-         return getXmlBlaster().publish(CorbaDriver.convert(msgUnit));
+         return getXmlBlaster().publish(OrbInstanceFactory.convert(msgUnit));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (log.isLoggable(Level.FINE)) log.fine("XmlBlasterException: " + e.getMessage());
-         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
+         throw OrbInstanceFactory.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publish() failed", e);
       }
@@ -695,10 +694,10 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    {
       if (log.isLoggable(Level.FINER)) log.finer("publishArr() num of Entries: " + msgUnitArr.length);
       try {
-         return getXmlBlaster().publishArr(CorbaDriver.convert(msgUnitArr));
+         return getXmlBlaster().publishArr(OrbInstanceFactory.convert(msgUnitArr));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (log.isLoggable(Level.FINE)) log.fine("XmlBlasterException: " + e.getMessage());
-         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
+         throw OrbInstanceFactory.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishArr", e);
       }
@@ -710,7 +709,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    public void publishOneway(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("publishOneway() ...");
       try {
-         getXmlBlaster().publishOneway(CorbaDriver.convert(msgUnitArr));
+         getXmlBlaster().publishOneway(OrbInstanceFactory.convert(msgUnitArr));
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishOneway", e);
       }
@@ -726,7 +725,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       try {
          return getXmlBlaster().erase(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
+         throw OrbInstanceFactory.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
          log.severe("IO exception: " + e.toString() + " sessionId=" + this.sessionId);
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e);
@@ -740,9 +739,9 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    public final MsgUnitRaw[] get(String xmlKey, String qos) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("get() ...");
       try {
-         return CorbaDriver.convert(glob, getXmlBlaster().get(xmlKey, qos));
+         return OrbInstanceFactory.convert(glob, getXmlBlaster().get(xmlKey, qos));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
+         throw OrbInstanceFactory.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "get", e);
       }

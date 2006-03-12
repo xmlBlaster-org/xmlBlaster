@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.qos;
 
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.client.protocol.corba.CorbaConnection;
 import org.xmlBlaster.client.protocol.corba.CorbaCallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
@@ -15,12 +14,10 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.util.protocol.corba.OrbInstanceFactory;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
-import org.xmlBlaster.protocol.corba.*;
 import org.omg.CORBA.ORB;
 import org.omg.PortableServer.POA;
 
@@ -44,17 +41,12 @@ import junit.framework.*;
  */
 public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 {
-   private final static String ME = "TestCorbaThreads";
-
    private Global glob;
    private static Logger log = Logger.getLogger(TestCorbaThreads.class.getName());
    private EmbeddedXmlBlaster serverThread;
    private final String loginName = "TestCorbaThreads";
-   private String publishOid = "";
    private CorbaConnection corbaConnection = null;
    private I_CallbackServer cbServer = null;
-   private String corbaContent;
-   private int numReceived = 0;
 
 
    /**

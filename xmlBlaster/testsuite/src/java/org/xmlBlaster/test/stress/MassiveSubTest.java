@@ -293,8 +293,8 @@ public class MassiveSubTest extends TestCase implements I_Callback {
                         Global gg = globalUtil.getClone(glob);
                         // Try to reuse the same ORB to avoid too many threads:
                         if ("IOR".equals(gg.getProperty().get("protocol","IOR")) && ci > 0) {
-                           gg.addObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper",
-                                             (org.xmlBlaster.protocol.corba.OrbInstanceWrapper)manyConnections[ci-1].getGlobal().getObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper"));
+                           gg.addObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.util.protocol.corba.OrbInstanceWrapper",
+                                             (org.xmlBlaster.util.protocol.corba.OrbInstanceWrapper)manyConnections[ci-1].getGlobal().getObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.util.protocol.corba.OrbInstanceWrapper"));
                         }
                         manyConnections[ci] = gg.getXmlBlasterAccess();
                         ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)

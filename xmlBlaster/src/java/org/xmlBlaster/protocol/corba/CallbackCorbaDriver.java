@@ -12,6 +12,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.protocol.corba.OrbInstanceFactory;
+import org.xmlBlaster.util.protocol.corba.OrbInstanceWrapper;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -122,7 +124,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       try {
          return this.cb.update(callbackAddress.getSecretSessionId(), updateArr);
       } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException ex) {
-         XmlBlasterException xmlBlasterException = CorbaDriver.convert(glob, ex);
+         XmlBlasterException xmlBlasterException = OrbInstanceFactory.convert(glob, ex);
          throw XmlBlasterException.tranformCallbackException(xmlBlasterException);
          /*
          // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
