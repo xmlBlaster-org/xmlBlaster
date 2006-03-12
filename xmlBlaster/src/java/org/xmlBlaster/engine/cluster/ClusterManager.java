@@ -13,7 +13,9 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.QosData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
@@ -486,6 +488,13 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       }
 
       SubscribeQos subscribeQos2 = new SubscribeQos(this.glob, subscribeQos.getData());
+      
+      ClientProperty clientProperty = subscribeQos2.getClientProperty(Constants.PERSISTENCE_ID);
+      if (clientProperty != null) {
+         // remove marker that this is from persistent store, the other node would react wrong
+         subscribeQos2 = new SubscribeQos(this.glob, (QueryQosData)subscribeQos.getData().clone());
+         subscribeQos2.getData().getClientProperties().remove(Constants.PERSISTENCE_ID);
+      }
       
       // As we forward many subscribes probably accessing the
       // same message but only want one update.

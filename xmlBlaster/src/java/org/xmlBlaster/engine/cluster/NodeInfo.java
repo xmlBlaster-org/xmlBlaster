@@ -9,6 +9,8 @@ package org.xmlBlaster.engine.cluster;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
@@ -18,6 +20,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.cluster.NodeId;
 
 import org.xml.sax.Attributes;
@@ -44,6 +47,8 @@ public final class NodeInfo
 
    private ConnectQosSaxFactory connectQosSaxFactory;
    private ConnectQosData connectQosData;
+
+   private DisconnectQos disconnectQos;
 
    /** @deprecated We now use ConnectQos */
    private Address tmpAddress = null; // Helper for SAX parsing
@@ -190,6 +195,7 @@ public final class NodeInfo
          if (callback.getSecretSessionId().equals(AddressBase.DEFAULT_sessionId))
             callback.setSecretSessionId(createCbSessionId());
          this.cbSessionId = callback.getSecretSessionId();
+         callback.setRetries(-1);
       }
       else {
          log.severe("Internal problem: Expected a callback address setup but none was delivered");
@@ -215,7 +221,7 @@ public final class NodeInfo
    {
       // log.info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
 
-      if (name.equalsIgnoreCase("connect")) {
+      if (name.equalsIgnoreCase(MethodName.CONNECT.getMethodName())) { // "connect"
          inConnectQos = true;
          this.connectQosSaxFactory = new ConnectQosSaxFactory(this.remoteGlob);
          this.connectQosSaxFactory.setConnectQosData(getConnectQosData());
@@ -249,6 +255,7 @@ public final class NodeInfo
          String type = (attrs != null) ? attrs.getValue("type") : null;
          tmpAddress = new Address(this.remoteGlob, type, getId());
          tmpAddress.startElement(uri, localName, name, character, attrs);
+         log.warning("Using <address> markup is deprecated, please use connectQos markup");
          return true;
       }
 
@@ -256,6 +263,7 @@ public final class NodeInfo
          inCallback = true;
          tmpCbAddress = new CallbackAddress(this.remoteGlob);
          tmpCbAddress.startElement(uri, localName, name, character, attrs);
+         log.warning("Using <callback> markup is deprecated, please use connectQos markup");
          return true;
       }
 
@@ -270,7 +278,7 @@ public final class NodeInfo
 
       try {
          if (inConnectQos) { // delegate to connectQosSaxFactory ...
-            if (name.equalsIgnoreCase("connect")) {
+            if (name.equalsIgnoreCase(MethodName.CONNECT.getMethodName())) { // "connect"
                inConnectQos = false;
                character.setLength(0);
                this.connectQosData = this.connectQosSaxFactory.getConnectQosData();
@@ -364,9 +372,17 @@ public final class NodeInfo
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<connect>");
+      sb.append(offset).append("<").append(MethodName.CONNECT.getMethodName()).append(">");
       sb.append(getConnectQosData().toXml(extraOffset + Constants.INDENT));
-      sb.append(offset).append("</connect>");
+      sb.append(offset).append("</").append(MethodName.CONNECT.getMethodName()).append(">");
+      
+      DisconnectQos dis = getDisconnectQos();
+      if (dis != null) {
+         sb.append(offset).append("<").append(MethodName.DISCONNECT.getMethodName()).append(">");
+         sb.append(dis.toXml(extraOffset + Constants.INDENT));
+         sb.append(offset).append("</").append(MethodName.DISCONNECT.getMethodName()).append(">");
+      }
+
       /*
       sb.append(offset).append("<info>");
       if (this.connectQosData != null) {
@@ -397,5 +413,26 @@ public final class NodeInfo
       */
 
       return sb.toString();
+   }
+
+   /**
+    * @return Returns the disconnectQos.
+    */
+   public DisconnectQos getDisconnectQos() {
+      return this.disconnectQos;
+   }
+
+   /**
+    * @param disconnectQos The disconnectQos to set.
+    */
+   public void setDisconnectQos(DisconnectQos disconnectQos) {
+      this.disconnectQos = disconnectQos;
+   }
+
+   /**
+    * @return Returns the remoteGlob.
+    */
+   public org.xmlBlaster.util.Global getRemoteGlob() {
+      return this.remoteGlob;
    }
 }

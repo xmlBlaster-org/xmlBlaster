@@ -9,9 +9,11 @@ package org.xmlBlaster.engine.cluster;
 
 import java.util.logging.Logger;
 
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -76,6 +78,8 @@ import org.xml.sax.SAXException;
  * Note that maxConnections is specific to message types "__sys__cluster.node:heron"
  * <p />
  * The parsed data is directly written into the ClusterManager attributes
+ * <p />
+ * TODO: Support full XmlScript syntax by using our xmlScript parser
  */
 public class NodeParser extends SaxHandlerBase
 {
@@ -103,6 +107,8 @@ public class NodeParser extends SaxHandlerBase
    private boolean inState = false; // parsing inside <state> ?
    private NodeStateInfo tmpState = null; // Helper variable
 
+   private boolean inDisconnect = false; // parsing inside <disconnect>
+   
    private final SessionInfo sessionInfo;
 
 
@@ -146,10 +152,10 @@ public class NodeParser extends SaxHandlerBase
                      throw new RuntimeException("NodeParser: <clusternode> attribute 'id' is missing, ignoring message");
                   }
                   id = id.trim();
-                  tmpClusterNode = clusterManager.getClusterNode(id);
+                  tmpClusterNode = this.clusterManager.getClusterNode(id);
                   if (tmpClusterNode == null) {
                      tmpClusterNode = new ClusterNode(glob, new NodeId(id), sessionInfo);
-                     clusterManager.addClusterNode(tmpClusterNode);
+                     this.clusterManager.addClusterNode(tmpClusterNode);
                   }
                }
                return;
@@ -209,6 +215,13 @@ public class NodeParser extends SaxHandlerBase
             }
             character.setLength(0);
             return;
+         }
+         
+         if (inClusternode == 1) {
+            if (name.equals(MethodName.DISCONNECT.getMethodName())) {
+               this.inDisconnect = true;
+               return;
+            }
          }
       }
       catch (XmlBlasterException e) {
@@ -271,6 +284,14 @@ public class NodeParser extends SaxHandlerBase
          return;
       }
 
+      if (inDisconnect) {
+         this.inDisconnect = false;
+         if (tmpNodeInfo == null) return;
+         // TODO: Parse specific disconnect attributes/tags (use xmlScript parser)
+         this.tmpNodeInfo.setDisconnectQos(new DisconnectQos(this.tmpNodeInfo.getRemoteGlob()));
+         return;
+      }
+      
       log.warning("endElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
    }
 
@@ -279,7 +300,12 @@ public class NodeParser extends SaxHandlerBase
    public static void main(String[] args)
    {
       ServerScope glob = new ServerScope(args);
+      glob.setUseCluster(true);
+      ClusterManager m = new ClusterManager(glob, null);
+
       try {
+         m.init(glob, null);
+         
          String xml =
             "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +
             "   <connect><qos>\n" +
@@ -291,6 +317,7 @@ public class NodeParser extends SaxHandlerBase
             "        <clusternode id='aragon.mycomp.com'/>\n" +
             "     </backupnode>\n" +
             "   </qos></connect>\n" +
+            "   <disconnect/>\n" +
             "   <master type='DomainToMaster' version='0.9'>\n" +
             "     <key queryType='DOMAIN' domain='RUGBY'/>\n" +
             "     <key queryType='XPATH'>//STOCK</key>\n" +

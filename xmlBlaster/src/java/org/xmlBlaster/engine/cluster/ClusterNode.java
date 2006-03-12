@@ -167,12 +167,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    */
 
    /**
-    * @param force shutdown if if messages are pending
+    * @param force shutdown even if no <disconnect/> was configured
     */
-   public void resetXmlBlasterAccess() {
+   public void resetXmlBlasterAccess(boolean force) {
       if (this.xmlBlasterConnection != null) {
          if (this.xmlBlasterConnection.isConnected())
-            this.xmlBlasterConnection.disconnect(null);
+            if (force)
+               this.xmlBlasterConnection.disconnect(this.getNodeInfo().getDisconnectQos());
+            else if (this.getNodeInfo().getDisconnectQos() != null)
+               this.xmlBlasterConnection.disconnect(this.getNodeInfo().getDisconnectQos());
          this.xmlBlasterConnection = null;
       }
    }
@@ -387,7 +390,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    public void shutdown() {
-      resetXmlBlasterAccess();
+      resetXmlBlasterAccess(false);
    }
 
    /**
@@ -411,7 +414,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       sb.append(offset).append("<clusternode id='").append(getId()).append("'>");
 
       sb.append(getNodeInfo().toXml(extraOffset + Constants.INDENT));
-
+      
       if (getDomainInfoMap() != null) {
          Iterator it = getDomainInfoMap().values().iterator();
          while (it.hasNext()) {
@@ -429,5 +432,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    public boolean isAvailable() {
       return available;
+   }
+
+   /**
+    * @return Returns the remoteGlob.
+    */
+   public org.xmlBlaster.util.Global getRemoteGlob() {
+      return this.remoteGlob;
    }
 }
