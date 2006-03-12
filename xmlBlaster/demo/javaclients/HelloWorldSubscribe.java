@@ -275,19 +275,23 @@ public class HelloWorldSubscribe implements I_Callback
             try { Thread.sleep(1000000000); } catch( InterruptedException i) {}
          }
 
+         char ret = 0;
          if (unSubscribe && srq!=null) {
             if (interactive) {
-               Global.waitOnKeyboardHit("Hit a key to unSubscribe");
+               while (ret != 'q' && ret != 'u')
+                  ret = (char)Global.waitOnKeyboardHit("Hit 'u' to unSubscribe, 'q' to quit");
             }
 
-            UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
-            if (domain.length() > 0)  // cluster routing information
-               uk.setDomain(domain);
-            UnSubscribeQos uq = new UnSubscribeQos(glob);
-            log.info("UnSubscribeKey=\n" + uk.toXml());
-            log.info("UnSubscribeQos=\n" + uq.toXml());
-            UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
-            log.info("UnSubscribe on " + urqArr.length + " subscriptions done");
+            if (ret == 0 || ret == 'u') {
+               UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
+               if (domain.length() > 0)  // cluster routing information
+                  uk.setDomain(domain);
+               UnSubscribeQos uq = new UnSubscribeQos(glob);
+               log.info("UnSubscribeKey=\n" + uk.toXml());
+               log.info("UnSubscribeQos=\n" + uq.toXml());
+               UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
+               log.info("UnSubscribe on " + urqArr.length + " subscriptions done");
+            }
          }
 
          if (runAsDaemon) {
@@ -299,7 +303,8 @@ public class HelloWorldSubscribe implements I_Callback
             }
          }
          else {
-            Global.waitOnKeyboardHit("Hit a key to exit");
+            if (ret != 'q')
+               Global.waitOnKeyboardHit("Hit a key to exit");
          }
       }
       catch (XmlBlasterException e) {
