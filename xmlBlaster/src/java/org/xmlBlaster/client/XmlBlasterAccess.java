@@ -1543,7 +1543,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public static void main( String[] args ) {
       try {
-         final String ME = "XmlBlasterAccess-Test";
          final Global glob = new Global(args);
          final String oid = "HelloWorld";
 
