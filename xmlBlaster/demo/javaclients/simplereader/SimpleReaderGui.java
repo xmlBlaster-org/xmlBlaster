@@ -8,6 +8,7 @@ package javaclients.simplereader;
 
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -15,6 +16,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
 
 import java.awt.event.*;
 import java.awt.*;
@@ -32,9 +35,11 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
    private static final String USR_LOGIN  = ME;
    private static final String USR_PASSWD = "secret";
 
-   private ImageIcon image = null;
+   private ImageIcon image;
 
-   private I_XmlBlasterAccess xmlBlaster = null;
+   private I_XmlBlasterAccess xmlBlaster;
+   private SubscribeReturnQos subscribeReturnQos;
+
    private DefaultListModel listModel = new DefaultListModel();
    private JList jList1 = new JList();
    private JScrollPane jScrollPane1 = new JScrollPane();
@@ -87,6 +92,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
          srGui.loadImage();
          ConnectQos qos = new ConnectQos(glob, USR_LOGIN, USR_PASSWD);
          xmlBlaster.connect(qos, srGui);
+         srGui.setTitle(ME + "  " + xmlBlaster.getSessionName().getNodeIdStr() + "  <no subscription>");
       }
       catch(Exception ex) {
          log_error( ME, ex.toString(), "");
@@ -201,18 +207,34 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
 
    void jButton1_actionPerformed(ActionEvent e) {
       String text = jTextField1.getText();
-      this.setTitle(ME + "  " + text);
+      this.setTitle(ME + "  " + xmlBlaster.getSessionName().getNodeIdStr() + "  " + text);
+      
+      if (this.subscribeReturnQos != null) {
+         try {
+            UnSubscribeKey key = new UnSubscribeKey(xmlBlaster.getGlobal(), this.subscribeReturnQos.getSubscriptionId());
+            UnSubscribeQos qos = new UnSubscribeQos(xmlBlaster.getGlobal() );
+            xmlBlaster.unSubscribe(key.toXml(), qos.toXml());
+            System.out.println(ME + " unSubscribe from " + this.subscribeReturnQos.getSubscriptionId());
+            this.subscribeReturnQos = null;
+         }
+         catch( Throwable ex ) {
+            System.err.println("error-error-error-error >>>"+ex.toString());
+            System.out.println(ME + " " + ex.getMessage());
+            ex.printStackTrace();
+         }
+      }
+
       try {
          SubscribeKey key = new SubscribeKey(xmlBlaster.getGlobal(), text, "XPATH");
          SubscribeQos qos = new SubscribeQos(xmlBlaster.getGlobal() );
-         xmlBlaster.subscribe(key.toXml(), qos.toXml());
+         this.subscribeReturnQos = xmlBlaster.subscribe(key.toXml(), qos.toXml());
+         System.out.println(ME + " subscribe on " + text + "  ->  " + this.subscribeReturnQos.getSubscriptionId());
       }
       catch( Exception ex ) {
          System.err.println("error-error-error-error >>>"+ex.toString());
          System.out.println(ME + " " + ex.getMessage());
          ex.printStackTrace();
       }
-
    }
 
    void jButton2_actionPerformed(ActionEvent ae) {
