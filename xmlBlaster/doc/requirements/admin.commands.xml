@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='admin.commands' type='NEW' prio='MEDIUM' status="INWORK">
+<requirement id='admin.commands' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>Description of the available commands for remote administration of xmlBlaster</topic>
    <description>
      <p>
