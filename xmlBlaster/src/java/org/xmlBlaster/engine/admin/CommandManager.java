@@ -182,6 +182,7 @@ public final class CommandManager implements I_RunlevelListener
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null or too short");
       try {
          CommandWrapper w = new CommandWrapper(glob, oid);
+         if (args != null) w.setArgs(args);
          String key = w.getThirdLevel();
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"

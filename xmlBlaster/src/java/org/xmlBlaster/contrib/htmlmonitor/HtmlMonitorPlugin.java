@@ -314,7 +314,8 @@ public class HtmlMonitorPlugin implements I_Plugin, I_HttpRequest {
    /**
     * Access a property. 
     * @param key The key to lookup
-    * @param value The found value
+    * @param def The default to return if key is not found
+    * @return The found value
     */
    public String get(String key, String def) {
       if (key == null) return def;

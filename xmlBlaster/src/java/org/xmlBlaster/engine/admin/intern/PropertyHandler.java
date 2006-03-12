@@ -136,7 +136,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       String value = cmdString.substring(equalsIndex+1);
       */
       String key = cmd.getKey();
-      String[] values = cmd.getValue();
+      String[] values = cmd.getArgs();
 
       /*
       if (isLogLevelRequest(key)) {

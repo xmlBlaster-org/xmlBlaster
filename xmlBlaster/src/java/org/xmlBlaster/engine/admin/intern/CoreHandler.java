@@ -132,7 +132,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          if (method == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed: No such method found");
       }
-      Object[] argValues = convertMethodArguments(method.getParameterTypes(), cmd.getValue());
+      Object[] argValues = convertMethodArguments(method.getParameterTypes(), cmd.getArgs());
 
       try {
          Object tmp = method.invoke (impl, argValues);
@@ -280,7 +280,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       if (client.startsWith("?")) {
          // for example "/node/heron/?freeMem"
-         /*String ret = ""+*/setInvoke(cmd.getKey(), glob.getRequestBroker(), I_AdminNode.class, cmd.getValue());
+         /*String ret = ""+*/setInvoke(cmd.getKey(), glob.getRequestBroker(), I_AdminNode.class, cmd.getArgs());
          log.info("Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
          return cmd.getArgsString();
       }
@@ -299,7 +299,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       if (pubSessionId.startsWith("?")) {
          // for example "/node/heron/joe/?uptime"
-         /*String ret = ""+*/setInvoke(cmd.getKey(), subjectInfo, I_AdminSubject.class, cmd.getValue());
+         /*String ret = ""+*/setInvoke(cmd.getKey(), subjectInfo, I_AdminSubject.class, cmd.getArgs());
          log.info("Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
          return cmd.getArgsString();
       }
@@ -313,7 +313,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          I_AdminSession sessionInfo = subjectInfo.getSessionByPubSessionId(Long.parseLong(pubSessionId));
          if (sessionInfo == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
-         /*String ret = ""+*/setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());
+         /*String ret = ""+*/setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getArgs());
          log.info("Set " + cmd.getCommandStripAssign() + "=" + cmd.getArgsString());
          return cmd.getArgsString();
       }

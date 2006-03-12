@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.ServerScope;
 
@@ -52,7 +53,7 @@ public final class CommandWrapper
    String third = null;
    /** The fourth level -> "client/joe" */
    String fourth = null;
-   /** The fifth level -> "client/joe/ses17" or "client/joe/?maxSessions" */
+   /** The fifth level -> "client/joe/17" or "client/joe/session/17" or "client/joe/?maxSessions" */
    String fifth = null;
    /** The sixth level -> "client/joe/ses17/?queue/callback/maxEntries" */
    String sixth = null;
@@ -65,7 +66,7 @@ public final class CommandWrapper
    /** "sysprop/?call[auth]=true" this is "true"
     * for "sysprop/?setSomtthing=true&17" it is "true", "17"
     */
-   String[] value = null;
+   String[] args = null;
    /** "true&17" */
    private String argsString;
    
@@ -106,7 +107,7 @@ public final class CommandWrapper
       if (questionIndex >= 0 && equalsIndex >= 0 && questionIndex < equalsIndex)  {
          parseKeyValue();
          prefix = cmd.substring(0,equalsIndex);
-         if (log.isLoggable(Level.FINE)) log.fine("prefix=" + prefix + " key=" + key + " value=" + value);
+         if (log.isLoggable(Level.FINE)) log.fine("prefix=" + prefix + " key=" + key + " value=" + args);
       }
 
       StringTokenizer st = new StringTokenizer(prefix, "/");
@@ -122,8 +123,11 @@ public final class CommandWrapper
             third = token;
          else if (ii == 4)
             fourth = token;
-         else if (ii == 5)
+         else if (ii == 5) {
+            if (ContextNode.SESSION_MARKER_TAG.equals(token)) // "session"
+               continue;
             fifth = token;
+         }
          else if (ii == 6)
             sixth = token;
          else {
@@ -226,10 +230,10 @@ public final class CommandWrapper
     * Lenght is guaranteed to be >= 1
     * @exception XmlBlasterException if no value found
     */
-   public final String[] getValue() throws XmlBlasterException {
-      if (key == null && this.value == null)
+   public final String[] getArgs() throws XmlBlasterException {
+      if (key == null && this.args == null)
          parseKeyValue();
-      return this.value;
+      return this.args;
    }
 
    /**
@@ -238,7 +242,7 @@ public final class CommandWrapper
     * @exception XmlBlasterException if no value found
     */
    public final String getKey() throws XmlBlasterException {
-      if (key == null && value == null)
+      if (key == null && args == null)
          parseKeyValue();
       return key;
    }
@@ -258,7 +262,7 @@ public final class CommandWrapper
       int equalsIndex = propString.indexOf("=");
       if (equalsIndex < 1 || propString.length() <= (equalsIndex+1)) {
          this.key = propString;
-         this.value = null;
+         this.args = null;
          return; // a getXy()
          //log.warn(ME, "parseKeyValue(): Invalid command '" + cmd + "', can't find '='");
          //throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find '='");
@@ -269,8 +273,8 @@ public final class CommandWrapper
       // "arg1&arg2"
       this.argsString = propString.substring(equalsIndex+1).trim(); 
       
-      this.value = StringPairTokenizer.parseLine(argsString, '&');
-      if (this.value.length < 1) {
+      this.args = StringPairTokenizer.parseLine(argsString, '&');
+      if (this.args.length < 1) {
          log.warning("parseKeyValue(): Invalid command '" + cmd + "', can't find value behind '='");
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".parseKeyValue", "Invalid command '" + cmd + "', can't find value behind '='");
       }
@@ -440,5 +444,11 @@ public final class CommandWrapper
       return this.argsString;
    }
 
+   /**
+    * @param argsString The argsString to set.
+    */
+   public void setArgs(String[] args) {
+      this.args = args;
+   }
 }
 
