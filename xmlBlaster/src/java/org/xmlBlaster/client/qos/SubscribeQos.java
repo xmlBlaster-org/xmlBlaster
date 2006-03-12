@@ -40,7 +40,6 @@ import org.xmlBlaster.util.def.MethodName;
  */
 public final class SubscribeQos
 {
-   private String ME = "SubscribeQos";
    private final Global glob;
    private final QueryQosData queryQosData;
 
@@ -62,7 +61,8 @@ public final class SubscribeQos
    }
 
    /**
-    * Access the wrapped data holder
+    * Access the wrapped data holder. 
+    * @return is never null
     */
    public QueryQosData getData() {
       return this.queryQosData;
@@ -223,6 +223,14 @@ public final class SubscribeQos
     */
    public String toXml() {
       return this.queryQosData.toXml();
+   }
+   
+   /**
+    * Returns a deep clone, you can change savely all basic or immutable types
+    * like boolean, String, int and also the ClientProperties and RouteInfo. 
+    */
+   public Object clone() {
+      return new SubscribeQos(this.glob, (QueryQosData)this.queryQosData.clone());
    }
 
    /** For testing: java org.xmlBlaster.client.qos.SubscribeQos */
