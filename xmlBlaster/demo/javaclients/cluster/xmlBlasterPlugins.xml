@@ -21,6 +21,12 @@
    </plugin>
    -->
 
+   <!--========== SubscriptionPersistencePlugin =============-->
+   <plugin create='true' id='subPersistence' className='org.xmlBlaster.engine.SessionPersistencePlugin'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='10' />
+      <action do='STOP' onShutdownRunlevel='3' sequence='60'/>
+   </plugin>
+
    <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
    <plugin id='protocol:IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
       <action do='LOAD' onStartupRunlevel='3' sequence='2'
