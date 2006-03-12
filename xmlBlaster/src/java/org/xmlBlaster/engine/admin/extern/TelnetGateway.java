@@ -16,6 +16,7 @@ import org.xmlBlaster.engine.admin.SetReturn;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.I_Timeout;
@@ -268,6 +269,17 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
          String query = cmd.substring(cmdType.length()).trim();
 
+         if (cmd.equalsIgnoreCase("maxMemStr")) {
+            lastCommand = cmd;
+            long usedMem = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
+            String freeMem = Global.byteString(Global.heapMemoryUsage-usedMem);
+            
+            String ret = "Physical RAM size is " + Global.byteString(Global.totalPhysicalMemorySize) + "," +
+                  " this JVM has currently " + freeMem + " free available and may use max " + Global.byteString(Global.heapMemoryUsage) +
+                  " and max " + Global.maxFileDescriptorCount + " file descriptors";
+            return ret + "\r\n";
+         }
+
          if (cmdType.equalsIgnoreCase("CONNECT")) {
             if (!st.hasMoreTokens()) {
                lastCommand = cmd;
@@ -379,6 +391,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
              "   time                     Display current time on server" + CRLF +
              "   gc                       Run System.gc() command on remote system" + CRLF +
              "   mem [total|free]         Display amount of memory on remote system" + CRLF +
+             "   maxMemStr                Display amount of memory on remote system" + CRLF +
              "   exit                     Call System.exit(0) on remote system" + CRLF +
              "  For query syntax see" + CRLF +
              "  http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" + CRLF +
