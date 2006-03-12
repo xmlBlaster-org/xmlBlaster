@@ -218,7 +218,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.storageId = uniqueQueueId;
-         if (log.isLoggable(Level.FINER)) this.log.finer("initialize '" + this.storageId + "'");
+         if (log.isLoggable(Level.FINER)) log.finer("initialize '" + this.storageId + "'");
 
          this.manager = getJdbcQueueManagerCommonTable(this.pluginInfo);
 
@@ -602,7 +602,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @deprecated
     */
    public ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("peekWithLimitEntry called");
+      if (log.isLoggable(Level.FINER)) log.finer("peekWithLimitEntry called");
       if (limitEntry == null) return new ArrayList();
       return this.manager.getEntriesWithLimit(getStorageId(), limitEntry);
    }
@@ -611,7 +611,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see I_Queue#removeWithLimitEntry(I_QueueEntry, boolean)
     */
    public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("removeWithLimitEntry called");
+      if (log.isLoggable(Level.FINER)) log.finer("removeWithLimitEntry called");
       if (limitEntry == null) return 0L;
       long ret = 0L;
       synchronized(this.modificationMonitor) {
@@ -774,7 +774,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             int[] tmp = this.manager.deleteEntriesBatch(getStorageId().getStrippedId(), ids);
             long sum = 0;
             for (int i=0; i < tmp.length; i++) {
-               if (log.isLoggable(Level.FINE)) this.log.trace(ME, "removeRandom: entry '" + i + "' is '" + tmp[i]);
+               if (log.isLoggable(Level.FINE)) log.trace(ME, "removeRandom: entry '" + i + "' is '" + tmp[i]);
                ret[i] = tmp[i] > 0 || tmp[i] == -2; // !!! JDK 1.4 only: Statement.SUCCESS_NO_INFO = -2;
                if (ret[i]) sum++;
             }
@@ -866,7 +866,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
          }
-         else if (log.isLoggable(Level.FINE)) this.log.fine("getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
+         else if (log.isLoggable(Level.FINE)) log.fine("getNumOfEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfEntries + "'");
          return this.numOfEntries;
       }
    }
@@ -913,7 +913,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                   throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
-            else if (log.isLoggable(Level.FINE)) this.log.fine("getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
+            else if (log.isLoggable(Level.FINE)) log.fine("getNumOfPersistentEntries_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentEntries + "'");
             return this.numOfPersistentEntries;
          }
          catch (XmlBlasterException ex) {
@@ -973,7 +973,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
          }
-         else if (log.isLoggable(Level.FINE)) this.log.fine("getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
+         else if (log.isLoggable(Level.FINE)) log.fine("getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
          return this.numOfBytes;
       }
    }
@@ -1020,7 +1020,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                   throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
                }
             }
-            else if (log.isLoggable(Level.FINE)) this.log.warning("getNumOfPersistentBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");
+            else if (log.isLoggable(Level.FINE)) log.warning("getNumOfPersistentBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfPersistentBytes + "'");
             return this.numOfPersistentBytes;
          }
          catch (XmlBlasterException ex) {
@@ -1105,7 +1105,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * Shutdown the implementation, sync with data store
     */
    synchronized public void shutdown() {
-      if (log.isLoggable(Level.FINER)) this.log.finer("shutdown '" + this.storageId + "' (currently the value of 'isDown' is '" + this.isDown + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown '" + this.storageId + "' (currently the value of 'isDown' is '" + this.isDown + "'");
       if (this.isDown) return;
       this.isDown = true;
       this.manager.unregisterQueue(this);
