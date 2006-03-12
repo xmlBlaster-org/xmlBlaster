@@ -734,11 +734,6 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       return arr;
    }
 
-   public final long getNumSubscriptions() {
-      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
-      return subs.length;
-   }
-
    public final String subscribe(String url, String qos) throws XmlBlasterException {
       if (url == null) {
          return "Please pass a valid topic oid";
@@ -819,22 +814,6 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       return arr;
    }
 
-   public final String getSubscriptionList() throws XmlBlasterException {
-      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
-      if (subs.length < 1)
-         return "";
-      StringBuffer sb = new StringBuffer(subs.length * 30);
-      for (int i=0; i<subs.length; i++) {
-         if (subs[i].isCreatedByQuerySubscription()) {
-            continue;
-         }
-         if (sb.length() > 0)
-            sb.append(",");
-         sb.append(subs[i].getSubscriptionId());
-      }
-      return sb.toString();
-   }
-
    public final String getSubscriptionDump() throws XmlBlasterException {
       SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
       if (subs.length < 1)
@@ -842,13 +821,6 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       StringBuffer sb = new StringBuffer(subs.length * 300);
       sb.append("<SessionInfo id='").append(getId()).append("'>");
       for (int i=0; i<subs.length; i++) {
-         /*
-         if (subs[i].isCreatedByQuerySubscription()) {
-            continue;
-         }
-         if (sb.length() > 0)
-            sb.append(",");
-         */
          sb.append(subs[i].toXml(" "));
       }
       sb.append("</SessionInfo>");

@@ -9,8 +9,6 @@ package org.xmlBlaster.engine.admin;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.I_AdminUsage;
-import org.xmlBlaster.util.key.QueryKeyData;
-import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.ConnectQosDataMBean;
 
 /**
@@ -132,13 +130,6 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public long getRoundTripDelay();
    /** Comma separated list of all subscribed topic oids of this login session */
    public String[] getSubscribedTopics();
-   /** How many topics are currently subscribed */
-   public long getNumSubscriptions();
-   /**
-    * Comma separated list of all subscriptionId of this login session
-    * @deprecated Please use getSubscriptions() instead
-    */
-   public String getSubscriptionList() throws XmlBlasterException;
    /**
     * Invoke operation to unSubscribe one/many topics. 
     * @param url The topic oid/xpath to unSubscribe (e.g. "Hello" or "xpath://key")

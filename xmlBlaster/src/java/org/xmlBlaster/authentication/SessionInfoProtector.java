@@ -133,10 +133,6 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getSubscribedTopics();
    }
 
-   public final long getNumSubscriptions() {
-      return this.sessionInfo.getNumSubscriptions();
-   }
-
    public final long getCurrBytesRead() {
       return this.sessionInfo.getDispatchStatistic().getCurrBytesRead();
    }
@@ -176,10 +172,6 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       catch (XmlBlasterException e) {
          throw new Exception(e.toString());
       }
-   }
-
-   public final String getSubscriptionList() throws XmlBlasterException {
-      return this.sessionInfo.getSubscriptionList();
    }
 
    public final String getSubscriptionDump() throws XmlBlasterException {
