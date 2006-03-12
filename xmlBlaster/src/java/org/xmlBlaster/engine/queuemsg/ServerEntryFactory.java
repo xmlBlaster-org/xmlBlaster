@@ -320,7 +320,6 @@ public class ServerEntryFactory implements I_EntryFactory
       try {
          String[] persistType = new String[] { ENTRY_TYPE_MSG_SERIAL, ENTRY_TYPE_MSG_XML };
 
-         String ME;
          int numRuns = 4;
          for(int ii=0; ii<numRuns; ii++) {
             for(int jj=0; jj<persistType.length; jj++) {
@@ -338,8 +337,6 @@ public class ServerEntryFactory implements I_EntryFactory
                String type = msgUnitWrapper.getEmbeddedType();
                boolean persistent = msgUnitWrapper.isPersistent();
                long sizeInBytes = msgUnitWrapper.getSizeInBytes();
-
-               ME = persistType[jj];
 
                int numTransform = 1000;
                org.xmlBlaster.util.StopWatch stopWatchToBlob = new org.xmlBlaster.util.StopWatch();
