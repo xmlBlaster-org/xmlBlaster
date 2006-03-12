@@ -187,7 +187,12 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    {
       if (log.isLoggable(Level.FINER)) log.finer("ping client");
       try {
-         return this.cb.ping(qos);
+         BlasterCallback bcb = this.cb; // can be null during startup from persistence
+         if (bcb != null)
+            return bcb.ping(qos);
+         else
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                  "CORBA callback ping failed, no callback handle is available");
       } catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                      "CORBA callback ping failed", e);
