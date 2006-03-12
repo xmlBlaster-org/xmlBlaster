@@ -470,9 +470,13 @@
          &lt;nameservice>true&lt;/nameservice>
       &lt;/qos>
    &lt;connect>
+   &lt;disconnect/>
 &lt;/clusternode>
          </pre></td>
-    <td>The backupnode setting is currently not implemented</td>
+    <td>The backupnode setting is currently not implemented.
+    The disconnect markup can be used to force a disconnect on cluster node shutdown,
+    usually you won't set this to keep the connection alive in the remote server (to be able
+    to collect messages during our shutdown).</td>
     </tr>
       </table>
       </p>
