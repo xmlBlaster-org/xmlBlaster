@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -2269,14 +2270,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       return Runtime.getRuntime().freeMemory();
    }
    public String getFreeMemStr() {
-      return ServerScope.byteString(getFreeMem());
+      return Global.byteString(getFreeMem());
    }
    /** Free memory in bytes */
    public long getMaxFreeMem() {
-      return ServerScope.heapMemoryUsage-getUsedMem();
+      return Global.heapMemoryUsage-getUsedMem();
    }
    public String getMaxFreeMemStr() {
-      return ServerScope.byteString(getMaxFreeMem());
+      return Global.byteString(getMaxFreeMem());
    }
 /*   public void setFreeMem(long freeMem) throws XmlBlasterException {
       throw new XmlBlasterException(ME, "Setting of property 'freeMem' is not supported");
@@ -2285,19 +2286,19 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       return Runtime.getRuntime().totalMemory();
    }
    public String getTotalMemStr() {
-      return ServerScope.byteString(getTotalMem());
+      return Global.byteString(getTotalMem());
    }
    public long getMaxMem() {
       return Runtime.getRuntime().maxMemory();
    }
    public String getMaxMemStr() {
-      return ServerScope.byteString(getMaxMem());
+      return Global.byteString(getMaxMem());
    }
    public long getUsedMem() {
       return (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
    }
    public String getUsedMemStr() {
-      return ServerScope.byteString(getUsedMem());
+      return Global.byteString(getUsedMem());
    }
    public String getGc() {
       if (log.isLoggable(Level.FINE)) log.fine("Garbage collector is activated");
