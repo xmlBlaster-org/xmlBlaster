@@ -217,9 +217,9 @@ joe,jack,averell,william
  </qos>
 </MsgUnit>
 ]]></pre></td>
-            <td>Query topic with a consuming tag set
-            TODO: Is currently buggy</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td>Query topic with a consuming tag set, it returns immediately even if not 3 messages are available.
+            Setting <code>waitingDelay=2000</code> would wait for 2 seconds and return before if 3 messages are available.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>

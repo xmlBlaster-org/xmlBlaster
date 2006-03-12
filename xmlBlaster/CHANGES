@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository
 ======================
 
+ o #14918 Administrative commands
+   - Added telnet support for 'session' class specified
+   - Fixed Message command access with arguments
+
  o #14916 Admin-commands: Removed deprecated getNumSubscriptions and getSubscriptionList
 
  o #14914 Refactored common CORBA classes to org.xmlBlaster.util package

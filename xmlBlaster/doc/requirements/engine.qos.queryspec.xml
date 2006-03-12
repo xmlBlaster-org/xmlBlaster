@@ -23,7 +23,7 @@
       </p>
 
       <pre>
-   &lt;key oid='__cmd:client/fritzliHoseSchritzli/1/?cbQueueEntries' queryType='EXACT'>
+   &lt;key oid='__cmd:client/joe/session/1/?callbackQueueEntries' queryType='EXACT'>
    &lt;/key>
 
    &lt;qos>

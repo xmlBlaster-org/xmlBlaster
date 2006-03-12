@@ -12,7 +12,7 @@
       of the query are passed inside the query qos which in the case of a GET would be the GetQos.<br/>
       Attributes can be:
       <center>
-      <table width="80%" bgcolor="#ffffa0">
+      <table class="BORDER" border="1">
         <tr>
           <th>Attribute</th><th>default</th><th>Description</th><th>implemented</th>
         </tr>
@@ -62,9 +62,9 @@
       </p>
       <p>Following queue types are supported:</p>
       <ol>
-      <li>session queue: Each client session with a callback server has such a callback queue, for example <code>get client/joe/1/?cbQueueEntries</code></li>
-      <li>subject queue: Each client has a subject queue to hold PtP messages, for example <code>get client/joe/?subjectQueueEntries</code></li>
-      <li>history queue: Each topic has a history queue, for example <code>get topic/hello/?historyQueueEntries</code></li>
+      <li>session queue: Each client session with a callback server has such a callback queue, for example<br /><code>get client/joe/session/1/?callbackQueueEntries</code></li>
+      <li>subject queue: Each client has a subject queue to hold PtP messages, for example<br /><code>get client/joe/?subjectQueueEntries</code></li>
+      <li>history queue: Each topic has a history queue, for example<br /><code>get topic/hello/?historyQueueEntries</code></li>
       </ol>
    </description>
 
@@ -77,14 +77,14 @@
       </p>
 
       <pre>
-  &lt;xmlBlaster>
+ &lt;xmlBlaster>
     &lt;connect />
     &lt;get>
-      &lt;key oid='__cmd:client/fritzliHoseSchritzli/1/?cbQueueEntries' queryType='EXACT'>
+      &lt;key oid='__cmd:client/joe/session/1/?callbackQueueEntries' queryType='EXACT'>
       &lt;/key>
       &lt;qos>
         &lt;querySpec type='QueueQuery'>
-          &lt;![CDATA[maxEntries=3&amp;maxSize=-1&amp;consumable=false&amp;waitingDelay=0]]&gt;
+          maxEntries=3&amp;maxSize=-1&amp;consumable=false&amp;waitingDelay=0
         &lt;/querySpec>
       &lt;/qos>
     &lt;/get>
@@ -92,14 +92,35 @@
   &lt;/xmlBlaster>
       </pre>
 
-      and invoked from a telnet:
+      This example is invoked from a ordinary telnet client (<code>telnet localhost 2702</code>):
       <pre>
-GET client/fritzliHoseSchritzli/1/?cbQueueEntries&amp;\
-xmlBlaster.qos=&lt;qos>&lt;querySpec type='QueueQuery'>\
-&lt;![CDATA[maxEntries=3&amp;maxSize=-1&amp;consumable=false&amp;waitingDelay=0&lt;/querySpec>]]&gt;\
-&lt;/qos>
+GET client/subscribe/session/1/?callbackQueueEntries="maxEntries=2&amp;maxSize=-1&amp;consumable=true"
+
+ &lt;qos>
+  &lt;sender>/node/xmlBlaster_127_0_0_2_3412/client/pubisher/2&lt;/sender>
+  &lt;subscribe id='__subId:1142197847757000000'/>
+  &lt;expiration lifeTime='-1' forceDestroy='false'/>
+  &lt;rcvTimestamp nanos='1142197883173000000'/>
+ &lt;/qos>
+ &lt;key oid='Hello' contentMime='text/xml' contentMimeExtended='1.0'/>
+ &lt;content type='String'>Hi-16&lt;/content>
+
+ &lt;qos>
+  &lt;sender>/node/xmlBlaster_127_0_0_2_3412/client/pubisher/2&lt;/sender>
+  &lt;subscribe id='__subId:1142197847757000000'/>
+  &lt;expiration lifeTime='-1' forceDestroy='false'/>
+  &lt;rcvTimestamp nanos='1142197883209000000'/>
+ &lt;/qos>
+ &lt;key oid='Hello' contentMime='text/xml' contentMimeExtended='1.0'/>
+ &lt;content type='String'>Hi-17&lt;/content>
       </pre>
-      Note that this last example is in one single line without the character '\'
+
+<p>This example consumes 2 messages from the history queue of the topic <i>Hello</i>, if
+there are no messages we return immediately:
+</p>
+<p><code>
+GET topic/Hello/?historyQueueEntries="maxEntries=2&amp;maxSize=-1&amp;consumable=true&amp;waitingDelay=0"
+</code></p>
    </example>
 
 
