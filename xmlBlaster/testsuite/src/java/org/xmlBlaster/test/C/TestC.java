@@ -9,9 +9,7 @@ package org.xmlBlaster.test.C;
 import java.io.File;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.Execute;
 import org.xmlBlaster.util.I_ExecuteListener;
 
@@ -35,12 +33,9 @@ import junit.framework.*;
  */
 public class TestC extends TestCase implements I_ExecuteListener
 {
-   private static String ME = "TestC";
    private final Global glob;
    private static Logger log = Logger.getLogger(TestC.class.getName());
 
-   private EmbeddedXmlBlaster serverThread;
-   private int serverPort = 7615;
    private String pathToCBinary = null;
    String sep = File.separator;
 
@@ -126,7 +121,6 @@ public class TestC extends TestCase implements I_ExecuteListener
     */
    public void test_C_MethodInvocations()
    {
-      Runtime runtime = Runtime.getRuntime();
       String[] commandArr = { pathToCBinary+sep+"TestMethods" };
       String[] envArr = { "" };
 
@@ -160,7 +154,6 @@ public class TestC extends TestCase implements I_ExecuteListener
     */
    public void test_C_IllegalArguments()
    {
-      Runtime runtime = Runtime.getRuntime();
       String[] commandArr = { pathToCBinary+sep+"TestError" };
       String[] envArr = { "" };
 
@@ -194,7 +187,6 @@ public class TestC extends TestCase implements I_ExecuteListener
     */
    public void test_C_Stress()
    {
-      Runtime runtime = Runtime.getRuntime();
       String[] commandArr = { pathToCBinary+sep+"TestStress" };
       String[] envArr = { "" };
 
@@ -228,7 +220,6 @@ public class TestC extends TestCase implements I_ExecuteListener
     */
    public void test_C_Util()
    {
-      Runtime runtime = Runtime.getRuntime();
       String[] commandArr = { pathToCBinary+sep+"TestUtil" };
       String[] envArr = { "" };
 
@@ -262,7 +253,6 @@ public class TestC extends TestCase implements I_ExecuteListener
     */
    public void test_C_Queue()
    {
-      Runtime runtime = Runtime.getRuntime();
       String[] commandArr = { pathToCBinary+sep+"TestQueue" };
       String[] envArr = { "" };
 
@@ -296,7 +286,6 @@ public class TestC extends TestCase implements I_ExecuteListener
     */
    public void test_C_LeaveServer()
    {
-      Runtime runtime = Runtime.getRuntime();
       String[] commandArr = { pathToCBinary+sep+"TestLeaveServer" };
       String[] envArr = { "" };
 
@@ -330,7 +319,6 @@ public class TestC extends TestCase implements I_ExecuteListener
     */
    public void test_C_Socket()
    {
-      Runtime runtime = Runtime.getRuntime();
       String[] commandArr = { pathToCBinary+sep+"TestSocket" };
       String[] envArr = { "" };
 
