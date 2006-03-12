@@ -162,6 +162,10 @@ public class DisconnectQos
    public String toXml() {
       return this.disconnectQosData.toXml();
    }
+   
+   public final String toXml(String extraOffset) {
+      return this.disconnectQosData.toXml(extraOffset);
+   }
 
    /**
     * If there are tail back messages in the client side queue, what to do with them. 
