@@ -274,9 +274,13 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             long usedMem = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
             String freeMem = Global.byteString(Global.heapMemoryUsage-usedMem);
             
-            String ret = "Physical RAM size is " + Global.byteString(Global.totalPhysicalMemorySize) + "," +
+            String ret;
+            if (Global.totalPhysicalMemorySize > 0) // JDK >= 1.5
+               ret = "Physical RAM size is " + Global.byteString(Global.totalPhysicalMemorySize) + "," +
                   " this JVM has currently " + freeMem + " free available and may use max " + Global.byteString(Global.heapMemoryUsage) +
                   " and max " + Global.maxFileDescriptorCount + " file descriptors";
+            else
+               ret = "This JVM has currently " + freeMem + " free available and may use max " + Global.byteString(Global.heapMemoryUsage);
             return ret + "\r\n";
          }
 
