@@ -439,6 +439,16 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.log.
    {
       public void itemStateChanged(ItemEvent e)
       {  
+         /*
+         String name = (String)e.getItem();
+         try {
+            Level level = Level.parse(value);
+            glob.changeLogLevel(name, level);
+         }
+         catch (XmlBlasterException ex) {
+            log.warning("Cannot set log level attribute '"+ name +"':" + ex.getMessage());
+         }
+         */
          log.warning("is not implemented");
       }
    }

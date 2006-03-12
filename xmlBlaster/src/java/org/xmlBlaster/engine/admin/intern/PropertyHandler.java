@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.admin.intern;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.MsgUnit;
@@ -45,6 +46,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       this.commandManager = commandManager;
       this.ME = "PropertyHandler" + this.glob.getLogPrefixDashed();
       this.commandManager.register("sysprop", this);
+      this.commandManager.register("logging", this);
       log.info("Property administration plugin is initialized");
    }
 
@@ -137,6 +139,8 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       */
       String key = cmd.getKey();
       String[] values = cmd.getArgs();
+      
+      String type = cmd.getThirdLevel(); // "logging" or "sysprop"
 
       /*
       if (isLogLevelRequest(key)) {
@@ -146,6 +150,14 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       }
       else {
       */
+      if ("logging".equals(type)) {
+         String value = (values != null && values.length > 0) ? values[0] : "INFO";
+         log.info("Changed property '" + key + "' to " + value);
+         Level level = Level.parse(value);
+         this.glob.changeLogLevel(key, level);
+         return value;
+      }
+      else {
          try {
             String ret = glob.getProperty().set(key, values[0]);
             log.info("Changed property '" + key + "' to " + ret);
@@ -154,6 +166,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
          catch (XmlBlasterException e) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".set", e.getErrorCodeStr() + " " + e.getMessage());
          }
+      }
       // }
    }
 

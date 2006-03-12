@@ -82,12 +82,17 @@ public class JmxLogLevel implements DynamicMBean {
       }
 
       attribute_name = Global.decode(attribute_name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
+      // "logging/org.xmlBlaster.engine.RequestBroker"
+      if (attribute_name.startsWith("logging/"))
+         attribute_name = attribute_name.substring(8); // "org.xmlBlaster.engine.RequestBroker"
 
       try {
-         return this.glob.getLogLevel(attribute_name).toString();
+         Level level = this.glob.getLogLevel(attribute_name);
+         return level.toString();
       }
       catch (XmlBlasterException e) {
-         throw(new AttributeNotFoundException("Cannot find " + attribute_name + " attribute in " + dClassName));
+         if (attribute_name == null || attribute_name.length() == 0 || "logging/".equals(attribute_name)) return Level.INFO.toString();
+         throw(new AttributeNotFoundException("Cannot find '" + attribute_name + "' attribute in " + dClassName));
       }
    }
 
@@ -110,15 +115,22 @@ public class JmxLogLevel implements DynamicMBean {
       }
 
       name = Global.decode(name, "US-ASCII"); // HtmlAdapter made from info/admin -> info%2Fadmin
+      // "logging/org.xmlBlaster.engine.RequestBroker"
+      if (name.startsWith("logging/"))
+            name = name.substring(8); // "org.xmlBlaster.engine.RequestBroker"
 
       String value = (String)attribute.getValue();
       if (log.isLoggable(Level.FINE)) log.fine("Setting log level of name=" + name + " to '" + value + "'");
 
       try {
-         this.glob.changeLogLevel(name, Level.parse(value));
+         Level level = Level.parse(value);
+         this.glob.changeLogLevel(name, level);
       }
       catch (XmlBlasterException e) {
-         throw(new AttributeNotFoundException("Cannot set log level attribute "+ name +":" + e.toString()));
+         throw(new AttributeNotFoundException("Cannot set log level attribute '"+ name +"':" + e.getMessage()));
+      }
+      catch (Throwable e) {
+         throw(new AttributeNotFoundException("Cannot set log level attribute '"+ name +"':" + e.toString()));
       }
    }
 

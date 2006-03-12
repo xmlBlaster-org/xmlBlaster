@@ -358,7 +358,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    private final String getErrorText(String error) {
       String text = "ERROR-XmlBlaster telnet server: " + error + CRLF;
       if (isLogin) {
-         text += "Try a 'get sysprop/?user.home' or 'set sysprop/?trace[core]=true' or just 'help'" + CRLF + CRLF;
+         text += "Try a 'get sysprop/?user.home' or 'set logging/?org.xmlBlaster=FINE' or just 'help'" + CRLF + CRLF;
       }
       else {
          text += "Try 'help'" + CRLF + CRLF;
