@@ -353,9 +353,9 @@ joe,jack,averell,william
     Here is an example change the logging level of the authentication modules:
     </p>
     <pre>
-  CMD> set sysprop/?trace[auth]=true
+  CMD> set logging/?org.xmlBlaster.engine=FINE
 
-  /node/heron/sysprop/?trace[auth]=true
+  /node/heron/logging/?org.xmlBlaster.engine=FINE
     </pre>
 
     <p>

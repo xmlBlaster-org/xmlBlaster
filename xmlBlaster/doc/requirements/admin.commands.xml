@@ -484,13 +484,13 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>sysprop/?info=false</td>
-            <td>Switch off logging of infos</td>
+            <td>logging/?org.xmlBlaster=WARNING</td>
+            <td>Switch off INFO level logging</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>sysprop/?trace[corba]=true</td>
-            <td>Switch on trace mode for the corba layer</td>
+            <td>logging/?org.xmlBlaster.engine.RequestBroker=FINE</td>
+            <td>Switch on trace mode for the xmlBlaster core class</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
@@ -504,9 +504,9 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>/node/heron/topic/Hello/?content</td>
-            <td>Access the message content of the message with key-oid="Hello"</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td>topic/Hello/?peekHistoryMessages=2</td>
+            <td>Access max. two messages with key-oid="Hello"</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/topic/Hello/?content=How are you</td>
@@ -514,9 +514,9 @@
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>/node/heron/topic/Hello/?key</td>
-            <td>Return the complete key of this message</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td>/node/heron/topic/Hello/?toXml</td>
+            <td>Returns the topic dump</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/topic/Hello/?key.contentMime</td>
@@ -588,7 +588,7 @@
             Here we change the logging level of the corba plugin:
             <pre>
 java org.xmlBlaster.client.feeder.PublishFile
--xmlKey "&lt;key oid='__cmd:sysprop/?trace[corba]=true'/>"</pre>
+-xmlKey "&lt;key oid='__cmd:logging/?org.xmlBlaster.util=FINER'/>"</pre>
             Exit xmlBlaster with exit value 9:
             <pre>
 java org.xmlBlaster.client.feeder.PublishFile
@@ -602,7 +602,7 @@ java org.xmlBlaster.client.feeder.PublishFile
             <td><pre>
 get ?runlevel
 set /node/heron/?runlevel=3
-set sysprop/?trace[corba]=true
+set logging/?org.xmlBlaster=WARNING
             </pre></td>
             <td>With telnet you give the command <i>get</i> or <i>set</i> followed by the query (separated with a blank)
             </td>
@@ -734,11 +734,11 @@ telnet localhost 2702
          </tr>
       
          <tr>
-            <td>sysprop/?trace[auth]</td>
+            <td>logging/?org.xmlBlaster.util.queue=FINE</td>
             <td>boolean</td>
             <td>R/W</td>
-            <td>Monitor or change the <i>trace</i> log level, but
-            only for authentication issues
+            <td>Monitor or change the log level, but
+            only for queuing issues
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
