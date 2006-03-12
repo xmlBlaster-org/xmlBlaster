@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
@@ -30,7 +29,6 @@ import java.util.HashMap;
  */
 public abstract class QosData implements java.io.Serializable, Cloneable
 {
-   private transient final String ME = "QosData";
    protected transient Global glob;
    private static Logger log = Logger.getLogger(QosData.class.getName());
    protected transient final String serialData; // can be null - in this case use toXml()

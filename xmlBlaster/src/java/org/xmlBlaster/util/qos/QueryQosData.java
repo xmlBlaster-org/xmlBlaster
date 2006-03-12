@@ -394,9 +394,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Returns a shallow clone, you can change savely all basic or immutable types
-    * like boolean, String, int.
-    * Currently RouteInfo is not cloned (so don't change it)
+    * Returns a deep clone, you can change savely all basic or immutable types
+    * like boolean, String, int and also the ClientProperties and RouteInfo. 
     */
    public Object clone() {
       return super.clone();

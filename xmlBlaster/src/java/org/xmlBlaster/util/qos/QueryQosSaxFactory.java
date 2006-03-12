@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -39,7 +38,6 @@ import org.xml.sax.*;
  */
 public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_QueryQosFactory
 {
-   private String ME = "QueryQosSaxFactory";
    private final Global glob;
    private static Logger log = Logger.getLogger(QueryQosSaxFactory.class.getName());
 
@@ -106,7 +104,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
-      if (name.equalsIgnoreCase("subscribe")) {
+      if (name.equalsIgnoreCase(MethodName.SUBSCRIBE.getMethodName())) { // "subscribe"
          if (!inQos)
             return;
          //this.inSubscribe = true;
@@ -116,7 +114,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
-      if (name.equalsIgnoreCase("erase")) {
+      if (name.equalsIgnoreCase(MethodName.ERASE.getMethodName())) { // "erase"
          if (!inQos)
             return;
 //       this.inErase = true;
@@ -310,13 +308,13 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          return;
       }
 
-      if (name.equalsIgnoreCase("subscribe")) {
+      if (name.equalsIgnoreCase(MethodName.SUBSCRIBE.getMethodName())) { // "subscribe"
 //       this.inSubscribe = false;
          character.setLength(0);
          return;
       }
 
-      if (name.equalsIgnoreCase("erase")) {
+      if (name.equalsIgnoreCase(MethodName.ERASE.getMethodName())) { // "erase"
 //       this.inErase = false;
          character.setLength(0);
          return;
@@ -453,10 +451,10 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
 
       sb.append(offset).append("<qos>"); // <!-- SubscribeQos, UnSubscribeQos, EraseQos, GetQos -->");
       if (queryQosData.getSubscriptionId() != null)
-         sb.append(offset).append(" <subscribe id='").append(queryQosData.getSubscriptionId()).append("'/>");
+         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='").append(queryQosData.getSubscriptionId()).append("'/>");
 
       if (queryQosData.getForceDestroyProp().isModified()) {
-         sb.append(offset).append(" <erase forceDestroy='").append(queryQosData.getForceDestroy()).append("'/>");
+         sb.append(offset).append(" <").append(MethodName.ERASE.getMethodName()).append(" forceDestroy='").append(queryQosData.getForceDestroy()).append("'/>");
       }
 
       if (queryQosData.getMetaProp().isModified()) {

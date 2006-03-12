@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -40,7 +39,6 @@ import org.xml.sax.*;
  */
 public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_StatusQosFactory
 {
-   private String ME = "StatusQosSaxFactory";
    private final Global glob;
    private static Logger log = Logger.getLogger(StatusQosSaxFactory.class.getName());
 
@@ -114,7 +112,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          return;
       }
 
-      if (name.equalsIgnoreCase("subscribe")) {
+      if (name.equalsIgnoreCase(MethodName.SUBSCRIBE.getMethodName())) { // "subscribe"
          if (!inQos)
             return;
 //       this.inSubscribe = true;
@@ -198,7 +196,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          return;
       }
 
-      if (name.equalsIgnoreCase("subscribe")) {
+      if (name.equalsIgnoreCase(MethodName.SUBSCRIBE.getMethodName())) { // "subscribe"
 //       this.inSubscribe = false;
          character.setLength(0);
          return;
@@ -263,7 +261,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          sb.append("'/>");
       }
       if (statusQosData.getSubscriptionId() != null)
-         sb.append(offset).append(" <subscribe id='").append(statusQosData.getSubscriptionId()).append("'/>");
+         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='").append(statusQosData.getSubscriptionId()).append("'/>");
       if (statusQosData.getKeyOid() != null)
          sb.append(offset).append(" <key oid='").append(statusQosData.getKeyOid()).append("'/>");
 

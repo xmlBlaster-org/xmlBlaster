@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
@@ -105,7 +104,6 @@ import org.xml.sax.*;
  */
 public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_MsgQosFactory
 {
-   private String ME = "MsgQosSaxFactory";
    private final Global glob;
    private static Logger log = Logger.getLogger(MsgQosSaxFactory.class.getName());
 
@@ -497,7 +495,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("subscribe")) {
+      if (name.equalsIgnoreCase(MethodName.SUBSCRIBE.getMethodName())) { // "subscribe"
          if (!inQos)
             return;
 //       this.inSubscribe = true;
@@ -674,7 +672,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          return;
       }
 
-      if (name.equalsIgnoreCase("subscribe")) {
+      if (name.equalsIgnoreCase(MethodName.SUBSCRIBE.getMethodName())) { // "subscribe"
 //       this.inSubscribe = false;
          character.setLength(0);
          return;
@@ -823,7 +821,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if (msgQosData.getSubscriptionId() != null)
-         sb.append(offset).append(" <subscribe id='").append(msgQosData.getSubscriptionId()).append("'/>");
+         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='").append(msgQosData.getSubscriptionId()).append("'/>");
 
       if (msgQosData.getLifeTimeProp().isModified() || msgQosData.getForceDestroyProp().isModified()) {
          sb.append(offset).append(" <expiration");
