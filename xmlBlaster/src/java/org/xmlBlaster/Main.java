@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.I_XmlBlasterExceptionHandler;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -144,7 +145,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
    public final void init(ServerScope glob)
    {
       this.glob = glob;
-
+      
       this.ME = "Main" + glob.getLogPrefixDashed();
       //try { log.info(ME, glob.getDump()); } catch (Throwable e) { System.out.println(ME + ": " + e.toString()); e.printStackTrace(); }
 
@@ -312,6 +313,27 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
                }
                else
                   log.info("Current runlevel is " + RunlevelManager.toRunlevelStr(runlevelManager.getCurrentRunlevel()) + "=" + runlevelManager.getCurrentRunlevel() + "");
+            }
+            else if (line.toLowerCase().startsWith("j")) {
+               if (line.length() > 1) {
+                  // ObjectName = org.xmlBlaster:nodeClass=node,node="heron"
+                  // j org.xmlBlaster:nodeClass=node,node="heron"/action=getFreeMemStr
+                  // j org.xmlBlaster:nodeClass=node,node="heron"/action=usage?action=usage
+                  
+                  // java  -Djmx.invoke.getters=set ... org.xmlBlaster.Main
+                  // j org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning?action=getLastWarning
+                  // j org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning
+                  String tmp = "/InvokeAction//"+line.substring(1).trim();
+                  try {
+                     System.setProperty("jmx.invoke.getters", "set");
+                     System.out.println("Invoking: " + tmp);
+                     Object obj = JmxWrapper.getInstance(this.glob).invokeAction(tmp);
+                     System.getProperties().remove("jmx.invoke.getters");
+                     System.out.println(obj);
+                  } catch(XmlBlasterException e) { log.severe(e.toString()); }
+               }
+               else
+                  log.info("Please pass a JMX object name to query");
             }
             else if (line.toLowerCase().startsWith("d")) {
                try {
@@ -497,6 +519,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
       System.out.println("Key:");
       System.out.println("   g             Popup the control panel GUI.");
       System.out.println("   r <run level> Change to run level (0,3,6,9).");
+      System.out.println("   j <JMX call>  For example 'j org.xmlBlaster:nodeClass=node,node=\"heron\"/action=getFreeMemStr'");
       System.out.println("   d <file name> Dump internal state of xmlBlaster to file.");
       System.out.println("   q             Quit xmlBlaster.");
       System.out.println("----------------------------------------------------------");
