@@ -330,7 +330,14 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
                      System.out.println("Invoking: " + tmp);
                      Object obj = JmxWrapper.getInstance(this.glob).invokeAction(tmp);
                      System.getProperties().remove("jmx.invoke.getters");
-                     System.out.println(obj);
+                     if (obj instanceof String[]) {
+                        String[] str = (String[])obj;
+                        for(int i=0; i<str.length; i++)
+                           System.out.println(str[i]);
+                     }
+                     else {
+                        System.out.println(obj);
+                     }
                   } catch(XmlBlasterException e) { log.severe(e.toString()); }
                }
                else
