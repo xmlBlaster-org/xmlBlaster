@@ -519,7 +519,12 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
       System.out.println("Key:");
       System.out.println("   g             Popup the control panel GUI.");
       System.out.println("   r <run level> Change to run level (0,3,6,9).");
-      System.out.println("   j <JMX call>  For example 'j org.xmlBlaster:nodeClass=node,node=\"heron\"/action=getFreeMemStr'");
+      try {
+         if (JmxWrapper.getInstance(this.glob).isActivated())
+            System.out.println("   j <JMX call>  For example 'j org.xmlBlaster:nodeClass=node,node=\""+this.glob.getStrippedId()+"\"/action=getFreeMemStr'");
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+      }
       System.out.println("   d <file name> Dump internal state of xmlBlaster to file.");
       System.out.println("   q             Quit xmlBlaster.");
       System.out.println("----------------------------------------------------------");
