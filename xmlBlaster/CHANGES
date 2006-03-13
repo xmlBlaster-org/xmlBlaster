@@ -17,7 +17,7 @@ Current svn repository
  o #14909 Cluster fixes
    - Setting retries=-1 as a default for remote cluster login
    - Default is now to not disconnect at the remote clusters during shutdown
-     The old behavior can be forced by adding a <diconnect/> tag.
+     The old behavior can be forced by adding a <disconnect/> tag.
    - Bugfix to not forward the '__persistenceId' marker client property from subscribeQos to the remote node
    - Fixed cluster example: Added SubscriptionPersistencePlugin to xmlBlasterPlugins.xml
 
