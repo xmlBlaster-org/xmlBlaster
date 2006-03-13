@@ -17,6 +17,7 @@ import org.xmlBlaster.util.XmlBlasterSecurityManager;
 import com.sun.jdmk.comm.AuthInfo;
 import com.sun.jdmk.comm.HtmlAdaptorServer;
 
+import javax.management.Attribute;
 import javax.management.ObjectName;
 import javax.management.ObjectInstance;
 import javax.management.QueryExp;
@@ -737,6 +738,60 @@ public class JmxWrapper
     *  org.xmlBlaster:nodeClass=node,node="heron"/action=usage
     */
    public Object invokeAction(final String args) {
+/*
+Eamonn, Piyush:
+    Maybe I am confused. Whereas what Eamonn says is right, (with
+regards to the invoke.getters property etc.) in your original code
+didn't you have "state" as the name of the attribute?
+    If that is the case, the method to invoke is "setstate" and not
+"setState".
+
+    Right?
+
+- Kedar
+
+> Although the JMX spec refers to the property jmx.invoke.getters, this is
+> an editing mistake (see
+> <http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4949203>).  The
+> Reference Implementation used to allow getters and setters to be invoked
+> as operations always.  As of version 1.2 (included in JDK 5.0), this is
+> no longer allowed.  The jmx.invoke.getters property is intended for
+> pre-1.2 code that depended on the old behaviour.  It should not be used
+> in new code.
+>
+> Having said that, the problem with your code is probably that you are
+> not specifying the signature array correctly.  Your call to invoke
+> should look something like this:
+>
+> mbsc.invoke(mbeanName,
+>             "setState",
+>             new Object[] {"new state"},
+>             new String[] {"java.lang.String"});
+>
+> A much better alternative than coding explicit calls to getAttribute and
+> invoke is to use MBeanServerInvocationHandler
+> <http://java.sun.com/j2se/1.5.0/docs/api/javax/management/MBeanServerInvocationHandler.html>
+>
+>
+> For example:
+>
+> SimpleStandardMBean proxy = (SimpleStandardMBean)
+>     MBeanServerInvocationHandler.newProxyInstance(mbsc,
+>                                                   mbeanName,
+>
+> SimpleStandardMBean.class,
+>                                                   false);
+>
+> String state = proxy.getState();
+> proxy.setState("new state");
+> proxy.reset();
+>
+> This will correctly use the getAttribute, setAttribute, and invoke
+> methods of MBeanServerConnection, respectively.
+>
+> Regards,
+> Éamonn McManus   JMX Spec Lead   +33 476 188 352
+*/
       if (log.isLoggable(Level.FINER)) log.finer("invoke with: '" + args);
       if (this.mbeanServer == null) return null;
       if (useJmx == 0) return null;
@@ -790,6 +845,28 @@ public class JmxWrapper
          
          returnObject = mbeanServer.invoke(objectName, action, params,
                signature);
+      } catch (javax.management.ReflectionException e) {
+         try { // If invoke() fails with access to operations method, we try with getter/setter access
+            if (action.startsWith("get")) {
+               action = action.substring(3);
+               if (log.isLoggable(Level.FINE)) log.fine("invoke: '" + action + "@" + objectName);
+               returnObject = mbeanServer.getAttribute(objectName, action);
+            }
+            else if (action.startsWith("set")) {
+               action = action.substring(3);
+               Object value = (p!=null && p.size()>0) ? p.get(0) : "";
+               Attribute attribute = new Attribute(action, value);
+               if (log.isLoggable(Level.FINE)) log.fine("invoke: '" + attribute.toString() + "@" + objectName);
+               mbeanServer.setAttribute(objectName, attribute);
+               returnObject = "";
+            }
+            else {
+               if (log.isLoggable(Level.FINE)) log.fine("invoke: '" + action + "@" + objectName);
+               returnObject = mbeanServer.getAttribute(objectName, action);
+            }
+         } catch (Throwable e2) {
+            log.warning("args: '" + args + "' invoke: '" + action + "@" + objectName + " failed: " + e2.toString());
+         }
       } catch (Throwable e) {
          log.warning("args: '" + args + "' invoke: '" + action + "@" + objectName + " failed: " + e.toString());
          e.printStackTrace();
