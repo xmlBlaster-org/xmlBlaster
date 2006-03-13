@@ -357,6 +357,7 @@ TODO
       <echo message="         -DADD_TINYSQL=true    tinySQL JDBC dBase driver support [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_PLUGINPROP=[xml file] Adds your customized xmlBlasterPlugins.xml file"/>
+      <echo message="         -DADD_LOGGINGPROP=[property file] Adds your customized logging.properties file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
       <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
       <echo message="         -DADD_JAVACLIENTS=false basic java clients (XmlScript and some HelloWorld*) [true]"/>
@@ -380,6 +381,7 @@ TODO
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support for clients [true]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support for clients [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
+      <echo message="         -DADD_LOGGINGPROP=[property file] Adds your customized logging.properties file"/>
       <echo message="         -DADD_MANIFEST=[manifest file] Adds your customized manifest.xmlBlaster file"/>
       <echo message="         -DADD_DIRECTORY=[directory] Adds all class files in the specified directory"/>
       <echo message=""/>
@@ -429,7 +431,7 @@ TODO
       <echo message="   ${script} all"/>
       <echo message="   ${script} -Ddebug=off -DJVM.target=1.1 all"/>
       <echo message="   ${script} -Ddeprecation=on -Doptimize=on all"/>
-      <echo message="   ${script} -DADD_CORBA=false -DADD_PROP=mystuff/xmlBlaster.properties -DADD_PLUGINPROPS=mystuff/xmlBlasterPlugins.xml dist-client"/>
+      <echo message="   ${script} -DADD_CORBA=false -DADD_PROP=mystuff/xmlBlaster.properties -DADD_PLUGINPROPS=mystuff/xmlBlasterPlugins.xml -DADD_LOGGINGPROP=mystuff/logging.properties dist-client"/>
       <echo message="   ${script} -verbose cpp-lib"/>
       <echo message=""/>
       <echo message=""/>
@@ -678,7 +680,7 @@ TODO
       <copy file="${config.dir}/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
       <copy file="${config.dir}/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
-      <copy file="${config.dir}/logging.properties" tofile="logging.properties" filtering="true"/>
+      <copy file="${config.dir}/logging.properties" tofile="${build.dest}/logging.properties" filtering="true"/>
 
       <javac srcdir="${build.src}/xmlBlaster"
             destdir="${build.dest}"
@@ -696,7 +698,7 @@ TODO
       <rmic classname="org.xmlBlaster.protocol.rmi.XmlBlasterImpl" base="${build.dest}" />
 
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,xmlBlasterPlugins.xml,logging.properties,manifest.xmlBlaster,*.xml"/>
+           includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,xmlBlasterPlugins.xml,manifest.xmlBlaster,*.xml"/>
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
 
@@ -1575,6 +1577,7 @@ TODO
       <property name="ADD_TINYSQL" value="false"/>
       <property name="ADD_PROP" value="default"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties (to configure MoM) -->
       <property name="ADD_PLUGINPROP" value="default"/> <!-- e.g. -DADD_PLUGINPROP=myclient/xmlBlasterProperties.xml (to configure MoM) -->
+      <property name="ADD_LOGGINGPROP" value="config/logging.properties"/> <!-- e.g. -DADD_LOGGINGPROP=myclient/logging.properties (to configure logging) -->
       <property name="ADD_POLICY" value="default"/> <!-- e.g. -DADD_POLICY=myclient/xmlBlaster.policy (for RMI security) -->
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
       <property name="ADD_EMAIL" value="true"/>
@@ -1696,6 +1699,11 @@ TODO
             <copy file="${ADD_PLUGINPROP}" tofile="${dist.dir}/config/xmlBlasterPlugins.xml.template" overwrite="yes"/>
          </default>
       </switch>
+
+      <echo message="Using ${ADD_LOGGINGPROP}" />
+      <copy file="${ADD_LOGGINGPROP}" tofile="${dist-classes.dir}/logging.properties" overwrite="yes"/>
+      <copy file="${ADD_LOGGINGPROP}" tofile="${dist.dir}/config/logging.properties" overwrite="yes"/>
+
       <switch value="${ADD_POLICY}">
          <case value="default">
             <echo message="Using default xmlBlaster.policy" />
@@ -1799,6 +1807,7 @@ TODO
       <property name="ADD_SNMP" value="true"/>
       <property name="ADD_PROP" value="false"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties -->
       <property name="ADD_PLUGINPROP" value="false"/> <!-- e.g. -DADD_PLUGINPROP=myclient/xmlBlasterPlugins.xml -->
+      <property name="ADD_LOGGINGPROP" value="config/logging.properties"/> <!-- e.g. -DADD_LOGGINGPROP=myclient/logging.properties -->
       <property name="ADD_MANIFEST" value="false"/> <!-- e.g. -DADD_MANIFEST=myclient/manifest.xmlBlaster -->
       <property name="ADD_DIRECTORY" value="false"/>  <!-- e.g. -DADD_DIRECTORY=myclient/classes -->
       <property name="ADD_EMAIL" value="false"/>
@@ -1871,6 +1880,8 @@ TODO
             <copy file="${ADD_PLUGINPROP}" tofile="${dist-client.dir}/config/xmlBlasterPlugins.xml.template" overwrite="yes"/>
          </default>
       </switch>
+      <echo message="Using ${ADD_LOGGINGPROP} -> ${dist-client.dir}/config/logging.properties" />
+      <copy file="${ADD_LOGGINGPROP}" tofile="${dist-client.dir}/config/logging.properties" overwrite="yes"/>
       <switch value="${ADD_MANIFEST}">
          <case value="false">
             <echo message="Using default manifest.xmlBlaster" />
