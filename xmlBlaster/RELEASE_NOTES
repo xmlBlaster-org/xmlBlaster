@@ -1,4 +1,4 @@
-This is xmlBlaster version 1.1.1 2006-01-16
+This is xmlBlaster version 1.2 2006-03-13
 
 
 XmlBlaster  is  under development or productive in a huge range
@@ -7,15 +7,10 @@ telecommunication, radar, car industry, process monitoring etc.
 
 This  release  is backward compatible to the previous regarding
 the client server communication protocols.
-
-New features:
-
- o Database replication framework
- o Core event notification plugin
- o Extended monitoring support
- o More JMX control
- o Bugfixes
-
+It now uses  the java.util.logging  framework instead of jutils
+so be prepared  to port your code depending on jutils features.
+The engine.Global  class is renamed  to engine.ServerScope, you
+need to port your native plugins with respect to this rename.
 
 It  is  tested under Linux/Solaris-SPARC/FreeBSD/WinXP with JDK
 1.4-1.6 and g++ 2.9x/3.x/4.x, icc 8.x and 9.x, MSVisualC++ from

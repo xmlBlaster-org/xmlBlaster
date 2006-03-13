@@ -1,8 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Current svn repository
-======================
+Changes for 1.2 [2006-03-13] #14936
+===================================
 
  o #14921 The new JDK14 logging can now be controlled by telnet commands or JMX
 
