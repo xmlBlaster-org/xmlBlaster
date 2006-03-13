@@ -721,23 +721,32 @@ public class JmxWrapper
       }
    }
    
+
+   /**
+    * Invoke xmlBlaster core JMX bean operations and getter/setter. 
+    * To invoke getter/seeter you need to start with<br />
+    * <code>
+    *  java  -Djmx.invoke.getters=set ... org.xmlBlaster.Main
+    * </code>
+    * @param args could be somethig like:
+    * '/InvokeAction//org.xmlBlaster:nodeClass=node,node="izar",contribClass=contrib,contrib="Heini"
+    *  /action=myNiceMethodName?action=myNiceMethodName&p1+java.lang.String=arg1&p2+java.lang.String=arg1'
+    *  
+    *  or much simpler (will return the usage() string):
+    *  
+    *  org.xmlBlaster:nodeClass=node,node="heron"/action=usage
+    */
    public Object invokeAction(final String args) {
       if (log.isLoggable(Level.FINER)) log.finer("invoke with: '" + args);
       if (this.mbeanServer == null) return null;
       if (useJmx == 0) return null;
       if (args == null || args.length() < 1) return null;
 
-      // args could be somethig like:
-      // '/InvokeAction//org.xmlBlaster:nodeClass=node,node="izar",contribClass=contrib,contrib="Heini"
-      //  /action=myNiceMethodName?action=myNiceMethodName&p1+java.lang.String=arg1&p2+java.lang.String=arg1'
 
-      // so we check for invoke cmd
-      if (!args.startsWith("/InvokeAction")) {
-         // not invoke Action
-         return new Object();
+      String callString = args;
+      if (args.startsWith("/InvokeAction")) {
+         callString = args.substring("/InvokeAction//".length());
       }
-      // strip cmd
-      String callString = args.substring("/InvokeAction//".length());
       
       // check for actionName (method)
       int j = callString.indexOf("/action=", 1);
@@ -868,7 +877,7 @@ public class JmxWrapper
          return null;
       int j = s.indexOf("?", i);
       if (j < 0)
-         return null;
+         return s.substring("action=".length());
       else
          return s.substring(i + 7, j);
    }
