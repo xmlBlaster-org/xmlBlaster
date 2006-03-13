@@ -323,6 +323,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
                   // java  -Djmx.invoke.getters=set ... org.xmlBlaster.Main
                   // j org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning?action=getLastWarning
                   // j org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning
+                  // j org.xmlBlaster:nodeClass=node,node="avalon_mycomp_com",clientClass=client,client="heron.mycomp.com",sessionClass=session,session="1"/action=getConnectionState
                   String tmp = "/InvokeAction//"+line.substring(1).trim();
                   try {
                      System.setProperty("jmx.invoke.getters", "set");
