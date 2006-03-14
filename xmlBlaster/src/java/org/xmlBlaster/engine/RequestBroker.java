@@ -2456,7 +2456,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport
     */
    public void log(LogRecord record) {
       // We may not do any log.xxx() call here because of recursion!!
-      String newLog = "[" + record.getSourceClassName() + "." + record.getSourceMethodName() + "] " + record.getMessage();
+      String source = record.getSourceClassName()+"."+record.getSourceMethodName();
+      String summary = 
+         "[" + new java.sql.Timestamp(record.getMillis()).toString()
+       + " " + record.getLevel().toString()
+       + " " + Thread.currentThread().getName() + "-" + record.getThreadID()
+       + " " + source + "] ";
+
+      String newLog = summary + record.getMessage();
 
       // Remember error text
       if (Level.WARNING.intValue() == record.getLevel().intValue()) {
