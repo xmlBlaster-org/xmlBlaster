@@ -939,7 +939,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String description = (str == null) ? "" : str;
 
          String summary = 
-             "[" + new java.sql.Timestamp(new java.util.Date().getTime()).toString()
+             "[" + new java.sql.Timestamp(record.getMillis()).toString()
            + " " + level.toString()
            + " " + Thread.currentThread().getName()
            + " " + source + "]";
