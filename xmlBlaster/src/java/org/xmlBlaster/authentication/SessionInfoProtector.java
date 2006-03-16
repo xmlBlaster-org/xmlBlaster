@@ -244,6 +244,22 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return arr;
    }
    
+   public String clearRemotePropertiesStartingWith(String prefix) {
+      ClientPropertiesInfo info = this.sessionInfo.getRemoteProperties();
+      if (info == null || prefix == null) return "No remote properties found, nothing to clear";
+      synchronized (this.sessionInfo) {
+         ClientProperty[] arr = info.getClientPropertyArr();
+         int count = 0;
+         for (int i=0; i<arr.length; i++) {
+            if (arr[i].getName().startsWith(prefix)) {
+               info.getClientPropertyMap().remove(arr[i].getName());
+               count++;
+            }
+         }
+         return "Removed " + count + " remote properties which are starting with '"+prefix+"'";
+      }
+   }
+
    public String clearRemoteProperties() {
       ClientPropertiesInfo info = this.sessionInfo.getRemoteProperties();
       if (info == null) return "No remote properties found, nothing to clear";

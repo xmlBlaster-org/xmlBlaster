@@ -7,6 +7,7 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import java.util.logging.Logger;
@@ -948,13 +949,35 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
+    * Set porperties send by our client. 
     * @param remoteProperties The remoteProperties to set, pass null to reset.
+    * The key is of type String and the value of type ClientProperty
     */
    public synchronized void setRemoteProperties(Map map) {
       if (map == null)
          this.remoteProperties = null;
       else
          this.remoteProperties = new ClientPropertiesInfo(map);
+   }
+
+   /**
+    * Update porperties send by our client. 
+    * @param remoteProperties The remoteProperties to set, 
+    * if a property exists its value is overwritten, passing null does nothing
+    * The key is of type String and the value of type ClientProperty
+    */
+   public synchronized void mergeRemoteProperties(Map map) {
+      if (map == null || map.size() == 0) return;
+      if (this.remoteProperties == null) {
+         this.remoteProperties = new ClientPropertiesInfo(map);
+         return;
+      }
+      Iterator it = map.keySet().iterator();
+      while (it.hasNext()) {
+         String key = (String)it.next();
+         Object value = map.get(key);
+         this.remoteProperties.put(key, (ClientProperty)value);
+      }
    }
 
    /**

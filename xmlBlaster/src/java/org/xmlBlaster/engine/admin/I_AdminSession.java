@@ -217,6 +217,13 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html">The admin.events requirement</a>
     */
    public String[] getRemoteProperties();
+
+   /**
+    * Remove remote properties which key starts with the given prefix
+    * @param prefix For examlpe "logging/"
+    * @return A string describing success
+    */
+   public String clearRemotePropertiesStartingWith(String prefix);
    
    /**
     * Remove all remote properties from this session. 

@@ -1573,7 +1573,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          }
 
          if (msgKeyData.isRemoteProperties()) {
-            sessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
+            if ("set".equals(msgUnit.getContentStr()))
+               sessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
+            else // "merge"
+               sessionInfo.mergeRemoteProperties(publishQos.getData().getClientProperties());
             I_RemotePropertiesListener[] arr = getRemotePropertiesListenerArr();
             for (int i=0; i<arr.length; i++)
                arr[i].update(sessionInfo, publishQos.getData().getClientProperties());
