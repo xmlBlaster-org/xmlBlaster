@@ -1,3 +1,4 @@
+this readme is about replication done with xmlblaster
 to replicate you can invoke:
 java org.xmlBlaster.contrib.replication.ReplicationAgent -help
 
