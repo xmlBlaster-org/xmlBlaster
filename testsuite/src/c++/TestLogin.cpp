@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.16 2004/02/08 23:20:17 ruff Exp $
+Version:   $Id$
 -----------------------------------------------------------------------------*/
 
 /**

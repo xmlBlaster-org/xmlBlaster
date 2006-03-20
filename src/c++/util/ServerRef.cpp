@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding serverRef address string and protocol string to
            access XmlBlaster
-Version:   $Id: ServerRef.cpp,v 1.6 2003/01/16 10:11:44 laghi Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 /**

@@ -10,9 +10,9 @@ my $year = "2002";
 #                                                                      #
 # Code2Html, peter@palfrader.org                                       #
 #                                                                      #
-# $Date: 2002/09/13 11:00:41 $
+# $Date$
 # $Revision: 1.2 $
-# $Id: code2html,v 1.2 2002/09/13 11:00:41 ruff Exp $
+# $Id$
 #                                                                      #
 # AUTHOR                                                               #
 #        Peter  Palfrader. Written in 1999, 2000, 2001, 2002.          #

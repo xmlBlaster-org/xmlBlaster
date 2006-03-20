@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    xmlBlaster@marcelruff.info
-Version:   $Id: xmlBlaster.idl,v 1.16 2004/09/16 19:32:48 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_

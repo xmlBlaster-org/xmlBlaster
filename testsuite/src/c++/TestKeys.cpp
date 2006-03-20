@@ -3,7 +3,7 @@ Name:      TestKeys.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestKeys.cpp,v 1.2 2003/12/15 15:40:32 ruff Exp $
+Version:   $Id$
 -----------------------------------------------------------------------------*/
 #include "TestSuite.h"
 #include <util/key/MsgKeyFactory.h>

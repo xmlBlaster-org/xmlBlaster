@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: xmlBlaster,v 1.1 2002/10/11 17:48:08 goetzger Exp $
+# $Id$
 #
 # description: Controls the xmlBlaster Server
 # processname: xmlBlaster
