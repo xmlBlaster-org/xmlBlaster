@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #14956 changed repository structure for tags/branches and trunk and devorced it from other repositories.
+ 
  o #14952 RemoteProperties changed: Now new sent properties merge with existing ones
    - setting 'msgUnit.content=set' will overwrite existing remoteProperties (behaves as old version)
 
