@@ -49,8 +49,10 @@ public class XmlParserBase extends SaxHandlerBase {
    
    protected static void addTagToString(StringBuffer buf,  String tagName, Attributes attrs) {
       buf.append("<").append(tagName);
-      if (attrs == null || attrs.getLength() < 1)
+      if (attrs == null || attrs.getLength() < 1) { 
+         buf.append(">");
          return;
+      }
       for (int i=0; i < attrs.getLength(); i++) {
          buf.append(" ").append(attrs.getQName(i)).append("='").append(attrs.getValue(i)).append("'");
       }
