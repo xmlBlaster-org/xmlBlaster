@@ -88,7 +88,7 @@ public class XbNotifyHandler extends Handler {
     * This listener may NOT use logging himself to avoid recursion. <br />
     * If the given <code>level/logNotification</code> combination is already registered,
     * the call leaves everything unchanged and returns false.
-    * @param level to add, Level.SEVERE.intValue() | Level.WARNING.intValue()
+    * @param level to add, Level.SEVERE.intValue() | Level.WARNING.intValue() | Level.ALL.intValue()
     * @param logNotification The interface to send the logging
     * @return true if the given logNotification is added
     */
@@ -112,7 +112,7 @@ public class XbNotifyHandler extends Handler {
 
    /**
     * Remove the listener. 
-    * @param level Which levels you want to remove. Level.SEVERE.intValue() | Level.WARNING.intValue()
+    * @param level Which levels you want to remove. Level.SEVERE.intValue() | Level.WARNING.intValue() | Level.ALL.intValue()
     * @return true if the set contained the specified element.
     */
    public synchronized boolean unregister(int level, I_LogListener logNotification) {
