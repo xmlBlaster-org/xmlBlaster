@@ -153,6 +153,38 @@ org.xmlBlaster.engine.level = INFO
    </example>
 
    <configuration>
+      <p>
+      These parameters allow to configure the logging, other <i>java.util.logging</i> specific
+      settings are supported as well, please consult the Java logging documentation.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>xmlBlaster/java.util.logging</td>
+            <td>true</td>
+            <td>If set to 'false' there is no xmlBlaster specific handling.
+            As a default xmlBlaster adds some additional control for loglevels on command line
+            and some colorful logging on UNIX.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>java.util.logging.config.file</td>
+            <td>logging.properties</td>
+            <td>This setting is the same used by the standard java logging framework.
+            XmlBlaster additionally searches the logging.properties in its usual configuration
+            lookup manner as described in requirement <i>util.property</i>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
    </configuration>
 
    <see type="API" label="Colorful formatting">org.xmlBlaster.util.log.XbFormatter</see>
