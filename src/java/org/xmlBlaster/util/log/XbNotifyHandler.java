@@ -13,6 +13,7 @@ import java.util.logging.LogRecord;
  * Note:
  * You may not directly add a Filter to java.util.logging.Logger/Handler as this
  * would destroy our registration.
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.logging.html">The admin.logging requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class XbNotifyHandler extends Handler {
@@ -84,8 +85,9 @@ public class XbNotifyHandler extends Handler {
 
    /**
     * Register a listener. 
-    * This listener may NOT use logging himself to avoid recursion
-    * If this set already contains the specified element, the call leaves this set unchanged and returns false
+    * This listener may NOT use logging himself to avoid recursion. <br />
+    * If the given <code>level/logNotification</code> combination is already registered,
+    * the call leaves everything unchanged and returns false.
     * @param level to add, Level.SEVERE.intValue() | Level.WARNING.intValue()
     * @param logNotification The interface to send the logging
     * @return true if the given logNotification is added

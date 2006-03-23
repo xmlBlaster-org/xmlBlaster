@@ -14,7 +14,8 @@ import java.util.logging.LogRecord;
 /**
  * A xmlBlaster specific formatter for java.util.logging
  * 
- * @author marcel
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.logging.html">The admin.logging requirement</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class XbFormatter extends Formatter {
    private final String id;
