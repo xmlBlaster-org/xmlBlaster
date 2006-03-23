@@ -378,7 +378,7 @@ public class FileLocator
    public static final void appendToFile(String outName, String str) throws XmlBlasterException {
       try {
          boolean append = true;
-         FileOutputStream to = new FileOutputStream(outName, true);
+         FileOutputStream to = new FileOutputStream(outName, append);
          to.write(str.getBytes());
          to.close();
       }
