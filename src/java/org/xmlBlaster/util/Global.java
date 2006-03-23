@@ -522,7 +522,16 @@ public class Global implements Cloneable
 
    /**
     * Configure JDK 1.4 java.util.logging. 
-    * </p> 
+    * </p>
+    * Switch off xmlBlaster specific logging:
+    * <pre>
+    * xmlBlaster/java.util.logging=false
+    * </pre> 
+    * </p>
+    * Lookup a specific logging.properties:
+    * <pre>
+    * java.util.logging.config.file=logging.properties
+    * </pre> 
     * @return The used configuration file (can be used for user notification) or null
     * @throws XmlBlasterException if redirection fails
     */
@@ -530,8 +539,16 @@ public class Global implements Cloneable
       if (args == null) return null;
       if (logIsInitialized) return null;
       
+      final String propertyName = "java.util.logging.config.file";
+
+      if ("false".equals(getProperty().get("xmlBlaster/java.util.logging", (String)null))) {
+         logIsInitialized = true;
+         System.out.println("Switched off logging configuration with 'xmlBlaster/java.util.logging=false'");
+         return null;
+      }
+
       FileLocator fl = new FileLocator(this);
-      URL url = fl.findFileInXmlBlasterSearchPath("java.util.logging.config.file", "logging.properties");
+      URL url = fl.findFileInXmlBlasterSearchPath(propertyName, "logging.properties");
       if (url == null) {
          throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION,
          "Global", "Can't find java.util.logging.config.file=logging.properties");
