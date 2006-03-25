@@ -1,6 +1,8 @@
-Marcel 2005-05-17 version 2.5.0
+Marcel 2006-03-25 version 2.7.0
 
 See: http://sources.redhat.com/pthreads-win32/
+
+The library is in ../socket/pthreadVC2.dll and pthreadVC2.lib
 
 Changed in pthread.h
 
