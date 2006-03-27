@@ -1572,7 +1572,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             return glob.getMomClientGateway().setCommand(sessionInfo, msgKeyData, msgUnit, publishQos, publishQos.isClusterUpdate());
          }
 
-         if (msgKeyData.isRemoteProperties()) {
+         if (msgKeyData.isRemoteProperties()) { // "__sys__remoteProperties"
             if ("set".equals(msgUnit.getContentStr()))
                sessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
             else // "merge"
