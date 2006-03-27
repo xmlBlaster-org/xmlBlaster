@@ -442,7 +442,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
       this.eventTypes = this.eventTypes.trim();
 
-      String destLogStr = "";
+      StringBuffer destLogStr = new StringBuffer();
 
       // Sending the events with email?
       this.smtpDestinationConfiguration = this.glob.get("destination.smtp", "", null,
@@ -450,7 +450,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.smtpDestinationConfiguration != null && this.smtpDestinationConfiguration.trim().length() > 0) {
          this.smtpDestinationConfiguration = this.smtpDestinationConfiguration.trim();
          setupSmtpSink(this.smtpDestinationConfiguration);
-         destLogStr += "destination.smtp:" + this.smtpDestinationConfiguration;
+         if (destLogStr.length() > 0) destLogStr.append(",");
+         destLogStr.append("destination.smtp");
+         if (this.smtpDestinationConfiguration.length() > 0)
+            destLogStr.append("(").append(this.smtpDestinationConfiguration).append(")");
       }
 
       // Sending the events with publish()?
@@ -459,7 +462,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.publishDestinationConfiguration != null) {
          this.publishDestinationConfiguration = this.publishDestinationConfiguration.trim();
          this.publishDestinationHelper = new PublishDestinationHelper(this.publishDestinationConfiguration);
-         destLogStr += "destination.publish:" + this.publishDestinationConfiguration;
+         if (destLogStr.length() > 0) destLogStr.append(",");
+         destLogStr.append("destination.publish");
+         if (this.publishDestinationConfiguration.length() > 0)
+            destLogStr.append("(").append(this.publishDestinationConfiguration).append(")");
          if (this.eventTypes.indexOf("logging/severe/*") != -1 || this.eventTypes.indexOf("log/error/*") != -1)
             log.warning("The combination of 'destination.publish' with 'logging/severe/*' is dangerous as it could loop forever, it is supressed.");
          else if (this.eventTypes.indexOf("logging/severe/") != -1 || this.eventTypes.indexOf("log/error/") != -1)
@@ -474,7 +480,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.jmxDestinationConfiguration != null) {
          this.jmxDestinationConfiguration = this.jmxDestinationConfiguration.trim();
          this.jmxDestinationHelper = new JmxDestinationHelper(this.jmxDestinationConfiguration);
-         destLogStr += "destination.jmx:" + this.jmxDestinationConfiguration;
+         if (destLogStr.length() > 0) destLogStr.append(",");
+         destLogStr.append("destination.jmx");
+         if (this.jmxDestinationConfiguration.length() > 0)
+            destLogStr.append("(").append(this.jmxDestinationConfiguration).append(")");
       }
 
       if (destLogStr.length() < 1) {
@@ -487,7 +496,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       registerEventTypes(this.eventTypes);
       
       log.info("Configured to send core events of type '" + this.eventTypes.trim()
-            + "' to '" + destLogStr + "'");
+            + "' to '" + destLogStr.toString() + "'");
    } // init()
 
    /**
