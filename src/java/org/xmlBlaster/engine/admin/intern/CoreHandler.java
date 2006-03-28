@@ -449,6 +449,8 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             method = desc.getWriteMethod();
          }
          catch (IntrospectionException e) { // try operations like 'addProperty' without set/get prefix
+         }
+         if (method == null) {
             Method[] m = aClass.getMethods();
             for (int i=0; m!=null&&i<m.length;i++)
                if (m[i].getName().equals(property))
@@ -456,6 +458,11 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             if (method == null)
                throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: No such method found");
          }
+         // for property '?exit=-1' the setExit is not found as no getExit exist, so try again
+         if (argValuesAsStrings.length > 0 && "exit".equals(property)) {
+            method = aClass.getMethod("setExit", new Class[] { java.lang.String.class }); // call requestBroker.setExit(String)
+         }
+         
          Object[] argValues = convertMethodArguments(method.getParameterTypes(), argValuesAsStrings);
 
          Object obj = method.invoke (impl, argValues);

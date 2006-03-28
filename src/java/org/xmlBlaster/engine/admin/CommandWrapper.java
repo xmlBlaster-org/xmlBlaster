@@ -333,8 +333,9 @@ public final class CommandWrapper
    public final String getCommandStripAssign() throws XmlBlasterException {
       int equalsIndex = cmd.lastIndexOf("=");
       if (equalsIndex < 1 || cmd.length() <= (equalsIndex+1)) {
-         log.warning("getCommandStripAssign(): Invalid command '" + cmd + "', can't find assignment '='");
-         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".getCommandStripAssign", "Invalid command '" + cmd + "', can't find assignment '='");
+         //log.warning("getCommandStripAssign(): Invalid command '" + cmd + "', can't find assignment '='");
+         //throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".getCommandStripAssign", "Invalid command '" + cmd + "', can't find assignment '='");
+         return cmd;
       }
       return cmd.substring(0,equalsIndex).trim();
    }

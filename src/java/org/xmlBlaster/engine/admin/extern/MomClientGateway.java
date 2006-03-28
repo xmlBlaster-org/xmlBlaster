@@ -135,7 +135,7 @@ public final class MomClientGateway implements I_ExternGateway
       int dotIndex = command.indexOf(":");
       String query = command.substring(dotIndex+1).trim();  // "/node/heron/?numClients=5"
 
-      if (query.indexOf("=") == -1) {
+      if (query.indexOf("=") == -1 && msgUnit.getContentStr().length() > 0) {
          query = query + "=" + msgUnit.getContentStr();     // "/node/heron/?numClients=99"
       }
 
