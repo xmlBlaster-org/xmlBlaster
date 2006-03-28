@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #14970 Added support for all JMX commands for our http/HTML native access, see requirement
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.http.html
+
  o #14956 changed repository structure for tags/branches and trunk and devorced it from other repositories.
  
  o #14952 RemoteProperties changed: Now new sent properties merge with existing ones
