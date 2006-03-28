@@ -358,7 +358,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          else if (cmdType.equalsIgnoreCase("SET")) {
             SetReturn ret = commandManager.set(this.addressServer, sessionId, query);
             if (ret == null) return "NO ENTRY SET: " + ret.commandWrapper.getCommand() + CRLF;
-            return ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString + CRLF;
+            return ((ret.commandWrapper==null) ? "" : ret.commandWrapper.getCommandStripAssign() + "=") + ret.returnString + CRLF;
          }
          else {
             return null;

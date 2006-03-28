@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.extern.JmxWrapper;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.engine.ServerScope;
@@ -180,6 +182,39 @@ public final class CommandManager implements I_RunlevelListener
       if (log.isLoggable(Level.FINER)) log.finer("get(" + oid + ")");
       if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null or too short");
+
+      String cmd = CommandWrapper.stripCommand(this.glob, oid);
+      if (cmd.startsWith(ContextNode.SCHEMA_JMX_DOMAIN)) { // JMX query starts with "org.xmlBlaster:"
+         // ObjectName = org.xmlBlaster:nodeClass=node,node="heron"
+         // org.xmlBlaster:nodeClass=node,node="heron"/action=getFreeMemStr
+         // org.xmlBlaster:nodeClass=node,node="heron"/action=usage?action=usage
+         
+         // java  -Djmx.invoke.getters=set ... org.xmlBlaster.Main
+         // org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning?action=getLastWarning
+         // org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning
+         // org.xmlBlaster:nodeClass=node,node="avalon_mycomp_com",clientClass=client,client="heron.mycomp.com",sessionClass=session,session="1"/action=getConnectionState
+         Object obj = JmxWrapper.getInstance(this.glob).invokeCommand(cmd);
+         StringBuffer ret = new StringBuffer(1024);
+         if (obj != null) {
+            if (obj instanceof MsgUnit) {
+               return new MsgUnit[] { (MsgUnit)obj };
+            }
+            else if (obj instanceof MsgUnit[]) {
+               return (MsgUnit[])obj;
+            }
+            else if (obj instanceof String[]) {
+               String[] str = (String[])obj;
+               for(int i=0; i<str.length; i++)
+                  ret.append(str[i]).append("\n");
+            }
+            else {
+               ret.append(obj);
+            }
+         }
+         MsgUnit msgUnit = new MsgUnit("<key oid='__cmd:"+cmd+"'/>", ret.toString().getBytes(), "<qos/>");
+         return new MsgUnit[] { msgUnit };
+      }
+      
       try {
          CommandWrapper w = new CommandWrapper(glob, oid);
          if (args != null) w.setArgs(args);
@@ -223,6 +258,32 @@ public final class CommandManager implements I_RunlevelListener
       if (log.isLoggable(Level.FINER)) log.finer("set(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
+      
+      
+      if (cmd.startsWith(ContextNode.SCHEMA_JMX_DOMAIN)) { // JMX query starts with "org.xmlBlaster:"
+         // ObjectName = org.xmlBlaster:nodeClass=node,node="heron"
+         // org.xmlBlaster:nodeClass=node,node="heron"/action=getFreeMemStr
+         // org.xmlBlaster:nodeClass=node,node="heron"/action=usage?action=usage
+         
+         // java  -Djmx.invoke.getters=set ... org.xmlBlaster.Main
+         // org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning?action=getLastWarning
+         // org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning
+         // org.xmlBlaster:nodeClass=node,node="avalon_mycomp_com",clientClass=client,client="heron.mycomp.com",sessionClass=session,session="1"/action=getConnectionState
+         Object obj = JmxWrapper.getInstance(this.glob).invokeCommand(cmd);
+         StringBuffer ret = new StringBuffer(1024);
+         if (obj != null) {
+            if (obj instanceof String[]) {
+               String[] str = (String[])obj;
+               for(int i=0; i<str.length; i++)
+                  ret.append(str[i]).append("\n");
+            }
+            else {
+               ret.append(obj);
+            }
+         }
+         return new SetReturn(null, ret.toString());
+      }
+
       try {
          CommandWrapper w = new CommandWrapper(glob, cmd);
          String key = w.getThirdLevel();

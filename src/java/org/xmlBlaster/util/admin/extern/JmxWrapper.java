@@ -722,6 +722,21 @@ public class JmxWrapper
       }
    }
    
+   /**
+    * Similat to invokeAction but the command does not need to start with
+    * "/InvokeAction//", additionally the "set" feature is activated.
+    * @param command for example "org.xmlBlaster:nodeClass=node,node="heron"/action=getFreeMemStr"
+    * @return The methods return value
+    * @see #invokeAction(String)
+    */
+   public Object invokeCommand(final String command) {
+      String tmp = "/InvokeAction//"+command.trim();
+      System.setProperty("jmx.invoke.getters", "set");
+      System.out.println("Invoking: " + tmp);
+      Object obj = invokeAction(tmp);
+      System.getProperties().remove("jmx.invoke.getters");
+      return obj;
+   }
 
    /**
     * Invoke xmlBlaster core JMX bean operations and getter/setter. 
@@ -790,7 +805,7 @@ didn't you have "state" as the name of the attribute?
 > methods of MBeanServerConnection, respectively.
 >
 > Regards,
-> Éamonn McManus   JMX Spec Lead   +33 476 188 352
+> ï¿½amonn McManus   JMX Spec Lead
 */
       if (log.isLoggable(Level.FINER)) log.finer("invoke with: '" + args);
       if (this.mbeanServer == null) return null;
