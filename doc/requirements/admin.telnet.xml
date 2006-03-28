@@ -262,6 +262,20 @@ joe,jack,averell,william
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
+         <tr>
+            <td>get org.xmlBlaster:nodeClass=node,node="heron"/ action=getFreeMemStr</td>
+            <td><pre>
+1.926 MBytes
+            </pre></td>
+            <td>All commands starting with '<i>org.xmlBlaster:</i>' are treated as JMX commands and are forwarded
+            to the JMX handler. The server be started with switched on JMX and in the above
+            example should be named 'heron':<br />
+            <code>java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -cluster.node.id heron</code>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
       </table>
 
       <p>
@@ -469,6 +483,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    <see type="API">org.xmlBlaster.engine.admin.extern.TelnetGateway</see>
    <see type="REQ">admin</see>
    <see type="REQ">admin.commands</see>
+   <see type="REQ">admin.jmx</see>
    
    <author>xmlBlaster@marcelruff.info</author>
    

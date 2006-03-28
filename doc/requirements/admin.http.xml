@@ -16,7 +16,7 @@
       <p>
       We provide one such native plugin which delivers a simple status page and additionally
       allows to deliver any configured HTML page.
-      The HTML pages may contain any administrative command which is replaced on delivery
+      The HTML pages may contain any administrative command or any JMX invocation which is replaced on delivery
       to the browser with the real values. Needless to say, you can use Javascript and
       CSS in this page to add formatting, calculations and additional value.
       </p>
@@ -108,7 +108,7 @@ in your browser.
 
 
    <example lang="any" type="HTML">
-      <h1 id="template">A HTML template example</h1>
+      <h1 id="template">A HTML template example using administrative commands</h1>
    <pre>
 &lt;html>
   &lt;head>
@@ -150,6 +150,31 @@ in your browser.
    <p>Please see <tt>xmlBlaster/config/status.html</tt> for a more complete example.</p>
    </example>
 
+
+   <example lang="any" type="HTML">
+      <h1 id="template">A HTML template example using JMX</h1>
+   <pre>
+&lt;html>
+  &lt;head>
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    &lt;script language="JavaScript" type="text/javascript">
+      var key = "${sysprop/?xmlBlaster/monitor/statusRefresh}";
+      var refreshInverval = (key.indexOf("$")==-1) ? key : 12;
+      document.write("&lt;meta http-equiv='Refresh' content='"+refreshInverval+"'>");
+    &lt;/script>
+    &lt;title>XmlBlaster Status&lt;/title>
+  &lt;/head>
+
+  &lt;body>
+     &lt;h2>Free Memory: ${org.xmlBlaster:nodeClass=node,node="heron"/action=getFreeMemStr} bytes&lt;/h2>
+  &lt;/body>
+&lt;/html>
+   </pre>
+   <p>Please start xmlBlaster with the cluster node id 'heron' and with activated JMX to be successful:</p>
+<pre class="table">java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -cluster.node.id heron</pre>
+<p>Note that all JMX commands need to start with <i>org.xmlBlaster:</i>, for more details please
+read the <code>admin.jmx</code> requirement.</p>
+   </example>
 
 
    <configuration where="server">
@@ -256,6 +281,7 @@ in your browser.
 
    <see type="REQ">admin.commands</see>
    <see type="REQ">admin.telnet</see>
+   <see type="REQ">admin.jmx</see>
 
    <author>xmlblast@marcelruff.info</author>
    <hacker>xmlblast@marcelruff.info</hacker>
