@@ -124,7 +124,7 @@ public class Publisher implements I_Timeout {
       // this would throw an exception and act as a validation if something is not OK in configuration
       new MsgUnit(this.publishKey, (byte[])null, this.publishQos);
       this.filterType = this.global.get("filterType", "simple", null, pluginConfig);
-      this.copyOnMove = this.global.get("copyOnMove", false, null, pluginConfig);
+      this.copyOnMove = this.global.get("copyOnMove", true, null, pluginConfig);
       
       createDirectoryManager();
    }

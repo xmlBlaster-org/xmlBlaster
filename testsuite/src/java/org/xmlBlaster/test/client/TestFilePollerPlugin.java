@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.filepoller.Publisher;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -125,6 +124,11 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
     * Connect to xmlBlaster and login
     */
    protected void setUp() {
+      /*
+      File file = new File(this.dirName);
+      if (file.exists())
+         FileLocator.deleteDir(file);
+      */
       try {
          this.connGlobal = this.global.getClone(null);
          this.updateInterceptor = new MsgInterceptor(this.connGlobal, log, null);
@@ -602,7 +606,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       }
 
       TestFilePollerPlugin test = new TestFilePollerPlugin(global);
-
+/*
       test.setUp();
       test.testDirectories();
       test.tearDown();
@@ -630,7 +634,7 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       test.setUp();
       test.testPublishWithMoveRelativeLockMode();
       test.tearDown();
-
+*/
       test.setUp();
       test.testSimplePublishWithFilterLockMode();
       test.tearDown();
