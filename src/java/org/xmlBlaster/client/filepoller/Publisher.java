@@ -265,7 +265,7 @@ public class Publisher implements I_Timeout {
                   break;
                }
                catch (XmlBlasterException ex) {
-                  log.severe(ex.getMessage());
+                  log.severe("Moving " + infos[i].getName() + " failed, we try again without further publishing (please fix manually): " + ex.getMessage());
                   try {
                      Thread.sleep(this.pollInterval);
                   }

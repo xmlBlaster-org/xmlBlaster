@@ -155,7 +155,9 @@ public class DirectoryManager {
                catch (IOException ex) {
                   throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".getNewFiles", " could not get the canonical name of file '" + files[i].getName() + "'");
                }
-               int pos = name.lastIndexOf(this.lockExt);
+               int pos = -1;
+               if (this.lockExt != null)
+                  pos = (isFileNameCasesensitive() ? name.lastIndexOf(this.lockExt) : name.toUpperCase().lastIndexOf(this.lockExt.toUpperCase()));
                if (pos < 0) 
                   throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_CONFIGURATION, ME, "can not handle lckExtention '*" + this.lockExt + "'");
                this.lockFiles.add(name.substring(0, pos));
@@ -168,7 +170,10 @@ public class DirectoryManager {
          try {
             String name = files[i].getCanonicalPath();
             if (files[i].isFile()) {
-               if (this.lockExtention == null || (!this.lockFiles.contains(name) && !name.endsWith(this.lockExt)))
+               boolean endsWithLockExt = false;
+               if (this.lockExt != null)
+                  endsWithLockExt = (isFileNameCasesensitive() ? name.endsWith(this.lockExt) : name.toUpperCase().endsWith(this.lockExt.toUpperCase()));
+               if (this.lockExtention == null || (!this.lockFiles.contains(name) && !endsWithLockExt))
                   map.put(name, files[i]);
             }
          }
@@ -179,6 +184,15 @@ public class DirectoryManager {
       return map;
    }
    
+   public static boolean isFileNameCasesensitive() {
+      String osName = System.getProperty("os.name");
+      if (osName == null)
+         return true;
+      if (osName.startsWith("Windows"))
+         return false;
+      return true;
+   }
+
    /**
     * Returns false if the info object is null, if the size is zero or
     * if it has not passed sufficient time since the last change.
@@ -250,7 +264,7 @@ public class DirectoryManager {
          }
          else { // if still exists, then update
             FileInfo existingInfo = (FileInfo)existingEntry.getValue();
-            existingInfo.update(newFile, this.log);
+            existingInfo.update(newFile, log);
             newFiles.remove(key);
          }
       }
@@ -266,7 +280,7 @@ public class DirectoryManager {
       iter = newFiles.values().iterator();
       while (iter.hasNext()) {
          File file = (File)iter.next();
-         FileInfo info = new FileInfo(file, this.log);
+         FileInfo info = new FileInfo(file, log);
          existingFiles.put(info.getName(), info);
       }
    }
@@ -298,7 +312,7 @@ public class DirectoryManager {
     * @return false if the entry was not found
     * @throws XmlBlasterException
     */
-   void deleteOrMoveEntry(String entryName, boolean success) throws XmlBlasterException {
+   void deleteOrMoveEntry(final String entryName, boolean success) throws XmlBlasterException {
       try {
          if (log.isLoggable(Level.FINER))
             log.finer("removeEntry '" + entryName + "'");
@@ -324,11 +338,11 @@ public class DirectoryManager {
             }
          }
          if (success) { // then do a move 
-            moveTo(file, this.sentDirectory);
+            moveTo(file, entryName, this.sentDirectory);
             this.directoryEntries.remove(entryName);
          }
          else {
-            moveTo(file, this.discardedDirectory);
+            moveTo(file, entryName, this.discardedDirectory);
             this.directoryEntries.remove(entryName);
          }
       }
@@ -340,7 +354,7 @@ public class DirectoryManager {
       }
    }
    
-   private void moveTo(File file, File destinationDirectory) throws XmlBlasterException {
+   private void moveTo(File file, String origName, File destinationDirectory) throws XmlBlasterException {
       if (!destinationDirectory.exists())
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".removeEntry", "'" + destinationDirectory.getName() + "' does not exist");
       if (!destinationDirectory.isDirectory())
@@ -376,8 +390,21 @@ public class DirectoryManager {
          }
          else {
             boolean ret = file.renameTo(destinationFile);
-            if (!ret)
-               throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not move the file '" + relativeName + "' to '" + destinationDirectory.getName() + "' reason: could it be that the destination is not a local file system ? try the flag 'copyOnMove='true' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
+            if (!ret) {
+               File orig = new File(origName);
+               if (orig.exists()) {
+                  throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "Could not move the file '" + relativeName + "' to '" + destinationDirectory.getName() + "' reason: could it be that the destination is not a local file system ? try the flag 'copyOnMove='true' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
+               }
+               else {
+                  File dest = new File(destinationDirectory, relativeName);
+                  if (!dest.exists()) {
+                     log.warning("Removed published file '" + origName + "' but couldn't create backup '" + destinationDirectory.getName() + "' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
+                  }
+                  else {
+                     log.warning("Published file '" + origName + "' is already moved to backup '" + destinationDirectory.getName() + "' but java tells us it couldn't be moved, this is strange.");
+                  }
+               }
+            }
          }
       }
       catch (Throwable ex) {
