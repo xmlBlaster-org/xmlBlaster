@@ -4,7 +4,7 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
- o #14977 Extended MIME XPath filter:
+ o #14981 Extended MIME XPath filter:
    - Depending on the configuration the XPath can now query the QoS OR the message content
      The default is as before the message content
    - Optionally you can supply a XSL file name which is used to transform the message content
