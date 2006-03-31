@@ -202,7 +202,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
     */
    public PluginHolder readConfigFile() throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("readConfigFile");
+      if (log.isLoggable(Level.FINER)) log.finer("readConfigFile");
       FileLocator fileLocator = new FileLocator(this.glob);
       URL url = fileLocator.findFileInXmlBlasterSearchPath("pluginsFile", "xmlBlasterPlugins.xml");
 
@@ -212,18 +212,18 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
          "the file 'xmlBlasterPlugins.xml' has not been found in the search path nor in the property 'pluginsFile'");
       }
 
-      if (log.isLoggable(Level.FINE)) this.log.fine("readConfigFile: the file is '" + url.getFile() + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("readConfigFile: the file is '" + url.getFile() + "'");
       try {
          InputStream fis = url.openStream();
          InputSource inSource = new InputSource(fis);
          reset();
          init(url.toString(), inSource);
          PluginHolder ret = getObject();
-         if (log.isLoggable(Level.FINEST)) this.log.finest(".readConfigFile. The content: \n" + ret.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest(".readConfigFile. The content: \n" + ret.toXml());
          return ret;
       }
       catch(java.io.IOException ex) {
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readConfigFile", "the file '" + url.getFile() + "' has not been found", ex);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".readConfigFile", "the file '" + url.getFile() + "' has not been found", ex);
       }
    }
 
