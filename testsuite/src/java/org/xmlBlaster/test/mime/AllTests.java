@@ -15,6 +15,7 @@ public class AllTests {
    }
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster mime plugin tests");
+      suite.addTest(new TestSuite(XPathTransformerTest.class));
       suite.addTest(TestGetRegexFilter.suite());
       suite.addTest(TestGetSql92Filter.suite());
       suite.addTest(TestGetFilter.suite());

@@ -78,9 +78,7 @@ import org.jaxen.dom.DOMXPath;
  * @author Robert Leftwich <robert@leftwich.info>
  * @author Marcel Ruff
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html">The mime.plugin.access.xpath requirement</a>
- * @version $Id$
  */
-
 public class XPathFilter implements I_Plugin, I_AccessFilter {
    public static final String MAX_DOM_CACHE_SIZE = "engine.mime.xpath.maxcachesize";
    public static final String DEFAULT_MAX_CACHE_SIZE = "10";
@@ -546,8 +544,3 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
       }
    }
 }
-
-
-
-
-

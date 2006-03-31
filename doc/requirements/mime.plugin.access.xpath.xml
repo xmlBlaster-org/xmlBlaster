@@ -248,7 +248,10 @@ Transformed content:
          </tr>
          <tr>
             <td>xslContentTransformerFileName</td>
-            <td>myTransform.xsl</td>
+            <td>/tmp/myTransform.xsl<br />
+            http://www.xmlblaster.org/transformTest.xsl<br />
+            ftp://somewhere/xy.xsl
+            </td>
             <td>As default there is no XSL file specified. If you name an XSL file it will be
             looked up in the CLASSPATH and all other locations where xmlBlaster looks for configuration files.
             If, and only if, the filter match was successful the message content will be transformed
@@ -256,6 +259,8 @@ Transformed content:
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
+      <p>Example for <tt>xmlBlaster.properties</tt>:</p>
+      <tt>MimeAccessPlugin[XPathFilter][1.0]=org.xmlBlaster.engine.mime.xpath.XPathFilter,engine.mime.xpath.maxcachesize=20</tt>
    </configuration>
 
    <see type="API">org.xmlBlaster.engine.mime.xpath.XPathFilter</see>
@@ -275,6 +280,7 @@ Transformed content:
       <name>-</name>
       <comment>-</comment>
       <test tool="SUITE">org.xmlBlaster.test.mime.TestXPathSubscribeFilter</test>
+      <test tool="SUITE">org.xmlBlaster.test.mime.TestXPathTransformer</test>
    </testcase>
 </requirement>
 
