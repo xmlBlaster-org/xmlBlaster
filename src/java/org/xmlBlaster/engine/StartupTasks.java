@@ -95,7 +95,7 @@ public class StartupTasks implements I_Plugin {
          this.global.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
 
 
-         if (log.isLoggable(Level.FINER)) this.log.finer("init");
+         if (log.isLoggable(Level.FINER)) log.finer("init");
 
          this.directoryName = this.global.get("directoryName", this.directoryName, null, this.pluginInfo);
          this.scriptFileName = this.global.get("scriptFileName", this.scriptFileName, null, this.pluginInfo);
