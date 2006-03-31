@@ -34,6 +34,12 @@
          <td>full property file name (complete with path)</td>
        </tr>
        <tr>
+         <td>http:// or ftp://</td>
+         <td>file:xy.properties</td>
+         <td>Supports downloading a configuration or resource file, for example
+         http://www.xmlblaster.org/xmlBlaster/config/xmlBlaster.properties.template</td>
+       </tr>
+       <tr>
           <td>PROJECT_HOME</td>
           <td>java -DPROJECT_HOME=/opt/xmlBlaster</td>
           <td>global property</td>

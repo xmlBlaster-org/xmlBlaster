@@ -7,16 +7,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import org.xmlBlaster.util.def.ErrorCode;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 
@@ -165,11 +169,31 @@ public class FileLocator
       return null;
    }
 
+   public String read(URL url) throws XmlBlasterException {
+      if (url == null)
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME, "read() invoked with url==null");
+      try {
+         InputStreamReader reader = new InputStreamReader(url.openStream());
+         BufferedReader br = new BufferedReader(reader);
+         StringBuffer buf = new StringBuffer(2048);
+         String line = "";
+      
+         while((line = br.readLine()) != null)
+            buf.append(line).append("\n");
+         return buf.toString();
+      }
+      catch (IOException e) {
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME+": "+url.toString(), e.toString());
+      }
+   }
+
+
    /**
     * tries to find a file according to the xmlBlaster Strategy.
     * The strategy is:
     * <ul>
     *   <li>given value of the specified property</li>
+    *   <li>Locations with schema like http://www.xmlBlaster.org/empty.html</li>
     *   <li>user.dir</li>
     *   <li>full name (complete with path)</li>
     *   <li>PROJECT_HOME global property</li>
@@ -178,8 +202,9 @@ public class FileLocator
     *   <li>java.ext.dirs</li>
     *   <li>java.home</li>
     * </ul>
-    * @paran propertyName The key to look into Global, for example
-    *        <tt>locator.findFileInXmlBlasterSearchPath("pluginsFile", "/tmp/xmlBlasterPlugins.xml").getFile();</tt>
+    * @paran propertyName The key to look into Global, can be null. For example
+    *        <tt>URL url = locator.findFileInXmlBlasterSearchPath("pluginsFile", "/tmp/xmlBlasterPlugins.xml");
+    *        if (url != null) String file = url.getFile();</tt>
     *        looks for the key "pluginsFile" in global scope, if found the file of the keys value is chosen, else
     *        the above lookup applies.
     *  @param filename
@@ -192,13 +217,37 @@ public class FileLocator
    public final URL findFileInXmlBlasterSearchPath(String propertyName, String filename) {
       String path = null;
       URL ret = null;
-      path = this.glob.getProperty().get(propertyName, (String)null);
-      if (path != null) {
-         if (log.isLoggable(Level.FINE)) log.fine("findFileInXmlBlasterSearchPath: the path: '" + path + "' and the filename to search: '" + filename + "'");
-//         ret = findFileInSinglePath(path, filename);
-         ret = findFileInSinglePath(null, path);
-         if (ret != null) return ret;
+
+      String urlStr = filename;
+      if (propertyName != null) {
+         path = this.glob.getProperty().get(propertyName, (String)null);
+         if (path != null) {
+            if (log.isLoggable(Level.FINE)) log.fine("findFileInXmlBlasterSearchPath: the path: '" + path + "' and the filename to search: '" + filename + "'");
+   //         ret = findFileInSinglePath(path, filename);
+            ret = findFileInSinglePath(null, path);
+            if (ret != null) return ret;
+            urlStr = path;
+         }
       }
+      
+      if (urlStr != null) {
+         int schema = urlStr.indexOf("://"); // http:// or file:// or ftp://
+         if (schema != -1 || urlStr.startsWith("file:")) {
+            try {
+               return new URL(urlStr);
+            } catch (MalformedURLException e) {
+               log.warning("The given filename is an invalid url: " + toString());
+            }
+            if (urlStr.startsWith("file:") && urlStr.length() < 6 ||
+                 urlStr.length() < schema+3)
+               return null;
+            
+            filename = (schema != -1) ? urlStr.substring(schema+3) : urlStr.substring(5);
+         }
+      }
+      
+      if (filename == null) return null;
+
       // user.dir
       path = System.getProperty("user.dir", ".");
       ret = findFileInSinglePath(path, filename);
@@ -246,28 +295,6 @@ public class FileLocator
       return null;
     }
 
-    public static void main(String[] args) {
-       Global glob = Global.instance();
-       glob.init(args);
-
-       FileLocator locator = new FileLocator(glob);
-
-       try {
-          String ret = locator.findFileInXmlBlasterSearchPath("pluginsFile", "xmlBlasterPlugins.xml").getFile();
-          if (ret != null) {
-             System.out.println("The file 'xmlBlasterPlugins.xml' has been found");
-             System.out.println("Its complete path is: '" + ret + "'");
-          }
-          else {
-             System.out.println("The file 'xmlBlasterPlugins.xml' has not been found");
-          }
-       }
-       catch (Exception ex) {
-          System.err.println("Error occured: " + ex.toString());
-       }
-
-
-    }   
 
    /**
     * Read a file into <code>byte[]</code>.
@@ -544,5 +571,32 @@ public class FileLocator
          return "text/rtf";
       return defaultVal;
    }
+
+   /**
+    * java org.xmlBlaster.util.FileLocator -pluginsFile http://www.xmlblaster.org/empty.html 
+    * @param args
+    */
+   public static void main(String[] args) {
+       Global glob = Global.instance();
+       glob.init(args);
+
+       FileLocator locator = new FileLocator(glob);
+
+       try {
+          URL url = locator.findFileInXmlBlasterSearchPath("pluginsFile", "xmlBlasterPlugins.xml");
+          if (url != null && url.getFile() != null) {
+             System.out.println("The file 'xmlBlasterPlugins.xml' has been found");
+             System.out.println("Its complete path is: '" + url.toString() + "' and the file is '" + url.getFile() + "'");
+             System.out.println("DUMP:");
+             System.out.println(locator.read(url));
+          }
+          else {
+             System.out.println("The file 'xmlBlasterPlugins.xml' has not been found");
+          }
+       }
+       catch (Exception ex) {
+          System.err.println("Error occured: " + ex.toString());
+       }
+    }   
 }
 
