@@ -106,7 +106,8 @@ public class DisconnectQos
    }
 
    /**
-    * @param true if subject queue shall be deleted with last user session logout
+    * If subject queue shall be deleted with last user session logout
+    * @param del defaults to true
     */
    public void deleteSubjectQueue(boolean del) {
       this.disconnectQosData.deleteSubjectQueue(del);
