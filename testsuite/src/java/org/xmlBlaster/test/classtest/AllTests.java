@@ -17,6 +17,7 @@ public class AllTests {
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster class tests");
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.GlobalTest.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.FileLocatorTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.RunLevelTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.ContextNodeTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SessionNameTest.class));

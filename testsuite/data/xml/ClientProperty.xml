@@ -1,0 +1,25 @@
+<!--
+   Example to test XPath from command line for MIME filter plugin
+
+   export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/xpath/jaxen-core.jar:$XMLBLASTER_HOME/lib/xpath/saxpath.jar:$XMLBLASTER_HOME/lib/xpath/jaxen-dom.jar
+ 
+   java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile ClientProperty.xml -isQos true
+   
+   xpath > //clientProperty[@name='corrId']
+   Match: true
+
+
+See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html
+-->
+
+<qos>
+   <clientProperty name='corrId' type='int'>120001</clientProperty>
+
+   <clientProperty name='SayHello'>Hello World</clientProperty>
+
+   <clientProperty name='aKey'>aValue</clientProperty>
+   
+   <clientProperty name='MyXmlString' type='String' encoding='base64'>
+      QmxhPEJsYUJsYQ==
+   </clientProperty>
+</qos>

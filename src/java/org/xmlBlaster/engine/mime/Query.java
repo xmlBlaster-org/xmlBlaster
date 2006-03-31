@@ -17,6 +17,7 @@ import org.xmlBlaster.util.Global;
 public final class Query {
    private final String query;
    private Object preparedQuery = null;
+   private Object transformer = null;
 
    public Query(Global glob, String query) {
       this.query = (query == null) ? "" : query;
@@ -36,5 +37,20 @@ public final class Query {
 
    public final String toString() {
       return this.query;
+   }
+
+   /**
+    * The cached (XSL) transformer. 
+    * @return Returns the transformer or null
+    */
+   public Object getTransformer() {
+      return this.transformer;
+   }
+
+   /**
+    * @param transformer The transformer to set.
+    */
+   public void setTransformer(Object transformer) {
+      this.transformer = transformer;
    }
 }

@@ -6,10 +6,19 @@ Comment:   Support check of message content with XPath expressions.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.xpath;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.property.Args;
+import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XslTransformer;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.def.Constants;
@@ -20,8 +29,11 @@ import org.xmlBlaster.engine.ServerScope;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 import org.xml.sax.InputSource;
@@ -39,7 +51,7 @@ import org.jaxen.dom.DOMXPath;
  *<p>Filter on the content of an xml mime message.
  * <br />
  * The applicable mime types for this filter can be specified using the 
- * <code>engine.mime.xpath.types</code> parameter with semi-colon seperated mime types
+ * <code>engine.mime.xpath.types</code> parameter with semi-colon separated mime types
  * e.g. engine.mime.xpath.types=text/xml;image/svg+xml;application/xml
  * <br />
  * The filter will cache the message dom tree it produces,
@@ -64,6 +76,7 @@ import org.jaxen.dom.DOMXPath;
  * @author Peter Antman
  * @author Jens Askengren
  * @author Robert Leftwich <robert@leftwich.info>
+ * @author Marcel Ruff
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html">The mime.plugin.access.xpath requirement</a>
  * @version $Id$
  */
@@ -71,15 +84,22 @@ import org.jaxen.dom.DOMXPath;
 public class XPathFilter implements I_Plugin, I_AccessFilter {
    public static final String MAX_DOM_CACHE_SIZE = "engine.mime.xpath.maxcachesize";
    public static final String DEFAULT_MAX_CACHE_SIZE = "10";
+   public static final String MATCH_AGAINST_QOS = "matchAgainstQos";
+   public static final String XSL_CONTENT_TRANSFORMER_FILE_NAME = "xslContentTransformerFileName";
+   //public static final String XSL_QOS_TRANSFORMER_FILE_NAME = "xslQosTransformerFileName";
    public static final String XPATH_EXTENSTION_FUNCTIONS = "engine.mime.xpath.extension_functions";
    public static final String XPATH_MIME_TYPES = "engine.mime.xpath.types";
 
    private final String ME = "XPathFilter";
-   private ServerScope glob;
+   private Global glob;
    private static Logger log = Logger.getLogger(XPathFilter.class.getName());
    private int maxCacheSize = 10;
    private LinkedList domCache;
    private String [] mimeTypes;
+   private PluginInfo pluginInfo;
+   private boolean matchAgainstQos;
+   private String xslContentTransformerFileName;
+   //private String xslQosTransformerFileName;
 
    /**
     * This is called after instantiation of the plugin 
@@ -96,12 +116,20 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
+   public void init(Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
+      this.pluginInfo = pluginInfo;
       Properties prop = pluginInfo.getParameters();
       maxCacheSize = Integer.parseInt( prop.getProperty(MAX_DOM_CACHE_SIZE,
                                                         DEFAULT_MAX_CACHE_SIZE));
 
       loadXPathExtensionFunctions(prop.getProperty(XPATH_EXTENSTION_FUNCTIONS));
+
+      this.matchAgainstQos = Boolean.valueOf(
+            prop.getProperty(MATCH_AGAINST_QOS, ""+this.matchAgainstQos)
+            ).booleanValue();
+      
+      this.xslContentTransformerFileName = prop.getProperty(XSL_CONTENT_TRANSFORMER_FILE_NAME, this.xslContentTransformerFileName);
+      //this.xslQosTransformerFileName = prop.getProperty(XSL_QOS_TRANSFORMER_FILE_NAME, this.xslQosTransformerFileName);
 
       domCache = new LinkedList();
 
@@ -120,7 +148,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * @return "GnuRegexFilter"
     */
    public String getType() {
-      return "XPathFilter";
+      return (this.pluginInfo==null) ? "XPathFilter" : this.pluginInfo.getType();
    }
 
    /**
@@ -128,7 +156,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * @return "1.0"
     */
    public String getVersion() {
-      return "1.0";
+      return (this.pluginInfo==null) ? "1.0" : this.pluginInfo.getVersion();
    }
 
    /**
@@ -136,7 +164,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * @return "GnuRegexFilter"
     */
    public String getName() {
-      return "XPathFilter";
+      return getType(); //"XPathFilter";
    }
 
    /**
@@ -177,13 +205,14 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     *            For the publisher it looks as if the publish failed completely. Probably it is
     *            best to return 'false' instead and log the situation.
     */
-   public boolean match(SessionInfo receiver, MsgUnit msgUnitWrapper, Query query) throws XmlBlasterException {
-      if (msgUnitWrapper == null) {
+   public boolean match(SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
+      if (msgUnit == null) {
          Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in xpath match() call");
       }
       
       try {
+         // Access cached query ...
          DOMXPath expression;
          if (query.getPreparedQuery() == null) {
             try {
@@ -197,14 +226,37 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          else
             expression = (DOMXPath)query.getPreparedQuery();
          
-         Document doc = getDocument(msgUnitWrapper);
+         // Access cached xsl transformation
+         XslTransformer xslContentTransformer = null;
+         if (this.xslContentTransformerFileName != null) {
+            xslContentTransformer = (XslTransformer)query.getTransformer();
+            if (xslContentTransformer == null) {
+               Map xslProps = new TreeMap(); // TODO: Where to get them from
+               xslContentTransformer = new XslTransformer(glob, this.xslContentTransformerFileName, null, null, xslProps);
+            }
+         }
+         
+         String xml = getXml(msgUnit).trim(); // Content or QoS
+         
+         if (xml.length() == 0) {
+            log.warning("Provided XML string is empty, query does not match.");
+            return false;
+         }
+         
+         Document doc = getDocument(msgUnit);
          
          if ( log.isLoggable(Level.FINEST))
-            log.finest("Matching query " + query.getQuery() + " against document: " + msgUnitWrapper.getContentStr());
+            log.finest("Matching query " + query.getQuery() + " against document: " + getXml(msgUnit));
          
          boolean match = expression.booleanValueOf(doc);
          if (log.isLoggable(Level.FINE))
             log.fine("Query "+query.getQuery()+" did" + (match ? " match" : " not match"));
+         
+         if (match == true && xslContentTransformer != null) {
+            String tmp = (this.matchAgainstQos) ? msgUnit.getContentStr() : xml;
+            String ret = xslContentTransformer.doXSLTransformation(tmp);
+            msgUnit.setContent(ret.getBytes());
+         }
          
          return match;
       }
@@ -213,7 +265,8 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Error in querying dom tree with query " + query, e);
       }
       catch (Throwable e) {
-         log.warning("Error in handling XPath filter with query '" + query + "': and '" + msgUnitWrapper.getContentStr() + "': " + e.toString());
+         log.warning("Error in handling XPath filter with query='" + query + "' and xml='" + getXml(msgUnit) + "': " + e.toString());
+         e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Error in querying dom tree with query " + query, e);
       }
    }
@@ -310,7 +363,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          doc =  e.doc;
       } else {
          if (log.isLoggable(Level.FINE))log.fine("Constructing new doc from with key: " +key);
-         doc = getDocument(msg.getContentStr());
+         doc = getDocument(getXml(msg));
          
          // Put into cache and check size
          Entry e = new Entry(key,doc);
@@ -321,6 +374,18 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
                   
       } // end of else
       return doc;
+   }
+   
+   /**
+    * Access the XML string (from QoS or content). 
+    * @param msg
+    * @return Is never null
+    */
+   private String getXml(MsgUnit msg) {
+      if (this.matchAgainstQos)
+         return msg.getQos();
+      else
+         return msg.getContentStr();
    }
    
    /**
@@ -381,7 +446,105 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          return false;
       }
    }
+      
+   /**
+    * Command line helper to test your XPath syntax. 
+    * <p> 
+    * Please pass on command line the XML of the message content,
+    * you then can interactively test your XPath query.
+    * Type 'q' to quit.
+    * <p>
+    * <tt>
+    * export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/xpath/jaxen-core.jar:$XMLBLASTER_HOME/lib/xpath/saxpath.jar:$XMLBLASTER_HOME/lib/xpath/jaxen-dom.jar
+    * <br />
+    * java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile [someFile.xml]
+    * <br />
+    * java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile [someFile.xml] -xslContentTransformerFileName [someFile.xsl]
+    * <br />
+    * Example:<br />
+    * cd xmlBlaster/testsuite/data/xml<br/>
+    * java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile Airport.xml -xslContentTransformerFileName transformToKeyValue.xsl
+    * </tt> 
+    * <p>
+    * todo: Using http://jline.sourceforge.net/ for nicer command line input handling
+    * <br />Example: 
+    * java -cp /opt/download/jline-demo.jar:/opt/download/jline-0_9_5-demo.jar jline.example.Example simple
+    * 
+    * @param args -inFile [fileName.xml] OR -xml [the xml string]
+    */
+   public static void main(String[] args) {
+      try {
+         ServerScope scope = new ServerScope(args);
+         Global glob = scope;
+         XPathFilter filter = new XPathFilter();
+         filter.initialize(scope);
+         // check -matchAgainstQos and -xslContentTransformFileName command line settings 
+         String xslFile = Args.getArg(args, "-"+XSL_CONTENT_TRANSFORMER_FILE_NAME, (String)null);
+         boolean isQos = Args.getArg(args, "-"+MATCH_AGAINST_QOS, false);
+         String xml = Args.getArg(args, "-xml", (String)null);
+         if (xml == null) {
+            String inFile = Args.getArg(args, "-inFile", (String)null);
+            if (inFile == null || inFile.length() < 1) {
+               System.out.println("\nUsage:  java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile [someFile]");
+               System.exit(1);
+            }
+            xml = FileLocator.readAsciiFile(inFile);
+         }
+         String content = (!isQos) ? xml : "";
+         String qos = (isQos) ? xml : "<qos/>";
+         MsgUnit msgUnit = new MsgUnit("<key oid='Hello'/>", content, qos);
+         msgUnit.getQosData().setRcvTimestamp(new Timestamp());
+         SessionInfo sessionInfo = null;
+
+         PluginInfo info = new PluginInfo(glob, null, "XPathFilter", "1.0");
+         info.getParameters().put(MATCH_AGAINST_QOS, ""+isQos);
+         if (xslFile != null)
+            info.getParameters().put(XSL_CONTENT_TRANSFORMER_FILE_NAME, xslFile);
+         filter.init(glob, info);
          
+         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+         
+         System.out.println("The XML to query is");
+         System.out.println("==================================");
+         System.out.println(xml);
+         System.out.println("==================================");
+         System.out.println("Enter your xpath like '//a' or type 'q' to quit");
+         String line = "";
+         while (true) {
+            System.out.println("");
+            line = ""; // Nice to have: showing old query, this does not work - use jline
+            System.out.print("xpath> " + line);
+            line = in.readLine(); // Blocking in I/O
+            if (line == null) continue;
+            line = line.trim();
+            if (line.length() < 1) continue;
+            Query query = new Query(glob, line);
+            if (line.toLowerCase().equals("q") || line.toLowerCase().equals("quit")) {
+               System.out.println("Bye");
+               System.exit(0);
+            }
+            try {
+               boolean ret = filter.match(sessionInfo, msgUnit, query);
+               //System.out.println("Query: " + query.getQuery());
+               System.out.println("Match: " + ret);
+               if (ret == true && xslFile != null) {
+                  System.out.println("Transformed content: " + msgUnit.getContentStr());
+               }
+            }
+            catch (Exception e) { // javap org.jaxen.XPathSyntaxException
+               System.out.println(e.toString());
+               e.printStackTrace();
+            }
+         }
+      } catch (XmlBlasterException e) {
+         log.severe(e.getMessage());
+         if (!e.isResource())
+            e.printStackTrace();
+      }
+      catch (IOException e) {
+         log.severe(e.toString());
+      }
+   }
 }
 
 

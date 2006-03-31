@@ -4,6 +4,19 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #14977 Extended MIME XPath filter:
+   - Depending on the configuration the XPath can now query the QoS OR the message content
+     The default is as before the message content
+   - Optionally you can supply a XSL file name which is used to transform the message content
+   - The plugin type name is now dynamically determined to support multiple plugins
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html
+
+ o #14976 FileLocator handle now http:// and ftp:// and file: schemas
+   to lookup configuration files
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html
+
+ o #14974 Extended XPath filter FilePoller: Changed copyOnMove=true as default setting
+
  o #14974 FilePoller: Changed copyOnMove=true as default setting
 
  o #14973 FilePoller: Fix for case insensitive OS, Fix for failing renameTo

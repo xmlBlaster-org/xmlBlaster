@@ -10,7 +10,9 @@
       the message content, also with XPath, thereby supplying full XML/XPath content based routing of messages.
       </p>
       <p>
-      For this frequent use case we deliver a plugin using XPath expressions to check the message <i>content</i>.
+      For this frequent use case we deliver a plugin using XPath expressions to check the message <i>content</i>,
+      optionally, by setting the property <i>matchAgainstQos=true</i> you can match against
+      the QoS of the published message instead of the content.
       </p>
       <p>
       The plugin is registered for the <code>text/xml</code> mime type.
@@ -48,6 +50,10 @@
       also possible to register Jaxen extension functions by specifying them
       in the property <code>engine.mime.xpath.extension_functions</code>. The
       functions must implement the <code>org.jaxen.Function</code> interface.
+      </p>
+      <p>
+      It is possible to specify an XSL file name, this will be applied on the
+      message content if the match was successful.
       </p>
    </description>
    <example lang="any" type="HTML">
@@ -105,7 +111,67 @@
    </example>
 
    <example lang="Java" type="HTML">
-      <h2>Command line example</h2>
+      <h2>Command line example: Testing your XPath syntax</h2>
+
+      <p>This example allows you to test your XPath queries on command line, first set the CLASSPATH to
+      contain the JAXEN libraries</p>
+      <tt>export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/xpath/jaxen-core.jar: $XMLBLASTER_HOME/lib/xpath/saxpath.jar: $XMLBLASTER_HOME/lib/xpath/jaxen-dom.jar</tt>
+      <p> now create a file <code>test.xml</code> with following content</p>
+<pre>
+&lt;qos>
+   &lt;clientProperty name='corrId' type='int'>120001&lt;/clientProperty>
+
+   &lt;clientProperty name='SayHello'>Hello World&lt;/clientProperty>
+
+   &lt;clientProperty name='aKey'>aValue&lt;/clientProperty>
+
+   &lt;clientProperty name='MyXmlString' type='String' encoding='base64'>
+      QmxhPEJsYUJsYQ==
+   &lt;/clientProperty>
+&lt;/qos>
+</pre>
+      <p>and then start the command line test</p>
+
+      <tt>java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile test.xml</tt>
+      <pre>
+xpath> /qos/clientProperty/@name='corrId'
+Match: true
+
+xpath> /qos/clientProperty/@name='corYX'
+Match: false
+      </pre>
+      <p>You can now play further with the XPath query as shown above.</p>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h2>Command line example: Testing XSLT transformation</h2>
+
+      <p>This example allows you to test your XPath queries with XSLT transformation
+      of the message content (first set the CLASSPATH as described in the previous example).
+      </p>
+      <p>Now change to the directory <code>xmlBlaster/testsuite/data/xml</code>,
+      here we have some XML and one XSL file to play with.</p>
+      <p>Start the command line test</p>
+
+      <tt>java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile Airport.xml -xslContentTransformerFileName transformToKeyValue.xsl</tt>
+      <pre>
+xpath> //subscribe
+Match: true
+Transformed content:
+ &lt;?xml version="1.0" encoding="UTF-8"?>
+   &lt;generic>
+     &lt;entity name="subscribe">
+       &lt;entity name="key">
+       ...
+      </pre>
+      <p>The original file <code>Airport.xml</code> is transformed to the above example output.</p>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h2>Command line example: Test the plugin with xmlBlaster</h2>
+
+      <p>Assure that the plugin is registered in xmlBlaster.properties</p>
+      <tt>MimeAccessPlugin[XPathFilter][1.0]=org.xmlBlaster.engine.mime.xpath.XPathFilter</tt>
 
       <p>Start the server</p>
       <tt>java -jar lib/xmlBlaster.jar</tt>
@@ -143,7 +209,7 @@
             <th>Property</th>
             <th>Default</th>
             <th>Description</th>
-            <th>Implemented</th>
+            <th>Impl</th>
          </tr>
 
          <tr>
@@ -168,8 +234,25 @@
             <td>engine.mime.xpath.extension_functions</td>
             <td>:contains-ignore-case:
                 org.xmlBlaster.engine.mime.xpath.ContainsIgnoreCaseFunction;:
-                recursive-text:org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction</td>
+                recursive-text:
+                org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction</td>
             <td>A semicolon separated list of function definitions.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>matchAgainstQos</td>
+            <td>false</td>
+            <td>In the default setting the XPath runs against the message content.
+            If you set this property to 'true' the XPath runs against the publish QoS of the message.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>xslContentTransformerFileName</td>
+            <td>myTransform.xsl</td>
+            <td>As default there is no XSL file specified. If you name an XSL file it will be
+            looked up in the CLASSPATH and all other locations where xmlBlaster looks for configuration files.
+            If, and only if, the filter match was successful the message content will be transformed
+            with the given XSLT transformation.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
@@ -185,6 +268,7 @@
    <see type="REQ">mime.plugin.accessfilter</see>
    <see type="REQ">cluster</see>
    <author>pra@tim.se</author>
+   <author>xmlblast@marcelruff.info</author>
    <date>2003 09 09</date>
    <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
