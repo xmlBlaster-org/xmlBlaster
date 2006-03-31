@@ -43,7 +43,7 @@ public class PluginInfo implements I_PluginConfig {
       ME = "PluginInfo-" + type;
       this.glob = glob;
 
-      if (log.isLoggable(Level.FINER)) this.log.finer("constructor type='" + type + "' className='" + className + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("constructor type='" + type + "' className='" + className + "'");
       this.type = type.trim();
       this.className = className;
       this.params = params;
