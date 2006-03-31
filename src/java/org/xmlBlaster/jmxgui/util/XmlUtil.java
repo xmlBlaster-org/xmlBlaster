@@ -24,7 +24,6 @@ import org.xmlBlaster.util.*;
 public class XmlUtil {
    private static Logger log = Logger.getLogger(XmlUtil.class.getName());
   private Global glob = null;
-  private static String ME = "XmlUtil";
 
   public XmlUtil() {
     this.glob = new Global();
