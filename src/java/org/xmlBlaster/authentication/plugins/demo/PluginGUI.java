@@ -4,8 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import org.xmlBlaster.util.def.MethodName;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
 
 /*****************************************************************************
@@ -13,6 +11,7 @@ import java.util.logging.Level;
  * @author <a href="email:wolfgang.kleinertz@doubleSlash.de">Wolfgang Kleinertz</a>
  *****************************************************************************/
 public class PluginGUI extends JFrame {
+   private static final long serialVersionUID = 8063864833824851457L;
    JPanel           contentPane;
    GridLayout       gridLayout1 = new GridLayout();
    JScrollPane     jScrollPane1 = new JScrollPane();

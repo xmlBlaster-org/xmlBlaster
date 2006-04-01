@@ -4,6 +4,12 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #14987 Refactored security framework - incompatible security interface change
+   of interfaces I_Subject, I_Session, I_MsgSecurityInterceptor
+   - isAuthorized is now a method of the I_Session instead of the I_Subject
+   - isAuthorized gets now extended informations to be able to authorize on data instance level
+   - importMessage() and exportMessage() have now extended arguments
+
  o #14985 Upgraded to jaxen-1.1-beta-8.jar from http://jaxen.org (2006-04-01)
    Removed in xmlBlaster/lib/xpath: saxpath.jar jaxen-core.jar jaxen-dom.jar
    Added   xmlBlaster/lib/jaxen.jar

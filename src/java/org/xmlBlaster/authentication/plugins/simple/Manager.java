@@ -4,6 +4,8 @@ import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
+
 import java.util.Hashtable;
 
 /**
@@ -65,8 +67,8 @@ public class Manager implements I_Manager{
    void changeSecretSessionId(String oldSessionId, String newSessionId) throws XmlBlasterException {
       synchronized(sessions) {
          Session session = (Session)sessions.get(oldSessionId);
-         if (session == null) throw new XmlBlasterException(ME+".unknownSessionId", "Unknown sessionId!");
-         if (sessions.get(newSessionId) != null) throw new XmlBlasterException(ME+".invalidSessionId", "This sessionId is already in use!");
+         if (session == null) throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_CONNECTIONFAILURE, ME+".unknownSessionId", "Unknown sessionId!");
+         if (sessions.get(newSessionId) != null) throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_CONNECTIONFAILURE, ME+".invalidSessionId", "This sessionId is already in use!");
          sessions.put(newSessionId, session);
          sessions.remove(oldSessionId);
       }

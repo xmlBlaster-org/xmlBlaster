@@ -46,10 +46,6 @@ public interface I_SecurityQos {
     */
    public void setCredential(String cred);
 
-   public String getPluginType();
-
-   public String getPluginVersion();
-
    /**
     * Serialize the information.
     */

@@ -9,6 +9,7 @@ package org.xmlBlaster.authentication;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
@@ -16,6 +17,8 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -470,7 +473,8 @@ final public class Authenticate implements I_RunlevelListener
             throw new XmlBlasterException(this.glob, ErrorCode.USER_NOT_CONNECTED, ME + " Authenticate.disconnect", "You are not connected, your secretSessionId is invalid.");
          }
          try {
-            securityMgr.releaseSession(secretSessionId, sessionSecCtx.importMessage(qos_literal));
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.DISCONNECT, new MsgUnitRaw(null, (byte[])null, qos_literal), null);
+            securityMgr.releaseSession(secretSessionId, sessionSecCtx.importMessage(dataHolder).getQos());
          }
          catch(Throwable e) {
             log.warning("Ignoring importMessage() problems, we continue to cleanup resources: " + e.getMessage());

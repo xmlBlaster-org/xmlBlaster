@@ -80,4 +80,21 @@ public interface I_Session extends I_MsgSecurityInterceptor {
     * @param String The sessionId.
     */
    public String getSecretSessionId();
+
+   /**
+    * Check if this subject instance is permitted to do something
+    * <p/>
+    * @param sessionHolder Holding information about the subject which requires rights
+    * @param dataHolder Holding information about the data which shall be accessed
+    *
+    * EXAMPLE:
+    *    isAuthorized("publish", "thisIsAMessageKey");
+    *
+    * The above line checks if this subject is permitted to >>publish<<
+    * a message under the key >>thisIsAMessageKey<<
+    *
+    * Known action keys:
+    *    publish, subscribe, get, erase, ...
+    */
+   public boolean isAuthorized(SessionHolder sessionHolder, DataHolder dataHolder);
 }

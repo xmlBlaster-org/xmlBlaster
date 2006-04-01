@@ -13,12 +13,10 @@ import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.MethodName;
@@ -32,7 +30,6 @@ import org.xmlBlaster.engine.AvailabilityChecker;
  */
 final public class AuthenticateProtector implements I_Authenticate
 {
-   final private String ME;
    private final ServerScope glob;
    private static Logger log = Logger.getLogger(AuthenticateProtector.class.getName());
    private final Authenticate authenticate;
@@ -41,7 +38,6 @@ final public class AuthenticateProtector implements I_Authenticate
    public AuthenticateProtector(ServerScope global, Authenticate authenticate) throws XmlBlasterException {
       this.glob = global;
 
-      this.ME = "AuthenticateProtector" + glob.getLogPrefixDashed();
       this.authenticate = authenticate;
       if (log.isLoggable(Level.FINER)) log.finer("Entering constructor");
       this.glob.setAuthenticate(this);

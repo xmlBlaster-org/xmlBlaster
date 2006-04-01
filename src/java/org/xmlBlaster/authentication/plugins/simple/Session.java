@@ -1,14 +1,14 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
+import org.xmlBlaster.authentication.plugins.DataHolder;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.authentication.plugins.SessionHolder;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.def.MethodName;
 
 /**
  * @author  $Author: laghi $ ($Name:  $)
@@ -17,10 +17,8 @@ import org.xmlBlaster.util.def.MethodName;
  */
 
 public class Session implements I_Session {
-   private static final String ME = "Session";
 
    private Subject  subject = null;
-   private static Logger log = Logger.getLogger(Session.class.getName());
    private Manager secMgr = null;
    private String sessionId = null;
    private boolean authenticated = false;
@@ -97,12 +95,20 @@ public class Session implements I_Session {
     * [I_Session]
     */
    public I_Subject getSubject() {
-      return (I_Subject)subject;
+      return subject;
    }
 
 
    public I_Manager getManager() {
       return secMgr;
+   }
+
+   /**
+    * Check if the user is permited (authorized) to do something
+    */
+   public boolean isAuthorized(SessionHolder sessionHolder, DataHolder dataHolder) {
+      //System.out.println("### User: "+getName()+" is permitted to "+actionKey+" "+key+" ###");
+      return true; // dummy implementation;
    }
 
 
@@ -124,47 +130,11 @@ public class Session implements I_Session {
       return subj;
    }
 
-   /**
-    * decrypt, check, unseal an incomming message. 
-    * <p/>
-    * @param MsgUnitRaw The the received message
-    * @return MsgUnitRaw The original message
-    * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException {
-      // dummy implementation
-      return msg;
+   public MsgUnitRaw importMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      return dataHolder.getMsgUnitRaw();
    }
 
-   public String importMessage(String xmlMsg) throws XmlBlasterException {
-      return xmlMsg;
-   }
-
-   public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException {
-      return xmlMsg;
-   }
-
-
-
-
-   /**
-    * encrypt, sign, seal an outgoing message. 
-    * <p/>
-    * @param MsgUnitRaw The source message
-    * @return MsgUnitRaw
-    * @exception XmlBlasterException Thrown if the message cannot be processed
-    */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
-      // dummy implementation
-      return msg;
-
-   }
-
-   public String exportMessage(String xmlMsg) throws XmlBlasterException {
-      return xmlMsg;
-   }
-
-   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException {
-      return xmlMsg;
+   public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      return dataHolder.getMsgUnitRaw();
    }
 }

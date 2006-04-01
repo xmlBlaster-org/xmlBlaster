@@ -12,8 +12,10 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.MsgUnitRaw;
 
@@ -73,9 +75,12 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
       // import (decrypt) message
       I_ClientPlugin secPlgn = getSecurityPlugin();
       if (secPlgn != null) {
-         updateKeyLiteral = secPlgn.importMessage(updateKeyLiteral);
-         content = secPlgn.importMessage(content);
-         updateQosLiteral = secPlgn.importMessage(updateQosLiteral);
+         MsgUnitRaw in = new MsgUnitRaw(updateKeyLiteral, content, updateQosLiteral);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UPDATE, in, null);
+         MsgUnitRaw msg = secPlgn.importMessage(dataHolder);
+         updateKeyLiteral = msg.getKey();
+         content = msg.getContent();
+         updateQosLiteral = msg.getQos();
       }
 
       // parse XML key and QoS
@@ -108,7 +113,10 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          
          // export (encrypt) return value
          if (secPlgn != null) {
-            ret = secPlgn.exportMessage(ret);
+            MsgUnitRaw msg = new MsgUnitRaw(null, (byte[])null, ret);
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UPDATE, msg, null);
+            dataHolder.setReturnValue(true);
+            ret = secPlgn.exportMessage(dataHolder).getQos();
          }
 
          return ret;
@@ -136,9 +144,13 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
       try {
          I_ClientPlugin secPlgn = getSecurityPlugin();
          if (secPlgn != null) {
-            updateKeyLiteral = secPlgn.importMessage(updateKeyLiteral);
-            content = secPlgn.importMessage(content);
-            updateQosLiteral = secPlgn.importMessage(updateQosLiteral);
+            MsgUnitRaw in = new MsgUnitRaw(updateKeyLiteral, content, updateQosLiteral);
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UPDATE_ONEWAY, in, null);
+            MsgUnitRaw msg = secPlgn.importMessage(dataHolder);
+
+            updateKeyLiteral = msg.getKey();
+            content = msg.getContent();
+            updateQosLiteral = msg.getQos();
          }
 
          UpdateKey updateKey = new UpdateKey(glob, updateKeyLiteral);

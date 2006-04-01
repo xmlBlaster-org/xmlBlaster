@@ -30,18 +30,9 @@ public class Subject implements I_Subject {
    }
 
 
-   /**
-    * Check if the user is permited (authorized) to do something
-    */
-   public boolean isAuthorized(MethodName actionKey, String key) {
-//System.out.println("### User: "+getName()+" is permitted to "+actionKey+" "+key+" ###");
-      return true; // dummy implementation;
-   }
-
    public String getName() {
       return name;
    }
-
 
    /**
     * Authenticate the user

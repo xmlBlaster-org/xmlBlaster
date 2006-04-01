@@ -35,6 +35,7 @@ import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 
 
@@ -207,7 +208,8 @@ public final class ClientDispatchConnection extends DispatchConnection
       // We export/encrypt the message (call the interceptor)
       if (securityInterceptor != null) {
          for (int i=0; i<msgArr.length; i++) {
-            msgUnitRawArr[i] = securityInterceptor.exportMessage(msgArr[i].getMsgUnitRaw(), MethodName.PUBLISH);
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.PUBLISH, msgArr[i].getMsgUnitRaw());
+            msgUnitRawArr[i] = securityInterceptor.exportMessage(dataHolder);
          }
          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted " + msgArr.length + " publish messages.");
       }
@@ -238,8 +240,9 @@ public final class ClientDispatchConnection extends DispatchConnection
                continue;
 
             if (securityInterceptor != null) {
-               // decrypt ...
-               rawReturnVal[i] = securityInterceptor.importMessage(rawReturnVal[i]);
+               CryptDataHolder dataHolder = new CryptDataHolder(MethodName.PUBLISH, new MsgUnitRaw(null, (byte[])null, rawReturnVal[i]));
+               dataHolder.setReturnValue(true);
+               rawReturnVal[i] = securityInterceptor.importMessage(dataHolder).getQos();
             }
 
             // create return object
@@ -265,8 +268,10 @@ public final class ClientDispatchConnection extends DispatchConnection
       String key = subscribeEntry.getSubscribeKeyData().toXml();
       String qos = subscribeEntry.getSubscribeQosData().toXml();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         key = securityInterceptor.exportMessage(key);
-         qos = securityInterceptor.exportMessage(qos);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.SUBSCRIBE, new MsgUnitRaw(key, (byte[])null, qos));
+         MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
+         key = msgUnitRaw.getKey();
+         qos = msgUnitRaw.getQos();
          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted subscribe request.");
       }
       else {
@@ -279,7 +284,9 @@ public final class ClientDispatchConnection extends DispatchConnection
       
       if (subscribeEntry.wantReturnObj()) {
          if (securityInterceptor != null) { // decrypt return value ...
-            rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.SUBSCRIBE, new MsgUnitRaw(null, (byte[])null, rawReturnVal));
+            dataHolder.setReturnValue(true);
+            rawReturnVal = securityInterceptor.importMessage(dataHolder).getQos();
          }
          try {
             subscribeEntry.setReturnObj(new SubscribeReturnQos(glob, rawReturnVal));
@@ -300,8 +307,10 @@ public final class ClientDispatchConnection extends DispatchConnection
       String key = unSubscribeEntry.getUnSubscribeKey().toXml();
       String qos = unSubscribeEntry.getUnSubscribeQos().toXml();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         key = securityInterceptor.exportMessage(key);
-         qos = securityInterceptor.exportMessage(qos);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UNSUBSCRIBE, new MsgUnitRaw(key, (byte[])null, qos));
+         MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
+         key = msgUnitRaw.getKey();
+         qos = msgUnitRaw.getQos();
          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted unSubscribe request.");
       }
       else {
@@ -316,7 +325,9 @@ public final class ClientDispatchConnection extends DispatchConnection
          UnSubscribeReturnQos[] retQosArr = new UnSubscribeReturnQos[rawReturnValArr.length];
          for (int ii=0; ii<rawReturnValArr.length; ii++) {
             if (securityInterceptor != null) { // decrypt return value ...
-               String xmlQos = securityInterceptor.importMessage(rawReturnValArr[ii]);
+               CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UNSUBSCRIBE, new MsgUnitRaw(null, (byte[])null, rawReturnValArr[ii]));
+               dataHolder.setReturnValue(true);
+               String xmlQos = securityInterceptor.importMessage(dataHolder).getQos();
                retQosArr[ii] = new UnSubscribeReturnQos(glob, xmlQos);
             }
          }
@@ -343,8 +354,10 @@ public final class ClientDispatchConnection extends DispatchConnection
       String key = getEntry.getGetKey().toXml();
       String qos = getEntry.getGetQos().toXml();
       if (this.securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         key = this.securityInterceptor.exportMessage(key);
-         qos = this.securityInterceptor.exportMessage(qos);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.GET, new MsgUnitRaw(key, (byte[])null, qos));
+         MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
+         key = msgUnitRaw.getKey();
+         qos = msgUnitRaw.getQos();
          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted get request.");
       }
       else {
@@ -359,7 +372,9 @@ public final class ClientDispatchConnection extends DispatchConnection
       if (getEntry.wantReturnObj()) {
          for (int ii=0; ii<rawReturnValArr.length; ii++) {
             if (this.securityInterceptor != null) { // decrypt return value ...
-               rawReturnValArr[ii] = this.securityInterceptor.importMessage(rawReturnValArr[ii], MethodName.PUBLISH);
+               CryptDataHolder dataHolder = new CryptDataHolder(MethodName.GET, rawReturnValArr[ii]);
+               dataHolder.setReturnValue(true);
+               rawReturnValArr[ii] = securityInterceptor.importMessage(dataHolder);
             }
             // NOTE: We use PUBLISH here instead of GET_RETURN to have the whole MsgUnit stored
             msgUnitArr[ii] = new MsgUnit(glob, rawReturnValArr[ii], MethodName.PUBLISH);
@@ -378,8 +393,10 @@ public final class ClientDispatchConnection extends DispatchConnection
       String key = eraseEntry.getEraseKey().toXml();
       String qos = eraseEntry.getEraseQos().toXml();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         key = securityInterceptor.exportMessage(key);
-         qos = securityInterceptor.exportMessage(qos);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.ERASE, new MsgUnitRaw(key, (byte[])null, qos));
+         MsgUnitRaw msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
+         key = msgUnitRaw.getKey();
+         qos = msgUnitRaw.getQos();
          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted erase request.");
       }
       else {
@@ -394,7 +411,9 @@ public final class ClientDispatchConnection extends DispatchConnection
          EraseReturnQos[] retQosArr = new EraseReturnQos[rawReturnValArr.length];
          for (int ii=0; ii<rawReturnValArr.length; ii++) {
             if (securityInterceptor != null) { // decrypt return value ...
-               String xmlQos = securityInterceptor.importMessage(rawReturnValArr[ii]);
+               CryptDataHolder dataHolder = new CryptDataHolder(MethodName.ERASE, new MsgUnitRaw(null, (byte[])null, rawReturnValArr[ii]));
+               dataHolder.setReturnValue(true);
+               String xmlQos = securityInterceptor.importMessage(dataHolder).getQos();
                retQosArr[ii] = new EraseReturnQos(glob, xmlQos);
             }
          }
@@ -418,7 +437,8 @@ public final class ClientDispatchConnection extends DispatchConnection
    private void connect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueConnectEntry connectEntry = (MsgQueueConnectEntry)entry;
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         this.encryptedConnectQos = securityInterceptor.exportMessage(connectEntry.getConnectQosData().toXml());
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, connectEntry.getConnectQosData().toXml()));
+         this.encryptedConnectQos = securityInterceptor.exportMessage(dataHolder).getQos();
          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted connect request.");
       }
       else {
@@ -431,7 +451,9 @@ public final class ClientDispatchConnection extends DispatchConnection
       connectionsHandler.getDispatchStatistic().incrNumConnect(1);
       
       if (securityInterceptor != null) { // decrypt return value ...
-         rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, rawReturnVal));
+         dataHolder.setReturnValue(true);
+         rawReturnVal = securityInterceptor.importMessage(dataHolder).getQos();
       }
 
       try {
@@ -450,7 +472,8 @@ public final class ClientDispatchConnection extends DispatchConnection
          connectQos.setSessionName(this.connectReturnQos.getSessionName());
          connectQos.getSessionQos().setSecretSessionId(this.connectReturnQos.getSecretSessionId());
          if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-            this.encryptedConnectQos = securityInterceptor.exportMessage(connectQos.toXml());
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, connectQos.toXml()));
+            this.encryptedConnectQos = securityInterceptor.exportMessage(dataHolder).getQos();
             if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted connect request.");
          }
          else {
@@ -472,7 +495,8 @@ public final class ClientDispatchConnection extends DispatchConnection
       MsgQueueDisconnectEntry disconnectEntry = (MsgQueueDisconnectEntry)entry;
       String qos = disconnectEntry.getDisconnectQos().toXml();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         qos = securityInterceptor.exportMessage(qos);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.DISCONNECT, new MsgUnitRaw(null, (byte[])null, qos));
+         qos = securityInterceptor.exportMessage(dataHolder).getQos();
          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted disconnect request.");
       }
       else {
@@ -524,7 +548,9 @@ public final class ClientDispatchConnection extends DispatchConnection
       connectionsHandler.getDispatchStatistic().incrNumConnect(1);
       
       if (securityInterceptor != null) { // decrypt return value ...
-         rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, rawReturnVal));
+         dataHolder.setReturnValue(true);
+         rawReturnVal = securityInterceptor.importMessage(dataHolder).getQos();
       }
 
       this.connectReturnQos = null;

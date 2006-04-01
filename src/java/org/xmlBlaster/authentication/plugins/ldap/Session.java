@@ -1,16 +1,18 @@
 package org.xmlBlaster.authentication.plugins.ldap;
 
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
+import org.xmlBlaster.authentication.plugins.DataHolder;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.authentication.plugins.SessionHolder;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.def.MethodName;
 
 
 /**
@@ -44,27 +46,10 @@ public class Session implements I_Session, I_Subject {
       ldap = new LdapGateway(this.secMgr.getGlobal(), serverUrl, rootDN, rootPwd, loginFieldName);
    }
 
-
-   /**
-    * Initialize the Session. (In this case, it's a login.)<br/>
-    * [I_Session]
-    * <p/>
-    * @param String A xml-String containing the loginname, password, etc.
-    * @exception XmlBlasterException Thrown (in this case) if the user doesn't
-    *                                exist or the passwd is incorrect.
-    */
    public String init(String xmlQoS_literal) throws XmlBlasterException {
       return init(new SecurityQos(this.secMgr.getGlobal(), xmlQoS_literal));
    }
 
-
-   /**
-    * Initialize the Session for a login or connect call. 
-    * <p/>
-    * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
-    * @exception XmlBlasterException Thrown (in this case) if the user doesn't
-    *                                exist or the passwd is incorrect.
-    */
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       authenticated = false;
 
@@ -97,37 +82,20 @@ public class Session implements I_Session, I_Subject {
       }
    }
 
-   /**
-    * Get the subjects login-name.
-    * <p/>
-    * @return String name
-    */
    public String getName() {
       return this.loginName;
    }
 
-   /**
-    * Check if this subject is permitted to do something
-    * <p/>
-    * @param String The action the user tries to perfrom
-    * @param String whereon the user tries to perform the action
-    *
-    * EXAMPLE:
-    *    isAuthorized("publish", "thisIsAMessageKey");
-    *
-    * The above line checks if this subject is permitted to >>publish<<
-    * a message under the key >>thisIsAMessageKey<<
-    *
-    * Known action keys:
-    *    publish, subscribe, get, erase, ... see Constants.PUBLISH etc.
-    */
-   public boolean isAuthorized(MethodName actionKey, String key) {
+   public boolean isAuthorized(SessionHolder sessionHolder, DataHolder dataHolder) {
       if (authenticated == false) {
          log.warning("Authentication of user " + getName() + " failed");
          return false;
       }
+      
+      MethodName action = dataHolder.getAction();
+      String key = dataHolder.getKeyOid();
 
-      log.warning("No authorization check for action='" + actionKey + "' on key='" +key + "' is implemented, access generously granted.");
+      log.warning("No authorization check for action='" + action + "' on key='" +key + "' is implemented, access generously granted.");
       return true;
    }
 
@@ -143,9 +111,6 @@ public class Session implements I_Session, I_Subject {
       return sessionId;
    }
 
-   /**
-    * Enforced by interface I_Session
-    */
    public I_Subject getSubject() {
       return this;
    }
@@ -154,45 +119,11 @@ public class Session implements I_Session, I_Subject {
       return this.secMgr;
    }
 
-   /**
-    * decrypt, check, unseal an incomming message. 
-    * <p/>
-    * @param MsgUnitRaw The the received message
-    * @param MethodName The name of the method which is intercepted
-    * @return MsgUnitRaw The original message
-    * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
-      // dummy implementation
-      return msg;
+   public MsgUnitRaw importMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      return dataHolder.getMsgUnitRaw();
    }
 
-   public String importMessage(String xmlMsg) throws XmlBlasterException {
-      return xmlMsg;
-   }
-
-   public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException {
-      return xmlMsg;
-   }
-
-   /**
-    * encrypt, sign, seal an outgoing message. 
-    * <p/>
-    * @param MsgUnitRaw The source message
-    * @return MsgUnitRaw
-    * @exception XmlBlasterException Thrown if the message cannot be processed
-    */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
-      // dummy implementation
-      return msg;
-
-   }
-
-   public String exportMessage(String xmlMsg) throws XmlBlasterException {
-      return xmlMsg;
-   }
-
-   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException {
-      return xmlMsg;
+   public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      return dataHolder.getMsgUnitRaw();
    }
 }

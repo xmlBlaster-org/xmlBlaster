@@ -6,12 +6,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.dispatch;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -19,6 +21,8 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -27,8 +31,8 @@ import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.util.dispatch.I_PostSendListener;
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
-import org.xmlBlaster.util.def.MethodName;
 
 
 /**
@@ -132,10 +136,12 @@ public final class CbDispatchConnection extends DispatchConnection
       class Holder {
          public MsgQueueUpdateEntry msgQueueUpdateEntry;
          public MsgUnitRaw msgUnitRaw;
+         public String subscriptionId;
          
-         public Holder(MsgQueueUpdateEntry msgQueueUpdateEntry, MsgUnitRaw msgUnitRaw) {
+         public Holder(MsgQueueUpdateEntry msgQueueUpdateEntry, MsgUnitRaw msgUnitRaw, String subscriptionId) {
             this.msgQueueUpdateEntry = msgQueueUpdateEntry;
             this.msgUnitRaw = msgUnitRaw;
+            this.subscriptionId = subscriptionId;
          }
       }
 
@@ -188,23 +194,57 @@ public final class CbDispatchConnection extends DispatchConnection
             }
             else {
                if (responders == null) responders = new ArrayList();
-               responders.add(new Holder(entry, raw));
+               responders.add(new Holder(entry, raw, entry.getSubscriptionId()));
             }
          }
       }
+      
+      ServerScope scope = (ServerScope)this.glob;
 
       // We export/encrypt the message (call the interceptor)
       I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
       if (securityInterceptor != null) {
          if (responders != null) {
             for (int i=0; i<responders.size(); i++) {
-               ((Holder)responders.get(i)).msgUnitRaw = securityInterceptor.exportMessage(((Holder)responders.get(i)).msgUnitRaw, MethodName.UPDATE);
+               Holder holder = (Holder)responders.get(i);
+               
+               // Pass subscribeQos or connectQos - clientProperties to exportMessage() in case there are
+               // some interesting settings provided, for example a desired XSL transformation
+               SubscriptionInfo subscriptionInfo = null;
+               Map map = null;
+               if (holder.subscriptionId != null) {
+                  subscriptionInfo = scope.getRequestBroker().getClientSubscriptions().getSubscription(holder.subscriptionId);
+                  if (subscriptionInfo != null)
+                     map = subscriptionInfo.getQueryQosDataClientProperties();
+                  //String xslFileName = subscriptionInfo.getQueryQosData().getClientProperty("__xslTransformerFileName", (String)null);
+               }
+               else {
+                  // todo: use map=ConnectQos.getClientProperties() as a map to pass to dataHolder
+               }
+               
+               CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UPDATE, holder.msgUnitRaw, map);
+               holder.msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
             }
             if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted " + responders.size() + " messages.");
          }
          if (oneways != null) {
             for (int i=0; i<oneways.size(); i++) {
-               oneways.set(i, securityInterceptor.exportMessage((MsgUnitRaw)oneways.get(i), MethodName.UPDATE_ONEWAY));
+               Holder holder = (Holder)responders.get(i);
+               
+               SubscriptionInfo subscriptionInfo = null;
+               Map map = null;
+               if (holder.subscriptionId != null) {
+                  subscriptionInfo = scope.getRequestBroker().getClientSubscriptions().getSubscription(holder.subscriptionId);
+                  if (subscriptionInfo != null)
+                     map = subscriptionInfo.getQueryQosDataClientProperties();
+               }
+               else {
+                  // todo: use map=ConnectQos.getClientProperties() as a map to pass to dataHolder
+               }
+
+               CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UPDATE_ONEWAY,
+                     holder.msgUnitRaw, map);
+               oneways.set(i, securityInterceptor.exportMessage(dataHolder));
             }
             if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted " + oneways.size() + " oneway messages.");
          }
@@ -237,7 +277,10 @@ public final class CbDispatchConnection extends DispatchConnection
 
                if (securityInterceptor != null) {
                   // decrypt ...
-                  rawReturnVal[i] = securityInterceptor.importMessage(rawReturnVal[i]);
+                  CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UPDATE,
+                        new MsgUnitRaw(null, (byte[])null, rawReturnVal[i]));
+                  dataHolder.setReturnValue(true);
+                  rawReturnVal[i] = securityInterceptor.importMessage(dataHolder).getQos();
                }
 
                // create object

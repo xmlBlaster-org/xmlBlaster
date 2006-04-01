@@ -24,6 +24,7 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Vector;
 
 
@@ -329,11 +330,21 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
 
    /**
     * Access on SubscribeQosServer object
-    * @return SubscribeQosServer object
+    * @return SubscribeQosServer object or null
     */
    public QueryQosData getQueryQosData() {
       if (this.subscribeQos == null) return null;
       return this.subscribeQos.getData();
+   }
+
+   /**
+    * @return null if none found
+    */
+   public Map getQueryQosDataClientProperties() {
+      QueryQosData queryQosData = getQueryQosData();
+      if (queryQosData != null)
+         return queryQosData.getClientProperties();
+      return null;
    }
 
    /**

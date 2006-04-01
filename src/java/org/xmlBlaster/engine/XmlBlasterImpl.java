@@ -25,8 +25,11 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
+import org.xmlBlaster.authentication.plugins.DataHolder;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.authentication.plugins.SessionHolder;
 
 /**
  * This is the native implementation of the xmlBlaster interface.
@@ -93,7 +96,9 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          sessionInfo.getDispatchStatistic().incrNumSubscribe(1);
          
          // export (encrypt) return value
-         return sessionInfo.getSecuritySession().exportMessage(ret);
+         MsgUnitRaw in = new MsgUnitRaw(null, (byte[])null, ret);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.SUBSCRIBE, in);
+         return sessionInfo.getSecuritySession().exportMessage(dataHolder).getQos();
       }
       catch (Throwable e) {
          throw this.availabilityChecker.checkException(MethodName.SUBSCRIBE, e);
@@ -128,8 +133,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
          // export (encrypt) return value
          I_Session sec = sessionInfo.getSecuritySession();
-         for (int ii=0; ii<retArr.length; ii++)
-            retArr[ii] = sec.exportMessage(retArr[ii]);
+         for (int ii=0; ii<retArr.length; ii++) {
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UNSUBSCRIBE, new MsgUnitRaw(null, (byte[])null, retArr[ii]));
+            retArr[ii] = sec.exportMessage(dataHolder).getQos();
+         }
          return retArr;
 
       }
@@ -157,7 +164,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
          sessionInfo.getDispatchStatistic().incrNumPublish(1);
 
-         return sessionInfo.getSecuritySession().exportMessage(ret);
+         CryptDataHolder dataHolder = new CryptDataHolder(MethodName.PUBLISH, new MsgUnitRaw(null, (byte[])null, ret));
+         return sessionInfo.getSecuritySession().exportMessage(dataHolder).getQos();
       }
       catch (Throwable e) {
          throw this.availabilityChecker.checkException(MethodName.PUBLISH, e);
@@ -182,10 +190,12 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          DispatchStatistic statistic = sessionInfo.getDispatchStatistic();
          String[] returnArr = new String[msgUnitArr.length];
          for (int ii=0; ii<msgUnitArr.length; ii++) {
+            // TODO: Implement native PUBLISH_ARR
             MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitArr[ii], MethodName.PUBLISH);
             String ret = requestBroker.publish(sessionInfo, msgUnit);
             statistic.incrNumPublish(1);
-            returnArr[ii] = sec.exportMessage(ret);
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.PUBLISH_ARR, new MsgUnitRaw(null, (byte[])null, ret));
+            returnArr[ii] = sec.exportMessage(dataHolder).getQos();
          }
 
          return returnArr;
@@ -237,8 +247,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
          // export (encrypt) return value
          I_Session sec = sessionInfo.getSecuritySession();
-         for (int ii=0; ii<retArr.length; ii++)
-            retArr[ii] = sec.exportMessage(retArr[ii]);
+         for (int ii=0; ii<retArr.length; ii++) {
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.ERASE, new MsgUnitRaw(null, (byte[])null, retArr[ii]));
+            retArr[ii] = sec.exportMessage(dataHolder).getQos();
+         }
          return retArr;
       }
       catch (Throwable e) {
@@ -275,8 +287,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          // export (encrypt) return value
          MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgUnitArr.length];
          I_Session sec = sessionInfo.getSecuritySession();
-         for (int ii=0; ii<msgUnitArr.length; ii++)
-            msgUnitRawArr[ii] = sec.exportMessage(msgUnitArr[ii].getMsgUnitRaw(), MethodName.GET);
+         for (int ii=0; ii<msgUnitArr.length; ii++) {
+            CryptDataHolder dataHolder = new CryptDataHolder(MethodName.GET, msgUnitArr[ii].getMsgUnitRaw());
+            msgUnitRawArr[ii] = sec.exportMessage(dataHolder);
+         }
 
          return msgUnitRawArr;
       }
@@ -328,7 +342,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       }
 
       // check the message, if it was treated with confidentiality and integrity
-      msgUnitRaw = sessionSecCtx.importMessage(msgUnitRaw, action);
+      CryptDataHolder ctyptDataHolder = new CryptDataHolder(action, msgUnitRaw, null);
+      msgUnitRaw = sessionSecCtx.importMessage(ctyptDataHolder);
 
       // Parse XML key and XML QoS
       MsgUnit msgUnit = new MsgUnit(glob, msgUnitRaw.getKey(), msgUnitRaw.getContent(), msgUnitRaw.getQos(), action);
@@ -371,7 +386,9 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       // check if this user is permitted to do this action with this message
       I_Subject subjSecCtx = sessionSecCtx.getSubject();
-      if (!subjSecCtx.isAuthorized(action, msgUnitRaw.getKey())) {
+      SessionHolder sessionHolder = new SessionHolder(sessionInfo, addressServer);
+      DataHolder dataHolder = new DataHolder(action, msgUnit);
+      if (!sessionSecCtx.isAuthorized(sessionHolder, dataHolder)) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED, ME,
                        "Subject '" + subjSecCtx.getName() + "' is not permitted to perform action '" + action +
                        "' on key '" + msgUnit.getKey() + "'");

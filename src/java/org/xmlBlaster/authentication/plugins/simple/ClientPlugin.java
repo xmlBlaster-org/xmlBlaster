@@ -4,10 +4,10 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
-import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Helper only for Java clients. 
@@ -58,58 +58,13 @@ public class ClientPlugin implements I_ClientPlugin {
    }
 
    // --- message handling ----------------------------------------------------
-
-   /**
-    * decrypt, check, unseal an incomming message. 
-    * <p/>
-    * @param MsgUnitRaw The the received message
-    * @param MethodName The name of the method which is intercepted
-    * @return MsgUnitRaw The original message
-    * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException
+   public MsgUnitRaw importMessage(CryptDataHolder dataHolder) throws XmlBlasterException
    {
-      return msg;
+      return dataHolder.getMsgUnitRaw();
    }
 
-   /**
-    * decrypt, check, unseal an incomming message. 
-    * <p/>
-    * We do noting in this simple case.
-    * @param String The the received message
-    * @return String The original message
-    * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    */
-   public String importMessage(String xmlMsg) throws XmlBlasterException
+   public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException
    {
-      return xmlMsg;
-   }
-
-   public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException
-   {
-      return xmlMsg;
-   }
-
-   /**
-    * encrypt, sign, seal an outgoing message. 
-    * <p/>
-    * We do noting in this simple case.
-    * @param MsgUnitRaw The source message
-    * @return MsgUnitRaw
-    * @exception XmlBlasterException Thrown if the message cannot be processed
-    */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException
-   {
-      return msg;
-   }
-
-   public String exportMessage(String xmlMsg) throws XmlBlasterException
-   {
-      return xmlMsg;
-   }
-
-   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException
-   {
-      return xmlMsg;
+      return dataHolder.getMsgUnitRaw();
    }
 }

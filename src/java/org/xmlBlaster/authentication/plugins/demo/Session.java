@@ -1,23 +1,22 @@
 package org.xmlBlaster.authentication.plugins.demo;
 
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
+import org.xmlBlaster.authentication.plugins.DataHolder;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.authentication.plugins.SessionHolder;
 import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 //import org.xmlBlaster.authentication.plugins.ReversibleCrypt;
-import org.xmlBlaster.util.def.MethodName;
 
 /**
  * @author Wolfgang Kleinertz
  */
 
 public class Session implements I_Session {
-   private static final String ME = "Session";
-
    private              Subject       subject = null;
    private              Manager        secMgr = null;
    private              String          sessionId = null;
@@ -25,7 +24,6 @@ public class Session implements I_Session {
 
    private              Subject      dummyUsr = null;
 
-   private              byte       aDemoCryptoKey = 10;
    private ReversibleCrypt crypter = new ReversibleCrypt();
 
    public Session(Manager sm, String sessionId) {
@@ -35,7 +33,6 @@ public class Session implements I_Session {
       // Thus, it gets a dummy, a subjet with nearly no rights.
       if (dummyUsr == null) dummyUsr = new Subject(secMgr.getGUI());
    }
-
 
    /**
     * Initialize the SessionSecurityContext. (In this case, it's a login.)<br/>
@@ -99,12 +96,23 @@ public class Session implements I_Session {
     * [I_Session]
     */
    public I_Subject getSubject() {
-      return (I_Subject)subject;
+      return subject;
    }
 
 
    public I_Manager getManager() {
       return secMgr;
+   }
+
+   /**
+    * Check if the user is permited (authorized) to do something
+    */
+   public boolean isAuthorized(SessionHolder sessionHolder, DataHolder dataHolder) {
+      subject.getGui().printAction(dataHolder.getAction());
+      subject.getGui().printKey(dataHolder.getKeyOid());
+      subject.getGui().printName(subject.getName());
+      return subject.getGui().getAccessDecision(); // dummy implementation;
+//      return true;
    }
 
 
@@ -133,44 +141,43 @@ public class Session implements I_Session {
     * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException {
-      // dummy implementation
+   public MsgUnitRaw importMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      MsgUnitRaw msg = dataHolder.getMsgUnitRaw();
+
+      if (dataHolder.getAction() == null)
+         return msg;
+
+      if (dataHolder.getAction().wantsMsgArrArg()) { // PUBLISH
+         secMgr.getGUI().printQoS(msg.getQos());
+         secMgr.getGUI().printContent(msg.getContentStr());
+      }   
+      
       msg = new MsgUnitRaw(msg.getMsgUnit(),
                            importMessage(msg.getKey()),
                            importMessage(msg.getContent()),
                            importMessage(msg.getQos()));
-
-      //secMgr.getGUI().printKey(msg.getKey());
-      secMgr.getGUI().printQoS(msg.getQos());
-      secMgr.getGUI().printContent(msg.getContentStr());
-
+   
+      if (dataHolder.getAction().wantsMsgArrArg()) {
+         secMgr.getGUI().printQoS(msg.getQos());
+         secMgr.getGUI().printContent(msg.getContentStr());
+      }   
       return msg;
    }
 
    /**
-    * @see #importMessage(MsgUnitRaw, MethodName)
+    * @see #importMessage(CryptDataHolder)
     */
-   public String importMessage(String xmlMsg) throws XmlBlasterException
-   {
+   private String importMessage(String xmlMsg) throws XmlBlasterException {
       if (xmlMsg==null) return null;
-      String ret=null;
-
-      //ret = new String(crypter.decrypt(xmlMsg.getBytes()));
-      ret = crypter.decrypt(xmlMsg);
-
-      return ret;
+      return crypter.decrypt(xmlMsg);
    }
 
    /**
-    * @see #importMessage(MsgUnitRaw, MethodName)
+    * @see #importMessage(CryptDataHolder)
     */
-   public byte[] importMessage(byte[] byteArr) throws XmlBlasterException
-   {
-      secMgr.getGUI().printInputStream(new String(byteArr));
-      byte[] newByteArr = crypter.decrypt(byteArr);
-      secMgr.getGUI().printOutputStream(new String(newByteArr));
-
-      return newByteArr;
+   private byte[] importMessage(byte[] byteArr) throws XmlBlasterException {
+      if (byteArr==null || byteArr.length == 0) return new byte[0];
+      return crypter.decrypt(byteArr);
    }
 
    /**
@@ -180,40 +187,43 @@ public class Session implements I_Session {
     * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
     */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
-      // dummy implementation
+   public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      MsgUnitRaw msg = dataHolder.getMsgUnitRaw();
+
+      if (dataHolder.getAction() == null)
+         return msg;
+
+      if (dataHolder.getAction().wantsMsgArrArg()) { // PUBLISH
+         secMgr.getGUI().printQoS(msg.getQos());
+         secMgr.getGUI().printContent(msg.getContentStr());
+      }
+
       msg = new MsgUnitRaw(msg.getMsgUnit(),
                            exportMessage(msg.getKey()),
                            exportMessage(msg.getContent()),
                            exportMessage(msg.getQos()));
 
+      if (dataHolder.getAction().wantsMsgArrArg()) {
+         secMgr.getGUI().printQoS(msg.getQos());
+         secMgr.getGUI().printContent(msg.getContentStr());
+      }   
       return msg;
-
    }
 
    /**
-    * @see #exportMessage(MsgUnitRaw, MethodName)
+    * @see #exportMessage(CryptDataHolder)
     */
-   public String exportMessage(String xmlMsg) throws XmlBlasterException
-   {
+   private String exportMessage(String xmlMsg) throws XmlBlasterException {
       if (xmlMsg==null) return null;
-      String ret=null;
-
-      ret = new String(crypter.crypt(xmlMsg.getBytes()));
-
-      return ret;
+      return new String(crypter.crypt(xmlMsg.getBytes()));
    }
 
    /**
-    * @see #exportMessage(MsgUnitRaw, MethodName)
+    * @see #exportMessage(CryptDataHolder)
     */
-   public byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
-   {
-      secMgr.getGUI().printOutputStream(new String(byteArr));
-      byte[] newByteArr = crypter.crypt(byteArr);
-      secMgr.getGUI().printInputStream(new String(newByteArr));
-
-      return newByteArr;
+   private byte[] exportMessage(byte[] byteArr) throws XmlBlasterException {
+      if (byteArr==null || byteArr.length == 0) return new byte[0];
+      return crypter.crypt(byteArr);
    }
 }
 

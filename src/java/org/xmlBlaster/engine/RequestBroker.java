@@ -319,6 +319,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       return  this.bigXmlKeyDOM;
    }
 
+   /**
+    * Holds all subscriptions. 
+    * @return Is never null
+    */
    public ClientSubscriptions getClientSubscriptions() {
       return this.clientSubscriptions;
    }

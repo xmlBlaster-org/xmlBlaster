@@ -590,7 +590,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          if (log.isLoggable(Level.FINE)) log.fine("Got zero messages from queue, expected at least one, can happen if client disconnected in the mean time: " + toXml(""));
          return null;
       }
-      return prepareMsgsFromQueue(ME, this.log, this.msgQueue, entryList);
+      return prepareMsgsFromQueue(ME, log, this.msgQueue, entryList);
    }
 
    public static ArrayList prepareMsgsFromQueue(String logId, Logger log, I_Queue queue, ArrayList entryList) {

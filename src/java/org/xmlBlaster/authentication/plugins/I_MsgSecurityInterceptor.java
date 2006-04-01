@@ -2,7 +2,6 @@ package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Interface declaring methods to intercept messages in the security layer
@@ -20,33 +19,24 @@ import org.xmlBlaster.util.def.MethodName;
 public interface I_MsgSecurityInterceptor {
 
    /**
-    * decrypt, check, unseal etc an incomming message. 
+    * Decrypt, check, unseal etc an incomming message. 
     * <p/>
     * Use this to import (decrypt) the xmlKey or xmlQos
-    * @param str The the received message (which is probably crypted)
-    * @return The original message
+    * @param dataHolder A container holding the MsgUnitRaw and some additional informations
+    * @return The original or modified message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #exportMessage(String)
+    * @see #exportMessage(CryptDataHolder)
     */
-   public String importMessage(String str) throws XmlBlasterException;
-   /** Use this to import (decrypt) the content */
-   public byte[] importMessage(byte[] content) throws XmlBlasterException;
-   /** Use this to import (decrypt) separately the xmlKey,content,qos of MsgUnitRaw */
-   /** @param MethodName The name of the method which is intercepted */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException;
+   public MsgUnitRaw importMessage(CryptDataHolder dataHolder) throws XmlBlasterException;
 
    /**
-    * encrypt, sign, seal an outgoing message. 
+    * Encrypt, sign, seal an outgoing message. 
     * <p/>
     * Use this to export (encrypt) the xmlKey or xmlQos
-    * @param str The source message
+    * @param dataHolder A container holding the MsgUnitRaw and some additional informations
     * @return The probably more secure string
     * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(String)
+    * @see #importMessage(CryptDataHolder)
     */
-   public String exportMessage(String str) throws XmlBlasterException;
-   /** Use this to export (encrypt) the content */
-   public byte[] exportMessage(byte[] content) throws XmlBlasterException;
-   /** Use this to export (encrypt) separately the xmlKey,content,qos of MsgUnitRaw */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName method) throws XmlBlasterException;
+   public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException;
 }

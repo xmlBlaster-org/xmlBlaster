@@ -85,6 +85,7 @@ public final class MethodName implements java.io.Serializable
     * this equals() method is safe under such circumstances
     */
    public boolean equals(MethodName other) {
+      if (other == null) return false;
       return getMethodName().equals(other.getMethodName());
    }
 

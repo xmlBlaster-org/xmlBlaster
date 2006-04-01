@@ -1,11 +1,13 @@
 package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 
 public class Subject implements I_Subject {
-   private String       name = null;
+   private String    name = null;
    private PluginGUI gui;
 
    public Subject(PluginGUI gui) {
@@ -24,17 +26,6 @@ public class Subject implements I_Subject {
    }
 
 
-   /**
-    * Check if the user is permited (authorized) to do something
-    */
-   public boolean isAuthorized(MethodName actionKey, String key) {
-      gui.printAction(actionKey);
-      gui.printKey(key);
-      gui.printName(name);
-      return gui.getAccessDecision(); // dummy implementation;
-//      return true;
-   }
-
    public String getName() {
       return name;
    }
@@ -52,7 +43,16 @@ public class Subject implements I_Subject {
       gui.printAction(MethodName.CONNECT);
       gui.printKey("");
       gui.printName(name);
-      if(!gui.getAccessDecision()) throw new XmlBlasterException("AccessDenied!", "Login Failed");
+      if(!gui.getAccessDecision()) throw new XmlBlasterException(Global.instance(),
+            ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, "AccessDenied!", "Login Failed");
+   }
+
+
+   /**
+    * @return Returns the gui.
+    */
+   public PluginGUI getGui() {
+      return this.gui;
    }
 
 }

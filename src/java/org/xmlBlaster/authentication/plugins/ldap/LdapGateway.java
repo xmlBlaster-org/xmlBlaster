@@ -1,10 +1,9 @@
 package org.xmlBlaster.authentication.plugins.ldap;
 
-import org.xmlBlaster.authentication.plugins.I_Manager;
-import org.xmlBlaster.authentication.plugins.I_Session;
-import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.ErrorCode;
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -60,6 +59,8 @@ public class LdapGateway
    private static final String ME = "LdapGateway";
    private static Logger log = Logger.getLogger(LdapGateway.class.getName());
 
+   private Global glob;
+   
    /**
     * Specify the initial context implementation to use.
     * This could also be set by using the -D option to the java program.
@@ -98,7 +99,7 @@ public class LdapGateway
    public LdapGateway(Global glob, String serverUrl, String rootDN, String rootPwd,
                      String loginFieldName) throws XmlBlasterException
    {
-
+      this.glob = glob;
       this.serverUrl = serverUrl;
       this.rootDN = rootDN;
       this.rootPwd = rootPwd;
@@ -153,7 +154,7 @@ public class LdapGateway
       }
       catch (NamingException e) {
          log.severe("Can't access root context, check your settings ldap.serverUrl='" + serverUrl + "', ldap.rootDN='" + rootDN + "' and ldap.rootPwd='***'");
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
       }
    }
 
@@ -182,11 +183,11 @@ public class LdapGateway
          }
          else {
             log.severe("Can't access root context, check your setting of ldap.loginFieldName='" + loginFieldName + "'");
-            throw new XmlBlasterException(ME, serverUrl + " is not valid");
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, serverUrl + " is not valid");
          }
       }
       catch (NamingException e) {
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
       }
 
    }
@@ -225,7 +226,7 @@ public class LdapGateway
          return userCtx;
       }
       catch (NamingException e) {
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
       }
    }
 
@@ -255,7 +256,6 @@ public class LdapGateway
     */
    public Hashtable getAllAttributes(String loginName, String password, String lookupUserId) throws XmlBlasterException
    {
-      Attributes newNode = new BasicAttributes();
       Hashtable attrHash = new Hashtable();
 
       DirContext userCtx = null;
@@ -316,7 +316,7 @@ public class LdapGateway
          }
       }
       catch (NamingException e) {
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
       }
       finally {
          try {
@@ -351,7 +351,7 @@ public class LdapGateway
          }
       }
       catch (NamingException e) {
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
       }
       return null;
    }
@@ -393,7 +393,7 @@ public class LdapGateway
          }
       }
       catch (NamingException e) {
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
       }
       finally {
          try {
@@ -424,7 +424,7 @@ public class LdapGateway
          return false;
       }
       catch (NamingException e) {
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
       }
    }
 
@@ -469,7 +469,7 @@ public class LdapGateway
          return searchResults;
       }
       catch (NamingException e) {
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, e.toString());
       }
    }
 

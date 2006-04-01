@@ -4,9 +4,9 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Class for java clients, decrypting messages which
@@ -61,8 +61,8 @@ public class ClientPlugin implements I_ClientPlugin {
     * @return MsgUnitRaw The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     */
-   public MsgUnitRaw importMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
-      // dummy implementation
+   public MsgUnitRaw importMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      MsgUnitRaw msg = dataHolder.getMsgUnitRaw();
       msg = new MsgUnitRaw(msg.getMsgUnit(),
                            importMessage(msg.getKey()),
                            importMessage(msg.getContent()),
@@ -78,13 +78,13 @@ public class ClientPlugin implements I_ClientPlugin {
     * @return String The original message
     * @exception XmlBlasterException Thrown i.e. if the message has been modified
     */
-   public String importMessage(String xmlMsg) throws XmlBlasterException
+   private String importMessage(String xmlMsg) throws XmlBlasterException
    {
       if (xmlMsg==null) return null;
       return new String(crypt(xmlMsg.getBytes()));
    }
 
-   public byte[] importMessage(byte[] byteArr) throws XmlBlasterException
+   private byte[] importMessage(byte[] byteArr) throws XmlBlasterException
    {
       return crypt(byteArr);
    }
@@ -96,8 +96,8 @@ public class ClientPlugin implements I_ClientPlugin {
     * @return MsgUnitRaw
     * @exception XmlBlasterException Thrown if the message cannot be processed
     */
-   public MsgUnitRaw exportMessage(MsgUnitRaw msg, MethodName action) throws XmlBlasterException {
-      // dummy implementation
+   public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      MsgUnitRaw msg = dataHolder.getMsgUnitRaw();
       msg = new MsgUnitRaw(msg.getMsgUnit(),
                            exportMessage(msg.getKey()), 
                            exportMessage(msg.getContent()),
@@ -107,14 +107,14 @@ public class ClientPlugin implements I_ClientPlugin {
 
    }
 
-   public String exportMessage(String xmlMsg) throws XmlBlasterException
+   private String exportMessage(String xmlMsg) throws XmlBlasterException
    {
       if (xmlMsg==null) return null;
 //      return new String(crypt(xmlMsg.toCharArray()));
       return new String(crypt(xmlMsg.getBytes()));
     }
 
-   public byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
+   private byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
    {
       return crypt(byteArr);
    }
@@ -126,7 +126,6 @@ public class ClientPlugin implements I_ClientPlugin {
    private byte[] crypt(byte[] byteArr) {
       if (byteArr==null) return null;
       byte[] newByteArr = new byte[byteArr.length];
-      int cap;
       int tmp;
       for (int i=0; i<byteArr.length; i++) {
          tmp = byteArr[i];

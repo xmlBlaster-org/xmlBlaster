@@ -536,7 +536,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       this.securityCtx = securityCtx;
    }
 
-   /**
+   /*
     * Check if this subject is permitted to do something
     * <p/>
     * @param String The action the user tries to perfrom
@@ -550,7 +550,6 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     *
     * Known action keys:
     *    PUBLISH, SUBSCRIBE, GET, ERASE,
-    */
    public boolean isAuthorized(MethodName actionKey, String key) {
       if (this.securityCtx == null) {
          log.warning("No authorization for '" + actionKey + "' and msg=" + key);
@@ -558,7 +557,8 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       }
       return this.securityCtx.isAuthorized(actionKey, key);
    }
-
+*/
+   
    /**
     * PtP mode: If the qos is set to forceQueuing the message is queued.
     * @param msgUnit The message. Only called in sync mode on publish (TopicHandler)

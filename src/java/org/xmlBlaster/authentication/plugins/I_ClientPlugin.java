@@ -2,7 +2,6 @@ package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.MsgUnitRaw;
 
 /**
  * A client helper.
