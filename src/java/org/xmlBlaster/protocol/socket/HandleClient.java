@@ -231,6 +231,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          // receive() processes all invocations, only connect()/disconnect() we do locally ...
          if (receiveReply(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {
+               // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                conQos.setAddressServer(this.driver.getAddressServer());
                setLoginName(conQos.getUserId());
