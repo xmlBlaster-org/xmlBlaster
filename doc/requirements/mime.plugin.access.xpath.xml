@@ -115,7 +115,7 @@
 
       <p>This example allows you to test your XPath queries on command line, first set the CLASSPATH to
       contain the JAXEN libraries</p>
-      <tt>export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/xpath/jaxen-core.jar: $XMLBLASTER_HOME/lib/xpath/saxpath.jar: $XMLBLASTER_HOME/lib/xpath/jaxen-dom.jar</tt>
+      <tt>export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/jaxen.jar</tt>
       <p> now create a file <code>test.xml</code> with following content</p>
 <pre>
 &lt;qos>
@@ -193,9 +193,7 @@ Transformed content:
       If you make a xmlBlaster distribution you must make shure to copy
       </p>
 <pre>
-   xmlBlaster/lib/xpath/jaxen-core.jar
-   xmlBlaster/lib/xpath/jaxen-dom.jar
-   xmlBlaster/lib/xpath/saxpath.jar
+   xmlBlaster/lib/jaxen.jar
 </pre>
       <p>
       and add the jar files to the CLASSPATH.
@@ -272,6 +270,8 @@ Transformed content:
    <see type="REQ">mime.plugin.accessfilter.howto</see>
    <see type="REQ">mime.plugin.accessfilter</see>
    <see type="REQ">cluster</see>
+   <see type="INTERNET" label="JAXEN homepage">http://jaxen.org/</see>
+   
    <author>pra@tim.se</author>
    <author>xmlblast@marcelruff.info</author>
    <date>2003 09 09</date>

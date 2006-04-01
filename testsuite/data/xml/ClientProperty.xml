@@ -1,7 +1,7 @@
 <!--
    Example to test XPath from command line for MIME filter plugin
 
-   export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/xpath/jaxen-core.jar:$XMLBLASTER_HOME/lib/xpath/saxpath.jar:$XMLBLASTER_HOME/lib/xpath/jaxen-dom.jar
+   export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/jaxen.jar
  
    java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile ClientProperty.xml -isQos true
    

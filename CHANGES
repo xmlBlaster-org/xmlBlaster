@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #14985 Upgraded to jaxen-1.1-beta-8.jar from http://jaxen.org (2006-04-01)
+   Removed in xmlBlaster/lib/xpath: saxpath.jar jaxen-core.jar jaxen-dom.jar
+   Added   xmlBlaster/lib/jaxen.jar
+
  o #14981 Extended MIME XPath filter:
    - Depending on the configuration the XPath can now query the QoS OR the message content
      The default is as before the message content

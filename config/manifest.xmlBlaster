@@ -11,10 +11,9 @@ Class-Path: xmlrpc.jar junit.jar omquery.jar
  tinySQL.jar jhotdraw.jar 
  jax.jar 
  jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar 
- jutils.jar mail.jar activation.jar 
+ mail.jar activation.jar 
  batik/batik.jar js.jar 
- xpath/jaxen-core.jar xpath/jaxen-dom.jar 
- xpath/saxpath.jar 
+ jaxen.jar 
  postgresql.jar 
  jmxtools.jar jmxri.jar 
  hsqldb.jar 

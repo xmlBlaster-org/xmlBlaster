@@ -93,7 +93,7 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
          "" + (serverPort-3),
          "-MimeAccessPlugin[XPathFilter][1.0]",
          "org.xmlBlaster.engine.mime.xpath.XPathFilter,engine.mime.xpath.extension_functions=:contains-ignore-case:org.xmlBlaster.engine.mime.xpath.ContainsIgnoreCaseFunction;:recursive-text:org.xmlBlaster.engine.mime.xpath.RecursiveTextFunction",
-         //,classpath=xpath/jaxen-core.jar:xpath/jaxen-dom.jar:xpath/saxpath.jar
+         //,classpath=jaxen.jar
          "-admin.remoteconsole.port",
          "0"
       };

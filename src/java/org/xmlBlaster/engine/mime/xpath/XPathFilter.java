@@ -453,7 +453,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * Type 'q' to quit.
     * <p>
     * <tt>
-    * export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/xpath/jaxen-core.jar:$XMLBLASTER_HOME/lib/xpath/saxpath.jar:$XMLBLASTER_HOME/lib/xpath/jaxen-dom.jar
+    * export CLASSPATH=$CLASSPATH:$XMLBLASTER_HOME/lib/jaxen.jar
     * <br />
     * java org.xmlBlaster.engine.mime.xpath.XPathFilter -inFile [someFile.xml]
     * <br />

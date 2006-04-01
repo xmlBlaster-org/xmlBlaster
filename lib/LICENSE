@@ -42,6 +42,12 @@ only the SNMP subagent module jax.jar is GPL only!
    com/jclark/xsl/dom/SunXMLProcessorImpl.java is changed to use jaxp
 
 
+3) jaxen.jar
+============
+   XPath API used for MIME access plugin
+   jaxen-1.1-beta-8.jar from http://jaxen.org 2006-04-01
+
+
 4) junit.jar
 ============
    JUNIT 3.8.1 testsuite from Kent Beck and Erich Gamma
