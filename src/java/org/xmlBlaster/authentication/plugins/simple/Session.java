@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.def.MethodName;
 
 /**
- * @author  $Author$ ($Name:  $)
+ * @author  $Author: laghi $ ($Name:  $)
  *
  * @author Wolfgang Kleinertz
  */

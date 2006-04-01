@@ -7,8 +7,8 @@ import org.xmlBlaster.util.def.MethodName;
 import java.util.logging.Logger;
 
 /**
- * @author  $Author$ ($Name:  $)
- * @version $Revision: 1.6 $ (State: $State) (Date: $Date$)
+ * @author  $Author: laghi $ ($Name:  $)
+ * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2006-03-05 00:02:48 +0100 (So, 05 Mär 2006) $)
  */
 
 public class Subject implements I_Subject {
