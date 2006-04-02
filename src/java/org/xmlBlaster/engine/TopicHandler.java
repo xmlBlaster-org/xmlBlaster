@@ -169,6 +169,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
+   
+   protected Object clone() {
+      throw new RuntimeException("TopicHandler NO CLONEING PLEASE");
+   }
 
    /**
     * Use this constructor if a subscription is made on a yet unknown topic.
@@ -217,10 +221,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
       if (publisherSessionInfo == null) {
-         if (log.isLoggable(Level.FINER)) log.fine("Creating new TopicHandler because of subscription.");
+         if (log.isLoggable(Level.FINER)) log.fine("Creating new TopicHandler '" + uniqueKey + "' because of subscription.");
       }
       else {
-         if (log.isLoggable(Level.FINER)) log.fine("Creating new TopicHandler because of publish.");
+         if (log.isLoggable(Level.FINER)) log.fine("Creating new TopicHandler '" + uniqueKey + "' because of publish.");
       }
       // mimeType and content remains unknown until first data is fed
    }
@@ -284,7 +288,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          String hist = (maxEntriesHistory > 0) ? "history/maxEntries="+maxEntriesHistory : "message history is switched off with queue/history/maxEntries=0";
          long maxEntriesStore = this.topicProperty.getMsgUnitStoreProperty().getMaxEntries();
          String store = (maxEntriesStore > 0) ? "persistence/msgUnitStore/maxEntries="+maxEntriesStore : "message storage is switched off with persistence/msgUnitStore/maxEntries=0";
-         log.info("New topic is ready, " + hist + ", " + store);
+         log.info("New topic '" + this.msgKeyData.getOid() + "' is ready, " + hist + ", " + store);
       }
    }
 
@@ -652,6 +656,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          }
          msgUnitWrapper.startExpiryTimer();
       }
+      catch (Throwable e) {
+         log.severe(e.toString());
+         e.printStackTrace();
+         if (e instanceof XmlBlasterException)
+            throw (XmlBlasterException)e;
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, "TopicHandler", "", e);
+      }
       finally {
          if (msgUnitWrapper != null) {
             synchronized(this) {
@@ -931,7 +942,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
       if (!underConstruction) {
          try {
-            getMsgUnitCache().remove(msgUnitWrapper);
+            if (getMsgUnitCache() == null) {
+               Thread.dumpStack();
+               log.severe("MsgUnitCache is unexpected null, topic: " + toXml() + "\n msgUnitWrapper is: " + msgUnitWrapper.toXml());
+            }
+            else {
+               getMsgUnitCache().remove(msgUnitWrapper);
+            }
          }
          catch (XmlBlasterException e) {
             log.warning("Internal problem in entryDestroyed removeRandom of msg store (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
@@ -1363,6 +1380,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                requestBroker.deadMessage(entries, null, reason);
             }
             catch (XmlBlasterException e2) {
+               log.severe("PANIC: Sending of message '" + msgUnitWrapper.getLogId() + "' from " + publisherName + " to " +
+                               sub.getSessionInfo().getId() + " failed, message is lost: " + e2.getMessage() + " original exception is: " + e.toString());
+            }
+            catch (Throwable e2) {
+               e.printStackTrace(); // original stack
                log.severe("PANIC: Sending of message '" + msgUnitWrapper.getLogId() + "' from " + publisherName + " to " +
                                sub.getSessionInfo().getId() + " failed, message is lost: " + e2.getMessage() + " original exception is: " + e.toString());
             }
@@ -2034,6 +2056,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                      //topicProperty.setDestroyDelay(destroyDelay);
                      topicProperty.setCreateDomEntry(false);
                      org.xmlBlaster.util.qos.storage.HistoryQueueProperty prop = new org.xmlBlaster.util.qos.storage.HistoryQueueProperty(this.glob, null);
+                     prop.setMaxEntriesCache(0);
                      prop.setMaxEntries(0);
                      topicProperty.setHistoryQueueProperty(prop);
                      pq.setTopicProperty(topicProperty);
@@ -2319,7 +2342,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @throws XmlBlasterException
     */
    private void initMsgDistributorPlugin() throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("initMsgDistributorPlugin");
+      if (log.isLoggable(Level.FINER)) log.finer("initMsgDistributorPlugin");
       if (this.distributor != null) return;
       String typeVersion = this.topicProperty.getMsgDistributor();
       // if (typeVersion == null) return; // no plugin has been configured for this topic
@@ -2333,7 +2356,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
    
    private void shutdownMsgDistributorPlugin() {
-      if (log.isLoggable(Level.FINER)) this.log.finer("shutdownMsgDistributorPlugin");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdownMsgDistributorPlugin");
       if (this.distributor == null) return;
       synchronized(this) {
          try {

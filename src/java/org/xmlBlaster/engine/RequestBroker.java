@@ -1250,9 +1250,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    /**
     * @return The previous topic handler (there should never be any in our context).
     */
-   public final TopicHandler addTopicHandler(TopicHandler topicHandler) {
+   final TopicHandler addTopicHandler(TopicHandler topicHandler) {
       synchronized(topicHandlerMap) {
          TopicHandler old = (TopicHandler)topicHandlerMap.put(topicHandler.getUniqueKey(), topicHandler); // ram lookup
+         if (old != null) {
+            log.severe("Duplicate TopicHandlers, removed old: " +
+                  old.toXml() + "\nnewTopic: " + topicHandler.toXml());
+            Thread.dumpStack();
+         }
          fireTopicEvent(topicHandler);
          return old;
       }
@@ -1267,13 +1272,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       }
       String uniqueKey = topicHandler.getUniqueKey();
       if (log.isLoggable(Level.FINE)) log.fine("Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
-      synchronized(topicHandlerMap) {
+      synchronized(this.topicHandlerMap) {
+         fireTopicEvent(topicHandler);
          Object obj = topicHandlerMap.remove(uniqueKey);
          if (obj == null) {
             log.warning("Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
             throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Sorry, can't remove message unit, because oid=" + uniqueKey + " doesn't exist");
          }
-         fireTopicEvent(topicHandler);
       }
    }
 
@@ -1289,7 +1294,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
       String uniqueKey = subs.getKeyData().getOid();
       TopicHandler topicHandler = null;
-      synchronized(topicHandlerMap) {
+      synchronized(this.topicHandlerMap) {
          Object obj = topicHandlerMap.get(uniqueKey);
          if (obj == null) {
             // This is a new Message, yet unknown ...
@@ -1681,8 +1686,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
          // Find or create the topic
          TopicHandler topicHandler = null;
-         synchronized(topicHandlerMap) {
-            Object obj = topicHandlerMap.get(msgKeyData.getOid());
+         synchronized(this.topicHandlerMap) {
+            if (!msgKeyData.getOid().equals(msgUnit.getKeyOid())) {
+               Thread.dumpStack();
+               log.severe("Unexpected change of keyOid " + msgKeyData.getOid() + " and msgUnit " + msgUnit.toXml());
+            }
+            Object obj = topicHandlerMap.get(msgUnit.getKeyOid());
             if (obj == null) {
                topicHandler = new TopicHandler(this, sessionInfo, msgUnit.getKeyOid()); // adds itself to topicHandlerMap
             }
