@@ -146,7 +146,6 @@ public class ReplicationAgent {
          setProp(map, readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
          setProp(map, readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from " + replPrefix + "items");
          setProp(map, readerInfo, "db.queryMeatStatement", "SELECT * FROM " + replPrefix + "items ORDER BY repl_key");
-         setProp(map, readerInfo, "changeDetector.postUpdateStatement", "DELETE from " + replPrefix + "items");
          setProp(map, readerInfo, "converter.addMeta", "false");
          setProp(map, readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
          setProp(map, readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");

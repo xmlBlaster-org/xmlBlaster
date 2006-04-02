@@ -44,6 +44,11 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
  *       list it. All distinct <tt>ICAO_ID</tt> values trigger an own publish event.
  *       If not configured, this plugin triggers on change exactly one publish event.
  *  </li>
+ *  <li><tt>changeDetector.ignoreExistingDataOnStartup</tt> defaults to false,
+ *       like this all SQL data in the observed table are delivered on DbWatcher startup.
+ *       If you set this to <tt>true</tt> only the future changes are detected after
+ *       a new xmlBlaster restart.
+ *  </li>
  * </ul>
  *
  * <h2>Limitations</h2>
@@ -104,15 +109,13 @@ public class TimestampChangeDetector implements I_ChangeDetector
    protected String groupColName;
    protected boolean useGroupCol;
    protected boolean tableExists=true;
+   protected boolean ignoreExistingDataOnStartup;
    protected String changeCommand;
    protected String oldTimestamp;
    protected String newTimestamp;
    String MINSTR = " ";
    protected String queryMeatStatement;
 
-   // additions for replication ...
-   protected String postUpdateStatement;
-   
    /**
     * @param info
     * @param changeListener
@@ -146,6 +149,8 @@ public class TimestampChangeDetector implements I_ChangeDetector
       if (this.timestampColNum < 1) {
          throw new IllegalArgumentException("Please pass the JDBC index (starts with 1) of the column containing the timestamp, for example 'changeDetector.timestampColNum=1'");
       }
+      
+      this.ignoreExistingDataOnStartup = this.info.getBoolean("changeDetector.ignoreExistingDataOnStartup", this.ignoreExistingDataOnStartup);
 
       this.dbPool = DbWatcher.getDbPool(this.info);
       
@@ -157,11 +162,6 @@ public class TimestampChangeDetector implements I_ChangeDetector
       this.useGroupCol = this.groupColName != null;
       if (this.groupColName == null)
          this.groupColName = this.info.get("mom.topicName", "db.change.event");
-      
-      this.postUpdateStatement = this.info.get("changeDetector.postUpdateStatement", null);
-      if (this.postUpdateStatement != null)
-         this.postUpdateStatement = this.postUpdateStatement.trim();
-      
    }
 
    
@@ -230,6 +230,8 @@ public class TimestampChangeDetector implements I_ChangeDetector
                   newTimestamp = rs.getString(timestampColNum);
                   if (rs.wasNull())
                     newTimestamp = MINSTR;
+                  if (oldTimestamp == null && ignoreExistingDataOnStartup)
+                     oldTimestamp = newTimestamp;
                   if (oldTimestamp == null || !oldTimestamp.equals(newTimestamp)) {
                     changeCommand = (tableExists) ? "UPDATE" : "CREATE";
                     if (oldTimestamp != null && compareTo(oldTimestamp, newTimestamp)) {
@@ -281,14 +283,9 @@ public class TimestampChangeDetector implements I_ChangeDetector
               changeListener.hasChanged(changeEvent);
               changeCount++;
            }
-            oldTimestamp = newTimestamp;
+           oldTimestamp = newTimestamp;
             
             // TODO rollback in case of an exception and distributed transactions ...
-            /*
-             if (this.postUpdateStatement != null) {
-               this.dbPool.update(conn, this.postUpdateStatement);
-            }
-            */
          }
       }
       catch (Exception e) {

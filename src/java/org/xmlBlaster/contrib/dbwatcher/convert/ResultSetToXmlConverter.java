@@ -32,6 +32,9 @@ import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
  *       Suppress meta information, the CREATE statement however will
  *       always transport the meta tags
  *   </li>
+ *   <li><tt>converter.postStatement</tt>
+ *       A statement to be executed after a message has been published
+ *   </li>
  *    <li><tt>charSet</tt>  The encoding, defaults to <tt>UTF-8</tt></li>
  *    <li><tt>transformer.class</tt>
  *      If not empty or null the specified plugin implementing
@@ -94,6 +97,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
    protected boolean commandIsAdded;
    protected boolean doneCalled;
    protected boolean addMeta;
+   protected String postStatement;
    protected String charSet;
    private int maxRows;
    /**
@@ -118,6 +122,12 @@ public class ResultSetToXmlConverter implements I_DataConverter
    public synchronized void init(I_Info info) throws Exception {
       this.rootTag = info.get("converter.rootName", "sql");
       this.addMeta = info.getBoolean("converter.addMeta", true);
+      this.postStatement = info.get("converter.postStatement", (String)null);
+      if (this.postStatement != null) {
+         this.postStatement = this.postStatement.trim();
+         if (this.postStatement.length() < 1)
+            this.postStatement = null;
+      }
       this.charSet = info.get("charSet", "UTF-8");
       this.maxRows = info.getInt("converter.maxRows", 0);
       ClassLoader cl = this.getClass().getClassLoader();
@@ -344,7 +354,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
    }
 
    public String getPostStatement() {
-      return null;
+      return this.postStatement;
    }
 
    public static byte[] getResultSetAsXmlLiteral(ResultSet rs, String command, String ident, long maxRows) throws Exception {

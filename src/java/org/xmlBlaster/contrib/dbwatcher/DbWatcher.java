@@ -284,7 +284,8 @@ public class DbWatcher implements I_ChangeListener {
             }
          }
          else {
-            log.warning("No post statement defined after having published ");
+            if (log.isLoggable(Level.FINEST))
+               log.finest("No post statement defined after having published, for example: converter.postStatement='INSERT ...'");
          }
       }
    }
