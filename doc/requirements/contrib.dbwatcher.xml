@@ -960,16 +960,16 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
          you don't need to configure anything here.
          </td>
        </tr>
-
        <tr>
-         <td>changeDetector. postUpdateStatement</td>
+         <td>changeDetector. ignoreExistingDataOnStartup</td>
          <td>String</td>
          <td>no</td>
-         <td>null</td>
+         <td>false</td>
          <td>
-         Here you can define an update statement to perform in the same transaction after
-         having processed the detected data. For example you could do some cleanup here
-         with a DELETE statement.
+         This setting defaults to <tt>false</tt>,
+         like this all SQL data in the observed table are initially delivered on DbWatcher startup.
+         If you set this to <tt>true</tt> only the future changes are detected after
+         a new xmlBlaster restart.
          </td>
        </tr>
 
@@ -993,6 +993,18 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
          For <tt>ResultSetToXmlConverter</tt> plugin only:
          If <tt>false</tt> suppress meta information, the CREATE statement however will
          always transport the meta tags.
+         </td>
+       </tr>
+       <tr>
+         <td>converter.postStatement</td>
+         <td>String</td>
+         <td>no</td>
+         <td>null</td>
+         <td>
+         For <tt>ResultSetToXmlConverter</tt> plugin only:
+         You can give a SQL statement which will be executed after
+         a message has been successfully published (and only then).
+         It is run inside the same transaction as the <tt>db.queryMeatStatement</tt>.
          </td>
        </tr>
        <tr>
