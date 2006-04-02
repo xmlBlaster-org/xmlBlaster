@@ -115,6 +115,7 @@ public class HelloWorldPublish
          boolean connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
          
          Map clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
+         Map connectQosClientPropertyMap = glob.getProperty().get("connect/qos/clientProperty", (Map)null);
 
          if (historyMaxMsg < 1 && !glob.getProperty().propertyExists("destroyDelay"))
             destroyDelay = 24L*60L*60L*1000L; // Increase destroyDelay to one day if no history queue is used
@@ -171,6 +172,16 @@ public class HelloWorldPublish
          log.info("   -erase.domain   " + ((domain==null)?"":domain));
          log.info(" ConnectQos settings");
          log.info("   -connect/qos/persistent " + connectPersistent);
+         if (connectQosClientPropertyMap != null) {
+            Iterator it = connectQosClientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               log.info("   -connect/qos/clientProperty["+key+"]   " + connectQosClientPropertyMap.get(key).toString());
+            }
+         }
+         else {
+            log.info("   -connect/qos/clientProperty[]   ");
+         }
          log.info("For more info please read:");
          log.info("   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html");
 
@@ -209,6 +220,13 @@ public class HelloWorldPublish
          ConnectQos qos = new ConnectQos(glob);
          if (connectPersistent) {
             qos.setPersistent(connectPersistent);
+         }
+         if (connectQosClientPropertyMap != null) {
+            Iterator it = connectQosClientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               qos.addClientProperty(key, connectQosClientPropertyMap.get(key).toString());
+            }
          }
          log.info("ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
