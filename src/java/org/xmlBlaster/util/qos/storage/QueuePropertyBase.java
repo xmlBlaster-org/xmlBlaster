@@ -27,7 +27,6 @@ import org.xmlBlaster.util.qos.address.AddressBase;
  */
 public abstract class QueuePropertyBase implements Cloneable
 {
-   private static final String ME = "QueuePropertyBase";
    protected final Global glob;
    private static Logger log = Logger.getLogger(QueuePropertyBase.class.getName());
 
