@@ -20,6 +20,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -117,8 +118,23 @@ public class Session implements I_Session, I_Subject {
          log.warning("Authentication of user " + getName() + " failed");
          return false;
       }
-
-      //log.warning("No authorization check for action='" + dataHolder.getAction() + "' on key='" +dataHolder.getKeyOid() + "' is implemented, access generously granted.");
+      
+      /*
+      // Is buggy: Currently this is the SocketDrivers AddressServer singleton
+      // and has no client specific address informations: 
+      if (sessionHolder.getAddressServer().getRemoteAddress() != null &&
+            sessionHolder.getAddressServer().getRemoteAddress() instanceof org.xmlBlaster.util.protocol.socket.SocketUrl) {
+         org.xmlBlaster.util.protocol.socket.SocketUrl url =
+            (org.xmlBlaster.util.protocol.socket.SocketUrl)sessionHolder.getAddressServer().getRemoteAddress();
+         // "socket://127.0.0.2:35335"
+         String hostname = url.getHostname();
+         int port = url.getPort();
+         log.severe("DEBUG ONLY: Client for action='" + dataHolder.getAction() + "' coming from " + url.toString());
+      }
+      */
+      
+      if (log.isLoggable(Level.FINER))
+            log.finer("No authorization check for action='" + dataHolder.getAction() + "' on key='" +dataHolder.getKeyOid() + "' is implemented, access generously granted.");
       return true;
    }
 
@@ -143,6 +159,9 @@ public class Session implements I_Session, I_Subject {
    }
 
    public MsgUnitRaw importMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      //MethodName methodName = dataHolder.getAction();
+      //Map map = dataHolder.getClientProperties();
+      //log.fine("Entering " + methodName + " isReturn=" + dataHolder.isReturnValue());
       return dataHolder.getMsgUnitRaw();
    }
 
