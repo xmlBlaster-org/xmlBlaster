@@ -166,6 +166,20 @@ public class Session implements I_Session, I_Subject {
    }
 
    public MsgUnitRaw exportMessage(CryptDataHolder dataHolder) throws XmlBlasterException {
+      /*
+      // TODO Verify if the subscription clientProperties are proper handled for
+      // - persistent subscribe with server restart
+      // - swapped callback messages
+      if (MethodName.UPDATE.equals(dataHolder.getAction())) {
+         // Callback update() call
+         Map clientProperties = dataHolder.getClientProperties(); // subscribeQos.getClientProperties()
+         if (clientProperties != null) {
+            ClientProperty clp = (ClientProperty)clientProperties.get("_xslTransformationFileName");
+            String xslFile = clp.getStringValue();
+            log.info("Implementation of XSL transformation with '" + xslFile + "' is missing");
+         }
+      }
+      */
       return dataHolder.getMsgUnitRaw();
    }
 }
