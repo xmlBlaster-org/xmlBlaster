@@ -115,6 +115,8 @@ public class HelloWorldSubscribe implements I_Callback
    private boolean connectRefreshSession;
    private boolean runAsDaemon;
    private boolean dumpToConsole;
+   private Map clientPropertyMap;
+   private Map connectQosClientPropertyMap;
 
    private void readEnv() {
       this.connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
@@ -152,6 +154,8 @@ public class HelloWorldSubscribe implements I_Callback
       this.connectRefreshSession = glob.getProperty().get("connect/qos/sessionRefresh", false);
       this.runAsDaemon = glob.getProperty().get("runAsDaemon", false);
       this.dumpToConsole = glob.getProperty().get("dumpToConsole", true);
+      this.clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
+      this.connectQosClientPropertyMap = glob.getProperty().get("connect/qos/clientProperty", (Map)null);
    }
 
    public HelloWorldSubscribe(Global glob_) {
@@ -180,6 +184,16 @@ public class HelloWorldSubscribe implements I_Callback
          log.info("Used settings are:");
          log.info("   -connect/qos/persistent     " + connectPersistent);
          log.info("   -connect/qos/sessionRefresh " + connectRefreshSession);
+         if (connectQosClientPropertyMap != null) {
+            Iterator it = connectQosClientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               log.info("   -connect/qos/clientProperty["+key+"]   " + connectQosClientPropertyMap.get(key).toString());
+            }
+         }
+         else {
+            log.info("   -connect/qos/clientProperty[]   ");
+         }
          log.info("   -interactive       " + interactive);
          log.info("   -interactiveUpdate " + this.interactiveUpdate);
          log.info("   -updateSleep       " + this.updateSleep);
@@ -206,6 +220,17 @@ public class HelloWorldSubscribe implements I_Callback
          log.info("   -filter.type       " + filterType);
          log.info("   -filter.version    " + filterVersion);
          log.info("   -filter.query      " + filterQuery);
+         if (this.clientPropertyMap != null) {
+            Iterator it = this.clientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               log.info("   -clientProperty["+key+"]   " + this.clientPropertyMap.get(key).toString());
+            }
+         }
+         else {
+            log.info("   -clientProperty[]   ");
+         }
+         
          log.info("For more info please read:");
          log.info("   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html");
 
@@ -247,6 +272,13 @@ public class HelloWorldSubscribe implements I_Callback
          ConnectQos qos = new ConnectQos(glob);
          qos.setPersistent(connectPersistent);
          qos.setRefreshSession(connectRefreshSession);
+         if (connectQosClientPropertyMap != null) {
+            Iterator it = connectQosClientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               qos.addClientProperty(key, connectQosClientPropertyMap.get(key).toString());
+            }
+         }
          log.info("ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          // crq can be null if '-dispatch/connection/doSendConnect false' is set
@@ -360,6 +392,13 @@ public class HelloWorldSubscribe implements I_Callback
          if (filterQuery.length() > 0) {
             AccessFilterQos filter = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
             sq.addAccessFilter(filter);
+         }
+         if (clientPropertyMap != null) {
+            Iterator it = clientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               sq.addClientProperty(key, clientPropertyMap.get(key).toString());
+            }
          }
 
          log.info("SubscribeKey=\n" + sk.toXml());
