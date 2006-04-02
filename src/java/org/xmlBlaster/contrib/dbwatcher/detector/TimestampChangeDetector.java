@@ -154,6 +154,12 @@ public class TimestampChangeDetector implements I_ChangeDetector
 
       this.dbPool = DbWatcher.getDbPool(this.info);
       
+      // TODO: Persist oldTimestamp to support plugin/xmlBlaster restart
+      //String colGroupingName = xmlBlasterPlugin.getType(); // or something else if not inside xmlBlaster 
+      //this.persistentInfo = new DbInfo(this.dbPool, colGroupingName);
+      //this.oldTimestamp = this.persistentInfo.get("I_ChangeDetector.oldTimestamp");
+      // TODO: Set on each oldTimstamp change
+      
       // if null: check the complete table
       // if != null: check for each groupColName change separately
       this.groupColName = this.info.get("changeDetector.groupColName", (String)null);
