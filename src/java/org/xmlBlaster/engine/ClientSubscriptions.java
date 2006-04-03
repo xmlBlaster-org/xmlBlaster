@@ -31,9 +31,6 @@ import java.util.*;
  */
 public class ClientSubscriptions implements I_ClientListener, I_SubscriptionListener
 {
-   private final String ME;
-
-   private final ServerScope glob;
    private static Logger log = Logger.getLogger(ClientSubscriptions.class.getName());
 
    /**
@@ -77,9 +74,6 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
     */
    ClientSubscriptions(ServerScope glob, RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
-      this.glob = glob;
-      this.ME = "ClientSubscriptions" + this.glob.getLogPrefixDashed();
-
       requestBroker.addSubscriptionListener(this);
       authenticate.addClientListener(this);
    }
@@ -412,7 +406,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    /**
     * Event invoked on message erase() invocation. 
     */
-   public void messageErase(TopicHandler topicHandler) throws XmlBlasterException
+   public void topicRemove(TopicHandler topicHandler) throws XmlBlasterException
    {
       String uniqueKey = topicHandler.getUniqueKey();
 

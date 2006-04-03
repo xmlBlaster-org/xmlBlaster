@@ -2114,7 +2114,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    private void removeFromBigSubscriptionSet() {
       try {
-         requestBroker.getClientSubscriptions().messageErase(this);
+         requestBroker.getClientSubscriptions().topicRemove(this);
       }
       catch (XmlBlasterException e) {
          log.severe("Received exception on message erase, we ignore it: " + e.getMessage());
