@@ -5,8 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.key;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
@@ -41,7 +39,6 @@ import org.xmlBlaster.util.def.Constants;
 public abstract class KeyData implements java.io.Serializable, Cloneable
 {
    protected transient Global glob;
-   private static Logger log = Logger.getLogger(KeyData.class.getName());
    protected transient final String serialData; // can be null - in this case use toXml() - original without generated oid
    /** value from attribute <key oid="..."> */
    private String oid;
