@@ -202,6 +202,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     *            may receive the update, subscribers which are served after us won't get it.
     *            For the publisher it looks as if the publish failed completely. Probably it is
     *            best to return 'false' instead and log the situation.
+    *            Further the current subscription is destroyed when exception is thrown.
     */
    public boolean match(SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
       if (msgUnit == null) {
@@ -209,9 +210,10 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in xpath match() call");
       }
       
+      // Access cached query ...
+      DOMXPath expression;
+      
       try {
-         // Access cached query ...
-         DOMXPath expression;
          if (query.getPreparedQuery() == null) {
             try {
                expression = new DOMXPath(query.getQuery());
@@ -241,7 +243,14 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
             return false;
          }
          
-         Document doc = getDocument(msgUnit);
+         Document doc = null;
+         try {
+            doc = getDocument(msgUnit);
+         }
+         catch (Throwable e) {
+            log.warning("The msgUnit can't be parsed, we reject it for this subscriber: " + e.toString());
+            return false;
+         }
          
          if ( log.isLoggable(Level.FINEST))
             log.finest("Matching query " + query.getQuery() + " against document: " + getXml(msgUnit));
@@ -403,7 +412,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
             org.xml.sax.SAXParseException s = (org.xml.sax.SAXParseException)ex;
             reason = reason + " at line="+s.getLineNumber() + " column=" +
                s.getColumnNumber() +
-               " in systemID" + s.getSystemId();
+               " in systemID=" + s.getSystemId();
          }
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Could not parse xml: " + reason);
       }  catch (javax.xml.parsers.ParserConfigurationException ex) {
