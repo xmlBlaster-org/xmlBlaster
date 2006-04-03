@@ -89,6 +89,7 @@ public class HelloWorld6
          cbAddress.setDelay(4000L);      // retry connecting every 4 sec
          cbAddress.setRetries(-1);       // -1 == forever
          cbAddress.setPingInterval(4000L); // ping every 4 seconds
+         //cbAddress.setDispatcherActive(false);
 
          // Example how to hardcode a SOCKET server:
          //cbAddress.setType("SOCKET");    // force SOCKET protocol for callback
