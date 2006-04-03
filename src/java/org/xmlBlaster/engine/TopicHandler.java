@@ -2046,6 +2046,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   pq.setSender(sessionName);
                   pq.addDestination(new Destination(sub.getSessionInfo().getSessionName()));
                   pq.addClientProperty("__oid", getUniqueKey());
+                  MsgKeyData k = this.msgKeyData;
+                  if (k != null && k.getDomain() != null)
+                     pq.addClientProperty("__domain", k.getDomain());
                   pq.addClientProperty("__subscriptionId", sub.getSubSourceSubscriptionId());
                   if (eraseKey != null) // To have all attributes for cluster slaves getting forwarded the erase
                      pq.addClientProperty("__eraseKey", eraseKey.toXml());
