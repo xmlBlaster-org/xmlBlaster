@@ -430,6 +430,7 @@ public class HelloWorldSubscribe implements I_Callback
       if (updateQos.isErased() && oid.length() > 0) { // Erased topic with EXACT subscription?
          if (dumpToConsole) {
             System.out.println("============= Topic '" + updateKey.getOid() + "' is ERASED =======================");
+            System.out.println(updateKey.toXml());
          }
          subscribe();             // topic is erased -> re-subsribe
          return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
