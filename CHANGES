@@ -4,6 +4,12 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #15002 Java client library methods added to I_XmlBlasterAccess
+   - Added convenience method to send an administrative command to xmlBlaster
+     String sendAdministrativeCommand(String command)
+   - Added convenience method to switch callback dispatcher on/off
+     void setCallbackDispatcherActive(boolean activate)
+
  o #14995 DbWatcher changes
    - Removed changeDetector.postUpdateStatement
    - Added converter.postStatement

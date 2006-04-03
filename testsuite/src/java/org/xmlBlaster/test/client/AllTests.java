@@ -6,6 +6,8 @@ Comment:   Start all tests
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.client;
 
+import org.xmlBlaster.test.client.TestCommand;
+
 import junit.framework.*;
 
 
@@ -24,6 +26,7 @@ public class AllTests
    public static Test suite() {
       TestSuite suite= new TestSuite("All xmlBlaster message client side tests");
       suite.addTest(TestSynchronousCache.suite());
+      suite.addTest(new TestSuite(TestCommand.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafe.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafePing.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestFailSafeAsync.class));

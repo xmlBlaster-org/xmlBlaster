@@ -151,6 +151,28 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     */
    I_CallbackServer initCbServer(String loginName, CallbackAddress callbackAddress) throws XmlBlasterException;
 
+   /** 
+    * Switch callback dispatcher on/off. 
+    * This is a convenience function (see ConnectQos). It will update the client side
+    * ConnectQos as well so we don't loose the setting on reconnects after server maintenance.
+    * @param activate true: XmlBlaster server delivers callback messages
+    *        false: XmlBlaster server keeps messages for this client in the callback queue
+    */
+   void setCallbackDispatcherActive(boolean activate) throws XmlBlasterException;
+
+   /**
+    * Convenience method to send an administrative command to xmlBlaster. 
+    * If the command contains a '=' it is interpreted as a set() call, else it is used as
+    * a get() call.
+    * @param command for example "client/joe/?dispatcherActive" (a getter) or "client/joe/?dispatcherActive=false" (a setter).
+    *        The "__cmd:" is added by us
+    *        To enforce a getter or setter you can write "get client/joe/?dispatcherActive" or
+    *        "set client/joe/?dispatcherActive=false"
+    * @return When setting a value you get the returned state, else the retrieved data
+    * @throws XmlBlasterException on problems
+    */
+   String sendAdministrativeCommand(String command) throws XmlBlasterException;
+
    /**
     * Access the client side security plugin. 
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.introduction.html">security.introduction requirement</a>

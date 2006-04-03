@@ -42,12 +42,14 @@ import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -1416,6 +1418,53 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          return this.dispatchManager.isDispatcherActive();
       }
       return false;
+   }
+
+   public void setCallbackDispatcherActive(boolean activate) throws XmlBlasterException {
+      String command = getSessionName() + "/?dispatcherActive=" + activate;
+      sendAdministrativeCommand(command);
+      this.connectQos.getSessionCbQueueProperty().getCurrentCallbackAddress().setDispatcherActive(activate);
+   }
+
+   public String sendAdministrativeCommand(String command) throws XmlBlasterException {
+      if (command == null)
+         throw new IllegalArgumentException("sendAdministrativeCommand() called with null argument");
+      command = command.trim();
+      boolean isGet = command.indexOf("get ") == 0 || command.indexOf("GET ") == 0;
+      boolean isSet = command.indexOf("set ") == 0 || command.indexOf("SET ") == 0;
+      String cmd = ((isGet || isSet)) ? command.substring(4) : command;
+      
+      if (isSet || (!isGet && cmd.indexOf("=") != -1)) {
+         String oid = "__cmd:" + cmd;
+         PublishKey key = new PublishKey(glob, oid); // oid="__cmd:/client/joe/1/?dispatcherActive=false"
+         PublishQos qos = new PublishQos(glob);
+         MsgUnit msgUnit = new MsgUnit(key, "", qos);
+         try {
+            PublishReturnQos ret = publish(msgUnit);
+            if (log.isLoggable(Level.FINE)) log.fine("Send '" + cmd + " '");
+            return ret.getState();
+         }
+         catch (XmlBlasterException e) {
+            if (log.isLoggable(Level.FINE)) log.fine("Sending of '" + cmd + " ' failed: " + e.getMessage());
+            throw e;
+         }
+      }
+      else {
+         String oid = "__cmd:" + cmd;
+         GetKey getKey = new GetKey(glob, oid);
+         GetQos getQos = new GetQos(glob);
+         try {
+            MsgUnit[] msgs = get(getKey, getQos);
+            if (log.isLoggable(Level.FINE)) log.fine("Send '" + cmd + " ', got array of size " + msgs.length);
+            if (msgs.length == 0)
+               return "";
+            return msgs[0].getContentStr();
+         }
+         catch (XmlBlasterException e) {
+            if (log.isLoggable(Level.FINE)) log.fine("Sending of '" + cmd + " ' failed: " + e.getMessage());
+            throw e;
+         }
+      }
    }
 
    public synchronized String[] peekClientMessages(int numOfEntries) throws Exception {
