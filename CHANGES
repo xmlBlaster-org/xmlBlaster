@@ -4,6 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #15006 Added 'domain' to erase event
+
+ o #15003 XPathFilter bugfix
+    Does not throw exception anymore for not wellformed message content
+
  o #15002 Java client library methods added to I_XmlBlasterAccess
    - Added convenience method to send an administrative command to xmlBlaster
      String sendAdministrativeCommand(String command)
