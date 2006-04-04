@@ -124,9 +124,15 @@ sub testPubGet {
 
         $key = "<key oid='myHello1' contentMime='text/plain' />" ;
         open(DAT, "test.bin") || die("Could not open file test.bin!");
-        #@content=<DAT>;
-        $content=$coder->base64(encode_base64(<DAT>));
-        print "> user [",$profiles[0]->{'user'},"] publish [",$content,"]...\n";
+        my $content=<DAT>;
+        print "> Sending binary [\n";
+        print $content;
+        print "]\n";
+        # You need to add a second argument "" to avoid Base64 linebreaks.
+        # Thanks to Chris Cobb for this hint
+        my $b64 = encode_base64($content, "");
+        $content=$coder->base64($b64);
+        print "> user [",$profiles[0]->{'user'},"] publish [",$b64,"]...\n";
 
         $keyoid = $srv1->publish( $key, $content );
 
@@ -145,12 +151,20 @@ sub testPubGet {
                 return undef ;
         }
 
+        print "> Get returned\n";
         foreach my $message ( @$messages ){
+                my $written;
+                my $content;
                 my $message_unit = xmlBlaster::MsgUnit->new( $message );
                 open(DAT,">return.bin") || die("Cannot Open File return.bin");
-                print DAT $message_unit->content();
+                #$content = decode_base64($message_unit->content());
+                $content = $message_unit->content();
+
+                $written = syswrite(DAT, $content, length($content));
+                die "syswrite failed: $!\n" unless $written == length($content);
+                #print DAT $message_unit->content();
                 close(DAT);
-                print "Found message = [",$message_unit->keyOid()," / ", $message_unit->content(), "]\n";
+                print "Found message = [",$message_unit->keyOid()," / ", $content, "]\n";
         }
 
         #
