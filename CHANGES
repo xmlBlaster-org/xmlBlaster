@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ 
+ o #15014 MX4J Adaptor could not find the necessary xsl in Windows. This issue is now fixed.
 
  o #15006 Added 'domain' to erase event
 
