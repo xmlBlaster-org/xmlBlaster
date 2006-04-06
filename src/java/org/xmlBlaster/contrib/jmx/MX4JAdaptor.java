@@ -57,11 +57,19 @@ public class MX4JAdaptor extends GlobalInfo {
          return this.prefix;
       }
       
+      private boolean isPathAbsolute(String path) {
+         if (path == null)
+            return false;
+         File test = new File(path.trim());
+         return test.isAbsolute();
+      }
+      
       protected InputStream getInputStream(String path) {
          if (path == null)
             log.severe("ContribXsltProcessor.getInputStream: no filename specified");
          // path = this.prefix + File.separatorChar + path;
-         if (!path.startsWith(File.separator) && !path.startsWith("/"))
+         // if (!path.startsWith(File.separator) && !path.startsWith("/"))
+         if (!isPathAbsolute(path)) 
             path = File.separator + path;
                
          path = this.prefix + path;
