@@ -23,7 +23,10 @@ Compile it (make all) and start it like that:
 
     Using the Clear button clears the left column.
 
-    Yo may try to enter //key as well to see all available topics.
+    You may try to enter //key as well to see all available topics.
+
+    Specify the query on command line:
+    java javaclients.simplereader.SimpleReaderGui -xpath "//key[starts-with(@oid,'com.')]"
 
 Don´t forget to start the server (java org.xmlBlaster.MainGUI) first.
 
