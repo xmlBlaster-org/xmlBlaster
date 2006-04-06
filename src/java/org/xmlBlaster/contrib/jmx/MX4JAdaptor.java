@@ -64,19 +64,36 @@ public class MX4JAdaptor extends GlobalInfo {
          return test.isAbsolute();
       }
       
-      protected InputStream getInputStream(String path) {
+      /**
+       *
+       * Note on the classpath: to find a resource it has to be according to java nomenclature,
+       * it will not find a document specified with '\'.
+       * @param path
+       * @param cl
+       * @param fixFileSeparator
+       * @return
+       */
+      private InputStream getInputStream(String path, ClassLoader cl, boolean fixFileSeparator) {
+
+         log.fine("using classloader '" + cl.getClass().getName() + "'");
          if (path == null)
             log.severe("ContribXsltProcessor.getInputStream: no filename specified");
          // path = this.prefix + File.separatorChar + path;
-         // if (!path.startsWith(File.separator) && !path.startsWith("/"))
-         if (!isPathAbsolute(path)) 
-            path = File.separator + path;
+         log.info("Requesting path '" + path + "'");
+         if (!path.startsWith(File.separator) && !path.startsWith("/"))
+         // if (!isPathAbsolute(path)) 
+            // path = File.separator + path;
+            path = "/" + path;
                
          path = this.prefix + path;
+         if (fixFileSeparator)
+            path = path.replace('/', File.separatorChar);
+
+         log.info("Requesting path (after cleaning) '" + path + "'");
          
          InputStream ret = null;
          try {
-            Enumeration enm = this.getClass().getClassLoader().getResources(path);
+            Enumeration enm = cl.getResources(path);
             if(enm.hasMoreElements()) {
                URL url = (URL)enm.nextElement();
                String urlTxt = "loading file '" + url.getFile() + "'";
@@ -96,14 +113,17 @@ public class MX4JAdaptor extends GlobalInfo {
                }
             }
             else {
-               ClassLoader cl = this.getClass().getClassLoader();
                StringBuffer buf = new StringBuffer();
                if (cl instanceof URLClassLoader) {
                   URL[] urls = ((URLClassLoader)cl).getURLs();
                   for (int i=0; i < urls.length; i++) 
                      buf.append(urls[i].toString()).append("\n");
                }
+               else {
+                  buf.append(" not an URLClassLoader (can not get list of files found) ");
+               }
                log.warning("no file found with the name '" + path + "'" /*+ "' : " + (buf.length() > 0 ? " classpath: " + buf.toString() : ""*/);
+               log.fine("no file found with the name '" + path + "'" + " classpath: '" + buf.toString() + "'");
             }
          }
          catch(IOException e) {
@@ -111,8 +131,28 @@ public class MX4JAdaptor extends GlobalInfo {
          }
          return ret;
       }
+
+      protected InputStream getInputStream(String path) {
+         boolean fixFileSeparator = false;
+         InputStream ret = null;
+         if (ret == null)
+            ret = getInputStream(path, this.getClass().getClassLoader(), fixFileSeparator);
+         /*
+         if (ret == null)
+            ret = getInputStream(path, ClassLoader.getSystemClassLoader(), fixFileSeparator);
+         fixFileSeparator = true;
+         */
+         /*
+         if (ret == null)
+            ret = getInputStream(path, this.getClass().getClassLoader(), fixFileSeparator);
+         if (ret == null)
+            ret = getInputStream(path, ClassLoader.getSystemClassLoader(), fixFileSeparator);
+         return ret;
+         */
+         return ret;
+      }
+      
    }
-   
    
    public MX4JAdaptor() {
       super((Set)null);
