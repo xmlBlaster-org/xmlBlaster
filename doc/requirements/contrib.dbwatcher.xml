@@ -961,6 +961,18 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
          </td>
        </tr>
        <tr>
+         <td>changeDetector. MINSTR</td>
+         <td>String</td>
+         <td>no</td>
+         <td>2005-11-25 12:48:00.000</td>
+         <td>
+         This setting defaults to <tt>" "</tt>,
+         like this all SQL data in the observed table are initially delivered on DbWatcher startup.
+         If you set this to a minimal value of your timestamp column only the changes bigger detected after
+         a new xmlBlaster restart.
+         </td>
+       </tr>
+       <tr>
          <td>changeDetector. ignoreExistingDataOnStartup</td>
          <td>String</td>
          <td>no</td>
