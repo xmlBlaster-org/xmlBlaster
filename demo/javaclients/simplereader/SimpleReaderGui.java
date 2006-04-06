@@ -24,6 +24,13 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
+/**
+ * Usage:
+ * <pre>
+ *  java javaclients.simplereader.SimpleReaderGui 
+ *  java javaclients.simplereader.SimpleReaderGui -xpath "//key[starts-with(@oid,'com.')]" 
+ * </pre>
+ */
 public class SimpleReaderGui extends JFrame implements I_Callback {
    /**
     * 
@@ -109,7 +116,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       MessageWrapper messageWrapper = new MessageWrapper(secretCallbackSessionId, updateKey, content, updateQos);
       listModel.addElement(messageWrapper);
       System.out.println("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
-      return ("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
+      return "";
    }
 
 
@@ -168,7 +175,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       jScrollPane2.setPreferredSize(new Dimension(300, 26));
       jSplitPane1.setMinimumSize(new Dimension(234, 400));
       jSplitPane1.setPreferredSize(new Dimension(512, 400));
-      jTextField1.setText("//key");
+      jTextField1.setText(this.xmlBlaster.getGlobal().getProperty().get("xpath", "//key"));
       jPanel3.setLayout(borderLayout4);
       jPanel3.setMaximumSize(new Dimension(120, 40));
       jPanel3.setMinimumSize(new Dimension(120, 40));
