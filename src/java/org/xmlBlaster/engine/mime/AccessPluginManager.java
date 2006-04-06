@@ -37,6 +37,8 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
 
    private final ServerScope glob;
    private static Logger log = Logger.getLogger(AccessPluginManager.class.getName());
+   
+   private boolean firstLogging = true;
 
    public AccessPluginManager(ServerScope glob)
    {
@@ -128,7 +130,13 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
          key.append(type).append(version);
          obj = accessFilterMap.get(key.toString());
          if (obj != null) {
-            if (log.isLoggable(Level.FINE)) log.fine("Filter plugin type=" + type + " version=" + version + " is loaded but does not support mime=" + mime + " mimeExtended=" + mimeExtended);
+            if (firstLogging) {
+               log.warning("Filter plugin type=" + type + " version=" + version + " is loaded but does not support mime=" + mime + " mimeExtended=" + mimeExtended);
+               firstLogging = false;
+            }
+            else {
+               if (log.isLoggable(Level.FINE)) log.fine("Filter plugin type=" + type + " version=" + version + " is loaded but does not support mime=" + mime + " mimeExtended=" + mimeExtended);
+            }
             return null; // Plugin is loaded but does not support the mime types
          }
 
@@ -159,7 +167,7 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
       } catch (Exception e) {
          log.severe("Problems accessing subscribe filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
          e.printStackTrace();
-         return (I_AccessFilter)null;
+         return null;
       }
    }
 
