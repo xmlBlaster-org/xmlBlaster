@@ -61,7 +61,7 @@ public class MX4JAdaptor extends GlobalInfo {
          if (path == null)
             log.severe("ContribXsltProcessor.getInputStream: no filename specified");
          // path = this.prefix + File.separatorChar + path;
-         if (!path.startsWith(File.separator))
+         if (!path.startsWith(File.separator) && !path.startsWith("/"))
             path = File.separator + path;
                
          path = this.prefix + path;
