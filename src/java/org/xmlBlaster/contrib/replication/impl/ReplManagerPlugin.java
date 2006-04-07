@@ -137,7 +137,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       I_Info tmpInfo = (I_Info)this.replications.get(replPrefix);
       if (tmpInfo == null)
          throw new Exception("The replication with replication.prefix='" + replPrefix + "' was not found");
-      String srcVersion = tmpInfo.get("replication.version", "").trim();
+      String srcVersion = tmpInfo.get("replication.version", "0.0").trim();
       if (srcVersion.length() < 1)
          throw new Exception("The replication '" + replPrefix + "' has no version defined");
       return transformVersion(replPrefix, srcVersion, destVersion, destination, srcData);
@@ -689,7 +689,18 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       catch (Exception ex) {
          if (ex instanceof XmlBlasterException)
             throw (XmlBlasterException)ex;
-         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "exception occured when filtering replication messages", "", ex);
+         if (slave != null) {
+            boolean persist = true;
+            try { slave.doPause(persist); } catch (Exception e) { }
+         }
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "exception occured when filtering replication messages", "", ex);
+      }
+      catch (Throwable ex) {
+         if (slave != null) {
+            boolean persist = true;
+            try { slave.doPause(persist); } catch (Exception e) { }
+         }
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "throwable occured when filtering replication messages. " + Global.getStackTraceAsString(ex), "", ex);
       }
    }
 
