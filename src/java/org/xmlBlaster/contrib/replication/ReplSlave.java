@@ -168,7 +168,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
          this.maxReplKey = 0L;
       }
-      this.srcVersion = info.get("replication.version", "");
+      this.srcVersion = info.get("replication.version", "0.0");
       this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, null);
       
       if (this.ownVersion != null) {

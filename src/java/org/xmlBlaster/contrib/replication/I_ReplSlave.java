@@ -74,5 +74,12 @@ public interface I_ReplSlave extends I_ContribPlugin {
     * @param sqlResponse The sqlResponse to set.
     */
    void setSqlResponse(String sqlResponse);
+
+   /**
+    * Pauses the dispatcher. 
+    * @param doPersist true if you want to persist the information that it was stopped.
+    * @throws Exception
+    */
+   void doPause(boolean doPersist) throws Exception;
    
 }
