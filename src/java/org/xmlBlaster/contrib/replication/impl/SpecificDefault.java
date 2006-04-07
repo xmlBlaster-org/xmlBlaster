@@ -1276,7 +1276,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          conn = pool.reserve();
          conn.setAutoCommit(true);
          String schema = info.get("wipeout.schema", null);
-         String version = info.get("replication.version", null);
+         String version = info.get("replication.version", "0.0");
          if (schema == null) {
             String initialUpdateFile = info.get("initialUpdate.file", null);
             if (initialUpdateFile != null) {
