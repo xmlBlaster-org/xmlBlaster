@@ -34,17 +34,19 @@ http://localhost:9999/mbean?objectname=org.xmlBlaster:contribClass=contrib,*&att
    <xsl:param name="content" />
    <xsl:choose>
      <xsl:when test="contains($content, ',')">
-   <option>
-        <xsl:value-of select="substring-before($content, ',')"/>
-   </option>
+   <xsl:element name="option">
+       <xsl:attribute name="value"><xsl:value-of select="substring-before($content, ',')"/></xsl:attribute>
+       <xsl:value-of select="substring-before($content, ',')"/>
+   </xsl:element>
         <xsl:call-template name="replaceString">
            <xsl:with-param name="content" select="substring-after($content, ',')"/>
         </xsl:call-template>
      </xsl:when>
      <xsl:otherwise>
-   <option>
+   <xsl:element name="option">
+       <xsl:attribute name="value"><xsl:value-of select="$content"/></xsl:attribute>
        <xsl:value-of select="$content"/>
-   </option>
+   </xsl:element>
      </xsl:otherwise>
    </xsl:choose>
 </xsl:template>
@@ -94,7 +96,7 @@ function back() {
   	        <td class="normal" title="" colspan="4">
 		  <center>Replication Source:
                     <select class="values" id="replication" name="replication" size="1">
-                       <option></option>
+                       <option value=""></option>
                        <xsl:call-template name="replaceString">
                          <xsl:with-param name="content" select="//MBean[@classname='org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin']/Attribute[@name='Replications']/@value"/>
                        </xsl:call-template>
