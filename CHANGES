@@ -3,6 +3,12 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+
+ o #15029 Corba xmlBlaster.idl testing 'wstring' instead of 'string'
+   - Java client to java server works fine
+   - Testing with mico 2.3.12 works fine only for 'string'
+     The 'wstring' variant lost its QoS during connect()
+     so we stay with 'string'
  
  o #15014 MX4J Adaptor could not find the necessary xsl in Windows. This issue is now fixed.
 
