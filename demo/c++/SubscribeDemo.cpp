@@ -119,8 +119,8 @@ public:
             std::cout << "(Enter " << dd << " 'q' to exit) >> ";
             std::cin.read(ptr,1);
             if (*ptr == 'q') stop = true;
-            if (*ptr == 'a') connection_.setCallbackDispatcherActive(true);
-            if (*ptr == 'd') connection_.setCallbackDispatcherActive(false);
+            if (*ptr == 'a') connection_.setCallbackDispatcherActive(true), dispatcherActive=true;
+            if (*ptr == 'd') connection_.setCallbackDispatcherActive(false), dispatcherActive=false;
          }
       }
       else {
