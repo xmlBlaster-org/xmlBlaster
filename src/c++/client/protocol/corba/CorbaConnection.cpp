@@ -413,7 +413,13 @@ ConnectReturnQosRef CorbaConnection::connect(const ConnectQosRef& connectQos)
       ConnectQos help = *connectQos; // since it is a const
       string reqQos = help.toXml();
       if (log_.trace()) log_.trace(me(), string("connect req: ") + reqQos);
-      string retQos = authServer_->connect(reqQos.c_str());
+      // If using wstring in xmlBlaster.idl:
+      //CORBA::WString_var ws1 = CORBA::wstring_dup(toWstring(reqQos).c_str());
+      //CORBA::WString_var ws2 = authServer_->connect(ws1);
+      //string retQos = toString(wstring(ws2));
+      // or
+      string retQos = corbaWStringToString(authServer_->connect(toCorbaWString(reqQos)));
+      //string retQos = authServer_->connect(reqQos.c_str());
       if (log_.trace()) log_.trace(me(), string("connect ret: ") + retQos);
       ConnectQosFactory factory(global_);
       if (log_.dump()) log_.dump(me(), "connect: the connect return qos before parsing: " + retQos);
@@ -470,7 +476,7 @@ bool CorbaConnection::disconnect(const string& qos)
    try {
       if (!CORBA::is_nil(authServer_)) {
          if (sessionId_=="") authServer_->logout(xmlBlaster_);
-         else authServer_->disconnect(sessionId_.c_str(), qos.c_str());
+         else authServer_->disconnect(sessionId_.c_str(), toCorbaWString(qos));
       }
       shutdown();
       return true;
@@ -502,8 +508,9 @@ CorbaConnection::subscribe(const string &xmlKey, const string &qos)
                                           txt.c_str(), "", "", "", "", "", "");
   }
   try {
-     CORBA::String_var ret = xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str());
-     return static_cast<const char *>(ret);
+     return corbaWStringToString(xmlBlaster_->subscribe(toCorbaWString(xmlKey), toCorbaWString(qos)));
+     //CORBA::String_var ret = toString(xmlBlaster_->subscribe(xmlKey.c_str(), qos.c_str()));
+     //return static_cast<const char *>(ret);
   } catch(serverIdl::XmlBlasterException &e) {
      throw e;
   }
@@ -529,11 +536,11 @@ vector<std::string> CorbaConnection::unSubscribe(const string &xmlKey,
 
   try {
      serverIdl::XmlTypeArr_var 
-        retArr = xmlBlaster_->unSubscribe(xmlKey.c_str(), qos.c_str());
+        retArr = xmlBlaster_->unSubscribe(toCorbaWString(xmlKey), toCorbaWString(qos));
      
      vector<std::string> vecArr;
      for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
-        vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
+        vecArr.push_back(corbaWStringToString(retArr[ii].inout()));
      }
      return vecArr;
   }
@@ -567,8 +574,9 @@ string CorbaConnection::publish(const util::MessageUnit &msgUnitUtil) {
      serverIdl::MessageUnit msgUnit;
      // serverIdl::MessageUnit_var msgUnit;
      copyToCorba(msgUnit, msgUnitUtil);
-     CORBA::String_var ret = xmlBlaster_->publish(msgUnit);
-     return static_cast<char *>(ret);
+     return corbaWStringToString(xmlBlaster_->publish(msgUnit));
+     //CORBA::String_var ret = xmlBlaster_->publish(msgUnit);
+     //return static_cast<char *>(ret);
   }
   catch(serverIdl::XmlBlasterException &e) {
      string msg = "XmlBlasterException: ";
@@ -597,8 +605,9 @@ CorbaConnection::publish(const serverIdl::MessageUnit &msgUnit)
  }
 
   try {
-     CORBA::String_var ret = xmlBlaster_->publish(msgUnit);
-     return static_cast<char *>(ret);
+     return corbaWStringToString(xmlBlaster_->publish(msgUnit));
+     //CORBA::String_var ret = xmlBlaster_->publish(msgUnit);
+     //return static_cast<char *>(ret);
   }
   catch(serverIdl::XmlBlasterException &e) {
      string msg = "XmlBlasterException: ";
@@ -638,7 +647,8 @@ CorbaConnection::publishArr(const vector<util::MessageUnit> &msgVec)
      serverIdl::XmlTypeArr_var retArr = xmlBlaster_->publishArr(msgUnitArr);
      vector<std::string> vecArr;
      for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
-        vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
+        vecArr.push_back(corbaWStringToString(retArr[ii].inout()));
+        //vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
      }
      return vecArr;
   }
@@ -758,10 +768,11 @@ CorbaConnection::erase(const string &xmlKey, const string &qos)
   }
 
   try {
-     serverIdl::XmlTypeArr_var retArr = xmlBlaster_->erase(xmlKey.c_str(), qos.c_str());
+     serverIdl::XmlTypeArr_var retArr = xmlBlaster_->erase(toCorbaWString(xmlKey), toCorbaWString(qos));
      vector<std::string> vecArr;
      for (CORBA::ULong ii=0; ii<retArr->length(); ii++) {
-        vecArr.push_back(static_cast<const char *>(retArr[ii]));
+        vecArr.push_back(corbaWStringToString(retArr[ii]));
+        //vecArr.push_back(static_cast<const char *>(retArr[ii]));
      }
      return vecArr;
   }
@@ -797,7 +808,7 @@ CorbaConnection::get(const string &xmlKey, const string &qos)
   }
 
   try {
-     units = xmlBlaster_->get(xmlKey.c_str(), qos.c_str());
+     units = xmlBlaster_->get(toCorbaWString(xmlKey), toCorbaWString(qos));
      /*
      string subId = xmlBlaster_->subscribe(xmlKey.c_str(),
                                            qos.c_str());
@@ -840,13 +851,13 @@ void
 CorbaConnection::copyToCorba(serverIdl::MessageUnit &dest,
                              const util::MessageUnit &src) const 
 {
-  dest.xmlKey = src.getKey().toXml().c_str();
+  dest.xmlKey = toCorbaWString(src.getKey().toXml());
   serverIdl::ContentType content(src.getContentLen(),
                                  src.getContentLen(),
                                  (CORBA::Octet*)src.getContent(),
                                  false); // our src does memory management itself
   dest.content = content;  // dest.content and content point to same memory? memory leak?
-  dest.qos = src.getQos().toXml().c_str();
+  dest.qos = toCorbaWString(src.getQos().toXml());
 }
 
    
@@ -882,8 +893,8 @@ CorbaConnection::copyFromCorba(vector<util::MessageUnit> &msgVec,
      unsigned long len = static_cast<unsigned long>(msgUnit.content.length());
      const unsigned char * blob = static_cast<const unsigned char *>(&msgUnit.content[0]);
      if (log_.trace()) log_.trace(me(), "copyFromCorba() '" + string((const char *)blob) + "' len=" + lexical_cast<std::string>(len));
-     MsgKeyData key = msgKeyFactory_.readObject(string(msgUnit.xmlKey));
-     MsgQosData qos = msgQosFactory_.readObject(string(msgUnit.qos)); 
+     MsgKeyData key = msgKeyFactory_.readObject(corbaWStringToString(msgUnit.xmlKey));
+     MsgQosData qos = msgQosFactory_.readObject(corbaWStringToString(msgUnit.qos)); 
      const util::MessageUnit msg(key, len, blob, qos);
      msgVec.push_back(msg);
   }

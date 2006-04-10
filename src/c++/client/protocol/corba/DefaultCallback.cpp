@@ -63,11 +63,11 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
       UpdateQos *updateQos = 0;
       try {
          if (log_.dump()) {
-            log_.dump(me(), string("update: the key: ") + string(msgUnit.xmlKey));
-            log_.dump(me(), string("update: the qos: ") + string(msgUnit.qos));
+            log_.dump(me(), string("update: the key: ") + corbaWStringToString(msgUnit.xmlKey));
+            log_.dump(me(), string("update: the qos: ") + corbaWStringToString(msgUnit.qos));
          }
-         updateKey = new UpdateKey(global_, msgKeyFactory_.readObject(string(msgUnit.xmlKey)));
-         updateQos = new UpdateQos(global_, msgQosFactory_.readObject(string(msgUnit.qos)));
+         updateKey = new UpdateKey(global_, msgKeyFactory_.readObject(corbaWStringToString(msgUnit.xmlKey)));
+         updateQos = new UpdateQos(global_, msgQosFactory_.readObject(corbaWStringToString(msgUnit.qos)));
          // Now we know all about the received msg, dump it or do 
          // some checks
          if (log_.dump()) log_.dump("UpdateKey", string("\n") + updateKey->toXml());
@@ -100,14 +100,12 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
             }
             else log_.warn(me(), "can not update: no callback defined");
          }
-         CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
-         (*res)[i] = str;
+         (*res)[i] = toCorbaWString(oneRes);
       } 
       catch (serverIdl::XmlBlasterException &e) {
          log_.error(me(), string(e.message) + " message is on error state: " + updateKey->toXml());
          string oneRes = "<qos><state id='ERROR'/></qos>";
-         CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
-         (*res)[i] = str;
+         (*res)[i] = toCorbaWString(oneRes);
       }
       catch(...) {
          string tmp = "Exception caught in update() " + lexical_cast<std::string>(msgUnitArr.length()) + " messages are handled as not delivered";
@@ -144,8 +142,8 @@ void DefaultCallback::updateOneway(const char* sessionId,
       try {
          const serverIdl::MessageUnit &msgUnit = msgUnitArr[i];
          try {
-            updateKey = new UpdateKey(global_, msgKeyFactory_.readObject(string(msgUnit.xmlKey)));
-            updateQos = new UpdateQos(global_, msgQosFactory_.readObject(string(msgUnit.qos)));
+            updateKey = new UpdateKey(global_, msgKeyFactory_.readObject(corbaWStringToString(msgUnit.xmlKey)));
+            updateQos = new UpdateQos(global_, msgQosFactory_.readObject(corbaWStringToString(msgUnit.qos)));
          } 
          catch (serverIdl::XmlBlasterException &e) {
             log_.error(me(), string(e.message) );

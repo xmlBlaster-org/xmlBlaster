@@ -189,3 +189,23 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #endif // _COMPATIBLECORBA_H
 
 std::string to_string(const CORBA::Exception &ex);
+
+
+# ifdef XBL_IDL_WITH_WSTRING
+   // Note: This is switched off as the mico C++ client was loosing its ConnectQos wstring during send
+   //       Marcel 2006/04
+   // CORBA::WChar is equivalent to wchar_t
+   void string2wstring(std::wstring &dest,const std::string &src);
+   void wstring2string(std::string &dest,const std::wstring &src);
+   std::wstring toWstring(const std::string &src);
+   std::string toString(const std::wstring &src);
+   // If changing in xmlBlaster.idl 
+   //    'string' to 'wstring'  (typedef wstring XmlType;)
+   //    This will lead to CORBA::WString_var
+   std::string corbaWStringToString(const CORBA::WString_var &src);
+   CORBA::WString_var toCorbaWString(const std::string &src);
+#else
+   std::string corbaWStringToString(const char *src);
+   const char* toCorbaWString(const std::string &src);
+# endif
+
