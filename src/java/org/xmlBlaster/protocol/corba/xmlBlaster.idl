@@ -28,7 +28,14 @@ Version:   $Id$
  */
 module serverIdl
 {
+//This ifdef works with jacorb, but is not added to build.xml for C++ idl compilers
+//#ifdef XBL_IDL_WSTRING
+      // Works fine with Javaclient    -> xmlBlaster
+      // but failed with MicoC++Client -> xmlBlaster, the received ConnectQos wstring was empty, is not yet resolved
+//   typedef wstring XmlType; 
+//#else
    typedef string XmlType;
+//#endif
    typedef sequence<XmlType> XmlTypeArr;
 
    typedef sequence<octet> ContentType;
