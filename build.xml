@@ -187,8 +187,8 @@ TODO
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
-   <property name="COMPILE_CORBA_PLUGIN" value="1" />   <!-- Add the Corba protocol plugin -->
-   <property name="COMPILE_SOCKET_PLUGIN" value="0" />  <!-- Add the C socket library wrapper plugin? -->
+   <property name="COMPILE_CORBA_PLUGIN" value="0" />   <!-- Add the Corba protocol plugin -->
+   <property name="COMPILE_SOCKET_PLUGIN" value="1" />  <!-- Add the C socket library wrapper plugin? -->
 
    <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
@@ -502,6 +502,15 @@ TODO
          </default>
       </switch>
 
+      <switch value="${XBL_IDL_WITH_WSTRING}">
+         <case value="1">
+            <property name="D_XBL_IDL_WSTRING" value="-DXBL_IDL_WSTRING=1" />  <!-- to force 'wstring' in xmlBlaster.idl -->
+         </case>
+         <default>
+            <property name="D_XBL_IDL_WSTRING" value="" />
+         </default>
+      </switch>
+
       <echo message="JVM.target=${JVM.target}, JVM.source=${JVM.source}"/>
 
    </target>
@@ -547,7 +556,7 @@ TODO
          <else>
             <echo message="Generating CORBA stubs and skeletons from ${idl.dir}/xmlBlaster.idl" />
             <java classname="${idl.class}" classpath="${cp}" fork="true">
-               <arg line=" -i2jpackage serverIdl:${idl}.serverIdl -i2jpackage clientIdl:${idl}.clientIdl  -i2jpackage authenticateIdl:${idl}.authenticateIdl -d ${src.java.dir} ${idl.dir}/xmlBlaster.idl"/>
+               <arg line=" ${D_XBL_IDL_WSTRING} -i2jpackage serverIdl:${idl}.serverIdl -i2jpackage clientIdl:${idl}.clientIdl  -i2jpackage authenticateIdl:${idl}.authenticateIdl -d ${src.java.dir} ${idl.dir}/xmlBlaster.idl"/>
             </java>
          </else>
       </if>
@@ -2107,7 +2116,7 @@ TODO
       <switch value="${COMPILE_SOCKET_PLUGIN}">
          <case value="1">
             <property name="COMPILE_SOCKET_EXCLUDES" value="" />
-            <property name="COMPILE_SOCKET_DEFINE" value="1" />
+            <property name="COMPILE_SOCKET_DEFINE" value="" />
          </case>
          <default>
             <property name="COMPILE_SOCKET_EXCLUDES" value="**/socket/**" />
@@ -2351,17 +2360,20 @@ TODO
    <!-- c++ client integration - create libxmlBlasterClient.sl (so,dll)     -->
    <!-- See http://ant-contrib.sourceforge.net/cc.html                      -->
    <!-- =================================================================== -->
-   <target name="cpp-lib" depends="prepare-cpp" description="c++ client integration - create libxmlBlasterClient.sl (dll)">
+   <target name="cpp-lib" depends="prepare-cpp,c-lib" description="c++ client integration - create libxmlBlasterClient.sl (dll)">
 
+      <!-- We use some helper from the C-lib (queue, zlib, SOCKET)
+         OR XMLBLASTER_PERSISTENT_QUEUE
       <switch value="${COMPILE_SOCKET_PLUGIN}">
          <case value="1">
             <echo message="calling ant target c-lib for SOCKET protocol plugin ..." />
-            <antcall target="c-lib"/>  <!-- Call e.g. "cpp-corba-idl-MICO" for MICO -->
+            <antcall target="c-lib"/>
             <echo message="c-lib done, continue with cpp-lib ..." />
          </case>
          <default>
          </default>
       </switch>
+      -->
 
       <switch value="${COMPILE_CORBA_PLUGIN}">
          <case value="1">
@@ -2459,6 +2471,7 @@ TODO
          
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
 
+           <define name="XBL_IDL_WITH_WSTRING" value="1" if="XBL_IDL_WITH_WSTRING" />
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
@@ -2536,7 +2549,7 @@ TODO
             <libset dir="${xerces.lib.dir}" libs="${xerces.lib.name}${CPP_DEBUG_POSTFIX}" if="windows" />
 
             <!-- xmlBlasterClientC.so -->
-            <libset dir="${lib.dir}" libs="${c.lib.name}" if="COMPILE_SOCKET_DEFINE" />
+            <libset dir="${lib.dir}" libs="${c.lib.name}" />
 
             <!-- libsqlite.so --> 
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
@@ -2654,6 +2667,7 @@ TODO
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
+           <define name="XBL_IDL_WITH_WSTRING" value="1" if="XBL_IDL_WITH_WSTRING" />
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
@@ -2732,7 +2746,7 @@ TODO
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
 
             <!-- xmlBlasterClientC.so -->
-            <libset dir="${lib.dir}" libs="${c.lib.name}" if="COMPILE_SOCKET_DEFINE" />
+            <libset dir="${lib.dir}" libs="${c.lib.name}" />
 
             <!-- libsqlite.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
@@ -2789,7 +2803,7 @@ TODO
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
 
             <!-- xmlBlasterClientC.so -->
-            <libset dir="${lib.dir}" libs="${c.lib.name}" if="COMPILE_SOCKET_DEFINE" />
+            <libset dir="${lib.dir}" libs="${c.lib.name}" />
 
             <!-- libsqlite.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
@@ -2853,7 +2867,7 @@ TODO
             <libset dir="${lib.dir}" libs="${cpp.lib.name}" />
 
             <!-- xmlBlasterClientC.so -->
-            <libset dir="${lib.dir}" libs="${c.lib.name}" if="COMPILE_SOCKET_DEFINE" />
+            <libset dir="${lib.dir}" libs="${c.lib.name}" />
 
             <!-- libsqlite.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />
