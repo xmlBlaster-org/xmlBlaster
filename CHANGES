@@ -4,8 +4,14 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #15038 Big topic DOM: Changed default encoding from ISO-8859-1 to UTF-8
+   This is configurable with -xmlBlaster/topicDom/encoding for backward compatible behaviour
+
+ o #15037 Bugfix TopicHandler (multi threading issue)
+   By Eugene Wu for topic going unintended into unreferenced for volatile messages
+
  o #15029 Corba xmlBlaster.idl testing 'wstring' instead of 'string'
-   - Java client to java server works fine
+   - Java client to java server works fine (encoding UTF-8, windows-1252 etc.)
    - Testing with mico 2.3.12 works fine only for 'string'
      The 'wstring' variant lost its QoS during connect()
      so we stay with 'string'
