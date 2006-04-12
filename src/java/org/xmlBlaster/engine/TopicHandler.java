@@ -142,6 +142,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    private boolean isRegisteredInBigXmlDom = false;
 
+   private int publishCounter = 0; //count the threads running in publish method
+   
    /**
     * This topic is destroyed after given timeout
     * The timer is activated on state change to UNREFERENCED
@@ -576,7 +578,12 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             }
 
             msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
-
+            
+            publishCounter++;
+            if (!isAlive()) {
+                toAlive();
+            }
+            
             // Forcing RAM entry temporary (reset in finally below) to avoid performance critical harddisk IO during initialization, every callback/subject/history queue put()/take() is changing the reference counter of MsgUnitWrapper. For persistent messages this needs to be written to harddisk
             // If the server crashed during this RAM operation it is not critical as the publisher didn't get an ACK yet
             synchronized(this.msgUnitWrapperUnderConstruction) {
@@ -666,6 +673,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       finally {
          if (msgUnitWrapper != null) {
             synchronized(this) {
+               publishCounter--;
                synchronized(msgUnitWrapper) {
                   synchronized(this.msgUnitCache) {
                      try {
@@ -964,8 +972,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                if (isSoftErased()) {
                   notifyList = toDead(this.creatorSessionName, null, null);
                }
-               else {
+               else if (publishCounter==0) {
                   notifyList = toUnreferenced(false);
+               }
+               else {
+                   if (log.isLoggable(Level.FINE)) log.fine("Ignored the attempt to set topic unreferenced as other thread in publish");
                }
             }
             catch (XmlBlasterException e) {
