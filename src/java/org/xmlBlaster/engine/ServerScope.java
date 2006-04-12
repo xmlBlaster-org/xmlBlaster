@@ -872,12 +872,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    {
       StringBuffer sb = new StringBuffer(512);
       sb.append(logUsage());
-      sb.append("\n");
-      sb.append("  There are fine grained logging possibilities like:\n");
-      sb.append("   -trace[corba]       Switch on trace mode only for IOR driver.\n");
-      sb.append("   -call[cluster]      Show method calls in the cluster module.\n");
-      sb.append("   -trace[mime]        Trace code in mime based filter plugins.\n");
-      sb.append("    Supported is [core], [auth], [dispatch], [mime], [corba], [xmlrpc] [admin]\n");
+      //sb.append("    Bla bla\n");
       return sb.toString();
    }
 

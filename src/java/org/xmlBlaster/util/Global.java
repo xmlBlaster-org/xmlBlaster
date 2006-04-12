@@ -1858,24 +1858,14 @@ public class Global implements Cloneable
 
    public static String logUsage() {
       StringBuffer sb = new StringBuffer(1024);
-      sb.append("Logging options:\n");
-      sb.append("   -info  false        Supress info output.\n");
-      sb.append("   -trace true         Show code trace.\n");
-      sb.append("   -dump  true         Dump internal state.\n");
-      sb.append("   -call  true         Show important method entries\n");
-      sb.append("   -time true          Display some performance data.\n");
-      sb.append("   -logFile <fileName> Log to given file.\n");
-      sb.append("   -maxLogFileLines <50000> Create a backup log file after reaching given number of lines.\n");
-      sb.append("   -maxLogFileCounter <9> Maximum number of rolling backup files.\n");
-      sb.append("   -logDevice file,console  Log to console and above file.\n");
-      sb.append("   Example:  -logFile /tmp/xmlBlaster.log -logDevice file,console -call true -trace[corba] true.\n");
-      sb.append("\n");
       sb.append("Control properties framework:\n");
       sb.append("   -propertyFile <file> Specify an xmlBlaster.properties file to load.\n");
       sb.append("                        The contained settings overwrite a property file found in the xmlBlaster.jar file.\n");
       sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup [" + Property.DEFAULT_VERBOSE + "].\n");
       sb.append("   -pluginsFile  <file> Specify an xmlBlasterPlugins.xml property file to load.\n");
       sb.append("                        The contained settings overwrite a plugins file found in the xmlBlaster.jar file.\n");
+      sb.append("   -java.util.logging.config.file  <file> The JDK 1.4 logging configuration, overwrite the file found in xmlBlaster.jar\n");
+      sb.append("                        The default is from xmlBlaster/config/logging.properties\n");
       return sb.toString();
    }
 
