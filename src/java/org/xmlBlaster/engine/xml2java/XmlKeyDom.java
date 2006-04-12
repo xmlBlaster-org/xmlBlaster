@@ -32,7 +32,7 @@ import org.w3c.dom.Element;
  * <p />
  * This DOM tree contains the meta data from XmlKey:<br />
  * <pre>
- *  <?xml version='1.0' encoding='ISO-8859-1' ?>
+ *  <?xml version='1.0' encoding='UTF-8' ?>
  *  <xmlBlaster>
  *    <key oid='abc' contentMime='text/plain'>
  *      <Hello/>
@@ -50,11 +50,8 @@ public class XmlKeyDom implements I_MergeDomNode
 
    private final ServerScope glob;
    private static Logger log = Logger.getLogger(XmlKeyDom.class.getName());
-
    protected Document xmlKeyDoc = null;
-
-   protected String encoding = "ISO-8859-1";             // !!! TODO: access from xmlBlaster.properties file
-                                                         // default is "UTF-8"
+   protected String encoding = Constants.UTF8_ENCODING; // Before xmlBlaster 1.3: "ISO-8859-1";
    protected final RequestBroker requestBroker;
 
 
@@ -65,10 +62,10 @@ public class XmlKeyDom implements I_MergeDomNode
    {
       this.requestBroker = requestBroker;
       this.glob = this.requestBroker.getGlobal();
-
+      this.encoding = this.glob.getProperty().get("xmlBlaster/topicDom/encoding", encoding);
 
       // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
-      String xml = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+      String xml = "<?xml version='1.0' encoding='"+this.encoding+"' ?>\n" +
                    "<xmlBlaster></xmlBlaster>";
       java.io.StringReader reader = new java.io.StringReader(xml);
       org.xml.sax.InputSource input = new org.xml.sax.InputSource(reader);
