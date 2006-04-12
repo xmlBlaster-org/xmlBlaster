@@ -172,6 +172,7 @@ void PublishDemo::initEnvironment()
    if (historyMaxMsg < 1 && !global_.getProperty().propertyExists("destroyDelay"))
       destroyDelay = 24L*60L*60L*1000L; // Increase destroyDelay to one day if no history queue is used
 
+   log_.info(ME, "You can use for example '-session.name publisher/1 -passwd secret' to pass your credentials");
    log_.info(ME, "Used settings are:");
    log_.info(ME, "   -interactive    " + lexical_cast<string>(interactive));
    log_.info(ME, "   -sleep          " + lexical_cast<string>(sleep)); // org.jutils.time.TimeHelper.millisToNice(sleep));
