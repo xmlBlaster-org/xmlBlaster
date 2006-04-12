@@ -60,8 +60,8 @@ wrapper.app.parameter.4=-propertyFile
 wrapper.app.parameter.5=%XMLBLASTER_HOME%/conf/xmlBlaster.properties
 wrapper.app.parameter.6=-pluginsFile
 wrapper.app.parameter.7=%XMLBLASTER_HOME%/conf/xmlBlasterPlugins.xml
-wrapper.app.parameter.8=-logDevice file
-wrapper.app.parameter.9=-logFile %XMLBLASTER_HOME%/logs/xmlBlasterServer.log
+wrapper.app.parameter.8=-java.util.logging.config.file
+wrapper.app.parameter.9=%XMLBLASTER_HOME%/config/logging.properties
 wrapper.app.parameter.10=-xmlBlaster/sleepOnStartup
 wrapper.app.parameter.11=0
 # You may want to set the sleepOnStartup to say 5000 (5sec)
