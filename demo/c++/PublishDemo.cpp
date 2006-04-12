@@ -11,6 +11,7 @@ Comment:   Little demo to show how a publish is done
 #include <util/qos/ClientProperty.h>
 #include <authentication/SecurityQos.h>
 #include <iostream>
+#include <fstream>
 #include <map>
 
 using namespace std;
@@ -20,6 +21,34 @@ using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::qos::storage;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
+
+static unsigned long filesize(ifstream &ins)
+{
+   unsigned long s,e,c;
+   c = ins.tellg();        // save current file position
+   ins.seekg(0, ios::end); // position at end
+   e = ins.tellg();
+   ins.seekg(0, ios::beg); // position at beginning
+   s = ins.tellg();
+   ins.seekg(c);           // restore file position
+   return e-s;
+}
+
+int fileRead(string &fn, string &content)
+{
+   unsigned char *buf;
+   ifstream ins(fn.c_str(), ios_base::binary);
+   if (!ins.is_open()) return -1;
+   int   fs   = filesize(ins);
+   buf  = new unsigned char [fs+1];
+   buf[fs]    = 0; // so we can assign to string
+   ins.read((char *)buf,fs);
+   ins.close();
+   content = (char *)buf;
+   delete [] buf;
+   return fs;
+}
+
 
 class PublishDemo
 {
@@ -37,6 +66,7 @@ private:
    string domain;
    string clientTags;
    string contentStr;
+   string contentFile;
    PriorityEnum priority;
    bool persistent;
    long lifeTime;
@@ -109,6 +139,7 @@ void PublishDemo::initEnvironment()
    domain = global_.getProperty().get("domain", string(""));
    clientTags = global_.getProperty().get("clientTags", ""); // "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
    contentStr = global_.getProperty().get("content", "Hi-%counter");
+   contentFile = global_.getProperty().get("contentFile", "");
    priority = int2Priority(global_.getProperty().get("priority", NORM_PRIORITY));
    persistent = global_.getProperty().get("persistent", true);
    lifeTime = global_.getProperty().get("lifeTime", -1L);
@@ -156,6 +187,9 @@ void PublishDemo::initEnvironment()
    if (contentSize >= 0) {
       log_.info(ME, "   -content        [generated]");
       log_.info(ME, "   -contentSize    " + lexical_cast<string>(contentSize));
+   }
+   else if (contentFile.size() > 0) {
+      log_.info(ME, "   -contentFile    " + contentFile);
    }
    else {
       log_.info(ME, "   -content        " + contentStr);
@@ -268,6 +302,9 @@ void PublishDemo::publish()
          for (int j=0; j<contentSize; j++)
             contentTmp += "X";
       }
+      else if (contentFile.size() > 0) {
+         fileRead(contentFile, contentTmp);
+      }
       else {
          contentTmp = StringTrim::replaceAll(contentTmp, "%counter", lexical_cast<string>(i+1));
       }
@@ -287,6 +324,7 @@ void PublishDemo::publish()
       }
    }
 }
+
 
 static void usage(I_Log& log) 
 {
