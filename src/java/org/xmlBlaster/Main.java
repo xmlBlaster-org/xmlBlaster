@@ -579,11 +579,11 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
       System.out.println("   java org.xmlBlaster.Main -propertyFile somewhere/xmlblaster.properties -pluginsFile somewhere/plugins.xml");
       System.out.println("   java org.xmlBlaster.Main -bootstrapPort 3412");
       System.out.println("   java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/XmlBlaster_Ref.ior");
-      System.out.println("   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
-      System.out.println("   java org.xmlBlaster.Main -trace[mime] true -call[cluster] true -dump[corba] true");
-      System.out.println("   java org.xmlBlaster.Main -logFile /tmp/xmlBlaster.log -logDevice file,console");
+      System.out.println("   java org.xmlBlaster.Main -logging/org.xmlBlaster.engine FINE");
+      System.out.println("   java org.xmlBlaster.Main -logging/org.xmlBlaster.util.protocol.RequestReplyExecutor FINEST   (dumps SOCKET messages)");
       System.out.println("   java org.xmlBlaster.Main -plugin/xmlrpc/hostname 102.24.64.60 -plugin/xmlrpc/port 8081");
       System.out.println("   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main");
+      System.out.println("   java -Djava.util.logging.config.file=config/logging.properties org.xmlBlaster.Main");
       System.out.println("   java org.xmlBlaster.Main -?");
       System.out.println("See xmlBlaster.properties for more options");
       System.out.println("");
