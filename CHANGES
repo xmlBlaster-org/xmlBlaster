@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #15047 Added xmlBlaster ant task
+   This allows to access xmlBlaster from within ant with the xmlBlaster XML scripting language
+   See: http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/contrib/ant/XmlBlasterTask.html
+
  o #15041 Patch from Balázs Póka which makes defensive cast to URLClassLoader
    Allows Java WebStart and none standalone apps.
 
