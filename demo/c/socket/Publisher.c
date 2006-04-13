@@ -219,7 +219,7 @@ int main(int argc, char** argv)
             msgUnit.contentLen = contentSize;
          }
          else if (contentFile != 0) {
-			char* p = readFile(contentFile);
+                        char* p = readFile(contentFile);
             msgUnit.content = p;
             msgUnit.contentLen = strlen(msgUnit.content);
          }
@@ -318,43 +318,41 @@ char* readFile(const char *fn) {
    size_t nchread = 0;
    char *newbuf;
 
-   if((fp = fopen(fn, "r")) == NULL) {
+   if ((fp = fopen(fn, "r")) == NULL) {
       printf("Error Opening File %s.\n", fn);
       return 0;
    }
 
-	while((c = getc(fp)) != EOF) {
-		if(nchread >= nchmax) {
-			nchmax += 1024;
-			if(nchread >= nchmax) {	/* in case nchmax overflowed */
-				free(retbuf);
-				return NULL;
-			}
+   while ((c = getc(fp)) != EOF) {
+      if (nchread >= nchmax) {
+         nchmax += 1024;
+         if(nchread >= nchmax) { /* in case nchmax overflowed */
+            free(retbuf);
+            return NULL;
+         }
 #ifdef SAFEREALLOC
-			newbuf = realloc(retbuf, nchmax + 1);
+         newbuf = realloc(retbuf, nchmax + 1);
 #else
-			if(retbuf == NULL)	/* in case pre-ANSI realloc */
-				newbuf = malloc(nchmax + 1);
-			else	newbuf = realloc(retbuf, nchmax + 1);
+         if (retbuf == NULL)      /* in case pre-ANSI realloc */
+            newbuf = malloc(nchmax + 1);
+         else    newbuf = realloc(retbuf, nchmax + 1);
 #endif
-      		/* +1 for \0 */
-			if(newbuf == NULL) {
-				free(retbuf);
-				return NULL;
-			}
+         /* +1 for \0 */
+         if (newbuf == NULL) {
+            free(retbuf);
+            return NULL;
+         }
+         retbuf = newbuf;
+      }
+      retbuf[nchread++] = c;
+   }
 
-			retbuf = newbuf;
-		}
-		retbuf[nchread++] = c;
-	}
+   if(retbuf != NULL) {
+      retbuf[nchread] = '\0';
+      newbuf = realloc(retbuf, nchread + 1);
+      if(newbuf != NULL)
+         retbuf = newbuf;
+   }
 
-	if(retbuf != NULL) {
-		retbuf[nchread] = '\0';
-
-		newbuf = realloc(retbuf, nchread + 1);
-		if(newbuf != NULL)
-			retbuf = newbuf;
-	}
-
-	return retbuf;
+   return retbuf;
 }
