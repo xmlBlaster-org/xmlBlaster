@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #15041 Patch from Balázs Póka which makes defensive cast to URLClassLoader
+   Allows Java WebStart and none standalone apps.
+
  o #15038 Big topic DOM: Changed default encoding from ISO-8859-1 to UTF-8
    This is configurable with -xmlBlaster/topicDom/encoding for backward compatible behaviour
 
