@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.io.Reader;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.script.XmlScriptClient;
@@ -40,7 +39,6 @@ import org.xmlBlaster.util.MsgUnit;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.script.html">The client.script requirement</a>
  */
 public class XmlScript {
-   private static String ME = "XmlScript";
    private final Global glob;
    private static Logger log = Logger.getLogger(XmlScript.class.getName());
    private XmlScriptClient interpreter;
@@ -51,7 +49,6 @@ public class XmlScript {
 
    public XmlScript(Global glob, String inFile, String outFile, String updFile) {
       this.glob = glob;
-
       this.prepareForPublish = glob.getProperty().get("prepareForPublish", this.prepareForPublish);
 
       try {
