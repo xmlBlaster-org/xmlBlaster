@@ -69,7 +69,6 @@ import org.xmlBlaster.util.XmlBlasterException;
  *      ]]&gt 
  *   &lt;/xmlBlasterScript>
  * &lt;/target>
- *&lt;/project>
  * </pre>
  * @todo Some more configuration features like passing a xmlBlaster.properties file
  * @author Marcel Ruff
