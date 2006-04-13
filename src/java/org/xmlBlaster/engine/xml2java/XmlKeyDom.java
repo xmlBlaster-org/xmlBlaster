@@ -31,16 +31,16 @@ import org.w3c.dom.Element;
  * Building a DOM tree for XmlKeys.
  * <p />
  * This DOM tree contains the meta data from XmlKey:<br />
- * <pre>
- *  <?xml version='1.0' encoding='UTF-8' ?>
- *  <xmlBlaster>
- *    <key oid='abc' contentMime='text/plain'>
- *      <Hello/>
- *    </key>
- *    <key oid='xyz' contentMime='text/xml'>
- *      <World/>
- *    </key>
- *  </xmlBlaster>
+ * <pre>&lt;![CDATA[
+ *  &lt;?xml version='1.0' encoding='UTF-8' ?>
+ *  &lt;xmlBlaster>
+ *    &lt;key oid='abc' contentMime='text/plain'>
+ *      &lt;Hello/>
+ *    &lt;/key>
+ *    &lt;key oid='xyz' contentMime='text/xml'>
+ *      &lt;World/>
+ *    &lt;/key>
+ *  &lt;/xmlBlaster>]]>
  * </pre>
  * @author xmlBlaster@marcelruff.info
  */
