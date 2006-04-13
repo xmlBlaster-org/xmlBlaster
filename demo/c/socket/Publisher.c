@@ -14,6 +14,8 @@ See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.ht
 #include <string.h>
 #include <XmlBlasterAccessUnparsed.h>
 
+char* readFile(const char *fn);
+
 /**
  * Demo client to publish messages. 
  * Not all PublishQos functionality is implemented.
@@ -101,11 +103,11 @@ int main(int argc, char** argv)
       char key[4098];
       const char *oid = xa->props->getString(xa->props, "oid", "Hello");
       const char *domain = xa->props->getString(xa->props, "domain", 0);
+      bool interactive = xa->props->getBool(xa->props, "interactive", true);
 
       char qos[4098];
       char topicQos[2048];
       char destinationQos[2048];
-      bool interactive = xa->props->getBool(xa->props, "interactive", true);
       bool oneway = xa->props->getBool(xa->props, "oneway", false);
       long sleep = xa->props->getLong(xa->props, "sleep", 1000L);
       int numPublish = xa->props->getInt(xa->props, "numPublish", 1);
@@ -126,6 +128,7 @@ int main(int argc, char** argv)
       bool subscribable = xa->props->getBool(xa->props, "subscribable", true);
       const char *destination = xa->props->getString(xa->props, "destination", 0);
       int contentSize = xa->props->getInt(xa->props, "contentSize", -1);
+      const char *contentFile = xa->props->getString(xa->props, "contentFile", 0);
       /*Map clientPropertyMap = xa->props->getInt(xa->props, "clientProperty", (Map)0); */
 
       publishToken = (domain == 0) ? oid : domain;
@@ -215,6 +218,11 @@ int main(int argc, char** argv)
             msgUnit.content = p;
             msgUnit.contentLen = contentSize;
          }
+         else if (contentFile != 0) {
+			char* p = readFile(contentFile);
+            msgUnit.content = p;
+            msgUnit.contentLen = strlen(msgUnit.content);
+         }
          else {
             const char *pc = strstr(content, "%counter");
             if (pc) { /* Replace '%counter' token by current index */
@@ -256,6 +264,8 @@ int main(int argc, char** argv)
 
    while (true) {
       char msg[20];
+      bool interactive = xa->props->getBool(xa->props, "interactiveQuit", true);
+      if (!interactive) break;
                   
       printf("(Enter 'q' to exit) >> ");
       fgets(msg, 19, stdin);
@@ -300,3 +310,51 @@ int main(int argc, char** argv)
    return 0;
 }
 
+char* readFile(const char *fn) {
+   FILE *fp;
+   char *retbuf = NULL;
+   size_t nchmax = 0;
+   register int c;
+   size_t nchread = 0;
+   char *newbuf;
+
+   if((fp = fopen(fn, "r")) == NULL) {
+      printf("Error Opening File %s.\n", fn);
+      return 0;
+   }
+
+	while((c = getc(fp)) != EOF) {
+		if(nchread >= nchmax) {
+			nchmax += 1024;
+			if(nchread >= nchmax) {	/* in case nchmax overflowed */
+				free(retbuf);
+				return NULL;
+			}
+#ifdef SAFEREALLOC
+			newbuf = realloc(retbuf, nchmax + 1);
+#else
+			if(retbuf == NULL)	/* in case pre-ANSI realloc */
+				newbuf = malloc(nchmax + 1);
+			else	newbuf = realloc(retbuf, nchmax + 1);
+#endif
+      		/* +1 for \0 */
+			if(newbuf == NULL) {
+				free(retbuf);
+				return NULL;
+			}
+
+			retbuf = newbuf;
+		}
+		retbuf[nchread++] = c;
+	}
+
+	if(retbuf != NULL) {
+		retbuf[nchread] = '\0';
+
+		newbuf = realloc(retbuf, nchread + 1);
+		if(newbuf != NULL)
+			retbuf = newbuf;
+	}
+
+	return retbuf;
+}
