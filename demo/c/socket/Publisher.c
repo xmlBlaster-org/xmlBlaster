@@ -170,7 +170,10 @@ int main(int argc, char** argv)
                sleepMillis(sleep);
             }
             if (verbose) {
-               printf("[client] Publish '%s' #%d/%d", oid, iPublish, numPublish);
+               if (contentFile != 0)
+                  printf("[client] Publish to topic '%s' file '%s' #%d/%d\n", oid, contentFile, iPublish, numPublish);
+               else
+                  printf("[client] Publish to topic '%s' #%d/%d\n", oid, iPublish, numPublish);
             }
          }
 
