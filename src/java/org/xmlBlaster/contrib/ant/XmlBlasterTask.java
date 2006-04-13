@@ -16,36 +16,65 @@ import org.xmlBlaster.util.XmlBlasterException;
 /**
  * Access xmlBlaster from within ant. 
  * <p>
- * Example:
- * <pre><code>
-&lt;project name="xmlBlaster" default="publish" basedir=".">
-
-  &lt;taskdef name="xmlBlaster"
-           classname="org.xmlBlaster.contrib.ant.XmlBlasterTask"
-           classpath="build.tmp/classes:lib/xmlBlaster.jar"/>
-
-  &lt;target name="publish">
-    &lt;xmlBlaster>
-        &lt;![CDATA[
-         &lt;xmlBlaster>
-           &lt;connect/>
-           &lt;publish>&lt;key oid="1">&lt;airport />&lt;/key>&lt;content>Hallo from ANT>&lt;/content>&lt;/publish>
-           &lt;subscribe>&lt;key queryType="XPATH">//airport&lt;/key>&lt;qos/>&lt;/subscribe>
-           &lt;input message="Press key"/>
-           &lt;publish>&lt;key oid="2">&lt;airport />&lt;/key>&lt;content>Hi again&lt;/content>&lt;/publish>
-           &lt;wait delay="2000" />
-           &lt;erase>&lt;key oid="1">&lt;/key>&lt;qos>&lt;force/>&lt;/qos>&lt;/erase>
-           &lt;erase>&lt;key oid="2">&lt;/key>&lt;qos/>&lt;/erase>
-           &lt;wait delay="500" />
-           &lt;disconnect />
-         &lt;/xmlBlaster>
-        ]]&gt;
-    &lt;/xmlBlaster>
-  &lt;/target>
-&lt;/project>
- * </code></pre>
+ * The usage is simple, here are the steps to follow.<br />
+ * Edit your <code>build.xml</code> file and register the xmlBlaster task:
+ * <p>
+ * <pre>
+ *&lt;project name="xmlBlaster" default="publish" basedir=".">
+ *
+ *  &lt;taskdef name="xmlBlasterScript"
+ *          classname="org.xmlBlaster.contrib.ant.XmlBlasterTask"
+ *          classpath="build.tmp/classes:lib/xmlBlaster.jar"/>
+ *
+ *  ...
+ *
+ *&lt;/project>
+ * </pre>
+ * The only tricky part is to choose the classpath setting, it
+ * must include at least the xmlBlaster client library and this class itself.
+ * <p>
+ * <p>
+ * 
+ * Example task using files:
+ * <pre>
+ *&lt;target name="usingFiles">
+ *   &lt;xmlBlasterScript
+ *       scriptFile="myXblScript.xml"
+ *       responseFile="methodReturn.xml"
+ *       updateFile="asyncResponses.xml"/>
+ *&lt;/target>
+ * </pre>
+ * You have to provide the <code>myXblScript.xml</code> file content, its format is defined
+ * in the requirement <code>client.script</code>.<br />
+ * The other two files are generated during execution.
+ * <p/>
+ * Example task with embedded script and output to console:
+ * <pre>
+ *  &lt;target name="publish">
+ *    &lt;xmlBlasterScript>
+ *      &lt;!-- This is the script executed -->
+ *      &lt;![CDATA[
+ *        &lt;xmlBlaster>
+ *          &lt;connect/>
+ *          &lt;publish>&lt;key oid="1">&lt;airport />&lt;/key>&lt;content>Hallo from ANT>&lt;/content>&lt;/publish>
+ *          &lt;subscribe>&lt;key queryType="XPATH">//airport&lt;/key>&lt;qos/>&lt;/subscribe>
+ *          &lt;input message="Press key"/>
+ *          &lt;publish>&lt;key oid="2">&lt;airport />&lt;/key>&lt;content>Hi again&lt;/content>&lt;/publish>
+ *          &lt;wait delay="2000" />
+ *          &lt;erase>&lt;key oid="1">&lt;/key>&lt;qos>&lt;force/>&lt;/qos>&lt;/erase>
+ *          &lt;erase>&lt;key oid="2">&lt;/key>&lt;qos/>&lt;/erase>
+ *          &lt;wait delay="500" />
+ *          &lt;disconnect />
+ *        &lt;/xmlBlaster>
+ *      ]]&gt 
+ *   &lt;/xmlBlasterScript>
+ * &lt;/target>
+ *&lt;/project>
+ * </pre>
+ * @todo Some more configuration features like passing a xmlBlaster.properties file
  * @author Marcel Ruff
  * @see http://ant.apache.org/manual/index.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
  */
 public class XmlBlasterTask extends Task {
 
@@ -53,11 +82,11 @@ public class XmlBlasterTask extends Task {
     private Global glob;
     private String xmlBlasterScript;
     private String scriptFile;
-    private String outFile;
+    private String responseFile;
     private String updateFile;
     private Reader reader;
-    private OutputStream outStream;
-    private OutputStream updStream;
+    private OutputStream responseStream;
+    private OutputStream updateStream;
     private XmlScriptClient interpreter;
     private boolean prepareForPublish;
 
@@ -80,18 +109,18 @@ public class XmlBlasterTask extends Task {
              throw new BuildException("Please provide a script");
           }
           
-          if (this.outFile == null)
-             this.outStream = System.out;
+          if (this.responseFile == null)
+             this.responseStream = System.out;
           else {
-             this.outStream = new FileOutputStream(outFile);
+             this.responseStream = new FileOutputStream(this.responseFile);
           }
           
           if (this.updateFile == null)
-             this.updStream = this.outStream;
+             this.updateStream = this.responseStream;
           else {
-             this.updStream = new FileOutputStream(updateFile);
+             this.updateStream = new FileOutputStream(this.updateFile);
           }
-          this.interpreter = new XmlScriptClient(this.glob, this.glob.getXmlBlasterAccess(), this.outStream, this.updStream, null);
+          this.interpreter = new XmlScriptClient(this.glob, this.glob.getXmlBlasterAccess(), this.updateStream, this.responseStream, null);
 
           if (this.prepareForPublish) {
              this.interpreter.registerMsgUnitCb(new I_MsgUnitCb() {
@@ -130,11 +159,11 @@ public class XmlBlasterTask extends Task {
    /**
     * @param outFile The outFile to set.
     */
-   public void setOutFile(String outFile) {
-      if (outFile == null || outFile.trim().length() < 1)
-         this.outFile = null;
+   public void setResponseFile(String responseFile) {
+      if (responseFile == null || responseFile.trim().length() < 1)
+         this.responseFile = null;
       else
-         this.outFile = outFile;
+         this.responseFile = responseFile;
    }
 
    /**
