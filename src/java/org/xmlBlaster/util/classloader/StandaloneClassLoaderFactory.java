@@ -137,11 +137,13 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
       else
          classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
 
-      URL[] urls = ((URLClassLoader)this.getClass().getClassLoader()).getURLs();
-      for (int i=0; i<urls.length; i++) {
-         String xmlBlasterJar = (String)classPath.get(0);
-         if( urls[i].getFile().indexOf(xmlBlasterJar) < 0 ) {
-            classPath.add(urls[i].getFile());
+      if (this.getClass().getClassLoader() instanceof URLClassLoader) {
+         URL[] urls = ((URLClassLoader)this.getClass().getClassLoader()).getURLs();
+         for (int i=0; i<urls.length; i++) {
+            String xmlBlasterJar = (String)classPath.get(0);
+            if( urls[i].getFile().indexOf(xmlBlasterJar) < 0 ) {
+               classPath.add(urls[i].getFile());
+            }
          }
       }
 
