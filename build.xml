@@ -96,6 +96,7 @@ TODO
    <property name="classes.dir" value="./classes"/>
    <property name="javadoc.dir" value="./doc/api"/>
    <property name="javadoc.client.dir" value="./doc/client-api"/>
+   <property name="javadoc.contrib.dir" value="./doc/contrib-api"/>
    <property name="testsuite.dir" value="./testsuite"/>
    <property name="testsuite.java.dir" value="./testsuite/src/java"/>
    <property name="demo.dir" value="./demo"/>
@@ -1235,7 +1236,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates complete documentation                                      -->
    <!-- =================================================================== -->
-   <target name="docs" depends="xmlBlaster,javadocs-client,javadocs,html,requirements,whitepaper" description="Creates the complete documentation (javadoc, source-html, requirements>">
+   <target name="docs" depends="xmlBlaster,javadocs-client,javadocs-contrib,javadocs,html,requirements,whitepaper" description="Creates the complete documentation (javadoc, source-html, requirements>">
    </target>
    <target name="docs-delete" depends="javadocs-delete,html-delete,requirements-delete,whitepaper-delete" description="Remoces all documentation (javadoc, source-html, requirements>">
    </target>
@@ -1266,7 +1267,7 @@ TODO
    <!-- Creates the javadoc documentation                                   -->
    <!-- =================================================================== -->
    <target name="javadocs-client" description="Creates the client side javadoc documentation">
-      <echo message="Creating javadoc documentation"/>
+      <echo message="Creating client javadoc documentation"/>
       <mkdir dir="${javadoc.client.dir}"/>
       <!-- sourcefiles="${demo.dir}/HelloWorld.java,${demo.dir}/HelloWorld2.java,${demo.dir}/HelloWorld3.java,${demo.dir}/HelloWorld4.java,${demo.dir}/HelloWorld5.java,${demo.dir}/HelloWorld6.java" -->
       <javadoc packagenames="org.xmlBlaster.client.*,org.xmlBlaster.util.*,javaclients,http.*,html.*"
@@ -1288,9 +1289,32 @@ TODO
                bottom="Copyright &#169; ${year} The xmlBlaster.org contributers." />
       <!-- javadoc does not like missing package names in demo.dir:  sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}:${demo.java.dir}" -->
    </target>
+   <target name="javadocs-contrib" description="Creates the contributions javadoc documentation">
+      <echo message="Creating contributions javadoc documentation"/>
+      <mkdir dir="${javadoc.contrib.dir}"/>
+      <!-- sourcefiles="${demo.dir}/HelloWorld.java,${demo.dir}/HelloWorld2.java,${demo.dir}/HelloWorld3.java,${demo.dir}/HelloWorld4.java,${demo.dir}/HelloWorld5.java,${demo.dir}/HelloWorld6.java" -->
+      <javadoc packagenames="org.xmlBlaster.contrib.*"
+               sourcepath="${src.java.dir}:${demo.dir}"
+               excludepackagenames=""
+               classpath="${cp}"
+               maxmemory="256m"
+               destdir="${javadoc.contrib.dir}"
+               protected="true"
+               package="false"
+               private="false"
+               author="true"
+               version="true"
+               use="true"
+               windowtitle="xmlBlaster ${version} contributions API"
+               doctitle="&lt;h1&gt;xmlBlaster contributions API&lt;/h1&gt;"
+               header="xmlBlaster ${version} contributions API"
+               bottom="Copyright &#169; ${year} The xmlBlaster.org contributers." />
+      <!-- javadoc does not like missing package names in demo.dir:  sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}:${demo.java.dir}" -->
+   </target>
    <target name="javadocs-delete" description="Removes the javadoc documentation">
       <delete dir="${javadoc.dir}" failonerror="false"/>
       <delete dir="${javadoc.client.dir}" failonerror="false"/>
+      <delete dir="${javadoc.contrib.dir}" failonerror="false"/>
    </target>
 
    <!-- =================================================================== -->
