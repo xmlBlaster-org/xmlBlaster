@@ -576,7 +576,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
       System.out.println("Example:");
       System.out.println("   java org.xmlBlaster.Main -cluster false");
       System.out.println("   java org.xmlBlaster.Main -cluster.node.id heron");
-      System.out.println("   java org.xmlBlaster.Main -propertyFile somewhere/xmlblaster.properties -pluginsFile somewhere/plugins.xml");
+      System.out.println("   java org.xmlBlaster.Main -propertyFile somewhere/xmlBlaster.properties -pluginsFile somewhere/plugins.xml");
       System.out.println("   java org.xmlBlaster.Main -bootstrapPort 3412");
       System.out.println("   java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/XmlBlaster_Ref.ior");
       System.out.println("   java org.xmlBlaster.Main -logging/org.xmlBlaster.engine FINE");
