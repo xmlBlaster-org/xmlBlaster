@@ -5,14 +5,18 @@ import java.io.FileReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Hashtable;
+import java.util.Properties;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+
 import org.xmlBlaster.client.script.I_MsgUnitCb;
 import org.xmlBlaster.client.script.XmlScriptClient;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+
 /**
  * Access xmlBlaster from within ant. 
  * <p>
@@ -48,21 +52,23 @@ import org.xmlBlaster.util.XmlBlasterException;
  * in the requirement <code>client.script</code>.<br />
  * The other two files are generated during execution.
  * <p/>
- * Example task with embedded script and output to console:
+ * Example task with embedded script and output to console.<br />
+ * We set a property to run without database on client side,
+ * then we connect and subscribe to topic <code>Hello</code>.
+ * After you press a key we publish such a message and receive it asynchronously:
  * <pre>
  *  &lt;target name="publish">
  *    &lt;xmlBlasterScript>
  *      &lt;!-- This is the script executed -->
  *      &lt;![CDATA[
  *        &lt;xmlBlaster>
+ *          &lt;property name="queue/connection/defaultPlugin">RAM,1.0&lt;/property>
  *          &lt;connect/>
- *          &lt;publish>&lt;key oid="1">&lt;airport />&lt;/key>&lt;content>Hallo from ANT>&lt;/content>&lt;/publish>
- *          &lt;subscribe>&lt;key queryType="XPATH">//airport&lt;/key>&lt;qos/>&lt;/subscribe>
- *          &lt;input message="Press key"/>
- *          &lt;publish>&lt;key oid="2">&lt;airport />&lt;/key>&lt;content>Hi again&lt;/content>&lt;/publish>
+ *          &lt;subscribe>&lt;key oid="Hello"/>&lt;qos/>&lt;/subscribe>
+ *          &lt;input message="Subscribed to 'hello', press a key to publish"/>
+ *          &lt;publish>&lt;key oid="Hello">&lt;/key>&lt;content>Hallo from ANT>&lt;/content>&lt;/publish>
  *          &lt;wait delay="2000" />
- *          &lt;erase>&lt;key oid="1">&lt;/key>&lt;qos>&lt;force/>&lt;/qos>&lt;/erase>
- *          &lt;erase>&lt;key oid="2">&lt;/key>&lt;qos/>&lt;/erase>
+ *          &lt;erase>&lt;key oid="Hello"/>&lt;qos/>&lt;/erase>
  *          &lt;wait delay="500" />
  *          &lt;disconnect />
  *        &lt;/xmlBlaster>
@@ -70,32 +76,70 @@ import org.xmlBlaster.util.XmlBlasterException;
  *   &lt;/xmlBlasterScript>
  * &lt;/target>
  * </pre>
- * @todo Some more configuration features like passing a xmlBlaster.properties file
+ * <p>
+ * In the following example we set verbosity to 3 (max), use the
+ * given xmlBlaster.properties,
+ * configure the JDK 1.4 logging for the xmlBlaster client library
+ * and inherit all properties from ant to xmlBlaster-Global scope: 
+ * <pre>
+ *&lt;target name="usingFiles">
+ *   &lt;xmlBlasterScript
+ *       scriptFile="myXblScript.xml"
+ *       responseFile="methodReturn.xml"
+ *       updateFile="asyncResponses.xml"
+ *       verbose="3"
+ *       propertyFile="/tmp/xmlBlaster.properties"
+ *       loggingFile="logging.properties"
+ *       inheritAll="true"
+ *       />
+ *&lt;/target>
+ * <p>Note that the ant properties are weakest, followed by xmlBlaster.properties settings
+ * and the &lt;property> tags in the script are strongest.
+ * </p>
+ * @todo Resolve class loader problem, classes loaded by reflection inside the xmlBlaster client library are not found
  * @author Marcel Ruff
- * @see http://ant.apache.org/manual/index.html
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html">http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html</a>
+ * @see <a href="http://ant.apache.org/manual/index.html">http://ant.apache.org/manual/index.html</a>
  */
 public class XmlBlasterTask extends Task {
 
-    private int verbose;
+    private int verbose=1;
     private Global glob;
     private String xmlBlasterScript;
     private String scriptFile;
     private String responseFile;
     private String updateFile;
+    private String propertyFile;
+    private String loggingFile;
     private Reader reader;
+    private boolean inheritAll;
     private OutputStream responseStream;
     private OutputStream updateStream;
     private XmlScriptClient interpreter;
     private boolean prepareForPublish;
 
     public void execute() throws BuildException {
-       if (verbose > 0)  System.out.println("execute() called");
+       if (verbose > 1)  log("execute() called");
        
        String message = getProject().getProperty("ant.project.name");
-       log("Here is project '" + message + "' used in: " +  getLocation());
+       if (verbose > 0) log("Here is project '" + message + "' used in: " +  getLocation());
        
        this.glob = Global.instance();
+       
+       Hashtable antProperties = getProject().getProperties();
+       Hashtable props = (inheritAll) ? antProperties : new Properties();
+       
+       if (this.propertyFile != null)
+          props.put("propertyFile", this.propertyFile);
+
+       if (this.loggingFile != null)
+          props.put("java.util.logging.config.file", this.loggingFile);
+       
+       // Nested tags (antcall): <param name="param1" value="value"/>
+       // (ant): <property name="param1" value="version 1.x"/>
+       
+       if (props.size() > 0)
+          this.glob.init(props);
        
        try {
           if (this.scriptFile != null) {
@@ -129,6 +173,10 @@ public class XmlBlasterTask extends Task {
                 }
              });
           }
+
+          if (verbose > 0)  System.out.println("scriptFile=" + this.scriptFile + " propertyFile=" + this.propertyFile + " loggingFile=" + this.loggingFile);
+          if (verbose > 2)  System.out.println(this.glob.getProperty().toXml());
+          
           this.interpreter.parse(this.reader);
        }
        catch (XmlBlasterException e) {
@@ -142,6 +190,10 @@ public class XmlBlasterTask extends Task {
        }
     }
 
+    /**
+     * Set verbosity from 0 (silent) to 3 (chatterbox). 
+     * @param level defaults to 1
+     */
     public void setVerbose(int level) {
        this.verbose = level;
     }
@@ -152,11 +204,12 @@ public class XmlBlasterTask extends Task {
      */
     public void addText(String text) {
        this.xmlBlasterScript = text;
-       log("Your script to execute: " + text);
+       if (verbose > 0) log("Your script to execute: " + text);
     }
 
    /**
-    * @param outFile The outFile to set.
+    * The file whereto dump the method invocation return values. 
+    * @param responseFile The outFile to set, for example "/tmp/responses.xml"
     */
    public void setResponseFile(String responseFile) {
       if (responseFile == null || responseFile.trim().length() < 1)
@@ -176,7 +229,8 @@ public class XmlBlasterTask extends Task {
    }
 
    /**
-    * @param updateFile The updateFile to set.
+    * Where shall the update messages be dumped to. 
+    * @param updateFile The updateFile to set, for example "/tmp/updates.xml"
     */
    public void setUpdateFile(String updateFile) {
       if (updateFile == null || updateFile.trim().length() < 1)
@@ -192,6 +246,36 @@ public class XmlBlasterTask extends Task {
       this.prepareForPublish = prepareForPublish;
    }
 
-   public static void main(String[] args) {
+   /**
+    * The <code>xmlBlaster.properties</code> to use. 
+    * @param propertyFile The propertyFile to set, e.g. "/tmp/xmlBlaster.properties"
+    */
+   public void setPropertyFile(String propertyFile) {
+      if (propertyFile == null || propertyFile.trim().length() < 1)
+         this.propertyFile = null;
+      else
+         this.propertyFile = propertyFile;
+   }
+
+   /**
+    * The <code>logging.properties</code> to use. 
+    * <p>
+    * Set the JDK1.4 logging configuration for the xmlBlaster client library
+    * @param loggingFile The loggingFile to set, e.g. "/tmp/logging.properties"
+    */
+   public void setLoggingFile(String loggingFile) {
+      if (loggingFile == null || loggingFile.trim().length() < 1)
+         this.loggingFile = null;
+      else
+         this.loggingFile = loggingFile;
+   }
+
+   /**
+    * If set to <code>true</code> all properties from the ant build file
+    * are inheretid to the Global scope as properties.
+    * @param inheritAll The inheritAll to set, defaults to false
+    */
+   public void setInheritAll(boolean inheritAll) {
+      this.inheritAll = inheritAll;
    }
 }
