@@ -80,6 +80,18 @@
 &lt;replaceKeyTokens/>
 &lt;replaceContentTokens/>
     </pre>
+
+     <h2>Setting configuration properties</h2>
+     <p>At the beginning of the script you can set configuration properties,
+     similar you would do it from <code>xmlBlaster.properties</code>:</p>
+<pre class="BORDER">
+&lt;xmlBlaster>
+   &lt;property name="queue/connection/defaultPlugin">RAM,1.0&lt;/property>
+   &lt;connect/>
+   ...
+     </pre>
+
+
    </description>
 
    <example lang="any" type="HTML">
