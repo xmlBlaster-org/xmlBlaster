@@ -1353,18 +1353,18 @@ public class Property implements Cloneable {
    /**
     * Convert a properties hashtable to a String array with leading "-" in front of the keys
     */
-   public static String[] propsToArgs(Properties props)
+   public static String[] propsToArgs(Map props)
    {
       if (props == null) return new String[0];
 
       String[] args = new String[props.size()*2];
-      Enumeration e = props.keys();
+      Iterator e = props.keySet().iterator();
       int ii = 0;
-      while (e.hasMoreElements()) {
-         String key = (String)e.nextElement();
+      while (e.hasNext()) {
+         String key = (String)e.next();
          args[ii] = "-"+key;
          ii++;
-         args[ii] = props.getProperty(key);
+         args[ii] = (String)props.get(key);
          //System.out.println("ii=" + ii + ": " + args[ii] + " key=" + key);
          ii++;
       }
