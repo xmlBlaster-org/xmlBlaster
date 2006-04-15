@@ -9,6 +9,7 @@ package org.xmlBlaster.util.qos.address;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
@@ -35,9 +36,8 @@ import java.util.Properties;
  * @see CallbackAddress
  * @see org.xmlBlaster.test.classtest.qos.AddressBaseTest
  */
-public abstract class AddressBase
+public abstract class AddressBase implements Cloneable
 {
-   private static final String ME = "AddressBase";
    protected final Global glob;
    private static Logger log = Logger.getLogger(AddressBase.class.getName());
 
@@ -156,13 +156,23 @@ public abstract class AddressBase
       setRootTag(rootTag);
    }
 
-   /**
+   /*
     * @throws IllegalArgumentException Not implemented. 
-    */
+    
    public Object clone() {
       throw new IllegalArgumentException("AddressBase.clone() is not implemented");
    }
-
+*/
+   public AddressBase getClone() {
+      try {
+         AddressBase s = (AddressBase)super.clone();
+          return s;
+      } catch (CloneNotSupportedException e) {
+          //This shouldn't happen because we implement Cloneable.
+          throw new AssertionError();
+      }
+   }
+   
    /**
     * Configure property settings. 
     * "-/node/heron/dispatch/connection/delay 20" has precedence over "-delay 10"

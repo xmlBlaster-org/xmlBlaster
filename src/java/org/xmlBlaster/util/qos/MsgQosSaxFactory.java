@@ -5,7 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.logging.Logger;
+
+import org.hsqldb.lib.FileUtil;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
@@ -920,4 +925,26 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    public void sendRemainingLife(boolean sendRemainingLife) { this.sendRemainingLife = sendRemainingLife; }
    public boolean sendRemainingLife() { return this.sendRemainingLife; }
 
+   // java org.xmlBlaster.util.qos.MsgQosSaxFactory cp1252.xml
+	public static void main(String[] args) {
+      String fn = args[0];
+      Global glob = Global.instance();
+      MsgQosSaxFactory f = new MsgQosSaxFactory(glob);
+      String xml;
+      try {
+         xml = FileLocator.readAsciiFile(fn);
+         //xml = new String(FileLocator.readFile(fn), "windows-1252");
+         MsgQosData data = f.readObject(xml);
+         String newXml = data.toXml();
+         System.out.println("CP1252=" + data.getClientProperty("CP1252"));
+         System.out.println(newXml);
+         FileOutputStream to = new FileOutputStream(fn+".xml", false);
+         String enc = "UTF-8"; //"UTF-16"; // "cp1252";
+         newXml = "<?xml version='1.0' encoding='"+enc+"' standalone='yes'?>"+newXml;
+         to.write(newXml.getBytes(enc));
+         to.close();
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+	}
 }

@@ -684,7 +684,7 @@ public class Global implements Cloneable
     * Calls init(String[] args), the props keys have no leading "-". 
     * @return 1 Show usage, 0 OK, -1 error
     */
-   public int init(Properties props) {
+   public int init(Map props) {
       return init(Property.propsToArgs(props));
    }
 

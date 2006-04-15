@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import java.io.*;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
@@ -123,6 +124,21 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
 
 
    private void parse(String xmlData) throws XmlBlasterException {
+      /*
+      byte[] xmlRaw = new byte[0];
+      try {
+         //xmlRaw = xmlData.getBytes("windows-1252");
+         //xmlRaw = xmlData.getBytes("UTF-8");
+         xmlRaw = xmlData.getBytes();
+         //xmlRaw = xmlData.getBytes("UTF-16");
+      } catch (Throwable e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      InputStream inBytes = new ByteArrayInputStream(xmlRaw);
+      InputSource inputSource = new InputSource(inBytes);
+      parse(inputSource);
+      */
       parse(new InputSource(new StringReader(xmlData)));
    }
 
@@ -141,9 +157,13 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
          SAXParser sp = spf.newSAXParser();
          XMLReader parser = sp.getXMLReader();
 
+         //parser.setEntityResolver(EntityResolver resolver);
+         //parser.setFeature("http://xml.org/sax/features/validation", true);
+         //parser.setFeature("http://apache.org/xml/features/validation/schema", true);
+         //parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true);
          parser.setContentHandler(this);
          parser.setErrorHandler(this); // !!! new MyErrorHandler ());
-
+         
          /*
          final boolean useLexicalHandler = true; // switch on to get CDATA events
          */

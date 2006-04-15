@@ -20,7 +20,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -153,6 +152,13 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       return msgInfos;
    }
 
+   /**
+    * Called during XML parsing.
+    */
+   public void setProperty(String key, String value) throws XmlBlasterException {
+      this.glob.getProperty().set(key, value);
+   }
+   
    /**
     * Called during XML parsing.
     */

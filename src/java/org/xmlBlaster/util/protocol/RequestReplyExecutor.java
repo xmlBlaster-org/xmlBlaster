@@ -105,7 +105,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    protected void initialize(Global glob, AddressBase addressConfig) {
       this.glob = (glob == null) ? Global.instance() : glob;
 
-      this.addressConfig = addressConfig;
+      this.addressConfig = addressConfig.getClone();
       this.ME = RequestReplyExecutor.class.getName() + ":" + addressConfig.getRawAddress();
 
       setMinSizeForCompression((int)this.addressConfig.getMinSize());
