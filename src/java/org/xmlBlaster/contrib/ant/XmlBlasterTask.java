@@ -93,6 +93,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  *       inheritAll="true"
  *       />
  *&lt;/target>
+ * </pre>
  * <p>Note that the ant properties are weakest, followed by xmlBlaster.properties settings
  * and the &lt;property> tags in the script are strongest.
  * </p>
