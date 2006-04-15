@@ -117,6 +117,8 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    private String sessionId;
    private String requestId;
    private byte type; // I=invoke R=response E=exception
+   private String  propertyName;
+   private boolean inProperty;
 
    /** the attachments (some contents can be in the attachments) */
    private HashMap attachments;
@@ -307,7 +309,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          this.replaceKeyTokens = true;
          return;
       }
-
+      
       if (KEY_TAG.equals(qName)) {
          this.inKey++;
          this.key.setLength(0);
@@ -407,6 +409,13 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          this.needsRootEndTag = true;
          return;
       }
+
+      if ("property".equals(qName)) {
+         this.inProperty = true;
+         // <property name='transactionId'>Something&lt;/property>
+         this.propertyName = atts.getValue("name");
+         return;
+      }
    }
 
    /**
@@ -453,6 +462,11 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
     */
    abstract public boolean fireMethod(MethodName methodName,
          String sessionId, String requestId, byte type) throws XmlBlasterException;
+
+   /**
+    * Set a property into Global scope. 
+    */
+   abstract public void setProperty(String key, String value) throws XmlBlasterException;
 
    /**
     * Fires the given xmlBlaster command and sends the response to the output stream
@@ -592,6 +606,14 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          }
          // comes here since the end tag is not part of the content
          if (this.inContent > 0) appendEndOfElement(this.content, qName);
+
+         if ("property".equals(qName) && this.inProperty) {
+            this.inProperty = false;
+            if (this.propertyName != null) {
+               setProperty(this.propertyName, character.toString().trim());
+            }
+            return;
+         }
 
          if (this.commandsToFire.contains(qName)) {
             appendEndOfElement(this.character, qName);

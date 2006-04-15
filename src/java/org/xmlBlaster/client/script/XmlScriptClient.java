@@ -123,6 +123,10 @@ public class XmlScriptClient extends XmlScriptInterpreter {
       this.msgUnitCb = msgUnitCb;
    }
    
+   public void setProperty(String key, String value) throws XmlBlasterException {
+      this.glob.getProperty().set(key, value);
+   }
+   
    public boolean fireMethod(MethodName methodName,
          String sessionId, String requestId, byte type)
          throws XmlBlasterException {
