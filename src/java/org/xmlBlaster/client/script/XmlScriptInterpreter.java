@@ -612,6 +612,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
             if (this.propertyName != null) {
                setProperty(this.propertyName, character.toString().trim());
             }
+            character.setLength(0);
             return;
          }
 
