@@ -19,7 +19,7 @@ import java.util.Properties;
  * &lt;/address>
  * </pre>
  */
-public class AddressServer extends AddressBase
+public class AddressServer extends AddressBase implements Cloneable
 {
    private Object remoteAddress;
 
@@ -45,7 +45,7 @@ public class AddressServer extends AddressBase
     * IP and port here.
     * @return For example getRemoteAddress().toString() = "socket://192.168.1.2:64794"
     *         Can be null depending on the protocol plugin.<br />
-    *         For example the SOCKET protocol returns an "org.xmlBlaster.protocol.socket.SocketUrl" instance
+    *         For example the SOCKET protocol returns an "org.xmlBlaster.util.protocol.socket.SocketUrl" instance
     */
    public Object getRemoteAddress() {
       return this.remoteAddress;
@@ -67,6 +67,16 @@ public class AddressServer extends AddressBase
    /** @return The literal address as given by getAddressServer() */
    public String toString() {
       return getRawAddress();
+   }
+   
+   public AddressBase getClone() {
+      try {
+         AddressServer s = (AddressServer)super.clone();
+          return s;
+      } catch (CloneNotSupportedException e) {
+          //This shouldn't happen because we implement Cloneable.
+          throw new AssertionError();
+      }
    }
 }
 
