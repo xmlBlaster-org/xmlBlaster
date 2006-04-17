@@ -6,6 +6,8 @@ Comment:   Holding destination address attributes
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.def;
 
+import org.xmlBlaster.jms.XBConnectionMetaData;
+
 
 /**
  * Holding some Constants
@@ -235,19 +237,24 @@ public class Constants {
    /** This is the key of a client property telling the number of 
     * this chunk in the sequence. The value itself is a long.
     */
-   public final static String CHUNK_SEQ_NUM = "__CHUNK_SEQ_NUM";
+   // public final static String CHUNK_SEQ_NUM = "__CHUNK_SEQ_NUM";
+   public final static String CHUNK_SEQ_NUM = XBConnectionMetaData.JMSX_GROUP_SEQ;
    
    /** If this exists it is always set to boolean 'true' */
-   public final static String CHUNK_EOF = "__CHUNK_EOF";
+   // public final static String CHUNK_EOF = "__CHUNK_EOF";
+   public final static String CHUNK_EOF = XBConnectionMetaData.JMSX_GROUP_EOF;
    
    /** If set, an exception occured in this chunk. It contains the 
     * exception. It is used to perform clean up in case of exceptions.
     */
-   public final static String CHUNK_EXCEPTION = "__CHUNK_EXCEPTION";
+   // public final static String CHUNK_EXCEPTION = "__CHUNK_EXCEPTION";
+   public final static String CHUNK_EXCEPTION = XBConnectionMetaData.JMSX_GROUP_EX;
    
    /** This is the same for all chunks in a message. It shall be a 
     * globally unique Identifier. */
-   public final static String STREAM_ID = "__STREAM_ID";
+   // public final static String STREAM_ID = "__STREAM_ID";
+   public final static String STREAM_ID = XBConnectionMetaData.JMSX_GROUP_ID;
+
    
    /** Mimetypes */
    // see @apache/mime.conf or so
