@@ -153,8 +153,9 @@ public class TestHelperClasses extends XMLTestCase {
       String tmpImportLocation = "/tmp/tmpFiles";
       String lockExtention = ".lock";
       boolean overwriteDumpFiles = true;
+      boolean keepDumpFiles = false;
       try {
-         FileWriterCallback callback = new FileWriterCallback(importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles);
+         FileWriterCallback callback = new FileWriterCallback(importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles, keepDumpFiles);
          byte[] content = new byte[100000];
          File checkFile = new File("/tmp/dummy");
          checkFile.delete();
@@ -167,7 +168,7 @@ public class TestHelperClasses extends XMLTestCase {
       }
       
       try {
-         FileWriterCallback callback = new FileWriterCallback(importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles);
+         FileWriterCallback callback = new FileWriterCallback(importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles, keepDumpFiles);
          String filename = "second.dat";
          File checkFile = new File("/tmp/" + filename);
          checkFile.delete();
