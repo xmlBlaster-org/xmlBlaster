@@ -5,15 +5,21 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.jms;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 
 import javax.jms.JMSException;
 import javax.jms.MessageNotWriteableException;
 
 import java.util.logging.Logger;
+
+import org.xmlBlaster.jms.MessageHelper;
+import org.xmlBlaster.jms.XBBytesMessage;
+import org.xmlBlaster.jms.XBDestination;
 import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.jms.XBTextMessage;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
 
@@ -309,6 +315,63 @@ public class TestMessages extends TestCase {
       }
    }
 
+
+   public void testBytesMessage() {
+      try {
+         {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buf = new byte[100];
+            baos.write(buf);
+            byte[] buf1 = baos.toByteArray();
+            assertEquals("Wrong size of output buffer", buf.length, buf1.length);
+         }
+         { // 1. key, content and qos all null in constructor
+            byte[] content = null;
+            XBBytesMessage msg = new XBBytesMessage(null, content);
+            
+            content = new byte[256];
+            for (int i=0; i < 256; i++) {
+               content[i] = (byte)i;
+            }
+            
+            msg.writeBytes(content, 0, content.length);
+            XBDestination dest = new XBDestination("someTopic", null);
+            msg.setJMSDestination(dest);
+            msg.reset();
+            
+            byte[] content2 = new byte[256];
+            msg.readBytes(content2);
+            for (int i=0; i < content.length; i++)
+               assertEquals("byte nr. '" + i + "' is wrong", content[i], content2[i]);
+         }
+         { // 1. key, content and qos all null in constructor
+            byte[] content = null;
+            XBBytesMessage msg = new XBBytesMessage(null, content);
+            
+            content = new byte[256];
+            for (int i=0; i < 256; i++) {
+               content[i] = (byte)i;
+            }
+            
+            msg.writeBytes(content, 0, content.length);
+            XBDestination dest = new XBDestination("someTopic", null);
+            msg.setJMSDestination(dest);
+            msg.reset();
+            MsgUnit msgUnit = MessageHelper.convertToMessageUnit(new Global(), msg);
+            
+            byte[] content2 = msgUnit.getContent();
+            assertEquals("Wrong length", content.length, content2.length);
+            msg.readBytes(content2);
+            for (int i=0; i < content.length; i++)
+               assertEquals("byte nr. '" + i + "' is wrong", content[i], content2[i]);
+         }
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("exception occured ", false);
+      }
+   }
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.TestMessages
@@ -318,6 +381,10 @@ public class TestMessages extends TestCase {
    {
       TestMessages test = new TestMessages("TestMessages");
       test.prepare(args);
+
+      test.setUp();
+      test.testBytesMessage();
+      test.tearDown();
 
       test.setUp();
       test.testPropertyValueConversion();
