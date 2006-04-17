@@ -103,7 +103,8 @@ public class Receiver implements I_Plugin, I_Callback {
             else
                tmpDirectoryName = directoryName + File.separator + tmpDirectoryName;
          }
-         this.callback = new FileWriterCallback(directoryName, tmpDirectoryName, lockExtention, overwrite);
+         boolean keepDumpFiles = false;
+         this.callback = new FileWriterCallback(directoryName, tmpDirectoryName, lockExtention, overwrite, keepDumpFiles);
       }
       catch (Exception ex) {
          throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "Receiver constructor", "exception occured", ex);
