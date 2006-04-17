@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
@@ -1247,7 +1246,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          
          System.setProperty("java.util.logging.config.file",
                "testlog.properties");
-         LogManager.getLogManager().readConfiguration();
+         // LogManager.getLogManager().readConfiguration();
 
          // Preferences prefs = Preferences.userRoot();
          // prefs.node(ReplicationConstants.CONTRIB_PERSISTENT_MAP).clear();

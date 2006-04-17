@@ -113,12 +113,12 @@ private final static String ME = "ReplicationWriter";
       String tmpImportLocation = this.info.get("replication.importLocationChunks", this.importLocation + "/chunks");
       boolean overwriteDumpFiles = true;
       String lockExtention =  null;
-      this.callback = new FileWriterCallback(this.importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles);
+      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
+      this.callback = new FileWriterCallback(this.importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles, this.keepDumpFiles);
       this.info = info;
       this.pool = (I_DbPool)info.getObject(DbWriter.DB_POOL_KEY);
       if (this.pool == null)
          throw new Exception(ME + ".init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
-      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
 
       this.doDrop = info.getBoolean("replication.drops", true);
       this.doCreate = info.getBoolean("replication.creates", true);
@@ -557,18 +557,24 @@ private final static String ME = "ReplicationWriter";
       // and now perform an import of the DB
       boolean isEof = true;
       boolean isException = false;
+      int seqNumber = -1;
+      String exTxt = "";
       prop = (ClientProperty)attrMap.get(Constants.CHUNK_SEQ_NUM);
       if (prop != null) {
+         seqNumber = prop.getIntValue();
          prop = (ClientProperty)attrMap.get(Constants.CHUNK_EOF);
          if (prop == null) {
             isEof = false;
          }
          else {
             prop = (ClientProperty)attrMap.get(Constants.CHUNK_EXCEPTION);
-            if (prop != null)
+            if (prop != null) {
+               exTxt = prop.getStringValue();
                isException = true;
+            }
          }
       }
+      log.info("'" + topic + "' dumped file '" + filename + "' on '" + this.importLocation + "' seq nr. '" + seqNumber + "' ex='" + exTxt + "'");
       
       if (isEof && !isException) {
          if (this.hasInitialCmd) {
