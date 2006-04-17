@@ -33,7 +33,8 @@ public class FileWriterCallback implements I_Update {
    private boolean overwrite;
    private String tmpDirName;
    private File tmpDirectory;
-   
+   /** if true it cleans up the chunks after processing, otherwise it leaves them. */
+   private boolean keepDumpFiles;
    
    /**
     * Creates a callback
@@ -45,7 +46,7 @@ public class FileWriterCallback implements I_Update {
     * @param overwrite if set to true it will overwrite existing files.
     * @throws Exception
     */
-   public FileWriterCallback(String dirName, String tmpDirName, String lockExtention, boolean overwrite) throws Exception {
+   public FileWriterCallback(String dirName, String tmpDirName, String lockExtention, boolean overwrite, boolean keepDumpFiles) throws Exception {
       this.dirName = dirName;
       if (dirName == null)
          throw new Exception ("The directory where to store the files is null, can not continue");
@@ -77,6 +78,7 @@ public class FileWriterCallback implements I_Update {
          throw new Exception("The temporary '" + tmpDirName + "' is not a directory, can not use it to store files");
 
       this.overwrite = overwrite;
+      this.keepDumpFiles = keepDumpFiles;
    }
 
    
@@ -256,7 +258,7 @@ public class FileWriterCallback implements I_Update {
          }
          
          // clean up all chunks since complete file created
-         if (!isCompleteMsg) {
+         if (!isCompleteMsg && !this.keepDumpFiles) {
             for (int i=0; i < files.length; i++)
                deleteFile(files[i]);
          }
