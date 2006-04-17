@@ -17,22 +17,27 @@ import javax.jms.ServerSessionPool;
  */
 public class XBConnectionConsumer implements ConnectionConsumer {
 
-   /* (non-Javadoc)
+   private boolean closed;
+   private XBServerSessionPool serverSessionPool;
+   
+   public XBConnectionConsumer(XBConnection connection) {
+      this.serverSessionPool = new XBServerSessionPool(connection);
+   }
+   
+   /**
     * @see javax.jms.ConnectionConsumer#close()
     */
-   public void close() throws JMSException {
-      // TODO Auto-generated method stub
-
+   public synchronized void close() throws JMSException {
+      this.closed = true;
    }
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.ConnectionConsumer#getServerSessionPool()
     */
    public ServerSessionPool getServerSessionPool() throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+      if (this.closed)
+         throw new IllegalStateException("Can not create a server session pool since this connection consumer has been closed");
+      return this.serverSessionPool;
    }
 
-   public static void main(String[] args) {
-   }
 }

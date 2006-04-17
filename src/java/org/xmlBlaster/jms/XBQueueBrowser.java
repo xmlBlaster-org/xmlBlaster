@@ -11,6 +11,8 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 
+import org.xmlBlaster.util.def.ErrorCode;
+
 /**
  * XBQueueBrowser
  *
@@ -27,38 +29,34 @@ public class XBQueueBrowser implements QueueBrowser {
       this.msgSelector = msgSelector;
    }
    
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.QueueBrowser#getQueue()
     */
    public Queue getQueue() throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+      return this.queue;
    }
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.QueueBrowser#getMessageSelector()
     */
    public String getMessageSelector() throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+      return this.msgSelector;
    }
 
-   /* (non-Javadoc)
+   /**
+    * TODO implement
     * @see javax.jms.QueueBrowser#getEnumeration()
     */
    public Enumeration getEnumeration() throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+      throw new XBException(ErrorCode.INTERNAL_NOTIMPLEMENTED.getErrorCode(), "method XBQueueBrowser.getEnumeration() not implemented");
    }
 
-   /* (non-Javadoc)
+   /**
+    * TODO implement
     * @see javax.jms.QueueBrowser#close()
     */
    public void close() throws JMSException {
-      // TODO Auto-generated method stub
-
+      throw new XBException(ErrorCode.INTERNAL_NOTIMPLEMENTED.getErrorCode(), "method XBQueueBrowser.close() not implemented");
    }
 
-   public static void main(String[] args) {
-   }
 }

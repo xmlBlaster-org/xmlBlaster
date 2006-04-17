@@ -16,6 +16,12 @@ import javax.jms.TemporaryTopic;
  */
 public class XBTemporaryTopic extends XBDestination implements TemporaryTopic {
 
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
+
+
    XBTemporaryTopic() {
       super();
    }

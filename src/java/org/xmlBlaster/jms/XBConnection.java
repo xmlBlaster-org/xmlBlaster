@@ -25,10 +25,10 @@ import javax.jms.TopicSession;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 
 /**
  * XBConnection holds the connections to xmlBlaster.Since this class serves as a 
@@ -59,6 +59,9 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    private boolean stillVirgin = true;
    
    private boolean forQueues;
+   private boolean closed;
+   
+   Object closeSync = new Object();
    
    /**
     * 
@@ -78,22 +81,36 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
          this.connectQos = new ConnectQos(this.global);
       }
 
+      if (this.connectQos.getData().getCurrentCallbackAddress().isDispatcherActive()) {
+         log.warning("The dispatcher in the ConnectQos is active, it will be now disactivated");
+         this.connectQos.getData().getCurrentCallbackAddress().setDispatcherActive(false);
+      }
+      
       this.metaData = metaData;
       this.sessionMap = new HashMap();
-      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("constructor");
    }
    
+   final void checkClosed() throws JMSException {
+      if (this.closed)
+         throw new IllegalStateException("No operation is permitted on the Connection since in state 'closed'");
+   }
+   
+   /*
    private ConnectQos cloneConnectQos(ConnectQos qos) throws XmlBlasterException {
       Global global = qos.getData().getGlobal().getClone(null);
       ConnectQosSaxFactory factory = new ConnectQosSaxFactory(global);
       ConnectQos connQos = new ConnectQos(global, factory.readObject(qos.toXml()));
       return connQos;
    }
+   */
    
    private synchronized void initSession(String methodName, XBSession session, boolean transacted, int ackMode) 
       throws JMSException {
       this.stillVirgin = false;
-      if (log.isLoggable(Level.FINER)) this.log.finer(methodName + " transacted='" + transacted + "' ackMode='" + ackMode + "'");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer(methodName + " transacted='" + transacted + "' ackMode='" + ackMode + "'");
       if (transacted) 
          throw new XBException(ME, " '" + methodName + "' in transacted mode not implemented yet");
       try {
@@ -118,42 +135,54 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
     */
    public Session createSession(boolean transacted, int ackMode)
       throws JMSException {
+      checkClosed();
+      // XBSession session = new XBSession(cloneConnectQos(this.connectQos), ackMode, transacted);
+      XBSession session = new XBSession(this, ackMode, transacted);
+      initSession("createSession", session, transacted, ackMode); 
+      return session;
+      /*
       try {
-         XBSession session = new XBSession(cloneConnectQos(this.connectQos), ackMode, transacted);
-         initSession("createSession", session, transacted, ackMode); 
-         return session;
       }
       catch (XmlBlasterException ex) {
          throw new JMSException(ex.getMessage());
       }
+      */
    }
       
    public TopicSession createTopicSession(boolean transacted, int ackMode)
       throws JMSException {
+      checkClosed();
       if (this.forQueues) 
          throw new IllegalStateException(ME + ".createTopicSession", "this is a QueueConnection: use TopicConnection to invoke this method");
+      // XBTopicSession session = new XBTopicSession(cloneConnectQos(this.connectQos), ackMode, transacted);
+      XBTopicSession session = new XBTopicSession(this, ackMode, transacted);
+      initSession("createTopicSession", session, transacted, ackMode); 
+      return session;
+      /*
       try {
-         XBTopicSession session = new XBTopicSession(cloneConnectQos(this.connectQos), ackMode, transacted);
-         initSession("createTopicSession", session, transacted, ackMode); 
-         return session;
       }
       catch (XmlBlasterException ex) {
          throw new JMSException(ex.getMessage());
       }
+      */
    }
 
    public QueueSession createQueueSession(boolean transacted, int ackMode)
       throws JMSException {
+      checkClosed();
       if (!this.forQueues) 
          throw new IllegalStateException(ME + ".createQueueSession", "this is a TopicConnection: use QueueConnection to invoke this method");
+      // XBQueueSession session = new XBQueueSession(cloneConnectQos(this.connectQos), ackMode, transacted);
+      XBQueueSession session = new XBQueueSession(this, ackMode, transacted);
+      initSession("createQueueSession", session, transacted, ackMode); 
+      return session;
+      /*
       try {
-         XBQueueSession session = new XBQueueSession(cloneConnectQos(this.connectQos), ackMode, transacted);
-         initSession("createQueueSession", session, transacted, ackMode); 
-         return session;
       }
       catch (XmlBlasterException ex) {
          throw new JMSException(ex.getMessage());
       }
+      */
    }
 
    /**
@@ -161,46 +190,65 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
     * @see javax.jms.Connection#close()
     */
    public synchronized void close() throws JMSException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("close");
-      JMSException ex = null;
-      Object[] keys = this.sessionMap.keySet().toArray();
-      for (int i=0; i < keys.length; i++) {
-         // first deregister listener to avoid recursive deletion of entries in this map
-         XBSession session = (XBSession)this.sessionMap.get(keys[i]);
-         if (session != null) {
-            try {
-               session.close();
-            }
-            catch (JMSException e) {
-               ex = e;
-               if (this.exceptionListener != null) this.exceptionListener.onException(e);
-               if (log.isLoggable(Level.FINE)) {
-                  ex.printStackTrace();
+      if (this.closed)
+         return;
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("close");
+      this.closed = true;
+      try {
+         if (this.global.getXmlBlasterAccess().isConnected())
+            this.global.getXmlBlasterAccess().setCallbackDispatcherActive(false);
+      }
+      catch (XmlBlasterException ex) {
+         throw new XBException(ex, "exception occured when trying to close the connection");
+      }
+      
+      synchronized(this.closeSync) { // Note: this does not protect in case a newMessage
+         // calls close itself (since in same thread sync will not do)
+         JMSException ex = null;
+         Object[] keys = this.sessionMap.keySet().toArray();
+         for (int i=0; i < keys.length; i++) {
+            // first deregister listener to avoid recursive deletion of entries in this map
+            XBSession session = (XBSession)this.sessionMap.get(keys[i]);
+            if (session != null) {
+               try {
+                  session.close();
+               }
+               catch (JMSException e) {
+                  ex = e;
+                  if (this.exceptionListener != null) this.exceptionListener.onException(e);
+                  if (log.isLoggable(Level.FINE)) {
+                     ex.printStackTrace();
+                  }
                }
             }
          }
-      }
-      this.sessionMap.clear();
-      if (ex != null) {
-         log.warning("close: exception occured when closing some of the sessions associated to this connection");
-         throw ex;
+         this.sessionMap.clear();
+         if (ex != null) {
+            log.warning("close: exception occured when closing some of the sessions associated to this connection");
+            throw ex;
+         }
       }
    }
 
-   public String getClientID() throws JMSException {
+   public synchronized String getClientID() throws JMSException {
+      checkClosed();
       return this.connectQos.getUserId();
    }
 
    public ExceptionListener getExceptionListener() throws JMSException {
+      checkClosed();
       return this.exceptionListener;
    }
 
    public ConnectionMetaData getMetaData() throws JMSException {
+      checkClosed();
       return this.metaData;
    }
 
    public synchronized void setClientID(String loginName) throws JMSException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("setClientID '" + loginName + "'");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("setClientID '" + loginName + "'");
       if (!this.stillVirgin) {
          throw new IllegalStateException(ME + ".setClientID: the clientId cannot be set since you made already invocations on this connection");
       }
@@ -213,7 +261,9 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    }
 
    public synchronized void setExceptionListener(ExceptionListener exeptionListener) throws JMSException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("setExceptionListener");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("setExceptionListener");
+      checkClosed();
       this.exceptionListener = exeptionListener;
    }
 
@@ -222,35 +272,40 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
     * connection.
     * @see javax.jms.Connection#start()
     */
-   public void start() throws JMSException {
+   public synchronized void start() throws JMSException {
+      checkClosed();
       startStop("start", true);
    }       
     
    private synchronized void startStop(String txt, boolean isStart) throws JMSException {
-      if (log.isLoggable(Level.FINER)) this.log.finer(txt);
-      this.stillVirgin = false;
+      if (log.isLoggable(Level.FINER)) 
+         log.finer(txt);
+      synchronized (this.closeSync) {
+         this.stillVirgin = false;
 
-      JMSException ex = null;
-      Object[] keys = this.sessionMap.keySet().toArray();
-      for (int i=0; i < keys.length; i++) {
-         XBSession session = (XBSession)this.sessionMap.get(keys[i]);
-         if (session != null) {
-            try {
-               session.activateDispatcher(isStart);
-            }
-            catch (XmlBlasterException e) {
-               ex = new XBException(e, ME + "." + txt);
-               if (this.exceptionListener != null) this.exceptionListener.onException(ex);
-               if (log.isLoggable(Level.FINE)) {
-                  e.printStackTrace();
+         JMSException ex = null;
+         Object[] keys = this.sessionMap.keySet().toArray();
+         for (int i=0; i < keys.length; i++) {
+            XBSession session = (XBSession)this.sessionMap.get(keys[i]);
+            if (session != null) {
+               try {
+                  session.activateDispatcher(isStart);
+               }
+               catch (XmlBlasterException e) {
+                  ex = new XBException(e, ME + "." + txt);
+                  if (this.exceptionListener != null) 
+                     this.exceptionListener.onException(ex);
+                  if (log.isLoggable(Level.FINE)) {
+                     e.printStackTrace();
+                  }
                }
             }
          }
-      }
-      this.running = isStart;
-      if (ex != null) {
-         log.warning(txt + ": exception occured when invoking activateDispatcher");
-         throw ex;
+         this.running = isStart;
+         if (ex != null) {
+            log.warning(txt + ": exception occured when invoking activateDispatcher");
+            throw ex;
+         }
       }
    }
 
@@ -259,13 +314,15 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
     * @see javax.jms.Connection#stop()
     */
    public synchronized void stop() throws JMSException {
+      checkClosed();
       startStop("start", true);
    }
 
    // optional server side stuff not implemented here ...
 
    public void statusPostChanged(String id, int oldStatus, int newStatus) {
-      if (log.isLoggable(Level.FINER)) this.log.finer("statusPostChanged");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("statusPostChanged");
    }
 
    /**
@@ -273,7 +330,8 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
     * when the session closes.
     */
    public void statusPreChanged(String id, int oldStatus, int newStatus) {
-      if (log.isLoggable(Level.FINER)) this.log.finer("statusPreChanged");
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("statusPreChanged");
       synchronized(this) {
          if (oldStatus == I_StatusChangeListener.RUNNING && newStatus == I_StatusChangeListener.CLOSED)
             this.sessionMap.remove(id);
@@ -281,7 +339,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    }
 
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
     */
    public synchronized ConnectionConsumer createConnectionConsumer(
@@ -290,11 +348,13 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
       ServerSessionPool serverSessionPool,
       int maxMessages)
       throws JMSException {
+      checkClosed();
       this.stillVirgin = false;
-      throw new JMSException(ME + " 'createConnectionConsumer' not implemented yet");
+      return new XBConnectionConsumer(this);
+      // throw new JMSException(ME + " 'createConnectionConsumer' not implemented yet");
    }
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
     */
    public ConnectionConsumer createConnectionConsumer(Topic topic, String msgSelector, ServerSessionPool serverSessionPool, int maxMessages)
@@ -303,7 +363,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
    }
 
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.QueueConnection#createConnectionConsumer(javax.jms.Queue, java.lang.String, javax.jms.ServerSessionPool, int)
     */
    public synchronized ConnectionConsumer createConnectionConsumer(Queue queue, String msgSelector, ServerSessionPool serverSessionPool, int maxMessages)
@@ -311,7 +371,7 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
       return createConnectionConsumer((Destination)queue, msgSelector, serverSessionPool, maxMessages);
    }
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.TopicConnection#createDurableConnectionConsumer(javax.jms.Topic, java.lang.String, java.lang.String, javax.jms.ServerSessionPool, int)
     */
    public synchronized ConnectionConsumer createDurableConnectionConsumer(
@@ -323,6 +383,10 @@ public class XBConnection implements QueueConnection, TopicConnection, I_StatusC
       throws JMSException {
       this.stillVirgin = false;
       throw new JMSException(ME + " 'createDurableConnectionConsumer' not implemented yet");
+   }
+
+   ConnectQos getConnectQos() {
+      return this.connectQos;
    }
 
 }

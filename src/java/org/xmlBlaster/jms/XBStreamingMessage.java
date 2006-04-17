@@ -67,7 +67,7 @@ public class XBStreamingMessage extends XBTextMessage {
                   break;
             }
             int length = offset;
-            // must pass null since otherwise you get a non-writeable ex.
+
             BytesMessage chunk = this.session.createBytesMessage();
             MessageHelper.copyProperties(this, chunk);
             
@@ -75,6 +75,7 @@ public class XBStreamingMessage extends XBTextMessage {
             if (length < bufSize)
                chunk.setBooleanProperty(Constants.CHUNK_EOF, true);
             chunk.setLongProperty(Constants.CHUNK_SEQ_NUM, count);
+            chunk.reset();
             producer.send(dest, chunk);
             count++;
             if (length < bufSize)

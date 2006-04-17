@@ -25,8 +25,11 @@ import javax.naming.StringRefAddr;
  */
 public class XBDestination implements Topic, Queue, Destination, Referenceable, Externalizable {
 
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
    private final static String ME = "XBDestination";
-   private final static long SER_VERSION = 1;
    private String topicName;
    private String queueName;
    private boolean forceQueuing;
@@ -73,16 +76,16 @@ public class XBDestination implements Topic, Queue, Destination, Referenceable, 
 
    public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
       long version = oi.readLong();
-      if (version <= SER_VERSION) {
+      if (version <= serialVersionUID) {
          this.topicName = (String)oi.readObject();
          this.queueName = (String)oi.readObject();
          this.forceQueuing = ((Boolean)oi.readObject()).booleanValue();
       }
-      else throw new IOException(ME + ".writeExternal: current version '" + SER_VERSION + "' is older than serialized version '" + version + "'");
+      else throw new IOException(ME + ".writeExternal: current version '" + serialVersionUID + "' is older than serialized version '" + version + "'");
    }
    
    public void writeExternal(java.io.ObjectOutput oo) throws IOException {
-      oo.writeLong(SER_VERSION);
+      oo.writeLong(serialVersionUID);
       oo.writeObject(this.topicName);
       oo.writeObject(this.queueName);
       oo.writeObject(new Boolean(this.queueName));

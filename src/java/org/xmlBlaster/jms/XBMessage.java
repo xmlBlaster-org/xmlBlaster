@@ -15,8 +15,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageNotWriteableException;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -41,38 +39,16 @@ public class XBMessage implements Message {
    public final static int DEFAULT_TYPE = XBMessage.STREAM;
    
    private final static String ME = "XBMessage";
-   private static Logger log = Logger.getLogger(XBMessage.class.getName());
    protected Global  global;
    protected byte[]  content;
    protected int     type;
    protected boolean acknowledged;
    protected boolean readOnly;
-   protected boolean writeOnly;
    protected Map     props;
    private boolean   propertyReadOnly;
    protected XBSession   session;
    protected Destination destination;
    
-   private boolean oldReadOnly;
-   private boolean oldWriteOnly;
-   private boolean oldPropertyReadOnly;
-   
-   final void giveFullAccess() {
-      this.oldWriteOnly = this.writeOnly;
-      this.oldReadOnly = this.readOnly;
-      this.oldPropertyReadOnly = this.propertyReadOnly;
-      this.writeOnly = false;
-      this.readOnly = false;
-      this.propertyReadOnly = false;
-   }
-   
-   final void resetAccess() {
-      this.writeOnly = this.oldWriteOnly;
-      this.readOnly = this.oldReadOnly;
-      this.propertyReadOnly = this.oldPropertyReadOnly;
-   }
-   
-
    // thes are the properties which are not stored in the props map.
    private boolean redelivered;
    private int priority;
@@ -85,6 +61,12 @@ public class XBMessage implements Message {
    private String jmsType;
    
 
+   /**
+    * 
+    * @param session
+    * @param content
+    * @param type
+    */
    public XBMessage(XBSession session, byte[] content, int type) {
       this.session = session;
       if (this.session == null) 
@@ -95,22 +77,6 @@ public class XBMessage implements Message {
       this.content = content;
       this.props = new HashMap();
       this.type = type;
-      try {
-         setIntProperty(XBPropertyNames.JMS_MESSAGE_TYPE, this.type);
-      }
-      catch (JMSException ex) {
-         // should never happen anyway
-      }
-      if (this.content == null) {
-         this.writeOnly = true;
-      }
-      else {
-         this.readOnly = true;
-         this.propertyReadOnly = true;
-      } 
-      this.oldWriteOnly = this.writeOnly;
-      this.oldReadOnly = this.readOnly;
-      this.oldPropertyReadOnly = this.propertyReadOnly;
    }
 
    boolean isAcknowledged() {
@@ -124,6 +90,7 @@ public class XBMessage implements Message {
    synchronized public void acknowledge() throws JMSException {
       this.acknowledged = true;
       if (this.session == null) return;
+      this.session.connection.checkClosed();
       synchronized (this.session) {
          this.session.notifyAll();
       }
@@ -148,7 +115,6 @@ public class XBMessage implements Message {
    public void clearBody() throws JMSException {
       this.content = null;
       this.readOnly = false;
-      this.writeOnly = true;
    }
 
    public void clearProperties() throws JMSException {
@@ -410,6 +376,22 @@ public class XBMessage implements Message {
    public void setStringProperty(String key, String value) throws JMSException {
       checkPropertiesReadOnly("setStringProperty", key);
       this.props.put(key, new ClientProperty(key, null, null, value));   
+   }
+
+   /**
+    * Used internally
+    * @param propertyReadOnly
+    */
+   void setPropertyReadOnly(boolean propertyReadOnly) {
+      this.propertyReadOnly = propertyReadOnly;
+   }
+
+   /**
+    * Used internally
+    * @param readOnly
+    */
+   void setReadOnly(boolean readOnly) {
+      this.readOnly = readOnly;
    }
 
 }

@@ -47,15 +47,23 @@ public class MessageHelper {
    public MessageHelper() {
    }
    
-   public static void copyProperties(Message sourceMsg, Message destMsg) throws JMSException {
+   /**
+    * Currently only used in streaming messages to build the chunks.
+    * @param sourceMsg
+    * @param destMsg
+    * @throws JMSException
+    */
+   static void copyProperties(Message sourceMsg, Message destMsg) throws JMSException {
       if (sourceMsg == null)
          throw new XBException("internal", "Convert: The passed 'sourceMsg' attribute is null.");
       if (destMsg == null)
          throw new XBException("internal", "Convert: The passed 'destMsg' attribute is null.");
+      /*
       if (sourceMsg instanceof XBMessage)
          ((XBMessage)sourceMsg).giveFullAccess();
       if (destMsg instanceof XBMessage)
          ((XBMessage)destMsg).giveFullAccess();
+      */   
       try {
          // first strip all qos properties which are specific
          Destination dest = sourceMsg.getJMSDestination();
@@ -84,121 +92,138 @@ public class MessageHelper {
          }
       }
       finally {
+         /*
          if (sourceMsg instanceof XBMessage)
             ((XBMessage)sourceMsg).resetAccess();
          if (destMsg instanceof XBMessage)
             ((XBMessage)destMsg).resetAccess();
+         */
       }
    }
    
-   public static MsgUnit convert(Global global, Message msg) throws JMSException, XmlBlasterException, IOException {
+   /**
+    * This method converts a message (which could be from a foreign provider but also an own
+    * XBMessage) to a MsgUnit (internal XmlBlaster messages). This method is called internally
+    * by us as a provider. More specifically this is only used on the Message Producer send 
+    * method. This method is made public only for testing purposes. 
+    * 
+    * @param global
+    * @param msg
+    * @return the created message unit.
+    * @throws JMSException
+    * @throws XmlBlasterException
+    * @throws IOException
+    */
+   public static MsgUnit convertToMessageUnit(Global global, Message msg) throws JMSException, XmlBlasterException, IOException {
       if (global == null)
          throw new XBException("internal", "Convert: The passed 'global' attribute is null.");
       if (msg == null)
          throw new XBException("internal", "Convert: The passed 'msg' attribute is null.");
-      if (msg instanceof XBMessage)
-         ((XBMessage)msg).giveFullAccess();
-      try {
-         // first strip all qos properties which are specific
-         Destination dest = msg.getJMSDestination();
-         if (!(dest instanceof XBDestination))
-            throw new XBException("client.configuration", "destination is not an xmlblaster destination. Do not know how to handle it");
-         PublishQos qos = null;
-         PublishKey key = null;
-         if (dest != null) {
-            XBDestination xbDest = (XBDestination)dest;
-            String ptpName = xbDest.getQueueName(); 
-            if (ptpName != null) {
-               org.xmlBlaster.util.qos.address.Destination ptpDest = new org.xmlBlaster.util.qos.address.Destination(global, new SessionName(global, ptpName));
-               if (xbDest.getForceQueuing())
-                  ptpDest.forceQueuing(true);
-               qos = new PublishQos(global, ptpDest);
-            }
-            else {
-               qos = new PublishQos(global);
-            }
-            String tmp = xbDest.getTopicName();
-            if (tmp == null && ptpName == null)
-               throw new XBException("client.configuration", "A Topic must be specified in the message to be sent");
-
-            // determine if it is a complete key 
-            if (tmp != null && tmp.indexOf('<') > -1) { // complete key
-               MsgKeySaxFactory keyFactory = new MsgKeySaxFactory(global);
-               key = new PublishKey(global, keyFactory.readObject(tmp));
-            }
-            else { // then it is a simple oid
-               if (tmp != null)
-                  key = new PublishKey(global, tmp);
-               else
-                  key = new PublishKey(global);
-            }
+      // first strip all qos properties which are specific
+      Destination dest = msg.getJMSDestination();
+      if (!(dest instanceof XBDestination))
+         throw new XBException("client.configuration", "destination is not an xmlblaster destination. Do not know how to handle it");
+      PublishQos qos = null;
+      PublishKey key = null;
+      if (dest != null) {
+         XBDestination xbDest = (XBDestination)dest;
+         String ptpName = xbDest.getQueueName(); 
+         if (ptpName != null) {
+            org.xmlBlaster.util.qos.address.Destination ptpDest = new org.xmlBlaster.util.qos.address.Destination(global, new SessionName(global, ptpName));
+            if (xbDest.getForceQueuing())
+               ptpDest.forceQueuing(true);
+            qos = new PublishQos(global, ptpDest);
          }
-         else
-            throw new XBException("client.configuration", "A destination must be specified in the message to be sent");
-         
-         String corrId = msg.getJMSCorrelationID();
-         if (corrId != null)
-            qos.addClientProperty(XBPropertyNames.JMS_CORRELATION_ID, corrId);
-         int deliveryMode = msg.getJMSDeliveryMode();
-         if (deliveryMode == DeliveryMode.PERSISTENT)
-            qos.setPersistent(true);
-         long expiration = msg.getJMSExpiration();
-         if (expiration > -1)
-            qos.setLifeTime(expiration);
+         else {
+            qos = new PublishQos(global);
+         }
+         String tmp = xbDest.getTopicName();
+         if (tmp == null && ptpName == null)
+            throw new XBException("client.configuration", "A Topic must be specified in the message to be sent");
 
-         int prio = msg.getJMSPriority();
-         if (prio > -1)
-            qos.setPriority(PriorityEnum.toPriorityEnum(prio));
+         // determine if it is a complete key 
+         if (tmp != null && tmp.indexOf('<') > -1) { // complete key
+            MsgKeySaxFactory keyFactory = new MsgKeySaxFactory(global);
+            key = new PublishKey(global, keyFactory.readObject(tmp));
+         }
+         else { // then it is a simple oid
+            if (tmp != null)
+               key = new PublishKey(global, tmp);
+            else
+               key = new PublishKey(global);
+         }
+      }
+      else
+         throw new XBException("client.configuration", "A destination must be specified in the message to be sent");
       
-         String mimeType = msg.getJMSType(); // is this correct ?
-         if (mimeType != null)
-            key.setContentMime(mimeType);
+      String corrId = msg.getJMSCorrelationID();
+      if (corrId != null)
+         qos.addClientProperty(XBPropertyNames.JMS_CORRELATION_ID, corrId);
+      int deliveryMode = msg.getJMSDeliveryMode();
+      if (deliveryMode == DeliveryMode.PERSISTENT)
+         qos.setPersistent(true);
+      long expiration = msg.getJMSExpiration();
+      if (expiration > -1)
+         qos.setLifeTime(expiration);
 
-         Enumeration eNum = msg.getPropertyNames();
-         while (eNum.hasMoreElements()) {
-            String propKey = (String)eNum.nextElement();
-            Object obj = msg.getObjectProperty(propKey);
-            qos.addClientProperty(propKey, obj);
-         }
-         byte[] content = null;
-         if (msg instanceof TextMessage) {
-            qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.TEXT);
-            content = ((TextMessage)msg).getText().getBytes();
-         }
-         else if (msg instanceof BytesMessage) {
-            qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.BYTES);
-            BytesMessage bytesMsg = (BytesMessage)msg;
-            long length = bytesMsg.getBodyLength();
+      int prio = msg.getJMSPriority();
+      if (prio > -1)
+         qos.setPriority(PriorityEnum.toPriorityEnum(prio));
+   
+      String mimeType = msg.getJMSType(); // is this correct ?
+      if (mimeType != null)
+         key.setContentMime(mimeType);
+
+      Enumeration eNum = msg.getPropertyNames();
+      while (eNum.hasMoreElements()) {
+         String propKey = (String)eNum.nextElement();
+         Object obj = msg.getObjectProperty(propKey);
+         qos.addClientProperty(propKey, obj);
+      }
+      byte[] content = null;
+      if (msg instanceof TextMessage) {
+         qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.TEXT);
+         content = ((TextMessage)msg).getText().getBytes();
+      }
+      else if (msg instanceof StreamMessage) {
+         qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.STREAM);
+         StreamMessage streamMsg = (StreamMessage)msg;
+         if (streamMsg instanceof XBStreamMessage) {
+            long length = ((XBStreamMessage)streamMsg).getBodyLength();
             if (length >= Integer.MAX_VALUE)
                throw new XBException("feature.missing", "Handling of big message not implemented");
             content = new byte[(int)length];
-            bytesMsg.readBytes(content);
+            streamMsg.readBytes(content);
          }
-         else if (msg instanceof ObjectMessage) {
-            qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.OBJECT);
-            ObjectMessage objMsg = (ObjectMessage)msg;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            Object object = objMsg.getObject();
-            oos.writeObject(object);
-            content = baos.toByteArray();
-            oos.close();
-         }
-         else if(msg instanceof MapMessage) { // TODO implement this
-            throw new XBException("feature.missing", "MapMessage is not implemented");
-         }
-         else if (msg instanceof StreamMessage) { // TODO implement this
-            throw new XBException("feature.missing", "StreamMessage is not implemented");
-         }
-         else {
-            throw new XBException("feature.missing", "unknown message type '" + msg.getClass().getName() + "'");
-         }
-         return new MsgUnit(key, content, qos);
+         else
+            throw new XBException("feature.missing", "Handling of non XBStreamMessage types not implemented");
       }
-      finally {
-         if (msg instanceof XBMessage)
-            ((XBMessage)msg).resetAccess();
+      else if (msg instanceof BytesMessage) {
+         qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.BYTES);
+         BytesMessage bytesMsg = (BytesMessage)msg;
+         long length = bytesMsg.getBodyLength();
+         if (length >= Integer.MAX_VALUE)
+            throw new XBException("feature.missing", "Handling of big message not implemented");
+         content = new byte[(int)length];
+         bytesMsg.readBytes(content);
       }
+      else if (msg instanceof ObjectMessage) {
+         qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.OBJECT);
+         ObjectMessage objMsg = (ObjectMessage)msg;
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         ObjectOutputStream oos = new ObjectOutputStream(baos);
+         Object object = objMsg.getObject();
+         oos.writeObject(object);
+         content = baos.toByteArray();
+         oos.close();
+      }
+      else if(msg instanceof MapMessage) { // TODO implement this
+         throw new XBException("feature.missing", "MapMessage is not implemented");
+      }
+      else {
+         throw new XBException("feature.missing", "unknown message type '" + msg.getClass().getName() + "'");
+      }
+      return new MsgUnit(key, content, qos);
    }
 
    /**
@@ -217,14 +242,29 @@ public class MessageHelper {
    }
    */
 
-   public static XBMessage convert(XBSession session, String sender, MsgUnit msgUnit) throws JMSException, XmlBlasterException, IOException {
+   /**
+    * Used in the message consumer receive method.
+    */
+   public static XBMessage convertFromMsgUnit(XBSession session, String sender, MsgUnit msgUnit) throws JMSException, XmlBlasterException, IOException {
       MsgQosData qosData = (MsgQosData)msgUnit.getQosData();
       MsgKeyData keyData = (MsgKeyData)msgUnit.getKeyData();
       byte[] content = msgUnit.getContent();
-      return convert(session, sender, keyData, content, qosData);
+      return convertFromMsgUnit(session, sender, keyData, content, qosData);
    }
-      
-   public static XBMessage convert(XBSession session, String sender, MsgKeyData keyData, byte[] content, MsgQosData qosData) throws JMSException, XmlBlasterException, IOException {
+    
+   /**
+    * Used in the message consumer update method. 
+    * @param session
+    * @param sender
+    * @param keyData
+    * @param content
+    * @param qosData
+    * @return
+    * @throws JMSException
+    * @throws XmlBlasterException
+    * @throws IOException
+    */
+   public static XBMessage convertFromMsgUnit(XBSession session, String sender, MsgKeyData keyData, byte[] content, MsgQosData qosData) throws JMSException, XmlBlasterException, IOException {
       XBMessage msg = null;
       int type = qosData.getClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.DEFAULT_TYPE);
       switch (type) {
@@ -236,58 +276,52 @@ public class MessageHelper {
          default : throw new XBException("feature.missing", "message type '" + type + "' is unknown to the XmlBlaster JMS Implementation");
       }
 
-      
-      if (msg instanceof XBMessage)
-         ((XBMessage)msg).giveFullAccess();
-      try {
-         String corrId = qosData.getClientProperty(XBPropertyNames.JMS_CORRELATION_ID, (String)null);
-         if (corrId != null)
-            msg.setJMSCorrelationID(corrId);
+      String corrId = qosData.getClientProperty(XBPropertyNames.JMS_CORRELATION_ID, (String)null);
+      if (corrId != null)
+         msg.setJMSCorrelationID(corrId);
 
-         if (qosData.isPersistent())
-            msg.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
-         else
-            msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      if (qosData.isPersistent())
+         msg.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
+      else
+         msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-         org.xmlBlaster.util.qos.address.Destination[] destArr = qosData.getDestinationArr();
-         Destination dest = null;
-         if (destArr != null && destArr.length > 0) {
-            if (destArr.length > 1)
-               log.warning("there are more than one destinations defined. The current JMS Implementation only supports single PtP Destinations");
-            dest = new XBDestination(keyData.toXml(), destArr[0].getDestination().getAbsoluteName(), destArr[0].forceQueuing());
-         }
-         else
-            dest = new XBDestination(keyData.toXml(), null, false);
-         msg.setJMSDestination(dest);
-
-         long life = qosData.getLifeTime();
-         msg.setJMSExpiration(life);
-
-         String msgId = "ID:" + qosData.getRcvTimestamp().getTimestamp();
-         msg.setJMSMessageID(msgId);
-
-         msg.setJMSPriority(qosData.getPriority().getInt());
-
-         boolean redelivered = qosData.getClientProperty(XBPropertyNames.JMS_REDELIVERED, false);
-         if (redelivered)
-            msg.setJMSRedelivered(true);
-
-         if (sender != null) {
-            // no force queuing (since I don't know better)
-            Destination senderDest = new XBDestination(null, sender, false);
-            msg.setJMSReplyTo(senderDest);
-         }
-
-         long timestamp = qosData.getClientProperty(XBPropertyNames.JMS_TIMESTAMP, 0L);
-         if (timestamp != 0L)
-            msg.setJMSTimestamp(timestamp);
-         return msg;
+      org.xmlBlaster.util.qos.address.Destination[] destArr = qosData.getDestinationArr();
+      Destination dest = null;
+      if (destArr != null && destArr.length > 0) {
+         if (destArr.length > 1)
+            log.warning("there are more than one destinations defined. The current JMS Implementation only supports single PtP Destinations");
+         dest = new XBDestination(keyData.toXml(), destArr[0].getDestination().getAbsoluteName(), destArr[0].forceQueuing());
       }
-      finally {
-         if (msg instanceof XBMessage)
-            ((XBMessage)msg).resetAccess();
+      else
+         dest = new XBDestination(keyData.toXml(), null, false);
+      msg.setJMSDestination(dest);
+
+      long life = qosData.getLifeTime();
+      msg.setJMSExpiration(life);
+
+      String msgId = "ID:" + qosData.getRcvTimestamp().getTimestamp();
+      msg.setJMSMessageID(msgId);
+
+      msg.setJMSPriority(qosData.getPriority().getInt());
+
+      boolean redelivered = qosData.getClientProperty(XBPropertyNames.JMS_REDELIVERED, false);
+      if (redelivered)
+         msg.setJMSRedelivered(true);
+
+      if (sender != null) {
+         // no force queuing (since I don't know better)
+         Destination senderDest = new XBDestination(null, sender, false);
+         msg.setJMSReplyTo(senderDest);
       }
-      
+
+      long timestamp = qosData.getClientProperty(XBPropertyNames.JMS_TIMESTAMP, 0L);
+      if (timestamp != 0L)
+         msg.setJMSTimestamp(timestamp);
+      msg.setReadOnly(true);
+      msg.setPropertyReadOnly(true);
+      return msg;
+   
+   
    }
 
 

@@ -12,8 +12,6 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
-import org.xmlBlaster.client.qos.ConnectQos;
-
 /**
  * XBTopicSession
  *
@@ -22,10 +20,8 @@ import org.xmlBlaster.client.qos.ConnectQos;
  */
 public class XBTopicSession extends XBSession implements TopicSession {
 
-   private final static String ME = "XBTopicSession";
-
-   XBTopicSession(ConnectQos connectQos, int ackMode, boolean transacted) {
-      super(connectQos, ackMode, transacted);
+   XBTopicSession(XBConnection connection, int ackMode, boolean transacted) {
+      super(connection, ackMode, transacted);
    }
 
    public TopicPublisher createPublisher(Topic topic) throws JMSException {

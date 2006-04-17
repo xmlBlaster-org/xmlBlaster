@@ -21,8 +21,6 @@ import javax.jms.QueueSender;
  */
 public class XBQueueSender extends XBMessageProducer implements QueueSender {
 
-   private final static String ME = "XBQueueSender";
-
    XBQueueSender(XBSession session, Queue queue) {
       super(session, queue);
    }
@@ -33,9 +31,11 @@ public class XBQueueSender extends XBMessageProducer implements QueueSender {
 
    public void send(Queue dest, Message message)
       throws JMSException {
+      super.send(dest, message);
    }
 
    public void send(Queue dest, Message message, int deliveryMode, int priority, long timeToLive)
       throws JMSException {
+      super.send(dest, message, deliveryMode, priority, timeToLive);
    }
 }

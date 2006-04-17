@@ -60,7 +60,8 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
    /**
     * For each consumer created, an own xmlBlaster subscription is done since
     * the msgSelector (i.e. in xmlBlaster the mime plugin) could be different from
-    * one consumer to another. This is done in the constructor of the MessageConsumer and
+    * one consumer to another. This is done in the constructor of the MessageConsumer.
+    * The msgSelector can be null.
     */
    XBMessageConsumer(XBSession session, Destination destination, String msgSelector, boolean noLocal) 
       throws JMSException {
@@ -76,23 +77,32 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
    }
 
    protected final void checkIfOpen(String methodName) throws JMSException {
-      if (log.isLoggable(Level.FINER)) this.log.finer(methodName);
+      if (log.isLoggable(Level.FINER)) 
+         log.finer(methodName);
       if (!this.open)
          throw new IllegalStateException(ME + "." + methodName, "the session has been closed, operation '" + methodName + "' not permitted");
    }
 
    private final String getOid(Destination destination) throws JMSException {
       String oid = null;
-      if (destination instanceof Topic) 
+      if (destination instanceof XBDestination) {
+         XBDestination xbDest = (XBDestination)destination;
+         if (xbDest.getTopicName() != null)
+            oid = xbDest.getTopicName();
+         else
+            oid = xbDest.getQueueName();
+      }
+      else if (destination instanceof Topic) 
          oid = ((Topic)destination).getTopicName();
-      else oid = ((Queue)destination).getQueueName();
+      else 
+         oid = ((Queue)destination).getQueueName();
       return oid;
    }
    
    private final SubscribeReturnQos subscribe(Destination destination, String msgSelector, boolean noLocal) throws JMSException {
       this.destination = destination;
       String oid = getOid(destination);
-      SubscribeKey key = new SubscribeKey(this.global, oid); 
+      SubscribeKey key = new SubscribeKey(this.global, oid);
       SubscribeQos qos = new SubscribeQos(this.global);
       qos.setWantInitialUpdate(false);
       qos.setWantLocal(!noLocal);
@@ -117,7 +127,8 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
    synchronized public void close() throws JMSException {
       if (!this.open) return;
       try {
-         if (log.isLoggable(Level.FINER)) this.log.finer("close");
+         if (log.isLoggable(Level.FINER)) 
+            log.finer("close");
          String subId = this.subscribeReturnQos.getSubscriptionId();
          UnSubscribeKey key = new UnSubscribeKey(this.global, subId);
          UnSubscribeQos qos = new UnSubscribeQos(this.global);
@@ -163,7 +174,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
          MsgUnit[] mu = this.global.getXmlBlasterAccess().get(new GetKey(this.global, getOid), getQos);
          if (mu == null || mu.length < 1 || mu[0] == null) return null;
          String sender = mu[0].getQosData().getSender().getAbsoluteName();
-         return MessageHelper.convert(this.session, sender, mu[0]); 
+         return MessageHelper.convertFromMsgUnit(this.session, sender, mu[0]); 
       }
       catch (XmlBlasterException ex) {
          throw new XBException(ex, ME + ".receive");
@@ -206,57 +217,64 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("update cbSessionId='" + cbSessionId + "' oid='" + updateKey.getOid() + "'");
-      try {
-         if (this.msgListener != null) {
-            Message msg = MessageHelper.convert(this.session, updateQos.getSender().getAbsoluteName(), updateKey.getData(), content, updateQos.getData()); 
-            int ackMode = this.session.getAcknowledgeMode();
-            if (log.isLoggable(Level.FINE)) this.log.fine("update: acknowledge mode is: " + ackMode);
-            if (msg != null) {
-               // TODO keep reference to this and on next event fill this
-               
-               
-               XBMsgEvent msgEvent = new XBMsgEvent(this.msgListener, msg);
-               this.session.channel.put(msgEvent);
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("update cbSessionId='" + cbSessionId + "' oid='" + updateKey.getOid() + "'");
+      synchronized (this.session.connection.closeSync) {
+         try {
+            if (this.msgListener != null) {
+               Message msg = MessageHelper.convertFromMsgUnit(this.session, updateQos.getSender().getAbsoluteName(), updateKey.getData(), content, updateQos.getData()); 
+               int ackMode = this.session.getAcknowledgeMode();
+               if (log.isLoggable(Level.FINE)) 
+                  log.fine("update: acknowledge mode is: " + ackMode);
+               if (msg != null) {
+                  // TODO keep reference to this and on next event fill this
+                  
+                  
+                  XBMsgEvent msgEvent = new XBMsgEvent(this.msgListener, msg);
+                  this.session.channel.put(msgEvent);
 
-               // for the other modes the difference is made in the run() of the session
-               if (ackMode != Session.AUTO_ACKNOWLEDGE) {
-                  synchronized (this.session) {
-                     long timeout = this.session.getUpdateTimeout();
-                     if (timeout > 0) {
-                        long t0 = System.currentTimeMillis();
-                        if (log.isLoggable(Level.FINE)) this.log.fine("update: waiting for ack");
-                        this.session.wait(timeout);
-                        if (log.isLoggable(Level.FINE)) this.log.fine("update: waked up from ack");
-                        long dt = System.currentTimeMillis() - t0;
-                        if (dt >= timeout) {
-                           if (this.exceptionListener != null) {
-                              this.exceptionListener.onException(new XBException(ME + ".update", "timeout of '" + timeout + "' ms occured when waiting for acknowledge of msg '" + msg.getJMSMessageID() + "'"));
-                           }
-                           throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update timeout of '" + timeout + "' ms occured when waiting for acknowledge of msg '" + msg.getJMSMessageID() + "'");
-                        }   
+                  // for the other modes the difference is made in the run() of the session
+                  if (ackMode != Session.AUTO_ACKNOWLEDGE) {
+                     synchronized (this.session) {
+                        long timeout = this.session.getUpdateTimeout();
+                        if (timeout > 0) {
+                           long t0 = System.currentTimeMillis();
+                           if (log.isLoggable(Level.FINE)) 
+                              log.fine("update: waiting for ack");
+                           this.session.wait(timeout);
+                           if (log.isLoggable(Level.FINE)) 
+                              log.fine("update: waked up from ack");
+                           long dt = System.currentTimeMillis() - t0;
+                           if (dt >= timeout) {
+                              if (this.exceptionListener != null) {
+                                 this.exceptionListener.onException(new XBException(ME + ".update", "timeout of '" + timeout + "' ms occured when waiting for acknowledge of msg '" + msg.getJMSMessageID() + "'"));
+                              }
+                              throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update timeout of '" + timeout + "' ms occured when waiting for acknowledge of msg '" + msg.getJMSMessageID() + "'");
+                           }   
+                        }
+                        else
+                           this.session.wait(timeout);
                      }
-                     else
-                        this.session.wait(timeout);
+                  }
+                  else {
+                     if (log.isLoggable(Level.FINE)) 
+                        log.fine("update: acknowledge mode is AUTO: no waiting for user acknowledge");
+                     msg.acknowledge();
                   }
                }
                else {
-                  if (log.isLoggable(Level.FINE)) this.log.fine("update: acknowledge mode is AUTO: no waiting for user acknowledge");
-                  msg.acknowledge();
+                  throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message was null");         
                }
             }
             else {
-               throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message was null");         
+               throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message listener has not been assigned yet");         
             }
+            return "OK";
          }
-         else {
-            throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update: the message listener has not been assigned yet");         
+         catch (Throwable ex) {
+            ex.printStackTrace();
+            throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update");         
          }
-         return "OK";
-      }
-      catch (Throwable ex) {
-         ex.printStackTrace();
-         throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_ERROR, ME + ".update");         
       }
    }
 }

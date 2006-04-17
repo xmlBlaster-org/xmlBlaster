@@ -14,7 +14,12 @@ import javax.jms.TemporaryQueue;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public class XBTemporaryQueue extends XBQueue implements TemporaryQueue {
+public class XBTemporaryQueue extends XBDestination implements TemporaryQueue {
+
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
 
    XBTemporaryQueue() {
       super();

@@ -139,7 +139,7 @@ public class XBMessageProducer implements MessageProducer {
             ((XBStreamingMessage)msg).send(this.session, this, this.destination);
          }
          else {
-            MsgUnit msgUnit = MessageHelper.convert(this.session.global, msg);
+            MsgUnit msgUnit = MessageHelper.convertToMessageUnit(this.session.global, msg);
             this.publishReturnQos = this.access.publish(msgUnit); 
             // what to do whith the publish return qos ?
          }

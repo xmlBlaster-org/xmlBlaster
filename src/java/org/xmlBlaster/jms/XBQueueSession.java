@@ -12,8 +12,6 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 
-import org.xmlBlaster.client.qos.ConnectQos;
-
 /**
  * XBQueueSession
  *
@@ -22,35 +20,32 @@ import org.xmlBlaster.client.qos.ConnectQos;
  */
 public class XBQueueSession extends XBSession implements QueueSession {
 
-   private final static String ME = "XBQueueSession";
-
-   XBQueueSession(ConnectQos connectQos, int ackMode, boolean transacted) {
-      super(connectQos, ackMode, transacted);
+   XBQueueSession(XBConnection connection, int ackMode, boolean transacted) {
+      super(connection, ackMode, transacted);
    }
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.QueueSession#createReceiver(javax.jms.Queue)
     */
-   public QueueReceiver createReceiver(Queue arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+   public QueueReceiver createReceiver(Queue queue) throws JMSException {
+      return createReceiver(queue, null);
    }
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.QueueSession#createReceiver(javax.jms.Queue, java.lang.String)
     */
-   public QueueReceiver createReceiver(Queue arg0, String arg1)
+   public QueueReceiver createReceiver(Queue queue, String msgSelector)
       throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+      boolean noLocal = false;
+      // the msgSelector is the MIME Plugin
+      return new XBQueueReceiver(this, queue, msgSelector, noLocal);
    }
 
-   /* (non-Javadoc)
+   /**
     * @see javax.jms.QueueSession#createSender(javax.jms.Queue)
     */
-   public QueueSender createSender(Queue arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+   public QueueSender createSender(Queue queue) throws JMSException {
+      return new XBQueueSender(this, queue);
    }
 
 }

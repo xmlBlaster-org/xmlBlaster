@@ -25,6 +25,11 @@ import org.xmlBlaster.util.def.ErrorCode;
  */
 public class XBConnectionMetaData implements ConnectionMetaData, Serializable, Cloneable {
 
+   /**
+    * 
+    */
+   private static final long serialVersionUID = 1L;
+   
    private final static String ME = "XBConnectionMetaData";
    final static int MAJOR_VERSION = 1;
    final static int MINOR_VERSION = 1;
@@ -37,8 +42,34 @@ public class XBConnectionMetaData implements ConnectionMetaData, Serializable, C
    
    public final static String JMSX_PTP_DESTINATION = "JMSXPtPDest";
    
+   /**
+    * When using chunked messages this belongs to a specified group.
+    */
+   public final static String JMSX_GROUP_ID = "JMSXGroupID";
+   /**
+    * The internal sequence number within a group. If this is set, then JMSXGroupID must
+    * be set too.
+    */
+   public final static String JMSX_GROUP_SEQ = "JMSXGroupSeq";
+   
+   /** 
+    * If this exists it is always set to boolean 'true' and tells this is the EOF
+    * message of a sequence (a group)
+    */
+   public final static String JMSX_GROUP_EOF = "JMSXGroupEof";
+   
+   /** If set, an exception occured in this chunk. It contains the 
+    * exception. It is used to perform clean up in case of exceptions.
+    */
+   public final static String JMSX_GROUP_EX = "JMSXGroupEx";
+   
+   
    /** These properties are specific to our implementation and must start with the prefix JMSX */
    private final static String[] propNames = new String[] {
+      JMSX_GROUP_ID, 
+      JMSX_GROUP_SEQ,
+      JMSX_GROUP_EOF,
+      JMSX_GROUP_EX,
       JMSX_RCV_TIMESTAMP,
       JMSX_MAX_CHUNK_SIZE,
       "JMSX"

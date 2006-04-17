@@ -17,6 +17,25 @@ public interface XBPropertyNames {
    
    public final static String CONNECT_QOS = "JMS_xmlBlasterConnectQos";
 
+   /**
+    * This property sets the maximum size of each chunk. If a message has a content
+    * which is bigger than this value, then the message is 'chunked', that is, it is
+    * sent in several smaller messages. If this value is not set before publishing, the
+    * size is unlimited. This is a specific feature of xmlBlaster.
+    */
+   public final static String MAX_CHUNK_SIZE = "JMS_maxChunkSize";
+   
+   /**
+    * This is a feature specific to xmlBlaster. It allows to stream huge messages
+    * (or real streams). If this is set to 'true' (defaults to false), then the action
+    * of publishing will publish the first chunk (or submessage) but it will keep the
+    * message alive, that is, it will continue publishing chunks even after having invoked
+    * publish (or send). To finish publishing (i.e. to mark the end of the ongoing publishing)
+    * you have to invoke clearBody() on the published message. If you set this flag and 
+    * MAX_CHUNK_SIZE is not set, the application will choose an appropriate chunk size. 
+    */
+   public final static String OPEN_END_PUBLISH = "JMS_openEndPublish";
+   
    // these are keys used in the client properties,
    // most of them used in XBMessage and XBMessageConsumer
    public final static String JMS_MESSAGE_TYPE   = "JMSMessageType";
