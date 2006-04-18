@@ -18,6 +18,6 @@ OWNCLASSPATH=$OWNCLASSPATH:lib/batik/js.jar
 # Set in your $HOME/build.properties
 # build.compiler=jikes  or  modern  or classic
 
-"$JAVA_HOME/bin/java" -Xmx256m -Dant.home="$XMLBLASTER_HOME" -classpath "$OWNCLASSPATH" org.apache.tools.ant.Main $@
+"$JAVA_HOME/bin/java" -Xmx256m -Dant.home="$XMLBLASTER_HOME" -classpath "$OWNCLASSPATH" org.apache.tools.ant.Main -logger org.apache.tools.ant.listener.AnsiColorLogger $@
 
 # end of file
