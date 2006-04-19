@@ -6,6 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -81,6 +83,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String ownVersion;
    private String srcVersion;
    private boolean doTransform;
+   private String initialFilesLocation;
+   private String lastMessage;
    
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.global = global;
@@ -89,6 +93,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.slaveSessionId = slaveSessionId;
       // this.status = STATUS_UNUSED;
       setStatus(STATUS_NORMAL);
+      this.lastMessage = "";
       //final boolean doPersist = false;
       //final boolean dispatcherActive = false;
       try {
@@ -182,6 +187,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          this.doTransform = true;
       this.initialized = true;
       this.forcedCounter = 0L;
+      this.initialFilesLocation = info.get(ReplicationConstants.INITIAL_FILES_LOCATION, null);
    }
    
    private final void setStatus(int status) {
@@ -322,6 +328,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       PublishQos pubQos = new PublishQos(this.global, destination);
       pubQos.addClientProperty(ReplicationConstants.SLAVE_NAME, this.slaveSessionId);
       pubQos.addClientProperty(ReplicationConstants.REPL_VERSION, this.ownVersion);
+      if (this.initialFilesLocation != null)
+         pubQos.addClientProperty(ReplicationConstants.INITIAL_FILES_LOCATION, this.initialFilesLocation);
       pubQos.setPersistent(true);
       MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_UPDATE.getBytes(), pubQos);
       conn.publish(msg);
@@ -382,12 +390,53 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       }
    }
    
+   private void storeChunkLocally(ReferenceEntry entry, ClientProperty location, ClientProperty subDirProp) throws Exception {
+      if (entry == null)
+         throw new Exception("The entry to store is null, can not store");
+      MsgUnit msgUnit = entry.getMsgUnit();
+      if (msgUnit == null)
+         throw new Exception("The msgUnit to store is null, can not store");
+      if (location == null || location.getStringValue() == null || location.getStringValue().trim().length() < 1)
+         throw new Exception("The location is empty, can not store the message unit '" + msgUnit.getLogId() + "'");
+      
+      // String fileId = "" + new Timestamp().getTimestamp();
+      // this way they are automatically sorted and in case of a repeated write it simply would be overwritten.
+      String fileId = entry.getPriority() + "-" + entry.getUniqueId();
+      String pathName = location.getStringValue().trim();
+      File dirWhereToStore = new File(pathName);
+      if (!dirWhereToStore.exists())
+         throw new Exception("The path '" + pathName + "' does not exist");
+      if (!dirWhereToStore.isDirectory())
+         throw new Exception("The path '" + pathName + "' is not a directory");
+      if (subDirProp == null)
+         throw new Exception("The property to define the file name (dataId) is not set, can not continue");
+      String subDirName = subDirProp.getStringValue();
+      if (subDirName == null || subDirName.trim().length() < 1)
+         throw new Exception("The subdirectory to be used to store the initial data is empty");
+      File subDir = new File(dirWhereToStore, subDirName);
+      if (!subDir.exists()) {
+         if (!dirWhereToStore.mkdir()) {
+            String txt = "could not make '" + subDir.getAbsolutePath() + "' to be a directory. Check your rights";
+            log.severe(txt);
+            throw new Exception(txt);
+         }
+      }
+      
+      File file = new File(subDir, fileId);
+      if (file.exists())
+         log.warning("File '" + file.getAbsolutePath() + "' exists already. Will overwrite it");
+      FileOutputStream fos = new FileOutputStream(file);
+      fos.write(msgUnit.toXml().getBytes());
+      fos.close();
+      log.info("MsgUnit '" + msgUnit.getQosData().getRcvTimestamp().getTimestamp() + "' has been written to file '" + file.getAbsolutePath() + "'");
+   }
    
    /**
     * FIXME TODO HERE
     */
    public synchronized ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
       this.forcedCounter++;
+      this.lastMessage = "";
       log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' (invocation since start is '" + this.forcedCounter + "'");
       if (!this.initialized) {
          log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
@@ -431,6 +480,27 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          MsgUnit msgUnit = entry.getMsgUnit();
          ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
          
+         // check if the message has to be stored locally
+         ClientProperty initialFilesLocation = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_FILES_LOCATION);
+         if (initialFilesLocation != null) {
+            ClientProperty subDirName = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_ID);
+            storeChunkLocally(entry, initialFilesLocation, subDirName);
+            queue.removeRandom(entry);
+            entries.remove(i); // TODO INVERT SEQUENCE SINCE THEORETICALLY IT COULD BE MORE THAN ONE MSG IN THE LIST
+            continue;
+         }
+         // check if the message is the end of the data (only sent in case the initial data has to be stored on file in which
+         // case the dispatcher shall return in its waiting state.
+         ClientProperty endOfData = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END);
+         if (endOfData != null) {
+            final boolean doPersist = true;
+            doPause(doPersist);
+            queue.removeRandom(entry);
+            entries.remove(i);
+            this.lastMessage = "MANUAL DATA TRANSFER: WAITING";
+            continue;
+         }
+         
          if (endMsg != null) {
             log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
             setStatus(STATUS_NORMAL);
@@ -439,13 +509,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             // initiate a cascaded replication (if configured that way)
             if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
                log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'. Was entry '" + i + "' of a set of '" + entries.size() + "'");
-               this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null);
+               this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
             }
             else {
                log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
             }
             break; // there should only be one such message 
          }
+         
+         
+         
       }
 
       // if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
@@ -483,7 +556,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
                // initiate a cascaded replication (if so configured)
                if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
                   log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
-                  this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null);
+                  this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
                }
             }
          }
@@ -537,6 +610,18 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     */
    public void doPause(boolean doPersist) throws Exception {
       setDispatcher(false, doPersist);
+   }
+   
+   public void handleException(Throwable ex) {
+      try {
+         this.lastMessage = ex.getMessage();
+         final boolean doPersist = true;
+         doPause(doPersist);
+      }
+      catch (Throwable e) {
+         log.severe("An exception occured when trying to pause the connection: " + e.getMessage());
+         ex.printStackTrace();
+      }
    }
    
    /**
@@ -639,7 +724,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
 
    public String reInitiateReplication() throws Exception {
-      return this.manager.initiateReplication(this.slaveSessionId, this.replPrefix + "_Ver_" + this.ownVersion, this.cascadedReplSlave, this.cascadedReplPrefix);
+      return this.manager.initiateReplication(this.slaveSessionId, this.replPrefix + "_Ver_" + this.ownVersion, this.cascadedReplSlave, this.cascadedReplPrefix, this.initialFilesLocation);
    }
    
    public String getReplPrefix() {
@@ -649,5 +734,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    public String getVersion() {
       return this.ownVersion;
    }
-   
+ 
+   public String getLastMessage() {
+      return this.lastMessage;
+   }
 }

@@ -112,6 +112,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private I_DbPool pool;
    private VersionTransformerCache transformerCache;
    private String cachedListOfReplications;
+   private String initialFilesLocation;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -180,7 +181,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             buf.append(tmp);
          }
          else {
-            String replPrefix = tmpInfo.get("replication.prefix", "REPL_");
+            String replPrefix = SpecificDefault.getReplPrefix(tmpInfo);
             log.warning("Property '" + ReplicationConstants.SUPPORTED_VERSIONS + "' not found for '" + replPrefix + "'");
             if (!isFirst)
                buf.append(",");
@@ -246,25 +247,31 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @param replicationKey This is the dbWatcher replication.prefix attribute.
     * @param cascadeSlaveSessionName The Name of the session of the dbWriter to be used for the cascaded replication. Can be null.
     * @param cascadedReplicationPrefix the prefix identifing the DbWatcher for the cascaded replication. Can be null.  
-    * @param cascadeReplicationPrefix
+    * @param realInitialFilesLocation the file location where the initial dump is stored. If null or an empty String, then it
+    * is assumed to be transfered the "normal" way, that is over the choosen communication protocol.
     * @throws Exception
     */
-   public String initiateReplication(String slaveSessionName, String prefixWithVersion, String cascadeSlaveSessionName, String cascadeReplicationPrefix) throws Exception {
+   public String initiateReplication(String slaveSessionName, String prefixWithVersion, String cascadeSlaveSessionName, String cascadeReplicationPrefix, String realInitialFilesLocation) throws Exception {
       try {
          if (slaveSessionName == null || slaveSessionName.trim().length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The slave session name is null, please provide one");
          if (prefixWithVersion == null || prefixWithVersion.length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The replication.prefix is null, please provide one");
          slaveSessionName = slaveSessionName.trim();
-         String ret = "initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + prefixWithVersion + "'";
+         String ret = "initiateReplication invoked for slave '" + slaveSessionName + "' and on replication '" + prefixWithVersion + "' store location : '" + realInitialFilesLocation + "'";
          log.info(ret);
-         
          
          String replicationPrefix = VersionTransformerCache.stripReplicationPrefix(prefixWithVersion);
          String requestedVersion = VersionTransformerCache.stripReplicationVersion(prefixWithVersion);
          
          I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
          if (individualInfo != null) {
+            
+            if (realInitialFilesLocation != null && realInitialFilesLocation.trim().length() > 0) {
+               this.initialFilesLocation = realInitialFilesLocation.trim();
+               individualInfo.put(ReplicationConstants.INITIAL_FILES_LOCATION, this.initialFilesLocation);
+            }
+            
             individualInfo.put(ReplicationConstants.REPL_VERSION, requestedVersion);
             individualInfo.putObject("org.xmlBlaster.engine.Global", this.global);
             I_ReplSlave slave = null;
@@ -365,7 +372,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                subscriptionAdd(subEvent);
             }
          }
-         
+         this.initialFilesLocation = this.get("replication.initialFilesLocation", "${user.home}/tmp");
          this.initialized = true;
       }
       catch (Throwable e) {
@@ -489,7 +496,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                String requestId = updateQos.getClientProperty("requestId", (String)null);
                if (requestId == null)
                   throw new Exception("The requestId has not been defined");
-               String repl =  updateQos.getClientProperty("replication.prefix", (String)null);
+               String repl =  updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
                String sql =  new String(content);
                sendBroadcastRequest(repl, sql, highPrio, requestId);
                return "OK";
@@ -689,17 +696,13 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       catch (Exception ex) {
          if (ex instanceof XmlBlasterException)
             throw (XmlBlasterException)ex;
-         if (slave != null) {
-            boolean persist = true;
-            try { slave.doPause(persist); } catch (Exception e) { }
-         }
+         if (slave != null)
+            slave.handleException(ex);
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "exception occured when filtering replication messages", "", ex);
       }
       catch (Throwable ex) {
-         if (slave != null) {
-            boolean persist = true;
-            try { slave.doPause(persist); } catch (Exception e) { }
-         }
+         if (slave != null)
+            slave.handleException(ex);
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "throwable occured when filtering replication messages. " + Global.getStackTraceAsString(ex), "", ex);
       }
    }
@@ -1045,6 +1048,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          throw new Exception("Could not find a replication source with replication.prefix='" + replPrefix + "'");
    }
    
+   public String getInitialFilesLocation() {
+      return this.initialFilesLocation;
+   }
+  
 
    private static void mainUsage() {
       System.err.println("You must invoke at least java org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin -cmd insert|delete -requestId someId -replication.prefix somePrefix < filename");
@@ -1068,7 +1075,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          
          int count = Integer.parseInt(requestId.trim());
          
-         String repl = global.getProperty().get("replication.prefix", (String)null);
+         String repl = global.getProperty().get(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
          if (repl == null)
             mainUsage();
          

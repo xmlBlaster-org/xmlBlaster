@@ -4,6 +4,8 @@
 <xsl:param name="queue.highalarm" select="10"/>
 <xsl:param name="queue.highwarn" select="4"/>
 <xsl:param name="show.cascading" select="'no'"/> <!-- the single quotes are important ! -->
+<xsl:param name="show.initialFilesLocation" select="'yes'"/> <!-- the single quotes are important ! -->
+
 <xsl:param name="refresh.rate" select="10"/>
 
 <!-- If you choose not empty here (does not matter what) it will output all ReplSlaves together -->

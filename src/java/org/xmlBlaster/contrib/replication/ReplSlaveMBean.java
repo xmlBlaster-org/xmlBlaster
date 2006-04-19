@@ -24,4 +24,5 @@ public interface ReplSlaveMBean {
    String reInitiateReplication() throws Exception;
    String getReplPrefix();
    String getVersion();
+   String getLastMessage();
 }

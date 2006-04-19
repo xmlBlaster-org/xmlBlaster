@@ -42,6 +42,7 @@ import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 
@@ -531,7 +532,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       log.info("going to initialize the resources");
       this.replaceVariable = new ReplaceVariable();
       this.info = info;
-      this.replPrefix = this.info.get("replication.prefix", "repl_");
+      this.replPrefix = SpecificDefault.getReplPrefix(this.info);
       this.replVersion =  this.info.get("replication.version", "0.0");
       Map map = new HashMap();
       map.put("replVersion", this.replVersion);
@@ -1090,9 +1091,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * 
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
     */
-   public final void initiateUpdate(String topic, String destination, String slaveName, String requestedVersion) throws Exception {
+   public final void initiateUpdate(String topic, String destination, String slaveName, String requestedVersion, String initialFilesLocation) throws Exception {
       
-      log.info("initial replication for destination='" + destination + "' and slave='" + slaveName + "'");
+      log.info("initial replication for destination='" + destination + "' and slave='" + slaveName + "' and location '" + initialFilesLocation + "'");
       Connection conn = null;
       // int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
       // int oldTransactionIsolation = Connection.TRANSACTION_REPEATABLE_READ;
@@ -1123,7 +1124,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
          conn.commit();
-         this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, requestedVersion, this.replVersion);
+         this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, requestedVersion, this.replVersion, initialFilesLocation);
       }
       catch (Exception ex) {
          if (conn != null) {
@@ -1320,5 +1321,12 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
    
+   public static String getReplPrefix(I_Info info) {
+      String pureVal = info.get(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
+      String corrected = Global.getStrippedString(pureVal);
+      if (!corrected.equals(pureVal))
+         log.warning("The " + ReplicationConstants.REPL_PREFIX_KEY + " property has been changed from '" + pureVal + "' to '" + corrected + "' to be able to use it inside a DB");
+      return corrected;
+   }
    
 }

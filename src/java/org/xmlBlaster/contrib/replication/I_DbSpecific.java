@@ -183,10 +183,12 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param destination
     * @param slaveName
     * @param version the version for which to start replication. If null the current version
+    * @param initialFilesLocation tells where to store the initial files in case the replication data
+    * has to be transfered manually by means of copying files.
     * is ment.
     * @throws Exception
     */
-   void initiateUpdate(String topic, String destination, String slaveName, String version) throws Exception;
+   void initiateUpdate(String topic, String destination, String slaveName, String version, String initialFilesLocation) throws Exception;
 
    /**
     * This is the intial command which is invoked on the OS. It is basically used for the

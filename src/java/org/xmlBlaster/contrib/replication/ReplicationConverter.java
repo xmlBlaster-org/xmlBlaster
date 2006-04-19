@@ -27,6 +27,7 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
+import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.util.ReplaceVariable;
 
 /**
@@ -110,7 +111,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          this.transformer.init(info);
          log.info("Loaded transformer pluging '" + transformerClassName + "'");
       }
-      this.replPrefix = this.info.get("replication.prefix", "repl_");
+      this.replPrefix = SpecificDefault.getReplPrefix(this.info);
       boolean forceCreationAndInit = true;
       this.dbSpecific = getDbSpecific(info, forceCreationAndInit);
       final boolean doFix = true;

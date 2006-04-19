@@ -141,8 +141,22 @@ function initiateReplication(objName) {
    var extraDest = "";
      </xsl:otherwise>
    </xsl:choose>
+
+   var initialFilesLocation = "";
+   <xsl:choose>
+     <xsl:when test="$show.initialFilesLocation = 'yes'">
+   var tmp = document.getElementById("initialFilesLocation").checked;
+   if (tmp)
+     intialFilesLocation = "<xsl:value-of select="Attribute[@name='initialFilesLocation']/@value"/>"; 
+     </xsl:when>
+     <xsl:otherwise>
+   var extraSource = "";
+   var extraDest = "";
+     </xsl:otherwise>
+   </xsl:choose>
+
    var url = 'invoke?objectname=' + objName + '&amp;operation=initiateReplication&amp;type0=java.lang.String&amp;value0=' +
-      dest + '&amp;type1=java.lang.String&amp;value1=' + source + '&amp;type2=java.lang.String&amp;value2=' + extraDest + '&amp;type3=java.lang.String&amp;value3=' + extraSource + '&amp;destination=destinationList&amp;template=result' ;
+      dest + '&amp;type1=java.lang.String&amp;value1=' + source + '&amp;type2=java.lang.String&amp;value2=' + extraDest + '&amp;type3=java.lang.String&amp;value3=' + extraSource + '&amp;type4=java.lang.String&amp;value4=' + initialFilesLocation + '&amp;destination=destinationList&amp;template=result' ;
    self.location.href= url;
 }
 
@@ -203,6 +217,18 @@ function cancel() {
                 </td>
               </tr>
 
+   <xsl:choose>
+     <xsl:when test="$show.initialFilesLocation = 'yes'">
+              <tr>
+                <td colspan="1" class="value">
+		  <input type="checkbox" name="initialFilesLocation" id="initialFilesLocation" value=""/>store intial data
+		</td>  
+                <td colspan="1" class="value">
+		  <input type="text" name="initialFiles" id="initialFiles" size="30"><xsl:value-of select="Attribute[@name='initialFilesLocation']/@value"/></input>
+                </td>
+              </tr>
+     </xsl:when>
+   </xsl:choose>
 
 
    <xsl:choose>

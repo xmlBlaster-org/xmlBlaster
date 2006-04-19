@@ -16,6 +16,7 @@ import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
+import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 
 /**
  * This scheduler waiks up in intervals and triggers a database check. 
@@ -45,7 +46,7 @@ public class OracleByEventsScheduler implements I_AlertProducer {
          this.period = info.getLong("alertScheduler.pollInterval", 30000L);
          this.changeDetector = changeDetector;
          this.info = info;
-         this.event = info.get("replication.prefix", "REPL_") + "ITEMS";
+         this.event = SpecificDefault.getReplPrefix(info) + "ITEMS";
          if (this.period <= 0L) {
             log.warning("OracleByEventsScheduler is switched off with alertScheduler.pollInterval=" + this.period);
          }

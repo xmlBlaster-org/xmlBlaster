@@ -161,18 +161,20 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       private String slaveName;
       private String version;
       private I_DbSpecific dbSpecific;
+      private String initialFilesLocation;
       
-      public ExecutionThread(String replTopic, String destination, String slaveName, String version, I_DbSpecific dbSpecific) {
+      public ExecutionThread(String replTopic, String destination, String slaveName, String version, I_DbSpecific dbSpecific, String initialFilesLocation) {
          this.replTopic = replTopic;
          this.destination = destination;
          this.slaveName = slaveName;
          this.version = version;
          this.dbSpecific = dbSpecific;
+         this.initialFilesLocation = initialFilesLocation;
       }
       
       public void run() {
          try {
-            this.dbSpecific.initiateUpdate(replTopic, destination, slaveName, version);
+            this.dbSpecific.initiateUpdate(replTopic, destination, slaveName, version, initialFilesLocation);
          }
          catch (Exception ex) {
             log.severe("An Exception occured when running intial update for '" + replTopic + "' for '" + destination + "' as slave '" + slaveName);
@@ -253,7 +255,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    public final void init(I_Info info) throws Exception {
       log.info("going to initialize the resources");
       this.info = info;
-      this.replPrefix = this.info.get("replication.prefix", "repl_");
+      this.replPrefix = SpecificDefault.getReplPrefix(this.info);
       
       boolean needsPublisher = this.info.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
       if (needsPublisher) {
@@ -388,7 +390,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             if (prop != null)
                requestedVersion = prop.getStringValue();
             // this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
-            ExecutionThread executionThread = new ExecutionThread(replTopic, destination, slaveName, requestedVersion, this.dbSpecific);
+            prop = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_FILES_LOCATION);
+            String initialFilesLocation = null;
+            if (prop != null)
+               initialFilesLocation = prop.getStringValue();
+            ExecutionThread executionThread = new ExecutionThread(replTopic, destination, slaveName, requestedVersion, this.dbSpecific, initialFilesLocation);
             executionThread.start();
             
          }
@@ -460,8 +466,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @param maxKey
     * @throws Exception
     */
-   public final void sendInitialDataResponse(String slaveSessionName, String filename, String destination, String slaveName, long minKey, long maxKey, String requestedVersion, String currentVersion) throws Exception {
-      sendInitialFile(slaveSessionName, filename, minKey, requestedVersion, currentVersion);
+   public final void sendInitialDataResponse(String slaveSessionName, String filename, String destination, String slaveName, long minKey, long maxKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws Exception {
+      sendInitialFile(slaveSessionName, filename, minKey, requestedVersion, currentVersion, initialFilesLocation);
       HashMap attrs = new HashMap();
       attrs.put("_destination", destination);
       attrs.put("_command", "INITIAL_DATA_RESPONSE");
@@ -481,7 +487,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws FileNotFoundException
     * @throws IOException
     */
-   private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey, String requestedVersion, String currentVersion)throws FileNotFoundException, IOException, JMSException  {
+   private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws FileNotFoundException, IOException, JMSException  {
       // in this case they are just decorators around I_ChangePublisher
       if (this.publisher == null) {
          if (shortFilename == null)
@@ -496,6 +502,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
       
+      String dumpId = "" + new Timestamp().getTimestamp();
       // now read the file which has been generated
       String filename = null;
       if (shortFilename != null) {
@@ -512,6 +519,10 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          msg.setStringProperty("_filename", shortFilename);
          msg.setLongProperty(ReplicationConstants.REPL_KEY_ATTR, minKey);
          msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");
+         if (initialFilesLocation != null) {
+            msg.setStringProperty(ReplicationConstants.INITIAL_FILES_LOCATION, initialFilesLocation);
+            msg.setStringProperty(ReplicationConstants.INITIAL_DATA_ID, dumpId);
+         }
          msg.setInputStream(fis);
          producer.send(msg);
          // make a version copy if none exists yet
@@ -562,6 +573,19 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          log.info("initial update requested with no real initial data for '" + slaveSessionName + "' and for replication '" + this.replPrefix + "'");
 
       // send the message for the status change
+      if (initialFilesLocation != null) {
+         // then we save it in a file but we must tell it is finished now
+         TextMessage  endMsg = session.createTextMessage();
+         endMsg.setText("INITIAL UPDATE WILL BE STORED UNDER '" + initialFilesLocation + "'");
+         endMsg.setBooleanProperty(ReplicationConstants.INITIAL_DATA_END, true);
+         endMsg.setStringProperty(ReplicationConstants.INITIAL_DATA_ID, dumpId);
+         producer.send(endMsg);
+         endMsg = session.createTextMessage();
+         endMsg.setText("INITIAL UPDATE WILL BE STORED UNDER '" + initialFilesLocation + "' (going to remote)");
+         endMsg.setBooleanProperty(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE, true);
+         endMsg.setStringProperty(ReplicationConstants.INITIAL_DATA_ID, dumpId);
+         producer.send(endMsg);
+      }
       TextMessage  endMsg = session.createTextMessage();
       endMsg.setText("INITIAL UPDATE ENDS HERE");
       endMsg.setBooleanProperty(ReplicationConstants.END_OF_TRANSITION , true);

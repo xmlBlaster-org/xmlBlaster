@@ -28,6 +28,7 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
+import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 
 /**
  * Test basic functionality.
@@ -131,7 +132,7 @@ public class ReplicationAgent {
    private static void setupProperties(Map map, I_Info readerInfo, I_Info writerInfo) {
       // we hardcode the first ...
       if (readerInfo != null) {
-         replPrefix = readerInfo.get("replication.prefix", "repl_");
+         replPrefix = SpecificDefault.getReplPrefix(readerInfo);
          readerInfo.put("jdbc.drivers", "org.hsqldb.jdbcDriver:" +
                "oracle.jdbc.driver.OracleDriver:" +
                "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 

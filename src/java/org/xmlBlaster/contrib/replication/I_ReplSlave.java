@@ -25,7 +25,7 @@ public interface I_ReplSlave extends I_ContribPlugin {
    public final static String DBWATCHER_SESSION_NAME = "_dbWatcherSessionName";
    public final static String CASCADED_REPL_SLAVE = "_cascadedReplSlave";
    public final static String CASCADED_REPL_PREFIX = "_cascadedReplPrefix";
-
+   
    /**
     * Starts a replication
     * 
@@ -76,10 +76,8 @@ public interface I_ReplSlave extends I_ContribPlugin {
    void setSqlResponse(String sqlResponse);
 
    /**
-    * Pauses the dispatcher. 
-    * @param doPersist true if you want to persist the information that it was stopped.
-    * @throws Exception
+    * Pauses the dispatcher. and sets the message. 
     */
-   void doPause(boolean doPersist) throws Exception;
+   void handleException(Throwable ex);
    
 }

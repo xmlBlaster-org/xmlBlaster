@@ -7,7 +7,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.replication;
 
 public interface ReplicationConstants {
-
    // special topics and session names
    public final static String REPL_MANAGER_SESSION = "replManager/1";
    public final static String REPL_MANAGER_TOPIC = "replManagerTopic";
@@ -47,7 +46,6 @@ public interface ReplicationConstants {
    public final static String DUMP_FILENAME = "dumpName";
    public final static String ALREADY_PROCESSED_ATTR = "alreadyProcessed"; // Used to mark a message which has already been processed and which has been sent twice.
    public final static String EXCEPTION_ATTR = "exception"; 
-   
    // commands
    public final static String REPLICATION_CMD = "REPLICATION";
    public final static String INSERT_ACTION = "INSERT";
@@ -60,8 +58,14 @@ public interface ReplicationConstants {
    public final static String STATEMENT_ACTION = "STATEMENT"; // that is a generic SQL statement
    
    public final static String END_OF_TRANSITION = "_END_OF_TRANSITION"; // sent to determine that the transition status is finished
+   public final static String INITIAL_DATA_END = "_INITIAL_DATA_END"; // sent to determine when to re-close the dispatcher (manual transfer)
+   public final static String INITIAL_DATA_END_TO_REMOTE = "_INITIAL_DATA_END_TO_REMOTE"; // sent to client
    public final static String VERSION_TOKEN = "_Ver_";
    public final static String DUMP_POSTFIX = ".dump";
    public final static String SUPPORTED_VERSIONS = "_supportedVersions";
+   public final static String INITIAL_FILES_LOCATION = "_initialFilesLocation";
+   public final static String INITIAL_DATA_ID = "_initialDataId"; // used for the directory name where to store the initial dump by manual transfer
+   
+   public final static String REPL_PREFIX_DEFAULT = "REPL_";
    
 }

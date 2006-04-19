@@ -37,7 +37,7 @@ public interface ReplManagerPluginMBean {
     * @param cascadedReplicationPrefix the prefix identifing the DbWatcher for the cascaded replication. Can be null.  
     * @throws Exception
     */
-   String initiateReplication(String slaveSessionName, String replPrefix, String cascadeSlaveSessionName, String cascadeReplPrefix) throws Exception;
+   String initiateReplication(String slaveSessionName, String replPrefix, String cascadeSlaveSessionName, String cascadeReplPrefix, String realInitialFilesLocation) throws Exception;
 
    /**
     * Recreates the triggers for the given replication source.
@@ -76,7 +76,14 @@ public interface ReplManagerPluginMBean {
     * 
     *
     */
-   public void clearVersionCache();
+   void clearVersionCache();
 
+   /**
+    * Returns the (default) initialFileLocation which is the directory where the initial data is stored in case you want
+    * to transfer it per file.
+    * 
+    * @return
+    */
+   String getInitialFilesLocation();
    
 }
