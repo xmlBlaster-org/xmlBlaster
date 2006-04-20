@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
@@ -273,6 +274,7 @@ public class ReplicationAgent {
       if (this.readerInfo != null) {
          try {
             log.info("setUp: Instantiating DbWatcher");
+            GlobalInfo.setStrippedHostname(this.readerInfo);
             this.dbWatcher = new DbWatcher();
             this.dbWatcher.init(this.readerInfo);
             
