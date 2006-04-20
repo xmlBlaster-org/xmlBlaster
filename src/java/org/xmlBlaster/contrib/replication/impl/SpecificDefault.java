@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.VersionTransformerCache;
@@ -42,7 +43,6 @@ import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 
@@ -1323,8 +1323,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    
    public static String getReplPrefix(I_Info info) {
       String pureVal = info.get(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
-      String corrected = Global.getStrippedString(pureVal);
-      corrected = ReplaceVariable.replaceAll(corrected, "-", "_");
+      String corrected = GlobalInfo.getStrippedString(pureVal);
       if (!corrected.equals(pureVal))
          log.warning("The " + ReplicationConstants.REPL_PREFIX_KEY + " property has been changed from '" + pureVal + "' to '" + corrected + "' to be able to use it inside a DB");
       return corrected;
