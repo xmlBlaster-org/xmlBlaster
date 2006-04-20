@@ -236,7 +236,7 @@ function toggleDispatcher() {
     	  <tr class="inner">
     	    <td colspan="1" class="normal" title="The last message (for example exceptions)">Last message</td>
        	    <td align="center" colspan="3" class="normal">
-              <center><textarea id="sqlTxt" name="sqlTxt" cols="40" rows="3"><xsl:value-of select="Attribute[@name='LastMessage']/@value"/></textarea></center>
+              <center><textarea id="sqlTxt" name="sqlTxt" cols="45" rows="2"><xsl:value-of select="Attribute[@name='LastMessage']/@value"/></textarea></center>
     	    </td>
     	  </tr>
 

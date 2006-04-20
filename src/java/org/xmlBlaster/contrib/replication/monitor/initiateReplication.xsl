@@ -146,15 +146,16 @@ function initiateReplication(objName) {
    <xsl:choose>
      <xsl:when test="$show.initialFilesLocation = 'yes'">
    var tmp = document.getElementById("initialFilesLocation").checked;
-   if (tmp)
-     intialFilesLocation = "<xsl:value-of select="Attribute[@name='initialFilesLocation']/@value"/>"; 
+   if (tmp) {
+     var initialFilesLocEl = document.getElementById("initialFiles");
+     initialFilesLocation = initialFilesLocEl.getAttribute("value");
+   }
      </xsl:when>
      <xsl:otherwise>
    var extraSource = "";
    var extraDest = "";
      </xsl:otherwise>
    </xsl:choose>
-
    var url = 'invoke?objectname=' + objName + '&amp;operation=initiateReplication&amp;type0=java.lang.String&amp;value0=' +
       dest + '&amp;type1=java.lang.String&amp;value1=' + source + '&amp;type2=java.lang.String&amp;value2=' + extraDest + '&amp;type3=java.lang.String&amp;value3=' + extraSource + '&amp;type4=java.lang.String&amp;value4=' + initialFilesLocation + '&amp;destination=destinationList&amp;template=result' ;
    self.location.href= url;
@@ -163,6 +164,17 @@ function initiateReplication(objName) {
 function cancel() {
    var url = '<xsl:value-of select="$destinationListUrl"/>';
    self.location.href= url;
+}
+
+function initialFilesChanged() {
+   var source = document.getElementById("initialFilesLocation").checked;
+   var dest = document.getElementById("initialFiles");
+   if (source) {
+      dest.removeAttribute("disabled");
+   }
+   else {
+      dest.setAttribute("disabled", "true");
+   }
 }
 
 
@@ -221,10 +233,17 @@ function cancel() {
      <xsl:when test="$show.initialFilesLocation = 'yes'">
               <tr>
                 <td colspan="1" class="value">
-		  <input type="checkbox" name="initialFilesLocation" id="initialFilesLocation" value=""/>store intial data
-		</td>  
+                  <input type="checkbox" name="initialFilesLocation" id="initialFilesLocation" onclick="initialFilesChanged()" value=""/>store initial data
+                </td>  
                 <td colspan="1" class="value">
-		  <input type="text" name="initialFiles" id="initialFiles" size="30"><xsl:value-of select="Attribute[@name='initialFilesLocation']/@value"/></input>
+                  <xsl:element name="input">
+                    <xsl:attribute name="type">text</xsl:attribute>
+                    <xsl:attribute name="disabled">true</xsl:attribute>
+                    <xsl:attribute name="name">initialFiles</xsl:attribute>
+                    <xsl:attribute name="id">initialFiles</xsl:attribute>
+                    <xsl:attribute name="size">35</xsl:attribute>
+                    <xsl:attribute name="value"><xsl:value-of select="Attribute[@name='InitialFilesLocation']/@value"/></xsl:attribute>
+                  </xsl:element>   
                 </td>
               </tr>
      </xsl:when>
