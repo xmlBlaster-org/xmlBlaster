@@ -380,6 +380,7 @@ TODO
       <echo message="         -DADD_HSQLDB=false    does not add hsqldb.jar, no embedded database support [true]"/>
       <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
       <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XMLRPC support for clients [true]"/>
+      <echo message="         -DADD_EMAIL=true      mail.jar,activaton.jar, for EMAIL support [false]"/>
       <echo message="         -DADD_SNMP=false      does not add jax.jar, no SNMP support for clients [false]"/>
       <echo message="         -DADD_PROP=[property file] Adds your customized xmlBlaster.properties file"/>
       <echo message="         -DADD_LOGGINGPROP=[property file] Adds your customized logging.properties file"/>
@@ -1837,7 +1838,7 @@ TODO
       <property name="ADD_HSQLDB" value="true"/>
       <property name="ADD_CORBA" value="true"/>
       <property name="ADD_XMLRPC" value="true"/>
-      <property name="ADD_SNMP" value="true"/>
+      <property name="ADD_SNMP" value="false"/>
       <property name="ADD_PROP" value="false"/> <!-- e.g. -DADD_PROP=myclient/xmlBlaster.properties -->
       <property name="ADD_PLUGINPROP" value="false"/> <!-- e.g. -DADD_PLUGINPROP=myclient/xmlBlasterPlugins.xml -->
       <property name="ADD_LOGGINGPROP" value="config/logging.properties"/> <!-- e.g. -DADD_LOGGINGPROP=myclient/logging.properties -->
@@ -1942,7 +1943,7 @@ TODO
             <unjar src="${lib.dir}/mail.jar" dest="${dist-client.dir}/classes" />
          </case>
          <default>
-            <echo message="ADD_EMAIL=${ADD_EMAIL}: No XML parser added, we assume you supply one yourself!" />
+            <echo message="ADD_EMAIL=${ADD_EMAIL}: No email support jar files added" />
          </default>
       </switch>
 
