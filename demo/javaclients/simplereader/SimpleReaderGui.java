@@ -40,7 +40,6 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
    private static final String ME = "SimpleReaderGui";
 
    private static final String USR_LOGIN  = ME;
-   private static final String USR_PASSWD = "secret";
 
    private ImageIcon image;
 
@@ -97,7 +96,8 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
          I_XmlBlasterAccess xmlBlaster = glob.getXmlBlasterAccess();
          srGui = new SimpleReaderGui(xmlBlaster);
          srGui.loadImage();
-         ConnectQos qos = new ConnectQos(glob, USR_LOGIN, USR_PASSWD);
+         String loginName = glob.getProperty().get("session.name", "");
+         ConnectQos qos = (loginName.length() < 1) ? new ConnectQos(glob, USR_LOGIN, null) : new ConnectQos(glob);
          xmlBlaster.connect(qos, srGui);
          srGui.setTitle(ME + "  " + xmlBlaster.getSessionName().getNodeIdStr() + "  <no subscription>");
       }
