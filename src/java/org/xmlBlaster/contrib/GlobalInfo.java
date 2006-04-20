@@ -18,6 +18,7 @@ package org.xmlBlaster.contrib;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -42,6 +43,38 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    private Map objects = new HashMap();
    private Set propsOfOwnInterest;
    private InfoHelper helper;
+
+   public static String getStrippedString(String pureVal) {
+      String corrected = GlobalInfo.getStrippedString(pureVal);
+      return ReplaceVariable.replaceAll(corrected, "-", "_");
+   }
+   
+   /**
+    * Convenience to allow the usage of a name mapped to the hostname which can be used as an identifier in a database.
+    * Specifically used for the prefix in the replication.
+    * @param info can be null, in which case only system properties are changed.
+    */
+   public static String setStrippedHostname(I_Info info) {
+      String hostName = System.getProperty("host.name");
+      String strippedHostName = getStrippedString(hostName);
+      String oldStrippedHostName = System.getProperty("stripped.host.name");
+      if (oldStrippedHostName != null)
+         log.warning("The system property 'stripped.host.name' was already set to '" + oldStrippedHostName + "' will NOT change it to '" + strippedHostName + "'");
+      else {
+         System.setProperty("stripped.host.name", strippedHostName);
+         log.info("Set system property 'stripped.host.name' to '" + strippedHostName + "'");
+      }
+      if (info != null) {
+         oldStrippedHostName = info.get("stripped.host.name", null);
+         if (oldStrippedHostName != null)
+            log.warning("The info property 'stripped.host.name' was already set to '" + oldStrippedHostName + "' will NOT change it to '" + strippedHostName + "'");
+         else {
+            info.put("stripped.host.name", strippedHostName);
+            log.info("Set info property 'stripped.host.name' to '" + strippedHostName + "'");
+         }
+      }
+      return strippedHostName;
+   }
    
    /**
     * Checks in the registry if such an object exitsts and if not it
@@ -124,6 +157,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       //    this.global = global_;
       // this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
 
+      setStrippedHostname(this);
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;
       if (log.isLoggable(Level.FINER)) {
