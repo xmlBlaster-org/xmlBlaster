@@ -45,7 +45,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    private InfoHelper helper;
 
    public static String getStrippedString(String pureVal) {
-      String corrected = GlobalInfo.getStrippedString(pureVal);
+      String corrected = Global.getStrippedString(pureVal);
       return ReplaceVariable.replaceAll(corrected, "-", "_");
    }
    
@@ -56,6 +56,10 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     */
    public static String setStrippedHostname(I_Info info) {
       String hostName = System.getProperty("host.name");
+      if (hostName == null) {
+         log.warning("the property 'host.name' is not set, will not set 'stripped.host.name'");
+         return null;
+      }
       String strippedHostName = getStrippedString(hostName);
       String oldStrippedHostName = System.getProperty("stripped.host.name");
       if (oldStrippedHostName != null)
