@@ -156,9 +156,15 @@ public class DbWriter implements I_Update {
       if (!this.isAlive) {
          throw new Exception("update topic='" + topic + "' happens when we not alive: \n" + content);
       }
-      ClientProperty prop = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
-      if (prop != null) {
+      ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
+      ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
+      if (dumpProp != null) {
          this.writer.update(topic, content, attrMap);
+      }
+      else if (endToRemoteProp != null) {
+         String txt = "Feature 'manual file transfer' not implemented yet";
+         log.severe(txt);
+         throw new Exception(txt);
       }
       else {
          SqlInfo updateInfo = this.parser.parse(new String(content));

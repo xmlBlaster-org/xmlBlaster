@@ -398,16 +398,13 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          throw new Exception("The msgUnit to store is null, can not store");
       if (location == null || location.getStringValue() == null || location.getStringValue().trim().length() < 1)
          throw new Exception("The location is empty, can not store the message unit '" + msgUnit.getLogId() + "'");
-      
       // String fileId = "" + new Timestamp().getTimestamp();
       // this way they are automatically sorted and in case of a repeated write it simply would be overwritten.
       String fileId = entry.getPriority() + "-" + entry.getUniqueId();
+      
       String pathName = location.getStringValue().trim();
-      File dirWhereToStore = new File(pathName);
-      if (!dirWhereToStore.exists())
-         throw new Exception("The path '" + pathName + "' does not exist");
-      if (!dirWhereToStore.isDirectory())
-         throw new Exception("The path '" + pathName + "' is not a directory");
+      File dirWhereToStore = ReplManagerPlugin.checkExistance(pathName);
+      
       if (subDirProp == null)
          throw new Exception("The property to define the file name (dataId) is not set, can not continue");
       String subDirName = subDirProp.getStringValue();
@@ -415,7 +412,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          throw new Exception("The subdirectory to be used to store the initial data is empty");
       File subDir = new File(dirWhereToStore, subDirName);
       if (!subDir.exists()) {
-         if (!dirWhereToStore.mkdir()) {
+         if (!subDir.mkdir()) {
             String txt = "could not make '" + subDir.getAbsolutePath() + "' to be a directory. Check your rights";
             log.severe(txt);
             throw new Exception(txt);
@@ -480,24 +477,34 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          MsgUnit msgUnit = entry.getMsgUnit();
          ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
          
-         // check if the message has to be stored locally
-         ClientProperty initialFilesLocation = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_FILES_LOCATION);
-         if (initialFilesLocation != null) {
-            ClientProperty subDirName = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_ID);
-            storeChunkLocally(entry, initialFilesLocation, subDirName);
-            queue.removeRandom(entry);
-            entries.remove(i); // TODO INVERT SEQUENCE SINCE THEORETICALLY IT COULD BE MORE THAN ONE MSG IN THE LIST
-            continue;
-         }
          // check if the message is the end of the data (only sent in case the initial data has to be stored on file in which
          // case the dispatcher shall return in its waiting state.
          ClientProperty endOfData = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END);
+         ClientProperty initialFilesLocation = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_FILES_LOCATION);
+         ClientProperty subDirName = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_ID);
          if (endOfData != null) {
             final boolean doPersist = true;
             doPause(doPersist);
             queue.removeRandom(entry);
             entries.remove(i);
-            this.lastMessage = "MANUAL DATA TRANSFER: WAITING";
+            String dirName = "unknown";
+            if (subDirName != null) {
+               if (initialFilesLocation != null) {
+                  File base = new File(initialFilesLocation.getStringValue().trim());
+                  File complete = new File(base, subDirName.getStringValue().trim());
+                  dirName = complete.getAbsolutePath();
+               }
+            }
+            this.lastMessage = "Manual Data transfer: WAITING (stored on '" + dirName + "')";
+            continue;
+         }
+
+         // check if the message has to be stored locally
+         ClientProperty endToRemote = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
+         if (initialFilesLocation != null && (endToRemote == null || !endToRemote.getBooleanValue())) {
+            storeChunkLocally(entry, initialFilesLocation, subDirName);
+            queue.removeRandom(entry);
+            entries.remove(i); // TODO INVERT SEQUENCE SINCE THEORETICALLY IT COULD BE MORE THAN ONE MSG IN THE LIST
             continue;
          }
          

@@ -67,6 +67,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -268,6 +269,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          if (individualInfo != null) {
             
             if (realInitialFilesLocation != null && realInitialFilesLocation.trim().length() > 0) {
+               checkExistance(realInitialFilesLocation.trim());
                this.initialFilesLocation = realInitialFilesLocation.trim();
                individualInfo.put(ReplicationConstants.INITIAL_FILES_LOCATION, this.initialFilesLocation);
             }
@@ -1052,6 +1054,15 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       return this.initialFilesLocation;
    }
   
+   public static File checkExistance(String pathName) throws Exception {
+      File dirWhereToStore = new File(pathName);
+      if (!dirWhereToStore.exists())
+         throw new Exception("The path '" + pathName + "' does not exist");
+      if (!dirWhereToStore.isDirectory())
+         throw new Exception("The path '" + pathName + "' is not a directory");
+      return dirWhereToStore;
+   }
+   
 
    private static void mainUsage() {
       System.err.println("You must invoke at least java org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin -cmd insert|delete -requestId someId -replication.prefix somePrefix < filename");

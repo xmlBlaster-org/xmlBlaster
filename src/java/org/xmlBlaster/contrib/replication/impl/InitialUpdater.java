@@ -579,11 +579,13 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          endMsg.setText("INITIAL UPDATE WILL BE STORED UNDER '" + initialFilesLocation + "'");
          endMsg.setBooleanProperty(ReplicationConstants.INITIAL_DATA_END, true);
          endMsg.setStringProperty(ReplicationConstants.INITIAL_DATA_ID, dumpId);
+         endMsg.setStringProperty(ReplicationConstants.INITIAL_FILES_LOCATION, initialFilesLocation);
          producer.send(endMsg);
          endMsg = session.createTextMessage();
          endMsg.setText("INITIAL UPDATE WILL BE STORED UNDER '" + initialFilesLocation + "' (going to remote)");
          endMsg.setBooleanProperty(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE, true);
          endMsg.setStringProperty(ReplicationConstants.INITIAL_DATA_ID, dumpId);
+         endMsg.setStringProperty(ReplicationConstants.INITIAL_FILES_LOCATION, initialFilesLocation);
          producer.send(endMsg);
       }
       TextMessage  endMsg = session.createTextMessage();
