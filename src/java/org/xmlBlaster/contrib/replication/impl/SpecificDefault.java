@@ -1324,6 +1324,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    public static String getReplPrefix(I_Info info) {
       String pureVal = info.get(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
       String corrected = Global.getStrippedString(pureVal);
+      corrected = ReplaceVariable.replaceAll(corrected, "-", "_");
       if (!corrected.equals(pureVal))
          log.warning("The " + ReplicationConstants.REPL_PREFIX_KEY + " property has been changed from '" + pureVal + "' to '" + corrected + "' to be able to use it inside a DB");
       return corrected;
