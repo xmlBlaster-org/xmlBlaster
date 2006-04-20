@@ -306,7 +306,14 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("       transId := CHR(replKey);\n");
       buf.append("    END IF;\n");
       buf.append("    UPDATE " + this.replPrefix + "items SET trans_key=transId WHERE repl_key=replKey;\n");
-      
+      buf.append("    IF INSERTING THEN\n");
+      buf.append("       dbms_lob.close(newCont);\n");
+      buf.append("    ELSIF DELETING THEN\n");
+      buf.append("       dbms_lob.close(oldCont);\n");
+      buf.append("    ELSE\n");
+      buf.append("       dbms_lob.close(oldCont);\n");
+      buf.append("       dbms_lob.close(newCont);\n");
+      buf.append("    END IF;\n");
       buf.append("END ").append(triggerName).append(";\n");
       buf.append("\n");
       return buf.toString();
