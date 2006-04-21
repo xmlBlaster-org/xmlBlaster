@@ -603,6 +603,13 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
       it won't accept uncompressed clients. If you have both types of clients you need
       to register two SOCKET protocol driver in <tt>xmlBlasterPlugins.xml</tt>.
       </p>
+      <p>Note that the <i>zlib</i> setting compresses block wise and violates the
+      described SOCKET protocol format, it adds a prefix to the message format.
+      A first byte at the beginning, the <code>compressionFlag</code>, where '1' is zlib compressed and '0' is uncompressed.
+      This is followed by 4 bytes which contain the length of the uncompressed message.
+      If <code>compressionFlag==1</code>, there are another 4 bytes which contain the compressed length.
+      See <code>ZBlockOutputStream.java:86</code> for more details.
+      </p>
       <p>
       For a simple usage in this test we set following parameters in <tt>xmlBlaster.properties</tt>
       </p>
