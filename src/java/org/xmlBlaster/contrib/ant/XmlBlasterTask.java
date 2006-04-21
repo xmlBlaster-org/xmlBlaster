@@ -97,7 +97,17 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <p>Note that the ant properties are weakest, followed by xmlBlaster.properties settings
  * and the &lt;property> tags in the script are strongest.
  * </p>
- * @todo Resolve class loader problem, classes loaded by reflection inside the xmlBlaster client library are not found
+ * <h3>Classloader problem:</h3>
+ * <p>Loading classes like the JDBC driver (hsqldb.jar)
+ * or loading of customized JDK1.4 logging classes from logging.properties fails.<br />
+ * The reason is that ant uses an own Classloader and the failing classes
+ * to load seem to be loaded by the system Classloader (<code>ClassLoader.getSystemClassLoader().loadClass(word);</code>),
+ * but this doesn't know our classes to load!<br />
+ * The workaround is to set LOCALCLASSPATH before startig ant, for example:<br />
+ * <code> export LOCALCLASSPATH=$CLASSPATH:$HOME/apache-ant-1.6.5/lib/ant.jar</code><br />
+ * which resolves the issue (assuming that your CLASSPATH contains all needed classes already).
+ * </p>
+ * 
  * @author Marcel Ruff
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html">http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html</a>
  * @see <a href="http://ant.apache.org/manual/index.html">http://ant.apache.org/manual/index.html</a>
@@ -220,6 +230,7 @@ public class XmlBlasterTask extends Task {
    }
 
    /**
+    * Pass the name of a file which contains XmlBlaster script markup. 
     * @param scriptFile The scriptFile to set.
     */
    public void setScriptFile(String scriptFile) {
@@ -241,6 +252,7 @@ public class XmlBlasterTask extends Task {
    }
 
    /**
+    * Fake the sender address, this is useful to resend dead messages. 
     * @param prepareForPublish The prepareForPublish to set.
     */
    public void setPrepareForPublish(boolean prepareForPublish) {
