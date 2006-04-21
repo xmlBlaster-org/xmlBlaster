@@ -289,6 +289,10 @@
            and the normal flow of the program is continued. If the error code is unknown a
            <i>resource.configuration</i> error is thrown and the runlevel flow is interrupted.
        </li>
+       <li>the <b><i>create</i></b> attribute wether this plugin has to be created or not. It defaults to 'true'.
+           If you set it to false its configuration will be loaded but the plugin itself will not be created.
+	   This is a way to inhibit a plugin without the need of deleting its configuration.
+       </li>
      </ul>
 
     
