@@ -94,7 +94,7 @@ public final class NodeInfo
    /**
     * @return The connection configuration for the remote cluster node, never null
     */   
-   ConnectQosData getConnectQosData() {
+   public ConnectQosData getConnectQosData() {
       /*
       if (this.connectQosData == null) {
          synchronized (this) {
