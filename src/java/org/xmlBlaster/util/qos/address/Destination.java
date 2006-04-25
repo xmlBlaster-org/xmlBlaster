@@ -169,6 +169,8 @@ public class Destination implements java.io.Serializable
     * @return The Destination as a XML ASCII string
     */
    public final String toXml(String extraOffset) {
+      if (this.destination == null)
+        return "";
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -180,10 +182,10 @@ public class Destination implements java.io.Serializable
          sb.append(" forceQueuing='").append(forceQueuing).append("'");
 
       // Set the real used destination to support PtP routing
-      if (destination.isNodeIdExplicitlyGiven())
-         sb.append(">").append(destination.getAbsoluteName()).append("</destination>");
+      if (this.destination.isNodeIdExplicitlyGiven())
+         sb.append(">").append(this.destination.getAbsoluteName()).append("</destination>");
       else
-         sb.append(">").append(destination.getRelativeName()).append("</destination>");
+         sb.append(">").append(this.destination.getRelativeName()).append("</destination>");
 
       return sb.toString();
    }
