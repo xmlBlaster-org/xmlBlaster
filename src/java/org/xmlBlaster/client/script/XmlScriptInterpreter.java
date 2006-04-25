@@ -363,10 +363,11 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       }
       
       if ("wait".equals(qName)) {
-          String message = atts.getValue("message");
-          if (message != null) {
-              System.out.println(message);
-          }
+         String message = atts.getValue("message");
+         if (message != null) {
+            System.out.println(message);
+         }
+         this.waitNumUpdates = 0;
          String tmp = atts.getValue("updates");
          if (tmp != null) {
             try {
@@ -380,17 +381,27 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          if (tmp != null) {
             try {
                delay = Long.parseLong(tmp);
+               if (delay == 0) delay = Integer.MAX_VALUE;
             }
             catch (Throwable e) {
             }
          }
          if (this.waitNumUpdates > 0 || delay > 0) {
-           synchronized (waitMutex) {
-               try {
-            	   waitMutex.wait(delay);
-                }
-                catch (InterruptedException e) {
-                }
+           synchronized (this.waitMutex) {
+              if (this.waitNumUpdates > 0 && this.updateCounter >= this.waitNumUpdates) {
+                 // updates have arrived already
+              }
+              else {
+                 try {
+               	  waitMutex.wait(delay);
+                 }
+                 catch (InterruptedException e) {
+                 }
+                 if (this.waitNumUpdates == 0 || this.updateCounter < this.waitNumUpdates) {
+                    log.info("wait timeout occurred after " + delay + " milli.");
+                 }
+                 this.updateCounter = 0;
+              }
            }
          }
          return;
@@ -861,17 +872,15 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
     * @throws XmlBlasterException
     */
 	public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-		this.updateCounter++;
-		log.fine("Received #" + this.updateCounter);
-        if (this.waitNumUpdates > 0) {
-    		if (this.updateCounter >= this.waitNumUpdates) {
-    			if (this.updateCounter == this.waitNumUpdates) log.info("Fire notify");
-	            synchronized (waitMutex) {
-	            	waitMutex.notify();
-	            }
-    		}
-        }
-
+      synchronized (this.waitMutex) {
+         if (updateQos.isOk())
+            this.updateCounter++;
+         if (this.waitNumUpdates > 0 && this.updateCounter >= this.waitNumUpdates) {
+      		if (this.updateCounter == this.waitNumUpdates) log.info("Fire notify, " + this.updateCounter + " updates arrived");
+          	waitMutex.notify();
+         }
+      }
+      if (log.isLoggable(Level.FINE)) log.fine("Received #" + this.updateCounter);
 		return null;
 	}
    
