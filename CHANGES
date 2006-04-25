@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ o #15093 Extended XmlScript with
+   <wait delay="60000" updates="4" message="Waiting for 4 updates (timeout is 1 min) ..."/>
 
  o #15055 RequestReplyExecutor.java returns now address.clone
    TODO - pass specific address of client for authentication
