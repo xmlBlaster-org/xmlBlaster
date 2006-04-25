@@ -39,7 +39,7 @@
        <li><b>publishArr</b> childs: one or more <i>message</i></li>
        <li><b>subscribe</b> childs: <i>key</i> and <i>qos</i></li>
        <li><b>unSubscribe</b> childs: <i>key</i> and <i>qos</i></li>
-       <li><b>wait</b> no childs but one attribute: <i>delay</i>: the time to wait expressed in milliseconds</li>
+       <li><b>wait</b> no childs but attributes: <i>delay</i>: the time to wait expressed in milliseconds. <i>updates</i>: the number of update messages to wait for</li>
        <li><b>input</b> Waits until the user hits a key, no childs but two attributes: <i>message</i>: the prompt message; <i>delay</i>: the time to wait expressed in milliseconds until the message prompt is displayed</li>
      </ul>
      For the qos and the key tags the syntax is the one defined in the client interface.
@@ -155,6 +155,11 @@ java javaclients.script.XmlScript \
 ]]>
       
       </pre>
+      <p>
+    Waiting could as well look like this:
+  &lt;wait delay="6000" updates="4" message="Waiting for messages ..."/>
+      </p>
+
       </p>
       <p>And as the response to the upper request:<br/>
 <pre class="BORDER">
