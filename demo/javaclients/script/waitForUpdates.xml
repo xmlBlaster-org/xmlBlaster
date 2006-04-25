@@ -25,9 +25,16 @@
 
   <subscribe><key oid="Hello"></key><qos><persistent>false</persistent></qos></subscribe>
 
-  <wait delay="600000" updates="4" message="Waiting for updates ..."/>
+  <wait delay="60000" updates="4" message="Waiting for 4 updates (timeout is 1 min) ..."/>
 
   <unSubscribe><key oid="Hello"/></unSubscribe>
+
+  <subscribe><key oid="Hello"></key><qos><persistent>false</persistent></qos></subscribe>
+
+  <wait delay="10000" updates="2" message="Waiting for 2 more updates (timeout is 10 sec) ..."/>
+
+  <unSubscribe><key oid="Hello"/></unSubscribe>
+
   <disconnect />
 </xmlBlaster>
 
