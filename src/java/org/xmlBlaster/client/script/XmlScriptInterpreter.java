@@ -7,6 +7,9 @@ package org.xmlBlaster.client.script;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -130,6 +133,10 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    protected StringBuffer response;
    protected boolean needsRootEndTag;
    protected OutputStream out;
+   
+   protected Object waitMutex = new Object();
+   protected long updateCounter;
+   protected int waitNumUpdates;
    
    /**
     * Set true to send a simple exception format like
@@ -356,14 +363,35 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       }
       
       if ("wait".equals(qName)) {
-         String tmp = atts.getValue("delay");
+          String message = atts.getValue("message");
+          if (message != null) {
+              System.out.println(message);
+          }
+         String tmp = atts.getValue("updates");
          if (tmp != null) {
             try {
-               long delay = Long.parseLong(tmp);
-               Thread.sleep(delay);
+               this.waitNumUpdates = Integer.parseInt(tmp);
             }
             catch (Throwable e) {
             }
+         }
+         long delay = Integer.MAX_VALUE;
+         tmp = atts.getValue("delay");
+         if (tmp != null) {
+            try {
+               delay = Long.parseLong(tmp);
+            }
+            catch (Throwable e) {
+            }
+         }
+         if (this.waitNumUpdates > 0 || delay > 0) {
+           synchronized (waitMutex) {
+               try {
+            	   waitMutex.wait(delay);
+                }
+                catch (InterruptedException e) {
+                }
+           }
          }
          return;
       }
@@ -821,6 +849,31 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, "dumpToFile", "Please check your '"+path+"' or file name '" + fn + "'", e);
       }
    }
+ 
+   /**
+    * If a callback handler was registered, we will be notified here
+    * about updates as well
+    * @param cbSessionId
+    * @param updateKey
+    * @param content
+    * @param updateQos
+    * @return
+    * @throws XmlBlasterException
+    */
+	public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+		this.updateCounter++;
+		log.fine("Received #" + this.updateCounter);
+        if (this.waitNumUpdates > 0) {
+    		if (this.updateCounter >= this.waitNumUpdates) {
+    			if (this.updateCounter == this.waitNumUpdates) log.info("Fire notify");
+	            synchronized (waitMutex) {
+	            	waitMutex.notify();
+	            }
+    		}
+        }
+
+		return null;
+	}
    
    public static void main(String[] args) {
       try {

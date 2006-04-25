@@ -12,6 +12,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -19,6 +20,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.ConnectQosData;
@@ -45,7 +47,7 @@ import java.util.HashMap;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.script.html">The client.script requirement</a>
  */
-public class XmlScriptClient extends XmlScriptInterpreter {
+public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback {
    
    private final String ME = "XmlScriptClient";
    private static Logger log = Logger.getLogger(XmlScriptClient.class.getName());
@@ -142,15 +144,17 @@ public class XmlScriptClient extends XmlScriptInterpreter {
             boolean implicitConnect = !MethodName.CONNECT.equals(methodName);
             // if (this.qos.length() < 1) this.qos.append("<qos />");
             String ret = null;
+            I_Callback cb = null;
+            if (this.callback != null) cb = this; // we intercept callbacks
             if (implicitConnect || this.qos.length() < 1) {
                log.warning("Doing implicit xmlBlaster.connect() as no valid <connect/> markup is in the script");
                ConnectQos connectQos = new ConnectQos(this.glob);
-               ret = this.access.connect(connectQos, this.callback).toXml();
+               ret = this.access.connect(connectQos, cb).toXml();
             }
             else {
                ConnectQosData data = this.connectQosFactory.readObject(this.qos.toString());
                // nectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
-               ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
+               ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), cb);
                if (tmp != null) ret = tmp.toXml("  ");
                else ret = "";
             }
@@ -341,4 +345,12 @@ public class XmlScriptClient extends XmlScriptInterpreter {
          ex.printStackTrace();
       }
    }
+
+	public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+		super.update(cbSessionId, updateKey, content, updateQos);
+		if (this.callback != null) {
+			return this.callback.update(cbSessionId, updateKey, content, updateQos);
+		}
+		return null;
+	}
 }
