@@ -353,7 +353,7 @@ class SocketConnectorThread extends Thread {
          log.throwing(SocketGetter.class.getName(), "getKey", e);
       }
 
-      // create a conveninece reader
+      // create a convenience reader
       BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
       String line = null;
@@ -364,7 +364,7 @@ class SocketConnectorThread extends Thread {
          log.throwing(SocketGetter.class.getName(), "getKey", e);
       }
 
-      // if no line is given, retrun null
+      // if no line is given, return null
       if (line == null) {
          log.severe("EOF reached");
          return null;
