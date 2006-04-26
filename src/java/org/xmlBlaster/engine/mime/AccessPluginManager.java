@@ -17,6 +17,7 @@ import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -174,9 +175,10 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
    /**
     * Invoked on new subscription or get() invocation, loads plugin. 
     * You have to check yourself if it is loaded already
-    * @return true if initially loaded, and false if was loaded already or on error
+    * @return true if initially loaded, and false if was loaded already
+    * @exception on error
     */
-   public final boolean addAccessFilterPlugin(String type, String version)
+   public final boolean addAccessFilterPlugin(String type, String version) throws XmlBlasterException
    {
       StringBuffer key = new StringBuffer(80);
       key.append(type).append(version);
@@ -189,8 +191,8 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
       try {
          I_AccessFilter filterPlugin = getPlugin(type, version);
          if (filterPlugin == null) {
-            log.severe("Problems accessing plugin " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
-            return false;
+            log.warning("Problems accessing plugin " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Problems accessing subscribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]");
          }
 
          // filterPlugin.initialize(glob); is done via PluginManagerBase -> postInstantiate()
@@ -220,11 +222,14 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
          }
 
          return true;
+      } catch (XmlBlasterException e) {
+         log.warning("Problems accessing subscribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
+         throw e;
       } catch (Throwable e) {
          log.severe("Problems accessing subscribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
          e.printStackTrace();
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Problems accessing subscribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]", e);
       }
-      return false;
    }
 
    public void shutdown() {
