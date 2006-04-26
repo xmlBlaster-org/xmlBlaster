@@ -53,7 +53,6 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
     * Constructs the TestCorbaThreads object.
     * <p />
     * @param testName  The name used in the test suite
-    * @param loginName The name to login to the xmlBlaster
     */
    public TestCorbaThreads(Global glob, String testName) {
        super(testName);
