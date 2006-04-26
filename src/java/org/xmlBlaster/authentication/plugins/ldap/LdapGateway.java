@@ -410,7 +410,7 @@ public class LdapGateway
 
    /**
     * Check password
-    * @param password The clear text password
+    * @param userPassword The clear text password
     * @return true The password is valid
     */
    public boolean checkPassword(String loginName, String userPassword) throws XmlBlasterException
