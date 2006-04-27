@@ -539,7 +539,10 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             try {
                boolean force = false;
                boolean forceSend = false;
-               this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION", "", null, force, null, forceSend);
+               TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(this.pool), "TEST_REPLICATION");
+               tableToWatch.setActions("");
+               tableToWatch.setTrigger(null);
+               this.dbSpecific.addTableToWatch(tableToWatch, force, null, forceSend);
                CallableStatement st = conn.prepareCall(sql);
                st.setString(2, null);
                st.setString(3, this.specificHelper.getOwnSchema(this.pool));
@@ -920,7 +923,10 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       boolean force = false;
       String destination = null;
       boolean forceSend = false;
-      this.dbSpecific.addTableToWatch(catalog, schema, tableName, flags, null, force, destination, forceSend);
+      TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, tableName);
+      tableToWatch.setActions(flags);
+      tableToWatch.setTrigger(null);
+      this.dbSpecific.addTableToWatch(tableToWatch, force, destination, forceSend);
       Statement st = conn.createStatement();
       ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
       assertTrue("testing '" + tableName + "' went wrong since no entries found", rs.next());
@@ -934,7 +940,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       rs.close();
       st.close();
       // test removal now
-      TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, tableName);
       this.dbSpecific.removeTableToWatch(tableToWatch, false);
       st = conn.createStatement();
       rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
@@ -1020,7 +1025,11 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          boolean force = false;
          String destination = null;
          boolean forceSend = false;
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination, forceSend);
+
+         TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+         tableToWatch.setActions("IDU");
+         tableToWatch.setTrigger(null);
+         this.dbSpecific.addTableToWatch(tableToWatch, force, destination, forceSend);
          
          // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
          this.dbSpecific.forceTableChangeCheck();
@@ -1111,7 +1120,10 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          boolean force = false;
          String destination = null;
          boolean forceSend = false;
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination, forceSend);
+         TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+         tableToWatch.setActions("IDU");
+         tableToWatch.setTrigger(null);
+         this.dbSpecific.addTableToWatch(tableToWatch, force, destination, forceSend);
 
          // check that nothing has been written in repl_items
          Statement st = conn.createStatement();

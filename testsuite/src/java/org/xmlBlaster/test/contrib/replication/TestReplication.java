@@ -22,6 +22,7 @@ import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationAgent;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 
 /**
  * Test basic functionality for the replication. This test needs an instance of xmlBlaster running.
@@ -311,7 +312,9 @@ public class TestReplication extends XMLTestCase {
             boolean force = false;
             String destination = null;
             boolean forceSend = false;
-            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination, forceSend);
+            TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+            tableToWatch.setActions("IDU");
+            getDbSpecific().addTableToWatch(tableToWatch, force, destination, forceSend);
          }
          catch (Exception ex) {
             ex.printStackTrace();
@@ -376,7 +379,9 @@ public class TestReplication extends XMLTestCase {
             boolean force = false;
             String destination = null;
             boolean forceSend = false;
-            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination, forceSend);
+            TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+            tableToWatch.setActions("IDU");
+            getDbSpecific().addTableToWatch(tableToWatch, force, destination, forceSend);
          }
          catch (Exception ex) {
             ex.printStackTrace();
@@ -598,7 +603,9 @@ public class TestReplication extends XMLTestCase {
             boolean force = false;
             String destination = null;
             boolean forceSend = false;
-            getDbSpecific().addTableToWatch(null, this.specificHelper.getOwnSchema(pool), tableName, "IDU", null, force, destination, forceSend);
+            TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+            tableToWatch.setActions("IDU");
+            getDbSpecific().addTableToWatch(tableToWatch, force, destination, forceSend);
          }
          catch (Exception ex) {
             ex.printStackTrace();

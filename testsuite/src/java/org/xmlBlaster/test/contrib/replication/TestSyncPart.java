@@ -27,6 +27,7 @@ import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.jms.XBSession;
 
@@ -144,7 +145,9 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
          this.dbSpecific.bootstrap(conn, doWarn, force);
          String destination = null;
          boolean forceSend = false;
-         this.dbSpecific.addTableToWatch(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), "IDU", null, false, destination, forceSend);
+         TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName));
+         tableToWatch.setActions("IDU");
+         this.dbSpecific.addTableToWatch(tableToWatch, false, destination, forceSend);
       }
       catch (Exception ex) {
          log.warning(ex.getMessage());

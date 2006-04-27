@@ -21,6 +21,7 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.jms.XBSession;
 
@@ -177,7 +178,10 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          dbSpecific.bootstrap(conn, doWarn, force);
          String destination = null;
          boolean forceSend = false;
-         dbSpecific.addTableToWatch(" ", specificHelper.getOwnSchema(dbPool), this.tableName, "", "DUMMY", false, destination, forceSend);
+         TableToWatchInfo tableToWatch = new TableToWatchInfo(" ", specificHelper.getOwnSchema(dbPool), this.tableName);
+         tableToWatch.setActions("");
+         tableToWatch.setTrigger("DUMMY");
+         dbSpecific.addTableToWatch(tableToWatch, false, destination, forceSend);
       }
       catch (Exception ex) {
          if (conn != null)
@@ -220,7 +224,10 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
             int numOfCols = dbUpdateInfo.getDescription().getColumns().length;
             assertTrue("Number of columns must be at least one (to detect that metadata is retrieved)", numOfCols > 0);
             assertXMLEqual("Parsing of message is working correctly: output xml is not the same as input xml", msg, msg1);
-            String functionAndTrigger = dbSpecific.createTableTrigger(dbUpdateInfo.getDescription(), null, "IDU");
+
+            TableToWatchInfo tableToWatch = new TableToWatchInfo();
+            tableToWatch.setActions("IDU");
+            String functionAndTrigger = dbSpecific.createTableTrigger(dbUpdateInfo.getDescription(), tableToWatch);
             
             log.fine("-- ---------------------------------------------------------------------------");
             log.fine(functionAndTrigger);
