@@ -148,7 +148,7 @@ function initiateReplication(objName) {
    var tmp = document.getElementById("initialFilesLocation").checked;
    if (tmp) {
      var initialFilesLocEl = document.getElementById("initialFiles");
-     initialFilesLocation = initialFilesLocEl.getAttribute("value");
+     initialFilesLocation = initialFilesLocEl.value; // getAttribute("value");
    }
      </xsl:when>
      <xsl:otherwise>
