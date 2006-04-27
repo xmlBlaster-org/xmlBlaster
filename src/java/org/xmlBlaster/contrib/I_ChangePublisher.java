@@ -64,6 +64,10 @@ public interface I_ChangePublisher extends java.util.EventListener, I_ContribPlu
     */
    void shutdown();
    
+   /**
+    * Only used in replication, can return null if not used.
+    * @return
+    */
    XBSession getJmsSession(); 
    
 }
