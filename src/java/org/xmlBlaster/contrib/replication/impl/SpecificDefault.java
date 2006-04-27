@@ -716,11 +716,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     */
    private void addTrigger(Connection conn, TableToWatchInfo tableToWatch, SqlInfo sqlInfo) throws Exception {
       Statement st = null;
-      String triggerName = tableToWatch.getTrigger();
       String table = tableToWatch.getTable();
       try {
          if (!tableToWatch.getStatus().equals(TableToWatchInfo.STATUS_OK)) {
-            String createString = createTableTrigger(sqlInfo.getDescription(), triggerName, tableToWatch.getActions());
+            String createString = createTableTrigger(sqlInfo.getDescription(), tableToWatch);
             if (createString != null && createString.length() > 1) {
                log.info("adding triggers to '" + table + "':\n\n" + createString);
                st = conn.createStatement();
@@ -869,11 +868,17 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
    
+   
    /**
     * @see I_DbSpecific#addTableToWatch(String, String, String, String, String, boolean, String, boolean)
     */
-   public final boolean addTableToWatch(String catalog, String schema, String tableName,
-         String actions, String triggerName, boolean force, String destination, boolean forceSend) throws Exception {
+   public final boolean addTableToWatch(TableToWatchInfo firstTableToWatch, boolean force, String destination, boolean forceSend) throws Exception {
+      String catalog = firstTableToWatch.getCatalog();
+      String schema = firstTableToWatch.getSchema();
+      String tableName = firstTableToWatch.getTable();
+      String actions = firstTableToWatch.getActions();
+      String replKeyColumn = firstTableToWatch.getReplKeyColumn();
+      String triggerName = firstTableToWatch.getTrigger();
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
       else
@@ -938,12 +943,16 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          if (triggerName == null)
             triggerName = this.replPrefix + tmp;
          triggerName = this.dbMetaHelper.getIdentifier(triggerName);
+         
          long debug = 0;
-         String sql = "INSERT INTO " + this.replPrefix + "tables VALUES ('" + catalog + "','"
-               + schema + "','" + tableName + "','" + actions
-               + "', 'CREATING'," + tmp + ",'" + triggerName + "'," + debug + ")";
-         log.info("Inserting the statement '" + sql + "'");
-         this.dbPool.update(conn, sql);
+         TableToWatchInfo finalTableToWatch = new TableToWatchInfo(catalog, schema, tableName);
+         finalTableToWatch.setActions(actions);
+         finalTableToWatch.setTrigger(triggerName);
+         finalTableToWatch.setDebug((int)debug);
+         finalTableToWatch.setReplKey(tmp);
+         finalTableToWatch.setReplKeyColumn(replKeyColumn);
+         finalTableToWatch.store(this.replPrefix, this.dbPool, conn);
+         
          return true;
       }
       catch (Throwable ex) {
@@ -1077,14 +1086,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       checkTriggerConsistency(doFix);
       TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(this.info);
       log.info("there are '" + tablesToWatch.length + "' tables to watch (invoked with forceSend='" + forceSend + "'");
-      for (int i=0; i < tablesToWatch.length; i++) {
-         String catalog = tablesToWatch[i].getCatalog();
-         String schema = tablesToWatch[i].getSchema();
-         String table = tablesToWatch[i].getTable();
-         String actions = tablesToWatch[i].getActions();
-         String trigger =  tablesToWatch[i].getTrigger();
-         addTableToWatch(catalog, schema, table, actions, trigger, force, destination, forceSend);
-      }
+      for (int i=0; i < tablesToWatch.length; i++)
+         addTableToWatch(tablesToWatch[i], force, destination, forceSend);
    }
 
    /**

@@ -44,11 +44,12 @@ public class TableToWatchInfo {
    public final static String ACTION_KEY = "actions";
    public final static String TRIGGER_KEY = "trigger";
    public final static String SEQUENCE_KEY = "sequence";
+   public final static String REPLKEY_COL_KEY = "replKeyColumn"; 
 
    public final static String STATUS_CREATING = "CREATING";
    public final static String STATUS_OK = "OK";
    public final static String STATUS_REMOVE = "REMOVE";
-   
+
    private String catalog;
    private String schema;
    private String table;
@@ -56,6 +57,11 @@ public class TableToWatchInfo {
    private long replKey = -1L;
    private String trigger;
    private long debug;
+   /**
+    * If not null, then for this table to be watched the replication key is taken from the
+    * column specified in this string.
+    */
+   private String replKeyColumn;
    
    /**
     * flags which are set mean the replication does happen for these flags.
@@ -213,7 +219,6 @@ public class TableToWatchInfo {
    }
    
    public TableToWatchInfo() {
-      
    }
 
    public TableToWatchInfo(String catalog, String schema, String table) {
@@ -309,6 +314,11 @@ public class TableToWatchInfo {
             buf.append(VAL_SEP);
          buf.append(SEQUENCE_KEY).append("=").append(this.replKey);
       }
+      if (this.replKeyColumn != null && this.replKeyColumn.trim().length() > 0) {
+         if (!isFirst)
+            buf.append(VAL_SEP);
+         buf.append(REPLKEY_COL_KEY).append("=").append(this.replKeyColumn);
+      }
       return buf.toString();
    }
    
@@ -352,6 +362,11 @@ public class TableToWatchInfo {
             throw new Exception(txt);
          }
       }
+      tmp = (String)map.get(REPLKEY_COL_KEY);
+      if (tmp == null || tmp.trim().length() < 1)
+         this.replKeyColumn = null;
+      else
+         this.replKeyColumn = tmp.trim();
    }
    
    /**
@@ -474,6 +489,14 @@ public class TableToWatchInfo {
       this.trigger = trigger;
    }
 
+   public void store(String replPrefix, I_DbPool dbPool, Connection conn) throws Exception {
+      String sql = "INSERT INTO " + replPrefix + "tables VALUES ('" + getCatalog() + "','"
+            + getSchema() + "','" + getTable() + "','" + getActions()
+            + "', 'CREATING'," + getReplKey() + ",'" + getTrigger() + "'," + getDebug() + ", '" + getReplKeyColumn() + "')";
+      log.info("Inserting the statement '" + sql + "' for '" + this + "'");
+      dbPool.update(conn, sql);
+   }
+
    /**
     * 
     * @param rs
@@ -490,8 +513,10 @@ public class TableToWatchInfo {
       String actions = rs.getString(4);
       String status = rs.getString(5);
       long replKey = rs.getLong(6);
-      String triggerName  = rs.getString(7);
+      String triggerName = rs.getString(7);
       long debug = rs.getInt(8);
+      String replKeyColumn = rs.getString(9);
+
       if (tableToWatch == null)
          tableToWatch = new TableToWatchInfo(catalog, schema, table);
       else {
@@ -502,8 +527,9 @@ public class TableToWatchInfo {
       tableToWatch.setActions(actions);
       tableToWatch.setStatus(status);
       tableToWatch.setReplKey(replKey);
-      tableToWatch.setTrigger(triggerName);
       tableToWatch.setDebug((int)debug);
+      tableToWatch.setTrigger(triggerName);
+      tableToWatch.setReplKeyColumn(replKeyColumn);
       return tableToWatch;
    }
    
@@ -596,6 +622,8 @@ public class TableToWatchInfo {
       if (this.debug  >  0)
          buf.append(" debug='" + this.debug + "'");
       buf.append(" doReplicate='" + isReplicate() + "' />");
+      if (this.replKeyColumn != null && this.replKeyColumn.trim().length() > 0)
+         buf.append(" replKeyCol='").append(getReplKeyColumn()).append("'");
       return buf.toString();
    }
 
@@ -631,6 +659,15 @@ public class TableToWatchInfo {
          
       }
    }
-   
+
+   public String getReplKeyColumn() {
+      if (this.replKeyColumn == null)
+         return "  ";
+      return this.replKeyColumn;
+   }
+
+   public void setReplKeyColumn(String replKeyColumn) {
+      this.replKeyColumn = replKeyColumn;
+   }
    
 }

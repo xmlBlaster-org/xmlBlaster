@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.replication;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,8 +35,14 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
+import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.XmlScriptParser;
 
 public class ReplicationWriter implements I_Writer, ReplicationConstants {
 
@@ -155,9 +163,6 @@ private final static String ME = "ReplicationWriter";
       else
          log.severe("Couldn't initialize I_Parser, please configure 'parser.class'");
       this.nirvanaClient = this.info.getBoolean("replication.nirvanaClient", false);
-      
-      
-      
    }
 
    public void shutdown() throws Exception {
@@ -534,15 +539,11 @@ private final static String ME = "ReplicationWriter";
       sqlInfo.fillMetadata(conn, null, schema, tableName, null, null);
       return sqlInfo.getDescription();
    }
-   
+
    /**
     * This is invoked for dump files
     */
-   public void update(String topic, byte[] content, Map attrMap) throws Exception {
-      if (this.nirvanaClient) {
-         log.warning("The content of the data for this writer ' is sent to nirvana since 'replication.nirvanaClient' is set to 'true'");
-         return;
-      }
+   private void updateDump(String topic, byte[] content, Map attrMap) throws Exception {
       ClientProperty prop = (ClientProperty)attrMap.get("_filename");
       String filename = null;
       if (prop == null) {
@@ -603,6 +604,89 @@ private final static String ME = "ReplicationWriter";
          else
             log.info("since no 'replication.initialCmd' property defined, the initial command will not be executed (not either the wipeout of the schema)");
       }
+   }
+
+   private void updateManualTransfer(String topic, byte[] content, Map attrMap) throws Exception {
+      ClientProperty subDirProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_ID);
+      if (subDirProp == null)
+         throw new Exception("updateManualTransfer: the mandatory property '" + ReplicationConstants.INITIAL_DATA_ID + "' was not found in the message");
+      String subDirName = subDirProp.getStringValue();
+      if (subDirName == null || subDirName.trim().length() < 1)
+         throw new Exception("updateManualTransfer: the mandatory property '" + ReplicationConstants.INITIAL_DATA_ID + "' was empty");
+      
+      String initialFilesLocation = this.info.get("replication.initialFilesLocation", "${user.home}/tmp");
+      XmlScriptParser xmlScriptParser = new XmlScriptParser();
+      xmlScriptParser.init(new Global(), null, null);
+
+      DbWriter dbWriter = (DbWriter)this.info.getObject("org.xmlBlaster.contrib.dbwriter.DbWriter");
+      if (dbWriter == null)
+         throw new Exception("The DbWriter is not set in the info");
+      
+      File dirWhereToStore = ReplManagerPlugin.checkExistance(initialFilesLocation);
+      File subDir = new File(dirWhereToStore, subDirName);
+      if (!subDir.exists()) {
+         String txt = "directory '" + subDir.getAbsolutePath() + "' does not exist";
+         log.severe(txt);
+         throw new Exception(txt);
+      }
+      if (!subDir.isDirectory()) {
+         String txt = "file '" + subDir.getAbsolutePath() + "' is not a directory";
+         log.severe(txt);
+         throw new Exception(txt);
+      }
+      
+      String[] files = subDir.list();
+      log.info("retreiving '" + files.length + "' manual transferred data files from directory '" + subDir.getAbsolutePath() + "'");
+      // alphabetical order guarantees correct sequence.
+      TreeSet set = new TreeSet();
+      for (int i=0; i < files.length; i++)
+         set.add(files[i]);
+      files = (String[])set.toArray(new String[set.size()]);
+      
+      for (int i=0; i < files.length; i++) {
+         File file = new File(subDir, files[i]);
+         if (!file.exists())
+            throw new Exception("The entry nr. '" + i + "': file '" + file.getAbsolutePath() + "' does not exist");
+         if (!file.isFile())
+            throw new Exception("The entry nr. '" + i + "': file '" + file.getAbsolutePath() + "' is not a file");
+
+         FileInputStream fis = new FileInputStream(file);
+         MsgInfo[] msgInfos = xmlScriptParser.parse(fis);
+         log.info("Processing entry " + i + " of " + files.length + ": '" + file.getAbsoluteFile() + "' which has " + msgInfos.length + "' msg");
+         for (int j=0; j < msgInfos.length; j++) {
+            MsgUnitRaw[] messages = msgInfos[j].getMessageArr();
+            for (int k=0; k < messages.length; k++) {
+               MsgUnit msgUnit = new MsgUnit(new Global(), messages[k].getKey(), messages[k].getContent(), messages[k].getQos());
+               // MsgUnit msgUnit = (MsgUnit)messages[k].getMsgUnit();
+               if (msgUnit == null)
+                  throw new Exception("The message unit for '" + file.getAbsoluteFile() + "' is null");
+               if (msgUnit.getQosData() == null)
+                  throw new Exception("The qos for message unit of '" + file.getAbsoluteFile() + "' is null");
+               Map subMap = msgUnit.getQosData().getClientProperties();
+               byte[] subContent = msgUnit.getContent();
+               dbWriter.update(topic, subContent, subMap);
+            }
+         }
+      }
+   }
+
+   
+   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+      if (this.nirvanaClient) {
+         log.warning("The content of the data for this writer ' is sent to nirvana since 'replication.nirvanaClient' is set to 'true'");
+         return;
+      }
+      
+      ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
+      ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
+
+      if (dumpProp != null)
+         updateDump(topic, content, attrMap);
+      else if (endToRemoteProp != null)
+         updateManualTransfer(topic, content, attrMap);
+      else
+         log.severe("Unknown operation");
+      
    }
    
 }

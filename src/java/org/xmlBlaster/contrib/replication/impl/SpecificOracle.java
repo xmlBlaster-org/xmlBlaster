@@ -14,7 +14,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
@@ -89,18 +88,19 @@ public class SpecificOracle extends SpecificDefault {
     *           can be 'old' or 'new'
     * @return
     */
-   protected String createVariableSqlPart(SqlDescription description, String prefix) {
+   protected String createVariableSqlPart(SqlDescription description, String prefix, boolean containsLongs) {
       String newOldPrefix = ":"; // ":" on ora10 ?
       SqlColumn[] cols = description.getColumns();
       String contName = prefix + "Cont"; // will be newCont or oldCont
       StringBuffer buf = new StringBuffer();
       String tablePrefix = newOldPrefix + prefix;
+      buf.append("       ").append(contName).append(" := NULL;\n");
       buf.append("       oid := ROWIDTOCHAR(").append(tablePrefix).append(".rowid);\n");
       if ("new".equals(prefix)) {
-         if (checkIfContainsLongs(description))
+         if (containsLongs)
             return buf.toString();
       }
-      
+      // note when using LONGS the newCont must be NULL (not EMPTY_CLOB)
       buf.append("       ").append(contName).append(" := EMPTY_CLOB;\n");
       buf.append("       dbms_lob.createtemporary(").append(contName).append(", TRUE);\n");
       buf.append("       dbms_lob.open(").append(contName).append(", dbms_lob.lob_readwrite);\n");
@@ -114,10 +114,7 @@ public class SpecificOracle extends SpecificDefault {
             buf.append("       IF debug != 0 THEN\n");
             if (this.debugFunction != null)
                buf.append("          ").append(this.debugFunction).append("('   col ").append(colName).append(" type ").append(typeName).append(" typeNr ").append(type).append(" prefix ").append(prefix).append("');\n");
-            // buf.append("          ").append(this.replPrefix).append("debug('   col ").append(colName).append(" type ").append(typeName).append(" typeNr ").append(type).append(" prefix ").append(prefix).append("');\n");
             buf.append("       END IF;\n");
-            // buf.append("    ").append(this.replPrefix).append("debug('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
-            // buf.append("    KG_WAKEUP.PG$DBGMESS('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
          }
          
          if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY)
@@ -125,13 +122,10 @@ public class SpecificOracle extends SpecificDefault {
          
          if (type == Types.LONGVARCHAR || type == Types.LONGVARBINARY) {
             /*
-            buf.append("          longKey := ").append(this.replPrefix).append("increment();\n");
-            // buf.append("          INSERT INTO ").append(this.replPrefix).append("LONGS_TABLE SELECT longKey, TO_LOB(").append(colName).append(") FROM ").append(tableName).append(" WHERE rowid IN (").append(tablePrefix).append(".rowid").append(");\n");
-            buf.append("--          INSERT INTO ").append(this.replPrefix).append("LONGS_TABLE SELECT longKey, TO_LOB(").append(colName).append(") FROM ").append(tableName).append(";\n");
-            buf.append("--          SELECT content INTO tmpCont FROM ").append(this.replPrefix).append("LONGS_TABLE WHERE repl_key=longKey;\n");
-            buf.append("--          dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
-            "col2xml('").append(colName).append("', tmpCont));\n");
-            */
+             * don't use the LONGS since they can not be used inside a trigger. For INSERT
+             * the RAWID will be used and the entry will be read when processing the data, for
+             * DELETE and UPDATE the LONGS will not be used to search.
+             */
          }
          else if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY
                || type == Types.STRUCT) {
@@ -190,7 +184,9 @@ public class SpecificOracle extends SpecificDefault {
       return buf.toString();
    }
 
-   public String createTableTrigger(SqlDescription infoDescription, String triggerName, String replFlags) {
+   public String createTableTrigger(SqlDescription infoDescription, TableToWatchInfo tableToWatch) {
+      String triggerName = tableToWatch.getTrigger();
+      String replFlags = tableToWatch.getActions();
       if (replFlags == null)
          replFlags = "";
       boolean doDeletes = replFlags.indexOf('D') > -1;
@@ -271,16 +267,18 @@ public class SpecificOracle extends SpecificDefault {
          // buf.append("    KG_WAKEUP.PG$DBGMESS('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
       }
       
+      boolean containsLongs = checkIfContainsLongs(infoDescription);
+      
       buf.append("    IF INSERTING THEN\n");
       buf.append("       op := 'INSERT';\n");
-      buf.append(createVariableSqlPart(infoDescription, "new"));
+      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs));
       buf.append("    ELSIF DELETING THEN\n");
       buf.append("       op := 'DELETE';\n");
-      buf.append(createVariableSqlPart(infoDescription, "old"));
+      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs));
       buf.append("    ELSE\n");
       buf.append("       op := 'UPDATE';\n");
-      buf.append(createVariableSqlPart(infoDescription, "old"));
-      buf.append(createVariableSqlPart(infoDescription, "new"));
+      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs));
+      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs));
       buf.append("    END IF;\n");
 
       String dbNameTmp = null;
@@ -292,7 +290,18 @@ public class SpecificOracle extends SpecificDefault {
       if (schemaName == null)
          schemaNameTmp = "NULL";
       else schemaNameTmp = "'" + schemaName + "'";
-      buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
+      // overwrite the use of replKey if so configured
+      String replKeyColumn = tableToWatch.getReplKeyColumn();
+      if (replKeyColumn != null && replKeyColumn.trim().length() > 0) {
+         buf.append("    IF DELETING THEN\n");
+         buf.append("       replKey := :old.").append(replKeyColumn).append(";\n");
+         buf.append("    ELSE\n");
+         buf.append("       replKey := :new.").append(replKeyColumn).append(";\n");
+         buf.append("    END IF;\n");
+      }
+      else // normal behaviour
+         buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
+      
       buf.append("    INSERT INTO " + this.replPrefix + "items (repl_key, trans_key, dbId, tablename, guid,\n");
       buf.append("                           db_action, db_catalog, db_schema, \n");
       buf.append("                           content, oldContent, version) values \n");
@@ -306,19 +315,29 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("       transId := CHR(replKey);\n");
       buf.append("    END IF;\n");
       buf.append("    UPDATE " + this.replPrefix + "items SET trans_key=transId WHERE repl_key=replKey;\n");
-      buf.append("    IF INSERTING THEN\n");
-      buf.append("       dbms_lob.close(newCont);\n");
-      buf.append("    ELSIF DELETING THEN\n");
-      buf.append("       dbms_lob.close(oldCont);\n");
-      buf.append("    ELSE\n");
-      buf.append("       dbms_lob.close(oldCont);\n");
-      buf.append("       dbms_lob.close(newCont);\n");
-      buf.append("    END IF;\n");
+      
+      // clean up (close) the used lobs. Note that if the table contains longs then the
+      // newClob has not been opened and shall therefore not be closed.
+      if (containsLongs) {
+         buf.append("    IF NOT INSERTING THEN\n");
+         buf.append("       dbms_lob.close(oldCont);\n");
+         buf.append("    END IF;\n");
+      }
+      else {
+         buf.append("    IF INSERTING THEN\n");
+         buf.append("       dbms_lob.close(newCont);\n");
+         buf.append("    ELSIF DELETING THEN\n");
+         buf.append("       dbms_lob.close(oldCont);\n");
+         buf.append("    ELSE\n");
+         buf.append("       dbms_lob.close(oldCont);\n");
+         buf.append("       dbms_lob.close(newCont);\n");
+         buf.append("    END IF;\n");
+      }
       buf.append("END ").append(triggerName).append(";\n");
       buf.append("\n");
       return buf.toString();
    }
-
+   
    private final boolean cleanupType(String schema, String objName, String sql, String postfix) {
       Connection conn = null;
       try {
@@ -372,20 +391,38 @@ public class SpecificOracle extends SpecificDefault {
       }
    }
 
-   public void cleanupSchema(String schema) {
+   /**
+    * Cleans up the specified schema for the specified type.
+    * @param schema can not be null.
+    * @param type can be null. If null all types are cleaned up, otherwise only the ones contained in the string will be cleaned up.
+    * For example "table alltriggers" will clean up both 'table' and 'trigger' types. The types must be specified in lowercase.
+    * Allowed types are synonym,trigger,package,procedure,function,view,table,sequence.
+    * @param referencedSchema is the schema which is referenced by the object. It only has an effect on triggers where the 
+    * owner of the trigger would be the schema but the table on which the trigger resides it the referenced schema. If null, all
+    * schemas referenced are deleted. 
+    */
+   public void cleanupSchema(String schema, String type, String referencedSchema) {
       String sql = "SELECT synonym_name FROM all_synonyms WHERE owner='" + schema + "'";
-      cleanupType(schema, "synonym", sql, "");
-      sql = "SELECT trigger_name FROM all_triggers WHERE owner='" + schema + "'";
-      cleanupType(schema, "trigger", sql, "");
+      if (type == null || type.indexOf("synonym") != -1)
+         cleanupType(schema, "synonym", sql, "");
+      if (referencedSchema == null || referencedSchema.trim().length() < 1)
+         sql = "SELECT trigger_name FROM all_triggers WHERE owner='" + schema + "'";
+      else
+         sql = "SELECT trigger_name FROM all_triggers WHERE owner='" + schema + "' AND table_owner='" + referencedSchema + "'";
+      if (type == null || type.indexOf("trigger") != -1)
+         cleanupType(schema, "trigger", sql, "");
       // sql = "SELECT name FROM all_source WHERE owner='" + schema + "' AND
       // LINE=1";
       // cleanupType(schema, "function", sql, "");
       sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='PACKAGE' AND LINE=1";
-      cleanupType(schema, "package", sql, "");
+      if (type == null || type.indexOf("package") != -1)
+         cleanupType(schema, "package", sql, "");
       sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='PROCEDURE' AND LINE=1";
-      cleanupType(schema, "procedure", sql, "");
+      if (type == null || type.indexOf("procedure") != -1)
+         cleanupType(schema, "procedure", sql, "");
       sql = "SELECT NAME FROM all_source WHERE owner='" + schema + "' AND type='FUNCTION' AND LINE=1";
-      cleanupType(schema, "function", sql, "");
+      if (type == null || type.indexOf("function") != -1)
+         cleanupType(schema, "function", sql, "");
       // sql = "SELECT procedure_name FROM all_procedures WHERE owner='" +
       // schema + "'";
       // cleanupType(schema, "function", sql, "");
@@ -393,11 +430,14 @@ public class SpecificOracle extends SpecificDefault {
       // schema + "'";
       // cleanupType(schema, "procedure", sql, "");
       sql = "SELECT view_name FROM all_views WHERE owner='" + schema + "'";
-      cleanupType(schema, "view", sql, " CASCADE CONSTRAINTS");
+      if (type == null || type.indexOf("view") != -1)
+         cleanupType(schema, "view", sql, " CASCADE CONSTRAINTS");
       sql = "SELECT table_name FROM all_tables WHERE owner='" + schema + "'";
-      cleanupType(schema, "table", sql, " CASCADE CONSTRAINTS");
+      if (type == null || type.indexOf("table") != -1)
+         cleanupType(schema, "table", sql, " CASCADE CONSTRAINTS");
       sql = "SELECT sequence_name FROM all_sequences WHERE sequence_owner='" + schema + "'";
-      cleanupType(schema, "sequence", sql, "");
+      if (type == null || type.indexOf("sequence") != -1)
+         cleanupType(schema, "sequence", sql, "");
    }
 
    /**
@@ -477,14 +517,11 @@ public class SpecificOracle extends SpecificDefault {
     */
    public static void main(String[] args) {
       try {
-         System.setProperty("java.util.logging.config.file", "testlog.properties");
-         LogManager.getLogManager().readConfiguration();
+         // System.setProperty("java.util.logging.config.file", "testlog.properties");
+         // LogManager.getLogManager().readConfiguration();
          // ---- Database settings -----
          if (System.getProperty("jdbc.drivers", null) == null) {
-            System
-                  .setProperty(
-                        "jdbc.drivers",
-                        "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
+            System.setProperty("jdbc.drivers", "oracle.jdbc.driver.OracleDriver");
          }
          if (System.getProperty("db.url", null) == null) {
             System.setProperty("db.url", "jdbc:oracle:thin:@localhost:1521:test");
@@ -493,14 +530,17 @@ public class SpecificOracle extends SpecificDefault {
             System.setProperty("db.user", "xmlblaster");
          }
          if (System.getProperty("db.password", null) == null) {
-            System.setProperty("db.password", "secret");
+            System.setProperty("db.password", "xbl");
          }
          SpecificOracle oracle = new SpecificOracle();
          I_Info info = new PropertiesInfo(System.getProperties());
          oracle.init(info);
          I_DbPool pool = (I_DbPool) info.getObject("db.pool");
          Connection conn = pool.reserve();
-         oracle.cleanupSchema("AIS");
+         String objectTypes = info.get("objectTypes", null);
+         String schema = info.get("schema", "AIS");
+         String referencedSchema = info.get("referencedSchema", null);
+         oracle.cleanupSchema(schema, objectTypes, referencedSchema);
          pool.release(conn);
       }
       catch (Throwable e) {

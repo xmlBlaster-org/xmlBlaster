@@ -28,14 +28,18 @@ import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.xbformat.MsgInfo;
+import org.xmlBlaster.util.xbformat.XmlScriptParser;
 
 
 /**
@@ -85,6 +89,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private boolean doTransform;
    private String initialFilesLocation;
    private String lastMessage;
+   private String lastDispatcherException = "";
    
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.global = global;
@@ -423,7 +428,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       if (file.exists())
          log.warning("File '" + file.getAbsolutePath() + "' exists already. Will overwrite it");
       FileOutputStream fos = new FileOutputStream(file);
-      fos.write(msgUnit.toXml().getBytes());
+      MsgUnitRaw msgUnitRaw = new MsgUnitRaw(msgUnit.getKey(), msgUnit.getContent(), msgUnit.getQos());
+      MsgInfo msgInfo = new MsgInfo(this.global, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, this.slaveSessionId);
+      msgInfo.addMessage(msgUnitRaw);
+      XmlScriptParser parser = new XmlScriptParser();
+      parser.init(new Global(), null, null);
+      fos.write(parser.toLiteral(msgInfo).getBytes());
       fos.close();
       log.info("MsgUnit '" + msgUnit.getQosData().getRcvTimestamp().getTimestamp() + "' has been written to file '" + file.getAbsolutePath() + "'");
    }
@@ -743,6 +753,15 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
  
    public String getLastMessage() {
+      try {
+         String tmp = getSession().getLastCallbackException();
+         if (!this.lastDispatcherException.equals(tmp)) { 
+            this.lastDispatcherException = tmp;
+            this.lastMessage = tmp;
+         }
+      }
+      catch (Exception ex) {
+      }
       return this.lastMessage;
    }
 }

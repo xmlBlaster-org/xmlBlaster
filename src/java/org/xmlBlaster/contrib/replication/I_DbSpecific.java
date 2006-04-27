@@ -8,7 +8,6 @@ package org.xmlBlaster.contrib.replication;
 
 import java.sql.Connection;
 import java.util.Map;
-import java.util.Set;
 
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
@@ -104,7 +103,8 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param triggerName the name to give to the trigger associated with this table,
     * @return
     */
-   String createTableTrigger(SqlDescription infoDescription, String triggerName, String replFlags);
+   // String createTableTrigger(SqlDescription infoDescription, String triggerName, String replFlags);
+   String createTableTrigger(SqlDescription infoDescription, TableToWatchInfo tableToWatch);
 
    
    /**
@@ -148,7 +148,8 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @throws Exception if an exception occurs on the backend. For example if the table already has been
     * added, it will throw an exception.
     */
-   boolean addTableToWatch(String catalog, String schema, String tableName, String replFlags, String triggerName, boolean force, String destination, boolean forceSend) throws Exception;
+   boolean addTableToWatch(TableToWatchInfo tableToWatch, boolean force, String destination, boolean forceSend) throws Exception;
+   // boolean addTableToWatch(String catalog, String schema, String tableName, String replFlags, String triggerName, boolean force, String destination, boolean forceSend) throws Exception;
    
    /**
     * Adds a schema to be watched. By Oracle it would add triggers to the schema. 
