@@ -162,9 +162,7 @@ public class DbWriter implements I_Update {
          this.writer.update(topic, content, attrMap);
       }
       else if (endToRemoteProp != null) {
-         String txt = "Feature 'manual file transfer' not implemented yet";
-         log.severe(txt);
-         throw new Exception(txt);
+         this.writer.update(topic, content, attrMap);
       }
       else {
          SqlInfo updateInfo = this.parser.parse(new String(content));
