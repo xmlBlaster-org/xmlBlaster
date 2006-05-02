@@ -2663,10 +2663,13 @@ TODO
       <echo message="Compiling of C++ test client '${compileCppSourcePath}/bin/${exeName}' ..."/>
       <mkdir dir="${cpp.obj.dir}"/>
       <mkdir dir="${compileCppSourcePath}/bin"/>
-      <cc debug="${cpp.debug}" outtype="executable"
+      <cc debug="${cpp.debug}"
+          outtype="executable"
           outfile="${compileCppSourcePath}/bin/${exeName}"
           objdir="${cpp.obj.dir}"
-          multithreaded="true" exceptions="true">
+          multithreaded="true"
+          exceptions="true"
+          subsystem="console">
          <compiler refid="g++"/>
          <compiler refid="icc"/>
          <compiler refid="msvc"/>
@@ -3053,10 +3056,13 @@ TODO
       <echo message="Compiling of C test client '${compileCSourcePath}/bin/${exeName}' to '${compileCSourcePath}/bin/${exeName}'"/>
       <mkdir dir="${c.obj.dir}"/>
       <mkdir dir="${compileCSourcePath}/bin"/>
-      <cc debug="${c.debug}" outtype="executable"
+      <cc debug="${c.debug}"
+          outtype="executable"
           outfile="${compileCSourcePath}/bin/${exeName}"
           objdir="${c.obj.dir}"
-          multithreaded="true" exceptions="true">
+          multithreaded="true"
+          exceptions="true"
+          subsystem="console">
          <compiler refid="gcc"/>
          <compiler refid="icc"/>
          <compiler refid="msvc"/>
