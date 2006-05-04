@@ -489,7 +489,33 @@ public class TableToWatchInfo {
       this.trigger = trigger;
    }
 
+   /**
+    * First checks if the entry exists already. If it exists, it is first removed, otherwise it is
+    * just added.
+    * 
+    * @param replPrefix
+    * @param dbPool
+    * @param conn
+    * @throws Exception
+    */
    public void store(String replPrefix, I_DbPool dbPool, Connection conn) throws Exception {
+      String selectSql = "SELECT * FROM " + replPrefix + "tables WHERE CATALOGNAME='" + getCatalog() + "' AND SCHEMANAME='" + getSchema() + "' AND TABLENAME='" + getTable() + "'";
+      log.info("executing '" + selectSql + "'");
+      ResultSet rs = null;
+      try {
+         Statement st = conn.createStatement();
+         rs = st.executeQuery(selectSql);
+         if (rs.next()) {
+            String delSql = "DELETE FROM " + replPrefix + "tables WHERE CATALOGNAME='" + getCatalog() + "' AND SCHEMANAME='" + getSchema() + "' AND TABLENAME='" + getTable() + "'";
+            log.info("executing '" + delSql + "'");
+            dbPool.update(conn, delSql);
+         }
+      }
+      finally {
+         if (rs != null) {
+            rs.close();
+         }
+      }
       String sql = "INSERT INTO " + replPrefix + "tables VALUES ('" + getCatalog() + "','"
             + getSchema() + "','" + getTable() + "','" + getActions()
             + "', 'CREATING'," + getReplKey() + ",'" + getTrigger() + "'," + getDebug() + ", '" + getReplKeyColumn() + "')";
