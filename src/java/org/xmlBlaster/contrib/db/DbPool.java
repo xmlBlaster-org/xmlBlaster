@@ -8,6 +8,8 @@ package org.xmlBlaster.contrib.db;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -18,8 +20,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.util.pool.PoolManager;
 import org.xmlBlaster.util.pool.I_PoolManager;
 import org.xmlBlaster.util.pool.ResourceWrapper;
@@ -413,4 +415,33 @@ public class DbPool implements I_DbPool, I_PoolManager {
          return;
       destroy();
    }
+   
+   public static void main(String[] args) {
+      try {
+         I_DbPool pool = new DbPool();
+         I_Info info = new PropertiesInfo(System.getProperties());
+         String filename = info.get("file", null);
+         if (filename == null) {
+            System.out.println("usage: java -Dfile=someFile org.xmlBlaster.contrib.db.DbPool");
+            System.exit(-1);
+         }
+            
+         pool.init(info);
+         
+         BufferedReader br = new BufferedReader(new FileReader(filename));
+         String line = null;
+         StringBuffer buf = new StringBuffer();
+         while (  (line = br.readLine()) != null)
+            buf.append(line).append("\n");
+         br.close();
+         String cmd = buf.toString();
+         System.out.println(cmd);
+         pool.update(buf.toString());
+         pool.shutdown();
+      }
+      catch (Exception ex) {
+         
+      }
+   }
+   
 }
