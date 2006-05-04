@@ -644,22 +644,38 @@ public class TableToWatchInfo {
       String sql = "DELETE FROM " + replicationPrefix + "tables WHERE catalogname='" + this.catalog + "' AND schemaname='" + this.schema + "' AND tablename='" + this.table + "'";
       dbPool.update(sql);
    }
-   
-   public boolean isStatusOk() {
-      if (this.status == null)
+
+   /**
+    * Checks if the status is OK. To return true the status flag in the tables table must
+    * be OK, the trigger must exist and no exception shall be thrown by requesting the
+    * existence of the trigger.
+    * 
+    * @param dbSpecific
+    * @param conn
+    * @return
+    */
+   public boolean isStatusOk(I_DbSpecific dbSpecific, Connection conn) {
+      if (this.status == null) {
+         log.warning("The status flag for trigger '" + this.trigger + "' on table '" + this.table + "' is null");
          return false;
-      return getStatus().equals(TableToWatchInfo.STATUS_OK);      
-   }
-   
-   public static void main(String[] args) {
+      }
       try {
-         
+         boolean ret = dbSpecific.triggerExists(conn, this);
+         if (!ret) {
+            log.warning("The trigger '" + this.trigger + "' for table '" + this.table + "' does not exist and status is '" + getStatus() + "'");
+            return ret;
+         }
       }
       catch (Throwable ex) {
-         
+         ex.printStackTrace();
+         return false;
       }
+      boolean ret = getStatus().equals(TableToWatchInfo.STATUS_OK);
+      if (!ret)
+         log.warning("The status flag for trigger '" + this.trigger + "' on table '" + this.table + "' is not OK, it is '" + getStatus() + "'");
+      return ret;
    }
-
+   
    public String getReplKeyColumn() {
       if (this.replKeyColumn == null)
          return "  ";

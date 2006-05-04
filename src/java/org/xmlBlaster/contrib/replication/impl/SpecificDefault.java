@@ -901,10 +901,11 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          }
 
          final String TABLES_TABLE = this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES");
-         TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, null);
+         TableToWatchInfo tableToWatch = null;
+         TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, tableToWatch);
          if (!conn.getAutoCommit())
             conn.commit(); // to be sure it is a new transaction
-         if (!force && tableToWatch != null && tableToWatch.isStatusOk()) { 
+         if (!force && tableToWatch != null && tableToWatch.isStatusOk(this, conn)) { 
             // send it manually since table exits already and trigger is OK.
             log.info("table '" + tableName + "' is already registered, will add directly an entry in the ENTRIES Table");
             String destAttrName = "?";
