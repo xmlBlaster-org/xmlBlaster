@@ -902,7 +902,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
 
          final String TABLES_TABLE = this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES");
          TableToWatchInfo tableToWatch = null;
-         TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, tableToWatch);
+         tableToWatch = TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, tableToWatch);
          if (!conn.getAutoCommit())
             conn.commit(); // to be sure it is a new transaction
          if (!force && tableToWatch != null && tableToWatch.isStatusOk(this, conn)) { 
