@@ -94,7 +94,7 @@ function toggleDispatcher() {
     	        <td align="center" colspan="1" class="normal"><button class="danger" onClick="killSession()" title="Click to delete definitively this replication">Remove</button></td>
     	        <td align="center" colspan="1" class="normal"><button class="small" onClick="gotoDestinationList()" title="Click to go back to replication list">Back</button></td>
     	        <td align="center" colspan="1" class="normal"><button class="small" onClick="refresh()" title="Click to refresh this page manually">Refresh</button></td>
-    	        <td align="center" colspan="1" class="normal"><button class="small" onClick="reInitiateReplication()" title="Click if you want to restart this replication (initial update)">Restart Repl</button></td>
+    	        <td align="center" colspan="1" class="normal"><!-- <button class="small" onClick="reInitiateReplication()" title="Click if you want to restart this replication (initial update)">Restart Repl</button> --></td>
     	      </tr>
             </table>
          </td>
