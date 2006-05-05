@@ -9,14 +9,17 @@ package org.xmlBlaster.contrib.dbwriter;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 
 public class DefaultWriter implements I_Writer {
 
+   Logger log = Logger.getLogger(DefaultWriter.class.getName());
+   
    public void update(String topic, byte[] content, Map attrMap) throws Exception {
-      System.out.println("=========== NEW BINARY MESSAGE ============\n" + topic + "\n");
+      log.info("=========== NEW BINARY MESSAGE ============\n" + topic + "\n");
    }
 
    public DefaultWriter() {
@@ -24,7 +27,7 @@ public class DefaultWriter implements I_Writer {
    }
    
    public void store(SqlInfo info) throws Exception {
-      System.out.println("=========== NEW MESSAGE ============\n" + info.toXml("") + "\n");
+      log.info("=========== NEW MESSAGE ============\n" + info.toXml("") + "\n");
    }
 
    /**

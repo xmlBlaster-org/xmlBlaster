@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
@@ -44,7 +45,7 @@ import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class ReplicationAgent {
+public class ReplicationAgent implements I_Update {
    private static Logger log = Logger.getLogger(ReplicationAgent.class.getName());
 
    private I_Info readerInfo;
@@ -269,8 +270,14 @@ public class ReplicationAgent {
       if (this.writerInfo != null) {
          log.info("setUp: Instantiating DbWriter");
          this.dbWriter = new DbWriter();
+         this.dbWriter.registerListener(this);
          this.dbWriter.init(this.writerInfo);
       }
+      initializeDbWatcher();
+   }
+   
+
+   private final void initializeDbWatcher() throws Exception {
       if (this.readerInfo != null) {
          try {
             log.info("setUp: Instantiating DbWatcher");
@@ -321,8 +328,7 @@ public class ReplicationAgent {
       }
    }
 
-   public void shutdown() throws Exception {
-      Exception e = null;
+   private final void shutdownDbWatcher() throws Exception {
       if (this.readerInfo != null) {
          try {
             this.dbWatcher.shutdown();
@@ -330,15 +336,19 @@ public class ReplicationAgent {
          }
          catch (Exception ex) {
             ex.printStackTrace();
-            e = ex;
          }
+      }      
+   }
+
+   public void shutdown() throws Exception {
+      try {
+         shutdownDbWatcher();
       }
-      if (this.writerInfo != null) {
+      finally {
+         this.dbWriter.unregisterListener(this);
          this.dbWriter.shutdown();
          this.dbWriter = null;
       }
-      if (e != null)
-         throw e;
    }
 
    private static String displayProperties(Map usedPropsMap, I_Info info) {
@@ -502,6 +512,24 @@ public class ReplicationAgent {
             pool.release(conn);
       }
       
+   }
+
+   /**
+    * This implementation is interested in events coming after the initial dump (initial update)
+    * has been completed. It shuts down the DbWatcher and instantiated a new one. This is necessary
+    * for cases where the DbWatcher needs to detect changes occured to the ITEMS table when the
+    * replication key is lower than the last one before the initial dump.
+    */
+   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+      if (DbWriter.INITIAL_UPDATE_EVENT.equals(topic)) {
+         if (this.readerInfo != null) {
+            synchronized(this) {
+               shutdownDbWatcher();
+               this.dbWatcher = null;
+               initializeDbWatcher();
+            }
+         }
+      }
    }
 
 }

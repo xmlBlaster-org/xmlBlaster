@@ -45,8 +45,7 @@ import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.xbformat.XmlScriptParser;
 
 public class ReplicationWriter implements I_Writer, ReplicationConstants {
-
-private final static String ME = "ReplicationWriter";
+   private final static String ME = "ReplicationWriter";
    private static Logger log = Logger.getLogger(ReplicationWriter.class.getName());
    private I_DbPool pool;
    private I_Info info;

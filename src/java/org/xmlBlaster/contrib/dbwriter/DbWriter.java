@@ -23,7 +23,8 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * @author Michele Laghi mailto:laghi@swissinfo.org
  */
 public class DbWriter implements I_Update {
-   
+
+   public final static String INITIAL_UPDATE_EVENT = "initialUpdate";
    private static Logger log = Logger.getLogger(DbWriter.class.getName());
    public final static String DB_POOL_KEY = "db.pool";
    public final static String CASE_SENSITIVE_KEY = "dbWriter.caseSensitive";
@@ -34,6 +35,7 @@ public class DbWriter implements I_Update {
    private I_DbPool dbPool;
    private boolean poolOwner;
    private boolean isAlive;
+   private I_Update updateListener;
    
    /**
     * Default constructor, you need to call {@link #init} thereafter. 
@@ -160,6 +162,13 @@ public class DbWriter implements I_Update {
       ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
       if (dumpProp != null) {
          this.writer.update(topic, content, attrMap);
+         if (this.updateListener != null) {
+            synchronized(this) {
+               if (this.updateListener != null) {
+                  this.updateListener.update(INITIAL_UPDATE_EVENT, null, null);
+               }
+            }
+         }
       }
       else if (endToRemoteProp != null) {
          this.writer.update(topic, content, attrMap);
@@ -169,6 +178,24 @@ public class DbWriter implements I_Update {
          this.writer.store(updateInfo);
       }
    }
+   
+   public synchronized void registerListener(I_Update update) throws Exception {
+     if (update == null)
+        throw new Exception("ReplicationWriter.registerListener: The listener is null");
+     this.updateListener = update;
+   }
+
+   /**
+    * Currently only one instance of a listener can be registered. It will be deleted if you 
+    * pass a non null value here. If you pass null, an exception will be thrown.
+    */
+   public synchronized void unregisterListener(I_Update update) throws Exception {
+      if (update == null)
+         throw new Exception("ReplicationWriter.registerListener: The listener is null");
+      this.updateListener = null;
+   }
+
+   
    
    
    

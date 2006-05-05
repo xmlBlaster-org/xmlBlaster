@@ -13,5 +13,4 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 public interface I_Writer extends I_ContribPlugin, I_Update {
 
    void store(SqlInfo info) throws Exception;
-   
 }

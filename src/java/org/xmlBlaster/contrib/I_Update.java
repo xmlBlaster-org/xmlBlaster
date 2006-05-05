@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public interface I_Update {
    /**
-    * The message received from the MoM. 
+    * The message received from the MoM or from another source.
     * @param topic The topic name
     * @param content The message content
     * @param attrMap A map with attribute, can be null 
