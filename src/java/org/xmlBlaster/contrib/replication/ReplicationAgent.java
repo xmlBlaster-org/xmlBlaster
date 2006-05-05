@@ -524,10 +524,13 @@ public class ReplicationAgent implements I_Update {
       if (DbWriter.INITIAL_UPDATE_EVENT_PRE.equals(topic)) {
          if (this.readerInfo != null) {
             synchronized(this) {
+               /*
                log.info("shutting down DbWatcher and starting an new instance");
                shutdownDbWatcher();
                this.dbWatcher = null;
                initializeDbWatcher();
+               */
+               this.dbWatcher.resetChangeDetector();
             }
          }
       }

@@ -325,4 +325,12 @@ public class TimestampChangeDetector implements I_ChangeDetector
          this.dbPool = null;
       }
    }
+
+   /**
+    * Resets the old timestamp and the new timestamp (will be null after call).
+    */
+   public synchronized void reset() throws Exception {
+      this.oldTimestamp = null;
+      this.newTimestamp = null;
+   }
 }

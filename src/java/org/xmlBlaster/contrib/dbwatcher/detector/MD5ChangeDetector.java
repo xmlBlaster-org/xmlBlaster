@@ -555,4 +555,8 @@ public class MD5ChangeDetector implements I_ChangeDetector
          this.info.putObject("db.pool", null);
       }
    }
+
+   public void reset() throws Exception {
+   }
+   
 }

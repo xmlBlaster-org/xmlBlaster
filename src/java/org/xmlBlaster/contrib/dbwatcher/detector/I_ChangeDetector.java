@@ -106,5 +106,13 @@ public interface I_ChangeDetector
     * @throws Exception Can be of any type
     */
    void shutdown() throws Exception;
+   
+   /**
+    * Resets the detector. Behaviour depends on implementation.
+    * 
+    * @throws Exception
+    */
+   void reset() throws Exception;
+   
 }
 
