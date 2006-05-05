@@ -24,7 +24,8 @@ import org.xmlBlaster.util.qos.ClientProperty;
  */
 public class DbWriter implements I_Update {
 
-   public final static String INITIAL_UPDATE_EVENT = "initialUpdate";
+   public final static String INITIAL_UPDATE_EVENT_PRE = "initialUpdatePre";
+   public final static String INITIAL_UPDATE_EVENT_POST = "initialUpdatePost";
    private static Logger log = Logger.getLogger(DbWriter.class.getName());
    public final static String DB_POOL_KEY = "db.pool";
    public final static String CASE_SENSITIVE_KEY = "dbWriter.caseSensitive";
@@ -161,11 +162,18 @@ public class DbWriter implements I_Update {
       ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
       ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
       if (dumpProp != null) {
+         if (this.updateListener != null) {
+            synchronized(this) {
+               if (this.updateListener != null) {
+                  this.updateListener.update(INITIAL_UPDATE_EVENT_PRE, null, null);
+               }
+            }
+         }
          this.writer.update(topic, content, attrMap);
          if (this.updateListener != null) {
             synchronized(this) {
                if (this.updateListener != null) {
-                  this.updateListener.update(INITIAL_UPDATE_EVENT, null, null);
+                  this.updateListener.update(INITIAL_UPDATE_EVENT_POST, null, null);
                }
             }
          }

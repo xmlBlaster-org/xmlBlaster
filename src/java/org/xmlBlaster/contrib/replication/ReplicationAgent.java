@@ -521,15 +521,26 @@ public class ReplicationAgent implements I_Update {
     * replication key is lower than the last one before the initial dump.
     */
    public void update(String topic, byte[] content, Map attrMap) throws Exception {
-      if (DbWriter.INITIAL_UPDATE_EVENT.equals(topic)) {
+      if (DbWriter.INITIAL_UPDATE_EVENT_PRE.equals(topic)) {
          if (this.readerInfo != null) {
             synchronized(this) {
                shutdownDbWatcher();
                this.dbWatcher = null;
-               initializeDbWatcher();
             }
          }
       }
+      else if (DbWriter.INITIAL_UPDATE_EVENT_POST.equals(topic)) {
+         if (this.readerInfo != null) {
+            synchronized(this) {
+               if (this.dbWatcher != null) {
+                  log.warning("The dbWatcher is not null. It should have been set to null in an '" + DbWriter.INITIAL_UPDATE_EVENT_PRE + "' event");
+                  initializeDbWatcher();
+               }
+            }
+         }
+      }
+      else
+         log.warning("Event '" + topic + "' unknown to me. Will not process it");
    }
 
 }
