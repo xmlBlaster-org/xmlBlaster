@@ -270,8 +270,8 @@ public class ReplicationAgent implements I_Update {
       if (this.writerInfo != null) {
          log.info("setUp: Instantiating DbWriter");
          this.dbWriter = new DbWriter();
-         this.dbWriter.registerListener(this);
          this.dbWriter.init(this.writerInfo);
+         this.dbWriter.registerListener(this);
       }
       initializeDbWatcher();
    }
@@ -524,18 +524,10 @@ public class ReplicationAgent implements I_Update {
       if (DbWriter.INITIAL_UPDATE_EVENT_PRE.equals(topic)) {
          if (this.readerInfo != null) {
             synchronized(this) {
+               log.info("shutting down DbWatcher and starting an new instance");
                shutdownDbWatcher();
                this.dbWatcher = null;
-            }
-         }
-      }
-      else if (DbWriter.INITIAL_UPDATE_EVENT_POST.equals(topic)) {
-         if (this.readerInfo != null) {
-            synchronized(this) {
-               if (this.dbWatcher != null) {
-                  log.warning("The dbWatcher is not null. It should have been set to null in an '" + DbWriter.INITIAL_UPDATE_EVENT_PRE + "' event");
-                  initializeDbWatcher();
-               }
+               initializeDbWatcher();
             }
          }
       }

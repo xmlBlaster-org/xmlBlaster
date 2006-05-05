@@ -36,7 +36,6 @@ public class DbWriter implements I_Update {
    private I_DbPool dbPool;
    private boolean poolOwner;
    private boolean isAlive;
-   private I_Update updateListener;
    
    /**
     * Default constructor, you need to call {@link #init} thereafter. 
@@ -162,21 +161,7 @@ public class DbWriter implements I_Update {
       ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
       ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
       if (dumpProp != null) {
-         if (this.updateListener != null) {
-            synchronized(this) {
-               if (this.updateListener != null) {
-                  this.updateListener.update(INITIAL_UPDATE_EVENT_PRE, null, null);
-               }
-            }
-         }
          this.writer.update(topic, content, attrMap);
-         if (this.updateListener != null) {
-            synchronized(this) {
-               if (this.updateListener != null) {
-                  this.updateListener.update(INITIAL_UPDATE_EVENT_POST, null, null);
-               }
-            }
-         }
       }
       else if (endToRemoteProp != null) {
          this.writer.update(topic, content, attrMap);
@@ -190,7 +175,8 @@ public class DbWriter implements I_Update {
    public synchronized void registerListener(I_Update update) throws Exception {
      if (update == null)
         throw new Exception("ReplicationWriter.registerListener: The listener is null");
-     this.updateListener = update;
+     if (this.writer != null)
+        this.writer.registerListener(update);
    }
 
    /**
@@ -200,11 +186,8 @@ public class DbWriter implements I_Update {
    public synchronized void unregisterListener(I_Update update) throws Exception {
       if (update == null)
          throw new Exception("ReplicationWriter.registerListener: The listener is null");
-      this.updateListener = null;
+      if (this.writer != null)
+         this.writer.unregisterListener(update);
    }
 
-   
-   
-   
-   
 }

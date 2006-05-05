@@ -67,6 +67,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    private boolean hasInitialCmd;
    private I_Parser parserForOldInUpdates;
    private boolean nirvanaClient; // if true it does not store on the db (just consumes them
+   private I_Update updateListener;
    
    public ReplicationWriter() {
    }
@@ -577,6 +578,15 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       log.info("'" + topic + "' dumped file '" + filename + "' on '" + this.importLocation + "' seq nr. '" + seqNumber + "' ex='" + exTxt + "'");
       
       if (isEof && !isException) {
+         
+         if (this.updateListener != null) {
+            synchronized(this) {
+               if (this.updateListener != null) {
+                  this.updateListener.update(DbWriter.INITIAL_UPDATE_EVENT_PRE, null, null);
+               }
+            }
+         }
+         
          if (this.hasInitialCmd) {
             String completeFilename = this.importLocation + File.separator + filename;
             
@@ -688,4 +698,20 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       
    }
    
+   public synchronized void registerListener(I_Update update) throws Exception {
+      if (update == null)
+         throw new Exception("ReplicationWriter.registerListener: The listener is null");
+      this.updateListener = update;
+    }
+
+    /**
+     * Currently only one instance of a listener can be registered. It will be deleted if you 
+     * pass a non null value here. If you pass null, an exception will be thrown.
+     */
+    public synchronized void unregisterListener(I_Update update) throws Exception {
+       if (update == null)
+          throw new Exception("ReplicationWriter.registerListener: The listener is null");
+       this.updateListener = null;
+    }
+    
 }
