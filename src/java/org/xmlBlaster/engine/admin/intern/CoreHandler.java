@@ -61,7 +61,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       this.commandManager.register(ContextNode.SUBSCRIPTION_MARKER_TAG, this); // "subscription"
       // "topic" was handled by MsgHandler.java, changed 2006-02-028, marcel
       this.commandManager.register(ContextNode.TOPIC_MARKER_TAG, this); // "topic"
-      log.info("Core administration plugin is initialized");
+      log.fine("Core administration plugin is initialized");
    }
 
    /**

@@ -47,7 +47,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       this.ME = "PropertyHandler" + this.glob.getLogPrefixDashed();
       this.commandManager.register("sysprop", this);
       this.commandManager.register("logging", this);
-      log.info("Property administration plugin is initialized");
+      log.fine("Property administration plugin is initialized");
    }
 
    /**

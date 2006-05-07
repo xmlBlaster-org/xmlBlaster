@@ -8,6 +8,7 @@ package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.ReplaceVariable;
 
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -21,6 +22,7 @@ import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
 import org.xmlBlaster.util.key.I_QueryKeyFactory;
 import org.xmlBlaster.util.key.QueryKeySaxFactory;
+import org.xmlBlaster.util.log.XbFormatter;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.qos.ConnectQosSaxFactory;
 import org.xmlBlaster.util.qos.I_DisconnectQosFactory;
@@ -588,6 +590,11 @@ public class Global implements Cloneable
                Handler[] refHandlers = defLogger.getHandlers();
                for (int i=0; i < refHandlers.length; i++) {
                   refHandlers[i].setLevel(Level.FINEST);
+                  Formatter formatter = refHandlers[i].getFormatter();
+                  if (formatter instanceof XbFormatter) {
+                     XbFormatter xb = (XbFormatter)formatter;
+                     xb.setGlobal(this);
+                  }
                }
                
                while (iter.hasNext()) {
@@ -1715,6 +1722,10 @@ public class Global implements Cloneable
       }
       
       this.isDoingShutdown = false;
+   }
+   
+   public int getRunlevel() {
+      return -1;
    }
 
    /**

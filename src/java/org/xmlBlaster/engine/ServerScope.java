@@ -53,6 +53,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    private static Logger log = Logger.getLogger(ServerScope.class.getName());
    
    private RunlevelManager runlevelManager;
+   private int currRunlevel = 0;
 
    /** the authentication service (a layer around it for security reasons) */
    private I_Authenticate authenticate;
@@ -294,6 +295,10 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
          }
       }
       return this.runlevelManager;
+   }
+   
+   public int getRunlevel() {
+      return this.currRunlevel;
    }
 
    public void setUseCluster(boolean useCluster) {
@@ -680,24 +685,29 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       if (to == from)
          return;
 
-      if (to > from) { // startup
-         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-            getHttpServer(); // incarnate allow http based access (is for example used for CORBA-IOR download)
+      try {
+         if (to > from) { // startup
+            if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+               getHttpServer(); // incarnate allow http based access (is for example used for CORBA-IOR download)
+            }
+            if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
+            }
+            if (to == RunlevelManager.RUNLEVEL_RUNNING) {
+            }
          }
-         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
-         }
-         if (to == RunlevelManager.RUNLEVEL_RUNNING) {
+         else if (to < from) { // shutdown
+            if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
+            }
+            if (to == RunlevelManager.RUNLEVEL_STANDBY) {
+            }
+            if (to <= RunlevelManager.RUNLEVEL_HALTED) {
+               shutdownHttpServer(); // should be an own Plugin ?
+               shutdown();
+            }
          }
       }
-      else if (to < from) { // shutdown
-         if (to == RunlevelManager.RUNLEVEL_CLEANUP) {
-         }
-         if (to == RunlevelManager.RUNLEVEL_STANDBY) {
-         }
-         if (to <= RunlevelManager.RUNLEVEL_HALTED) {
-            shutdownHttpServer(); // should be an own Plugin ?
-            shutdown();
-         }
+      finally {
+         this.currRunlevel = to;
       }
    }
 

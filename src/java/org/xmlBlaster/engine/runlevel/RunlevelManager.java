@@ -230,7 +230,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
                if (dest > from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
-                     log.info("Successful startup to run level " + toRunlevelStr(dest) + Timestamp.millisToNice(elapsed));
+                     log.fine("Successful startup to run level " + toRunlevelStr(dest) + Timestamp.millisToNice(elapsed));
                   else
                      log.info("Startup to run level " + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
                }
@@ -252,7 +252,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
                if (dest < from && isMajorLevel(dest)) {
                   long elapsed = System.currentTimeMillis() - start;
                   if (numErrors == 0)
-                     log.info("Successful shutdown to run level=" + toRunlevelStr(dest) + Timestamp.millisToNice(elapsed));
+                     log.fine("Successful shutdown to run level=" + toRunlevelStr(dest) + Timestamp.millisToNice(elapsed));
                   else
                      log.info("Shutdown to run level=" + toRunlevelStr(dest) + " done with " + numErrors + " errors.");
                }
@@ -292,12 +292,12 @@ public final class RunlevelManager implements RunlevelManagerMBean
                else log.finer("startupPlugins: the pluginInfo is null");
             }
             this.glob.getPluginManager().getPluginObject(pluginInfo);
-            log.info("startupPlugins: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded");
+            log.fine("Run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded");
          }
          catch (Throwable ex) {
             ErrorCode code = pluginConfig.getUpAction().getOnFail();
             if (code == null) {
-               log.warning("startupPlugins. Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
+               log.warning("Exception when loading the plugin '" + pluginConfig.getId() + "' reason: " + ex.toString());
                ex.printStackTrace();
             }
             else {
@@ -324,7 +324,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
             I_Plugin plugin = this.glob.getPluginManager().getPluginObject(pluginInfo);
             plugin.shutdown();
             this.glob.getPluginManager().removeFromPluginCache(pluginInfo.getId());
-            log.info("fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' shutdown");
+            log.fine("fireRunlevelEvent: run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' shutdown");
          }
          catch (Throwable ex) {
             ErrorCode code = pluginConfig.getDownAction().getOnFail();

@@ -167,7 +167,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
 
       
       if (!this.glob.useCluster()) {
-         log.warning("Activating cluster is switched off with '-cluster false'");
+         log.info("Activating cluster is switched off with '-cluster false'");
          return;
       }
       this.sessionInfo = this.glob.getInternalSessionInfo();

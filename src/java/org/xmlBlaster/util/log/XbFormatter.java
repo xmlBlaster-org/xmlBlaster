@@ -11,6 +11,8 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import org.xmlBlaster.util.Global;
+
 /**
  * A xmlBlaster specific formatter for java.util.logging
  * 
@@ -21,6 +23,8 @@ public class XbFormatter extends Formatter {
    private final String id;
 
    private static long instanceCounter;
+   
+   private Global glob;
 
    /** Colored output to xterm */
    private boolean withXtermEscapeColor = false;
@@ -127,6 +131,10 @@ public class XbFormatter extends Formatter {
       this.lineSeparator = System.getProperty("line.separator", "\n");
    }
    
+   public void setGlobal(Global glob) {
+      this.glob = glob;
+   }
+   
    /**
     * If we may switch on xterm colors. 
     * java -DxmlBlaster/supressXtermColors ... suppresses those
@@ -183,6 +191,10 @@ public class XbFormatter extends Formatter {
          sb.append(""+record.getThreadID()).append("-");
          sb.append(Thread.currentThread().getName());
          sb.append(" ");
+      }
+      Global g = this.glob;
+      if (g != null && g.getRunlevel() != -1) {
+         sb.append("RL").append(g.getRunlevel()).append(" ");
       }
       if (record.getSourceClassName() != null) {
          sb.append(record.getSourceClassName());
