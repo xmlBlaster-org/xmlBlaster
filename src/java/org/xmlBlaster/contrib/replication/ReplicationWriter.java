@@ -582,10 +582,13 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          if (this.updateListener != null) {
             synchronized(this) {
                if (this.updateListener != null) {
+                  log.info("update listener will now be notified");
                   this.updateListener.update(DbWriter.INITIAL_UPDATE_EVENT_PRE, null, null);
                }
             }
          }
+         else
+            log.info("No update listener has been registered, will not notify any");
          
          if (this.hasInitialCmd) {
             String completeFilename = this.importLocation + File.separator + filename;

@@ -175,8 +175,13 @@ public class DbWriter implements I_Update {
    public synchronized void registerListener(I_Update update) throws Exception {
      if (update == null)
         throw new Exception("ReplicationWriter.registerListener: The listener is null");
-     if (this.writer != null)
+     if (this.writer != null) {
         this.writer.registerListener(update);
+        log.info("Registered listener");
+     }
+     else
+        log.warning("The writer is null, can not register update");
+     
    }
 
    /**

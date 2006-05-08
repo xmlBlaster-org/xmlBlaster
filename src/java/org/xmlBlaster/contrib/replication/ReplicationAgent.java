@@ -271,6 +271,7 @@ public class ReplicationAgent implements I_Update {
          log.info("setUp: Instantiating DbWriter");
          this.dbWriter = new DbWriter();
          this.dbWriter.init(this.writerInfo);
+         log.info("Registering the listener on the dbWriter");
          this.dbWriter.registerListener(this);
       }
       initializeDbWatcher();
