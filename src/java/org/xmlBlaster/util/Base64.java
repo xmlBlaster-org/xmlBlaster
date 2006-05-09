@@ -53,9 +53,9 @@ public class Base64 {
         int n = 0;
 
         while (i <= end) {
-            int d = ((((int) data [i]) & 0x0ff) << 16) 
-                | ((((int) data [i+1]) & 0x0ff) << 8)
-                | (((int) data [i+2]) & 0x0ff);
+            int d = (((data [i]) & 0x0ff) << 16) 
+                | (((data [i+1]) & 0x0ff) << 8)
+                | ((data [i+2]) & 0x0ff);
 
             buf.append (charTab [(d >> 18) & 63]);
             buf.append (charTab [(d >> 12) & 63]);
@@ -72,8 +72,8 @@ public class Base64 {
 
 
         if (i == start + len - 2) {
-            int d = ((((int) data [i]) & 0x0ff) << 16) 
-                | ((((int) data [i+1]) & 255) << 8);
+            int d = (((data [i]) & 0x0ff) << 16) 
+                | (((data [i+1]) & 255) << 8);
 
             buf.append (charTab [(d >> 18) & 63]);
             buf.append (charTab [(d >> 12) & 63]);
@@ -81,7 +81,7 @@ public class Base64 {
             buf.append ("=");
         }
         else if (i == start + len - 1) {
-            int d = (((int) data [i]) & 0x0ff) << 16;
+            int d = ((data [i]) & 0x0ff) << 16;
 
             buf.append (charTab [(d >> 18) & 63]);
             buf.append (charTab [(d >> 12) & 63]);
@@ -94,11 +94,11 @@ public class Base64 {
 
     static int decode (char c) {
         if (c >= 'A' && c <= 'Z') 
-            return ((int) c) - 65;
+            return c - 65;
         else if (c >= 'a' && c <= 'z') 
-            return ((int) c) - 97 + 26;
+            return c - 97 + 26;
         else if (c >= '0' && c <= '9')
-            return ((int) c) - 48 + 26 + 26;
+            return c - 48 + 26 + 26;
         else switch (c) {
         case '+': return 62;
         case '/': return 63;
@@ -146,10 +146,23 @@ public class Base64 {
     */
    public static void main(String[] args) {
       if (args.length == 2) {
-         String base64 = args[1];
-         byte[] back = Base64.decode(base64);
-         System.out.println("Decoded to '" + new String(back) + "'");
-         return;
+         if (args[0].equals("-decode")) {
+            String base64 = args[1];
+            byte[] back = Base64.decode(base64);
+            System.out.println("Decoded to '" + new String(back) + "'");
+            return;
+         }
+         if (args[0].equals("-fn")) {
+            try {
+               byte[] bb = FileLocator.readFile(args[1]);
+               String base64 = Base64.encode(bb);
+               System.out.println("Content of '" + args[1] + "' encoded to base64 '" + base64 + "'");
+               return;
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+            }
+         }
       }
       {
          String hello = args.length > 0 ? args[0] : "Hello World";
