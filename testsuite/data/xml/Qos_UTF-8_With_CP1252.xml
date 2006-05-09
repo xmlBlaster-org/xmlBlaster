@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="windows-1252" standalone="yes"?>
+<qos>
+  <clientProperty name='CP1252' charset="windows-1252">Ä</clientProperty>
+  <clientProperty name='CP1252-BASE64' encoding="base64" charset="windows-1252">QUUgaXMgJ8QnDQpPRSBpcyAn1icNCnNzIGlzICffJw==</clientProperty>
+  <clientProperty name='UTF-8'>Ã„</clientProperty>
+</qos>
