@@ -108,6 +108,9 @@ public class XmlQoSBase extends SaxHandlerBase
          this.inClientProperty++;
          if (this.cpCharacter == null) this.cpCharacter = new StringBuffer();
          this.clientProperty = new ClientProperty(attrs.getValue("name"), attrs.getValue("type"), attrs.getValue("encoding"));
+         String charset = attrs.getValue("charset");
+         if (charset != null && charset.length() > 0)
+            this.clientProperty.setCharset(charset);
          character.setLength(0);
          return true;
       }

@@ -47,7 +47,7 @@ import java.util.Map;
  */
 public final class MsgQosData extends QosData implements java.io.Serializable, Cloneable
 {
-   private String ME = "MsgQosData";
+   private static final long serialVersionUID = 1L;
    private transient I_MsgQosFactory factory;
    private transient boolean isExpired = false; // cache the expired state for performance reasons
 
@@ -679,17 +679,22 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * @return internal state of the message QoS as a XML ASCII string
     */
    public String toXml() {
-      return toXml((String)null);
+      return toXml((String)null, false);
    }
 
+   public String toXml(String extraOffset) {
+      return toXml(extraOffset, false);
+   }
+   
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
+    * @param forceReadable If true, any base64 is decoded to be more human readable 
     * @return internal state of the message QoS as a XML ASCII string
     */
-   public String toXml(String extraOffset) {
-      return this.factory.writeObject(this, extraOffset);
+   public String toXml(String extraOffset, boolean forceReadable) {
+      return this.factory.writeObject(this, extraOffset, forceReadable);
    }
 
    /**

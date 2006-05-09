@@ -5,11 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.util.logging.Logger;
 
-import org.hsqldb.lib.FileUtil;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
@@ -779,6 +777,17 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final String writeObject(MsgQosData msgQosData, String extraOffset) {
+      return writeObject(msgQosData, extraOffset, false);
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @param forceReadable If true, any base64 is decoded to be more human readable 
+    * @return internal state of the RequestBroker as a XML ASCII string
+    */
+   public final String writeObject(MsgQosData msgQosData, String extraOffset, boolean forceReadable) {
       StringBuffer sb = new StringBuffer(1024);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -904,7 +913,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append(msgQosData.getTopicProperty().toXml(extraOffset+Constants.INDENT));
       }
 
-      sb.append(msgQosData.writePropertiesXml(extraOffset+Constants.INDENT));
+      sb.append(msgQosData.writePropertiesXml(extraOffset+Constants.INDENT, forceReadable));
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)
@@ -925,7 +934,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    public void sendRemainingLife(boolean sendRemainingLife) { this.sendRemainingLife = sendRemainingLife; }
    public boolean sendRemainingLife() { return this.sendRemainingLife; }
 
-   // java org.xmlBlaster.util.qos.MsgQosSaxFactory cp1252.xml
+   // java org.xmlBlaster.util.qos.MsgQosSaxFactory xmlBlaster/testsuite/data/xml/Qos_UTF-8_With_CP1252.xml
 	public static void main(String[] args) {
       String fn = args[0];
       Global glob = Global.instance();
@@ -935,14 +944,26 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          xml = FileLocator.readAsciiFile(fn);
          //xml = new String(FileLocator.readFile(fn), "windows-1252");
          MsgQosData data = f.readObject(xml);
-         String newXml = data.toXml();
+         String newXml = data.toXml("",true);
          System.out.println("CP1252=" + data.getClientProperty("CP1252"));
+         System.out.println("CP1252-BASE64=" + data.getClientProperty("CP1252-BASE64"));
          System.out.println(newXml);
          FileOutputStream to = new FileOutputStream(fn+".xml", false);
          String enc = "UTF-8"; //"UTF-16"; // "cp1252";
          newXml = "<?xml version='1.0' encoding='"+enc+"' standalone='yes'?>"+newXml;
          to.write(newXml.getBytes(enc));
          to.close();
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+      
+      try {
+         System.out.println("\nReading as bytes:");
+         byte[] bb = FileLocator.readFile(fn);
+         String str = new String(bb, "windows-1252"); // transforms nicely cp1252 charset to UTF-8!
+         //String str = new String(bb);
+         // Linux: file.encoding is UTF-8
+         System.out.println("windows-1252 file.encoding="+ System.getProperty("file.encoding") + " '" + str + "'");
       } catch (Exception e) {
          e.printStackTrace();
       }

@@ -673,12 +673,16 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    }
 
    public final String writePropertiesXml(String offset) {
+      return writePropertiesXml(offset, false);
+   }
+
+   public final String writePropertiesXml(String offset, boolean forceReadable) {
       if (this.clientProperties.size() > 0) {
          Object[] arr = this.clientProperties.keySet().toArray();
          StringBuffer sb = new StringBuffer(arr.length*256);
          for (int i=0; i < arr.length; i++) {
             ClientProperty p = (ClientProperty)this.clientProperties.get(arr[i]);
-            sb.append(p.toXml(offset));
+            sb.append(p.toXml(offset, null, forceReadable));
          }
          return sb.toString();
       }

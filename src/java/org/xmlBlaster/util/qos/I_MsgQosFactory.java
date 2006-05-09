@@ -27,10 +27,13 @@ public interface I_MsgQosFactory
     * <br>
     * @param The data object to serialize
     * @param extraOffset Formatting hints
+    * @param forceReadable If true, any base64 is decoded to be more human readable 
     * @return The serialized representation
     */
-   String writeObject(MsgQosData msgQosData, String extraOffset);
+   String writeObject(MsgQosData msgQosData, String extraOffset, boolean forceReadable);
 
+   String writeObject(MsgQosData msgQosData, String extraOffset);
+   
    /** A human readable name of this factory */
    String getName();
 }

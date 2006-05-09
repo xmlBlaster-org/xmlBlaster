@@ -6,6 +6,8 @@ Comment:   Handling one client property of QosData
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.io.UnsupportedEncodingException;
+
 import org.xmlBlaster.util.def.Constants;
 import org.apache.commons.codec.binary.Base64;
 
@@ -17,8 +19,11 @@ import org.apache.commons.codec.binary.Base64;
  *&lt;clientProperty name='transactionId' type='int'>120001&lt;/clientProperty>
  *&lt;clientProperty name='myKey'>Hello World&lt;/clientProperty>
  *&lt;clientProperty name='myBlob' type='byte[]' encoding='base64'>OKFKAL==&lt;/clientProperty>
+ *&lt;clientProperty name='myText' type='String' encoding='base64' charset='cp1252'>Hello&lt;/clientProperty>
  * </pre>
  * If the attribute <code>type</code> is missing we assume a 'String' property
+ * <p />
+ * The encoding charset must be "UTF-8", it can be locally overwritten for base64 encoded strings
  *
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.clientProperty.html">The client.qos.clientProperty requirement</a>
  */
@@ -31,6 +36,8 @@ public class EncodableData implements java.io.Serializable, Cloneable
    /** The value encoded as specified with encoding */
    private String value;
    private String encoding;
+   /** Mark the charset for a base64 encoded String */
+   private String charset;
    /** Needed for Base64 encoding */
    public static final boolean isChunked = false;
    protected String tagName;
@@ -118,12 +125,23 @@ public class EncodableData implements java.io.Serializable, Cloneable
    }
 
    /**
+    * The string representation of the value.
+    * <p /> 
+    * If the string is base64 encoded with a given charset, it is decoded
+    * and transformed to the default charset, typically "UTF-8"
     * @return The value which is decoded (readable) in case it was base64 encoded, can be null
     */
    public String getStringValue() {
       if (this.value == null) return null;
       if (Constants.ENCODING_BASE64.equalsIgnoreCase(this.encoding)) {
          byte[] content = Base64.decodeBase64(this.value.getBytes());
+         if (getCharset() != null) {
+            try {
+               return new String(content, getCharset());
+            } catch (UnsupportedEncodingException e) {
+               e.printStackTrace();
+            }
+         }
          return new String(content);
       }
       return this.value;
@@ -196,6 +214,20 @@ public class EncodableData implements java.io.Serializable, Cloneable
     */
    public String getEncoding() {
       return this.encoding;
+   }
+
+   /**
+    * @return Returns the charset, for example "cp1252" or "UTF-8", helpful if base64 encoded
+    */
+   public String getCharset() {
+      return this.charset;
+   }
+
+   /**
+    * @param charset The charset to set.
+    */
+   public void setCharset(String charset) {
+      this.charset = charset;
    }
 
    /**
@@ -322,7 +354,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
     * <br>
     * @param extraOffset indenting of tags for nice output
     * @param tmpTagName the tag name to be used for this output. If you
-    * specify the default will be used, i.e. what has been passed in the constructor.
+    * specify 'null' the default will be used, i.e. what has been passed in the constructor.
     * @return internal state of the EncodableData as a XML ASCII string
     */
    public final String toXml(String extraOffset, String tmpTagName) {
@@ -332,9 +364,9 @@ public class EncodableData implements java.io.Serializable, Cloneable
    /**
     * You may set forceReadable==true to have nicer human readable output.
     * For normal processing leave forceReadable==false. 
-    * @param extraOffset
-    * @param tmpTagName
-    * @param forceReadable
+    * @param extraOffset The indenting prefix
+    * @param tmpTagName If null the default is chosen
+    * @param forceReadable If true the base64 is decoded to a 'readable' string
     * @return
     */
    public final String toXml(String extraOffset, String tmpTagName, boolean forceReadable) {
@@ -383,6 +415,9 @@ public class EncodableData implements java.io.Serializable, Cloneable
       
       if (getEncoding() != null) {
          sb.append(" encoding='").append(getEncoding()).append("'");
+      }
+      if (getCharset() != null) {
+         sb.append(" charset='").append(getCharset()).append("'");
       }
 
       String val = getValueRaw();
