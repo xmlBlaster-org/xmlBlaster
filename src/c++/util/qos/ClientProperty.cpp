@@ -28,7 +28,8 @@ ClientProperty::ClientProperty(bool /*dummy*/,
    : name_(name),
      value_(""),
      encoding_(encoding),
-     type_(type)
+     type_(type),
+     charset_("")
 {
 }
 
@@ -38,7 +39,8 @@ ClientProperty::ClientProperty(const std::string& name,
    : name_(name),
      value_(value),
      encoding_(""),
-     type_(type)
+     type_(type),
+     charset_("")
 {
    if (needsEncoding()) {
 //#     if defined(__sun)
@@ -64,7 +66,8 @@ ClientProperty::ClientProperty(const std::string& name,
    : name_(name),
      value_(""),
      encoding_(""),
-     type_(type)
+     type_(type),
+     charset_("")
 {
    if (type_ == "") {
       type_ = Constants::TYPE_BLOB;
@@ -105,8 +108,16 @@ std::string ClientProperty::getType() const {
    return type_;
 }
 
+void ClientProperty::setCharset(const string& charset) {
+   charset_ = charset;
+}
+
 std::string ClientProperty::getEncoding() const {
    return encoding_;
+}
+
+std::string ClientProperty::getCharset() const {
+   return charset_;
 }
 
 bool ClientProperty::isBase64() const {
@@ -177,6 +188,9 @@ std::string ClientProperty::toXml(std::string extraOffset, bool clearText, std::
    if (getEncoding() != "") {
       sb += " encoding='" + getEncoding() + "'";
    }
+   if (getCharset() != "") {
+      sb += " charset='" + getCharset() + "'";
+   }
 
    std::string val = getValueRaw();
    if (val == "")
@@ -188,7 +202,7 @@ std::string ClientProperty::toXml(std::string extraOffset, bool clearText, std::
       //     val.find(">") != std::string::npos ||
       //     val.find("&") != std::string::npos
       //    )
-      //   sb += "><![CDATA [" + val + "]]></clientProperty>";
+      //   sb += "><![CDATAï¿½[" + val + "]]></clientProperty>";
       //else
       sb += ">" + (clearText?getStringValue():val) + "</" + tagName + ">";
    }
@@ -201,14 +215,23 @@ std::string ClientProperty::toXml(std::string extraOffset, bool clearText, std::
 //g++ -o ClientProperty -Wall -g -DCLIENTPROPERTY_MAIN ClientProperty.cpp ../Base64.cpp ../Constants.cpp -I ~/xmlBlaster/src/c++
 #ifdef CLIENTPROPERTY_MAIN
 # include <iostream>
+
+namespace org { namespace xmlBlaster { namespace util {
+   template<> std::string lexical_cast(std::string arg) { return arg; }
+}}}
+
 int main(int argc, char **argv) {
    try {
       {
          ClientProperty cp("key", string("string"));
+         char *p = setlocale(LC_CTYPE, ""); // Returns "en_US.UTF-8" on Linux
+         cp.setCharset(p);
+         
          cout << "name=" << cp.getName() 
               << ", valueB64=" << cp.getValueRaw()
               << ", value=" << cp.getStringValue()
               << ", type=" << cp.getType()
+              << ", charset=" << cp.getCharset()
               << ", isBase64=" << cp.isBase64()
               << cp.toXml("")
               << endl << endl;
@@ -221,11 +244,13 @@ int main(int argc, char **argv) {
          v.push_back('l');
          v.push_back('o');
          ClientProperty cp("key", v);
+         cp.setCharset("windows-1252");
          cout << "name=" << cp.getName() 
               << ", valueB64=" << cp.getValueRaw()
               << ", value=" << cp.getStringValue()
               << ", type=" << cp.getType()
               << ", encoding=" << cp.getEncoding()
+              << ", charset=" << cp.getCharset()
               << ", isBase64=" << cp.isBase64()
               << cp.toXml("")
               << endl;

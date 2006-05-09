@@ -251,6 +251,9 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
       iter = attrs.find("type");
       if (iter != attrs.end()) type = (*iter).second;
       clientProperty_ = new ClientProperty(true, nameAttr, type, encoding);
+
+      iter = attrs.find("charset");
+      if (iter != attrs.end()) clientProperty_->setCharset((*iter).second);
    }
       
 }

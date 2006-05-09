@@ -48,6 +48,7 @@ private:
    std::string value_;
    std::string encoding_;
    mutable std::string type_;
+   mutable std::string charset_;
 
    template <typename T_VALUE> void guessType(const T_VALUE& value) const;
    bool needsEncoding() const;
@@ -141,6 +142,19 @@ public:
    std::string getEncoding() const;
 
    /**
+    * If value is of type "String" and base64 encoded you can specify a charset (like "UTF-8" or "windows-1252")
+    * @return The used encoding, for example "base64" or "" for none
+    * @see Constants::ENCODING_BASE64
+    */
+   std::string getCharset() const;
+
+   /**
+    * Set a charset, needed only it not "UTF-8" (default). 
+    * @param charset e.g. "windows-1252"
+    */
+   void setCharset(const std::string& charset);
+
+   /**
     * Check if getValueRaw() is Base64 encoded
     */
    bool isBase64() const;
@@ -201,7 +215,8 @@ template <typename T_VALUE> ClientProperty::ClientProperty(
    : name_(name),
      value_(""),
      encoding_(encoding),
-     type_(type)
+     type_(type),
+     charset_("")
 {
    if (type_ == "") {
       guessType(value);  // guess type from T_VALUE

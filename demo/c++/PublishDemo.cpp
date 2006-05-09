@@ -163,9 +163,11 @@ void PublishDemo::initEnvironment()
    string clientPropertyKey = global_.getProperty().get("clientProperty.key", string(""));
    string clientPropertyValue = global_.getProperty().get("clientProperty.value", string(""));
    string clientPropertyEncoding = global_.getProperty().get("clientProperty.encoding", ""); // Force to Constants::ENCODING_BASE64="base64"
+   string clientPropertyCharset = global_.getProperty().get("clientProperty.charset", ""); // Force to e.g. "windows-1252"
    string clientPropertyType = global_.getProperty().get("clientProperty.type", ""); // Date type, see Constants::TYPE_DOUBLE, Constants::TYPE_STRING etc
    if (clientPropertyKey != "") {
       ClientProperty cp(clientPropertyKey, clientPropertyValue, clientPropertyType, clientPropertyEncoding);
+      if (clientPropertyCharset != "") cp.setCharset(clientPropertyCharset);
       clientPropertyMap.insert(QosData::ClientPropertyMap::value_type(clientPropertyKey, cp));
    }
 
@@ -348,6 +350,8 @@ static void usage(I_Log& log)
  *   PublishDemo -help
  * </pre>
  * for usage help
+ * <p />Example:
+ * PublishDemo -oid __sys__remoteProperties -clientProperty.key "MultiByte" -clientProperty.value "With 'Ä' multibyte" -clientProperty.charset windows-1252 -clientProperty.encoding base64
  */
 int main(int args, char ** argv)
 {
