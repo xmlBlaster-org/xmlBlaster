@@ -168,6 +168,15 @@ void PublishDemo::initEnvironment()
    if (clientPropertyKey != "") {
       ClientProperty cp(clientPropertyKey, clientPropertyValue, clientPropertyType, clientPropertyEncoding);
       if (clientPropertyCharset != "") cp.setCharset(clientPropertyCharset);
+      //
+      // Returns "en_US.UTF-8" on Linux and "English_United States.1252" on WinXP
+      //char *p = setlocale(LC_CTYPE, "");
+      //log_.info(ME, "setlocale CTYPE returns: " + string(p));
+      // But java (server on Linux or Windows) can't handle "English_United States.1252" or "1252": java.io.UnsupportedEncodingException: 1252
+      // but it can handle conversion from "windows-1252" to "UTF-8"
+      // Further, java does: UnsupportedEncodingException: en_US.UTF-8
+      // but likes "UTF-8"
+      //What else instead of setlocal() could we use for automatic charset detection of this C++ client (which is compatible to Java used names)?
       clientPropertyMap.insert(QosData::ClientPropertyMap::value_type(clientPropertyKey, cp));
    }
 
