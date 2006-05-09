@@ -17,12 +17,10 @@ import java.util.Properties;
  */
 public class JdkCompatible
 {
-   private static final String ME = "JdkCompatible";
-
-
    /**
     * System.setProperty(String, String); is since JDK 1.2
     * This method supports JDK 1.1 as well
+    * @deprecated since JDK 1.2
     */
    public static void setSystemProperty(String key, String value)
    {
