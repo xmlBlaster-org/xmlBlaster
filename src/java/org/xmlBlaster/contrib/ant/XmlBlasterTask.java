@@ -28,7 +28,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  *
  *  &lt;taskdef name="xmlBlasterScript"
  *          classname="org.xmlBlaster.contrib.ant.XmlBlasterTask"
- *          classpath="build.tmp/classes:lib/xmlBlaster.jar"/>
+ *          classpath="lib/xmlBlaster.jar"/>
  *
  *  ...
  *
