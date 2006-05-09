@@ -155,7 +155,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
                      .append("\n - - - content: - - -\n")
                      .append(new String(content))
                      .append("\n - - - updateQos: - - -")
-                     .append(updateQos.toXml()))
+                     .append(updateQos.getData().toXml("", true)))
                      .append("\n - - - end - - -\n")
                      .toString();
                jTextArea1.setText(text);
