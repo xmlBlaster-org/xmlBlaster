@@ -121,6 +121,5 @@ public interface I_DataConverter
     * has been finished. In normal cases this means after having published the change message. 
     */
    String getPostStatement();
-   
 }
 

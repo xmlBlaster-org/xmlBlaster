@@ -107,12 +107,5 @@ public interface I_ChangeDetector
     */
    void shutdown() throws Exception;
    
-   /**
-    * Resets the detector. Behaviour depends on implementation.
-    * 
-    * @throws Exception
-    */
-   void reset() throws Exception;
-   
 }
 

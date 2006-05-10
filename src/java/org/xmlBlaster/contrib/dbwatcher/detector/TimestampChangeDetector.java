@@ -326,12 +326,4 @@ public class TimestampChangeDetector implements I_ChangeDetector
       }
    }
 
-   /**
-    * Resets the old timestamp and the new timestamp (will be null after call).
-    */
-   public synchronized void reset() throws Exception {
-      log.info("resetting the detector");
-      this.oldTimestamp = null;
-      this.newTimestamp = null;
-   }
 }

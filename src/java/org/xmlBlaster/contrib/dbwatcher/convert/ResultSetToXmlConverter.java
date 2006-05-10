@@ -373,6 +373,5 @@ public class ResultSetToXmlConverter implements I_DataConverter
       converter.shutdown();
       return baos.toByteArray();
    }
-   
-   
+
 }

@@ -127,15 +127,6 @@ public class DbWatcher implements I_ChangeListener {
       }
    }
    
-   public void resetChangeDetector() throws Exception {
-      if (log.isLoggable(Level.INFO))
-         log.info("entering resetChangeDetector; changeDetector is ["
-               + this.changeDetector == null ? "" : "not " + "null].");
-      if (this.changeDetector != null) {
-         this.changeDetector.reset();
-      }
-   }
-
    /**
     * Creates a processor for changes. 
     * The alert producers need to be started later with a call to

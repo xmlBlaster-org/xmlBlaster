@@ -556,7 +556,4 @@ public class MD5ChangeDetector implements I_ChangeDetector
       }
    }
 
-   public void reset() throws Exception {
-   }
-   
 }
