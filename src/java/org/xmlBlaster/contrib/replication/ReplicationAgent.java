@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
@@ -45,7 +44,7 @@ import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class ReplicationAgent implements I_Update {
+public class ReplicationAgent {
    private static Logger log = Logger.getLogger(ReplicationAgent.class.getName());
 
    private I_Info readerInfo;
@@ -271,8 +270,6 @@ public class ReplicationAgent implements I_Update {
          log.info("setUp: Instantiating DbWriter");
          this.dbWriter = new DbWriter();
          this.dbWriter.init(this.writerInfo);
-         log.info("Registering the listener on the dbWriter");
-         this.dbWriter.registerListener(this);
       }
       initializeDbWatcher();
    }
@@ -346,7 +343,6 @@ public class ReplicationAgent implements I_Update {
          shutdownDbWatcher();
       }
       finally {
-         this.dbWriter.unregisterListener(this);
          this.dbWriter.shutdown();
          this.dbWriter = null;
       }
@@ -513,30 +509,6 @@ public class ReplicationAgent implements I_Update {
             pool.release(conn);
       }
       
-   }
-
-   /**
-    * This implementation is interested in events coming after the initial dump (initial update)
-    * has been completed. It shuts down the DbWatcher and instantiated a new one. This is necessary
-    * for cases where the DbWatcher needs to detect changes occured to the ITEMS table when the
-    * replication key is lower than the last one before the initial dump.
-    */
-   public void update(String topic, byte[] content, Map attrMap) throws Exception {
-      if (DbWriter.INITIAL_UPDATE_EVENT_PRE.equals(topic)) {
-         if (this.readerInfo != null) {
-            synchronized(this) {
-               /*
-               log.info("shutting down DbWatcher and starting an new instance");
-               shutdownDbWatcher();
-               this.dbWatcher = null;
-               initializeDbWatcher();
-               */
-               this.dbWatcher.resetChangeDetector();
-            }
-         }
-      }
-      else
-         log.warning("Event '" + topic + "' unknown to me. Will not process it");
    }
 
 }
