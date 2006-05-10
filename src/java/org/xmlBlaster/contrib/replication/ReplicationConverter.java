@@ -398,7 +398,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       String statement = "DELETE FROM " + this.replPrefix + "ITEMS WHERE TRANS_KEY='" + this.transactionId + "'";
       return statement;
    }
-   
-   
+
 }
 
