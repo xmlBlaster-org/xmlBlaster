@@ -157,7 +157,7 @@ int main(int argc, char** argv)
                    "-------------------------------------"
                    "%s\n <content>%.100s%s</content>%s\n"
                    "-------------------------------------\n",
-                   i+1, msgUnitArr->len,
+                   (unsigned int)(i+1), (unsigned int)msgUnitArr->len,
                    msgUnitArr->msgUnitArr[i].key,
                    contentStr, dots,
                    msgUnitArr->msgUnitArr[i].qos);
