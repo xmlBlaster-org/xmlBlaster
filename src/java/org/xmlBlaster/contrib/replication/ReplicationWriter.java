@@ -67,7 +67,6 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    private boolean hasInitialCmd;
    private I_Parser parserForOldInUpdates;
    private boolean nirvanaClient; // if true it does not store on the db (just consumes them
-   private I_Update updateListener;
    
    public ReplicationWriter() {
    }
@@ -493,7 +492,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
             }
             catch (Throwable ex) {
                log.severe("store: an exception occured when trying to commit: " + ex.getMessage());
-               ex.printStackTrace();
+               log.severe(Global.getStackTraceAsString(ex));
                if (ex instanceof Exception)
                   throw (Exception)ex;
                else
@@ -502,7 +501,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          }
          catch (Exception ex) {
             log.severe("An exception occured when trying storing the entry." + ex.getMessage());
-            ex.printStackTrace();
+            log.severe(Global.getStackTraceAsString(ex));
             throw ex;
          }
          finally {
@@ -513,7 +512,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                }
                catch (Throwable ex) {
                   log.severe("store: an exception occured when trying to rollback: " + ex.getMessage());
-                  ex.printStackTrace();
+                  log.severe(Global.getStackTraceAsString(ex));
                }
                if (oldAutoCommitKnown) {
                   try {
@@ -522,7 +521,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   }
                   catch (Throwable ex) {
                      log.severe("store: an exception occured when reverting to original autocommit settings: " + ex.getMessage());
-                     ex.printStackTrace();
+                     log.severe(Global.getStackTraceAsString(ex));
                   }
                }
                this.pool.release(conn);
@@ -578,18 +577,6 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       log.info("'" + topic + "' dumped file '" + filename + "' on '" + this.importLocation + "' seq nr. '" + seqNumber + "' ex='" + exTxt + "'");
       
       if (isEof && !isException) {
-         
-         if (this.updateListener != null) {
-            synchronized(this) {
-               if (this.updateListener != null) {
-                  log.info("update listener will now be notified");
-                  this.updateListener.update(DbWriter.INITIAL_UPDATE_EVENT_PRE, null, null);
-               }
-            }
-         }
-         else
-            log.info("No update listener has been registered, will not notify any");
-         
          if (this.hasInitialCmd) {
             String completeFilename = this.importLocation + File.separator + filename;
             
@@ -601,7 +588,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                }
                catch (Exception ex) {
                   log.severe("Could not clean up completely the schema");
-                  ex.printStackTrace();
+                  log.severe(Global.getStackTraceAsString(ex));
                }
             }
             String version = null;
@@ -701,20 +688,4 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       
    }
    
-   public synchronized void registerListener(I_Update update) throws Exception {
-      if (update == null)
-         throw new Exception("ReplicationWriter.registerListener: The listener is null");
-      this.updateListener = update;
-    }
-
-    /**
-     * Currently only one instance of a listener can be registered. It will be deleted if you 
-     * pass a non null value here. If you pass null, an exception will be thrown.
-     */
-    public synchronized void unregisterListener(I_Update update) throws Exception {
-       if (update == null)
-          throw new Exception("ReplicationWriter.registerListener: The listener is null");
-       this.updateListener = null;
-    }
-    
 }
