@@ -187,7 +187,10 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
       string type;
       iter = attrs.find("type");
       if (iter != attrs.end()) type = (*iter).second;
-      attribute_ = new ClientProperty(true, nameAttr, type, encoding);
+      string charset;
+      iter = attrs.find("charset");
+      if (iter != attrs.end()) charset = (*iter).second;
+      attribute_ = new ClientProperty(true, nameAttr, type, encoding, charset);
    }
 }
 

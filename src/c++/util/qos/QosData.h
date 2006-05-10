@@ -228,7 +228,8 @@ public:
             const std::string& name,
             const T_VALUE& value,
             const std::string& type="",
-            const std::string& encoding="");
+            const std::string& encoding="",
+            const std::string& charset="");
 
    /**
     * Access the value for the given name, if not found returns the defaultValue. 
@@ -318,9 +319,10 @@ typedef org::xmlBlaster::util::ReferenceHolder<org::xmlBlaster::util::qos::QosDa
 
 template <typename T_VALUE> void QosData::addClientProperty(
              const std::string& name, const T_VALUE& value,
-             const std::string& type, const std::string& encoding)
+             const std::string& type, const std::string& encoding,
+             const std::string& charset)
 {
-   org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value, type, encoding);
+   org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value, type, encoding, charset);
    clientProperties_.insert(ClientPropertyMap::value_type(name, clientProperty));   
 }
 

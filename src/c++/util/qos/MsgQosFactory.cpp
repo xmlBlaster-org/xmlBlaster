@@ -242,18 +242,23 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
       inClientProperty_ = true;
       character_.erase();
       string nameAttr;
+
       AttributeMap::const_iterator iter = attrs.find("name");
       if (iter != attrs.end()) nameAttr = (*iter).second;
+
       string encoding;
       iter = attrs.find("encoding");
       if (iter != attrs.end()) encoding = (*iter).second;
+
       string type;
       iter = attrs.find("type");
       if (iter != attrs.end()) type = (*iter).second;
-      clientProperty_ = new ClientProperty(true, nameAttr, type, encoding);
 
+      string charset;
       iter = attrs.find("charset");
-      if (iter != attrs.end()) clientProperty_->setCharset((*iter).second);
+      if (iter != attrs.end()) charset = (*iter).second;
+
+      clientProperty_ = new ClientProperty(true, nameAttr, type, encoding, charset);
    }
       
 }

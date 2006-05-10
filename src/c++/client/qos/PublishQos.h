@@ -206,8 +206,9 @@ public:
             const std::string& name,
             const T_VALUE& value,
             const std::string& type="",
-            const std::string& encoding="") {
-      msgQosData_.addClientProperty(name, value, type, encoding);
+            const std::string& encoding="",
+            const std::string& charset="") {
+      msgQosData_.addClientProperty(name, value, type, encoding, charset);
    }
 
    /**

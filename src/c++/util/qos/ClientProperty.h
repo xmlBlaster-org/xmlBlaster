@@ -68,7 +68,8 @@ public:
                   const std::string& name,
                   const T_VALUE& value,
                   const std::string& type="",
-                  const std::string& encoding=""
+                  const std::string& encoding="",
+                  const std::string& charset=""
                   );
 
    /**
@@ -79,7 +80,8 @@ public:
    ClientProperty(bool dummy,
                   const std::string& name,
                   const std::string& type,
-                  const std::string& encoding
+                  const std::string& encoding,
+                  const std::string& charset
                   );
 
    /**
@@ -210,13 +212,14 @@ template <typename T_VALUE> ClientProperty::ClientProperty(
                      const std::string& name,
                      const T_VALUE& value,
                      const std::string& type,
-                     const std::string& encoding
+                     const std::string& encoding,
+                     const std::string& charset
                      )
    : name_(name),
      value_(""),
      encoding_(encoding),
      type_(type),
-     charset_("")
+     charset_(charset)
 {
    if (type_ == "") {
       guessType(value);  // guess type from T_VALUE

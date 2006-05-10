@@ -189,7 +189,10 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
       string type;
       iter = attrs.find("type");
       if (iter != attrs.end()) type = (*iter).second;
-      clientProperty_ = new ClientProperty(true, nameAttr, type, encoding);
+      string charset;
+      iter = attrs.find("charset");
+      if (iter != attrs.end()) charset = (*iter).second;
+      clientProperty_ = new ClientProperty(true, nameAttr, type, encoding, charset);
    }
 }
 

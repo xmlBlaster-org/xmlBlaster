@@ -23,13 +23,14 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 ClientProperty::ClientProperty(bool /*dummy*/,
                   const std::string& name,
                   const std::string& type,
-                  const std::string& encoding
+                  const std::string& encoding,
+                  const std::string& charset
                   )
    : name_(name),
      value_(""),
      encoding_(encoding),
      type_(type),
-     charset_("")
+     charset_(charset)
 {
 }
 
