@@ -14,8 +14,4 @@ public interface I_Writer extends I_ContribPlugin, I_Update {
 
    void store(SqlInfo info) throws Exception;
 
-   void registerListener(I_Update update) throws Exception;
-
-   void unregisterListener(I_Update update) throws Exception;
-
 }

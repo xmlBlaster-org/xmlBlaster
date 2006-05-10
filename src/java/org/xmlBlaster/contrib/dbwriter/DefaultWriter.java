@@ -44,10 +44,4 @@ public class DefaultWriter implements I_Writer {
    public void shutdown() throws Exception {
    }
    
-   public synchronized void registerListener(I_Update update) throws Exception {
-   }
-
-   public synchronized void unregisterListener(I_Update update) throws Exception {
-   }
-    
 }
