@@ -2,6 +2,7 @@ package org.xmlBlaster.contrib.ant;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -152,6 +153,9 @@ public class XmlBlasterTask extends Task {
        if (props.size() > 0)
           this.glob.init(props);
        
+       boolean closeResponseStream = false;
+       boolean closeUpdateStream = false;
+       
        try {
           if (this.scriptFile != null) {
              this.reader = new FileReader(this.scriptFile);
@@ -167,12 +171,14 @@ public class XmlBlasterTask extends Task {
              this.responseStream = System.out;
           else {
              this.responseStream = new FileOutputStream(this.responseFile);
+             closeResponseStream = true;
           }
           
           if (this.updateFile == null)
              this.updateStream = this.responseStream;
           else {
              this.updateStream = new FileOutputStream(this.updateFile);
+             closeUpdateStream = true;
           }
           this.interpreter = new XmlScriptClient(this.glob, this.glob.getXmlBlasterAccess(), this.updateStream, this.responseStream, null);
 
@@ -198,6 +204,23 @@ public class XmlBlasterTask extends Task {
           log("Scripting to xmlBlaster failed " + getLocation() + ": " + e.toString());
           e.printStackTrace();
           throw new BuildException(e.toString());
+       }
+       finally {
+          if (closeResponseStream) {
+             try {
+               this.responseStream.close();
+            } catch (IOException e) {
+               e.printStackTrace();
+            }
+          }
+          if (closeUpdateStream) {
+             try {
+               this.updateStream.close();
+            } catch (IOException e) {
+               e.printStackTrace();
+            }
+          }
+
        }
     }
 
