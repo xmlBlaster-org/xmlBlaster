@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ o #15137 Bugfix killClient() does now properly destroy clients which have no session
+   for example clients which came to live with a PtP message.
+
  o #15093 Extended XmlScript with
    <wait delay="60000" updates="4" message="Waiting for 4 updates (timeout is 1 min) ..."/>
 
