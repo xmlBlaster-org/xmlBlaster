@@ -784,7 +784,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @param forceReadable If true, any base64 is decoded to be more human readable 
+    * @param forceReadable If true, any base64 is decoded to be more human readable and timestamps are human readable
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final String writeObject(MsgQosData msgQosData, String extraOffset, boolean forceReadable) {
@@ -854,7 +854,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
 
       if (msgQosData.getRcvTimestamp() != null)
-         sb.append(msgQosData.getRcvTimestamp().toXml(extraOffset+Constants.INDENT, false));
+         sb.append(msgQosData.getRcvTimestamp().toXml(extraOffset+Constants.INDENT, forceReadable));
 
       if(msgQosData.getQueueSize() > 0)
          sb.append(offset).append(" <queue index='").append(msgQosData.getQueueIndex()).append("' size='").append(msgQosData.getQueueSize()).append("'/>");
