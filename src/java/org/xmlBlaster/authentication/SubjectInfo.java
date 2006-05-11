@@ -26,7 +26,6 @@ import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.queue.StorageId;
@@ -1104,12 +1103,15 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
    /**
     * Kills all sessions of this client
-    * @return The list of killed sessions (public session IDs)
+    * @return The list of killed sessions (public session IDs), in a human readable string
     */
    String killClient() throws XmlBlasterException {
       int numSessions = getNumSessions();
-      if (numSessions < 1)
-         return "";
+      long num = getSubjectQueueNumMsgs();
+      if (numSessions < 1) {
+         shutdown(true, true);
+         return getId() + " killed. No sessions where available, but destroyed " + num + " subject queue messages";
+      }
       String sessionList = getSessionList();
       while (true) {
          SessionInfo sessionInfo = null;
@@ -1127,7 +1129,8 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          sessions[ii].killSession();
       }
       */
-     return getId() + " Sessions " + sessionList + " killed";
+     String post = (num == 0) ? "" : " Destroyed " + num + " subject queue messages";
+     return getId() + " sessions " + sessionList + " killed." + post;
    }
 
    public String[] peekSubjectMessages(int numOfEntries) throws XmlBlasterException {
