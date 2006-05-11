@@ -4,6 +4,8 @@ File:    xbAnt.xml
 Comment: Send/receive xmlBlaster messages from within ant
 Run:     'ant -f xbAnt.xml'
 @author  Marcel Ruff
+@see     http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/contrib/ant/XmlBlasterTask.html
+@see     http://ant.apache.org/manual/tasksoverview.html
 -->
 <project name="xbAnt" default="publish" basedir=".">
 
@@ -20,7 +22,7 @@ Run:     'ant -f xbAnt.xml'
           <connect/>
           <subscribe><key oid="Hello"/><qos/></subscribe>
           <input message="Subscribed to 'hello', press a key to publish"/>
-          <publish><key oid="Hello"></key><content>Hallo from ANT></content></publish>
+          <publish><key oid="Hello"></key><content>Hello from ANT></content></publish>
           <wait delay="2000" />
           <erase><key oid="Hello"/><qos/></erase>
           <wait delay="500" />
