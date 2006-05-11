@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!-- 
+File:    xbAnt.xml
+Comment: Send/receive xmlBlaster messages from within ant
+Run:     'ant -f xbAnt.xml'
+@author  Marcel Ruff
+-->
+<project name="xbAnt" default="publish" basedir=".">
+
+   <taskdef name="xmlBlasterScript"
+         classname="org.xmlBlaster.contrib.ant.XmlBlasterTask"
+         classpath="lib/xmlBlaster.jar"/>
+
+   <target name="publish">
+      <xmlBlasterScript updateFile="asyncResponses.xml">
+      <!-- This is the script executed -->
+      <![CDATA[
+        <xmlBlaster>
+          <property name="queue/connection/defaultPlugin">RAM,1.0</property>
+          <connect/>
+          <subscribe><key oid="Hello"/><qos/></subscribe>
+          <input message="Subscribed to 'hello', press a key to publish"/>
+          <publish><key oid="Hello"></key><content>Hallo from ANT></content></publish>
+          <wait delay="2000" />
+          <erase><key oid="Hello"/><qos/></erase>
+          <wait delay="500" />
+          <disconnect />
+        </xmlBlaster>
+      ]]> 
+      </xmlBlasterScript>
+   </target>
+
+</project>
+ 
