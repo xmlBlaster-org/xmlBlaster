@@ -3,13 +3,19 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+
  o #15139 Bugfix for ant XmlBlasterTask: Closing file output streams
 
  o #15137 Bugfix killClient() does now properly destroy clients which have no session
    for example clients which came to live with a PtP message.
 
+ o #15124 Added client property variant:
+    <clientProperty name='myText' type='String' encoding='base64' charset='windows-1252'>...
+   to support base64 client properties of type String which are not UTF-8 encoded
+
  o #15093 Extended XmlScript with
    <wait delay="60000" updates="4" message="Waiting for 4 updates (timeout is 1 min) ..."/>
+   Like this XmlScript can be used with the request/reply pattern (useful as a ANT task)
 
  o #15055 RequestReplyExecutor.java returns now address.clone
    TODO - pass specific address of client for authentication
