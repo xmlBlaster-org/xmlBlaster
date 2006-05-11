@@ -197,8 +197,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          markProcessed = true;
       }
       else { // TODO move this after the sending of the message since this could still fail.
-         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
          this.oldReplKey = replKey;
+         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
       }
       // puts this in the metadata attributes of the message to be sent over the mom
       this.event.getAttributeMap().put(REPL_KEY_ATTR, "" + replKey);
