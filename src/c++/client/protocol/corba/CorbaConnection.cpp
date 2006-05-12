@@ -31,6 +31,14 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #include <util/Global.h>
 #include <client/protocol/corba/CorbaDriver.h>
 
+void closeSocket(int fd) {
+#ifdef _WINDOWS
+   closesocket(fd);
+#else
+   (void)close(fd);
+#endif
+}
+
 namespace org {
  namespace xmlBlaster {
   namespace client {
@@ -206,7 +214,8 @@ void CorbaConnection::initAuthenticationService()
            else {
               log_.warn(me(), "Connecting to -bootstrapHostname=" + iorHost + " failed"); // errno
            }
-           ::shutdown(s, 2);
+           ::shutdown(s, 2); // SHUT_RDWR
+           ::closeSocket(s); // Added because of handle leak reported by James Cazier
         }
      }
      if (!authServerIOR.empty()) {
