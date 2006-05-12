@@ -198,10 +198,27 @@ public:
 
    /**
     * Add a client property key and value. 
-    * @param name The unique key, a duplicate key will overwrite the old setting
-    * @param value "vector<unsigned char>" and "unsigned char *" types are treated as a blob
+    * A typical example is:
+    * <pre>
+    * publishQos.addClientProperty("myKey", "myValue");
+    * </pre>
+    * If you want to send a string in your own locale character set:
+    * <pre>
+    * publishQos.addClientProperty("myKey", "myValue", Constants::TYPE_STRING, Constants::ENCODING_BASE64, "windows-1252");
+    * </pre>
+    * @param name  The unique property key in US-ASCII encoding (7-bit), UTF-8 should work as well
+    *              A duplicate key will overwrite the old setting
+    * @param value Your data . The type (like "float") is guessed from T_VALUE
+    *              NOTE: "vector<unsigned char>" "unsigned char*" are
+    *                    treated as BLOBs and will be transferred Base64 encoded.
+    * @param type The data type of the value, optional, e.g. Constants::TYPE_FLOAT ("float")
+    * @param encoding How the data is transferred, org::xmlBlaster::util::Constants::ENCODING_BASE64 or ""
+    * @param charset XmlBlaster expects all XML strings as UTF-8, however you can send your client properties
+    * in any other charset but you must then encode it with ENCODING_BASE64 and pass the charset used, for example "windows-1252".
+    * Please use the official IANA charset names.
+    * @see http://www.iana.org/assignments/charset-reg/
     * @see ClientProperty::#ClientProperty
-    */
+   */
    template <typename T_VALUE> void addClientProperty(
             const std::string& name,
             const T_VALUE& value,
