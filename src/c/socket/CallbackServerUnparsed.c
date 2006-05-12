@@ -523,8 +523,10 @@ static bool isListening(CallbackServerUnparsed *cb)
  * The socketDataHolder holds all informations about the returned data from xmlBlaster,
  * on error the exception struct is filled.
  *
+ * @param cb The 'this' pointer
  * @param socketDataHolder You need to free(socketDataHolder->data) if return is 'true'.
  * @param exception Contains the exception thrown (on error only)
+ * @param udp If UDP to use
  * @return true if OK or on exception, false on EOF
  */
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp)
