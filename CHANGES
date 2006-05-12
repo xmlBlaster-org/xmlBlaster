@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #15144 Bugfix C++ Corba only
+   closeSocket(s) added because of handle leak reported by James Cazier
+
  o #15139 Bugfix for ant XmlBlasterTask: Closing file output streams
 
  o #15137 Bugfix killClient() does now properly destroy clients which have no session
