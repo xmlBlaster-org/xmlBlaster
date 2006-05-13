@@ -46,7 +46,7 @@ import java.io.IOException;
  * <p />
  * <code>   java org.xmlBlaster.Main -plugin/ior/iorFile /tmp/XmlBlaster_Ref</code>
  * <p />
- * <code>   java org.xmlBlaster.Main -trace true -dump true -call true -time true</code>
+ * <code>   java org.xmlBlaster.Main -logging FINEST</code>
  * <p />
  * <code>   java org.xmlBlaster.Main -plugin/xmlrpc/hostname 102.24.64.60 -plugin/xmlrpc/port 8081</code>
  * <p />

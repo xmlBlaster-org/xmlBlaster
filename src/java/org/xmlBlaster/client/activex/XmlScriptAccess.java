@@ -262,7 +262,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    /**
     * Initialize the environment. 
     * If you use the initialize(Properties) variant or this method makes no difference.
-    * @param args Command line arguments for example { "-protocol", SOCKET, "-trace", "true" }
+    * @param args Command line arguments for example { "-protocol", SOCKET, "-logging", "FINE" }
     */
    public void initArgs(String[] args) {
       this.glob.init(args);

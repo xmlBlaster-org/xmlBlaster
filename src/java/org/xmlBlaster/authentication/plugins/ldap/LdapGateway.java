@@ -477,7 +477,7 @@ public class LdapGateway
    /**
     * For testing only
     * <p />
-    * java org.xmlBlaster.authentication.plugins.ldap.LdapGateway -loginName tim -userPassword tim -trace true
+    * java org.xmlBlaster.authentication.plugins.ldap.LdapGateway -loginName tim -userPassword tim -logging FINE
     */
    public static void main(String[] args)
    {

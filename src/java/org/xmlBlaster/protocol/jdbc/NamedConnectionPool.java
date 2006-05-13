@@ -483,7 +483,7 @@ public class NamedConnectionPool
    /**
     * For testing only.
     * <p />
-    * Invoke: java org.xmlBlaster.protocol.jdbc.NamedConnectionPool -trace true
+    * Invoke: java org.xmlBlaster.protocol.jdbc.NamedConnectionPool -logging FINE
     */
    public static void main(String[] args) {
       /*

@@ -64,7 +64,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * Switch on logging with
  * 
  * <pre>
- * -trace[org.xmlBlaster.util.protocol.email.Pop3Driver] true
+ * -logging/org.xmlBlaster.util.protocol.email.Pop3Driver FINE
  * </pre>
  * 
  * and add to xmlBlasterJdk14Logging.properties:

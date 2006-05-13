@@ -225,7 +225,7 @@ public class Property implements Cloneable {
    * @param scanSystemProperties Scan System.getProperties() as well, you can
    *        add variable to JVM like: java -DmyName=Joe ...
    * @param args A String array with properties, usually from command line, e.g.
-   *        java myApp -trace true -name Joe
+   *        java myApp -logging FINE -name Joe
    * @param replaceVariables true: replace occurrences of ${key} with the value of key
    */
    public Property(String fileName, boolean scanSystemProperties, String[] args, boolean replaceVariables) throws XmlBlasterException {
