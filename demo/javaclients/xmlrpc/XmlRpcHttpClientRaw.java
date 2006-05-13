@@ -13,18 +13,10 @@ import java.io.*;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.xmlrpc.*;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.util.MsgUnit;
 
 /**
  * Raw demo showing how to implement a client which connects to xmlBlaster via
@@ -118,7 +110,7 @@ public class XmlRpcHttpClientRaw
       try {
          String host = glob.getProperty().get("dispatch/connection/plugin/xmlrpc/hostname", "localhost");
          int port = glob.getProperty().get("dispatch/connection/plugin/xmlrpc/port", 8080);
-         int cb_port = glob.getProperty().get("dispatch/callback/plugin/xmlrpc/port", 8081);
+         // int cb_port = glob.getProperty().get("dispatch/callback/plugin/xmlrpc/port", 8081);
          String urlStr = "http://" + host + ":" + port;
 
          log.info("Connected to xmlBlaster using XMLRPC");
@@ -160,7 +152,7 @@ public class XmlRpcHttpClientRaw
    /**
     * Only for testing purposes.
     * <pre>
-    * java javaclients.xmlrpc.XmlRpcHttpClientRaw < demo.xml -trace true
+    * java javaclients.xmlrpc.XmlRpcHttpClientRaw < demo.xml -logging FINE
     * </pre>
     */
    public static void main (String args[])

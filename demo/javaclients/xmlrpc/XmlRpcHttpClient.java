@@ -10,7 +10,6 @@ Author:    Michele Laghi (laghi@swissinfo.org)
 package javaclients.xmlrpc;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -43,9 +42,7 @@ import org.xmlBlaster.util.MsgUnit;
  * @author "Michele Laghi" <laghi@swissinfo.org>
  * @see org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
  */
-public class XmlRpcHttpClient
-{
-   private static final String ME = "XmlRpcHttpClient";
+public class XmlRpcHttpClient {
    private static Logger log = Logger.getLogger(XmlRpcHttpClient.class.getName());
 
 
@@ -72,7 +69,6 @@ public class XmlRpcHttpClient
          I_XmlBlasterAccess client = glob.getXmlBlasterAccess();
          
          log.info("Going to invoke xmlBlaster using XmlRpc-I_XmlBlasterAccess");
-         String sessionId = "Session1";
          ConnectQos connectQos = new ConnectQos(glob, "LunaMia", "silence");
          client.connect(connectQos, null);
          log.info("Connection successful");
@@ -100,7 +96,7 @@ public class XmlRpcHttpClient
    /**
     * Only for testing purposes.
     * <pre>
-    * java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml -trace true
+    * java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml -logging FINE
     * </pre>
     */
    public static void main (String args[])
