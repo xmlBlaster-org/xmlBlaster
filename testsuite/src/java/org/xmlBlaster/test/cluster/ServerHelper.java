@@ -1,26 +1,19 @@
 package org.xmlBlaster.test.cluster;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 
 // for client connections:
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 
-import java.util.Vector;
 import java.io.File;
-
-import junit.framework.*;
 
 /**
  * Set up the cluster nodes. 
@@ -30,7 +23,6 @@ import junit.framework.*;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html" target="others">Cluster requirement</a>
  */
 public class ServerHelper {
-   private String ME = "ServerHelper";
    private Global glob_;
    private static Logger log = Logger.getLogger(ServerHelper.class.getName());
    public static int heronPort = 7600;
@@ -44,7 +36,6 @@ public class ServerHelper {
    private Global heronGlob, avalonGlob, golanGlob, frodoGlob, bilboGlob;
 
    public ServerHelper(Global glob, Logger log, String name) {
-      ME = "ServerHelper-"+name;
       this.glob_ = glob;
       ServerHelper.log = log;
       setUp();
@@ -87,7 +78,7 @@ public class ServerHelper {
    }
 
    public void initHeron() {
-      String[] args = { "-propertyFile", findPropertyFile("heron.properties"), "-info[heron]", "true", "-call[heron]", "true" };
+      String[] args = { "-propertyFile", findPropertyFile("heron.properties"), "-/node/heron/logging", "FINEST" };
       heronGlob = this.glob_.getClone(args);
    }
 
@@ -107,7 +98,7 @@ public class ServerHelper {
    }
 
    public void initBilbo() {
-      String[] args = { "-propertyFile", findPropertyFile("bilbo.properties"), "-call[bilbo]", "false" };
+      String[] args = { "-propertyFile", findPropertyFile("bilbo.properties"), "-/node/bilbo/logging", "INFO" };
       bilboGlob = this.glob_.getClone(args);
       if (!"bilbo".equals(bilboGlob.getId())) {
          String tmp = "Invalid cluster node id, check biblo.properties or" +
@@ -186,7 +177,7 @@ public class ServerHelper {
          });
 
       ConnectQos qos = new ConnectQos(glob, clientName, "secret");
-      ConnectReturnQos conRetQos = con.connect(qos, cb);
+      con.connect(qos, cb);
 
       log.info("Connected to xmlBlaster.");
       return con;

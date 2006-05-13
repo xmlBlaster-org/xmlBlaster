@@ -99,8 +99,8 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
       };
       /*
 ,
-         "-trace",
-         "false"
+         "-logging",
+         "INFO"
       */
       glob.init(args);
 

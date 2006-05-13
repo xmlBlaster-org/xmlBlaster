@@ -10,21 +10,13 @@ package org.xmlBlaster.test.qos;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.recorder.ram.RamRecorder;
-import org.xmlBlaster.util.recorder.file.FileRecorder;
-import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.util.MsgUnit;
 
 import junit.framework.*;
@@ -43,22 +35,14 @@ import junit.framework.*;
  *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestInvocationRecorder
  * </pre>
  */
-public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, I_CallbackRaw
-{
-   private static String ME = "TestInvocationRecorder";
+public class TestInvocationRecorder extends TestCase implements I_XmlBlaster {
    private final Global glob;
    private static Logger log = Logger.getLogger(TestInvocationRecorder.class.getName());
 
    private RamRecorder recorder = null;
 
-   private String subscribeOid;
-   private String publishOid = "";
-
    private int numSubscribe, numUnSubscribe, numPublish, numPublishArr, numErase, numGet, numUpdate;
    private MsgUnit[] dummyMArr = new MsgUnit[0];
-   private String[] dummySArr = new String[0];
-   private String dummyS = "";
-
    private String xmlKey_get = "<key oid='HelloGet' queryType='EXACT'>\n</key>";
    private String qos_get = "<qos><get /></qos>";
 
@@ -112,8 +96,6 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
       String xmlKey = "<key oid='Hello' queryType='XPATH'>\n   //TestInvocationRecorder-AGENT\n</key>";
       String qos = "<qos></qos>";
       String content = "The content";
-      String clientName = "Gonzales";
-      String xmlAttr = "";
 
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qos);
@@ -267,7 +249,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster//, 
 
 
    /**
-    * Invoke: java org.xmlBlaster.test.qos.TestInvocationRecorder -calls true
+    * Invoke: java org.xmlBlaster.test.qos.TestInvocationRecorder -logging FINEST
     */
    public static void main(String args[])
    {

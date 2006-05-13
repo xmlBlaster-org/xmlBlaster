@@ -6,35 +6,23 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.dispatch;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
@@ -66,12 +54,10 @@ import junit.framework.*;
  */
 public class TestPriorizedDispatchWithLostCallback extends TestCase
 {
-   private static String ME = "TestPriorizedDispatchWithLostCallback";
    private Global glob;
    private static Logger log = Logger.getLogger(TestPriorizedDispatchWithLostCallback.class.getName());
 
    private ConnectQos connectQos;
-   private ConnectReturnQos connectReturnQos;
    private I_XmlBlasterAccess con = null;
    private String name;
    private String passwd = "secret";
@@ -88,8 +74,6 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
    private String NORMAL_LINE = "2M";
    private String BACKUP_LINE = "64k";
    private String DEAD_LINE = "DOWN";
-
-   private boolean connected;
 
    /**
     * Constructs the TestPriorizedDispatchWithLostCallback object.
@@ -150,7 +134,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
          cbAddress.setDispatchPlugin("Priority,1.0");  // Activate plugin for callback only
          this.connectQos.addCallbackAddress(cbAddress);
 
-         this.connectReturnQos = this.con.connect(this.connectQos, this.updateInterceptor);
+         this.con.connect(this.connectQos, this.updateInterceptor);
       }
       catch (Exception e) {
          e.printStackTrace();
@@ -364,7 +348,6 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
       this.glob = null;
      
       this.connectQos = null;
-      this.connectReturnQos = null;
       this.con = null;
       this.updateInterceptor = null;
       this.updateMsgs = null;
@@ -376,7 +359,6 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       String loginName = "PriorizedDispatchPlugin";
        suite.addTest(new TestPriorizedDispatchWithLostCallback(Global.instance(), "testPriorizedDispatchPluginConnectionState", "PriorizedDispatchPluginRecovery"));
        return suite;
    }
@@ -384,7 +366,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
    /**
     * Invoke: 
     * <pre>
-    *  java org.xmlBlaster.test.dispatch.TestPriorizedDispatchWithLostCallback -trace[dispatch] true -call[core] true
+    *  java org.xmlBlaster.test.dispatch.TestPriorizedDispatchWithLostCallback  -logging/org.xmlBlaster.engine.dispatch FINE -logging/org.xmlBlaster.util.dispatch FINE -logging/org.xmlBlaster.engine FINEST
     *  java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.dispatch.TestPriorizedDispatchWithLostCallback
     * <pre>
     */

@@ -6,29 +6,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.dispatch;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;
@@ -52,9 +42,7 @@ import junit.framework.*;
  * </pre>
  * @see org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDispatchPlugin
  */
-public class TestPriorizedDispatchPlugin extends TestCase
-{
-   private static String ME = "TestPriorizedDispatchPlugin";
+public class TestPriorizedDispatchPlugin extends TestCase {
    private Global glob;
    private static Logger log = Logger.getLogger(TestPriorizedDispatchPlugin.class.getName());
 
@@ -149,7 +137,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
          this.con.connect(qos, update);
       }
       catch (Exception e) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          log.severe("Can't connect to xmlBlaster: " + e.toString());
       }
 
@@ -455,7 +443,6 @@ public class TestPriorizedDispatchPlugin extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       String loginName = "PriorizedDispatchPlugin";
        suite.addTest(new TestPriorizedDispatchPlugin(Global.instance(), "testPriorizedDispatchPluginOne", "PriorizedDispatchPluginOne"));
        suite.addTest(new TestPriorizedDispatchPlugin(Global.instance(), "testPriorizedDispatchPlugin", "PriorizedDispatchPlugin"));
        suite.addTest(new TestPriorizedDispatchPlugin(Global.instance(), "testPriorizedDispatchPluginReconfigure", "PriorizedDispatchPluginRecovery"));
@@ -465,7 +452,7 @@ public class TestPriorizedDispatchPlugin extends TestCase
    /**
     * Invoke: 
     * <pre>
-    *  java org.xmlBlaster.test.dispatch.TestPriorizedDispatchPlugin -trace[dispatch] true -call[core] true
+    *  java org.xmlBlaster.test.dispatch.TestPriorizedDispatchPlugin  -logging/org.xmlBlaster.engine.dispatch FINE -logging/org.xmlBlaster.util.dispatch FINE -logging/org.xmlBlaster.engine FINEST
     *  java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.dispatch.TestPriorizedDispatchPlugin
     * <pre>
     */

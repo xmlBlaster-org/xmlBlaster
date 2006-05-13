@@ -198,7 +198,7 @@ public class TestReconnectSameClientOnly extends TestCase implements I_Callback
    /**
     * Invoke: 
     * <pre>
-    *  java org.xmlBlaster.test.qos.TestReconnectSameClientOnly -trace[qos] true -call[core] true
+    *  java org.xmlBlaster.test.qos.TestReconnectSameClientOnly -logging/org.xmlBlaster.client.qos FINE -logging/org.xmlBlaster.util.qos FINE -logging/org.xmlBlaster.engine FINEST 
     *  java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.qos.TestReconnectSameClientOnly
     * <pre>
     */

@@ -20,7 +20,6 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.key.PublishKey;
@@ -41,7 +40,7 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *  java  -Xms10m -Xmx220m org.xmlBlaster.Main -info false
+ *  java  -Xms10m -Xmx220m org.xmlBlaster.Main -logging WARNING
  *
  *  java org.xmlBlaster.test.qos.TestSubManyClients -numClients 10000 -dispatch/connection/protocol RMI -warn false
  *
@@ -54,8 +53,6 @@ public class TestSubManyClients extends TestCase implements I_Callback
    private static String ME = "TestSubManyClients";
    private final Global glob;
    private static Logger log = Logger.getLogger(TestSubManyClients.class.getName());
-
-   private boolean messageArrived = false;
 
    private final String publishOid1 = "dummy1";
    private final String publishOid2 = "dummy2";
@@ -315,7 +312,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       String subQos = subQosW.toXml();
 
       try {
-         SubscribeReturnQos subscribeOid = oneConnection.subscribe(subKey, subQos);
+         oneConnection.subscribe(subKey, subQos);
          log.info("Client " + oneName + " subscribed to " + subKeyW.getOid());
       } catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());

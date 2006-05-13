@@ -1,7 +1,6 @@
 package org.xmlBlaster.test.classtest;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -11,17 +10,12 @@ import org.xmlBlaster.util.recorder.ram.RamRecorder;
 import org.xmlBlaster.util.recorder.file.FileRecorder;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
-import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
-
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.client.qos.PublishQos;
 
 import junit.framework.*;
 
@@ -506,7 +500,7 @@ public class InvocationRecorderTest extends TestCase {
    /**
     * For debugging, invoke: 
     * <pre>
-    *  java org.xmlBlaster.test.classtest.InvocationRecorderTest -trace[dispatch] true -call[core] true
+    *  java org.xmlBlaster.test.classtest.InvocationRecorderTest -logging/org.xmlBlaster.engine.dispatch FINE -logging/org.xmlBlaster.util.dispatch FINE -logging/org.xmlBlaster.engine FINEST
     *  java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.InvocationRecorderTest
     * <pre>
     */

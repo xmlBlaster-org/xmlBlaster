@@ -6,33 +6,19 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
@@ -56,9 +42,7 @@ import junit.framework.*;
  *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestPtSession
  * </pre>
  */
-public class TestPtSession extends TestCase
-{
-   private static String ME = "TestPtSession";
+public class TestPtSession extends TestCase {
    private Global glob;
    private static Logger log = Logger.getLogger(TestPtSession.class.getName());
 
@@ -128,7 +112,7 @@ public class TestPtSession extends TestCase
             this.conHolderArr[ii].connectReturnQos = this.conHolderArr[ii].con.connect(qos, this.conHolderArr[ii].update);
          }
          catch (Exception e) {
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
             log.severe("Can't connect to xmlBlaster: " + e.toString());
             fail("Can't connect to xmlBlaster: " + e.toString());
          }
@@ -238,7 +222,6 @@ public class TestPtSession extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       String loginName = "PtSession";
        suite.addTest(new TestPtSession(Global.instance(), "testPtSession", "PtSession"));
        return suite;
    }
@@ -246,7 +229,7 @@ public class TestPtSession extends TestCase
    /**
     * Invoke: 
     * <pre>
-    *  java org.xmlBlaster.test.qos.TestPtSession -trace[qos] true -call[core] true -startEmbedded false
+    *  java org.xmlBlaster.test.qos.TestPtSession  -logging/org.xmlBlaster.client.qos FINE -logging/org.xmlBlaster.util.qos FINE -logging/org.xmlBlaster.engine FINEST -startEmbedded false
     *  java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.qos.TestPtSession
     * <pre>
     */

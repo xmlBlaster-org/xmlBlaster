@@ -7,7 +7,6 @@ Comment:   Test XPath.
 package org.xmlBlaster.test.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -15,12 +14,9 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.EraseQos;
@@ -43,13 +39,10 @@ import junit.framework.*;
  * </pre>
  * @author xmlBlaster@marcelruff.info
  */
-public class TestSubXPathMany extends TestCase
-{
-   private static String ME = "TestSubXPathMany";
+public class TestSubXPathMany extends TestCase {
    private final Global glob;
    private static Logger log = Logger.getLogger(TestSubXPathMany.class.getName());
 
-   private String publishOid = "";
    private I_XmlBlasterAccess con1, con2, con3;
 
    private int numReceived1 = 0;        // error checking
@@ -166,16 +159,16 @@ public class TestSubXPathMany extends TestCase
       try {
          SubscribeKey sk = new SubscribeKey(glob, "//key[@oid = 'command-navigation']", Constants.XPATH);
          SubscribeQos sq = new SubscribeQos(glob);
-         String subId = con1.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
+         con1.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
          String xpath2 = "//key[starts-with(@oid,'command-radar')]";
          sk = new SubscribeKey(glob, xpath2, Constants.XPATH);
          sq = new SubscribeQos(glob);
-         subId = con2.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
+         con2.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
          sk = new SubscribeKey(glob, xpath2, Constants.XPATH);
          sq = new SubscribeQos(glob);
-         subId = con3.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
+         con3.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
       }
       catch (XmlBlasterException e) {
          fail("doPublish failed: " + e.toString());
@@ -192,19 +185,19 @@ public class TestSubXPathMany extends TestCase
          PublishKey pk = new PublishKey(glob, "command-navigation", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         PublishReturnQos retQos = con1.publish(msgUnit);
+         con1.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
 
          pk = new PublishKey(glob, "command-radar-1", "text/plain", "1.0");
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         retQos = con1.publish(msgUnit);
+         con1.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
 
          pk = new PublishKey(glob, "dummyTestSubXPathMany", "text/plain", "1.0");
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         retQos = con1.publish(msgUnit);
+         con1.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
       }
       catch (XmlBlasterException e) {
@@ -282,7 +275,7 @@ public class TestSubXPathMany extends TestCase
    /**
     * <pre>
     *   java -Dtrace=true -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubXPathMany
-    *   java -Djava.compiler= org.xmlBlaster.test.qos.TestSubXPathMany -trace true
+    *   java -Djava.compiler= org.xmlBlaster.test.qos.TestSubXPathMany -logging FINE
     * </pre>
     */
    public static void main(String args[]) {
