@@ -78,12 +78,12 @@ use them in web.xml to configure the servlet
 Start it in the background on Linux:
 ====================================
 
-   java org.xmlBlaster.Main -Xms12M -Xmx32M -logFile /tmp/xmlBlaster.log  -plugin/xmlrpc/port 8081 -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
+   java org.xmlBlaster.Main -Xms12M -Xmx32M -plugin/xmlrpc/port 8081 -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
 
    # start tomcat with xmlBlaster.war
    startup.sh   > /tmp/tomcat.log 2>&1 &
 
-   java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
+   java html.systemInfo.SystemInfoPublisher -logging WARNING > /tmp/SystemInfoPublisher.log 2>&1 &
 
 
 Using tomcat 3.2.4 serlvet enginge (http://jakarta.apache.org):

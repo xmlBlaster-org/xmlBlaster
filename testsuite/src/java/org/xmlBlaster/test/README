@@ -86,7 +86,7 @@ Start the test suite manually:
 
    Start one test without testsuite (and with debugging output on console):
 
-      java -Djava.compiler= org.xmlBlaster.test.qos.TestUnSub -trace true -dump true -calls true -time true
+      java -Djava.compiler= org.xmlBlaster.test.qos.TestUnSub -logging FINEST
 
 
    Test RMI:

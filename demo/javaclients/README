@@ -22,7 +22,7 @@ publishing of messages.
 
    To get some more logging infos try:
 
-      java HelloWorld3 -trace true
+      java HelloWorld3 -logging FINE
 
 
    This displays the usage:

@@ -18,7 +18,7 @@ Another source to see how CORBA access is implemented, see files in
 
    To get some more logging infos try:
 
-      jaco javaclients.corba.ClientRaw -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref -trace true
+      jaco javaclients.corba.ClientRaw -dispatch/connection/plugin/ior/iorFile /tmp/NS_Ref -logging FINE
 
 
    This displays the usage:

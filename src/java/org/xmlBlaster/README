@@ -7,7 +7,7 @@ Howto start the xmlBlaster server:
 
    This example switches on some debugging on the console:
 
-      java org.xmlBlaster.Main -trace true -dump true -calls true -time true
+      java org.xmlBlaster.Main -logging FINEST
 
    Optionally you can also start the server with
 
@@ -24,7 +24,8 @@ Howto start the xmlBlaster server:
 
    This example redirects the logging output to a file:
 
-      java org.xmlBlaster.Main -logDevice file,console -logFile /tmp/xmlBlaster.log
+      java org.xmlBlaster.Main -logDevice file,console > /tmp/xmlBlaster.log 2>&1 &
+      or alternatively follow the information in config/logging.properties
 
    and finally, this example just displays the usage:
 
@@ -39,7 +40,7 @@ Howto start the xmlBlaster server:
 
   Using CORBA:
 
-     jaco javaclients.ClientSub -trace true
+     jaco javaclients.ClientSub -logging FINE
 
   Using RMI:
 
