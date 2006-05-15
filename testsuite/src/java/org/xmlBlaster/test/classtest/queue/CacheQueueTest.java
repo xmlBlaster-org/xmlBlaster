@@ -1,8 +1,6 @@
 package org.xmlBlaster.test.classtest.queue;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -70,7 +68,6 @@ public class CacheQueueTest extends TestCase {
    private String ME = "CacheQueueTest";
    protected Global glob;
    private static Logger log = Logger.getLogger(CacheQueueTest.class.getName());
-   private StopWatch stopWatch = new StopWatch();
    private CacheQueueInterceptorPlugin queue = null;
    private I_Queue[] queues;
    public ArrayList queueList = null;
@@ -138,7 +135,7 @@ public class CacheQueueTest extends TestCase {
    public void testConfig() {
       String queueType = "CACHE";
       try {
-         config();
+         config(20L, 10L, 500L, 200L);
       }
       catch (XmlBlasterException ex) {
          fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
@@ -147,15 +144,15 @@ public class CacheQueueTest extends TestCase {
    }
 
 
-   public void config()
+   public StorageId config(long maxEntries, long maxEntriesCache, long maxBytes, long maxBytesCache)
       throws XmlBlasterException {
 
       // set up the queues ....
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-      prop.setMaxEntries(20L);
-      prop.setMaxEntriesCache(10L);
-      prop.setMaxBytes(500L);
-      prop.setMaxBytesCache(200L);
+      prop.setMaxEntries(maxEntries);
+      prop.setMaxEntriesCache(maxEntriesCache);
+      prop.setMaxBytes(maxBytes);
+      prop.setMaxBytesCache(maxBytesCache);
 
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/config");
 
@@ -167,26 +164,41 @@ public class CacheQueueTest extends TestCase {
       long transientSize  = this.queue.getTransientQueue().getMaxNumOfBytes();
       long transientMsg   = this.queue.getTransientQueue().getMaxNumOfEntries();
 
-      assertEquals("Wrong persistent size", 500L, persistentSize);
-      assertEquals("Wrong persistent num of msg", 20L, persistentMsg);
-      if (200L != transientSize)
+      assertEquals("Wrong persistent size", maxBytes, persistentSize);
+      assertEquals("Wrong persistent num of msg", maxEntries, persistentMsg);
+      if (maxBytesCache != transientSize)
          log.severe("ERROR: Wrong transient size" + this.queue.getTransientQueue().toXml(""));
-      assertEquals("Wrong transient size" + this.queue.getTransientQueue().toXml(""), 200L, transientSize);
-      assertEquals("Wrong num of transient msg", 10L, transientMsg);
-
+      assertEquals("Wrong transient size" + this.queue.getTransientQueue().toXml(""), maxBytesCache, transientSize);
+      assertEquals("Wrong num of transient msg", maxEntriesCache, transientMsg);
+      return queueId;
    }
 
-
-   /**
-    * returns true if the combination is possible, false otherwise
-    */
-   private boolean checkIfPossible(long transientNumOfBytes, long persistentNumOfBytes,
-      long maxTransientNumOfBytes, long maxPersistentNumOfBytes) {
-      log.fine("checkIfPossible: transient number of bytes: " + transientNumOfBytes + " of (max) " + maxTransientNumOfBytes + " , persistent number of bytes: " + persistentNumOfBytes + " of (max) " + maxPersistentNumOfBytes);
-      if (transientNumOfBytes > maxTransientNumOfBytes) return false;
-      if (persistentNumOfBytes > maxPersistentNumOfBytes) return false;
-      return true;
+   public void testClearWithSwappedEntries() {
+      String queueType = "CACHE";
+      try {
+         StorageId id = config(20L, 3L, 500L, 100L);
+         PriorityEnum prio = PriorityEnum.toPriorityEnum(5);
+         for (int i=0; i < 15; i++) {
+            boolean persistent =  (i | 1) == 0; // some persistent and some transient
+            long entrySize = 10L;
+            DummyEntry entry = new DummyEntry(glob, prio, id, entrySize, persistent);
+            this.queue.put(entry, true);
+         }
+         
+         long ret = this.queue.clear();
+         assertEquals("wrong number of entries returned by clear", 15L, ret);
+         
+         long numOfEntries = this.queue.getNumOfEntries();
+         long numOfBytes = this.queue.getNumOfBytes();
+         assertEquals("the queue should be empty", 0L, numOfEntries);
+         assertEquals("the size of the queue should be 0", 0L, numOfBytes);
+      }
+      catch (XmlBlasterException ex) {
+         fail("Exception when testing PutMsg probably due to failed initialization of the queue of type " + queueType);
+         ex.printStackTrace();
+      }
    }
+
 
 
    public void testPutPeekRemove() {
@@ -250,11 +262,6 @@ public class CacheQueueTest extends TestCase {
                      refQueue.initialize(queueId, prop);
                      refQueue.clear();
 
-                     long maxPersistentNumOfBytes = maxNumOfBytes[is];
-                     long maxTransientNumOfBytes = maxNumOfBytesCache[ic];
-                     long transientNumOfBytes  = 0L;
-                     long persistentNumOfBytes  = 0L;
-
                      assertEquals(ME + " the number of bytes of the queue should be zero ", 0L, refQueue.getNumOfBytes());
                      assertEquals(ME + " the number of entries in the queue should be zero ", 0L, refQueue.getNumOfEntries());
                      assertEquals(ME + " the number of bytes of the persistent entries in the queue should be zero ", 0L, refQueue.getNumOfPersistentBytes());
@@ -265,8 +272,6 @@ public class CacheQueueTest extends TestCase {
                      try {
 
                         refQueue.clear();
-                        transientNumOfBytes = entrySize * numOfTransientEntries[it];
-                        persistentNumOfBytes =entrySize * numOfPersistentEntries[id];
                         // prepare the inputs .
                         Hashtable[] inputTable = new Hashtable[3];
                         for (int i=0; i < 3; i++) inputTable[i] = new Hashtable();
@@ -338,8 +343,8 @@ public class CacheQueueTest extends TestCase {
                            Hashtable table = inputTable[j];
                            Enumeration keys = table.keys();
                            while (keys.hasMoreElements()) {
-                              long refId = ((I_QueueEntry)table.get(keys.nextElement())).getUniqueId();
-                              long outId = ((I_QueueEntry)total.get(count)).getUniqueId();
+                              ((I_QueueEntry)table.get(keys.nextElement())).getUniqueId();
+                              ((I_QueueEntry)total.get(count)).getUniqueId();
                               assertEquals("uniqueId differe for count " + count + " " + refQueue.toXml(""), mustEntries, total.size());
                               count++;
                            }
@@ -380,8 +385,6 @@ public class CacheQueueTest extends TestCase {
       // set up the queues ....
       long maxNumOfBytesCache = 10000L;
       long maxNumOfBytes = 50000L;
-      int numOfTransientEntries = 200;
-      int numOfPersistentEntries =  200;
       long entrySize = 100L;
 
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
@@ -398,19 +401,11 @@ public class CacheQueueTest extends TestCase {
       this.queue.initialize(queueId, prop);
       this.queue.clear();
 
-      long maxPersistentNumOfBytes = maxNumOfBytes;
-      long maxTransientNumOfBytes = maxNumOfBytesCache;
-      long transientNumOfBytes  = 0L;
-      long persistentNumOfBytes  = 0L;
-
       int numOfEntries = 20;
       int entries1 = 5;
       int entries2 = 10;
 
       this.queue.clear();
-      transientNumOfBytes = entrySize * numOfTransientEntries;
-      persistentNumOfBytes = entrySize * numOfPersistentEntries;
-
       DummyEntry[] entries = new DummyEntry[numOfEntries];
       PriorityEnum prio = PriorityEnum.toPriorityEnum(4);
 
@@ -494,8 +489,12 @@ public class CacheQueueTest extends TestCase {
       testSub.testPutPeekRemove();
       testSub.tearDown();
 
+      testSub.setUp();
+      testSub.testClearWithSwappedEntries();
+      testSub.tearDown();
+
       long usedTime = System.currentTimeMillis() - startTime;
-      testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
+      log.info("time used for tests: " + usedTime/1000 + " seconds");
    }
 }
 
