@@ -712,9 +712,9 @@ final public class Authenticate implements I_RunlevelListener
       //   subjectInfo = null; // Give GC a hint
       //}
       
-      // in future we could for positive sessionId avoid to clear session queue
-      sessionInfo.shutdown();
+      // with positive sessionId avoid to clear session queue: Such a DisconnectQos flag is currently not existing
       if (isDisconnecting) sessionInfo.getSessionQueue().clear();
+      sessionInfo.shutdown();
       
       sessionInfo = null;
       log.info("loginNameSubjectInfoMap has " + getNumSubjects() +
