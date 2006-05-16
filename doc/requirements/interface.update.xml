@@ -78,7 +78,7 @@
          </tr>
       </table>
 
-      <h3>Behavior on exceptions thrown by a client in update()</h3>
+      <p class="celltitel"><a name="exception"></a>Behavior on exceptions thrown by a client in update()</p>
 
       <p>If the <code>update()</code> methods throws an exception of type <code>ErrorCode.USER_UPDATE_...</code>
       the server forwards the rejected message to its error handler. The current
@@ -113,6 +113,16 @@
       strategies.
       </p>
 
+      <p class="celltitel"><a name="timeout"></a>Behavior on blocking/timeout update()</p>
+      <p>
+      When the <code>update()</code> callback method is invoked we wait a given time on a response. This
+      setting is depending on the communication protocol used.
+      The response is the return value or an exception for method invocations which are not marked oneway.
+      On timeout an exception is thrown which leads on server side to a dead message (depending on the installed error handler).<br />
+      For the <a href="protocol.socket.html#configuration" target="others">SOCKET protocol</a> see <i>plugin/socket/updateResponseTimeout</i>, it defaults to forever - that means
+      the <code>update()</code> callback does never timeout.
+      </p>
+
       <h3>Note</h3>
       <p>
       Be prepared to receive all sorts of messages on update, like
@@ -145,18 +155,20 @@
          <tr><td>QoS</td><td>&lt;qos>&lt;state id='OK'>&lt;/qos></td></tr>
       </table>
       <p>
-      And a return value form the client (sent back to xmlBlaster):
+      And a return value from the client (sent back to xmlBlaster):
     </p>
    <table border="1"><tr><td>
-   <pre>
-      return "<qos><state id='OK'/></qos>";
-   </pre>
+   <pre>return "&lt;qos>&lt;state id='OK'/>&lt;/qos>";</pre>
    </td></tr></table>
    </example>
    
    <example lang="XML" type="HTML">
       <p>
-      Here is an example of an UpdateQos:
+      Here is an example of an UpdateQos XML markup which you may receive in the <code>update()</code> method.<br />
+      Usually, the first line of an XML document - the XML declaration - defines the XML version and the character encoding used in the document:
+      <code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;</code>.
+      As we support UTF-8 only, which is the XML default, it can be omitted.
+      The XML version is 1.0.
       </p>
       <pre>
 &lt;qos> &lt;!-- UpdateQos -->
@@ -184,6 +196,12 @@
   
   &lt;redeliver>4&lt;/redeliver> &lt;!-- Only sent if message sending had previous errors -->
   
+  &lt;clientProperty name='myTransactionId'>0x23345&lt;/clientProperty>
+  &lt;clientProperty name='myDescription' encoding="base64" charset="windows-1252">
+     QUUgaXMgJ8QnDQpPRSBpcyAn1icNCnNzIGlzICffJw==
+  &lt;/clientProperty>
+  &lt;clientProperty name='myAge' type='int'>12&lt;/clientProperty>
+
   &lt;route> &lt;!-- Routing information in cluster environment -->
      &lt;node id='avalon' stratum='1' timestamp='1068026303739000001' dirtyRead='false'/>
      &lt;node id='heron' stratum='0' timestamp='1068026303773000001' dirtyRead='false'/>
