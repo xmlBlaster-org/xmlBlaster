@@ -3,6 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ 
+ o #15158 Fixed serverTimestamp on status.html
+
+ o #15157 Bugfix disconnect(): Fixed clear session queue to be before shutdown
 
  o #15144 Bugfix C++ Corba only
    closeSocket(s) added because of handle leak reported by James Cazier
