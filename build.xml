@@ -2928,6 +2928,9 @@ TODO
    <target name="c-lib" depends="prepare-cpp" description="C client integration - create libxmlBlasterClientC.sl (dll)">
       <mkdir dir="${c.obj.dir}"/>
 
+      <!--
+      gcc -g -shared -o libxmlBlasterClientCD.so ../build.tmp/objCD/helper.o ../build.tmp/objCD/XmlBlasterAccessUnparsed.o ../build.tmp/objCD/CallbackServerUnparsed.o ../build.tmp/objCD/XmlBlasterConnectionUnparsed.o ../build.tmp/objCD/msgUtil.o ../build.tmp/objCD/xmlBlasterSocket.o ../build.tmp/objCD/SQLiteQueue.o ../build.tmp/objCD/Properties.o ../build.tmp/objCD/xmlBlasterZlib.o -L/opt/sqlite-bin/lib -lsqlite -L/opt/zlib-bin/lib -lz
+      -->
       <!-- C_LINK==shared links a shared library xmlBlaster/lib/libxmlBlasterClientC.so -->
       <cc debug="${c.debug}"
           outtype="${C_LINK}"
