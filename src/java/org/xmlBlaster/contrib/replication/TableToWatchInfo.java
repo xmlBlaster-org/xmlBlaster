@@ -44,7 +44,6 @@ public class TableToWatchInfo {
    public final static String ACTION_KEY = "actions";
    public final static String TRIGGER_KEY = "trigger";
    public final static String SEQUENCE_KEY = "sequence";
-   public final static String REPLKEY_COL_KEY = "replKeyColumn"; 
 
    public final static String STATUS_CREATING = "CREATING";
    public final static String STATUS_OK = "OK";
@@ -57,11 +56,6 @@ public class TableToWatchInfo {
    private long replKey = -1L;
    private String trigger;
    private long debug;
-   /**
-    * If not null, then for this table to be watched the replication key is taken from the
-    * column specified in this string.
-    */
-   private String replKeyColumn;
    
    /**
     * flags which are set mean the replication does happen for these flags.
@@ -314,11 +308,6 @@ public class TableToWatchInfo {
             buf.append(VAL_SEP);
          buf.append(SEQUENCE_KEY).append("=").append(this.replKey);
       }
-      if (this.replKeyColumn != null && this.replKeyColumn.trim().length() > 0) {
-         if (!isFirst)
-            buf.append(VAL_SEP);
-         buf.append(REPLKEY_COL_KEY).append("=").append(this.replKeyColumn);
-      }
       return buf.toString();
    }
    
@@ -362,11 +351,6 @@ public class TableToWatchInfo {
             throw new Exception(txt);
          }
       }
-      tmp = (String)map.get(REPLKEY_COL_KEY);
-      if (tmp == null || tmp.trim().length() < 1)
-         this.replKeyColumn = null;
-      else
-         this.replKeyColumn = tmp.trim();
    }
    
    /**
@@ -518,7 +502,7 @@ public class TableToWatchInfo {
       }
       String sql = "INSERT INTO " + replPrefix + "tables VALUES ('" + getCatalog() + "','"
             + getSchema() + "','" + getTable() + "','" + getActions()
-            + "', 'CREATING'," + getReplKey() + ",'" + getTrigger() + "'," + getDebug() + ", '" + getReplKeyColumn() + "')";
+            + "', 'CREATING'," + getReplKey() + ",'" + getTrigger() + "'," + getDebug() + ")";
       log.info("Inserting the statement '" + sql + "' for '" + this + "'");
       dbPool.update(conn, sql);
    }
@@ -541,7 +525,6 @@ public class TableToWatchInfo {
       long replKey = rs.getLong(6);
       String triggerName = rs.getString(7);
       long debug = rs.getInt(8);
-      String replKeyColumn = rs.getString(9);
 
       if (tableToWatch == null)
          tableToWatch = new TableToWatchInfo(catalog, schema, table);
@@ -555,7 +538,6 @@ public class TableToWatchInfo {
       tableToWatch.setReplKey(replKey);
       tableToWatch.setDebug((int)debug);
       tableToWatch.setTrigger(triggerName);
-      tableToWatch.setReplKeyColumn(replKeyColumn);
       return tableToWatch;
    }
    
@@ -648,8 +630,6 @@ public class TableToWatchInfo {
       if (this.debug  >  0)
          buf.append(" debug='" + this.debug + "'");
       buf.append(" doReplicate='" + isReplicate() + "' />");
-      if (this.replKeyColumn != null && this.replKeyColumn.trim().length() > 0)
-         buf.append(" replKeyCol='").append(getReplKeyColumn()).append("'");
       return buf.toString();
    }
 
@@ -700,16 +680,6 @@ public class TableToWatchInfo {
       if (!ret)
          log.warning("The status flag for trigger '" + this.trigger + "' on table '" + this.table + "' is not OK, it is '" + getStatus() + "'");
       return ret;
-   }
-   
-   public String getReplKeyColumn() {
-      if (this.replKeyColumn == null)
-         return "  ";
-      return this.replKeyColumn;
-   }
-
-   public void setReplKeyColumn(String replKeyColumn) {
-      this.replKeyColumn = replKeyColumn;
    }
    
 }
