@@ -290,17 +290,7 @@ public class SpecificOracle extends SpecificDefault {
       if (schemaName == null)
          schemaNameTmp = "NULL";
       else schemaNameTmp = "'" + schemaName + "'";
-      // overwrite the use of replKey if so configured
-      String replKeyColumn = tableToWatch.getReplKeyColumn();
-      if (replKeyColumn != null && replKeyColumn.trim().length() > 0) {
-         buf.append("    IF DELETING THEN\n");
-         buf.append("       replKey := :old.").append(replKeyColumn).append(";\n");
-         buf.append("    ELSE\n");
-         buf.append("       replKey := :new.").append(replKeyColumn).append(";\n");
-         buf.append("    END IF;\n");
-      }
-      else // normal behaviour
-         buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
+      buf.append("    SELECT " + this.replPrefix + "seq.nextval INTO replKey FROM DUAL;\n");
       
       buf.append("    INSERT INTO " + this.replPrefix + "items (repl_key, trans_key, dbId, tablename, guid,\n");
       buf.append("                           db_action, db_catalog, db_schema, \n");

@@ -877,7 +877,6 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       String schema = firstTableToWatch.getSchema();
       String tableName = firstTableToWatch.getTable();
       String actions = firstTableToWatch.getActions();
-      String replKeyColumn = firstTableToWatch.getReplKeyColumn();
       String triggerName = firstTableToWatch.getTrigger();
       if (catalog != null && catalog.trim().length() > 0)
          catalog = this.dbMetaHelper.getIdentifier(catalog);
@@ -951,7 +950,6 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          finalTableToWatch.setTrigger(triggerName);
          finalTableToWatch.setDebug((int)debug);
          finalTableToWatch.setReplKey(tmp);
-         finalTableToWatch.setReplKeyColumn(replKeyColumn);
          finalTableToWatch.store(this.replPrefix, this.dbPool, conn);
          
          return true;
