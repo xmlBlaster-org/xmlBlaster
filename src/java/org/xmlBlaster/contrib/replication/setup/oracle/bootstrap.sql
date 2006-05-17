@@ -64,8 +64,7 @@ CREATE TABLE ${replPrefix}tables(catalogname VARCHAR(${charWidth}),
                          schemaname VARCHAR(${charWidth}),
                          tablename VARCHAR(${charWidth}), actions CHAR(3),
 			 status VARCHAR(${charWidthSmall}), repl_key INTEGER, 
-			 trigger_name VARCHAR(${charWidth}), debug INTEGER, 
-			 replkeycol VARCHAR(${charWidth}),
+			 trigger_name VARCHAR(${charWidth}), debug INTEGER,
 			 PRIMARY KEY(catalogname, schemaname, tablename))
 -- EOC (end of command: needed as a separator for our script parser)            
 
