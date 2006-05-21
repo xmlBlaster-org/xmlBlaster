@@ -138,6 +138,11 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          return retVal;
       }
       catch (XmlRpcException ex) {
+         if (ex.toString().indexOf("org.apache.xmlrpc.XmlRpcException: can't serialize output") != -1) {
+            ex.printStackTrace();
+            String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed";
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, ex);
+         }
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed in client: " + ex.toString();
          if (log.isLoggable(Level.FINE)) log.fine(str);
