@@ -42,6 +42,14 @@ BEGIN
 END;
 -- EOC (end of command: needed as a separator for our script parser)            
 
+CREATE OR REPLACE PROCEDURE ${replPrefix}test_prepost AS
+   replKey INTEGER;
+BEGIN
+   replKey := 1;							    
+   SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
+   INSERT INTO ${replPrefix}debug_table VALUES (replKey, 'test pre post');
+END;
+-- EOC (end of command: needed as a separator for our script parser)            
 
 -- ---------------------------------------------------------------------------- 
 -- This is only for old LONG datas                                              
