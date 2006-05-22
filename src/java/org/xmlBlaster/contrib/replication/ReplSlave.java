@@ -90,7 +90,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String initialFilesLocation;
    private String lastMessage;
    private String lastDispatcherException = "";
-   
+
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.global = global;
       this.pool = pool;
