@@ -60,7 +60,6 @@ ssize_t writen(const int fd, const char * ptr, const size_t nbytes)
  * @param fd The socket descriptor
  * @param ptr A buffer which is big enough to hold nbytes
  * @param nbytes The number of bytes to read
- * @param currBytesRead Out parameter about the currently read number of bytes (read by another thread without mutex)
  * @param fpNumRead Function pointer, if not null we make a callback about the progress
  * @param userP Is bounced back to fpNumRead
  * @return number of bytes read, -1 is EOF
@@ -95,6 +94,7 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
 /**
  * Creates a raw blob to push over a socket as described in protocol.socket
  * @param msgUnit The message which we need to send
+ * @param debug Pass true for debugging output to stdout
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @return The raw 'serialized' MsgUnit as a char* in BlobHolder, the caller needs to free() it.
  */
@@ -150,6 +150,7 @@ Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
 /**
  * Creates a raw blob to push over a socket as described in protocol.socket
  * @param msgUnitArr An array of messages
+ * @param debug Set to true if you wish debugging output to stdout
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @return The raw 'serialized' MsgUnitArr as a char*, the caller needs to free() it.
  */
@@ -481,6 +482,7 @@ void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterExceptio
  * The given exception is dumped into the blob data. 
  * @param blob The encoded exception, you need to free the blob struct yourself after usage.
  * @param exception The given exception struct
+ * @param debug Print output to stdout
  */
 void encodeXmlBlasterException(XmlBlasterBlob *blob, const XmlBlasterException *exception, bool debug)
 {

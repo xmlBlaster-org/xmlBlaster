@@ -1,4 +1,4 @@
-/**---------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
 Name:      SQLiteQueue.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
@@ -409,6 +409,8 @@ static int callback(void *pArg, int nArg, char **azArg, char **azCol){
 */
 
 /**
+ * @param queueP The queue instance
+ * @param queueEntry The entry
  * @param exception The exception is set to *exception->errorCode==0 on success, else to != 0
  */
 static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, ExceptionStruct *exception)
@@ -520,6 +522,7 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
 /**
  * Compile a prepared query. 
  * No parameters are checked, they must be valid
+ * @param queueP The queue instance to use
  * @param methodName A nice string for logging
  * @param ppVm The virtual machine will be initialized if still 0
  * @param queryString
@@ -1213,6 +1216,7 @@ Dll_Export void freeEntryDump(char *entryDump)
 
 /**
  * Checks the given arguments to be valid.
+ * @param queueP The queue instance
  * @param methodName For logging
  * @param checkIsConnected If true does check the connection state as well 
  * @return false if the parameters are not usable,

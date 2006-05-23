@@ -371,7 +371,7 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa)
  * Callback from #XmlBlasterConnectionUnparsed just before a message is sent,
  * the msgRequestInfo contains the requestId used. 
  * This is the clients calling thread.
- * @param msgRequestInfo Contains some informations about the request, may not be NULL
+ * @param msgRequestInfoP Contains some informations about the request, may not be NULL
  * @param exception May not be NULL
  * @return The same (or a manipulated/encrypted) msgRequestInfo, if NULL the exception is filled. 
  *         If msgRequestInfoP->blob.data was changed and malloc()'d by you, the caller will free() it.
@@ -419,7 +419,7 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
  * This function is called by the callback server when a response message arrived (after we send a request). 
  * The xa->responseBlob->data is malloc()'d with the response string, you need to free it. 
  * This method is executed by the callback server thread.
- * @param userP May not be NULL, is of type XmlBlasterAccessUnparsed *
+ * @param msgRequestInfoP May not be NULL
  * @param socketDataHolder is on the stack and does not need to be freed, the 'data' member is
  *        malloc()'d and must be freed by the caller.
  */
@@ -455,8 +455,7 @@ static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHold
 
 /**
  * Callback function (wait for response) called directly after a message is sent. 
- * @param userP May not be NULL, is of type XmlBlasterAccessUnparsed *
- * @param msgRequestInfo Contains some informations about the request, may not be NULL
+ * @param msgRequestInfoP Contains some informations about the request, may not be NULL
  * @param exception May not be NULL
  * @return The returned string from a request is written into msgRequestInfoP->data,
  *         the caller needs to free() it.
@@ -767,6 +766,7 @@ static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const 
 
 /**
  * Ping the server. 
+ * @param xa The 'this' pointer
  * @param qos The QoS or 0
  * @param exception *errorCode!=0 on failure
  * @return The ping return QoS raw xml string, you need to free() it

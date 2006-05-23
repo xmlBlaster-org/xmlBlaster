@@ -153,6 +153,7 @@ Dll_Export void freeMsgUnit(MsgUnit *msgUnit)
 /**
  * NOTE: You need to free the returned pointer with xmlBlasterFree() or directly with free()!
  *
+ * @param msg The message
  * @param maxContentDumpLen for -1 get the complete content, else limit the
  *        content to the given number of bytes
  * @return A ASCII XML formatted message or NULL if out of memory

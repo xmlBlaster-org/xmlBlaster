@@ -95,8 +95,14 @@ extern ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNum
 
 /**
  * Creates a raw blob to push over a socket as described in the protocol.socket requirement. 
+ * @param msgType invoke, response or exception
+ * @param requestId The unique request ID for each invocation
+ * @param methodName The method name like "PUBLISH"
+ * @param secretSessionId The authentication string
  * @param data is returned
  * @param dataLen is returned
+ * @param debug Pass true for debugging output to stdout
+ * @param rawMsgLen
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @return The raw message, the caller needs to free() it.
  */

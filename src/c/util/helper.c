@@ -205,6 +205,7 @@ Dll_Export int64_t getTimestamp() {
  * On Linux < 2.5.64 does not support high resolution timers clock_gettime(),
  * but patches are available at http://sourceforge.net/projects/high-res-timers
  * @param relativeTimeFromNow the relative time from now in milliseconds
+ * @param abstime
  * @return true If implemented
  */
 Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime)
@@ -331,7 +332,7 @@ Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
  * Guarantees a '\0' terminated string
  * @param to The destination string must be big enough
  * @param from The source to be copied
- * @param (maxLen-1) of 'to' will be filled with a '\0',
+ * @param maxLen (maxLen-1) of 'to' will be filled with a '\0',
  *        so effectively only maxLen-1 from 'from' are copied.
  * @return The destination string 'to'
  */
@@ -423,6 +424,7 @@ Dll_Export void trimEnd(char *s)
 /**
  * Converts the given binary data to a more readable string,
  * the '\0' are replaced by '*'
+ * @param data The data to convert
  * @param len The length of the binary data
  * @return readable is returned, it must be free()'d.
  *         If allocation fails NULL is returned
@@ -471,6 +473,7 @@ long get_pthread_id(pthread_t t)
  * <pre>
  * xa->log = myXmlBlasterLoggingHandler;
  * </pre>
+ * @param logUserP User specific location bounced back
  * @param currLevel The actual log level of the client
  * @param level The level of this log entry
  * @param location A string describing the code place
