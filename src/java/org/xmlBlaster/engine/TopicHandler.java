@@ -172,6 +172,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
    
+   private boolean administrativeInitialize;
+   
    protected Object clone() {
       throw new RuntimeException("TopicHandler NO CLONEING PLEASE");
    }
@@ -251,11 +253,6 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    private synchronized void administrativeInitialize(MsgKeyData msgKeyData, MsgQosData publishQos,
                              PublishQosServer publishQosServer) throws XmlBlasterException {
-      if (!isUnconfigured() && !isSoftErased()) {
-         log.severe("Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the request");
-         return;
-      }
-
       if (publishQosServer.getTopicEntry() != null) {
          this.topicEntry = publishQosServer.getTopicEntry(); // Call from persistent layer, reuse the TopicEntry
          if (log.isLoggable(Level.FINE)) log.fine("Reuse TopicEntry persistence handle");
@@ -292,6 +289,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          String store = (maxEntriesStore > 0) ? "persistence/msgUnitStore/maxEntries="+maxEntriesStore : "message storage is switched off with persistence/msgUnitStore/maxEntries=0";
          log.info("New topic '" + this.msgKeyData.getOid() + "' is ready, " + hist + ", " + store);
       }
+      
+      this.administrativeInitialize = true;
    }
 
    /**
@@ -518,7 +517,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
          if (msgQosData.isAdministrative()) {
             synchronized (this.ADMIN_MONITOR) {
-               administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
+               if (!isUnconfigured() && !isSoftErased())
+                  log.severe("Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the request");
+               else
+                  administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
                if (this.handlerIsNewCreated) {
                   this.handlerIsNewCreated = false;
                   // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
@@ -537,12 +539,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             } // synchronized
          }
 
-         if (isUnconfigured() || isSoftErased()) {
-            synchronized (this) {
-               if (isUnconfigured() || isSoftErased()) {
-                 administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
-               }
-            }
+         if (!this.administrativeInitialize) {
+            administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
          }
 
          if (!isAlive()) {
@@ -1818,6 +1816,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          this.state = SOFT_ERASED;
          removeFromBigDom();
          this.handlerIsNewCreated = true;
+         this.administrativeInitialize = false;
       }
       return notifyList;
    }
