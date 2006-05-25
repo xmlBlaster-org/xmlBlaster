@@ -217,6 +217,7 @@ TODO
    <property name="zlib.include.dir" location="${src.c.dir}/util/zlib"/> <!-- Path to zlib.h, http://www.gzip.org/zlib/ -->
    <property name="zlib.lib.dir" location="${lib.dir}"/>                  <!-- Path to libz.so zlib.dll -->
    <property name="zlib.lib.name" value="z"/>                  <!-- On Windows set to 'zlib1' for zlib1.dll, defaults to 'z' for libz.so -->
+   <property name="PthreadDraftVersion" value="10"/>  <!-- omnithread posix.cc -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <compilerarg value="${CFLAGS}" if="CFLAGS" />
@@ -2026,6 +2027,7 @@ TODO
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
       <echo message=" XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=${XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN}"/>
+      <echo message=" XMLBLASTER_C_COMPILE_AS_CPP=${XMLBLASTER_C_COMPILE_AS_CPP}"/>
 
       <switch value="${cpp.debug}" caseinsensitive="false">
          <case value="true">
@@ -2533,7 +2535,11 @@ TODO
            <define name="SVR4" value="1" if="sun" />
            <define name="UsePthread" value="1" if="sun" />
            <define name="_REENTRANT" value="1" if="sun" />
-           <define name="PthreadDraftVersion" value="10" if="sun" />
+           <define name="PthreadDraftVersion" value="${PthreadDraftVersion}" if="sun" />
+
+	   <!-- To correctly include C lib headers -->
+           <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
+           <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
 
            <define name="BOOST_ASSERT_CONFIG" value="1" if="BOOST" /> <!-- To get error if compiler etc is not supported -->
            <define name="BOOST" value="1" if="BOOST" /> <!-- ThreadImpl.cpp looks for BOOST -->
@@ -2591,6 +2597,7 @@ TODO
            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
            <linkerarg value="-mt"/>
            <linkerarg value="-lpthread"/>
+           <linkerarg value="-lxmlBlasterClientC${C_DEBUG_POSTFIX}"/>
          </linker>
       </cc>
    </target>  <!-- cpp-lib -->
@@ -2730,7 +2737,7 @@ TODO
            <define name="SVR4" value="1" if="sun" />
            <define name="UsePthread" value="1" if="sun" />
            <define name="_REENTRANT" value="1" if="sun" />
-           <define name="PthreadDraftVersion" value="10" if="sun" />
+           <define name="PthreadDraftVersion" value="${PthreadDraftVersion}" if="sun" />
 
            <define name="BOOST_ASSERT_CONFIG" value="1" if="BOOST" /> <!-- To get error if compiler etc is not supported -->
          </defineset>
@@ -2905,6 +2912,7 @@ TODO
 
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
+            <linkerarg value="-lsocket"/>
             <!-- linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" / -->
             <!-- linkerarg value="-L${xerces.lib.dir}" / -->
             <!-- linkerarg value="-L${lib.dir.absolute}" / -->
@@ -2962,7 +2970,7 @@ TODO
            <define name="__sparc__" value="1" if="sun" />
            <define name="UsePthread" value="1" if="sun" />
            <define name="_REENTRANT" value="1" if="sun" />
-           <define name="PthreadDraftVersion" value="10" if="sun" />
+           <define name="PthreadDraftVersion" value="${PthreadDraftVersion}" if="sun" />
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Add command line define -->
