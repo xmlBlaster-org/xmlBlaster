@@ -17,7 +17,7 @@ See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.ht
 static const char *updateExceptionErrorCode = 0;
 static const char *updateExceptionMessage = 0;
 static const char *subscribeToken = 0;
-static char *queryType;
+static const char *queryType;
 static int message_counter = 1;
 static long updateSleep = 0l;
 static bool reportUpdateProgress = false;

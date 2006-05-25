@@ -337,8 +337,8 @@ char* readFile(const char *fn) {
          newbuf = realloc(retbuf, nchmax + 1);
 #else
          if (retbuf == NULL)      /* in case pre-ANSI realloc */
-            newbuf = malloc(nchmax + 1);
-         else    newbuf = realloc(retbuf, nchmax + 1);
+            newbuf = (char *)malloc(nchmax + 1);
+         else    newbuf = (char *)realloc(retbuf, nchmax + 1);
 #endif
          /* +1 for \0 */
          if (newbuf == NULL) {
@@ -352,7 +352,7 @@ char* readFile(const char *fn) {
 
    if(retbuf != NULL) {
       retbuf[nchread] = '\0';
-      newbuf = realloc(retbuf, nchread + 1);
+      newbuf = (char *)realloc(retbuf, nchread + 1);
       if(newbuf != NULL)
          retbuf = newbuf;
    }
