@@ -138,17 +138,22 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          return retVal;
       }
       catch (XmlRpcException ex) {
-         if (ex.toString().indexOf("org.apache.xmlrpc.XmlRpcException: can't serialize output") != -1) {
+         int start = ex.toString().indexOf("errorCode=");
+         if (start == -1) {
             ex.printStackTrace();
-            String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed";
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, ex);
+            String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed, receivunexpected exception format from client";
+            XmlBlasterException e2 = new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, ex);
+            e2.isServerSide(false);
+            e2.setLocation("client");
+            throw e2;
          }
          XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
+         e.isServerSide(false);
+         e.setLocation(this.getClass().getName());
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed in client: " + ex.toString();
          if (log.isLoggable(Level.FINE)) log.fine(str);
          // The remote client is only allowed to throw USER* errors!
          throw XmlBlasterException.tranformCallbackException(e);
-         //throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "CallbackFailed", e);
       }
       catch (Throwable e) { // e.g. IOException
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed: " + e.toString();
