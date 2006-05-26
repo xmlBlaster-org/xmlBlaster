@@ -6,10 +6,26 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 
+/*
+ Obsolete, as history can be further filtered by mime plugins!
+ A future version could extend the query possibilities to e.g.
+ <pre>
+   &lt;history type="sql92">  <!-- client properties -->
+      myKey=2000
+   &lt;/history>
+
+   &lt;history type="regex">  <!-- content check -->
+      a.*
+   &lt;/history>
+
+   &lt;history type="special">
+      &lt;time from='yesterday' to='now'>
+   &lt;/history>
+ </pre>
+ */
 
 /**
  * Helper class holding QoS settings to acces historical message. 
@@ -17,28 +33,21 @@ import org.xml.sax.Attributes;
  * <pre>
  *   &lt;history numEntries='20'/>   <!-- type="index" (is default) -->
  * </pre>
+ * <p>or</p>
+ * <pre>
+ *   &lt;history numEntries='20' newestFirst="false"/>
+ * </pre>
  * <p>
  * Default is to deliver the most current entry (numEntries='1'),
  * '-1' would deliver all history entries available.
  * </p>
- * A future version could extend the query possibilities to e.g.
- * <pre>
- *   &lt;history type="sql92">  <!-- client properties -->
- *      myKey=2000
- *   &lt;/history>
- *
- *   &lt;history type="regex">  <!-- content check -->
- *      a.*
- *   &lt;/history>
- *
- *   &lt;history type="special">
- *      &lt;time from='yesterday' to='now'>
- *   &lt;/history>
- * </pre>
+ * The selected messages can be further filtered by mime plugins,
+ * see requirement <code>interface.get</code>.
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
  */
 public final class HistoryQos
 {
-   private static final String ME = "HistoryQos";
    private final Global glob;
    private static Logger log = Logger.getLogger(HistoryQos.class.getName());
 

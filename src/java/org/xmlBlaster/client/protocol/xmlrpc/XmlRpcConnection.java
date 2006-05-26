@@ -8,8 +8,6 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.xmlBlaster.util.ReplaceVariable;
-
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;

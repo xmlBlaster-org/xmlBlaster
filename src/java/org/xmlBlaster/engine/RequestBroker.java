@@ -888,6 +888,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
     *         them without danger
     * @exception XmlBlasterException on internal errors
     * @see org.xmlBlaster.client.qos.GetQos
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
     */
    public MsgUnit[] get(SessionInfo sessionInfo, QueryKeyData xmlKey, GetQosServer getQos) throws XmlBlasterException
    {
