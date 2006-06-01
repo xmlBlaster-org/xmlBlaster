@@ -197,7 +197,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                       " is invalid, setting it to " + getDefaultResponseTimeout() + " millis");
          this.responseTimeout = getDefaultResponseTimeout();
       }
-      this.responseTimeout = millis;
+      else
+         this.responseTimeout = millis;
    }
 
    /**
@@ -212,7 +213,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                       " is invalid, setting it to " + getDefaultPingResponseTimeout() + " millis");
          this.pingResponseTimeout = getDefaultPingResponseTimeout();
       }
-      this.pingResponseTimeout = millis;
+      else
+         this.pingResponseTimeout = millis;
    }
 
    /**
@@ -227,7 +229,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                       " is invalid, setting it to " + getDefaultUpdateResponseTimeout() + " millis");
          this.updateResponseTimeout = getDefaultUpdateResponseTimeout();
       }
-      this.updateResponseTimeout = millis;
+      else
+         this.updateResponseTimeout = millis;
    }
 
    /**
