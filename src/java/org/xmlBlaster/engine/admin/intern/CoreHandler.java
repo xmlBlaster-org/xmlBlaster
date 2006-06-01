@@ -136,7 +136,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       try {
          Object tmp = method.invoke (impl, argValues);
-         log.info("Successful invoked set method '" + property + "'");
+         log.fine("Successful invoked set method '" + property + "'");
          
          //Object tmp = getInvoke(property, impl, clazz, cmd.getQueryKeyData(), cmd.getQueryQosData());
          String ret = "";
