@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+
+ o #15177 Fixed responseTimeout pingResponseTimeout and updateResponseTimeout when negative
  
  o #15158 Fixed serverTimestamp on status.html
 
