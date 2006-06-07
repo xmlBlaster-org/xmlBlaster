@@ -140,12 +140,11 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          catch (Throwable ex) {
             log.severe("An exception occured when verifying the intial status of the counter against the old replKeY: " + ex.getMessage());
             ex.printStackTrace();
-            this.dbPool.erase(conn);
+            SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_NO, this.dbPool);
             conn = null;
          }
          finally {
-            if (conn != null)
-               this.dbPool.release(conn);
+            SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_NO, this.dbPool);
          }
       }
       else {

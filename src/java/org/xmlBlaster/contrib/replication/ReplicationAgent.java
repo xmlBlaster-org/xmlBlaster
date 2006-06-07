@@ -300,13 +300,10 @@ public class ReplicationAgent {
                      dbSpecific.bootstrap(conn, doWarn, force);
                   }
                   catch (Exception ex) {
-                     ex.printStackTrace();
-                     pool.erase(conn);
-                     conn = null;
+                     conn = SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_YES, pool);
                   }
                   finally {
-                     if (conn != null)
-                        pool.release(conn);
+                     conn = SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_YES, pool);
                   }
                }
             }
@@ -460,55 +457,53 @@ public class ReplicationAgent {
       if (this.readerInfo == null)
          prompt = "slave>"; 
       
-      try {
-         conn  = pool.reserve();
+      System.out.println(prompt + "make your sql statement");
+      System.out.print(prompt);
+      String line = null;
+      while ( (line = br.readLine()) != null) {
 
+         if (line.trim().length() < 1) {
+            System.out.print(prompt);
+            continue;
+         }
+         line = line.trim();
+         if (line.equalsIgnoreCase("q") || 
+               line.equalsIgnoreCase("quit") ||
+               line.equalsIgnoreCase("exit") ||
+               line.equalsIgnoreCase("stop") ||
+               line.equalsIgnoreCase("finish")) 
+            break;
+
+         try {
+            conn  = pool.reserve();
+            Statement st = conn.createStatement();
+            boolean ret = st.execute(line);
+            if (ret) {
+               ResultSet rs = st.getResultSet();
+               while (rs.next()) {
+                  int nmax = rs.getMetaData().getColumnCount();
+                  StringBuffer buf = new StringBuffer(prompt);
+                  for (int i=0; i < nmax; i++) {
+                     buf.append(rs.getObject(i+1)).append("\t");
+                  }
+                  System.out.println(buf.toString());
+               }
+               System.out.println(prompt);
+               rs.close();
+            }
+            st.close();
+         } 
+         catch (Exception ex) {
+            ex.printStackTrace();
+            conn = SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_NO, pool);
+         }
+         finally {
+            conn = SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_NO, pool);
+         }
          System.out.println(prompt + "make your sql statement");
          System.out.print(prompt);
-         String line = null;
-         while ( (line = br.readLine()) != null) {
-            if (line.trim().length() < 1) {
-               System.out.print(prompt);
-               continue;
-            }
-            line = line.trim();
-            if (line.equalsIgnoreCase("q") || 
-                  line.equalsIgnoreCase("quit") ||
-                  line.equalsIgnoreCase("exit") ||
-                  line.equalsIgnoreCase("stop") ||
-                  line.equalsIgnoreCase("finish")) 
-               break;
-
-            try {
-               Statement st = conn.createStatement();
-               boolean ret = st.execute(line);
-               if (ret) {
-                  ResultSet rs = st.getResultSet();
-                  while (rs.next()) {
-                     int nmax = rs.getMetaData().getColumnCount();
-                     StringBuffer buf = new StringBuffer(prompt);
-                     for (int i=0; i < nmax; i++) {
-                        buf.append(rs.getObject(i+1)).append("\t");
-                     }
-                     System.out.println(buf.toString());
-                  }
-                  System.out.println(prompt);
-                  rs.close();
-               }
-               st.close();
-            } 
-            catch (Exception ex) {
-               ex.printStackTrace();
-            }
-            System.out.println(prompt + "make your sql statement");
-            System.out.print(prompt);
-         }
       }
-      finally {
-         if (conn != null)
-            pool.release(conn);
-      }
-      
+   
    }
 
 }

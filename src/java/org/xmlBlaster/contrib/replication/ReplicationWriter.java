@@ -36,6 +36,7 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
 import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
+import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -157,7 +158,8 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          ClassLoader cl = this.getClass().getClassLoader();
          this.parserForOldInUpdates = (I_Parser)cl.loadClass(parserClass).newInstance();
          this.parserForOldInUpdates.init(info);
-         if (log.isLoggable(Level.FINE)) log.fine(parserClass + " created and initialized");
+         if (log.isLoggable(Level.FINE)) 
+            log.fine(parserClass + " created and initialized");
       }
       else
          log.severe("Couldn't initialize I_Parser, please configure 'parser.class'");
@@ -490,6 +492,13 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                conn.commit();
                isCommitted = true;
             }
+            catch (SQLException ex) {
+               log.severe("store: an sql exception occured when trying to commit: " + ex.getMessage());
+               String txt = "Error code:'" + ex.getErrorCode() + "' state='" + ex.getSQLState() + "' localizedMsg='" + ex.getLocalizedMessage() + "'";
+               log.severe(txt);
+               log.severe(Global.getStackTraceAsString(ex));
+               throw (Exception)ex;
+            }
             catch (Throwable ex) {
                log.severe("store: an exception occured when trying to commit: " + ex.getMessage());
                log.severe(Global.getStackTraceAsString(ex));
@@ -499,6 +508,13 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   throw new Exception(ex);
             }
          }
+         catch (SQLException ex) {
+            log.severe("An exception occured when trying storing the entry." + ex.getMessage());
+            String txt = "Error code:'" + ex.getErrorCode() + "' state='" + ex.getSQLState() + "' localizedMsg='" + ex.getLocalizedMessage() + "'";
+            log.severe(txt);
+            log.severe(Global.getStackTraceAsString(ex));
+            throw ex;
+         }
          catch (Exception ex) {
             log.severe("An exception occured when trying storing the entry." + ex.getMessage());
             log.severe(Global.getStackTraceAsString(ex));
@@ -506,15 +522,19 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          }
          finally {
             if (conn != null) {
-               try {
-                  if (!isCommitted)
+               if (!isCommitted) {
+                  try {
                      conn.rollback();
+                  }
+                  catch (Throwable ex) {
+                     log.severe("store: an exception occured when trying to rollback: " + ex.getMessage());
+                     log.severe(Global.getStackTraceAsString(ex));
+                  }
+                  finally {
+                     conn = SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_NO, this.pool);
+                  }
                }
-               catch (Throwable ex) {
-                  log.severe("store: an exception occured when trying to rollback: " + ex.getMessage());
-                  log.severe(Global.getStackTraceAsString(ex));
-               }
-               if (oldAutoCommitKnown) {
+               if (oldAutoCommitKnown && conn != null) {
                   try {
                      if (oldAutoCommit)
                         conn.setAutoCommit(oldAutoCommit);
@@ -524,7 +544,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                      log.severe(Global.getStackTraceAsString(ex));
                   }
                }
-               this.pool.release(conn);
+               conn = SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_NO, this.pool);
             }
          }
       }

@@ -53,7 +53,8 @@ public class SpecificOracle extends SpecificDefault {
     * 
     * @param catalog
     * @param schema
-    * @throws Exception
+    * @throws Exception. Thrown if an exception occurs on the backend. Note that if an
+    * exception occurs you must cleanup the connection since it might become stale.
     */
    public void addSchemaToWatch(Connection conn, String catalog, String schema) throws Exception {
       if (schema == null || schema.length() < 1) return;
@@ -366,18 +367,11 @@ public class SpecificOracle extends SpecificDefault {
       }
       catch (Exception ex) {
          ex.printStackTrace();
+         conn = removeFromPool(conn, ROLLBACK_NO);
          return false;
       }
       finally {
-         if (conn != null) {
-            try {
-               this.dbPool.release(conn);
-            }
-            catch (Exception ex) {
-               ex.printStackTrace();
-            }
-         }
-         conn = null;
+         conn = releaseIntoPool(conn, COMMIT_NO);
       }
    }
 
@@ -531,7 +525,7 @@ public class SpecificOracle extends SpecificDefault {
          String schema = info.get("schema", "AIS");
          String referencedSchema = info.get("referencedSchema", null);
          oracle.cleanupSchema(schema, objectTypes, referencedSchema);
-         pool.release(conn);
+         conn = SpecificDefault.releaseIntoPool(conn, COMMIT_NO, pool);
       }
       catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());
@@ -796,14 +790,10 @@ public class SpecificOracle extends SpecificDefault {
 
       }
       catch (SQLException ex) {
-        if (conn != null)
-           dbPool.erase(conn);
-        conn = null;
+        conn = removeFromPool(conn, ROLLBACK_NO);
       }
       finally {
-         if (conn != null)
-            dbPool.release(conn);
-         conn = null;
+         conn = releaseIntoPool(conn, COMMIT_NO);
       }
       return sum;
    }
@@ -839,15 +829,7 @@ public class SpecificOracle extends SpecificDefault {
             
       }
       catch (Exception ex) {
-         if (conn != null) {
-            try {
-               this.dbPool.erase(conn);
-            }
-            catch (Exception e) {
-               e.printStackTrace();
-            }
-            conn = null;
-         }
+         conn = removeFromPool(conn, ROLLBACK_NO);
          throw ex;
       }
       finally { 
@@ -859,9 +841,7 @@ public class SpecificOracle extends SpecificDefault {
                e.printStackTrace();
             }
          }
-         if (conn != null)
-            this.dbPool.release(conn);
-         conn = null;
+         conn = releaseIntoPool(conn, COMMIT_NO);
       }
    }
 

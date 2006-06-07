@@ -101,6 +101,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
    
+   public final static boolean ROLLBACK_YES = true;
+   public final static boolean ROLLBACK_NO = false;
+   public final static boolean COMMIT_YES = true;
+   public final static boolean COMMIT_NO = false;
    
    private static Logger log = Logger.getLogger(SpecificDefault.class.getName());
 
@@ -334,9 +338,12 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             return 1;
          }
       }
+      catch (Exception ex) {
+         conn = removeFromPool(conn, ROLLBACK_NO);
+         throw ex;
+      }
       finally {
-         if (conn != null)
-            this.dbPool.release(conn);
+         conn = releaseIntoPool(conn, COMMIT_NO);
       }
    }
 
@@ -383,9 +390,12 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             return 1;
          }
       }
+      catch (Exception ex) {
+         conn = removeFromPool(conn, ROLLBACK_NO);
+         throw ex;
+      }
       finally {
-         if (conn != null)
-            this.dbPool.release(conn);
+         conn = releaseIntoPool(conn, COMMIT_NO);
       }
    }
    
@@ -400,7 +410,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * @param propDefault The default of the property.
     * @param force if force is true it will add it no matter what (overwrites 
     * existing stuff), otherwise it will check for existence.
-    * @throws Exception if an exception occurs when reading the bootstrap file.
+    * @throws Exception if an exception occurs when reading the bootstrap file. Note
+    * that in case of an exception you need to erase the connection from the pool (if you
+    * are using a pool)
     */
    protected void updateFromFile(Connection conn, String method, String propKey,
          String propDefault, boolean doWarn, boolean force, Replacer repl) throws Exception {
@@ -467,7 +479,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    }
 
    /**
-    * @see I_DbSpecific#bootstrap(Connection)
+    * @see I_DbSpecific#bootstrap(Connection).
+    * In case of an exception you need to cleanup the connection yourself.
     */
    public final void bootstrap(Connection conn, boolean doWarn, boolean force)
          throws Exception {
@@ -477,7 +490,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    }
 
    /**
-    * @see I_DbSpecific#cleanup(Connection)
+    * @see I_DbSpecific#cleanup(Connection). In case of an exception you need to cleanup
+    * the connection yourself.
     */
    public final void cleanup(Connection conn, boolean doWarn) throws Exception {
       /*
@@ -600,9 +614,12 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             }
          }
       }
+      catch (Exception ex) {
+         conn = removeFromPool(conn, ROLLBACK_NO);
+         throw ex;
+      }
       finally {
-         if (conn != null)
-            this.dbPool.release(conn);
+         conn = releaseIntoPool(conn, COMMIT_NO);
       }
    }
    
@@ -642,10 +659,12 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          return false;
          */
       }
+      catch (Exception ex) {
+         conn = removeFromPool(conn, ROLLBACK_NO);
+         throw ex;
+      }
       finally {
-         if (conn == null) {
-            this.dbPool.release(conn);
-         }
+         conn = releaseIntoPool(conn, COMMIT_NO);
       }
    }
    
@@ -800,11 +819,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          conn.commit();
       } 
       catch (Exception ex) {
-         if (conn != null) {
-            conn.rollback();
-            this.dbPool.erase(conn);
-            conn = null;
-         }
+         removeFromPool(conn, ROLLBACK_YES);
          throw ex;
       } 
       finally {
@@ -818,7 +833,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                   e.printStackTrace();
                }
             }
-            this.dbPool.release(conn);
+            conn = releaseIntoPool(conn, COMMIT_NO);
          }
       }
    }
@@ -833,16 +848,18 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          st = conn.prepareCall(sql);
          st.registerOutParameter(1, Types.VARCHAR);
          st.executeQuery();
-      } finally {
+      }
+      catch (Exception ex) {
+         conn = removeFromPool(conn, ROLLBACK_NO);
+      }
+      finally {
          try {
             if (st != null)
                st.close();
          } catch (Exception ex) {
             ex.printStackTrace();
          }
-         if (conn != null) {
-            this.dbPool.release(conn);
-         }
+         conn = releaseIntoPool(conn, COMMIT_NO);
       }
    }
 
@@ -955,29 +972,13 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          return true;
       }
       catch (Throwable ex) {
-         try {
-            if (conn != null)
-               conn.rollback();
-         }
-         catch (Throwable e) {
-            e.printStackTrace();
-         }
-         this.dbPool.erase(conn);
-         conn = null;
+         conn = removeFromPool(conn, ROLLBACK_YES);
          if (ex instanceof Exception)
             throw (Exception)ex;
          throw new Exception(ex);
       }
       finally {
-         if (conn != null) {
-            try {
-               conn.commit();
-            }
-            catch (Throwable ex) {
-               ex.printStackTrace();
-            }
-            this.dbPool.release(conn);
-         }
+         conn = releaseIntoPool(conn, COMMIT_YES);
       }
    }
 
@@ -1129,12 +1130,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, requestedVersion, this.replVersion, initialFilesLocation);
       }
       catch (Exception ex) {
-         if (conn != null) {
-            try {
-               conn.rollback();
-            }
-            catch (SQLException e) {e.printStackTrace(); }
-         }
+         conn = removeFromPool(conn, ROLLBACK_YES);
          ex.printStackTrace();
       }
       finally {
@@ -1143,14 +1139,13 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                try {
                   conn.setTransactionIsolation(oldTransactionIsolation);
                }
-               catch (SQLException e) { e.printStackTrace(); }
+               catch (SQLException e) { 
+                  e.printStackTrace(); 
+               }
             }
-
-            try {
-               this.dbPool.erase(conn);
-            }
-            catch (Exception e) {e.printStackTrace(); }
-            conn = null;
+            // we always throw away the connection on initial update (to be on the safe side)
+            // if rollback was done before this will not execute anything since conn=null 
+            conn = removeFromPool(conn, ROLLBACK_NO);
          }
       }
    }
@@ -1219,19 +1214,119 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             if (st2 != null)
                st2.close();
          }
-         conn.commit();
          return response;
       }
       catch (Exception ex) {
-         conn.rollback();
+         conn = removeFromPool(conn, ROLLBACK_YES);
          throw ex;
       }
       finally {
-         if (conn != null) {
-            this.dbPool.release(conn);
-            conn = null;
+         conn = releaseIntoPool(conn, COMMIT_YES);
+      }
+   }
+
+   /**
+    * Always returns null (to nullify the connection).
+    * @param conn The connection. Can be null, in which case nothing is done.
+    * @param doRollback if true, a rollback is done, on false no rollback is done.
+    * @return always null.
+    */
+   protected Connection removeFromPool(Connection conn, boolean doRollback) {
+      return removeFromPool(conn, doRollback, this.dbPool);
+   }
+   
+   /**
+    * Always returns null (to nullify the connection).
+    * @param conn The connection. Can be null, in which case nothing is done.
+    * @param doRollback if true, a rollback is done, on false no rollback is done.
+    * @param pool the pool to which the connection belongs.
+    * @return always null.
+    */
+   public static Connection removeFromPool(Connection conn, boolean doRollback, I_DbPool pool) {
+      if (conn == null)
+         return null;
+      if (doRollback) {
+         try {
+            conn.rollback();
+         }
+         catch (Throwable ex) {
+            log.severe("An exception occured when trying to rollback the jdbc connection. " + ex.getMessage());
+            ex.printStackTrace();
          }
       }
+      try {
+         pool.erase(conn);
+      }
+      catch (Throwable ex) {
+         log.severe("An exception occured when trying to erase the connection from the pool. " + ex.getMessage());
+         ex.printStackTrace();
+      }
+      return null;
+   }
+   
+
+   /**
+    * Always returns null (to nullify the connection).
+    * @param conn The connection. Can be null, in which case nothing is done.
+    * @param doCommit if true, a commit is done, on false no commit is done.
+    * @return always null.
+    */
+   protected Connection releaseIntoPool(Connection conn, boolean doCommit) {
+      return releaseIntoPool(conn, doCommit, this.dbPool);
+   }
+   
+   /**
+    * Always returns null (to nullify the connection).
+    * @param conn The connection. Can be null, in which case nothing is done.
+    * @param doCommit if true, a commit is done, on false no commit is done.
+    * @param pool the pool to which the connection belongs.
+    * @return always null.
+    */
+   public static Connection releaseIntoPool(Connection conn, boolean doCommit, I_DbPool pool) {
+      if (conn == null)
+         return null;
+      if (doCommit) {
+         try {
+            conn.commit();
+         }
+         catch (Throwable ex) {
+            ex.printStackTrace();
+         }
+      }
+      try {
+         pool.release(conn);
+      }
+      catch (Throwable ex) {
+         log.severe("An exception occured when trying to release the connection into the pool. " + ex.getMessage());
+         ex.printStackTrace();
+      }
+      return null;
+   }
+   
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#cancelUpdate(java.lang.String)
+    */
+   public void cancelUpdate(String replSlave) {
+      synchronized(this.cancelledUpdates) {
+         this.cancelledUpdates.add(replSlave);
+      }
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#clearCancelUpdate(java.lang.String)
+    */
+   public void clearCancelUpdate(String replSlave) {
+      synchronized(this.cancelledUpdates) {
+         this.cancelledUpdates.remove(replSlave);
+      }
+   }
+   
+   public static String getReplPrefix(I_Info info) {
+      String pureVal = info.get(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
+      String corrected = GlobalInfo.getStrippedString(pureVal);
+      if (!corrected.equals(pureVal))
+         log.warning("The " + ReplicationConstants.REPL_PREFIX_KEY + " property has been changed from '" + pureVal + "' to '" + corrected + "' to be able to use it inside a DB");
+      return corrected;
    }
    
    /**
@@ -1290,45 +1385,17 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          else {
             specific.wipeoutSchema(null, schema, WIPEOUT_ALL);
          }
-      } catch (Throwable e) {
+      } 
+      catch (Throwable e) {
          System.err.println("SEVERE: " + e.toString());
          e.printStackTrace();
+         conn = SpecificDefault.removeFromPool(conn, ROLLBACK_NO, pool);
       }
       finally {
-         if (pool != null && conn != null) {
-            try {
-               pool.release(conn);
-            } catch (Exception e) {
-               e.printStackTrace();
-            }
+         if (pool != null) {
+            conn = releaseIntoPool(conn, COMMIT_NO, pool);
          }
       }
    }
 
-   /**
-    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#cancelUpdate(java.lang.String)
-    */
-   public void cancelUpdate(String replSlave) {
-      synchronized(this.cancelledUpdates) {
-         this.cancelledUpdates.add(replSlave);
-      }
-   }
-
-   /**
-    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#clearCancelUpdate(java.lang.String)
-    */
-   public void clearCancelUpdate(String replSlave) {
-      synchronized(this.cancelledUpdates) {
-         this.cancelledUpdates.remove(replSlave);
-      }
-   }
-   
-   public static String getReplPrefix(I_Info info) {
-      String pureVal = info.get(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
-      String corrected = GlobalInfo.getStrippedString(pureVal);
-      if (!corrected.equals(pureVal))
-         log.warning("The " + ReplicationConstants.REPL_PREFIX_KEY + " property has been changed from '" + pureVal + "' to '" + corrected + "' to be able to use it inside a DB");
-      return corrected;
-   }
-   
 }

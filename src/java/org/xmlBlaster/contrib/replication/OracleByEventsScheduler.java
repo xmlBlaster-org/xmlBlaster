@@ -87,25 +87,11 @@ public class OracleByEventsScheduler implements I_AlertProducer {
                      count = 0L;
                }
                catch (Throwable ex) {
-                  try {
-                     if (conn != null) {
-                        pool.erase(conn);
-                        conn = null;
-                     }
-                     Thread.sleep(500L); // to avoid looping
-                  }
-                  catch (Throwable e) {
-                     e.printStackTrace();
-                  }
+                  conn = SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_NO, pool);
+                  Thread.sleep(500L); // to avoid looping
                }
                finally {
-                  try {
-                     if (conn != null)
-                        pool.release(conn);
-                  }
-                  catch (Throwable e) {
-                     e.printStackTrace();
-                  }
+                  conn = SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_NO, pool);
                }
             }
             // OracleByEventsScheduler.unregisterEvent(pool, this.event);
