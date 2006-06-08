@@ -268,6 +268,7 @@ public class ReplicationAgent {
       this.writerInfo = writerInfo;
       if (this.writerInfo != null) {
          log.info("setUp: Instantiating DbWriter");
+         GlobalInfo.setStrippedHostname(this.writerInfo);
          this.dbWriter = new DbWriter();
          this.dbWriter.init(this.writerInfo);
       }

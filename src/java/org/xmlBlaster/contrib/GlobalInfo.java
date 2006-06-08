@@ -23,6 +23,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -57,8 +59,26 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    public static String setStrippedHostname(I_Info info) {
       String hostName = System.getProperty("host.name");
       if (hostName == null) {
-         log.warning("the property 'host.name' is not set, will not set 'stripped.host.name'");
-         return null;
+         try {
+            hostName = InetAddress.getLocalHost().getHostName();
+            if (hostName == null) {
+               log.warning("The property 'host.name' was not set and it was not possible to retrieve the default host name (will try the IP Address instead)");
+               hostName = InetAddress.getLocalHost().getHostAddress();
+               if (hostName == null) {
+                  log.warning("the property 'host.name' is not set, will not set 'stripped.host.name'");
+                  return null;
+               }
+               else {
+                  log.warning("the property 'host.name' is not set and the default is set to the IP '" + hostName + "'");
+               }
+            }
+            log.info("Setting 'host.name' to '" + hostName + "'");
+            System.setProperty("host.name", hostName);
+         }
+         catch (UnknownHostException ex) {
+            log.warning("Could not retrieve the local hostname (I wanted it since 'host.name' was not set)");
+            return null;
+         }
       }
       String strippedHostName = getStrippedString(hostName);
       String oldStrippedHostName = System.getProperty("stripped.host.name");
