@@ -39,6 +39,10 @@ import java.util.logging.Level;
  */
 public abstract class GlobalInfo implements I_Plugin, I_Info {
    public final static String ORIGINAL_ENGINE_GLOBAL = "_originalEngineGlobal";
+   public final static int UNTOUCHED = 0;
+   public final static int UPPER_CASE = 1;
+   public final static int LOWER_CASE = 2;
+   
    private static Logger log = Logger.getLogger(GlobalInfo.class.getName());
    protected Global global;
    protected PluginInfo pluginInfo;
@@ -51,19 +55,29 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       return ReplaceVariable.replaceAll(corrected, "-", "_");
    }
    
+   private final static String fixCase(String val, int chCase) {
+      if (val == null)
+         return null;
+      if (chCase == UPPER_CASE)
+         return val.toUpperCase();
+      if (chCase == LOWER_CASE)
+         return val.toLowerCase();
+      return val;
+   }
+   
    /**
     * Convenience to allow the usage of a name mapped to the hostname which can be used as an identifier in a database.
     * Specifically used for the prefix in the replication.
     * @param info can be null, in which case only system properties are changed.
     */
-   public static String setStrippedHostname(I_Info info) {
+   public static String setStrippedHostname(I_Info info, int chCase) {
       String hostName = System.getProperty("host.name");
       if (hostName == null) {
          try {
-            hostName = InetAddress.getLocalHost().getHostName();
+            hostName = fixCase(InetAddress.getLocalHost().getHostName(), chCase);
             if (hostName == null) {
                log.warning("The property 'host.name' was not set and it was not possible to retrieve the default host name (will try the IP Address instead)");
-               hostName = InetAddress.getLocalHost().getHostAddress();
+               hostName = fixCase(InetAddress.getLocalHost().getHostAddress(), chCase);
                if (hostName == null) {
                   log.warning("the property 'host.name' is not set, will not set 'stripped.host.name'");
                   return null;
@@ -181,7 +195,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       //    this.global = global_;
       // this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
 
-      setStrippedHostname(this);
+      setStrippedHostname(this, UPPER_CASE);
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;
       if (log.isLoggable(Level.FINER)) {

@@ -268,7 +268,7 @@ public class ReplicationAgent {
       this.writerInfo = writerInfo;
       if (this.writerInfo != null) {
          log.info("setUp: Instantiating DbWriter");
-         GlobalInfo.setStrippedHostname(this.writerInfo);
+         GlobalInfo.setStrippedHostname(this.writerInfo, GlobalInfo.UPPER_CASE);
          this.dbWriter = new DbWriter();
          this.dbWriter.init(this.writerInfo);
       }
@@ -280,7 +280,7 @@ public class ReplicationAgent {
       if (this.readerInfo != null) {
          try {
             log.info("setUp: Instantiating DbWatcher");
-            GlobalInfo.setStrippedHostname(this.readerInfo);
+            GlobalInfo.setStrippedHostname(this.readerInfo, GlobalInfo.UPPER_CASE);
             this.dbWatcher = new DbWatcher();
             this.dbWatcher.init(this.readerInfo);
             
