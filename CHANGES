@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ 
+ o #15183 Added a swing console for arbitrary classes executions. Supports input and colored xmlBlaster
+          highlighting of logs
 
  o #15179 Replication: on exceptions the connection was not thrown away from the pool. This has now
           been fixed.
