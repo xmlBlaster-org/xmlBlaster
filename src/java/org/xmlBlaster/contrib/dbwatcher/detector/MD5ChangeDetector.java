@@ -214,7 +214,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
       try {
          this.conn = this.dbPool.select(this.conn, this.changeDetectStatement, new I_ResultCb() {
             public void result(ResultSet rs) throws Exception {
-               log.fine("Processing result set");
+               if (log.isLoggable(Level.FINE)) log.fine("Processing result set");
             
                if (rs == null) {
                   int changeCount = 0; 
@@ -254,6 +254,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                   changeCount = checkWithGroupCol(rs);
                else
                   changeCount = checkComplete(rs);
+               if (log.isLoggable(Level.FINE)) log.fine("Processing result set done");
             }
          });
       }
