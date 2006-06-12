@@ -375,10 +375,12 @@ public class AppTerm extends JFrame implements KeyListener {
    public void keyTyped(KeyEvent e) {
    }
 
+   // java org.xmlBlaster.contrib.AppTerm XMLBLASTER 0 100 1500 500 192192192 org.xmlBlaster.Main
    public static void main(String args[]) {
 
       if (args.length < 1) {
-         System.err.println("usage: " + AppTerm.class.getName() + " title className x0 y0 width height color [args]");
+         System.err.println("usage: " + AppTerm.class.getName() + " title x0 y0 width height color className [args]");
+         System.err.println("Example: java org.xmlBlaster.contrib.AppTerm XMLBLASTER 0 100 1500 500 192192192 org.xmlBlaster.Main");
          Font[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
          System.err.println("Fonts recognized by this system: ");
          for (int i=0; i < fonts.length; i++)
