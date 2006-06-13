@@ -95,6 +95,7 @@ public:
                  << ", valueB64=" << cp.getValueRaw()
                  << ", value=" << cp.getStringValue()
                  << ", type=" << cp.getType()
+                 << ", charset=" << cp.getCharset()
                  << ", isBase64=" << cp.isBase64()
                  << cp.toXml("")
                  << endl << endl;
@@ -103,14 +104,17 @@ public:
             assertEquals(log_, ME, "s tring", cp.getValueRaw(), "encoded value");
             assertEquals(log_, ME, "", cp.getType(), "type");
             assertEquals(log_, ME, "", cp.getEncoding(), "encoding");
+            assertEquals(log_, ME, "", cp.getCharset(), "charset");
             assertEquals(log_, ME, false, cp.isBase64(), "isBase64");
          }
          {
             ClientProperty cp("key", string("102 304 506 "));
+            cp.setCharset("windows-1252");
             cout << "name=" << cp.getName() 
                  << ", valueB64=" << cp.getValueRaw()
                  << ", value=" << cp.getStringValue()
                  << ", type=" << cp.getType()
+                 << ", charset=" << cp.getCharset()
                  << ", isBase64=" << cp.isBase64()
                  << cp.toXml("")
                  << endl << endl;
@@ -119,6 +123,7 @@ public:
             assertEquals(log_, ME, "102 304 506 ", cp.getValueRaw(), "encoded value");
             assertEquals(log_, ME, "", cp.getType(), "type");
             assertEquals(log_, ME, "", cp.getEncoding(), "encoding");
+            assertEquals(log_, ME, "windows-1252", cp.getCharset(), "charset");
             assertEquals(log_, ME, false, cp.isBase64(), "isBase64");
          }
          {
