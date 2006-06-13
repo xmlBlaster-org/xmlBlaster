@@ -152,6 +152,7 @@ public class Base64 {
             System.out.println("Decoded to '" + new String(back) + "'");
             return;
          }
+         /* FileLocator is not known in J2ME:
          if (args[0].equals("-fn")) {
             try {
                byte[] bb = FileLocator.readFile(args[1]);
@@ -163,6 +164,7 @@ public class Base64 {
                e.printStackTrace();
             }
          }
+         */
       }
       {
          String hello = args.length > 0 ? args[0] : "Hello World";

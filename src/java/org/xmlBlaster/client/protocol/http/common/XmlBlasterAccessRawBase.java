@@ -3,7 +3,7 @@ package org.xmlBlaster.client.protocol.http.common;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Enumeration;
 import java.util.Vector;
 
 /**
@@ -37,6 +37,8 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
    private static int staticInstanceCounter;
    protected int instanceCount;
 
+   private static Object mutexer = new Object();
+
    /**
     * Provides access to xmlBlaster server. 
     * @see #parseAppletParameter
@@ -47,7 +49,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     * The key/values are send in the URL. 
     */
    public XmlBlasterAccessRawBase(Hashtable properties) {
-      synchronized (XmlBlasterAccessRawBase.class) {
+      synchronized (mutexer) {
          staticInstanceCounter++;
          this.instanceCount = staticInstanceCounter;
       }
@@ -117,9 +119,9 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          
          // Add additional paramaters and send to the servlet
          Hashtable props = getHtmlProperties();
-         Iterator it = props.keySet().iterator();
-         while (it.hasNext()) {
-            String key = (String)it.next();
+         Enumeration it = props.keys();
+         while (it.hasMoreElements()) {
+            String key = (String)it.nextElement();
             String value = (String)props.get(key);
             if (key.startsWith("servlet/")) {
                key = key.substring("servlet/".length());
