@@ -17,7 +17,7 @@ import java.util.Set;
  * @author Marcel Ruff
  */
 public interface I_Info {
-   
+   public final static String JMX_PREFIX = "__JMX__";
    /**
     * Returns the value associated to this key.
     * @param key
