@@ -20,6 +20,8 @@ import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
@@ -49,6 +51,11 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    private Map objects = new HashMap();
    private Set propsOfOwnInterest;
    private InfoHelper helper;
+
+   /** My JMX registration */
+   private Set jmxHandleSet = new HashSet();
+   private ContextNode contextNode;
+
 
    public static String getStrippedString(String pureVal) {
       String corrected = Global.getStrippedString(pureVal);
@@ -205,10 +212,38 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       
       // To allow NATIVE access to xmlBlaster (there we need to take a clone!)
       putObject("org.xmlBlaster.engine.Global", this.global);
+      
+      // For JMX instanceName may not contain ","
+      if (pluginInfo != null) {
+         String instanceName = pluginInfo.getType();
+         this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+               instanceName, this.global.getScopeContextNode());
+      }
       doInit(global_, pluginInfo);
+      initJmx();
       this.helper.replaceAllEntries(this, this.propsOfOwnInterest);
    }
 
+   private void initJmx() {
+      Map jmxMap = InfoHelper.getObjectsWithKeyStartingWith(JMX_PREFIX, this, null);
+      if (jmxMap.size() < 1)
+         return;
+      String[] keys = (String[])jmxMap.keySet().toArray(new String[jmxMap.size()]);
+      for (int i=0; i < keys.length; i++) {
+         Object obj = jmxMap.get(keys[i]);
+         String name = keys[i];
+         ContextNode child = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, name, this.contextNode);
+         log.info("MBean '" + name + "' found. Will attach it as '" + child.getRelativeName() + "' to '" + this.contextNode.getAbsoluteName() + "'");
+         try {
+            JmxMBeanHandle mBeanHandle = this.global.registerMBean(child, obj);
+            this.jmxHandleSet.add(mBeanHandle);
+         }
+         catch(XmlBlasterException e) {
+            log.severe(e.getMessage());
+         }
+      }
+   }
+   
    /**
     * The plugin name as configured im <tt>xmlBlasterPlugins.xml</tt>
     * @see org.xmlBlaster.util.plugin.I_Plugin#getType()
@@ -229,6 +264,13 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * @see org.xmlBlaster.util.plugin.I_Plugin#shutdown()
     */
    public void shutdown() throws XmlBlasterException {
+      if (this.jmxHandleSet.size() < 1)
+         return;
+      JmxMBeanHandle[] handles = (JmxMBeanHandle[])this.jmxHandleSet.toArray(new JmxMBeanHandle[this.jmxHandleSet.size()]);
+      for (int i=0; i < handles.length; i++) {
+         log.info("Unregistering MBean '" + handles[i].getContextNode().getAbsoluteName() + "'");
+         this.global.unregisterMBean(handles[i]);
+      }
    }
    
    /**
