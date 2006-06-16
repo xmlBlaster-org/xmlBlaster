@@ -96,7 +96,7 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
  * @author Marcel Ruff
  * @author Michele Laghi 
  */
-public class TimestampChangeDetector implements I_ChangeDetector
+public class TimestampChangeDetector implements I_ChangeDetector, TimestampChangeDetectorMBean
 {
    private static Logger log = Logger.getLogger(TimestampChangeDetector.class.getName());
    protected I_Info info;
@@ -168,6 +168,10 @@ public class TimestampChangeDetector implements I_ChangeDetector
       this.useGroupCol = this.groupColName != null;
       if (this.groupColName == null)
          this.groupColName = this.info.get("mom.topicName", "db.change.event");
+      // to add this to JMX
+      String jmxName = I_Info.JMX_PREFIX + "timestampChangeDetector";
+      info.putObject(jmxName, this);
+      log.info("Added object '" + jmxName + "' to I_Info to be added as an MBean");
    }
 
    
@@ -324,6 +328,103 @@ public class TimestampChangeDetector implements I_ChangeDetector
          this.dbPool.shutdown();
          this.dbPool = null;
       }
+   }
+
+
+   // methods inherited by the MBean
+
+   public String getChangeCommand() {
+      return this.changeCommand;
+   }
+
+
+   public String getChangeDetectStatement() {
+      return this.changeDetectStatement;
+   }
+
+
+   public String getGroupColName() {
+      return this.groupColName;
+   }
+
+
+   public String getNewTimestamp() {
+      return this.newTimestamp;
+   }
+
+
+   public String getOldTimestamp() {
+      return this.oldTimestamp;
+   }
+
+
+   public String getQueryMeatStatement() {
+      return this.queryMeatStatement;
+   }
+
+
+   public int getTimestampColNum() {
+      return this.timestampColNum;
+   }
+
+
+   public boolean isIgnoreExistingDataOnStartup() {
+      return this.ignoreExistingDataOnStartup;
+   }
+
+
+   public boolean isPoolOwner() {
+      return this.poolOwner;
+   }
+
+
+   public boolean isTableExists() {
+      return this.tableExists;
+   }
+
+
+   public boolean isUseGroupCol() {
+      return this.useGroupCol;
+   }
+
+
+   public void setChangeCommand(String changeCommand) {
+      this.changeCommand = changeCommand;
+   }
+
+
+   public void setChangeDetectStatement(String changeDetectStatement) {
+      this.changeDetectStatement = changeDetectStatement;
+   }
+
+
+   public void setGroupColName(String groupColName) {
+      this.groupColName = groupColName;
+   }
+
+
+   public void setOldTimestamp(String oldTimestamp) {
+      this.oldTimestamp = oldTimestamp;
+   }
+
+
+   public void setPoolOwner(boolean poolOwner) {
+      this.poolOwner = poolOwner;
+   }
+
+
+   public void setQueryMeatStatement(String queryMeatStatement) {
+      this.queryMeatStatement = queryMeatStatement;
+   }
+
+
+   public void setTimestampColNum(int timestampColNum) {
+      this.timestampColNum = timestampColNum;
+   }
+
+
+   public void setUseGroupCol(boolean useGroupCol) {
+      this.useGroupCol = useGroupCol;
    }
 
 }
