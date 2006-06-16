@@ -114,7 +114,40 @@ public class InfoHelper {
                   key = dbHelper.getIdentifier(key);
                   val = dbHelper.getIdentifier(val);
                }
-               log.info("found and adding key='" + key + "' value='" + val + "' on map for prefix='" + prefix + "'");
+               log.fine("found and adding key='" + key + "' value='" + val + "' on map for prefix='" + prefix + "'");
+               map.put(key, val);
+            }
+         }
+         return map;
+      }
+   }
+
+   /**
+    * Returns the subset of objects (not normal properties) found in the I_Info object starting 
+    * with the specified prefix. 
+    * @param prefix The prefix to use. If null is passed, then all objects are returned
+    * @param info The I_Info object on which to operate
+    * @param dbHelper the DbMetaHelper used to determine if the keys have
+    * to be moved to uppercase/lowcase or left untouched. Can be null, in which case it
+    * is ignored.
+    * 
+    * @return the subset of properties only containing the objects found. The keys are stripped from their
+    * prefix. The returned keys are returned in alphabetical order.
+    */
+   public static Map getObjectsWithKeyStartingWith(String prefix, I_Info info, DbMetaHelper dbHelper) {
+      synchronized (info) {
+         Iterator iter = info.getObjectKeys().iterator();
+         TreeMap map = new TreeMap();
+         while (iter.hasNext()) {
+            String key = ((String)iter.next()).trim();
+            if (prefix == null || key.startsWith(prefix)) {
+               Object val = info.getObject(key);
+               if (prefix != null)
+                  key = key.substring(prefix.length());
+               if (dbHelper != null) {
+                  key = dbHelper.getIdentifier(key);
+               }
+               log.fine("found and adding key='" + key + "' on object map for prefix='" + prefix + "'");
                map.put(key, val);
             }
          }
