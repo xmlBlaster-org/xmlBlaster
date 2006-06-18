@@ -9,7 +9,6 @@ package org.xmlBlaster.util.qos.address;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
-import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
