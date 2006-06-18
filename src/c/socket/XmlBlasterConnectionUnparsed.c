@@ -245,6 +245,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
    void freeaddrinfo(*res);
 # endif
+   memset((char *)&hostbuf, 0, sizeof(struct hostent));
    hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen);
    /* printf("gethostbyname error=%d\n", WSAGetLastError()); */
    portP = getservbyname(servTcpPort, "tcp");
