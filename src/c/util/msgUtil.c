@@ -453,15 +453,15 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
 
 #else /* !_WINDOWS */
 #if defined(HAVE_FUNC_GETHOSTBYNAME_R_6)
-   struct hostent *hp;
-   int herr,res;
+   struct hostent *hp=0;
+   int herr=0,res=0;
 
    assert(tmphstbuf != 0);
 
    if (*hstbuflen == 0)
    {
       *hstbuflen = 1024; 
-      *tmphstbuf = (char *)malloc (*hstbuflen);
+      *tmphstbuf = (char *)calloc (*hstbuflen, sizeof(char));
       if (*tmphstbuf == 0) return 0;
    }
 
