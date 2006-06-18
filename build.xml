@@ -220,7 +220,9 @@ TODO
    <property name="PthreadDraftVersion" value="10"/>  <!-- omnithread posix.cc -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
-      <compilerarg value="${CFLAGS}" if="CFLAGS" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />  <!-- Will be quoted "", which does not allow to specify multiple args! -->
+      <compilerarg value="${CFLAGS2}" if="CFLAGS2" />
+      <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
       <defineset><define name="_WINDOWS" value="1" /></defineset>
       <!-- <compilerarg value="/EHsc" /> -->  <!-- Enable C++ exception handling (former /GX), set automatically by cpptasks -->
       <!-- <compilerarg value="/RTC1" /> -->  <!-- Enable stack chek (former /GZ), set automatically by cpptasks -->
@@ -263,7 +265,9 @@ TODO
    </compiler>
 
    <compiler id="bcc" name="bcc" if="use-bcc">
-      <compilerarg value="${CFLAGS}" if="CFLAGS" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />  <!-- Will be quoted "", which does not allow to specify multiple args! -->
+      <compilerarg value="${CFLAGS2}" if="CFLAGS2" />
+      <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
       <!--  target Pentium Pro   -->
       <compilerarg value="-6"/>
       <!--  zero length empty class member functions -->
@@ -284,7 +288,9 @@ TODO
 
    <!-- Compile C/C++ -->
    <compiler id="gcc" name="gcc" if="use-gcc">
-      <compilerarg value="${CFLAGS}" if="CFLAGS" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />  <!-- Will be quoted "", which does not allow to specify multiple args! -->
+      <compilerarg value="${CFLAGS2}" if="CFLAGS2" />
+      <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
       <compilerarg value="-Wall" />
       <compilerarg value="-pedantic" />
       <compilerarg value="-Wno-long-long" />  <!-- with -pedantic: to suppress warning: ANSI C does not support `long long', C99 supports it -->
@@ -304,7 +310,9 @@ TODO
 
    <!-- Compile Intel C++ -->
    <compiler id="icc" name="icc" if="use-icc">
-      <compilerarg value="${CFLAGS}" if="CFLAGS" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />  <!-- Will be quoted "", which does not allow to specify multiple args! -->
+      <compilerarg value="${CFLAGS2}" if="CFLAGS2" />
+      <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
       <compilerarg value="-fPIC" />
       <compilerarg value="-Wall" />
       <compilerarg value="-wd810" />
@@ -321,7 +329,9 @@ TODO
    </compiler>
 
   <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 and 5.5 -->
-    <compilerarg value="${CFLAGS}" if="CFLAGS" />
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />  <!-- Will be quoted "", which does not allow to specify multiple args! -->
+      <compilerarg value="${CFLAGS2}" if="CFLAGS2" />
+      <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
     <!-- compilerarg value="-Kpic"/ -->  <!-- defaults to -KPIC (-xcode=pic32) for CC -->
     <!-- compilerarg value="-Bdynamic"/ --> <!-- is default for CC -->
   </compiler>
