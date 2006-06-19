@@ -47,7 +47,7 @@
    &lt;!-- Don't return the content data of the message (notify only) -->
    &lt;content>false&lt;/content>
 
-   &lt;!-- Filters messages i have subscribed as implemented in the specified plugin -->
+   &lt;!-- Filters messages as implemented in the specified plugin -->
    &lt;!-- Here we use the regex filter and only want contents starting with the letter 'H' -->
    &lt;filter type='GnuRegexFilter' version='1.0'>
       ^H.*$

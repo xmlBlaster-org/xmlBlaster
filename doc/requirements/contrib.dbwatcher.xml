@@ -208,14 +208,14 @@
    as xmlBlaster plugin this logging output is redirected to xmlBlaster utils logging.
    To switch on detailed logging, add those lines to <tt>xmlBlaster.properties</tt>:</p>
    <pre>
-trace[org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter] true
-trace[org.xmlBlaster.contrib.db.DbPool] true
-trace[org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector] true
-trace[org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler] true
-trace[org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector] true
-trace[org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin] true
-trace[org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher] true
-trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher] true
+logging/org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter FINE
+logging/org.xmlBlaster.contrib.db.DbPool FINE
+logging/org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector FINE
+logging/org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler FINE
+logging/org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector FINE
+logging/org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin FINE
+logging/org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher FINE
+logging/org.xmlBlaster.contrib.dbwatcher.DbWatcher FINE
    </pre>
 
 
@@ -333,7 +333,7 @@ SELECT * FROM TEST_POLL ORDER BY CAR;
   </p>
 
   <p>To see what messages are published start the server and a client<br />
-  <tt>java org.xmlBlaster.Main -trace[org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin] true</tt><br />
+  <tt>java org.xmlBlaster.Main -logging/org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin FINE</tt><br />
   <tt>java javaclients.HelloWorldSubscribe -xpath //key -maxContentLength 1000</tt><br />
   and press one time enter to subscribe to all messages.</p>
 

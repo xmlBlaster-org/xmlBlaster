@@ -230,7 +230,8 @@ AddType application/java-archive .jar
    <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/index.html</see>
    <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/HelloWorld3.html</see>
    <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/SystemInfoApplet.html</see>
-
+   <see type="INTERNET" label="Emulator from Nokia">http://www.forum.nokia.com/tools#java</see>
+   <see type="INTERNET" label="Emulator from Motorola">http://www.motocoder.com</see>
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 04 01</date>
