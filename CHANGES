@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
  o #15192 Added simple jmx framework for contrib plugins with a first implementation TimestampChangeDetector.
+
+ o #15187 Fix to compile again for J2ME
+
+ o #15170 Fixed NPE in TopicHandler (reported by David Kerry)
  
  o #15183 Added a swing console for arbitrary classes executions. Supports input and colored xmlBlaster
           highlighting of logs
