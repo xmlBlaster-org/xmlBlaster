@@ -457,11 +457,6 @@ public class MsgInfo {
       msgVec.add(msg);
    }
 
-   /** @see #addMessage(String qos) */
-   public final void addQos(String qos) throws XmlBlasterException {
-      addMessage(qos);
-   }
-
    /**
     * Add a QoS array value. <br />
     * Use for return value of methods publishArr and erase
@@ -975,7 +970,7 @@ public class MsgInfo {
             msgInfo.setSecretSessionId("oxf6hZs");
             msgInfo.setChecksum(false);
             msgInfo.setCompressed(false);
-            msgInfo.addQos("<qos></qos>");
+            msgInfo.addMessage("<qos></qos>");
 
             rawMsg = msgInfo.createRawMsg();
             String send = msgInfo.toLiteral();
@@ -1146,7 +1141,7 @@ public class MsgInfo {
             // msgInfo.setSecretSessionId("");
             msgInfo.setChecksum(false);
             msgInfo.setCompressed(false);
-            msgInfo.addQos("<qos><state id='OK'/></qos>");
+            msgInfo.addMessage("<qos><state id='OK'/></qos>");
 
             rawMsg = msgInfo.createRawMsg();
             String send = msgInfo.getMsgInfoParser(className, null).toLiteral(rawMsg);
