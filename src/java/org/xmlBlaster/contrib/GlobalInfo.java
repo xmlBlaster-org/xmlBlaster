@@ -22,6 +22,7 @@ import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
@@ -190,7 +191,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     */
    public final void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
       this.global = global_.getClone(global_.getNativeConnectArgs());
-      this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));
+      this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
       if (global_ instanceof ServerScope) {
          //this.global = global_.getClone(global_.getNativeConnectArgs());
          // this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));

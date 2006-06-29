@@ -92,7 +92,7 @@ public class StartupTasks implements I_Plugin {
       this.pluginInfo = pluginInfo;
       this.global = glob.getClone(glob.getNativeConnectArgs());
       try {
-         this.global.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
+         this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
 
 
          if (log.isLoggable(Level.FINER)) log.finer("init");

@@ -105,7 +105,7 @@ public class CallbackLocalDriver implements I_CallbackDriver {
          if (this.callbackAddress == null)
             throw new XmlBlasterException(this.glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "getCallback");
          org.xmlBlaster.engine.ServerScope
-            engineGlob = (org.xmlBlaster.engine.ServerScope)this.glob.getObjectEntry("ServerNodeScope");
+            engineGlob = (org.xmlBlaster.engine.ServerScope)this.glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
          if (engineGlob == null)
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
          this.callback = (I_CallbackExtended)engineGlob.getObjectEntry(getRawAddress());

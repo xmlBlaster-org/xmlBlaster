@@ -40,6 +40,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XbUri;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
@@ -165,12 +166,14 @@ implements I_Plugin, I_Timeout,
     */
    public static Pop3Driver getPop3Driver(Global glob, I_PluginConfig pluginConfig)
                               throws XmlBlasterException {
-      Pop3Driver pop3Driver = (Pop3Driver)glob.getObjectEntry(OBJECTENTRY_KEY);
+      Global serverNode = (org.xmlBlaster.util.Global)glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
+      if (serverNode == null) serverNode = glob;
+      Pop3Driver pop3Driver = (Pop3Driver)serverNode.getObjectEntry(OBJECTENTRY_KEY);
       if (pop3Driver != null)
          return pop3Driver;
       
       synchronized(glob.objectMapMonitor) {
-         pop3Driver = (Pop3Driver)glob.getObjectEntry(OBJECTENTRY_KEY);
+         pop3Driver = (Pop3Driver)serverNode.getObjectEntry(OBJECTENTRY_KEY);
          if (pop3Driver == null) {
             pop3Driver = new Pop3Driver();
             // Uhhh - a downcast:
@@ -226,7 +229,9 @@ implements I_Plugin, I_Timeout,
 
       // Make this singleton available for others
       // key="org.xmlBlaster.util.protocol.email.Pop3Driver"
-      glob.addObjectEntry(OBJECTENTRY_KEY, this);
+      Global serverNode = (org.xmlBlaster.util.Global)this.glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
+      if (serverNode == null) serverNode = this.glob;
+      serverNode.addObjectEntry(OBJECTENTRY_KEY, this);
 
       this.timeout = new Timeout(threadName);
       if (activate) {

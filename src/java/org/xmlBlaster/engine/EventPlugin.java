@@ -421,11 +421,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          throws XmlBlasterException {
       this.pluginConfig = pluginInfo;
       this.glob = utilGlob.getClone(utilGlob.getNativeConnectArgs());
-      this.glob.addObjectEntry("ServerNodeScope", utilGlob
-            .getObjectEntry("ServerNodeScope"));
+      this.glob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, utilGlob // "ServerNodeScope"
+            .getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
 
       this.engineGlob = (org.xmlBlaster.engine.ServerScope) utilGlob
-            .getObjectEntry("ServerNodeScope");
+            .getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
       this.requestBroker = engineGlob.getRequestBroker();
       this.sessionInfo = requestBroker.getInternalSessionInfo();
 

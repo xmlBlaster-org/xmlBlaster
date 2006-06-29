@@ -18,6 +18,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -85,7 +86,7 @@ public class Receiver implements I_Plugin, I_Callback {
          String userId = this.global.get("loginName", "_" + this.name, null, this.info);
          String password = this.global.get("password", (String)null, null, this.info);
          this.connectQos = new ConnectQos(this.global, userId, password);
-         this.global.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
+         this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, globOrig.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
       }
 
       String directoryName = this.global.get("directoryName", (String)null, null, this.info);

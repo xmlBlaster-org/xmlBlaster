@@ -106,7 +106,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
       throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
       this.glob = glob;
-      org.xmlBlaster.engine.ServerScope engineGlob = (org.xmlBlaster.engine.ServerScope)glob.getObjectEntry("ServerNodeScope");
+      org.xmlBlaster.engine.ServerScope engineGlob = (org.xmlBlaster.engine.ServerScope)glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
 

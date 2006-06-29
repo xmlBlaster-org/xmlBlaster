@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -71,7 +72,7 @@ public class LocalConnection implements I_XmlBlasterConnection
       this.pluginInfo = pluginInfo;
       this.glob = (glob_ == null) ? Global.instance() : glob_;
 
-      org.xmlBlaster.engine.ServerScope engineGlob = (org.xmlBlaster.engine.ServerScope)this.glob.getObjectEntry("ServerNodeScope");
+      org.xmlBlaster.engine.ServerScope engineGlob = (org.xmlBlaster.engine.ServerScope)this.glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       try {

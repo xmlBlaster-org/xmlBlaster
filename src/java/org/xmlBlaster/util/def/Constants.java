@@ -46,6 +46,9 @@ public class Constants {
    public final static String TYPE_SHORT = "short";
    public final static String TYPE_LONG = "long";
 
+   // Used to lookup in global.getObjectEntry(OBJECT_ENTRY_ServerScope)
+   public final static String  OBJECT_ENTRY_ServerScope = "ServerNodeScope";
+      
    /**
     * The SOCKET protocol can support zlib compression with streaming compression
     * A partial flush means that all data will be output,

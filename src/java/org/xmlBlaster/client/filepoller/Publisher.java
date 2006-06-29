@@ -20,6 +20,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.qos.ConnectQosData;
@@ -105,7 +106,7 @@ public class Publisher implements I_Timeout {
          String userId = this.global.get("loginName", "_" + this.name, null, pluginConfig);
          String password = this.global.get("password", (String)null, null, pluginConfig);
          this.connectQos = new ConnectQos(this.global, userId, password);
-         this.global.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
+         this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, globOrig.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
       }
 
       this.fileFilter =  this.global.get("fileFilter", (String)null, null, pluginConfig);

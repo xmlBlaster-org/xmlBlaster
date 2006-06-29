@@ -168,7 +168,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
     */
    public Pop3Driver getPop3Driver() throws XmlBlasterException {
       if (this.pop3Driver == null) {
-         this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.OBJECTENTRY_KEY);
+         this.pop3Driver = (Pop3Driver) glob.getObjectEntry(Pop3Driver.OBJECTENTRY_KEY); // Global.instance()
          
          if (this.pop3Driver == null) {
             if (this.glob.isServerSide()) {

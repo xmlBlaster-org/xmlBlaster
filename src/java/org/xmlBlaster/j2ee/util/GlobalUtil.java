@@ -26,6 +26,7 @@ import java.rmi.RMISecurityManager;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.util.property.Property.FileInfo;
 
@@ -104,10 +105,10 @@ public class GlobalUtil implements java.io.Serializable {
    public Global getClone(Global global) {
       Global g = global.getClone(null);
       
-      Object engine = global.getObjectEntry("ServerNodeScope");
+      Object engine = global.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
       Object eg = engine != null ? engine : engineGlobal;
       if ( eg != null) {
-         g.addObjectEntry("ServerNodeScope", eg);
+         g.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, eg);
       } // end of if ()
       
       // Should we perhaps also clone POA???

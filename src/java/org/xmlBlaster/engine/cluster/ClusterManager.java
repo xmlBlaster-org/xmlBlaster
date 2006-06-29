@@ -161,7 +161,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
       this.ME = "ClusterManager";
-      this.glob = (org.xmlBlaster.engine.ServerScope)globUtil.getObjectEntry("ServerNodeScope");
+      this.glob = (org.xmlBlaster.engine.ServerScope)globUtil.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
       if (this.glob == null)
          throw new XmlBlasterException(globUtil, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
 

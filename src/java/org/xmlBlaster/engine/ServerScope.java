@@ -120,13 +120,13 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    public ServerScope(String[] args) {
       super(args);
       init(args);
-      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
+      addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, this); // registers itself in util.Global "ServerNodeScope"
    }
 
    public ServerScope(Properties p, boolean loadPropFile) {
       super(Property.propsToArgs(p), loadPropFile, false);
       initThis();
-      addObjectEntry("ServerNodeScope", this); // registers itself in util.Global
+      addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, this); // registers itself in util.Global
       // The util.Global base class can't initiliaze it, as this class is initialized later and overwrites with null
    }
 

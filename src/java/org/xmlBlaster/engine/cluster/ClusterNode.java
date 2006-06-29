@@ -74,6 +74,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       this.sessionInfo = sessionInfo;
 
       this.remoteGlob = this.fatherGlob.getClone(new String[0]);
+      this.remoteGlob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, this.fatherGlob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope)); // Used e.g. by Pop3Driver
       this.nodeInfo = new NodeInfo(this.remoteGlob, nodeId);
       this.state = new NodeStateInfo(this.remoteGlob);
       this.ME = "ClusterNode" + this.remoteGlob.getLogPrefixDashed() + "-" + "/node/" + getId() + "/";

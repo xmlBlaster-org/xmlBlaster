@@ -135,12 +135,15 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
     */
    public static SmtpClient getSmtpClient(Global glob, I_PluginConfig pluginConfig)
                               throws XmlBlasterException {
-      SmtpClient smtpClient = (SmtpClient)glob.getObjectEntry(OBJECTENTRY_KEY);
+      Global serverNode = (org.xmlBlaster.util.Global)glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
+      if (serverNode == null) serverNode = glob;
+      
+      SmtpClient smtpClient = (SmtpClient)serverNode.getObjectEntry(OBJECTENTRY_KEY);
       if (smtpClient != null)
          return smtpClient;
       
       synchronized(glob.objectMapMonitor) {
-         smtpClient = (SmtpClient)glob.getObjectEntry(OBJECTENTRY_KEY);
+         smtpClient = (SmtpClient)serverNode.getObjectEntry(OBJECTENTRY_KEY);
          if (smtpClient == null) {
             smtpClient = new SmtpClient();
             smtpClient.setSessionProperties(null, glob, pluginConfig); // adds itself as ObjectEntry
@@ -200,7 +203,9 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
 
       // Make this singleton available for others
       // key="org.xmlBlaster.util.protocol.email.SmtpClient"
-      this.glob.addObjectEntry(OBJECTENTRY_KEY, this);
+      Global serverNode = (org.xmlBlaster.util.Global)this.glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
+      if (serverNode == null) serverNode = this.glob;
+      serverNode.addObjectEntry(OBJECTENTRY_KEY, this);
    }
 
    /**

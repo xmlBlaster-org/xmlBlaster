@@ -89,7 +89,7 @@ public class DeadMessageDumper implements I_Plugin {
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
       this.global = glob.getClone(glob.getNativeConnectArgs());
-      this.global.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
+      this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
 
 
       if (log.isLoggable(Level.FINER)) this.log.finer("init");

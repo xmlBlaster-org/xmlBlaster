@@ -86,7 +86,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       }
       else {
          this.glob = globOrig.getClone(globOrig.getNativeConnectArgs());
-         this.glob.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
+         this.glob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, globOrig.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope)); // "ServerNodeScope"
       }
 
       this.shutdownMom = info.getBoolean("dbWriter.shutdownMom", false); // avoid to disconnect (otherwise it looses persistent subscriptions)
