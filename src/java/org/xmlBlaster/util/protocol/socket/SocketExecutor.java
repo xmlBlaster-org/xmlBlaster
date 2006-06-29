@@ -53,6 +53,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
    /** Which message format parser to use */
    protected String msgInfoParserClassName;
    
+   private int maxChunkSize = 50 * 1024;
 
    public SocketExecutor() {
    }
@@ -158,9 +159,18 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       if (listener != null) {
          listener.progressWrite("", 0, msg.length);
       }
+      int bytesLeft = msg.length;
+      int bytesRead = 0;
       synchronized (oStream) {
-         oStream.write(msg);
-         oStream.flush();
+         while (bytesLeft > 0) {
+            int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;  
+            oStream.write(msg, bytesRead, toRead);
+            oStream.flush();
+            bytesRead += toRead;
+            bytesLeft -= toRead;
+            if (listener != null)
+               listener.progressWrite("", bytesRead, msg.length);
+         }
          if (log.isLoggable(Level.FINE)) log.fine("TCP data is send");
       }
       if (listener != null) {
