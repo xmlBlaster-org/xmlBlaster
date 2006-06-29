@@ -115,7 +115,7 @@ public final class CbDispatchConnection extends DispatchConnection
 
       // Check if it is available
       if (super.address.getPingInterval() > 0) {
-         this.cbDriver.ping("<qos><state info='"+Constants.INFO_INITIAL+"'/></qos>");
+         doPing("<qos><state info='"+Constants.INFO_INITIAL+"'/></qos>");
       }
 
       if (log.isLoggable(Level.FINE)) log.fine("Connected low level to callback '" + this.address.getType() + "'");
