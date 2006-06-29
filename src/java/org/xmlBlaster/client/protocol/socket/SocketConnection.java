@@ -305,7 +305,7 @@ public class SocketConnection implements I_XmlBlasterConnection
 
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
-         parser.addQos(connectQos);
+         parser.addMessage(connectQos);
          return (String)getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
       }
       catch (XmlBlasterException e) {
@@ -341,7 +341,7 @@ public class SocketConnection implements I_XmlBlasterConnection
 
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
-         parser.addQos((qos==null)?"":qos);
+         parser.addMessage((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
@@ -607,7 +607,7 @@ public class SocketConnection implements I_XmlBlasterConnection
 
       try {
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
-         parser.addQos(""); // ("<qos><state id='OK'/></qos>");
+         parser.addMessage(qos); // ("<qos><state id='OK'/></qos>");
          Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          return (String)response;
       }
