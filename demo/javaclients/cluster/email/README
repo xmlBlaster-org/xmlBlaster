@@ -40,7 +40,7 @@ RUN IT
       xmlBlaster/demo/javaclients/cluster/email
    to find the configuration files (or use absolute pathes)!
 
-   Start cluster node 'golan', which is a slave on domain='heron' (that is messages or commands marked with such a domain).
+   Start cluster node 'golan', which is a slave on domain='greenwood' (that is messages or commands marked with such a domain).
    Other routings can be configured in golan.properties and heron.properties.
    Please read http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html for more details
 
@@ -57,10 +57,10 @@ RUN IT
 3. Start a subscriber
 
    A subscriber connects to 'golan' (the slave of topic "Woodlogging").
-   The subscription is automatically forworded to heron (the master of this topic) as we have
-   marked the subscription domain with 'heron'
+   The subscription is automatically forworded to 'heron' (the master of this topic) as we have
+   marked the subscription domain with 'greenwood'
 
-     java javaclients.HelloWorldSubscribe -oid Woodlogging -domain heron -session.name SUBSCRIBER/1 -persistentSubscribe true -dispatch/callback/retries -1 
+     java javaclients.HelloWorldSubscribe -oid Woodlogging -domain greenwood -session.name SUBSCRIBER/1 -persistentSubscribe true -dispatch/callback/retries -1 
 
 4. Start a sniffer to see what happens (oprional):
 
@@ -70,7 +70,7 @@ RUN IT
 
    A publisher connects to 'heron' and publishes messages to topic "Woodlogging"
 
-     java javaclients.HelloWorldPublish -oid Woodlogging -domain heron -session.name PUBLISHER/1 -numPublish 100 -dispatch/connection/plugin/socket/port 7700
+     java javaclients.HelloWorldPublish -oid Woodlogging -domain greenwood -session.name PUBLISHER/1 -numPublish 100 -dispatch/connection/plugin/socket/port 7700
 
 
 The messages are publish from the publish client to 'heron', and are forwarded to 'golan' and from there directed to the subsciber.
