@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ o #15207 Bugfix Java: The Callback QoS could loose the callback address due to a bug in the ConnectQos parser
+   (e.g. when reloaded from persistence)
+
  o #15192 Added simple jmx framework for contrib plugins with a first implementation TimestampChangeDetector.
 
  o #15187 Fix to compile again for J2ME
