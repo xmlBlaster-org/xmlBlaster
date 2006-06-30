@@ -4,7 +4,8 @@ INTRO
 =====
 
 This is a simple example-setup where cluster nodes communicate over EMAIL with each others.
-This is typically the case between two different companies which have closed firewalls.
+This is typically the case between two different companies which have closed firewalls
+or for a security gateway using the SMTP protocol.
 
 Please read the cluster requirement and the email requirement first:
   http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
