@@ -191,6 +191,14 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
     * Start element from SAX parsing, call as delegate delivers the character
     */
    public void startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
+      
+      if (this.clientPropertyTagNames.contains(name) && character.toString().trim().length() > 0) { // If e.g. email address is written before <attribute> tag
+         if (inCallback)
+            tmpCbAddr.setRawAddress(character.toString().trim());
+         if (inAddress)
+            tmpAddr.setRawAddress(character.toString().trim());
+      }
+
       if (super.startElementBase(uri, localName, name, attrs) == true)
          return;
 
