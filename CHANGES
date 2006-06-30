@@ -3,7 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
- 
+ o #15214 Email protocol now functional between cluster nodes, see example configuration
+          xmlBlaster/demo/javaclients/cluster/email/README
+          
  o #15207 Bugfix Java: The Callback QoS could loose the callback address due to a bug in the ConnectQos parser
           (e.g. when reloaded from persistence)
 
