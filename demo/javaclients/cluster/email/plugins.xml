@@ -1,0 +1,68 @@
+<!--
+# Name:      xmlBlasterPlugins.xml
+# Project:   xmlBlaster.org
+# Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+# Comment:   Plugins to load/unload on xmlBlaster startup/shutdown
+# See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+-->
+<xmlBlaster>
+
+   <!-- 
+      NOTE: For this cluster example we have switched off
+      all unnecessary plugins to avoid to much logging output
+   -->
+
+   <!--========== SubscriptionPersistencePlugin =============-->
+   <plugin create='true' id='subPersistence' className='org.xmlBlaster.engine.SessionPersistencePlugin'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='10' />
+      <action do='STOP' onShutdownRunlevel='3' sequence='60'/>
+   </plugin>
+
+   <!-- The cluster manager must be started after the protocol plugins it wants to use for communication -->
+   <plugin create='true' id='cluster' className='org.xmlBlaster.engine.cluster.ClusterManager'>
+      <action do='LOAD' onStartupRunlevel='5' sequence='5' />
+      <action do='STOP' onShutdownRunlevel='4' sequence='5'/>   
+   </plugin>
+
+   <!-- General EMAIL SMTP client service, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
+   <!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
+   <plugin create='true'  id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='7' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
+      <attribute id='mail.smtp.url'>smtp://${cluster.node.id}:${cluster.node.id}@localhost:8025</attribute>
+   </plugin>
+
+   <!-- General EMAIL POP3 polling service, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
+   <!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
+   <plugin create='true' id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='9' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='4' sequence='7'/>   
+      <attribute id='mail.pop3.url'>pop3://${cluster.node.id}:${cluster.node.id}@localhost:8110/INBOX</attribute>
+      <attribute id='pop3PollingInterval'>500</attribute>
+   </plugin>
+
+   <!-- EMAIL protocol driver (please activate 'pop3' and 'smtp' service at an earlier runlevel) -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
+   <plugin create='true'  id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
+      <action do='LOAD' onStartupRunlevel='7' sequence='10' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='10'/>
+      <attribute id='mail.smtp.from'>${helper.mailfrom}</attribute>   
+      <attribute id='compress/type'>zlib</attribute>
+      <attribute id='compress/minSize'>2000</attribute>
+      <attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser</attribute>
+      <attribute id='mail.subject'>XmlBlaster '${cluster.node.id}' generated mail</attribute>
+   </plugin>
+
+   <!-- Access for normal, local clients -->
+   <plugin create='true' id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='20' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
+      <attribute id='compress/type'></attribute>  <!-- Default: no compression for python,php,perl access -->
+   </plugin>
+
+</xmlBlaster>
+

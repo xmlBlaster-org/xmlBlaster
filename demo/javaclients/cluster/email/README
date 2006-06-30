@@ -1,0 +1,100 @@
+xmlBlaster/demo/javaclients/cluster/email/README  2006-06-19, marcel, http://www.xmlBlaster.org/
+
+INTRO
+=====
+
+This is a simple example-setup where cluster nodes communicate over EMAIL with each others.
+This is typically the case between two different companies which have closed firewalls.
+
+Please read the cluster requirement and the email requirement first:
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html
+
+
+SETUP
+=====
+
+To run this example you need to setup a mail transfer agent (MTA) or (mis)use for example your email provider.
+
+Here we assume a MTA running on localhost, the port for SMTP is moved from 25 to 8025
+and the port for POP3 is moved from 110 to port 8110 to avoid conflicts with other systems
+on your PC and to avoid root priviliges on Unix machines.
+
+The examples are run with james.apache.org.
+
+Please follow the guidelines in
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html
+to install, configure and start james.
+
+If your MTA runs on another machine or another port, please adjust 'plugins.xml' accordingly.
+
+
+RUN IT
+======
+
+1. Start james
+
+2. Start cluster nodes 'heron' and 'golan'
+   
+   You NEED to start the xmlBlaster cluster nodes in the directory
+      xmlBlaster/demo/javaclients/cluster/email
+   to find the configuration files (or use absolute pathes)!
+
+   Start cluster node 'golan', which is a slave on domain='heron' (that is messages or commands marked with such a domain).
+   Other routings can be configured in golan.properties and heron.properties.
+   Please read http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html for more details
+
+     cd xmlBlaster/demo/javaclients/cluster/email
+     java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile golan.properties -pluginsFile plugins.xml
+
+   You can use the JMX 'jconsole' GUI application if you want to have more control over golan.
+
+   Start the cluster node 'heron'
+
+     cd xmlBlaster/demo/javaclients/cluster/email
+     java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile heron.properties -pluginsFile plugins.xml
+
+3. Start a subscriber
+
+   A subscriber connects to 'golan' (the slave of topic "Woodlogging").
+   The subscription is automatically forworded to heron (the master of this topic) as we have
+   marked the subscription domain with 'heron'
+
+     java javaclients.HelloWorldSubscribe -oid Woodlogging -domain heron -session.name SUBSCRIBER/1 -persistentSubscribe true -dispatch/callback/retries -1 
+
+4. Start a sniffer to see what happens (oprional):
+
+     java javaclients.simplereader.SimpleReaderGui -dispatch/connection/plugin/socket/port 7700
+
+5. Start a publisher and hit enter to publish
+
+   A publisher connects to 'heron' and publishes messages to topic "Woodlogging"
+
+     java javaclients.HelloWorldPublish -oid Woodlogging -domain heron -session.name PUBLISHER/1 -numPublish 100 -dispatch/connection/plugin/socket/port 7700
+
+
+The messages are publish from the publish client to 'heron', and are forwarded to 'golan' and from there directed to the subsciber.
+The clients connect with the default SOCKET protocol, but 'heron' and 'golan' communicate over email.
+This communication is fail save, if and of the participants is crashing or down no message will be lost.
+
+NOTE 1: You HAVE TO start all examples in the current directory
+   xmlBlaster/demo/javaclients/cluster/email
+   to assure the plugins.xml and *.properties files are found.
+   Alternatively pass the property names with full path.
+
+NOTE 2: Assure that plugins.xml has the plugin 'cluster' configured
+   with the create='true' attribute (this is the default setting)
+
+NOTE 3: You can switch on specific logging to get a better idea what
+   happens, typically this is a good choice:
+   -logging/org.xmlBlaster.engine.RequestBroker FINE -logging/org.xmlBlaster.engine.cluster FINE -logging/org.xmlBlaster.client FINE
+
+NOTE 4: You need an email provider up and running, you can use 'james.apache.org' to start with:
+   ~/james-2.2.0/bin> ./run.sh
+   This provider needs to use
+      POP3 Service started plain:8110
+      SMTP Service started plain:8025
+   or you need to adjust the IP and PORT in xmlBlasterPlugins.xml
+   
+   telnet localhost 4555
+      and add user golan and user heron to the MTA.
