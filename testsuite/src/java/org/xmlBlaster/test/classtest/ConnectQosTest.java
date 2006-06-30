@@ -176,6 +176,8 @@ public class ConnectQosTest extends TestCase {
             assertEquals("", 12, addr.getBurstModeMaxEntries());
             assertEquals("", 24, addr.getBurstModeMaxBytes());
             assertEquals("", "1234", addr.getEnv("intKey1", "").getValue());
+            System.out.println("GOT: "+addr.getRawAddress());
+            assertEquals("", "http:/www.mars.universe:8080/RPC2", addr.getRawAddress());
          }
 
          assertEquals("Wrong number of clientProperties", 2, qos.getClientProperties().size());
@@ -260,6 +262,54 @@ public class ConnectQosTest extends TestCase {
       System.out.println("***ConnectQosTest: testParse2 [SUCCESS]");
    }
 
+   public void testParse3() {
+      System.out.println("***ConnectQosTest: testParse3 ...");
+      
+      try {
+         String xml =
+           "<qos>\n" +
+         "   <queue relating='callback' maxEntries='1600' maxBytes='2000'>\n" +
+         "      <callback type='email' bootstrapPort='56' sessionId='99i8Z' pingInterval='30000' retries='12' delay='20005' dispatchPlugin='undef'>\n" +
+         "      golan@localhost\n" +
+         "      \n" +
+         "      <attribute name='__ContextNode' type='String'>/xmlBlaster/node/heron/client/golan/session/1</attribute>\n" +
+         "      </callback>\n" +
+         "   </queue>\n" +
+         "</qos>\n";
+
+         I_ConnectQosFactory factory = this.glob.getConnectQosFactory();
+         ConnectQosData qos = factory.readObject(xml); // parse
+         String newXml = qos.toXml();                  // dump
+         qos = factory.readObject(newXml);             // parse again
+
+         if (log.isLoggable(Level.FINE)) log.fine("ORIG=\n" + xml + "\n NEW=\n" + newXml);
+
+         {
+            CbQueueProperty prop = qos.getSessionCbQueueProperty();
+            assertEquals("", 1600L, prop.getMaxEntries());
+            assertEquals("", 2000L, prop.getMaxBytes());
+            AddressBase[] addrArr = prop.getAddresses();
+            assertEquals("Address array", 1, addrArr.length);
+            AddressBase addr = addrArr[0];
+            assertEquals("", "golan@localhost", addr.getRawAddress());
+            assertEquals("", "/xmlBlaster/node/heron/client/golan/session/1", addr.getEnv("__ContextNode", "").getValue());
+            
+            assertEquals("", "email", addr.getType());
+            assertEquals("", 56, addr.getBootstrapPort());
+            assertEquals("", "99i8Z", addr.getSecretSessionId());
+            assertEquals("", 30000, addr.getPingInterval());
+            assertEquals("", 12, addr.getRetries());
+            assertEquals("", 20005, addr.getDelay());
+         }
+
+      }
+      catch (XmlBlasterException e) {
+         fail("testParse failed: " + e.toString());
+      }
+
+      System.out.println("***ConnectQosTest: testParse3 [SUCCESS]");
+   }
+
    public void testClientConnectQos() {
       System.out.println("***ConnectQosTest: testClientConnectQos ...");
       /*
@@ -309,6 +359,7 @@ public class ConnectQosTest extends TestCase {
    {
       ConnectQosTest testSub = new ConnectQosTest("ConnectQosTest");
       testSub.setUp();
+      testSub.testParse3();
       testSub.testCredential();
       testSub.testParse();
       testSub.testClientConnectQos();
