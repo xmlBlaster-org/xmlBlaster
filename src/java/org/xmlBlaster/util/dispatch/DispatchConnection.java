@@ -128,7 +128,10 @@ abstract public class DispatchConnection implements I_Timeout
          handleTransition(true, null);
       }
       catch (XmlBlasterException e) {
-         log.warning("initialize:" + e.getMessage());
+         if (ErrorCode.COMMUNICATION_FORCEASYNC.equals(e.getErrorCode()))
+            log.fine("initialize:" + e.getMessage());
+         else
+            log.warning("initialize:" + e.getMessage());
          if (retry(e)) {    // all types of ErrorCode.COMMUNICATION*
             handleTransition(true, e); // never returns (only if DEAD) - throws exception
          }

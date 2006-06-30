@@ -97,8 +97,8 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
    }
    
    protected final String BOUNCE_MESSAGEID_KEY = "bounce:messageId";
-   protected final String BOUNCE_MAILTO_KEY = "mail.to";
-   protected final String BOUNCE_MAILFROM_KEY = "mail.from";
+   public static final String BOUNCE_MAILTO_KEY = "mail.to";
+   public static final String BOUNCE_MAILFROM_KEY = "mail.from";
 
    /** 'messageId.mid' */
    protected String messageIdFileName = "messageId" + EmailData.MESSAGEID_EXTENSION;
@@ -135,6 +135,9 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       
       this.secretSessionId = addressBase.getSecretSessionId();
 
+      // The email address to reach the xmlBlaster server (if client side)
+      setTo(this.glob.get("mail.smtp.to", "xmlBlaster@localhost", null,
+            pluginConfig));
       String to = addressBase.getRawAddress();
       if (to != null && to.length() > 0) {
          // The xmlBlaster address is given on client side
@@ -142,9 +145,11 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          setTo(to);
       }
 
+      Object serverScope = glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope); // e.g. in cluster environment
+      String fromm = (serverScope != null) ? ((Global)serverScope).getContextNode().getInstanceNameNotNull() : "unknown"; 
       // from="xmlBlaster@localhost"
       setFrom(this.glob.get("mail.smtp.from",
-            "unknown@localhost", null, this.pluginConfig));
+            fromm+"@localhost", null, this.pluginConfig));
 
       setCc(this.glob.get("mail.smtp.cc",
             "", null, this.pluginConfig));
@@ -620,8 +625,10 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             log.warning("Illegal 'to' address '" + to + "'");
          }
       }
-      if (toAddr == null)
-         throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail");
+      if (toAddr == null) {
+         Thread.dumpStack();
+         throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
+      }
 
       EmailData emailData = new EmailData(toAddr, this.fromAddress, subject);
       emailData.setCc(this.cc);

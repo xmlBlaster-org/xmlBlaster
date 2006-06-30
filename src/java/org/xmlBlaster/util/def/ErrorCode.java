@@ -324,9 +324,16 @@ public final class ErrorCode implements java.io.Serializable
          new ResourceInfo[] {
          }
       );
-
+   
    public static final ErrorCode COMMUNICATION_RESPONSETIMEOUT = new ErrorCode("communication.responseTimeout",
-         "A method call blocked when waiting on the ACK/NAK return message.",
+        "A method call blocked when waiting on the ACK/NAK return message.",
+         new ResourceInfo[] {
+         }
+      );
+
+
+   public static final ErrorCode COMMUNICATION_FORCEASYNC = new ErrorCode("communication.forceAsync",
+         "Thrown if a ping is called but we can't afford to block until it succeeds.",
          new ResourceInfo[] {
          }
       );
@@ -697,6 +704,10 @@ public final class ErrorCode implements java.io.Serializable
       if (entry == null)
          throw new IllegalArgumentException("ErrorCode: The given errorCode=" + errorCode + " is unknown");
       return (ErrorCode)entry;
+   }
+   
+   public final boolean equals(ErrorCode other) {
+      return this.errorCode.equals(other.getErrorCode());
    }
 
    /**

@@ -98,7 +98,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       this.driver.connectLowlevel((Address)super.address);
       if (super.address.getPingInterval() > 0) {
          //spanPingTimer(1, true); // Could deadlock as it uses complete dispatch framework with its synchronized?
-         this.driver.ping("");  // Try a low level ping
+         this.driver.ping("<qos><state info='"+Constants.INFO_INITIAL+"'/></qos>");  // Try a low level ping
       }
       if (log.isLoggable(Level.FINE)) log.fine("Connected low level to " + super.address.toString());
    }

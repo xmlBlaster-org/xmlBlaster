@@ -23,6 +23,7 @@ import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -100,8 +101,8 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
          }
          
          // The email address to reach the xmlBlaster server
-         super.setTo(this.glob.get("mail.smtp.to", "xmlBlaster@localhost", null,
-               this.pluginInfo));
+         //super.setTo(this.glob.get("mail.smtp.to", "xmlBlaster@localhost", null,
+         //      this.pluginInfo));
 
          this.isInitialized = true;
          log.info("Initialized email connection from='" + super.fromAddress.toString() + "' to='" + super.toAddress.toString() + "'");
@@ -372,6 +373,16 @@ public class EmailConnection extends EmailExecutor implements I_XmlBlasterConnec
    public String ping(String qos) throws XmlBlasterException
    {
       if (!this.isInitialized) return "";
+      
+      // "<qos><state info='INITIAL'/></qos>"
+      // Send from ClientDispatchConnection.java on connect 
+      if (qos != null && qos.indexOf(Constants.INFO_INITIAL) != -1) {
+         if (log.isLoggable(Level.FINE)) log.fine("Email connection ping is suppressed as doing it before connect() may" +
+         " block the clients connect() if the server is not running");
+         //return Constants.RET_OK;
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_FORCEASYNC, ME, "Going initially to polling (async delivery) in case server is not available to avoid blocking pingResponseTimeout");
+      }
+
       return (String)super.sendEmail(qos, MethodName.PING, SocketExecutor.WAIT_ON_RESPONSE);
    }
 

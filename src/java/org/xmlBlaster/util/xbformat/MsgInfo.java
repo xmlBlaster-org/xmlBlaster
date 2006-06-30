@@ -15,6 +15,7 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.protocol.email.AttachmentHolder;
+import org.xmlBlaster.util.protocol.email.EmailExecutor;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.MsgUnitRaw;
 
@@ -157,7 +158,19 @@ public class MsgInfo {
    public MsgInfo createReturner(byte type) {
       MsgInfo returner = new MsgInfo(glob, type, getRequestId(),
             getMethodName(), getSecretSessionId(), getProgressListener());
-      returner.setBounceObjects(getBounceObjects());
+            
+      // returner.setBounceObjects(getBounceObjects());
+      if (this.bounceObjects != null) {
+         Map clone = (Map)((HashMap)this.bounceObjects).clone(); // Implicit expecting HashMap, fix me
+         returner.setBounceObjects(clone);
+         Object mailFrom = getBounceObject(EmailExecutor.BOUNCE_MAILFROM_KEY);
+         Object mailTo = getBounceObject(EmailExecutor.BOUNCE_MAILTO_KEY);
+         if (mailFrom != null && mailTo == null)
+            returner.setBounceObject(EmailExecutor.BOUNCE_MAILTO_KEY, mailFrom);
+         if (mailTo != null)
+            returner.setBounceObject(EmailExecutor.BOUNCE_MAILFROM_KEY, mailTo);
+      }
+      
       returner.setRequestIdGuessed(isRequestIdGuessed());
       return returner;
    }
