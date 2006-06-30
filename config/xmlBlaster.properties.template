@@ -439,11 +439,14 @@ MapMsgToMasterPlugin[DomainToMaster][1.0]=org.xmlBlaster.engine.cluster.simpledo
 
 
 #------------------------------------------------------------------------------
-# Switch off internal messages, events sent on client login and logout
+# Deprecated! Switched off since 1.3! Please use admin.events framework instead
+#
+# Switch on/off internal messages, events sent on client login and logout
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.LoginLogoutEvent.html
-#loginEvent=false
-#logoutEvent=false
-#userListEvent=false
+# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html
+loginEvent=false
+logoutEvent=false
+userListEvent=false
 #------------------------------------------------------------------------------
 
 
