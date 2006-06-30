@@ -63,7 +63,7 @@ RUN IT
 
      java javaclients.HelloWorldSubscribe -oid Woodlogging -domain greenwood -session.name SUBSCRIBER/1 -persistentSubscribe true -dispatch/callback/retries -1 
 
-4. Start a sniffer to see what happens (oprional):
+4. Start a sniffer to see what happens (optional):
 
      java javaclients.simplereader.SimpleReaderGui -dispatch/connection/plugin/socket/port 7700
 
@@ -74,9 +74,9 @@ RUN IT
      java javaclients.HelloWorldPublish -oid Woodlogging -domain greenwood -session.name PUBLISHER/1 -numPublish 100 -dispatch/connection/plugin/socket/port 7700
 
 
-The messages are publish from the publish client to 'heron', and are forwarded to 'golan' and from there directed to the subsciber.
+The messages are published from the publish client to 'heron', and are forwarded to 'golan' and from there directed to the subsciber.
 The clients connect with the default SOCKET protocol, but 'heron' and 'golan' communicate over email.
-This communication is fail save, if and of the participants is crashing or down no message will be lost.
+This communication is fail save, if any of the participants is crashing or down no message will be lost.
 
 NOTE 1: You HAVE TO start all examples in the current directory
    xmlBlaster/demo/javaclients/cluster/email
@@ -95,7 +95,7 @@ NOTE 4: You need an email provider up and running, you can use 'james.apache.org
    This provider needs to use
       POP3 Service started plain:8110
       SMTP Service started plain:8025
-   or you need to adjust the IP and PORT in xmlBlasterPlugins.xml
+   or you need to adjust the IP and PORT in xmlBlasterPlugins.xml (here called plugins.xml).
    
    telnet localhost 4555
       and add user golan and user heron to the MTA.
