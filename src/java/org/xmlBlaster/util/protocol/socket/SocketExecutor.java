@@ -52,6 +52,10 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
    protected String loginName;
    /** Which message format parser to use */
    protected String msgInfoParserClassName;
+   /**
+    *  Set to true if a XmlScript is send.If scripts used over socket we need to terminate each script with a null byte
+    */
+   private boolean isNullTerminated;
    
    private int maxChunkSize = 50 * 1024;
 
@@ -72,6 +76,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
    protected void initialize(Global glob, AddressBase addressConfig, InputStream iStream, OutputStream oStream) throws IOException {
       super.initialize(glob, addressConfig);
 
+      this.isNullTerminated = addressConfig.getEnv("isNullTerminated", false).getValue();
 
       if (isCompressZlibStream()) { // Statically configured for server side protocol plugin
          this.iStream = new ZFlushInputStream(iStream);
@@ -154,7 +159,8 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
     * Overwrite this in your derived class to send UDP 
     */
    protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
-      byte[] msg = msgInfo.createRawMsg();
+      byte[] msg = msgInfo.createRawMsg(this.msgInfoParserClassName);
+      if (log.isLoggable(Level.FINEST)) log.finest("Sending TCP data [" + new String(msg) + "]");
       I_ProgressListener listener = this.progressListener;
       if (listener != null) {
          listener.progressWrite("", 0, msg.length);
@@ -170,6 +176,10 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
             bytesLeft -= toRead;
             if (listener != null)
                listener.progressWrite("", bytesRead, msg.length);
+         }
+         if (this.isNullTerminated) { // If using XmlScriptInterpreter as parserClass, we finish each script with a null byte
+            oStream.write(0);
+            oStream.flush();
          }
          if (log.isLoggable(Level.FINE)) log.fine("TCP data is send");
       }

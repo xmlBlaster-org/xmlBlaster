@@ -17,6 +17,7 @@ import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.xbformat.MsgInfo;
@@ -126,6 +127,10 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          return (HandleClient) handleClientMap.get(sessionId);
       }
    }
+   
+   public I_PluginConfig getPluginConfig() {
+      return this.pluginInfo;
+   }
 
    /**
     * There is exactly one UDP listener thread which receives datagrams for all clients.
@@ -189,7 +194,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
                }
                InputStream iStream = new ByteArrayInputStream(packet.getData(), 0, actualSize);
                try {
-                  receiver = MsgInfo.parse(glob, null, iStream, null/*getMsgInfoParserClassName()*/)[0];
+                  receiver = MsgInfo.parse(glob, null, iStream, null/*getMsgInfoParserClassName()*/, getPluginConfig())[0];
                }
                catch (Throwable e) {
                   log.severe("Error parsing data from UDP packet: " + e);

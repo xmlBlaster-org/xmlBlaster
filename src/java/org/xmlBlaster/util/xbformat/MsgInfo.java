@@ -678,6 +678,7 @@ public class MsgInfo {
          throws XmlBlasterException {
       if (this.msgInfoParser == null) {
          this.pluginConfig = pluginConfig;
+         if (className == null && this.pluginConfig != null) className = (String)this.pluginConfig.getParameters().get("parserClass");
          this.msgInfoParser = MsgInfoParserFactory.instance().getMsgInfoParser(
                glob, this.progressListener, className, pluginConfig);
          // new XbfParser();
@@ -740,7 +741,7 @@ public class MsgInfo {
     * @throws XmlBlasterException
     */
    public final byte[] createRawMsg() throws XmlBlasterException {
-      return getMsgInfoParser(null, pluginConfig).createRawMsg(this);
+      return getMsgInfoParser(null, this.pluginConfig).createRawMsg(this);
    }
 
    /**
@@ -751,7 +752,7 @@ public class MsgInfo {
     * @throws XmlBlasterException
     */
    public final byte[] createRawMsg(String className) throws XmlBlasterException {
-      return getMsgInfoParser(className, pluginConfig).createRawMsg(this);
+      return getMsgInfoParser(className, this.pluginConfig).createRawMsg(this);
    }
 
    /**
@@ -763,10 +764,11 @@ public class MsgInfo {
     * @return Never null, usually of length==1
     */
    public static MsgInfo[] parse(Global glob,
-         I_ProgressListener progressListener, InputStream in, String className)
+         I_ProgressListener progressListener, InputStream in,
+         String className, I_PluginConfig pluginConfig)
          throws IOException, XmlBlasterException {
       I_MsgInfoParser parser = MsgInfoParserFactory.instance()
-            .getMsgInfoParser(glob, progressListener, className, null);
+            .getMsgInfoParser(glob, progressListener, className, pluginConfig);
       return parser.parse(in);
    }
 
@@ -775,15 +777,16 @@ public class MsgInfo {
     * 
     * @param className Class implementing I_MsgInfoParser
     *           Can be null to choose the default parser
-    * @param in
+    * @param pluginConfig The configuration of the plugin, can be null
     * @return Never null, usually of length==1
     */
    public static MsgInfo[] parse(Global glob,
-         I_ProgressListener progressListener, byte[] rawMsg, String className)
+         I_ProgressListener progressListener, byte[] rawMsg, String className,
+         I_PluginConfig pluginConfig)
          throws IOException, XmlBlasterException {
       //log.finer(new String(rawMsg));
       return parse(glob, progressListener, new ByteArrayInputStream(rawMsg),
-            className);
+            className, pluginConfig);
    }
 
    /**
@@ -880,7 +883,7 @@ public class MsgInfo {
                   .getBytes(), "<qos></qos>");
             msgInfo.addMessage(msg);
 
-            rawMsg = msgInfo.createRawMsg();
+            rawMsg = msgInfo.createRawMsg(className);
             String send = msgInfo.toLiteral();
             System.out.println(testName + ": Created and ready to send: \n|"
                   + send + "|");
@@ -930,7 +933,7 @@ public class MsgInfo {
          }
          {
             MsgInfo msgInfo = MsgInfo.parse(glob, progressListener,
-                  new ByteArrayInputStream(rawMsg), className)[0];
+                  new ByteArrayInputStream(rawMsg), className, null)[0];
             // System.out.println("\nReceived: \n" + msgInfo.dump());
             String receive = msgInfo.toLiteral();
             System.out.println("Received: \n|" + receive + "|");
@@ -961,7 +964,7 @@ public class MsgInfo {
          }
          {
             MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, rawMsg,
-                  className)[0];
+                  className, null)[0];
             // System.out.println("\nReceived: \n" + msgInfo.dump());
             String receive = msgInfo.toLiteral();
             System.out.println("Received: \n|" + receive + "|");
@@ -992,7 +995,7 @@ public class MsgInfo {
          }
          {
             MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, rawMsg,
-                  className)[0];
+                  className, null)[0];
             if (msgInfo.getMessageArr().length != 1) {
                System.out.println(testName + ": FAILURE numMsg="
                      + msgInfo.getMessageArr().length);
@@ -1027,7 +1030,7 @@ public class MsgInfo {
          }
          {
             MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, rawMsg,
-                  className)[0];
+                  className, null)[0];
             if (msgInfo.getMessageArr().length > 0) {
                System.out.println(testName + ": FAILURE msgLength="
                      + msgInfo.getMessageArr().length + " dump="
@@ -1057,7 +1060,7 @@ public class MsgInfo {
             }
             {
                MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, rawMsg,
-                     className)[0];
+                     className, null)[0];
                msgInfo.setSecretSessionId(null);
                if (msgInfo.getMessageArr().length > 0) {
                   System.out.println(testName + ": FAILURE");
@@ -1097,7 +1100,7 @@ public class MsgInfo {
          }
          {
             MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, rawMsg,
-                  className)[0];
+                  className, null)[0];
             // System.out.println("\nReceived: \n" + msgInfo.dump());
             String receive = msgInfo.toLiteral();
             System.out.println("Received: \n|" + receive + "|");
@@ -1132,7 +1135,7 @@ public class MsgInfo {
          }
          {
             MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, rawMsg,
-                  className)[0];
+                  className, null)[0];
             // System.out.println("\nReceived: \n" + msgInfo.dump());
             String receive = msgInfo.toLiteral();
             System.out.println("Received: \n|" + receive + "|");
@@ -1163,7 +1166,7 @@ public class MsgInfo {
          }
          {
             MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, rawMsg,
-                  className)[0];
+                  className, null)[0];
             // System.out.println("\nReceived: \n" + msgInfo.dump());
             String receive = msgInfo.toLiteral();
             System.out.println("Received: \n|" + receive + "|");
@@ -1193,5 +1196,13 @@ public class MsgInfo {
     */
    public void setRequestIdGuessed(boolean requestIdGuessed) {
       this.requestIdGuessed = requestIdGuessed;
+   }
+
+   public I_PluginConfig getPluginConfig() {
+      return pluginConfig;
+   }
+
+   public void setPluginConfig(I_PluginConfig pluginConfig) {
+      this.pluginConfig = pluginConfig;
    }
 }

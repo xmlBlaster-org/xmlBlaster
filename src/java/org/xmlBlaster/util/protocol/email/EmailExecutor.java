@@ -366,7 +366,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             if (log.isLoggable(Level.FINE)) log.fine("Decompressed message from " + length + " to " + encodedMsgUnit.length + " bytes");
          }
          String parserClassName = MsgInfoParserFactory.instance().guessParserName(msgUnitAttachmentHolder.getFileName(), msgUnitAttachmentHolder.getContentType());
-         msgInfos = MsgInfo.parse(glob, this.progressListener, encodedMsgUnit, parserClassName);
+         msgInfos = MsgInfo.parse(glob, this.progressListener, encodedMsgUnit, parserClassName, this.pluginConfig);
          if (msgInfos.length < 1) {
             log.severe("Unexpected msgInfo with length==0");
             Thread.dumpStack();
@@ -593,7 +593,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             payload = new byte[origAttachment.length+64];
             int compSize = compressor.deflate(payload);
             if (compSize <= 0) {
-               throw new IOException("Compression exception, got 0 bytes output: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
+               throw new IOException("Compression exception, got 0 bytes output: " + MsgInfo.toLiteral(msgInfo.createRawMsg(getMsgInfoParserClassName())));
             }
             if (compSize >= origAttachment.length) { // Compression didn't help
                payload = origAttachment;  
@@ -627,7 +627,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
       }
       if (toAddr == null) {
          Thread.dumpStack();
-         throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
+         throw new IllegalArgumentException("No 'toAddress' email address is given, can't send mail: " + MsgInfo.toLiteral(msgInfo.createRawMsg(getMsgInfoParserClassName())));
       }
 
       EmailData emailData = new EmailData(toAddr, this.fromAddress, subject);
@@ -655,7 +655,7 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
             + this.fromAddress.toString() + " to=" + toAddr.toString()
             + " messageId=" + messageId
             + " done");
-      if (log.isLoggable(Level.FINEST)) log.finest("MsgInfo dump: " + MsgInfo.toLiteral(msgInfo.createRawMsg()));
+      if (log.isLoggable(Level.FINEST)) log.finest("MsgInfo dump: " + MsgInfo.toLiteral(msgInfo.createRawMsg(getMsgInfoParserClassName())));
    }
 
    /**

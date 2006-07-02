@@ -5,6 +5,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.xbformat;
 
+import org.xml.sax.InputSource;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -13,6 +14,8 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.MsgUnitRaw;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,6 +40,10 @@ import java.util.logging.Logger;
  * @see <a
  *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.script.html">The
  *      client.script requirement</a>
+ * @see <a
+ *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html#script">The
+ *      protocol.socket requirement used with scripting protocol.</a>
+ *      
  */
 public class XmlScriptParser extends XmlScriptInterpreter implements
       I_MsgInfoParser {
@@ -54,6 +61,12 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    public static final String XMLSCRIPT_MIMETYPE = "text/xmlBlasterScript";
    
    public static final String XMLSCRIPT_ZLIB_MIMETYPE = "application/xmlBlasterScriptz";
+   
+   /**
+    *  If used by email, the InputStream finishes when the attaachment is read,
+    *  if used over socket, we need to terminate the script with a null byte
+    */
+   private boolean isNullTerminated;
    
    /** <?xml version='1.0' encoding='UTF-8'?> */
    private String xmlDecl;
@@ -93,6 +106,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
       this.schemaDecl = glob.get("schemaDeclaration", (String)null, null, pluginConfig);
       this.sendResponseSessionId = glob.get("sendResponseSessionId", true, null, pluginConfig);
       this.sendResponseRequestId = glob.get("sendResponseRequestId", true, null, pluginConfig);
+      this.isNullTerminated = glob.get("isNullTerminated", false, null, pluginConfig);
       super.sendSimpleExceptionFormat = glob.get("sendSimpleExceptionFormat", false, null, pluginConfig);
       super.initialize(glob, null, null);
    }
@@ -125,13 +139,44 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
    public final MsgInfo[] parse(InputStream in) {
       if (log.isLoggable(Level.FINER))
          log.finer("Entering parse()");
+      
+      MsgInfo[] msgInfos = new MsgInfo[0];
+
+      if (this.isNullTerminated) {
+         // If bytes are coming over a socket, we need to distinguish
+         // one script from the next one: Here we do it by a ZERO byte after
+         // each script.
+         // If "in" is coming from an email attachment, it terminates automatically
+         // after the script, so we don't enter this "if" statement
+         try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
+            while (true) {
+               int bt = in.read();
+               if (bt == 0) break;
+               out.write(bt);
+            }
+            in = new ByteArrayInputStream(out.toByteArray()); // Now "in" contains exactly one script
+            if (log.isLoggable(Level.FINEST)) log.finest("Got script [" + new String(out.toByteArray()) + "]");
+         } catch (Exception e) {
+            e.printStackTrace();
+            log.severe("Client failed: " + e.toString());
+            return msgInfos;
+         }
+      }
+      
       this.msgInfoParsed = new ArrayList();
 
-      MsgInfo[] msgInfos = new MsgInfo[0];
       try {
-         
          Reader reader = new InputStreamReader(in);
          super.parse(reader);
+         /*
+         byte[] buf = new byte[100];
+         in.read(buf);
+         //reader.read(buf);
+         System.out.println("XmlScriptParser:" + new String(buf));
+         //super.parse(reader);
+          
+          */
          msgInfos = (MsgInfo[])this.msgInfoParsed.toArray(new MsgInfo[this.msgInfoParsed.size()]);
          
          if (this.progressListener != null) {
@@ -339,5 +384,13 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
+   }
+
+   /**
+    *  If used by email, the InputStream finishes when the attaachment is read,
+    *  if used over socket, we need to terminate each script with a null byte
+    */
+   public boolean isNullTerminated() {
+      return isNullTerminated;
    }
 }

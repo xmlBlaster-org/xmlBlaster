@@ -229,7 +229,7 @@ public class XbfParser implements I_MsgInfoParser
 
             listener = this.progressListener;
             if (listener != null) {
-               listener.progressRead("", 10, msgLength);
+               listener.progressRead("", msgLength-remainLength, msgLength);
             }
             
             if (remainLength == 0) break;
@@ -244,10 +244,6 @@ public class XbfParser implements I_MsgInfoParser
       if (remainLength != 0) // assert
          throw new IOException(ME + ": Internal error, can't read complete message (" + msgLength + " bytes) from socket, only " + remainLength + " received, message is corrupted");
 
-      listener = this.progressListener;
-      if (listener != null) {
-         listener.progressRead("", msgLength, msgLength);
-      }
       return buf;
    }
 

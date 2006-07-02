@@ -350,7 +350,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          while (running) {
             try {
                // blocks until a message arrives
-               MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName())[0];
+               MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), driver.getPluginConfig())[0];
                handleMessage(msgInfo, false);
             }
             catch (Throwable e) {
