@@ -14,8 +14,7 @@
      This plugin avoids the need to download a CORBA library and compile
      it to get xmlBlaster access from C++ clients.
      The <a href="http://xml.apache.org/xerces-c/index.html">Xerces XML parser</a>
-     is the only needed additional library, xerces 1.7 up to 2.2 are known to run fine,
-     xerces 2.4 seems to have some memory leaks.
+     is the only needed additional library, xerces 2.7 is known to run fine.
      </p>
      <p>
      You can compile the C++ client library to contain
