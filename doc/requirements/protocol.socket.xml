@@ -292,6 +292,12 @@ it is determined by len.
 
 The '"' is just to show the boundary, '"' is not part of the message.
       ]]>
+
+      <p>You can switch on dumping of such SOCKET messages with following command line argument:
+      </p>
+      <pre>
+java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -logging/org.xmlBlaster.util.protocol.RequestReplyExecutor FINEST 
+      </pre>
    </example>
 
    <example lang="Java" type="HTML">
@@ -723,6 +729,111 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
 </pre>
    </example>
 
+
+   <example lang="Java" type="HTML">
+      <a name="script"/>
+      <p class="celltitel">Send xmlBlaster scripts over the socket</p>
+      <p>
+      It is possible to send other formats over the socket connection.
+      The data format described in this requirement is coded in the XbfParser.java class.
+      You can however choose to use the XmlScriptParser.java markup to be send (or any other format which may you code yourself). See
+      the requirement
+      <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html" target="others">client.script</a>
+      how this markup looks like. It is for example used as the default in the
+      <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html" target="others">EMAIL protocol plugin</a>.
+      </p>
+      <p>Here is an example how to switch to scripting markup send over the socket:
+      </p>
+<pre class="BORDER">
+#xmlBlaster.properties (server side)
+
+CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
+                             compress/type=,\
+                             isNullTerminated=true,\
+                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+
+#xmlBlasterPlugins.xml
+
+&lt;plugin create='true' id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+   &lt;action do='LOAD' onStartupRunlevel='4' sequence='20'
+            onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='3' sequence='50'/>
+   &lt;attribute id='compress/type'>&lt;/attribute>
+   &lt;attribute id='isNullTerminated'>true&lt;/attribute>
+   &lt;attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser&lt;/attribute>
+&lt;/plugin>
+</pre>
+
+   <p>and on client side:</p>
+
+<pre class="BORDER">
+#xmlBlaster.properties (client side)
+
+ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection,\
+                             compress/type=,\
+                             isNullTerminated=true,\
+                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+
+
+ClientCbServerProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl,\
+                             compress/type=,\
+                             isNullTerminated=true,\
+                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+
+</pre>
+
+   <p>Please note that you have to pass the <code>parserClass</code> (the same used for EMAIL)
+    and additionally the <code>isNullTerminated=true</code> configuration.
+    </p>
+    <p>To send the script compressed over the wire please use the <code>compress/type=zlib:stream</code>
+    setting.</p>
+    <p />
+    <p>You can switch on dumping of the send and received messages with the following logging configuration
+    used on command line:
+    </p>
+<pre class="BORDER">
+-logging/org.xmlBlaster.util.xbformat.XmlScriptParser FINEST
+-logging/org.xmlBlaster.util.protocol.socket.SocketExecutor FINEST
+</pre>
+
+    <p>which results in a typical logging output like:</p>
+<pre class="BORDER">
+02.07.2006 22:58:45 FINEST  10-main SocketExecutor sendMessage: Sending TCP data 
+[&lt;?xml version='1.0' encoding='UTF-8'?>
+
+&lt;publish sessionId='sessionId:127.0.0.2-null-1151873723867' requestId='name:115187001' type='I'>
+
+ &lt;qos>
+  &lt;subscribable/>
+  &lt;expiration lifeTime='-1' forceDestroy='false'/>
+  &lt;persistent/>
+  &lt;forceUpdate/>
+  &lt;isPublish/>
+ &lt;/qos>
+
+ &lt;key oid='Woodlogging' contentMime='text/xml' contentMimeExtended='1.0' domain='greenwood'>
+  &lt;org.xmlBlaster>&lt;demo-2/>&lt;/org.xmlBlaster>
+ &lt;/key>
+  &lt;content type='String'>Hi-2&lt;/content>
+&lt;/publish>
+]
+02.07.2006 22:58:45  FINE   10-main SocketExecutor sendMessage: TCP data is send
+02.07.2006 22:58:45 FINEST  11-XmlBlaster.SOCKET XmlScriptParser parse: Got script
+[&lt;?xml version='1.0' encoding='UTF-8'?>
+
+&lt;publish sessionId='sessionId:127.0.0.2-null-1151873723867' requestId='name:115187001' type='R'>
+
+ &lt;qos>
+  &lt;key oid='Woodlogging'/>
+  &lt;rcvTimestamp nanos='1151873925214000000'/>
+ &lt;isPublish/>
+ &lt;/qos>
+&lt;/publish>
+]
+</pre>
+
+   </example>
+
    <configuration where="server">
       <h2>Server side configuration</h2>
 
@@ -941,6 +1052,28 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
          </tr>
 
          <tr>
+            <td>parserClass</td>
+            <td>org.xmlBlaster.util.xbformat.XbfParser</td>
+            <td>The default chooses the above described formatting over socket.
+            It is however possible to force the xmlBlaster scripting markup to be send directly over
+            the socket wire, each script needs to be ended by one zero byte, please set
+            <code>parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser</code> and
+            <code>isNullTerminated=true</code> in this case.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>isNullTerminated</td>
+            <td>false</td>
+            <td>This setting is only useful if you switch to xmlBlaster scripting markup (see 'parserClass' setting).
+            In this case you need to set <code>isNullTerminated=true</code> to get a zero byte between the script messages sent
+            over the socket. 
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>dump[socket]</td>
             <td>false</td>
             <td>true switches message dump on
@@ -1055,12 +1188,12 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
       <li>
       Currently the server has implemented a one thread/client approach.
       This doesn't scale very well with thousands of clients -
-      probably we should support one thread/request with a thread pool as well.
+      we need to code another SOCKET protocol plugin based on the non-blocking nio framework since JDK 1.4 (http://java.sun.com/developer/technicalArticles/releases/nio/).
       </li>
-      <li>
+      <!-- 
       Different encodings on client and server side could be a problem, test with 
       java -Dfile.encoding=ISO8859_1 ... or System.setProperty("file.encoding","Cp850");
-      </li>
+      -->
    </ol>
    <h2>Note on UDP datagram usage</h2>
    <p>Each network in the Internet is characterised by a Maximum Transmission Unit (MTU),
