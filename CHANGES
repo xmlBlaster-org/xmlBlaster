@@ -3,6 +3,12 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+
+ o #15220 Added possibility to configure to send XmlBlaster script markup over the SOCKET protocol layer
+          with all benefits like tunneling back, compression and SSL
+          See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html#script
+          Fixed propress listener reporting in XbfParser.java
+ 
  o #15214 Email protocol now functional between cluster nodes, see example configuration
           xmlBlaster/demo/javaclients/cluster/email/README
           
