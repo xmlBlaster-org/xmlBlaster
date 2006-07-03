@@ -465,6 +465,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *
     * @param msgUnit The request to send
     * @param timeout The milliseconds to block, 0 is none blocking, -1 blocks forever
+    * @param maxEntries The maximum number of entries to deliver or return with less after timeout
     * @return The response messages, typically one.
     */
    MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException;

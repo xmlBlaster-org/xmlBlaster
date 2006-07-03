@@ -1810,6 +1810,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return prq;
    }
    
+   // TODO: add other properties and testsuite, add documentation requirement
+   //       Add own class to support multiple request/reply over same temporary topic
    public MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering request with timeout=" + timeout);
 
