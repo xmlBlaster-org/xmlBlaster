@@ -464,9 +464,9 @@ Content-Disposition: attachment; filename=messageId.mid
 
   <h2 class="celltitel">Debugging</h2>
 <pre class="BORDER">
-call[org.xmlBlaster.util.protocol.email.Pop3Driver] true
-call[org.xmlBlaster.util.protocol.email.SmtpClient] true
-call[org.xmlBlaster.util.protocol.email.EmailExecutor] true
+-logging/org.xmlBlaster.util.protocol.email.Pop3Driver FINEST
+-logging/org.xmlBlaster.util.protocol.email.SmtpClient FINEST
+-logging/org.xmlBlaster.util.protocol.email.EmailExecutor FINEST
 </pre>
 
   <h2 class="celltitel">Example configuration server side</h2>
@@ -630,7 +630,7 @@ on server side and on java client side.</p>
             <td>Switches on/off the javamail lowlevel debugging.
             Use as JVM setting like 'java -Dmail.debug=true ...'.<br />
             Further debugging can be switch on with
-            <code>call[org.xmlBlaster.util.protocol.email.SmtpClient] true</code>
+            <code>logging/org.xmlBlaster.util.protocol.email.SmtpClient FINEST</code>
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -691,8 +691,8 @@ on server side and on java client side.</p>
             <td>Switches on/off the javamail lowlevel debugging.
             Use as JVM setting like 'java -Dmail.debug=true ...'.<br />
             Further debugging can be switch on with
-            <code>call[org.xmlBlaster.util.protocol.email.Pop3Driver] true</code> and
-            <code>call[org.xmlBlaster.util.protocol.email.EmailExecutor] true</code>
+            <code>logging/org.xmlBlaster.util.protocol.email.Pop3Driver] FINEST</code> and
+            <code>logging/org.xmlBlaster.util.protocol.email.EmailExecutor] FINEST</code>
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
