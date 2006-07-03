@@ -437,6 +437,38 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    void publishOneway(org.xmlBlaster.util.MsgUnit [] msgUnitArr) throws XmlBlasterException;
+   
+   /**
+    * Implements the blocking request/reply pattern.
+    * <p>
+    * The msgUnit should contain a PublishQos which routes the request
+    * to the desired client, for example:
+    * <pre>
+    *  Destination dest = new Destination(glob, new SessionName(glob, "joe/1"));
+    *  dest.forceQueuing(forceQueuing);
+    *  pq.addDestination(dest);
+    *  </pre>
+    *  <p>
+    *  This receiver needs to send the response to the topic oid as passed with
+    *  the client property "__JMSReplyTo":
+    *  <pre>
+    *  String tempTopicOid = updateQos.getClientProperty("__JMSReplyTo", "");
+    *  // Send reply back ...
+    *  PublishKey pk = new PublishKey(receiver.getGlobal(), tempTopicOid);
+    *  ...
+    *  </pre>
+    *  
+    *  <p>
+    *  This approach is similar to the JMS approach for request/reply (TopicRequestor.java)
+    *  but we have the choice to send the msgUnit directly to another client or to a topic (as JMS),
+    *  and we can handle multiple replies for one request.
+    *
+    * @param msgUnit The request to send
+    * @param timeout The milliseconds to block, 0 is none blocking, -1 blocks forever
+    * @return The response messages, typically one.
+    */
+   MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException;
+
 
    //EraseReturnQos[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**

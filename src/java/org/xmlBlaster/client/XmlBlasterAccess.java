@@ -5,11 +5,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Random;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -39,9 +43,13 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
+import org.xmlBlaster.util.qos.QosData;
+import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.GetKey;
@@ -1771,86 +1779,68 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return glob.getBuildJavaVersion();
    }
    
+   /**
+    * Create a temporay topic. 
+    * You need to erase it yourself when not needed anymore
+    * @param topicProperty Can be null (the default is no DOM entry)
+    * @return The details about the created, temporary topic
+    * @throws XmlBlasterException
+    */
+   public PublishReturnQos createTemporaryTopic(TopicProperty topicProperty) throws XmlBlasterException {
+      PublishKey pk = new PublishKey(glob, "");
+      PublishQos pq = new PublishQos(glob);
+      if (topicProperty == null) {
+         long destroyDelay = 36000;
+         int historyMaxMsg = 10;
+         topicProperty = new TopicProperty(glob);
+         topicProperty.setDestroyDelay(destroyDelay);
+         topicProperty.setCreateDomEntry(false);
+         topicProperty.setReadonly(false);
+         pq.getData().setAdministrative(true); // TODO: add to PublishQos
+         if (historyMaxMsg >= 0L) {
+            HistoryQueueProperty prop = new HistoryQueueProperty(this.glob, null);
+            prop.setMaxEntries(historyMaxMsg);
+            topicProperty.setHistoryQueueProperty(prop);
+         }
+      }
+      pq.setTopicProperty(topicProperty);
+      MsgUnit msgUnit = new MsgUnit(pk, new byte[0], pq);
+      PublishReturnQos prq = publish(msgUnit);
+      if (log.isLoggable(Level.FINER)) log.finer("Created temporary topic " + prq.getKeyOid());
+      return prq;
+   }
    
-   /* JMS approach for request/reply
-   public class TopicRequestor {
+   public MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException {
+      if (log.isLoggable(Level.FINER)) log.finer("Entering request with timeout=" + timeout);
 
-      TopicSession    session;    // The topic session the topic belongs to.
-      Topic           topic;      // The topic to perform the request/reply on.  
-      TemporaryTopic  tempTopic;
-      TopicPublisher  publisher;
-      TopicSubscriber subscriber;
-
-
-       Constructor for the <CODE>TopicRequestor</CODE> class.
-        * 
-        * <P>This implementation assumes the session parameter to be non-transacted,
-        * with a delivery mode of either <CODE>AUTO_ACKNOWLEDGE</CODE> or 
-        * <CODE>DUPS_OK_ACKNOWLEDGE</CODE>.
-        *
-        * @param session the <CODE>TopicSession</CODE> the topic belongs to
-        * @param topic the topic to perform the request/reply call on
-        *
-        * @exception JMSException if the JMS provider fails to create the
-        *                         <CODE>TopicRequestor</CODE> due to some internal
-        *                         error.
-        * @exception InvalidDestinationException if an invalid topic is specified.
-       
-
-      public 
-      TopicRequestor(TopicSession session, Topic topic) throws JMSException {
-   this.session = session;
-   this.topic   = topic;
-          tempTopic    = session.createTemporaryTopic();
-          publisher    = session.createPublisher(topic);
-          subscriber   = session.createSubscriber(tempTopic);
-      }
-
-
-       Sends a request and waits for a reply. The temporary topic is used for
-        * the <CODE>JMSReplyTo</CODE> destination; the first reply is returned, 
-        * and any following replies are discarded.
-        *
-        * @param message the message to send
-        *  
-        * @return the reply message
-        *  
-        * @exception JMSException if the JMS provider fails to complete the
-        *                         request due to some internal error.
+      PublishReturnQos tempTopic = createTemporaryTopic(null);
       
-
-      public Message
-      request(Message message) throws JMSException {
-   message.setJMSReplyTo(tempTopic);
-          publisher.publish(message);
-   return(subscriber.receive());
+      try {
+         // Send the request ...
+         msgUnit.getQosData().addClientProperty("__JMSReplyTo", tempTopic.getKeyOid());
+         publish(msgUnit);
+         
+         // Access the reply ...
+         String oid = "__cmd:topic/"+tempTopic.getKeyOid()+"/?historyQueueEntries";
+         GetKey getKey = new GetKey(glob, oid);
+         String qos = "<qos>" +
+                      "<querySpec type='QueueQuery'>" +
+                      "maxEntries="+maxEntries+"&amp;maxSize=-1&amp;consumable=true&amp;waitingDelay="+timeout+
+                      "</querySpec>" +
+                      "</qos>";
+         GetQos getQos = new GetQos(glob, glob.getQueryQosFactory().readObject(qos));
+         MsgUnit[] msgs = get(getKey, getQos);
+         
+         if (log.isLoggable(Level.FINEST)) log.finest("Got " + msgs.length + " reply :\n" + ((msgs.length>0)?msgs[0].toXml():""));
+         return msgs;
       }
-
-
-      * Closes the <CODE>TopicRequestor</CODE> and its session.
-        *
-        * <P>Since a provider may allocate some resources on behalf of a 
-        * <CODE>TopicRequestor</CODE> outside the Java virtual machine, clients 
-        * should close them when they 
-        * are not needed. Relying on garbage collection to eventually reclaim 
-        * these resources may not be timely enough.
-        *
-        * <P>Note that this method closes the <CODE>TopicSession</CODE> object 
-        * passed to the <CODE>TopicRequestor</CODE> constructor.
-        *  
-        * @exception JMSException if the JMS provider fails to close the
-        *                         <CODE>TopicRequestor</CODE> due to some internal
-        *                         error.
-      
-
-      public void
-      close() throws JMSException {
-
-   // publisher and consumer created by constructor are implicitly closed.
-   session.close();
-   tempTopic.delete();
+      finally {
+         // Clean up temporary topic ...
+         EraseKey ek = new EraseKey(glob, tempTopic.getKeyOid());
+         EraseQos eq = new EraseQos(glob);
+         eq.setForceDestroy(true);
+         erase(ek, eq);
       }
-  }
-  */
+   }
 }
 
