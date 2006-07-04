@@ -3,6 +3,12 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ o #15234 Added java client side API methods for synchronous access:
+          Access xmlBlaster server side queues
+            MsgUnit[] receive(String oid, int maxEntries, long timeout, boolean consumable)
+          The synchrnous request/reply pattern
+            MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries)
+          See I_XmlBlasterAccess.java
 
  o #15220 Added possibility to configure to send XmlBlaster script markup over the SOCKET protocol layer
           with all benefits like tunneling back, compression and SSL
