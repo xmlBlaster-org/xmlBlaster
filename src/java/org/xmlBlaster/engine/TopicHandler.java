@@ -518,7 +518,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (msgQosData.isAdministrative()) {
             synchronized (this.ADMIN_MONITOR) {
                if (!isUnconfigured() && !isSoftErased())
-                  log.severe(ME+": Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the request");
+                  log.warning(ME+": Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the request");
                else
                   administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
                if (this.handlerIsNewCreated) {
@@ -2529,6 +2529,15 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                    "Erasing of topic '" + getId() + "' due to administrative request failed");
       }
    }
+   
+   /** JMX */
+   public long getDestroyDelay() {
+      TopicProperty t = this.topicProperty;
+      if (t != null)
+         return t.getDestroyDelay();
+      return 0L;
+   }
+
    /** JMX */
    public java.lang.String usage() {
       return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
