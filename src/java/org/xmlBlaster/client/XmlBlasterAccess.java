@@ -5,15 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.Random;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -43,13 +40,11 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
-import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.GetKey;
@@ -1785,23 +1780,33 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @param topicProperty Can be null (the default is no DOM entry)
     * @return The details about the created, temporary topic
     * @throws XmlBlasterException
+    * @todo Automatically delete topic when session dies; don't allow other session to subscribe on it
     */
    public PublishReturnQos createTemporaryTopic(TopicProperty topicProperty) throws XmlBlasterException {
+      if (topicProperty == null) {
+         return createTemporaryTopic(-1, 10);
+      }
       PublishKey pk = new PublishKey(glob, "");
       PublishQos pq = new PublishQos(glob);
-      if (topicProperty == null) {
-         long destroyDelay = 36000;
-         int historyMaxMsg = 10;
-         topicProperty = new TopicProperty(glob);
-         topicProperty.setDestroyDelay(destroyDelay);
-         topicProperty.setCreateDomEntry(false);
-         topicProperty.setReadonly(false);
-         pq.getData().setAdministrative(true); // TODO: add to PublishQos
-         if (historyMaxMsg >= 0L) {
-            HistoryQueueProperty prop = new HistoryQueueProperty(this.glob, null);
-            prop.setMaxEntries(historyMaxMsg);
-            topicProperty.setHistoryQueueProperty(prop);
-         }
+      pq.setTopicProperty(topicProperty);
+      MsgUnit msgUnit = new MsgUnit(pk, new byte[0], pq);
+      PublishReturnQos prq = publish(msgUnit);
+      if (log.isLoggable(Level.FINER)) log.finer("Created temporary topic " + prq.getKeyOid());
+      return prq;
+   }
+   
+   public PublishReturnQos createTemporaryTopic(long destroyDelay, int historyMaxMsg) throws XmlBlasterException {
+      PublishKey pk = new PublishKey(glob, "");
+      PublishQos pq = new PublishQos(glob);
+      TopicProperty topicProperty = new TopicProperty(glob);
+      topicProperty.setDestroyDelay(destroyDelay);
+      topicProperty.setCreateDomEntry(false);
+      topicProperty.setReadonly(false);
+      pq.getData().setAdministrative(true); // TODO: add to PublishQos
+      if (historyMaxMsg >= 0L) {
+         HistoryQueueProperty prop = new HistoryQueueProperty(this.glob, null);
+         prop.setMaxEntries(historyMaxMsg);
+         topicProperty.setHistoryQueueProperty(prop);
       }
       pq.setTopicProperty(topicProperty);
       MsgUnit msgUnit = new MsgUnit(pk, new byte[0], pq);
@@ -1814,26 +1819,21 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    //       Add own class to support multiple request/reply over same temporary topic
    public MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering request with timeout=" + timeout);
+      if (msgUnit == null)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please supply a valid msgUnit to request()");
 
-      PublishReturnQos tempTopic = createTemporaryTopic(null);
+      // Create a temporary reply topic ...
+      long destroyDelay = timeout+86400000; // on client crash, cleanup after one day; //long destroyDelay = -1;
+      PublishReturnQos tempTopic = createTemporaryTopic(destroyDelay, maxEntries);
       
       try {
          // Send the request ...
-         msgUnit.getQosData().addClientProperty("__JMSReplyTo", tempTopic.getKeyOid());
+         msgUnit.getQosData().addClientProperty(Constants.JMS_REPLY_TO, tempTopic.getKeyOid()); // "__jms:JMSReplyTo"
          publish(msgUnit);
          
          // Access the reply ...
-         String oid = "__cmd:topic/"+tempTopic.getKeyOid()+"/?historyQueueEntries";
-         GetKey getKey = new GetKey(glob, oid);
-         String qos = "<qos>" +
-                      "<querySpec type='QueueQuery'>" +
-                      "maxEntries="+maxEntries+"&amp;maxSize=-1&amp;consumable=true&amp;waitingDelay="+timeout+
-                      "</querySpec>" +
-                      "</qos>";
-         GetQos getQos = new GetQos(glob, glob.getQueryQosFactory().readObject(qos));
-         MsgUnit[] msgs = get(getKey, getQos);
+         MsgUnit[] msgs = receive("topic/"+tempTopic.getKeyOid(), maxEntries, timeout, true);
          
-         if (log.isLoggable(Level.FINEST)) log.finest("Got " + msgs.length + " reply :\n" + ((msgs.length>0)?msgs[0].toXml():""));
          return msgs;
       }
       finally {
@@ -1844,5 +1844,30 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          erase(ek, eq);
       }
    }
+
+   public MsgUnit[] receive(String oid, int maxEntries, long timeout, boolean consumable) throws XmlBlasterException {
+      if (oid == null || oid.length() == 0)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please supply a valid oid to receive()");
+
+      ContextNode node = ContextNode.valueOf(oid);
+      if (node.isOfClass(ContextNode.TOPIC_MARKER_TAG))
+         oid = "__cmd:"+oid+"/?historyQueueEntries"; // "__cmd:topic/hello/?historyQueueEntries"
+      else if (node.isOfClass(ContextNode.SUBJECT_MARKER_TAG) && node.getChild(ContextNode.SESSION_MARKER_TAG, null) != null)
+            oid = "__cmd:"+oid+"/?callbackQueueEntries"; // "__cmd:client/joe/session/1/?callbackQueueEntries";
+      else if (node.isOfClass(ContextNode.SUBJECT_MARKER_TAG))
+            oid = "__cmd:"+oid+"/?subjectQueueEntries"; // "__cmd:client/joe/?subjectQueueEntries"
+      
+      GetKey getKey = new GetKey(glob, oid);
+      String qos = "<qos>" +
+                   "<querySpec type='QueueQuery'>" +
+                   "maxEntries="+maxEntries+"&amp;maxSize=-1&amp;consumable="+consumable+"&amp;waitingDelay="+timeout+
+                   "</querySpec>" +
+                   "</qos>";
+      GetQos getQos = new GetQos(glob, glob.getQueryQosFactory().readObject(qos));
+      MsgUnit[] msgs = get(getKey, getQos);
+      if (log.isLoggable(Level.FINEST)) log.finest("Got " + msgs.length + " reply :\n" + ((msgs.length>0)?msgs[0].toXml():""));
+      return msgs;
+   }
+
 }
 

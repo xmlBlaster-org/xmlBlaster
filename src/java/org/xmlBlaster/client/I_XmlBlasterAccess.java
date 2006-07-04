@@ -413,6 +413,38 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     */
    MsgUnit[] get(GetKey getKey, GetQos getQos) throws XmlBlasterException;
 
+   // @param maxBytes The total size of all returned messages together must not exceed this value.
+   //       This is not implemented yet since the size of the entries in the queue is not guaranteed
+   //       to be related to the size of the MsgUnits
+   //RELATING_CALLBACK = "callback";
+   //RELATING_SUBJECT = "subject";
+   //RELATING_HISTORY = "history";
+   /**
+    * This method synchronously accesses maxEntries (or maxBytes) messages from any xmlBlaster server side queue.
+    * <p>
+    * This is a convenience method which uses get() with a specific Qos.
+    * @param oid The identifier like 
+    *            "topic/hello" to access a history queue,
+    *            "client/joe" to access a subject queue or
+    *            "client/joe/session/1"
+    *            to access a callback queue.
+    *            The string must follow the formatting rule of ContextNode.java
+    * @param maxEntries The maximum number of entries to retrieve
+    * @param timeout The time to wait until return. 
+    *                If you choose a negative value it will block until the maxEntries
+    *                has been reached.
+    *                If the value is '0' (i.e. zero) it will not wait and will correspond to a non-blocking get.
+    *                If the value is positive it will block until the specified amount in milliseconds
+    *                has elapsed or when the maxEntries has been reached (whichever comes first). 
+    * @param consumable  Expressed with the string 'true' or 'false'.
+    *                    If true the entries returned are deleted from the queue
+    * @see org.xmlBlaster.util.context.ContextNode
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">engine.qos.queryspec.QueueQuery requirement</a>
+    * @see javax.jms.MessageConsumer#receive
+    */
+   MsgUnit[] receive(String oid, int maxEntries, long timeout, boolean consumable) throws XmlBlasterException;
+   
+
    //UnSubscribeReturnQos[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
     * Cancel subscription. 
