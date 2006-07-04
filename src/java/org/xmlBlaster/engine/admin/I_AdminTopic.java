@@ -140,4 +140,10 @@ public interface I_AdminTopic extends I_AdminUsage {
     * @return A status message
     */
    public String eraseTopic() throws org.xmlBlaster.util.XmlBlasterException;
+   
+   /**
+    * The configured delay in milli seconds until the topic is destroyed in state UNREFERENCED. 
+    * @return milli seconds  
+    */
+   public long getDestroyDelay();
 }
