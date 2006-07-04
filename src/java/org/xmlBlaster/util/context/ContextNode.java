@@ -104,8 +104,19 @@ public final class ContextNode
    }
    */
 
+   /**
+    * @return The tag name like 'node' (ContextNode.CLUSTER_MARKER_TAG) or 'client' (ContextNode.SUBJECT_MARKER_TAG)
+    */
    public String getClassName() {
       return this.className;
+   }
+   
+   /**
+    * @param className The tag name like 'node' (ContextNode.CLUSTER_MARKER_TAG) or 'client' (ContextNode.SUBJECT_MARKER_TAG)
+    */
+   public boolean isOfClass(String className) {
+      if (this.className == null) return false;
+      return this.className.equals(className);
    }
 
    public void setInstanceName(String instanceName) {
@@ -515,7 +526,30 @@ public final class ContextNode
       if (lower.startsWith("xpath")) {
          throw new IllegalArgumentException("ContextNode.valueOf(): Unkown schema in '" + url + "'");
       }
-      if (url.startsWith("/xmlBlaster/node/") || url.startsWith("/node/")) {
+      if (url.startsWith(SCHEMA_JMX_DOMAIN+":")) { // SCHEMA_JMX
+         // org.xmlBlaster:nodeClass=node,node="heron",clientClass=connection,connection="jack",queueClass=queue,queue="connection-99"
+         int index = url.indexOf(":");
+         String tmp = url.substring(index+1);
+         String[] toks = StringPairTokenizer.parseLine(tmp, ',', QUOTE, true);
+         ContextNode node = ROOT_NODE;
+         for (int i=0; i<toks.length; i++) {
+            index = toks[i].indexOf("=");
+            String className = (index > 0) ? toks[i].substring(index+1) : null;
+            if (className.startsWith("\""))
+                className = className.substring(1,className.length()-1);
+            String instanceName = null;
+                if (i < toks.length-1) {
+               index = toks[i+1].indexOf("=");
+               instanceName = (index > 0) ? toks[i+1].substring(index+1) : null;
+               if (instanceName.startsWith("\""))
+                instanceName = instanceName.substring(1,instanceName.length()-1);
+               i++;
+                }
+            node = new ContextNode(className, instanceName, node);
+         }
+         return node;
+      }
+      else if (url.startsWith("/xmlBlaster/node/") || url.startsWith("/node/") || !url.startsWith("/")/*relative name*/) {
          String[] toks = StringPairTokenizer.parseLine(url, '/', QUOTE, true);
          ContextNode node = ROOT_NODE;
          for (int i=0; i<toks.length; i++) {
@@ -545,30 +579,8 @@ public final class ContextNode
          }
          return node;
       }
-      else if (url.startsWith(SCHEMA_JMX_DOMAIN+":")) { // SCHEMA_JMX
-         // org.xmlBlaster:nodeClass=node,node="heron",clientClass=connection,connection="jack",queueClass=queue,queue="connection-99"
-         int index = url.indexOf(":");
-         String tmp = url.substring(index+1);
-         String[] toks = StringPairTokenizer.parseLine(tmp, ',', QUOTE, true);
-         ContextNode node = ROOT_NODE;
-         for (int i=0; i<toks.length; i++) {
-            index = toks[i].indexOf("=");
-            String className = (index > 0) ? toks[i].substring(index+1) : null;
-            if (className.startsWith("\""))
-                className = className.substring(1,className.length()-1);
-            String instanceName = null;
-                if (i < toks.length-1) {
-               index = toks[i+1].indexOf("=");
-               instanceName = (index > 0) ? toks[i+1].substring(index+1) : null;
-               if (instanceName.startsWith("\""))
-                instanceName = instanceName.substring(1,instanceName.length()-1);
-               i++;
-                }
-            node = new ContextNode(className, instanceName, node);
-         }
-         return node;
-      }
-      throw new IllegalArgumentException("ContextNode.valueOf(): not implemented: '" + url + "'");
+      
+      throw new IllegalArgumentException("ContextNode.valueOf(): unknown formatting schema is not implemented: '" + url + "'");
    }
 
    /**
