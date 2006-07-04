@@ -420,7 +420,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    //RELATING_SUBJECT = "subject";
    //RELATING_HISTORY = "history";
    /**
-    * This method synchronously accesses maxEntries (or maxBytes) messages from any xmlBlaster server side queue.
+    * This method synchronously accesses maxEntries messages from any xmlBlaster server side queue.
     * <p>
     * This is a convenience method which uses get() with a specific Qos.
     * @param oid The identifier like 
@@ -482,9 +482,9 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  </pre>
     *  <p>
     *  This receiver needs to send the response to the topic oid as passed with
-    *  the client property "__JMSReplyTo":
+    *  the client property "__jmx:JMSReplyTo":
     *  <pre>
-    *  String tempTopicOid = updateQos.getClientProperty("__JMSReplyTo", "");
+    *  String tempTopicOid = updateQos.getClientProperty(Constants.JMS_REPLY_TO, "");
     *  // Send reply back ...
     *  PublishKey pk = new PublishKey(receiver.getGlobal(), tempTopicOid);
     *  ...
@@ -499,9 +499,9 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @param timeout The milliseconds to block, 0 is none blocking, -1 blocks forever
     * @param maxEntries The maximum number of entries to deliver or return with less after timeout
     * @return The response messages, typically one.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/demo/HelloWorld8.java.html">HelloWorld8.java</a>
     */
    MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException;
-
 
    //EraseReturnQos[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
