@@ -204,6 +204,7 @@
    <see type="API">org.xmlBlaster.util.MsgUnit</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
    <see type="API">org.xmlBlaster.protocol.rmi.XmlBlasterImpl</see>
+   <see type="REQ" label="Query history/callback/subject queue (sync)">engine.qos.queryspec.QueueQuery</see>
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 30</date>

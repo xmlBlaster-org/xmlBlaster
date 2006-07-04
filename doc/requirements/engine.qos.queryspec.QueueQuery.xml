@@ -131,7 +131,7 @@ GET topic/Hello/?historyQueueEntries="maxEntries=2&amp;maxSize=-1&amp;consumable
    <see type="REQ">admin</see>
    <see type="REQ">admin.commands</see>
    <see type="REQ">admin.messages</see>         
-   <see type="REQ">queryspec.plugin.queueQuery</see>            
+   <see type="REQ">engine.qos.queryspec</see>            
    <see type="REQ">client.script</see>            
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 05 06</date>
