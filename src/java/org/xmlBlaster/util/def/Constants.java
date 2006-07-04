@@ -7,6 +7,7 @@ Comment:   Holding destination address attributes
 package org.xmlBlaster.util.def;
 
 import org.xmlBlaster.jms.XBConnectionMetaData;
+import org.xmlBlaster.jms.XBPropertyNames;
 
 
 /**
@@ -257,6 +258,8 @@ public class Constants {
     * globally unique Identifier. */
    // public final static String STREAM_ID = "__STREAM_ID";
    public final static String STREAM_ID = XBConnectionMetaData.JMSX_GROUP_ID;
+   
+   public final static String JMS_REPLY_TO = XBPropertyNames.JMS_REPLY_TO; // "__jmx:JMSReplyTo"  
 
    
    /** Mimetypes */
