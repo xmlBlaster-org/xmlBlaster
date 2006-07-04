@@ -15,7 +15,9 @@ package org.xmlBlaster.jms;
  */
 public interface XBPropertyNames {
    
-   public final static String CONNECT_QOS = "JMS_xmlBlasterConnectQos";
+   public final static String JMS_PREFIX = "__jms:";
+   
+   public final static String CONNECT_QOS = JMS_PREFIX + "JMS_xmlBlasterConnectQos";
 
    /**
     * This property sets the maximum size of each chunk. If a message has a content
@@ -23,7 +25,7 @@ public interface XBPropertyNames {
     * sent in several smaller messages. If this value is not set before publishing, the
     * size is unlimited. This is a specific feature of xmlBlaster.
     */
-   public final static String MAX_CHUNK_SIZE = "JMS_maxChunkSize";
+   public final static String MAX_CHUNK_SIZE = JMS_PREFIX + "JMS_maxChunkSize";
    
    /**
     * This is a feature specific to xmlBlaster. It allows to stream huge messages
@@ -34,23 +36,22 @@ public interface XBPropertyNames {
     * you have to invoke clearBody() on the published message. If you set this flag and 
     * MAX_CHUNK_SIZE is not set, the application will choose an appropriate chunk size. 
     */
-   public final static String OPEN_END_PUBLISH = "JMS_openEndPublish";
+   public final static String OPEN_END_PUBLISH = JMS_PREFIX + "JMS_openEndPublish";
    
    // these are keys used in the client properties,
    // most of them used in XBMessage and XBMessageConsumer
-   public final static String JMS_MESSAGE_TYPE   = "JMSMessageType";
-   public final static String JMS_TYPE           = "JMSType";
-   public final static String JMS_TIMESTAMP      = "JMSTimestamp";
-   public final static String JMS_REDELIVERED    = "JMSRedelivered";
-   public final static String JMS_MESSAGE_ID     = "JMSMessageID";
-   public final static String JMS_CORRELATION_ID = "JMSCorrelationID";
+   public final static String JMS_MESSAGE_TYPE   = JMS_PREFIX + "JMSMessageType";
+   public final static String JMS_TYPE           = JMS_PREFIX + "JMSType";
+   public final static String JMS_TIMESTAMP      = JMS_PREFIX + "JMSTimestamp";
+   public final static String JMS_REDELIVERED    = JMS_PREFIX + "JMSRedelivered";
+   public final static String JMS_MESSAGE_ID     = JMS_PREFIX + "JMSMessageID";
+   public final static String JMS_CORRELATION_ID = JMS_PREFIX + "JMSCorrelationID";
    // don't really remember how I was thinking here
-   public final static String JMS_HEADER_PREFIX  = "jms/";
+   // public final static String JMS_HEADER_PREFIX  = "jms/";
    
-   public final static String JMS_REPLY_TO       = "JMSReplyTo";  
-   public final static String JMS_DELIVERY_MODE  = "JMSDeliveryMode";
-   public final static String JMS_EXPIRATION     = "JMSExpiration";
-   public final static String JMS_PRIORITY       = "JMSPriority";
-   
+   public final static String JMS_REPLY_TO       = JMS_PREFIX + "JMSReplyTo";  
+   public final static String JMS_DELIVERY_MODE  = JMS_PREFIX + "JMSDeliveryMode";
+   public final static String JMS_EXPIRATION     = JMS_PREFIX + "JMSExpiration";
+   public final static String JMS_PRIORITY       = JMS_PREFIX + "JMSPriority";
    
 }

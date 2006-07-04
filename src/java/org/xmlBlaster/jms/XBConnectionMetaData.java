@@ -63,6 +63,12 @@ public class XBConnectionMetaData implements ConnectionMetaData, Serializable, C
     */
    public final static String JMSX_GROUP_EX = "JMSXGroupEx";
    
+
+   
+   
+   
+   
+   
    
    /** These properties are specific to our implementation and must start with the prefix JMSX */
    private final static String[] propNames = new String[] {
