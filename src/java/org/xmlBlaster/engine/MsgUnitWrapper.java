@@ -92,7 +92,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    }
 
    /**
-    * Used when message comes from persistence, the owning I_Map is unknown
+    * Used when message is created from TopicHandler.publish
     */
    public MsgUnitWrapper(ServerScope glob, MsgUnit msgUnit, I_Map ownerCache, int referenceCounter,
                         int historyReferenceCounter, long sizeInBytes) throws XmlBlasterException {
