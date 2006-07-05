@@ -436,7 +436,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *                If the value is '0' (i.e. zero) it will not wait and will correspond to a non-blocking get.
     *                If the value is positive it will block until the specified amount in milliseconds
     *                has elapsed or when the maxEntries has been reached (whichever comes first). 
-    * @param consumable  Expressed with the string 'true' or 'false'.
+    * @param consumable  Expressed with 'true' or 'false'.
     *                    If true the entries returned are deleted from the queue
     * @see org.xmlBlaster.util.context.ContextNode
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">engine.qos.queryspec.QueueQuery requirement</a>
