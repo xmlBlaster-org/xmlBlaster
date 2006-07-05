@@ -482,7 +482,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  </pre>
     *  <p>
     *  This receiver needs to send the response to the topic oid as passed with
-    *  the client property "__jmx:JMSReplyTo":
+    *  the client property "__jms:JMSReplyTo":
     *  <pre>
     *  String tempTopicOid = updateQos.getClientProperty(Constants.JMS_REPLY_TO, "");
     *  // Send reply back ...

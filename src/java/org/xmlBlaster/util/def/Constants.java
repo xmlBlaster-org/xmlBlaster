@@ -259,7 +259,7 @@ public class Constants {
    // public final static String STREAM_ID = "__STREAM_ID";
    public final static String STREAM_ID = XBConnectionMetaData.JMSX_GROUP_ID;
    
-   public final static String JMS_REPLY_TO = XBPropertyNames.JMS_REPLY_TO; // "__jmx:JMSReplyTo"  
+   public final static String JMS_REPLY_TO = XBPropertyNames.JMS_REPLY_TO; // "__jms:JMSReplyTo"  
 
    
    /** Mimetypes */
