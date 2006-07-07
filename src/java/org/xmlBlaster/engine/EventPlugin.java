@@ -835,6 +835,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             eventType, errorCode));
          return str;
       }
+      // TODO: Support admin commands or JMX calls like
+      // $_{org.xmlBlaster:nodeClass=node,node="heron"/action=getFreeMemStr'}
       return str;
    }
 
