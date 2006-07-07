@@ -118,7 +118,20 @@
  <tr>
     <td>destination.publish</td>
     <td>Publishes an xmlBlaster message which contains the occurred event,
-     currently all messages are published into a topic named '__sys__Event'</td>
+     currently all messages are published into a topic named '__sys__Event'.
+     On demand, you can configure the PublishKey and PublishQos as in this example:
+<pre class="BORDER">
+&lt;attribute id='destination.publish'>
+   "publish.key=&lt;key oid='__sys__Logout'/>",
+   "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>&lt;topic destroyDelay='30000'>
+                        &lt;persistence relating='msgUnitStore' type='RAM'/>
+                        &lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>",
+   "publish.content=$_{eventType}"
+&lt;/attribute>
+</pre>
+     The separator between the properties <code>publish.key</code>,  <code>publish.qos</code>,  <code>publish.content</code>
+     is a comma ','. If you have a comma in your markup, you can escape it with double quotes '"'.
+     </td>
  </tr>
  <tr>
     <td>destination.jmx</td>
@@ -191,6 +204,13 @@
  &lt;/qos>
 </pre>
    <p>The content carries the <code>eventType</code> which was the original reason for the message.</p>
+
+   <p/>
+   <p>If you want to receive the login/logout events like done in xmlBlaster before version 1.3, please read the
+   <a href="engine.LoginLogoutEvent.html" target="others">engine.LoginLogoutEvent requirement</a>.
+   In the example section is a configuration which can be used to simulate the old behaviour</p>
+
+
    </example>
 
    <example lang="XML" type="HTML">
@@ -257,7 +277,7 @@
    &lt;action do='LOAD' onStartupRunlevel='8' sequence='14'/>
    &lt;action do='STOP' onShutdownRunlevel='7' sequence='14'/>
    <font color="blue">&lt;attribute id='eventTypes'>
-   	 logging/severe/*,
+         logging/severe/*,
        heartbeat.43200000
    &lt;/attribute></font>
    <font color="red">&lt;attribute id='destination.smtp'>

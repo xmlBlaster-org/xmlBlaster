@@ -15,6 +15,48 @@
          with the key "<tt>__absoluteName</tt>", it is of type <tt>String</tt>.
       </p>
    </description>
+
+   <example lang="Java" type="HTML">
+<p class="celltitel"><b>Work around</b> to receive events with new EventPlugin</p>
+<a name="workaround"/>
+
+<p>To reveive the login/logout event with the new framework please add this to <code>xmlBlasterPlugins.xml</code>:</p>
+
+<pre class="BORDER">
+   &lt;plugin create='true' id='connectEvent' className='org.xmlBlaster.engine.EventPlugin'>
+      &lt;action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      &lt;action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      &lt;attribute id='eventTypes'>client/*/session/*/event/connect&lt;/attribute>
+      &lt;attribute id='destination.publish'>
+         "publish.key=&lt;key oid='__sys__Login'/>",
+         "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>&lt;topic destroyDelay='30000'>
+                              &lt;persistence relating='msgUnitStore' type='RAM'/>
+                              &lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>"
+      &lt;/attribute>
+   &lt;/plugin>
+
+   &lt;plugin create='true' id='disconnectEvent' className='org.xmlBlaster.engine.EventPlugin'>
+      &lt;action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      &lt;action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      &lt;attribute id='eventTypes'>client/*/session/*/event/disconnect&lt;/attribute>
+      &lt;attribute id='destination.publish'>
+         "publish.key=&lt;key oid='__sys__Logout'/>",
+         "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>&lt;topic destroyDelay='30000'>
+                              &lt;persistence relating='msgUnitStore' type='RAM'/>
+                              &lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>"
+      &lt;/attribute>
+   &lt;/plugin>
+</pre>
+
+   <p>See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html</p>
+
+   <p>If you are interested in the <code>__sys__UserList</code> information, please query this like follows:</p>
+<pre>
+java javaclients.HelloWorldGet -oid __cmd:?clientList
+</pre>
+</example>
+
+
    <example lang="Java" type="HTML">
    <p>The following Java code snippet shows the access to the client login events:</p>
 <pre>
@@ -43,6 +85,8 @@ String absoluteName = updateQos.getClientProperty("__absoluteName", "");
 System.out.println("Client is '" + absoluteName + "'");
 </pre>
    </example>
+
+
 
    <configuration where="server">
       <p>
