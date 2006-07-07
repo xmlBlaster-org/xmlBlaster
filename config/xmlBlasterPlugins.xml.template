@@ -275,7 +275,7 @@
       <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
       <attribute id='eventTypes'>client/*/session/*/event/connect</attribute>
       <attribute id='destination.publish'>
-         "publish.key=<key oid='__sys__Login'/>",
+         "publish.key=<key oid='__sys__Login'><__sys__internal/></key>",
          "publish.qos=<qos><expiration lifeTime='0'/><topic destroyDelay='30000'><persistence relating='msgUnitStore' type='RAM'/><queue relating='history' type='RAM'/></topic></qos>"
       </attribute>
    </plugin>
@@ -287,7 +287,20 @@
       <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
       <attribute id='eventTypes'>client/*/session/*/event/disconnect</attribute>
       <attribute id='destination.publish'>
-         "publish.key=<key oid='__sys__Logout'/>",
+         "publish.key=<key oid='__sys__Logout'><__sys__internal/></key>",
+         "publish.qos=<qos><expiration lifeTime='0'/><topic destroyDelay='30000'><persistence relating='msgUnitStore' type='RAM'/><queue relating='history' type='RAM'/></topic></qos>"
+      </attribute>
+   </plugin>
+
+   <!-- Get event when a client logs in or out, send comma separated list of login names to topic '__sys__UserList' -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <plugin create='false' id='clientListEvent' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>client/*/session/*/event/connect,client/*/session/*/event/disconnect</attribute>
+      <attribute id='destination.publish'>
+         "publish.key=<key oid='__sys__UserList'><__sys__internal/></key>",
+         "publish.content=$_{clientList}",
          "publish.qos=<qos><expiration lifeTime='0'/><topic destroyDelay='30000'><persistence relating='msgUnitStore' type='RAM'/><queue relating='history' type='RAM'/></topic></qos>"
       </attribute>
    </plugin>
