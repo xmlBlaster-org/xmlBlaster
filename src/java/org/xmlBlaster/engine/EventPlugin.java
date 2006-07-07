@@ -822,6 +822,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       str = ReplaceVariable.replaceAll(str, "$_{id}", this.engineGlob.getId());  // "heron"
       str = ReplaceVariable.replaceAll(str, "$_{eventType}", (eventType==null)?"":eventType);
       str = ReplaceVariable.replaceAll(str, "$_{errorCode}", (errorCode==null)?"":errorCode);
+      if (str.indexOf("$_{clientList}") != -1) { // To support backward compatibility with "userListEvent=true" __sys__UserList
+         str = ReplaceVariable.replaceAll(str, "$_{clientList}", this.requestBroker.getClientList());
+      }
       if (str.indexOf("$_{versionInfo}") != -1) {
          XmlBlasterException e = new XmlBlasterException(this.engineGlob,
             ErrorCode.COMMUNICATION_NOCONNECTION, ME, "");
