@@ -475,7 +475,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
 
       // Sending the events as a JMX notification?
-      this.jmxDestinationConfiguration = this.glob.get("destination.jmx", "", null,
+      this.jmxDestinationConfiguration = this.glob.get("destination.jmx", (String)null, null,
             this.pluginConfig);
       if (this.jmxDestinationConfiguration != null) {
          this.jmxDestinationConfiguration = this.jmxDestinationConfiguration.trim();
