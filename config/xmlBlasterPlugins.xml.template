@@ -268,6 +268,30 @@
    </plugin>
    -->
 
+   <!-- Get event when a client logs in, send to topic '__sys__Login' -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <plugin create='false' id='connectEvent' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>client/*/session/*/event/connect</attribute>
+      <attribute id='destination.publish'>
+         "publish.key=<key oid='__sys__Login'/>",
+         "publish.qos=<qos><expiration lifeTime='0'/><topic destroyDelay='30000'><persistence relating='msgUnitStore' type='RAM'/><queue relating='history' type='RAM'/></topic></qos>"
+      </attribute>
+   </plugin>
+
+   <!-- Get event when a client logs out, send to topic '__sys__Logout' -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <plugin create='false' id='disconnectEvent' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>client/*/session/*/event/disconnect</attribute>
+      <attribute id='destination.publish'>
+         "publish.key=<key oid='__sys__Logout'/>",
+         "publish.qos=<qos><expiration lifeTime='0'/><topic destroyDelay='30000'><persistence relating='msgUnitStore' type='RAM'/><queue relating='history' type='RAM'/></topic></qos>"
+      </attribute>
+   </plugin>
+
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html -->
    <!--
    <plugin create='true' id='StartupTasks' className='org.xmlBlaster.engine.StartupTasks'>
