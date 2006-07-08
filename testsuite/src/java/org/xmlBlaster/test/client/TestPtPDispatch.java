@@ -90,6 +90,7 @@ public class TestPtPDispatch extends TestCase {
 
    private void prepare(boolean shutdownCb) {
       try {
+         // init(boolean wantsPtP, boolean shutdownCb, long cbMaxEntries, long cbMaxEntriesCache, long subjMaxEntries, long subjMaxEntriesCache)
          this.destinations[0].init(true, shutdownCb, 1, 1, 3, 1);
          this.destinations[1].init(false, shutdownCb, 1, 1, 3, 1);
       }
@@ -289,16 +290,19 @@ public class TestPtPDispatch extends TestCase {
    private void queuingNoOverflow(boolean isPersistent, String msgPrefix) {
       boolean forceQueuing = true;
       boolean shutdownCb = false;
-      prepare(shutdownCb);
+      
+      prepare(shutdownCb); // creates session TestPtPDispatch/1 und TestPtPDispatch/2
+      
+      // doPublish(int destNum, boolean forceQueuing, boolean expectEx, int[] counts, long timeout, boolean persistent, String contentPrefix)
       doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
       doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
       doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
-      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
-      doPublish(3 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix); // session TestPtPDispatch/3 will be dynamically created
+      doPublish(3 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix); // session TestPtPDispatch/4 will be dynamically created
 
+      // checkWithoutPublish(PtPDestination dest, boolean wantsPtP, int expected, long delay)
       checkWithoutPublish(this.destinations[2], true, 1, TIMEOUT);
-      checkWithoutPublish(this.destinations[3], false,0, TIMEOUT);
-      // TODO check for dead letters. There should be one here  
+      checkWithoutPublish(this.destinations[3], false,0, TIMEOUT); // wantsPtP==false is too late as doPublish(3,...) dynamically created one with default settings      // TODO check for dead letters. There should be one here  
 
       cleanup();
    }
