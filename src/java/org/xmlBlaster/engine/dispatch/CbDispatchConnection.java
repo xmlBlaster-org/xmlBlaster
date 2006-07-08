@@ -57,6 +57,12 @@ public final class CbDispatchConnection extends DispatchConnection
    public CbDispatchConnection(Global glob, CbDispatchConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
       this.ME = "CbDispatchConnection-" + connectionsHandler.getDispatchManager().getQueue().getStorageId();
+      // How to access ConnectQos? refactor and pass SessionInfo to DispatchManager?
+      //ServerScope serverScope = (ServerScope)glob;
+      //SessionInfo sessionInfo = serverScope.getAuthenticate().getSubjectInfoByName(connectionsHandler.getDispatchManager().getSessionName());
+      // -- in doSend
+      //if (msg.isPtp() && !sessionInfo.getConnectQos().isPtpAllowed())
+      //   throaway msg 
    }
 
    /**
