@@ -3,6 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+
+ o #15250 XmlRpc callback (server side): Fixed recognition of COMMUNICATION errorCode
+          to avoid going to DEAD when callback server of client disappeared temporary
+
  o #15244 EventPlugin: Added fix to only send JMX events when configured
 
  o #15234 Added java client side API methods for synchronous access:
