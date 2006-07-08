@@ -139,9 +139,13 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       }
       catch (XmlRpcException ex) {
          int start = ex.toString().indexOf("errorCode=");
-         if (start == -1) {
+         
+         // org.apache.xmlrpc.XmlRpcException: java.lang.Exception: RPC handler object not found for "update": no default handler registered.
+         boolean isServerSide = ex.toString().indexOf("no default handler registered") != -1;
+         
+         if (start == -1 && !isServerSide) {
             ex.printStackTrace();
-            String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed, receivunexpected exception format from client";
+            String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed, received unexpected exception format from client";
             XmlBlasterException e2 = new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, ex);
             e2.isServerSide(false);
             e2.setLocation("client");
@@ -223,7 +227,8 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "XmlRpc callback ping - got exception from client", e);
       }
       catch (Throwable e) {
-         e.printStackTrace();
+         if (!(e instanceof IOException)) // IOException: callback connection refused if client is away, is normal behavior
+            e.printStackTrace();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "XmlRpc callback ping failed", e);
       }
    }
