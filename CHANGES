@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ o #15261 JMX invocations: Fixed invocation with none-String arguments, see
+          See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.http.html#jmx
 
  o #15256 Fixed switching off erase notification, added test case
           Thanks to Brad Clements for reporting
