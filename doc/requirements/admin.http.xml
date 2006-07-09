@@ -70,7 +70,7 @@
    </description>
 
    <example lang="any" type="HTML">
-      <h1 id="status">Observing xmlBlaster with a simple status page</h1>
+      <p class="celltitel" id="status">Observing xmlBlaster with a simple status page</p>
       <p>XmlBlaster comes ready configured with a simple status HTML page which contains
       the most important informations. You can easily extend this example to your needs
       by editing <tt>xmlBlaster/config/status.html</tt> and and put the new file to
@@ -108,7 +108,7 @@ in your browser.
 
 
    <example lang="any" type="HTML">
-      <h1 id="template">A HTML template example using administrative commands</h1>
+      <p class="celltitel" id="template">A HTML template example using administrative commands</p>
    <pre>
 &lt;html>
   &lt;head>
@@ -152,7 +152,7 @@ in your browser.
 
 
    <example lang="any" type="HTML">
-      <h1 id="template">A HTML template example using JMX</h1>
+      <p class="celltitel" id="jmxtemplate">A HTML template example using JMX</p>
    <pre>
 &lt;html>
   &lt;head>
@@ -176,6 +176,29 @@ in your browser.
 read the <code>admin.jmx</code> requirement.</p>
    </example>
 
+
+   <example type="HTML">
+      <p class="celltitel" id="jmx">Example how to query a topic (a watchdog using JMX markup)</p>
+      <p>This example shows a html page which looks up a topic <code>watchdog</code>
+         and accesses the first message from the history queue:</p>
+<pre class="BORDER">
+&lt;!-- watchdog.html -->
+${org.xmlBlaster:nodeClass=node,node="heron",topicClass=topic,topic="watchdog"/action=peekHistoryMessages?p1+int=1}
+</pre>
+<p>Start xmlBlaster and a client sending heartbeats:</p>
+<pre class="BORDER">
+java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -cluster.node.id heron
+
+java javaclients.HelloWorldPublish -session.name watchdog/1 -numPublish -1 -persistent false \
+      -oid watchdog -content ALIVE -lifeTime 15000 -interactive false -sleep 10000    
+</pre>
+
+<p>You can now query xmlBlaster over http and report the result to nagios, here we use the wget command on linux:</p>
+<pre class="BORDER">
+rm watchdog.html.*; `wget http://127.0.0.2:3412/monitor/watchdog.html >/dev/null 2>&amp;1` cat watchdog.html.1 | grep ALIVE
+</pre>
+   <p>If you kill the publisher, after 15 seconds no "ALIVE" will be reported.</p>
+   </example>
 
    <configuration where="server">
       <p>
