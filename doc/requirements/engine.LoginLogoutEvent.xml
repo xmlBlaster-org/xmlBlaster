@@ -29,7 +29,9 @@
       &lt;attribute id='eventTypes'>client/*/session/*/event/connect&lt;/attribute>
       &lt;attribute id='destination.publish'>
          "publish.key=&lt;key oid='__sys__Login'>&lt;__sys__internal/>&lt;/key>",
-         "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>&lt;topic destroyDelay='30000'>&lt;persistence relating='msgUnitStore' type='RAM'/>&lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>"
+         "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>&lt;topic destroyDelay='30000'>
+                              &lt;persistence relating='msgUnitStore' type='RAM'/>
+                              &lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>"
       &lt;/attribute>
    &lt;/plugin>
 
@@ -39,7 +41,9 @@
       &lt;attribute id='eventTypes'>client/*/session/*/event/disconnect&lt;/attribute>
       &lt;attribute id='destination.publish'>
          "publish.key=&lt;key oid='__sys__Logout'>&lt;__sys__internal/>&lt;/key>",
-         "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>&lt;topic destroyDelay='30000'>&lt;persistence relating='msgUnitStore' type='RAM'/>&lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>"
+         "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>&lt;topic destroyDelay='30000'>
+                              &lt;persistence relating='msgUnitStore' type='RAM'/>
+                              &lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>"
       &lt;/attribute>
    &lt;/plugin>
 
@@ -50,7 +54,9 @@
       &lt;attribute id='destination.publish'>
          "publish.key=&lt;key oid='__sys__UserList'>&lt;__sys__internal/>&lt;/key>",
          "publish.content=$_{clientList}",
-         "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>&lt;topic destroyDelay='30000'>&lt;persistence relating='msgUnitStore' type='RAM'/>&lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>"
+         "publish.qos=&lt;qos>&lt;expiration lifeTime='0'/>
+                      &lt;topic destroyDelay='30000'>&lt;persistence relating='msgUnitStore' type='RAM'/>
+                      &lt;queue relating='history' type='RAM'/>&lt;/topic>&lt;/qos>"
       &lt;/attribute>
    &lt;/plugin>
 </pre>
@@ -70,6 +76,9 @@ qos:
   &lt;clientProperty name='_absoluteName'>/node/heron/client/Martin/1&lt;/clientProperty>
   ...
 </pre>
+   <p>Note that we have marked the event message to be volatile, this is a little
+   change of behavior to the original events, further the login name is not delivered in the
+   content anymore, you'll find it in the client property 'subjectId'.</p>
 
 
    <p>See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html</p>
