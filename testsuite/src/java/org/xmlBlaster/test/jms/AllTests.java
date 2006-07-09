@@ -5,9 +5,9 @@ import junit.framework.*;
 /**
  * TestSuite that runs all the sample tests. 
  * <pre>
- * java org.xmlBlaster.test.classtest.AllTests
- * java -Djava.compiler= org.xmlBlaster.test.classtest.AllTests
- * java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
+ * java org.xmlBlaster.test.jms.AllTests
+ * java -Djava.compiler= org.xmlBlaster.test.jms.AllTests
+ * java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.jms.AllTests
  * </pre>
  */
 public class AllTests {
