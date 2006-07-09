@@ -64,7 +64,8 @@ public class HelloWorldGet
          String oid = glob.getProperty().get("oid", "");
          String domain = glob.getProperty().get("domain", (String)null);
          String xpath = glob.getProperty().get("xpath", "");
-         int numHistory = glob.getProperty().get("numHistory", 1);
+         int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
+         boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
          String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
          String filterVersion = glob.getProperty().get("filter.version", "1.0");
          String filterQuery = glob.getProperty().get("filter.query", "");
@@ -78,17 +79,18 @@ public class HelloWorldGet
          }
 
          log.info("Used settings are:");
-         log.info("   -interactive       " + interactive);
-         log.info("   -oid               " + oid);
-         log.info("   -domain            " + domain);
-         log.info("   -xpath             " + xpath);
-         log.info("   -numHistory        " + numHistory);
-         log.info("   -content           " + content);
-         log.info("   -disconnect        " + disconnect);
-         log.info("   -filter.type       " + filterType);
-         log.info("   -filter.version    " + filterVersion);
-         log.info("   -filter.query      " + filterQuery);
-         log.info("   -saveToFile        " + saveToFile);
+         log.info("   -interactive        " + interactive);
+         log.info("   -oid                " + oid);
+         log.info("   -domain             " + domain);
+         log.info("   -xpath              " + xpath);
+         log.info("   -historyNumUpdates  " + historyNumUpdates);
+         log.info("   -historyNewestFirst " + historyNewestFirst);
+         log.info("   -content            " + content);
+         log.info("   -disconnect         " + disconnect);
+         log.info("   -filter.type        " + filterType);
+         log.info("   -filter.version     " + filterVersion);
+         log.info("   -filter.query       " + filterQuery);
+         log.info("   -saveToFile         " + saveToFile);
          log.info("For more info please read:");
          log.info("   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html");
 
@@ -107,7 +109,8 @@ public class HelloWorldGet
          gq.setWantContent(content);
          
          HistoryQos historyQos = new HistoryQos(glob);
-         historyQos.setNumEntries(numHistory);
+         historyQos.setNumEntries(historyNumUpdates);
+         historyQos.setNewestFirst(historyNewestFirst);
          gq.setHistoryQos(historyQos);
 
          if (filterQuery.length() > 0) {
