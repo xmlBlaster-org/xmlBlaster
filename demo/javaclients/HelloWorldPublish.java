@@ -233,7 +233,10 @@ public class HelloWorldPublish
          log.info("Connect success as " + crq.toXml());
 
          org.xmlBlaster.util.StopWatch stopWatch = new org.xmlBlaster.util.StopWatch();
-         for(int i=0; i<numPublish; i++) {
+         for(int i=0; true; i++) {
+            if (numPublish != -1)
+               if (i>=numPublish)
+                  break;
 
             String currOid = org.xmlBlaster.util.ReplaceVariable.replaceAll(oid, "%counter", ""+(i+1));
 
@@ -241,7 +244,7 @@ public class HelloWorldPublish
                Global.waitOnKeyboardHit("Hit a key to publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
             }
             else {
-               if (sleep > 0) {
+               if (sleep > 0 && i > 0) {
                   try { Thread.sleep(sleep); } catch( InterruptedException e) {}
                }
                log.info("Publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
