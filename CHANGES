@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn
 ===========
 
+ o #15256 Fixed switching off erase notification, added test case
+          Thanks to Brad Clements for reporting
+
  o #15250 XmlRpc callback (server side): Fixed recognition of COMMUNICATION errorCode
           to avoid going to DEAD when callback server of client disappeared temporary
 
