@@ -198,6 +198,9 @@ public class MsgInterceptor extends Assert implements I_Callback
       this.updateVec.removeElement(msg);
    }
    
+   /**
+    * Clears all arrived messages AND the countErased flag to false
+    */
    public void clear() { 
       this.updateVec.clear();
       this.countErased = false;
