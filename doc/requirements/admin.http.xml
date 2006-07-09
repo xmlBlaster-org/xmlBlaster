@@ -190,7 +190,7 @@ ${org.xmlBlaster:nodeClass=node,node="heron",topicClass=topic,topic="watchdog"/a
 java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -cluster.node.id heron
 
 java javaclients.HelloWorldPublish -session.name watchdog/1 -numPublish -1 -persistent false \
-      -oid watchdog -content ALIVE -lifeTime 15000 -interactive false -sleep 10000    
+     -oid watchdog -content ALIVE -lifeTime 15000 -interactive false -sleep 10000 -queue/history/maxEntries 1
 </pre>
 
 <p>You can now query xmlBlaster over http and report the result to nagios, here we use the wget command on linux:</p>
