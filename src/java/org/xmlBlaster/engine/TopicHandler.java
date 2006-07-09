@@ -2048,6 +2048,12 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                SubscriptionInfo[] arr = getSubscriptionInfoArr();
                for(int i=0; i<arr.length; i++) {
                   SubscriptionInfo sub = arr[i];
+                  if (!sub.getQueryQosData().getWantNotify()) {
+                     if (log.isLoggable(Level.FINER))
+                        log.finer("Don't send ERASE notify for topic " + getId() + " to subscriber " + sub.getSessionName() + " as want notify==false");
+                     continue;
+                  }
+
                   org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
                                                             Constants.EVENT_OID_ERASEDTOPIC/*+":"+getUniqueKey()*/, "text/plain", "1.0");
                   org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);

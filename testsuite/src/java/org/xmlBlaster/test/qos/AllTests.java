@@ -46,6 +46,7 @@ public class AllTests
       suite.addTest(TestSubExact.suite());
       suite.addTest(TestSubGet.suite());
       suite.addTest(TestSubNoDup.suite());
+      suite.addTest(TestSubNotify.suite());
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubId.suite());
       // suite.addTest(TestSubHistory.suite());

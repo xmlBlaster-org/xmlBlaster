@@ -341,6 +341,7 @@
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubXPath</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubManyClients</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubNoDup</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubNotify</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubNoLocal</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubXPathMany</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubDispatch</test>
