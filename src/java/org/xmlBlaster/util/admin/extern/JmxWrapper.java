@@ -747,6 +747,12 @@ public class JmxWrapper
     * @param args could be somethig like:
     * '/InvokeAction//org.xmlBlaster:nodeClass=node,node="izar",contribClass=contrib,contrib="Heini"
     *  /action=myNiceMethodName?action=myNiceMethodName&p1+java.lang.String=arg1&p2+java.lang.String=arg1'
+    *  or
+    *  'org.xmlBlaster:nodeClass=node,node="heron",topicClass=topic,topic="watchDog"/action=getNumOfHistoryEntries'
+    *  or
+    *  'org.xmlBlaster:nodeClass=node,node="heron",topicClass=topic,topic="watchDog"/action=usage'
+    *  or
+    *  'j org.xmlBlaster:nodeClass=node,node="heron",topicClass=topic,topic="watchDog"/action=peekHistoryMessages?p1+int=1
     *  
     *  or much simpler (will return the usage() string):
     *  
@@ -830,14 +836,13 @@ didn't you have "state" as the name of the attribute?
 //    if (log.isLoggable(Level.FINE)) log.trace(ME, "key: " + key + " element: '" + element);
 // }
  
-      // scan for arguments, starting with '&'
-      int k = callString.indexOf("&");
+      // scan for arguments, starting with '&' (i don't know who has introduced the double noting of action=...)
+      int k = callString.indexOf("&"); // '/action=myNiceMethodName?action=myNiceMethodName&p1+java.lang.String=arg1&p2+java.lang.String=arg1'
+      if (k == -1) k = callString.indexOf("?"); // '...action=myNiceMethodName?p1+java.lang.String=arg1&p2+java.lang.String=arg1'
 
-      ArrayList p = new ArrayList();
       ArrayList s = new ArrayList();
 
-      getParams(p, s, callString.substring(k+1));
-      Object[] params = p.toArray(new Object[p.size()]);
+      Object[] params = getParams(s, callString.substring(k+1));
       String[] signature = (String[]) s.toArray(new String[s.size()]);
       
       ObjectName objectName = null;
@@ -869,7 +874,7 @@ didn't you have "state" as the name of the attribute?
             }
             else if (action.startsWith("set")) {
                action = action.substring(3);
-               Object value = (p!=null && p.size()>0) ? p.get(0) : "";
+               Object value = (params.length>0) ? params[0] : "";
                Attribute attribute = new Attribute(action, value);
                if (log.isLoggable(Level.FINE)) log.fine("invoke: '" + attribute.toString() + "@" + objectName);
                mbeanServer.setAttribute(objectName, attribute);
@@ -974,11 +979,11 @@ didn't you have "state" as the name of the attribute?
          return s.substring(i + 7, j);
    }
 
-   private void getParams(ArrayList parms, ArrayList sigs, String callArgs) {
+   private Object[] getParams(ArrayList sigs, String callArgs) {
       if (log.isLoggable(Level.FINE)) log.fine("getParams from: '" + callArgs);
       Map param = StringPairTokenizer.parseToStringStringPairs(callArgs, "&", "+");
       if (log.isLoggable(Level.FINE)) log.fine("params: '" + param);
-      
+      ArrayList parms = new ArrayList();
       for (int p = 1; p <= param.size(); p++) {
          String key = "p" + p;
          if (param.containsKey(key)) {
@@ -989,8 +994,21 @@ didn't you have "state" as the name of the attribute?
             sigs.add(signature);
          }
       }
-      
+      Object[] ret = new Object[parms.size()];
+      for (int i=0; i<ret.length; i++) {
+         String sig = (String)sigs.get(i);
+         String par = (String)parms.get(i);
+         if (sig.equals("java.lang.Integer") || sig.equals("int"))
+            ret[i] = new Integer(par);
+         else if (sig.equals("java.lang.Long") || sig.equals("long"))
+            ret[i] = new Long(par);
+         else if (sig.equals("java.lang.Short") || sig.equals("short"))
+            ret[i] = new Short(par);
+         else if (sig.equals("java.lang.Boolean") || sig.equals("boolean"))
+            ret[i] = new Boolean(par);
+         else
+            ret[i] = par;
+      }
+      return ret;
    }
-
-
 }
