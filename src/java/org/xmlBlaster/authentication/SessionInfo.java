@@ -321,14 +321,19 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       try {
          this.isShutdown = true;
          removeExpiryTimer();
+         
          if (this.sessionQueue != null) {
             this.sessionQueue.shutdown();
             //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
          }
+         
          if (this.msgErrorHandler != null)
             this.msgErrorHandler.shutdown();
-         if (this.dispatchManager != null)
-            this.dispatchManager.shutdown();
+         
+         DispatchManager dispatchManager = this.dispatchManager;
+         if (dispatchManager != null)
+            dispatchManager.shutdown();
+         
          this.subjectInfo = null;
          // this.securityCtx = null; We need it in finalize() getSecretSessionId()
          // this.connectQos = null;
@@ -340,7 +345,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * @return null if no callback is configured
+    * @return null if no callback is configured, can change to null on reconfiguration
     */
    public final DispatchManager getDispatchManager() {
       return this.dispatchManager;
@@ -353,8 +358,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       if (this.statistic == null) {
          synchronized (this) {
             if (this.statistic == null) {
-               if (this.dispatchManager != null)
-                  this.statistic = this.dispatchManager.getDispatchStatistic();
+               DispatchManager dispatchManager = this.dispatchManager;
+               if (dispatchManager != null)
+                  this.statistic = dispatchManager.getDispatchStatistic();
                else
                   this.statistic = new DispatchStatistic();
             }
@@ -452,23 +458,30 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       CbQueueProperty cbQueueProperty = newConnectQos.getSessionCbQueueProperty();
       this.sessionQueue.setProperties(cbQueueProperty);
       if (wantsCallbacks && hasCallback()) {
-         this.dispatchManager.updateProperty(cbQueueProperty.getCallbackAddresses());
-         log.info("Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
-         this.dispatchManager.notifyAboutNewEntry();
+         DispatchManager dispatchManager = this.dispatchManager;
+         if (dispatchManager != null) {
+            dispatchManager.updateProperty(cbQueueProperty.getCallbackAddresses());
+            log.info("Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
+            dispatchManager.notifyAboutNewEntry();
+         }
       }
       else if (wantsCallbacks && !hasCallback()) {
          log.info("Successfully reconfigured and created dispatch manager with given callback address");
          DispatchManager tmpDispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                               this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                               newConnectQos.getSessionCbQueueProperty().getCallbackAddresses(), this.sessionName);
-         if (this.dispatchManager != null)
-            tmpDispatchManager.setDispatcherActive(this.dispatchManager.isDispatcherActive());
+         DispatchManager dispatchManager = this.dispatchManager;
+         if (dispatchManager != null)
+            tmpDispatchManager.setDispatcherActive(dispatchManager.isDispatcherActive());
          this.dispatchManager = tmpDispatchManager;
       }
       else if (!wantsCallbacks && hasCallback()) {
-         this.dispatchManager.shutdown();
+         DispatchManager dispatchManager = this.dispatchManager;
+         if (dispatchManager != null) {
+            dispatchManager.shutdown();
+            log.info("Successfully shutdown dispatch manager as no callback address is configured");
+         }
          this.dispatchManager = null;
-         log.info("Successfully shutdown dispatch manager as no callback address is configured");
       }
       else if (!wantsCallbacks && !hasCallback()) {
          if (log.isLoggable(Level.FINE)) log.fine("No callback exists and no callback is desired");
@@ -489,6 +502,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * @return loginName
     */
    public final String getLoginName() {
+      SubjectInfo subjectInfo = this.subjectInfo;
       return (subjectInfo==null)?"--":subjectInfo.getLoginName();
    }
 
@@ -498,7 +512,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * @return SubjectInfo
     */
    public final SubjectInfo getSubjectInfo() {
-      return subjectInfo;
+      return this.subjectInfo;
    }
 
    /**
@@ -551,7 +565,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * Enforced by I_QueueSizeListener
     */
    public void changed(I_Queue queue, long numEntries, long numBytes) {
-      boolean hasSubjectEntries = getSubjectInfo().getSubjectQueue().getNumOfEntries() > 0;
+      SubjectInfo subjectInfo = getSubjectInfo();
+      boolean hasSubjectEntries = (subjectInfo == null) ? false : subjectInfo.getSubjectQueue().getNumOfEntries() > 0;
       if (lastNumEntries != numEntries) {
          long max = getSessionQueue().getMaxNumOfEntries();
          if (hasSubjectEntries && numEntries < max && lastNumEntries > numEntries) {
@@ -591,20 +606,25 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<SessionInfo id='").append(getId());
-      long timeToLife = this.expiryTimer.spanToTimeout(timerKey);
+      
+      Timeout expiryTimer = this.expiryTimer;
+      long timeToLife = (expiryTimer != null) ? expiryTimer.spanToTimeout(timerKey) : 0;
       sb.append("' timeout='").append(timeToLife).append("'>");
 
       // Avoid dump of password
       sb.append(this.connectQos.toXml(extraOffset+Constants.INDENT, Constants.TOXML_FLAG_NOSECURITY));
       
-      if (hasCallback()) {
-         sb.append(this.dispatchManager.toXml(extraOffset+Constants.INDENT));
+      DispatchManager dispatchManager = this.dispatchManager;
+      if (dispatchManager != null) {
+         sb.append(dispatchManager.toXml(extraOffset+Constants.INDENT));
       }
       else {
          sb.append(offset).append(Constants.INDENT).append("<DispatchManager id='NULL'/>");
       }
-      if (this.sessionQueue != null) {
-         sb.append(this.sessionQueue.toXml(extraOffset+Constants.INDENT));
+      
+      I_Queue sessionQueue = this.sessionQueue;
+      if (sessionQueue != null) {
+         sb.append(sessionQueue.toXml(extraOffset+Constants.INDENT));
       }
       sb.append(offset).append("</SessionInfo>");
 
