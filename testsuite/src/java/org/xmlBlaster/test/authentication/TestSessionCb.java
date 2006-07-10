@@ -170,8 +170,8 @@ public class TestSessionCb extends TestCase
 
          try {
             log.info("Check that session has dissapeared ...");
-            MsgUnit[] msgs = Util.adminGet(glob, "__sys__UserList");
-            assertEquals("Can't access __sys__UserList", 1, msgs.length);
+            MsgUnit[] msgs = Util.adminGet(glob, "__cmd:?clientList");
+            assertEquals("Can't access __cmd:?clientList", 1, msgs.length);
             log.info("Got userList=" + msgs[0].getContentStr() + " checking for " + name1);
             assertEquals("Session of " + name1 + " was not destroyed by failing callback",
                       -1, msgs[0].getContentStr().indexOf(name1));
@@ -192,7 +192,6 @@ public class TestSessionCb extends TestCase
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       String loginName = "Tim";
        Global glob = new Global();
        suite.addTest(new TestSessionCb(glob, "testSessionCb"));
        suite.addTest(new TestSessionCb(glob, "testSessionCb")); // Run it twice
