@@ -366,7 +366,21 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * The life time of the message or -1L if forever
+    * Control the life time of a message. 
+    * <p/>
+    * This value is calculated relative to the rcvTimestamp in the xmlBlaster server.
+    * <p/>
+    * Passing -1 milliseconds asks the server for unlimited livespan, which
+    * the server may or may not grant.
+
+    * @param lifeTime The life time of the message or -1L if forever.
+    * <p>  
+    * Setting to 0 will behave as a volatile message (see setVolatile())
+    * and the message will be invisible directly after being pushed into the subscribers
+    * callback queues, in the callback queues it will stay until retrieved by the subscriber.
+    * <p>
+    * Setting it to a value > 0 will expire the message after the given milliseconds,
+    * even if they remain in any callback queue.
     */
    public void setLifeTime(long lifeTime) {
       this.lifeTime.setValue(lifeTime);
