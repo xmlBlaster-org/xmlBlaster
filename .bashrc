@@ -81,6 +81,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    # Funny stuff for speech synthetizer ...
    CLASSPATH=${XMLBLASTER_HOME}/lib/speech.jar:${CLASSPATH}
 
+   # Doug Lea JDK 1.5 concurrent for JDK 1.4
+   CLASSPATH=${XMLBLASTER_HOME}/lib/backport-util-concurrent.jar:${CLASSPATH}
+
    # classpath for the embedded db ...
    CLASSPATH=${XMLBLASTER_HOME}/lib/hsqldb.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/mckoidb.jar:${CLASSPATH}
