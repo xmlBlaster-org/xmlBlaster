@@ -433,8 +433,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          globals[4] = createConnection(this.origGlobal, "jonny/5", true, true);
       }
       finally {
-         for (int i=0; i < 3; i++) {
-            globals[i].getXmlBlasterAccess().disconnect(new DisconnectQos(globals[i]));
+         for (int i=0; i < globals.length; i++) {
+            if (globals[i] != null) globals[i].getXmlBlasterAccess().disconnect(new DisconnectQos(globals[i]));
          }
       }
    }
