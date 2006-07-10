@@ -238,21 +238,32 @@ public class HelloWorldPublish
                if (i>=numPublish)
                   break;
 
-            String currOid = org.xmlBlaster.util.ReplaceVariable.replaceAll(oid, "%counter", ""+(i+1));
+            String currCounter = ""+(i+1);
+            if (numPublish > 0) { // Add leading zeros to have nice justified numbers in dump
+               String tmp = ""+numPublish;
+               int curLen = currCounter.length();
+               currCounter = "";
+               for (int j=curLen; j<tmp.length(); j++) {
+                  currCounter += "0";
+               }
+               currCounter += (i+1);
+            }
+
+            String currOid = org.xmlBlaster.util.ReplaceVariable.replaceAll(oid, "%counter", currCounter);
 
             if (interactive) {
-               Global.waitOnKeyboardHit("Hit a key to publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
+               Global.waitOnKeyboardHit("Hit a key to publish '" + currOid + "' #" + currCounter + "/" + numPublish);
             }
             else {
                if (sleep > 0 && i > 0) {
                   try { Thread.sleep(sleep); } catch( InterruptedException e) {}
                }
-               log.info("Publish '" + currOid + "' #" + (i+1) + "/" + numPublish);
+               log.info("Publish '" + currOid + "' #" + currCounter + "/" + numPublish);
             }
 
             PublishKey pk = new PublishKey(glob, currOid, "text/xml", "1.0");
             if (domain != null) pk.setDomain(domain);
-            pk.setClientTags(org.xmlBlaster.util.ReplaceVariable.replaceAll(clientTags, "%counter", ""+(i+1)));
+            pk.setClientTags(org.xmlBlaster.util.ReplaceVariable.replaceAll(clientTags, "%counter", currCounter));
             PublishQos pq = new PublishQos(glob);
             pq.setPriority(priority);
             pq.setPersistent(persistent);
@@ -322,7 +333,7 @@ public class HelloWorldPublish
                PublishReturnQos prq = con.publish(msgUnit);
                if (log.isLoggable(Level.FINEST)) log.finest("Returned: " + prq.toXml());
 
-               log.info("#" + (i+1) + "/" + numPublish +
+               log.info("#" + currCounter + "/" + numPublish +
                          ": Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp() +
                          " for published message '" + prq.getKeyOid() + "'");
             }
