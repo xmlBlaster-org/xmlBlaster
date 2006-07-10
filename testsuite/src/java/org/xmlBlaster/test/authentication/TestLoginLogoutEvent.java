@@ -24,12 +24,14 @@ import junit.framework.*;
 /**
  * This client tests for login/logout events of other clients.
  * <p />
+ * IMPORTANT NOTE: Switch on the event plugins in xmlBlasterPlugins.xml for this test!
+ * <p />
  * There are two internal messages which hold login and logout events.
  * You can subscribe to "__sys__Login" to be notified when a new client logs in,
  * and to "__sys__Logout" to be notified when a client logs out.
  * The message content contains the unique login name of this client.
  * <p />
- * Tests the '__sys__UserList' feature as well.
+ * Tests the '__cmd:?clientList' feature as well.
  * <p />
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
@@ -42,7 +44,6 @@ import junit.framework.*;
  */
 public class TestLoginLogoutEvent extends TestCase
 {
-   private static String ME = "TestLoginLogoutEvent";
    private Global glob;
    private static Logger log = Logger.getLogger(TestLoginLogoutEvent.class.getName());
 
@@ -55,10 +56,6 @@ public class TestLoginLogoutEvent extends TestCase
    private String expectedName;
 
    private String passwd = "secret";
-
-   private int numReceived = 0;         // error checking
-   private final String contentMime = "text/plain";
-   private final String contentMimeExtended = "1.0";
 
    private MsgInterceptor updateInterceptFirst; // collects updated messages
    private MsgInterceptor updateInterceptSecond; // collects updated messages
@@ -112,7 +109,6 @@ public class TestLoginLogoutEvent extends TestCase
    {
       String xmlKey = "<key oid='__sys__Logout' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
-      this.numReceived = 0;
       if (this.firstConnection != null) {
          try {
             this.firstConnection.unSubscribe(xmlKey, qos);
@@ -143,7 +139,6 @@ public class TestLoginLogoutEvent extends TestCase
       if (log.isLoggable(Level.FINE)) log.fine("Subscribing to login events ...");
       String xmlKey = "<key oid='" + oid + "' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
-      numReceived = 0;
       try {
          String subscribeOid = firstConnection.subscribe(xmlKey, qos).getSubscriptionId();
          assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -162,9 +157,9 @@ public class TestLoginLogoutEvent extends TestCase
    {
       long sleep = 1000L;
 
-      numReceived = 0;
       expectedName = firstName;   // my first login name should be returned on this subscribe
       subscribe("__sys__Login");
+      /* NO not anymore, it is now volatile
       // expecting a login event message (the login event message exists from my own login)
       assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
       {
@@ -173,14 +168,13 @@ public class TestLoginLogoutEvent extends TestCase
          assertEquals("Wrong login name", expectedName, content);
          this.updateInterceptFirst.clear();
       }
+      */
 
-      numReceived = 0;
       expectedName = null;        // no check (the logout event exists with AllTests but not when this test is run alone
       subscribe("__sys__Logout");
       try { Thread.sleep(1000L); } catch( InterruptedException i) {}          // no check
       this.updateInterceptFirst.clear();
 
-      numReceived = 0;
       expectedName = secondName; // second name should be returned on this login
       try {
          Global secondGlob = glob.getClone(null);
@@ -191,21 +185,22 @@ public class TestLoginLogoutEvent extends TestCase
          
          // login event arrived?
          assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
-         String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
-         log.info("Received login event for " + content);
-         assertEquals("Wrong login name", expectedName, content);
+         String eventType = this.updateInterceptFirst.getMsgs()[0].getContentStr();
+         String subjectId = this.updateInterceptFirst.getMsgs()[0].getUpdateQos().getClientProperty("_subjectId", "");
+         log.info("Received login event for " + subjectId);
+         assertEquals("Wrong login name", expectedName, subjectId);
          this.updateInterceptFirst.clear();
 
          assertEquals("Not expected update for second con", 0, this.updateInterceptSecond.waitOnUpdate(500L));
          this.updateInterceptSecond.clear();
 
-         // Test the '__sys__UserList' feature:
+         // Test the '__cmd:?clientList' feature:
          MsgUnit[] msgArr = secondConnection.get(
-                          "<key oid='__sys__UserList' queryType='EXACT'></key>",
-                          "<qos></qos>");
-         assertTrue("Expected on __sys__UserList", msgArr.length == 1);
+                          "<key oid='__cmd:?clientList'/>",
+                          "<qos/>");
+         assertTrue("Expected on __cmd:?clientList", msgArr.length == 1);
          String clients = new String(msgArr[0].getContent());
-         log.info("Current '__sys__UserList' is\n" + clients);
+         log.info("Current '__cmd:?clientList' is\n" + clients);
          StringTokenizer st = new StringTokenizer(clients, ",");  // joe,jack,averell,...
          int found = 0;
          while (st.hasMoreTokens()) {
@@ -217,7 +212,7 @@ public class TestLoginLogoutEvent extends TestCase
             else if (sessionName.getLoginName().equals(this.secondName))
                found++;
          }
-         assertTrue("Check of '__sys__UserList' failed", found==2);
+         assertTrue("Check of '__cmd:?clientList' failed", found==2);
       }
       catch (XmlBlasterException e) {
          log.severe(e.getMessage());
@@ -225,7 +220,6 @@ public class TestLoginLogoutEvent extends TestCase
       }
 
 
-      numReceived = 0;
       expectedName = secondName; // second name should be returned on this login
       secondConnection.disconnect(null);
       secondConnection = null;
@@ -233,9 +227,10 @@ public class TestLoginLogoutEvent extends TestCase
       // expecting a logout event message
       {
          assertEquals("Missing my logout event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Logout", Constants.STATE_OK));
-         String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
-         log.info("Received logout event for " + content);
-         assertEquals("Wrong logout name", expectedName, content);
+         //String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
+         String subjectId = this.updateInterceptFirst.getMsgs()[0].getUpdateQos().getClientProperty("_subjectId", "");
+         log.info("Received logout event for " + subjectId);
+         assertEquals("Wrong logout name", expectedName, subjectId);
          this.updateInterceptFirst.clear();
       }
 
