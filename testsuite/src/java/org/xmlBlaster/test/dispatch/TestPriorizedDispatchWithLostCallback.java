@@ -144,23 +144,6 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
       this.updateInterceptor.clear();
    }
 
-   /**
-    * @param The oid of the status message 
-    * @param state Choose one of "2M" or "64k"
-    */
-   private void changeStatus(String oid, String state) {
-      log.info("Changing band width state to '" + state + "'");
-      try {
-         PublishReturnQos rq = con.publish(new MsgUnit(glob, "<key oid='" + oid + "'/>", state, null));
-         log.info("SUCCESS for state change to '" + state + "', " + rq.getState());
-         // Sleep to be shure the plugin has got and processed the message
-         try { Thread.sleep(1000L); } catch( InterruptedException i) {}
-      } catch(XmlBlasterException e) {
-         log.warning("XmlBlasterException: " + e.getMessage());
-         fail("publish bandwidth state - XmlBlasterException: " + e.getMessage());
-      }
-   }
-
    private void publish(String oid, int priority) {
       PriorityEnum prio = PriorityEnum.toPriorityEnum(priority);
       try {
