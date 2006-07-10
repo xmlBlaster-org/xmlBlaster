@@ -23,11 +23,9 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
@@ -37,14 +35,11 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.custommonkey.xmlunit.XMLTestCase;
-import org.custommonkey.xmlunit.XMLUnit;
 
 
 /**
@@ -67,11 +62,9 @@ import org.custommonkey.xmlunit.XMLUnit;
  * @see org.xmlBlaster.engine.TopicHandler
  */
 public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
-   private String ME = "TestTopicLifeCycle";
    private Global glob;
    private static Logger log = Logger.getLogger(TestTopicLifeCycle.class.getName());
 
-   private final String senderName = "Gesa";
    private I_XmlBlasterAccess con = null;
    private String senderContent = "Some message content";
    private String publishOid = "TestTopicLifeCycleMsg";
@@ -115,7 +108,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       }
 
       try {
-         String passwd = "secret";
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          this.updateInterceptor = new MsgInterceptor(this.glob, log, this);
@@ -136,10 +128,9 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
    protected void tearDown() {
       try { Thread.sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
-      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
-      String qos = "<qos></qos>";
+      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'/>";
       try {
-         EraseReturnQos[] arr = con.erase(xmlKey, qos);
+         EraseReturnQos[] arr = con.erase(xmlKey, "<qos/>");
          if (arr.length != 0) {
             log.severe("Erased " + arr.length + " messages instead of 0");
          }
@@ -166,7 +157,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       try {
          EraseQos eq = new EraseQos(glob);
          eq.setForceDestroy(forceDestroy);
-         EraseKey ek = new EraseKey(glob, publishOid);
+         EraseKey ek = new EraseKey(glob, this.publishOid);
          EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
          return er;
       } catch(XmlBlasterException e) {
@@ -304,23 +295,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
    }
 
    /**
-    * Retrieve the number of topics in xmlBlaster. 
-    */
-   private int getNumTopics() {
-      try {
-         GetKey gk = new GetKey(glob, "__cmd:?numTopics");
-         GetQos gq = new GetQos(glob);
-         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
-         assertEquals("Did not expect returned msg for get()", 1, msgs.length);
-         return Integer.valueOf(msgs[0].getContentStr()).intValue();
-      }
-      catch (XmlBlasterException e) {
-         fail("Didn't expect an exception in get(): " + e.getMessage());
-      }
-      return -1; // never reached
-   }
-
-   /**
     * THIS IS THE TEST
     * <p>
     * We traverse the transitions
@@ -334,7 +308,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * </p>
     */
    public void testExpiry() {
-      this.ME = "TestTopicLifeCycle-testExpiry";
       log.info("Entering testExpiry ...");
       this.updateInterceptor.clear();
 
@@ -390,7 +363,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * </p>
     */
    public void testUnreferencedAlive() throws Exception {
-      this.ME = "TestTopicLifeCycle-testUnreferencedAlive";
       log.info("Entering testUnreferencedAlive ...");
       this.updateInterceptor.clear();
 
@@ -474,7 +446,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * </p>
     */
    public void testVolatile() {
-      this.ME = "TestTopicLifeCycle-testVolatile";
       log.info("Entering testVolatile ...");
       this.updateInterceptor.clear();
 
@@ -492,7 +463,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * Transitions [1] -> [4] -> [6] -> [11]
     */
    public void testSubscribeVolatile() {
-      this.ME = "TestTopicLifeCycle-testSubscribeVolatile";
       log.info("Entering testSubscribeVolatile ...");
       this.updateInterceptor.clear();
 
@@ -538,7 +508,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * Transitions [1] -> [13] -> [9]
     */
    public void testUnconfiguredSubscribeSubscribe() {
-      this.ME = "TestTopicLifeCycle-testUnconfiguredSubscribeSubscribe";
       log.info("Entering testUnconfiguredSubscribeSubscribe ...");
       this.updateInterceptor.clear();
 
@@ -585,7 +554,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * Transitions [1] -> [4] -> [7] -> [12]
     */
    public void testSoftErased() {
-      this.ME = "TestTopicLifeCycle-testSoftErased";
       log.info("Entering testSoftErased ...");
       this.updateInterceptor.clear();
 
@@ -646,7 +614,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * Transitions [1] -> [4] -> [10]
     */
    public void testForcedErased() {
-      this.ME = "TestTopicLifeCycle-testForcedErased";
       log.info("Entering testForcedErased ...");
       this.updateInterceptor.clear();
 
@@ -692,15 +659,14 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * Transitions [1] -> [9]
     */
    public void testUnconfiguredErased() {
-      this.ME = "TestTopicLifeCycle-testUnconfiguredErased";
       log.info("Entering testUnconfiguredErased ...");
       this.updateInterceptor.clear();
+      this.updateInterceptor.countErased(true);
 
       {  // topic transition from START -> [1] -> UNCONFIGURED
          subscribeMsg();
-         if (log.isLoggable(Level.FINE)) log.fine("Retrieving initial dump=" + getDump());
          String dump = getDump();
-         log.fine(dump);
+         if (log.isLoggable(Level.FINE)) log.fine("Retrieving initial dump=" + dump);
          // Expecting something like:
          // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
@@ -713,6 +679,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          EraseReturnQos[] erq = sendErase(forceDestroy);
          assertEquals("erase failed", 1, erq.length);
          this.updateInterceptor.waitOnUpdate(1000L, 1); // Expecting one erase event (for the above subscription)
+         assertEquals("Expected ERASE", 1, this.updateInterceptor.getMsgs(this.publishOid,Constants.STATE_ERASED).length);
          try { Thread.sleep(1000L); } catch( InterruptedException i) {} // Give server a change to destroy topic after delivery of erase event messages
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
@@ -725,7 +692,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     * Transitions [1] -> [9] (by unSubscribe)
     */
    public void testUnconfiguredUnSubscribe() {
-      this.ME = "TestTopicLifeCycle-testUnconfiguredUnSubscribe";
       log.info("Entering testUnconfiguredUnSubscribe ...");
       this.updateInterceptor.clear();
 
@@ -796,16 +762,14 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          TestTopicLifeCycle testSub = new TestTopicLifeCycle(new Global(args), "TestTopicLifeCycle");
          testSub.setUp();
          //testSub.testExpiry();
-         testSub.testUnreferencedAlive();
-         /*
-         testSub.testVolatile();
-         testSub.testSubscribeVolatile();
-         testSub.testUnconfiguredSubscribeSubscribe();
-         testSub.testSoftErased();
-         testSub.testForcedErased();
+         //testSub.testUnreferencedAlive();
+         //testSub.testVolatile();
+         //testSub.testSubscribeVolatile();
+         //testSub.testUnconfiguredSubscribeSubscribe();
+         //testSub.testSoftErased();
+         //testSub.testForcedErased();
          testSub.testUnconfiguredErased();
-         testSub.testUnconfiguredUnSubscribe();
-         */
+         //testSub.testUnconfiguredUnSubscribe();
          testSub.tearDown();
       }
       catch(Exception e) {
