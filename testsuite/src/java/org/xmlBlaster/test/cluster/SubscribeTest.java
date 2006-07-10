@@ -1,7 +1,6 @@
 package org.xmlBlaster.test.cluster;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 // for client connections:
@@ -16,17 +15,12 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
-
-
-import java.util.Vector;
-import java.io.File;
 
 import junit.framework.*;
 
@@ -48,15 +42,11 @@ public class SubscribeTest extends TestCase {
 
    private I_XmlBlasterAccess heronCon, avalonCon, golanCon, frodoCon, bilboCon, bilboCon2;
 
-   private int updateCounterHeron = 0;
-   private int updateCounterFrodo = 0;
    private int updateCounterBilbo = 0;
    private int updateCounterBilbo2 = 0;
    private String oid = "SubscribeToBilbo";
    private String domain = "RUGBY_NEWS"; // heron is master for RUGBY_NEWS
    private String contentStr = "We win";
-
-   private String assertInUpdate = null;
 
    public SubscribeTest(String name) {
       super(name);
@@ -70,8 +60,6 @@ public class SubscribeTest extends TestCase {
 
       log.info("Entering setUp(), test starts");
 
-      updateCounterHeron = 0;
-      updateCounterFrodo = 0;
       updateCounterBilbo = 0;
       updateCounterBilbo2 = 0;
 
@@ -137,7 +125,7 @@ public class SubscribeTest extends TestCase {
             SubscribeKey sk = new SubscribeKey(glob, oid);
             sk.setDomain(domain);
             SubscribeQos sq = new SubscribeQos(glob);
-            SubscribeReturnQos srq = bilboCon.subscribe(sk.toXml(), sq.toXml());
+            bilboCon.subscribe(sk.toXml(), sq.toXml());
          }
 
          {
@@ -161,7 +149,7 @@ public class SubscribeTest extends TestCase {
             SubscribeKey sk = new SubscribeKey(glob, oid);
             sk.setDomain(domain);
             SubscribeQos sq = new SubscribeQos(glob);
-            SubscribeReturnQos srq = bilboCon2.subscribe(sk.toXml(), sq.toXml());
+            bilboCon2.subscribe(sk.toXml(), sq.toXml());
          }
 
          // First test subscribe ...
@@ -260,11 +248,9 @@ public class SubscribeTest extends TestCase {
          try { Thread.sleep(1000); } catch( InterruptedException i) {} // Wait some time
 
          for (int ii=0; ii<num; ii++) {
-            final int counter = ii;
             System.err.println("->Connect to bilbo #" + ii + " ...");
             final Global bilboGlobii = serverHelper.getBilboGlob().getClone(null);
             bilboCons[ii] = serverHelper.connect(bilboGlobii, new I_Callback() {  // Login to xmlBlaster, register for updates
-                  int bilboConInstanceCounter = counter; 
                   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                      log.info(
                               "Receiving update '" + updateKey.getOid() + "' state=" + updateQos.getState() + ", " + updateCounterBilbo + " ...");
@@ -293,7 +279,7 @@ public class SubscribeTest extends TestCase {
             SubscribeKey sk = new SubscribeKey(glob, oid);
             sk.setDomain(domain);
             SubscribeQos sq = new SubscribeQos(glob);
-            SubscribeReturnQos srq = bilboCons[ii].subscribe(sk.toXml(), sq.toXml());
+            bilboCons[ii].subscribe(sk.toXml(), sq.toXml());
 
             waitOnUpdate(2000L, 1);
             try { Thread.sleep(1000); } catch( InterruptedException i) {} // wait longer to check if too many arrive
@@ -357,12 +343,4 @@ public class SubscribeTest extends TestCase {
          }
       }
    }
-   /**
-    * setUp() and tearDown() are ivoked between each test...() method
-    */
-    /*
-   public void testDummy() {
-      System.err.println("***SubscribeTest: testDummy [SUCCESS]");
-   }
-     */
 }
