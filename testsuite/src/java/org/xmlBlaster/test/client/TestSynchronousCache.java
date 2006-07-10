@@ -6,16 +6,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.client;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.EraseKey;
@@ -23,8 +19,6 @@ import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -32,7 +26,6 @@ import org.xmlBlaster.client.SynchronousCache;
 
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
@@ -204,9 +197,9 @@ public class TestSynchronousCache extends TestCase {
                               "' and status=" + grq.getState());
             }
 
-            EraseReturnQos[] arr0 = sendErase(publishOidArr[0]);
+            sendErase(publishOidArr[0]);
             assertEquals("", 0, this.synchronousCache.getNumQueriesCached());
-            EraseReturnQos[] arr2 = sendErase(publishOidArr[2]);
+            sendErase(publishOidArr[2]);
          }
          catch (XmlBlasterException e) {
             log.severe("testCachedAccess() failed: " + e.getMessage());

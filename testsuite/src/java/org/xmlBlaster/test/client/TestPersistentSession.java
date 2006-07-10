@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.client;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -23,7 +22,6 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.*;
 
@@ -171,7 +169,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
       I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       try {
-         EraseReturnQos[] arr = con.erase(xmlKey, qos);
+         con.erase(xmlKey, qos);
 
          PropString defaultPlugin = new PropString("CACHE,1.0");
          String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
@@ -216,21 +214,6 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          log.info("Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
       } catch(XmlBlasterException e) {
-         log.warning("XmlBlasterException: " + e.getMessage());
-         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
-      }
-   }
- 
-   private void doUnSubscribe(int num, boolean isExact, boolean isPersistent) {
-      try {
-         UnSubscribeKey key = null;
-         if (isExact)  key = new UnSubscribeKey(this.glob, "Message-1");
-         else key = new UnSubscribeKey(this.glob, "//TestPersistentSession-AGENT", "XPATH");
-
-         UnSubscribeQos qos = new UnSubscribeQos(this.glob); // "<qos><persistent>true</persistent></qos>";
-         this.glob.getXmlBlasterAccess().unSubscribe(key, qos);
-      } 
-      catch(XmlBlasterException e) {
          log.warning("XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
@@ -383,7 +366,6 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       try {
          Global ret = parentGlobal.getClone(null);
          I_XmlBlasterAccess con = ret.getXmlBlasterAccess(); // Find orb
-         String passwd = "secret";
          ConnectQos connectQos = new ConnectQos(glob); // == "<qos>...</qos>";
          connectQos.setSessionName(new SessionName(ret, sessionName));
          // set the persistent connection 

@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.client;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.GetKey;
@@ -18,7 +17,6 @@ import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.util.qos.TopicProperty;
@@ -118,7 +116,7 @@ public class TestHistoryZero extends TestCase {
       String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
       I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       try {
-         EraseReturnQos[] arr = con.erase(xmlKey, qos);
+         con.erase(xmlKey, qos);
 
          PropString defaultPlugin = new PropString("CACHE,1.0");
          String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
