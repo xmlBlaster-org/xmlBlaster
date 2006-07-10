@@ -28,8 +28,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
-import com.sun.corba.se.impl.orbutil.closure.Constant;
-
 import junit.framework.*;
 
 
