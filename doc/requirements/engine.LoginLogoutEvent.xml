@@ -17,8 +17,8 @@
    </description>
 
    <example lang="Java" type="HTML">
-<p class="celltitel"><b>Work around</b> to receive events with new EventPlugin</p>
 <a name="workaround"/>
+<p class="celltitel"><b>Work around</b> to receive events with new EventPlugin</p>
 
 <p>To reveive the login/logout event with the new framework please add this to <code>xmlBlasterPlugins.xml</code>:</p>
 
