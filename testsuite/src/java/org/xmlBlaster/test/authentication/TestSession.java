@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.authentication;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -15,7 +14,6 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
@@ -38,7 +36,6 @@ import junit.framework.*;
  */
 public class TestSession extends TestCase implements I_Callback
 {
-   private static String ME = "TestSession";
    private final Global glob;
    private static Logger log = Logger.getLogger(TestSession.class.getName());
    private String name;
@@ -171,8 +168,8 @@ public class TestSession extends TestCase implements I_Callback
 
          try {
             log.info("Check that session has dissapeared ...");
-            MsgUnit[] msgs = Util.adminGet(glob, "__sys__UserList");
-            assertEquals("Can't access __sys__UserList", 1, msgs.length);
+            MsgUnit[] msgs = Util.adminGet(glob, "__cmd:?clientList");
+            assertEquals("Can't access __cmd:?clientList", 1, msgs.length);
             log.info("Got userList=" + msgs[0].getContentStr());
             assertEquals("Session of " + name + " was not destroyed by failing callback",
                       -1, msgs[0].getContentStr().indexOf(name));
