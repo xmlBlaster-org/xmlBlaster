@@ -13,7 +13,6 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.TopicProperty;
-import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.def.MethodName;
 
 
@@ -51,7 +50,6 @@ import org.xmlBlaster.util.def.MethodName;
  */
 public final class PublishQos
 {
-   private String ME = "PublishQos";
    private final Global glob;
    private final MsgQosData msgQosData;
 
@@ -168,12 +166,9 @@ public final class PublishQos
    }
 
    /**
-    * The message expires after given milliseconds (message is erased).<p />
-    * Clients will get a notify about expiration.<br />
-    * This value is calculated relative to the rcvTimestamp in the xmlBlaster server.<br />
-    * Passing -1 milliseconds asks the server for unlimited livespan, which
-    * the server may or may not grant.
+    * The message expires after given milliseconds.
     * @param lifeTime in milliseconds
+    * @see MsgQosData#setLifeTime(long)
     */
    public void setLifeTime(long lifeTime) {
       this.msgQosData.setLifeTime(lifeTime);
