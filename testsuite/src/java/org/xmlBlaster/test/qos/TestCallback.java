@@ -159,9 +159,9 @@ public class TestCallback extends TestCase implements I_Callback
          
          // Check with user "admin" if session of "Tim" has disappeared
          try {
-            MsgUnit[] msgs = Util.adminGet(glob, "__sys__UserList");
-            assertEquals("Can't access __sys__UserList", 1, msgs.length);
-            log.info("Got userList=" + msgs[0].getContentStr());
+            MsgUnit[] msgs = Util.adminGet(glob, "__cmd:?clientList");
+            assertEquals("Can't access __cmd:?clientList", 1, msgs.length);
+            log.info("Got clientList=" + msgs[0].getContentStr());
             assertEquals("Session of " + name + " was not destroyed by failing callback",
                       -1, msgs[0].getContentStr().indexOf(name));
          }
