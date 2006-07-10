@@ -8,7 +8,6 @@ package org.xmlBlaster.test;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.property.Args;
 
 import java.util.Vector;
 
@@ -24,7 +23,6 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public class Util
 {
-   private final static String ME = "Util";
 
    /**
     * If you want to start a second xmlBlaster instances
@@ -70,6 +68,9 @@ public class Util
     */
    public static String[] getDefaultServerPorts()
    {
+      /* We can't use stronger names, as a call sequence of
+       * getOtherServerPortVec() -> getDefaultServerPorts() -> getOtherServerPortVec()
+       * would fail.
       String[] argsDefault = {
          "-bootstrapPort",
          "" + Constants.XMLBLASTER_PORT,
@@ -82,6 +83,19 @@ public class Util
          "-admin.remoteconsole.port",
          "" + org.xmlBlaster.engine.admin.extern.TelnetGateway.TELNET_PORT
          };
+      */
+      String[] argsDefault = {
+            "-bootstrapPort",
+            "" + Constants.XMLBLASTER_PORT,
+            "-plugin/socket/port",
+            "" + org.xmlBlaster.util.protocol.socket.SocketUrl.DEFAULT_SERVER_PORT,
+            "-plugin/rmi/registryPort",
+            "" + org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT,
+            "-plugin/xmlrpc/port",
+            "" + org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT,
+            "-admin.remoteconsole.port",
+            "" + org.xmlBlaster.engine.admin.extern.TelnetGateway.TELNET_PORT
+            };
       return argsDefault;
    }
 
