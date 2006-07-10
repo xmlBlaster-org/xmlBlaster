@@ -187,7 +187,7 @@ public class TestLoginLogoutEvent extends TestCase
          assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
          String eventType = this.updateInterceptFirst.getMsgs()[0].getContentStr();
          String subjectId = this.updateInterceptFirst.getMsgs()[0].getUpdateQos().getClientProperty("_subjectId", "");
-         log.info("Received login event for " + subjectId);
+         log.info("Received login event '" + eventType + "' for " + subjectId);
          assertEquals("Wrong login name", expectedName, subjectId);
          this.updateInterceptFirst.clear();
 
