@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
@@ -32,10 +31,8 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
@@ -596,13 +593,19 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             }
             if (entry == null)
                break;
-            int countForwarded = forwardToSessionQueue(entry);
-            if (countForwarded > 0) {
-               this.subjectQueue.removeRandom(entry); // Remove the forwarded entry (blocking)
-               numMsgs++;
+            if (entry.isDestroyed()) {
+               log.info("Message " + entry.getLogId() + " is destroyed, ignoring it");
+               this.subjectQueue.removeRandom(entry); // Remove the destroyed entry
             }
-            else if (countForwarded == -1) { // There are sessions but they don't want PtP
-               break;
+            else {
+               int countForwarded = forwardToSessionQueue(entry);
+               if (countForwarded > 0) {
+                  this.subjectQueue.removeRandom(entry); // Remove the forwarded entry (blocking)
+                  numMsgs++;
+               }
+               else if (countForwarded == -1) { // There are sessions but they don't want PtP
+                  break;
+               }
             }
          }
          catch(Throwable e) {
@@ -658,29 +661,14 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];
-         if (sessionInfo.getConnectQos().isPtpAllowed() && sessionInfo.hasCallback()) {
+         I_Queue sessionQueue = sessionInfo.getSessionQueue();
+         if (sessionInfo.getConnectQos().isPtpAllowed() && sessionInfo.hasCallback() && sessionQueue != null) {
             if (log.isLoggable(Level.FINE)) log.fine("Forwarding msg " + entry.getLogId() + " from " +
                           this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
-                          " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
-                          " size=" + sessionInfo.getSessionQueue().getNumOfEntries() + " ...");
+                          " to session queue " + sessionQueue.getStorageId() +
+                          " size=" + sessionQueue.getNumOfEntries() + " ...");
             try {
-               TopicHandler topicHandler = ((ReferenceEntry)entry).getTopicHandler();
-               if (topicHandler == null) {
-                  if (log.isLoggable(Level.FINE)) log.fine("forwardToSessionQueue: TopicHandler is null for '" + entry.getLogId() + "'");
-                  break;
-               }
-               I_Map cache = topicHandler.getMsgUnitCache();
-               if (cache == null) {
-                  if (log.isLoggable(Level.FINE)) log.fine("forwardToSessionQueue: MsgUnitStore is null for '" + entry.getLogId() + "'");
-                  break;
-               }
-               MsgQueueUpdateEntry entryCb = null;
-               
-               synchronized(topicHandler) {
-                  synchronized(cache) {
-                     entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry, sessionInfo.getSessionQueue().getStorageId());
-                  }
-               }
+               MsgQueueUpdateEntry entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry, sessionQueue.getStorageId());
                sessionInfo.queueMessage(entryCb);
                countForwarded++;
             }

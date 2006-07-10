@@ -7,12 +7,10 @@ package org.xmlBlaster.engine.queuemsg;
 
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.engine.TopicHandler;
-import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
@@ -186,56 +184,32 @@ public class ReferenceEntry extends MsgQueueEntry
       return msgUnitWrapper;
    }
 
-   public I_Map getMsgUnitCache() {
-      RequestBroker rb = this.glob.getRequestBroker();
-      if (rb == null) return null;
-      TopicHandler topicHandler = rb.getMessageHandlerFromOid(this.keyOid);
-      if (topicHandler == null) return null;
-      return topicHandler.getMsgUnitCache();
-   }
-
-   public TopicHandler getTopicHandler() {
-      RequestBroker rb = this.glob.getRequestBroker();
-      if (rb == null) return null;
-      TopicHandler topicHandler = rb.getMessageHandlerFromOid(this.keyOid);
-      return topicHandler;
-   }
-
    private void incrementReferenceCounter(int incr, StorageId storageId) {
       try {
-         // we need to synchronize it over the caching process
-         boolean preDestroyed = false;
-         MsgUnitWrapper msgUnitWrapper = null;
-
-         TopicHandler topicHandler = getTopicHandler();
-         if (topicHandler == null)
-            return;
-         I_Map cache = topicHandler.getMsgUnitCache();
-         if (cache == null) return;
-         synchronized(topicHandler) {
-            synchronized(cache) {
-               msgUnitWrapper = getMsgUnitWrapper();
-               if (msgUnitWrapper != null) {
-                  preDestroyed = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
-               }
-               else {
-                  if (isForceDestroy()) {
-                     if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr);
-                  }
-                  else {
-                     log.severe("No meat found, incr=" + incr);
-                  }
-               }
-            }
+         MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+         if (msgUnitWrapper != null) {
+            msgUnitWrapper.incrementReferenceCounter(incr, storageId);
          }
-
-         if (preDestroyed && msgUnitWrapper != null) {
-            msgUnitWrapper.toDestroyed();
+         else { // Log situation:
+            boolean isHistory = (storageId == null) ? false : Constants.RELATING_HISTORY.equals(storageId.getPrefix());
+            String id = (storageId == null) ? "" : storageId.getId();
+            if (isForceDestroy()) {
+               if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
+            }
+            else if (isHistory) { // Is OK when expired history entries are cleared!
+               if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
+            }
+            else if (isExpired()) {
+               if (log.isLoggable(Level.FINE)) log.fine("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
+            }
+            else { // Analyse it
+               log.severe("No meat found, incr=" + incr + " storageId=" + id + " isExpired=" + isExpired());
+               Thread.dumpStack();
+            }
          }
       }
       catch (Throwable ex) {
          log.severe("incr="+incr+" to '" + storageId + "' raised an exception: " + ex.toString());
-         //ex.printStackTrace();
       }
    }
 
@@ -271,20 +245,10 @@ public class ReferenceEntry extends MsgQueueEntry
     *         or for msgUnitWrapper in state=DESTROYED
     */
    public boolean isDestroyed() {
-
-      TopicHandler topicHandler = getTopicHandler();
-      if (topicHandler == null)
+      MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+      if (msgUnitWrapper == null)
          return true;
-      I_Map cache = topicHandler.getMsgUnitCache();
-      if (cache == null) return true;
-      synchronized(topicHandler) {
-         synchronized(cache) {
-            MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-            if (msgUnitWrapper == null)
-               return true;
-            return msgUnitWrapper.isDestroyed();
-         }
-      }      
+      return msgUnitWrapper.isDestroyed();
    }
 
    public MsgQosData getMsgQosData() throws XmlBlasterException {
@@ -376,13 +340,8 @@ public class ReferenceEntry extends MsgQueueEntry
 
    /** @return the MsgUnitWrapper or null if not found */
    private MsgUnitWrapper lookup() {
-      RequestBroker rb = this.glob.getRequestBroker();
-      if (rb == null) return null;
-      TopicHandler topicHandler = rb.getMessageHandlerFromOid(keyOid);
-      if (topicHandler == null) return null;
-
       try {
-         return topicHandler.getMsgUnitWrapper(this.msgUnitWrapperUniqueId);
+         return this.glob.getTopicAccessor().lookupDirtyRead(this.keyOid, this.msgUnitWrapperUniqueId);
       }
       catch (XmlBlasterException e) {
          log.warning("lookup failed: " + e.getMessage());

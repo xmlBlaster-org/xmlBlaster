@@ -917,6 +917,7 @@ didn't you have "state" as the name of the attribute?
       }
       catch (Exception e) {
          log.severe("JMX unregistration problems: " + e.toString());
+         e.printStackTrace();
       }
    }
 

@@ -13,7 +13,6 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.distributor.I_MsgDistributor;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 
@@ -86,29 +85,24 @@ public final class DispatchWorker implements Runnable
 
 
    /**
-    * scans through the entries array for such messages which want an async
+    * Scans through the entries array for such messages which want an async
     * notification and sends such a notification.
     * @param entries
     * @return The MsgQueueEntry objects (as an ArrayList) which did not
     * want such an async notification. This is needed to allow the core process
     * such messages the normal way.
     */
-   protected ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
+   private ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
       // TODO move this on the server side
       ArrayList entriesWithNoDistributor = new ArrayList();
       for (int i=0; i < entries.size(); i++) {
          Object obj = entries.get(i); 
          if (!(obj instanceof MsgQueueUpdateEntry)) return entries;
          MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)obj;
-         I_MsgDistributor msgDistributor = null;
-         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper(); 
-         try {
-            msgDistributor = wrapper.getTopicHandler().getMsgDistributorPlugin();
-         }
-         catch (Throwable e) {
-            e.printStackTrace();
-         }
-         if (msgDistributor != null) {
+         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
+         boolean hasMsgDistributor = wrapper.getServerScope().getTopicAccessor().hasMsgDistributorPluginDirtyRead(wrapper.getKeyOid());
+         
+         if (hasMsgDistributor) {
             if (ex != null) { // in this case it is possible that retObj is not set yet
                UpdateReturnQosServer retQos = (UpdateReturnQosServer)entry.getReturnObj();               
                try {
@@ -145,12 +139,12 @@ public final class DispatchWorker implements Runnable
                entryList = entryListChecked;
          }
          else {
-            synchronized (this.msgQueue) {
+            //synchronized (this.msgQueue) {
                //entryList = (MsgQueueEntry[])this.msgQueue.take(-1); --> get()
                // not blocking and only all of the same priority:
                entryList = this.msgQueue.peekSamePriority(dispatchManager.getBurstModeMaxEntries(), dispatchManager.getBurstModeMaxBytes()); // -1, -1L -> get all entries in cache
                entryListChecked = dispatchManager.prepareMsgsFromQueue(entryList);
-            }
+            //}
          }
 
          if (entryList == null || entryList.size() < 1) {

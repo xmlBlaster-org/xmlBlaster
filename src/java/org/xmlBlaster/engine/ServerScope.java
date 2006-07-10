@@ -88,6 +88,8 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    private SubjectEntryShuffler subjectEntryShuffler;
    
    private SessionInfo internalSessionInfo;
+   
+   private TopicAccessor topicAccessor;
 
    public void finalize() {
       if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
@@ -896,6 +898,18 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
     */
    public void setInternalSessionInfo(SessionInfo internalSessionInfo) {
       this.internalSessionInfo = internalSessionInfo;
+   }
+
+   /**
+    * The singleton to handle all topics and its access. 
+    * @return never null (is filled by RequestBroker after construction)
+    */
+   public TopicAccessor getTopicAccessor() {
+      return topicAccessor;
+   }
+
+   public void setTopicAccessor(TopicAccessor topicAccessor) {
+      this.topicAccessor = topicAccessor;
    }
 
 }

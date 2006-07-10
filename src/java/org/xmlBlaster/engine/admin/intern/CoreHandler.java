@@ -219,17 +219,21 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          if (topicId == null || topicId.length() < 1 || topicId.startsWith("?"))
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid topicId in '" + cmd.getCommand() + "' with '" + topicId + "' is invalid");
 
-         TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(topicId);
+         TopicHandler topicHandler = this.glob.getTopicAccessor().access(topicId);
          if (topicHandler == null)
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid topicId in '" + cmd.getCommand() + "' topicId '" + topicId + "' is unknown");
-
-         String methodName = cmd.getFifthLevel();
-         if (methodName == null || methodName.length() < 1)
-            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid method name in '" + cmd.getCommand() + "'.");
-
-         if (methodName.startsWith("?")) {
-            // for example "/node/heron/topic/hello/?topicId"
-            return doGetInvoke(cmd, methodName.substring(1), topicHandler, I_AdminTopic.class);
+         try {
+            String methodName = cmd.getFifthLevel();
+            if (methodName == null || methodName.length() < 1)
+               throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid method name in '" + cmd.getCommand() + "'.");
+   
+            if (methodName.startsWith("?")) {
+               // for example "/node/heron/topic/hello/?topicId"
+               return doGetInvoke(cmd, methodName.substring(1), topicHandler, I_AdminTopic.class);
+            }
+         }
+         finally {
+            this.glob.getTopicAccessor().release(topicHandler);
          }
       }
       else if (registerKey.equals(ContextNode.QUEUE_MARKER_TAG)) { // "queue"

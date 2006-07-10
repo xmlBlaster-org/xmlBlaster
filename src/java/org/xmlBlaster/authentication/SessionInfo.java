@@ -322,8 +322,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          this.isShutdown = true;
          removeExpiryTimer();
          
-         if (this.sessionQueue != null) {
-            this.sessionQueue.shutdown();
+         I_Queue sessionQueue = this.sessionQueue;
+         if (sessionQueue != null) {
+            sessionQueue.shutdown();
             //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
          }
          
@@ -411,7 +412,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     */
    public final boolean hasAddress(AddressBase addr) {
       if (addr == null) return false;
-      CallbackAddress[] arr = ((CbQueueProperty)getSessionQueue().getProperties()).getCallbackAddresses();
+      I_Queue sessionQueue = getSessionQueue();
+      if (sessionQueue == null) return false;
+      CallbackAddress[] arr = ((CbQueueProperty)sessionQueue.getProperties()).getCallbackAddresses();
       for (int ii=0; arr!=null && ii<arr.length; ii++) {
          // if (arr[ii].isSameAddress(addr))
          if (arr[ii].equals(addr))
@@ -439,13 +442,14 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * Put the given message entry into the queue
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
-      if (!hasCallback()) {
+      I_Queue sessionQueue = this.sessionQueue;
+      if (!hasCallback() || sessionQueue == null) {
          if (log.isLoggable(Level.FINE)) log.fine("Queing PtP message without having configured a callback to the client, the client needs to reconnect with a valid callback address later");
          //if (!connectQos.getSessionName().isPubSessionIdUser()) { // client has specified its own publicSessionId (> 0)
          //   throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "No callback server is configured, can't callback client to send message " + entry.getKeyOid());
          //}
       }
-      this.sessionQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
+      sessionQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
    }
 
    public final ConnectQosServer getConnectQos() {
@@ -456,7 +460,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       boolean wantsCallbacks = (newConnectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0);
 
       CbQueueProperty cbQueueProperty = newConnectQos.getSessionCbQueueProperty();
-      this.sessionQueue.setProperties(cbQueueProperty);
+      I_Queue sessionQueue = this.sessionQueue;
+      if (sessionQueue != null) sessionQueue.setProperties(cbQueueProperty);
       if (wantsCallbacks && hasCallback()) {
          DispatchManager dispatchManager = this.dispatchManager;
          if (dispatchManager != null) {
@@ -568,7 +573,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       SubjectInfo subjectInfo = getSubjectInfo();
       boolean hasSubjectEntries = (subjectInfo == null) ? false : subjectInfo.getSubjectQueue().getNumOfEntries() > 0;
       if (lastNumEntries != numEntries) {
-         long max = getSessionQueue().getMaxNumOfEntries();
+         I_Queue sessionQueue = this.sessionQueue;
+         long max = (sessionQueue == null) ? 0 : sessionQueue.getMaxNumOfEntries();
          if (hasSubjectEntries && numEntries < max && lastNumEntries > numEntries) {
             if (log.isLoggable(Level.FINE)) log.fine("SessionQueue has emptied from " + lastNumEntries +
                            " to " + numEntries + " entries, calling SubjectInfoShuffler.shuffle()");
@@ -912,11 +918,13 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public long clearCallbackQueue() {
-      return this.sessionQueue.clear();
+      I_Queue sessionQueue = this.sessionQueue;
+      return (sessionQueue==null) ? 0L : sessionQueue.clear();
    }
 
    public long removeFromCallbackQueue(long numOfEntries) throws XmlBlasterException {
-      return this.sessionQueue.remove(numOfEntries, -1);
+      I_Queue sessionQueue = this.sessionQueue;
+      return (sessionQueue==null) ? 0L : sessionQueue.remove(numOfEntries, -1);
    }
 
    public MsgUnit[] getCallbackQueueEntries(String query) throws XmlBlasterException {

@@ -9,7 +9,7 @@ package org.xmlBlaster.engine;
 /**
  * An event which indicates that a new TopicHandler is created or destroyed. 
  * <p />
- * It carries the TopicHandler reference inside.
+ * It carries the locked TopicHandler reference inside.
  *
  * @author xmlBlaster@marcelruff.info
  */
@@ -28,7 +28,7 @@ public class TopicEvent extends java.util.EventObject {
    /**
     * Returns the originator of the event.
     *
-    * @return the TopicHandler
+    * @return the TopicHandler which is locked (no other thread has access)
     */
    public TopicHandler getTopicHandler() {
        return (TopicHandler)source;

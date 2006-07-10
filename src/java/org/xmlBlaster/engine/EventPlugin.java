@@ -575,7 +575,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                if (event.endsWith("/event/subscribe") || event.endsWith("/event/unSubscribe"))
                   this.requestBroker.addSubscriptionListener(this);
                else
-                  this.requestBroker.addTopicListener(this);
+                  this.engineGlob.getTopicAccessor().addTopicListener(this);
                if (this.topicSet == null) this.topicSet = new TreeSet();
                this.topicSet.add(event);
             }
@@ -903,7 +903,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       
       if (this.topicSet != null)
          this.topicSet = null;
-      this.requestBroker.removeTopicListener(this);
+      this.engineGlob.getTopicAccessor().removeTopicListener(this);
       
       this.isShutdown = true;
    }

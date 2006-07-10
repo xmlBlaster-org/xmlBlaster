@@ -110,19 +110,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    /** the authentication service */
    private Authenticate authenticate = null;          // The authentication service
 
-   /**
-    * All TopicHandler objects are stored in this map.
-    * <p>
-    * key   = oid value from <key oid="..."> (== topicHandler.getUniqueKey())
-    * value = TopicHandler object
-    */
-   private final Map topicHandlerMap = new HashMap(); //Collections.synchronizedMap(new HashMap());
-   /**
-    * For listeners who want to be informed about topic creation / deletion events.
-    */
-   private final Set topicListenerSet = Collections.synchronizedSet(new TreeSet());
-
-   private final Set remotePropertiesListeners = Collections.synchronizedSet(new TreeSet());
+   private final Set remotePropertiesListeners = new TreeSet();
 
    /**
     * Store configuration of all topics in xmlBlaster for recovery
@@ -149,7 +137,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
     * The key is an Integer number where the lowest is the first invoked on subscribe and the 
     * last invoked on unsubscribe.
     */
-   private final Map subscriptionListenerMap = Collections.synchronizedMap(new TreeMap());
+   private final Map subscriptionListenerMap = new TreeMap();
 
    /**
     * This is a handle on the big DOM tree with all XmlKey keys (all message meta data)
@@ -208,6 +196,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       this.glob = this.authenticate.getGlobal();
 
       glob.setRequestBroker(this);
+      
+      glob.setTopicAccessor(new TopicAccessor(this.glob));
+      
       this.startupTime = System.currentTimeMillis();
       this.mbeanHandle = this.glob.registerMBean(this.glob.getContextNode(), this);
 
@@ -958,7 +949,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
                xmlKeyExact = xmlKey;
 
-            TopicHandler topicHandler = getMessageHandlerFromOid(xmlKeyExact.getOid());
+            TopicHandler topicHandler = this.glob.getTopicAccessor().access(xmlKeyExact.getOid());
 
             if( topicHandler == null ) {
                /*
@@ -991,58 +982,63 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
             } // topicHandler==null
 
-            if (topicHandler.isAlive()) {
-
-               int numEntries = getQos.getHistoryQos().getNumEntries();
-               MsgUnitWrapper[] msgUnitWrapperArr = topicHandler.getMsgUnitWrapperArr(numEntries, getQos.getHistoryQos().getNewestFirst());
-
-               NEXT_HISTORY:
-               for(int kk=0; kk<msgUnitWrapperArr.length; kk++) {
-
-                  MsgUnitWrapper msgUnitWrapper = msgUnitWrapperArr[kk];
-                  if (msgUnitWrapper == null) {
-                     continue NEXT_HISTORY;
-                  }
-
-                  if (this.glob.useCluster() && !msgUnitWrapper.getMsgQosData().isAtMaster()) {
-                     if (log.isLoggable(Level.FINE)) log.fine("get(): Ignore message as we are not the master: " + msgUnitWrapper.toXml());
-                     continue NEXT_HISTORY;
-                  }
-
-                  AccessFilterQos[] filterQos = getQos.getAccessFilterArr();
-                  if (filterQos != null) {
-                     if (log.isLoggable(Level.FINE)) log.fine("Checking " + filterQos.length + " filters");
-                     for (int jj=0; jj<filterQos.length; jj++) {
-                        I_AccessFilter filter = getAccessPluginManager().getAccessFilter(
-                                                     filterQos[jj].getType(),
-                                                     filterQos[jj].getVersion(),
-                                                     msgUnitWrapper.getContentMime(),
-                                                     msgUnitWrapper.getContentMimeExtended());
-                        if (log.isLoggable(Level.FINE)) log.fine("get("+xmlKeyExact.getOid()+") filter=" + filter + " qos=" + getQos.toXml());
-                        if (filter != null && filter.match(sessionInfo,
-                                                     msgUnitWrapper.getMsgUnit(),
-                                                     filterQos[jj].getQuery()) == false)
-                           continue NEXT_HISTORY; // filtered message is not send to client
+            try {
+               if (topicHandler.isAlive()) {
+   
+                  int numEntries = getQos.getHistoryQos().getNumEntries();
+                  MsgUnitWrapper[] msgUnitWrapperArr = topicHandler.getMsgUnitWrapperArr(numEntries, getQos.getHistoryQos().getNewestFirst());
+   
+                  NEXT_HISTORY:
+                  for(int kk=0; kk<msgUnitWrapperArr.length; kk++) {
+   
+                     MsgUnitWrapper msgUnitWrapper = msgUnitWrapperArr[kk];
+                     if (msgUnitWrapper == null) {
+                        continue NEXT_HISTORY;
                      }
-                  }
-
-                  if (msgUnitWrapper.isExpired()) {
-                     continue NEXT_HISTORY;
-                  }
-
-                  MsgUnit mm = msgUnitWrapper.getMsgUnit();
-                  if (mm == null) {
-                     continue NEXT_HISTORY; // WeakReference to cache lost and lookup failed
-                  }
-
-                  GetReturnQosServer retQos = new GetReturnQosServer(glob, msgUnitWrapper.getMsgQosData(), Constants.STATE_OK);
-                  byte[] cont = (getQos.getWantContent()) ? mm.getContent() : new byte[0];
-                  mm = new MsgUnit(mm, null, cont, retQos.getData());
-                  msgUnitList.add(mm);
-
-               } // for each history entry
-
-            } // topicHandler.isAlive()
+   
+                     if (this.glob.useCluster() && !msgUnitWrapper.getMsgQosData().isAtMaster()) {
+                        if (log.isLoggable(Level.FINE)) log.fine("get(): Ignore message as we are not the master: " + msgUnitWrapper.toXml());
+                        continue NEXT_HISTORY;
+                     }
+   
+                     AccessFilterQos[] filterQos = getQos.getAccessFilterArr();
+                     if (filterQos != null) {
+                        if (log.isLoggable(Level.FINE)) log.fine("Checking " + filterQos.length + " filters");
+                        for (int jj=0; jj<filterQos.length; jj++) {
+                           I_AccessFilter filter = getAccessPluginManager().getAccessFilter(
+                                                        filterQos[jj].getType(),
+                                                        filterQos[jj].getVersion(),
+                                                        msgUnitWrapper.getContentMime(),
+                                                        msgUnitWrapper.getContentMimeExtended());
+                           if (log.isLoggable(Level.FINE)) log.fine("get("+xmlKeyExact.getOid()+") filter=" + filter + " qos=" + getQos.toXml());
+                           if (filter != null && filter.match(sessionInfo,
+                                                        msgUnitWrapper.getMsgUnit(),
+                                                        filterQos[jj].getQuery()) == false)
+                              continue NEXT_HISTORY; // filtered message is not send to client
+                        }
+                     }
+   
+                     if (msgUnitWrapper.isExpired()) {
+                        continue NEXT_HISTORY;
+                     }
+   
+                     MsgUnit mm = msgUnitWrapper.getMsgUnit();
+                     if (mm == null) {
+                        continue NEXT_HISTORY; // WeakReference to cache lost and lookup failed
+                     }
+   
+                     GetReturnQosServer retQos = new GetReturnQosServer(glob, msgUnitWrapper.getMsgQosData(), Constants.STATE_OK);
+                     byte[] cont = (getQos.getWantContent()) ? mm.getContent() : new byte[0];
+                     mm = new MsgUnit(mm, null, cont, retQos.getData());
+                     msgUnitList.add(mm);
+   
+                  } // for each history entry
+   
+               } // topicHandler.isAlive()
+            }
+            finally {
+               this.glob.getTopicAccessor().release(topicHandler);
+            }
          }
 
          MsgUnit[] msgUnitArr = (MsgUnit[])msgUnitList.toArray(new MsgUnit[msgUnitList.size()]);
@@ -1091,11 +1087,16 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          ArrayList oidList = bigXmlKeyDOM.parseKeyOid(sessionInfo, queryKeyData.getQueryString(), qos);
          ArrayList strippedList = new ArrayList();
          for(int i=0; i<oidList.size(); i++) {
-            TopicHandler topicHandler = getMessageHandlerFromOid((String)oidList.get(i));
+            TopicHandler topicHandler = this.glob.getTopicAccessor().access((String)oidList.get(i));
             if (topicHandler != null) {
-               KeyData keyData = topicHandler.getMsgKeyData();
-               if (keyData != null) {
-                  strippedList.add(keyData);
+               try {
+                  KeyData keyData = topicHandler.getMsgKeyData();
+                  if (keyData != null) {
+                     strippedList.add(keyData);
+                  }
+               }
+               finally {
+                  this.glob.getTopicAccessor().release(topicHandler);
                }
             }
          }
@@ -1104,12 +1105,20 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
       else if (queryKeyData.isExact()) { // subscription with a given oid
          if (log.isLoggable(Level.FINE)) log.fine("Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
-         TopicHandler topicHandler = getMessageHandlerFromOid(queryKeyData.getOid());
-         if (topicHandler == null || topicHandler.getMsgKeyData() == null) {
+         TopicHandler topicHandler = this.glob.getTopicAccessor().access(queryKeyData.getOid());
+         if (topicHandler == null) {
             return new KeyData[] { null }; // add arr[0]=null as a place holder
          }
-         // return new KeyData[] { topicHandler.getMsgKeyData() };
-         return new KeyData[] { queryKeyData };
+         try {
+            if (topicHandler.getMsgKeyData() == null) {
+               return new KeyData[] { null }; // add arr[0]=null as a place holder
+            }
+            // return new KeyData[] { topicHandler.getMsgKeyData() };
+            return new KeyData[] { queryKeyData };
+         }
+         finally {
+            this.glob.getTopicAccessor().release(topicHandler);
+         }
       }
 
       else if (queryKeyData.isDomain()) { // a domain attribute is given
@@ -1119,13 +1128,20 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             log.warning("The DOMAIN query has a domain=null, no topics found");
             return new KeyData[0];
          }
-         TopicHandler[] topics = getTopicHandlerArr();
+         String[] oids = this.glob.getTopicAccessor().getTopics();
          ArrayList strippedList = new ArrayList();
-         for(int i=0; i<topics.length; i++) {
-            TopicHandler topicHandler = topics[i];
-            if (topicHandler.getMsgKeyData() != null &&
-                domain.equals(topicHandler.getMsgKeyData().getDomain()))
-               strippedList.add(topicHandler.getMsgKeyData());
+         for(int i=0; i<oids.length; i++) {
+            TopicHandler topicHandler = this.glob.getTopicAccessor().access(oids[i]);
+            if (topicHandler != null) {
+               try {
+                  if (topicHandler.getMsgKeyData() != null &&
+                        domain.equals(topicHandler.getMsgKeyData().getDomain()))
+                     strippedList.add(topicHandler.getMsgKeyData());
+               }
+               finally {
+                  this.glob.getTopicAccessor().release(topicHandler);
+               }
+            }
          }
          if (log.isLoggable(Level.FINE)) log.fine("Found " + strippedList.size() + " domain matches for '" + domain + "'");
          return (KeyData[])strippedList.toArray(new KeyData[strippedList.size()]);
@@ -1146,29 +1162,18 @@ public final class RequestBroker extends NotificationBroadcasterSupport
     * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     * @return The array is never null, but it may contain a null element at index 0 if the oid is yet unknown
     */
-   private TopicHandler[] queryMatchingTopics(SessionInfo sessionInfo, QueryKeyData queryKeyData, QueryQosData qos)  throws XmlBlasterException
+   private String[] queryMatchingTopics(SessionInfo sessionInfo, QueryKeyData queryKeyData, QueryQosData qos)  throws XmlBlasterException
    {
       String clientName = sessionInfo.toString();
 
       if (queryKeyData.isQuery()) { // query: subscription without a given oid
          ArrayList oidList = bigXmlKeyDOM.parseKeyOid(sessionInfo, queryKeyData.getQueryString(), qos);
-         ArrayList strippedList = new ArrayList();
-         for(int i=0; i<oidList.size(); i++) {
-            TopicHandler topicHandler = getMessageHandlerFromOid((String)oidList.get(i));
-            if (topicHandler != null) {
-               strippedList.add(topicHandler);
-            }
-         }
-         return (TopicHandler[])strippedList.toArray(new TopicHandler[strippedList.size()]);
+         return (String[])oidList.toArray(new String[oidList.size()]);
       }
 
       else if (queryKeyData.isExact()) { // subscription with a given oid
          if (log.isLoggable(Level.FINE)) log.fine("Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
-         TopicHandler topicHandler = getMessageHandlerFromOid(queryKeyData.getOid());
-         if (topicHandler == null) {
-            return new TopicHandler[] { null }; // add arr[0]=null as a place holder
-         }
-         return new TopicHandler[] { topicHandler };
+         return new String[] { queryKeyData.getOid() };
       }
 
       else if (queryKeyData.isDomain()) { // a domain attribute is given
@@ -1176,51 +1181,29 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          if (log.isLoggable(Level.FINE)) log.fine("Access Client " + clientName + " with DOMAIN domain='" + domain + "'");
          if (domain == null) {
             log.warning("The DOMAIN query has a domain=null, no topics found");
-            return new TopicHandler[0];
+            return new String[0];
          }
-         TopicHandler[] topics = getTopicHandlerArr();
+         String[] oids = this.glob.getTopicAccessor().getTopics();
          ArrayList strippedList = new ArrayList();
-         for(int i=0; i<topics.length; i++) {
-            TopicHandler topicHandler = topics[i];
-            if (domain.equals(topicHandler.getMsgKeyData().getDomain()))
-               strippedList.add(topicHandler);
+         for(int i=0; i<oids.length; i++) {
+            TopicHandler topicHandler = this.glob.getTopicAccessor().access(oids[i]);
+            if (topicHandler != null) {
+               try {
+                  if (domain.equals(topicHandler.getMsgKeyData().getDomain()))
+                     strippedList.add(topicHandler);
+               }
+               finally {
+                  this.glob.getTopicAccessor().release(topicHandler);
+               }
+            }
          }
          if (log.isLoggable(Level.FINE)) log.fine("Found " + strippedList.size() + " domain matches for '" + domain + "'");
-         return (TopicHandler[])strippedList.toArray(new TopicHandler[strippedList.size()]);
+         return (String[])strippedList.toArray(new String[strippedList.size()]);
       }
 
       else {
          log.warning("Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
          throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query syntax is unknown: " + queryKeyData.getQueryType());
-      }
-   }
-
-   /**
-    * Find the TopicHandler, note that for subscriptions
-    * where never a message arrived this method will return null.
-    *
-    * Use ClientSubscriptions.getSubscriptionByOid() to find those as well.
-    *
-    * @param oid  This is the XmlKey:uniqueKey
-    * @return null if not found
-    */
-   public final TopicHandler getMessageHandlerFromOid(String oid) {
-      synchronized(this.topicHandlerMap) {
-         Object obj = this.topicHandlerMap.get(oid);
-         if (obj == null) {
-            if (log.isLoggable(Level.FINE)) log.fine("getMessageHandlerFromOid(): key oid " + oid + " is unknown, topicHandler == null");
-            return null;
-         }
-         return (TopicHandler)obj;
-      }
-   }
-
-   /**
-    * @return A current snapshot of all topics (never null)
-    */
-   public final TopicHandler[] getTopicHandlerArr() {
-      synchronized(this.topicHandlerMap) {
-         return (TopicHandler[])this.topicHandlerMap.values().toArray(new TopicHandler[this.topicHandlerMap.size()]);
       }
    }
 
@@ -1249,41 +1232,6 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
    /**
-    * @return The previous topic handler (there should never be any in our context).
-    */
-   final TopicHandler addTopicHandler(TopicHandler topicHandler) {
-      synchronized(topicHandlerMap) {
-         TopicHandler old = (TopicHandler)topicHandlerMap.put(topicHandler.getUniqueKey(), topicHandler); // ram lookup
-         if (old != null) {
-            log.severe("Duplicate TopicHandlers, removed old: " +
-                  old.toXml() + "\nnewTopic: " + topicHandler.toXml());
-            Thread.dumpStack();
-         }
-         fireTopicEvent(topicHandler);
-         return old;
-      }
-   }
-
-   /**
-    * Event invoked on message erase() invocation.
-    */
-   void topicErase(TopicHandler topicHandler) throws XmlBlasterException {
-      if (topicHandler.hasExactSubscribers()) {
-         log.warning("Erase event occured for oid=" + topicHandler.getUniqueKey() + ", " + topicHandler.numSubscribers() + " subscribers exist ...");
-      }
-      String uniqueKey = topicHandler.getUniqueKey();
-      if (log.isLoggable(Level.FINE)) log.fine("Erase event occured for oid=" + uniqueKey + ", removing message from my map ...");
-      synchronized(this.topicHandlerMap) {
-         fireTopicEvent(topicHandler);
-         Object obj = topicHandlerMap.remove(uniqueKey);
-         if (obj == null) {
-            log.warning("Sorry, can't remove message unit, because it didn't exist: " + uniqueKey);
-            throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Sorry, can't remove message unit, because oid=" + uniqueKey + " doesn't exist");
-         }
-      }
-   }
-
-   /**
     * Low level subscribe, is called when the <key oid='...' queryType='EXACT'> to subscribe is exactly known.
     * <p>
     * If the message is yet unknown, an empty is created to hold the subscription.
@@ -1294,25 +1242,19 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    private void subscribeToOid(SubscriptionInfo subs, boolean calleeIsXPathMatchCheck) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
       String uniqueKey = subs.getKeyData().getOid();
-      TopicHandler topicHandler = null;
-      synchronized(this.topicHandlerMap) {
-         Object obj = topicHandlerMap.get(uniqueKey);
-         if (obj == null) {
-            // This is a new Message, yet unknown ...
-            topicHandler = new TopicHandler(this, uniqueKey); // adds itself to topicHandlerMap
-         }
-         else {
-            // This message was known before ...
-            topicHandler = (TopicHandler)obj;
-         }
+      SessionInfo publisherSessionInfo = null; // subs.getSessionInfo() is the wrong one 
+      TopicHandler topicHandler = this.glob.getTopicAccessor().findOrCreate(publisherSessionInfo, uniqueKey);
+      try {
+         subs.incrSubscribeCounter();
+
+         fireSubscribeEvent(subs);  // inform all listeners about this new subscription
+
+         // Now the MsgUnit exists and all subcription handling is done, subscribe to it -> fires update to client
+         topicHandler.addSubscriber(subs, calleeIsXPathMatchCheck);
       }
-
-      subs.incrSubscribeCounter();
-
-      fireSubscribeEvent(subs);  // inform all listeners about this new subscription
-
-      // Now the MsgUnit exists and all subcription handling is done, subscribe to it -> fires update to client
-      topicHandler.addSubscriber(subs, calleeIsXPathMatchCheck);
+      finally {
+         this.glob.getTopicAccessor().release(topicHandler);
+      }
    }
 
    /**
@@ -1412,16 +1354,21 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          else { // Try to unSubscribe with topic oid instead of subscribe id:
             String suppliedXmlKey = xmlKey.getOid(); // remember supplied oid, another oid may be generated later
 
-            TopicHandler[] topicHandlerArr = queryMatchingTopics(sessionInfo, xmlKey, unSubscribeQos.getData());
+            String[] oids = queryMatchingTopics(sessionInfo, xmlKey, unSubscribeQos.getData());
             //Set oidSet = new HashSet(topicHandlerArr.length);  // for return values (TODO: change to TreeSet to maintain order)
-            for (int ii=0; ii<topicHandlerArr.length; ii++) {
-               TopicHandler topicHandler = topicHandlerArr[ii];
+            for (int ii=0; ii<oids.length; ii++) {
+               TopicHandler topicHandler = this.glob.getTopicAccessor().access(oids[ii]);
                if (topicHandler == null) { // unSubscribe on a unknown message ...
-                  log.warning("UnSubscribe on unknown topic [" + xmlKey.getOid() + "] is ignored");
+                  log.warning("UnSubscribe on unknown topic "+oids[ii]+" from passed [" + xmlKey.getOid() + "] is ignored");
                   continue;
                }
-
-               SubscriptionInfo[] subs = topicHandler.findSubscriber(sessionInfo);
+               SubscriptionInfo[] subs;
+               try {
+                  subs = topicHandler.findSubscriber(sessionInfo);
+               }
+               finally { // extend lock to cover fireUnSubscribeEvent?
+                  this.glob.getTopicAccessor().release(topicHandler);
+               }
                for (int jj=0; jj<subs.length; jj++) {
                   SubscriptionInfo sub = subs[jj];
                   if (sub != null) {
@@ -1429,12 +1376,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                      subscriptionIdSet.add(sub.getSubscriptionId());
                   }
                   else
-                     log.warning("UnSubscribe of " + topicHandler.getId() + " by session " + sessionInfo.getId() + " failed");
+                     log.warning("UnSubscribe of " + oids[ii] + " by session " + sessionInfo.getId() + " failed");
                }
             }
 
-            if (topicHandlerArr.length < 1) {
-               log.severe("Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
+            if (oids.length < 1) {
+               log.warning("Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
                throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
             }
          }
@@ -1685,6 +1632,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
          // Handle local message
 
+         if (!msgKeyData.getOid().equals(msgUnit.getKeyOid())) {
+            Thread.dumpStack();
+            log.severe("Unexpected change of keyOid " + msgKeyData.getOid() + " and msgUnit " + msgUnit.toXml());
+         }
+
+         /*
          // Find or create the topic
          TopicHandler topicHandler = null;
          synchronized(this.topicHandlerMap) {
@@ -1700,9 +1653,17 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                topicHandler = (TopicHandler)obj;
             }
          }
+         */
 
-         // Process the message
-         publishReturnQos = topicHandler.publish(sessionInfo, msgUnit, publishQos);
+         TopicHandler topicHandler = null;
+         try {
+            topicHandler = this.glob.getTopicAccessor().findOrCreate(sessionInfo, msgUnit.getKeyOid());
+            // Process the message
+            publishReturnQos = topicHandler.publish(sessionInfo, msgUnit, publishQos);
+         }
+         finally {
+            this.glob.getTopicAccessor().release(topicHandler);
+         }
 
          if (publishReturnQos == null) {  // assert only
             StatusQosData qos = new StatusQosData(glob, MethodName.PUBLISH);
@@ -1833,60 +1794,65 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                 "', query='" + xmlKey.getQueryString() + "') client '" + sessionInfo.getLoginName() + "' ...");
          if (log.isLoggable(Level.FINEST)) log.finest("Entering " + (isClusterUpdate?"cluster update message ":"") + xmlKey.toXml() + eraseQos.toXml());
 
-         TopicHandler[] topicHandlerArr = queryMatchingTopics(sessionInfo, xmlKey, eraseQos.getData());
-         Set oidSet = new HashSet(topicHandlerArr.length);  // for return values (TODO: change to TreeSet to maintain order)
+         String[] oids = queryMatchingTopics(sessionInfo, xmlKey, eraseQos.getData());
+         Set oidSet = new HashSet(oids.length);  // for return values (TODO: change to TreeSet to maintain order)
          EraseReturnQos[] clusterRetArr = null;
 
-         for (int ii=0; ii<topicHandlerArr.length; ii++) {
-            TopicHandler topicHandler = topicHandlerArr[ii];
-
-            if (this.glob.isClusterManagerReady() && !isClusterUpdate) { // cluster support - forward erase to master
-               try {
-                  clusterRetArr = glob.getClusterManager().forwardErase(sessionInfo, xmlKey, eraseQos);
-                  //Thread.currentThread().dumpStack();
-                  //if (ret != null) return ret;
+         for (int ii=0; ii<oids.length; ii++) {
+            TopicHandler topicHandler = this.glob.getTopicAccessor().access(oids[ii]);
+            try {
+               if (this.glob.isClusterManagerReady() && !isClusterUpdate) { // cluster support - forward erase to master
+                  try {
+                     clusterRetArr = glob.getClusterManager().forwardErase(sessionInfo, xmlKey, eraseQos);
+                     //Thread.currentThread().dumpStack();
+                     //if (ret != null) return ret;
+                  }
+                  catch (XmlBlasterException e) {
+                     if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
+                        this.glob.setUseCluster(false);
+                     }
+                     else {
+                        e.printStackTrace();
+                        throw e;
+                     }
+                  }
                }
-               catch (XmlBlasterException e) {
-                  if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
-                     this.glob.setUseCluster(false);
+               if (this.glob.useCluster() && !this.glob.isClusterManagerReady()) {
+                  log.warning("erase not forwarded to cluster as ClusterManager is not ready");
+               }
+               
+               if (topicHandler == null) { // unSubscribe on a unknown message ...
+                  if (clusterRetArr != null && clusterRetArr.length > 0) {
+                     log.info("Erase for topic [" + xmlKey.getOid() + "] successfully forwarded to cluster master");
+                     oidSet.add(xmlKey.getOid());
                   }
                   else {
-                     e.printStackTrace();
-                     throw e;
+                     log.warning("Erase on unknown topic [" + xmlKey.getOid() + "] is ignored");
+                  }
+                  // !!! how to delete XPath subscriptions, still MISSING ???
+                  continue;
+               }
+   
+               if (log.isLoggable(Level.FINE)) log.fine("erase oid='" + topicHandler.getUniqueKey() + "' of total " + oids.length + " ...");
+   
+               //log.info(ME, "Erasing " + topicHandler.toXml());
+   
+               oidSet.add(topicHandler.getUniqueKey());
+               if (eraseQos.getData().containsHistoryQos()) {
+                  if (log.isLoggable(Level.FINE)) log.fine("Erasing history instances only, the topic '" + topicHandler.getId() + "' remains");
+                  topicHandler.eraseFromHistoryQueue(sessionInfo, eraseQos.getData().getHistoryQos());
+               }
+               else { // erase the complete topic
+                  try {
+                     topicHandler.eraseRequest(sessionInfo, xmlKey, eraseQos);
+                  } catch (XmlBlasterException e) {
+                     if (log.isLoggable(Level.FINE)) log.severe("Unexpected exception: " + e.toString());
                   }
                }
             }
-            if (this.glob.useCluster() && !this.glob.isClusterManagerReady()) {
-               log.warning("erase not forwarded to cluster as ClusterManager is not ready");
-            }
-            
-            if (topicHandler == null) { // unSubscribe on a unknown message ...
-               if (clusterRetArr != null && clusterRetArr.length > 0) {
-                  log.info("Erase for topic [" + xmlKey.getOid() + "] successfully forwarded to cluster master");
-                  oidSet.add(xmlKey.getOid());
-               }
-               else {
-                  log.warning("Erase on unknown topic [" + xmlKey.getOid() + "] is ignored");
-               }
-               // !!! how to delete XPath subscriptions, still MISSING ???
-               continue;
-            }
-
-            if (log.isLoggable(Level.FINE)) log.fine("erase oid='" + topicHandler.getUniqueKey() + "' of total " + topicHandlerArr.length + " ...");
-
-            //log.info(ME, "Erasing " + topicHandler.toXml());
-
-            oidSet.add(topicHandler.getUniqueKey());
-            if (eraseQos.getData().containsHistoryQos()) {
-               if (log.isLoggable(Level.FINE)) log.fine("Erasing history instances only, the topic '" + topicHandler.getId() + "' remains");
-               topicHandler.eraseFromHistoryQueue(sessionInfo, eraseQos.getData().getHistoryQos());
-            }
-            else { // erase the complete topic
-               try {
-                  topicHandler.fireMessageEraseEvent(sessionInfo, xmlKey, eraseQos);
-               } catch (XmlBlasterException e) {
-                  if (log.isLoggable(Level.FINE)) log.severe("Unexpected exception: " + e.toString());
-               }
+            finally {
+               if (topicHandler != null)
+                  this.glob.getTopicAccessor().release(topicHandler);
             }
          }
          //log.info(ME, "AFTER ERASE: " + toXml());
@@ -2009,8 +1975,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
     * @param RemotePropertiesListener
     * @return
     */
-   public synchronized boolean addRemotePropertiesListener(I_RemotePropertiesListener remotePropertiesListener) {
-      return this.remotePropertiesListeners.add(remotePropertiesListener);
+   public boolean addRemotePropertiesListener(I_RemotePropertiesListener remotePropertiesListener) {
+      if (remotePropertiesListener == null)
+         throw new IllegalArgumentException(ME + ".addRemotePropertiesListener: the listener is null");
+      synchronized (this.remotePropertiesListeners) {
+         return this.remotePropertiesListeners.add(remotePropertiesListener);
+      }
    }
 
    /**
@@ -2018,58 +1988,21 @@ public final class RequestBroker extends NotificationBroadcasterSupport
     * @param RemotePropertiesListener
     * @return true if it was removed
     */
-   public synchronized boolean removeRemotePropertiesListener(I_RemotePropertiesListener remotePropertiesListener) {
-      return this.remotePropertiesListeners.remove(remotePropertiesListener);
+   public boolean removeRemotePropertiesListener(I_RemotePropertiesListener remotePropertiesListener) {
+      if (remotePropertiesListener == null)
+         throw new IllegalArgumentException(ME + ".removeRemotePropertiesListener: the listener is null");
+      synchronized (this.remotePropertiesListeners) {
+         return this.remotePropertiesListeners.remove(remotePropertiesListener);
+      }
    }
    
-   
-   public synchronized I_RemotePropertiesListener[] getRemotePropertiesListenerArr() {
-      return (I_RemotePropertiesListener[])this.remotePropertiesListeners.toArray(new I_RemotePropertiesListener[this.remotePropertiesListeners.size()]);
-   }
-
    /**
-    * Adds the specified Topic listener to receive creation/destruction events of Topics. 
+    * Access a current snapshot of all listeners. 
+    * @return
     */
-   public void addTopicListener(I_TopicListener l) {
-      if (l == null) {
-         throw new IllegalArgumentException(ME + ".addTopicListener: the listener is null");
-      }
-      synchronized (this.topicListenerSet) {
-         this.topicListenerSet.add(l);
-      }
-   }
-
-   /**
-    * Removes the specified listener.
-    */
-   public void removeTopicListener(I_TopicListener l) {
-      if (l == null) {
-         throw new IllegalArgumentException(ME + ".removeTopicListener: the listener is null");
-      }
-      synchronized (this.topicListenerSet) {
-         this.topicListenerSet.remove(l);
-      }
-   }
-
-   /**
-    * Is fired on topic creation or destruction. 
-    */
-   private final void fireTopicEvent(TopicHandler topicHandler)
-   {
-      if (log.isLoggable(Level.FINE)) log.fine("Going to fire fireTopicEvent() ...");
-
-      synchronized (this.topicListenerSet) {
-         Iterator it = this.topicListenerSet.iterator();
-         while (it.hasNext()) {
-            try {
-               I_TopicListener l = (I_TopicListener)it.next();
-               TopicEvent event = new TopicEvent(topicHandler);
-               l.changed(event);
-            }
-            catch (Throwable e) {
-               e.printStackTrace();
-            }
-         }
+   public I_RemotePropertiesListener[] getRemotePropertiesListenerArr() {
+      synchronized (this.remotePropertiesListeners) {
+         return (I_RemotePropertiesListener[])this.remotePropertiesListeners.toArray(new I_RemotePropertiesListener[this.remotePropertiesListeners.size()]);
       }
    }
 
@@ -2173,15 +2106,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      TopicHandler[] topicHandlerArr = getTopicHandlerArr();
-
       sb.append(offset).append("<RequestBroker>");
       if (this.topicStore != null) {
          sb.append(this.topicStore.toXml(extraOffset+Constants.INDENT));
       }
-      for (int ii=0; ii<topicHandlerArr.length; ii++) {
-         sb.append(topicHandlerArr[ii].toXml(extraOffset+Constants.INDENT));
-      }
+      sb.append(this.glob.getTopicAccessor().toXml(extraOffset+Constants.INDENT));
       sb.append(bigXmlKeyDOM.toXml(extraOffset+Constants.INDENT, true));
       sb.append(clientSubscriptions.toXml(extraOffset+Constants.INDENT));
       if (this.glob.isClusterManagerReady()) {
@@ -2408,29 +2337,20 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       return sb.toString();
    }
    public int getNumTopics() {
-      synchronized (this.topicHandlerMap) {
-         return this.topicHandlerMap.size();
-      }
+      return this.glob.getTopicAccessor().getNumTopics();
    }
    public String getTopicList() {
-      TopicHandler[] topicHandlerArr = getTopicHandlerArr();
-      StringBuffer sb = new StringBuffer(topicHandlerArr.length*60);
-      for(int ii=0; ii<topicHandlerArr.length; ii++) {
+      String[] oids = this.glob.getTopicAccessor().getTopics();
+      StringBuffer sb = new StringBuffer(oids.length*60);
+      for(int ii=0; ii<oids.length; ii++) {
          if (sb.length() > 0)
             sb.append(",");
-         sb.append(topicHandlerArr[ii].getUniqueKey());
+         sb.append(oids[ii]);
       }
       return sb.toString();
    }
    public String[] getTopics() {
-      TopicHandler[] topicHandlerArr = getTopicHandlerArr();
-      if (topicHandlerArr == null || topicHandlerArr.length == 0)
-         return new String[0];
-      String[] ret = new String[topicHandlerArr.length];
-      for (int i=0; i<topicHandlerArr.length; i++) {
-         ret[i] = topicHandlerArr[i].getUniqueKey();
-      }
-      return ret;
+      return this.glob.getTopicAccessor().getTopics();
    }
    public int getNumSubscriptions() {
       return getClientSubscriptions().getNumSubscriptions();

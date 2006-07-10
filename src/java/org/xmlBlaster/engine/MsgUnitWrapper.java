@@ -48,7 +48,6 @@ import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCallback
 {
    private static final long serialVersionUID = -3883804885824516337L;
-   private transient final static String ME = "MsgUnitWrapper-";
    private transient final ServerScope glob;
    private static Logger log = Logger.getLogger(MsgUnitWrapper.class.getName());
    private transient int historyReferenceCounter; // if is in historyQueue, is swapped to persistence as well
@@ -73,7 +72,6 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    private final static int PRE_EXPIRED = 4;
    private final static int EXPIRED = 1;
    private final static int DESTROYED = 2;
-   private final static int PRE_DESTROYED = 3;
    private transient int state = ALIVE;
 
    private MsgUnit msgUnit;
@@ -184,6 +182,10 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          log.severe("PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
       }
    }
+   
+   public final ServerScope getServerScope() {
+      return this.glob;
+   }
 
    /**
     * Cleanup timer, it is a weak reference on us therefor it is a 'nice to have'. 
@@ -216,27 +218,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       this.swapped = swapped;
    }
 
-   private I_Map getOwnerCache() throws XmlBlasterException {
-      if (this.ownerCache == null) {
-         if (log.isLoggable(Level.FINE)) log.fine("Creating ownerCache from topicHandler");
-         this.ownerCache = getTopicHandler().getMsgUnitCache();
-      }
-      return this.ownerCache;
-   }
-
    /**
-    * @return The owning TopicHandler, never null
-    */
-   public TopicHandler getTopicHandler() throws XmlBlasterException {
-      TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
-      if (topicHandler == null) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME + getLogId(), "getTopicHandler() - storage lookup of topic '" + getKeyOid() + "' failed");
-      }
-      return topicHandler;
-   }
-
-   /**
-    * Invoked by ReferenceEntry.java to support reference counting
+    * Invoked by ReferenceEntry.java and TopicHandler.java to support reference counting
     * @param count The number of ref-counts to add/subtract
     * @param storageId
     * @return false if the entry is not pre destroyed, true if it is
@@ -244,51 +227,36 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     *         'true' is returned. NOTE2: The invocation toDestroyed() must be done
     *         outside from any sync on the cache.
     */
-   public boolean incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
-      
-      I_Map cache = getOwnerCache();
-      synchronized (getTopicHandler()) {
-         synchronized (cache) {
-            if (isSwapped()) {
-               if (log.isLoggable(Level.FINE)) 
-                  log.fine("incrementReferenceCounter: unexpected swapped message");
-               return false;
-            }
-            boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
-            synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
-               if (isHistoryReference) {
-                  this.historyReferenceCounter += count;
-               }
-               this.referenceCounter += count;
-            }
-
-            // TODO: Remove the logging
-            if (log.isLoggable(Level.FINE) && !isInternal()) {
-               log.fine("Reference count changed from " +
-                   (this.referenceCounter-count) + " to " + this.referenceCounter + 
-                   ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "'");
-            }
-
-            if (this.referenceCounter > 0L) {
-               if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
-                  // Update persistence store
-                  if (count != 0 && getTopicHandler().isInMsgStore(this)) {
-                     I_MapEntry ret = cache.change(this, null);
-                     //I_MapEntry ret = getOwnerCache().change(this.getUniqueId(), this);  // I_ChangeCallback
-                     if (ret != this) {
-                        log.severe("Expected to be identical in change(): old=" + this + " new=" + ret);
-                     }
-                  }
-               }
-            }
-            else {
-               if (!isDestroyed()) {
-                  this.state = PRE_DESTROYED; // Invalidate inside synchronize
-               }
-            }
-         } // sync cache                               isDestroyed()
+   public void incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
+      if (isSwapped()) {
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("incrementReferenceCounter: unexpected swapped message");
+         return;
       }
-      return this.state == PRE_DESTROYED; //this.referenceCounter <= 0L)
+      boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
+      synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
+         if (isHistoryReference) {
+            this.historyReferenceCounter += count;
+         }
+         this.referenceCounter += count;
+      }
+
+      if (log.isLoggable(Level.FINE) && !isInternal()) {
+         log.fine("Reference count changed from " +
+             (this.referenceCounter-count) + " to " + this.referenceCounter + 
+             ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "'");
+      }
+
+      if (this.referenceCounter > 0L) {
+         if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
+            if (count != 0) this.glob.getTopicAccessor().changeDirtyRead(this);
+         }
+      }
+      else {
+         if (!isDestroyed()) {
+            toDestroyed();
+         }
+      }
    }
 
    /**
@@ -339,12 +307,6 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    public int getPriority() {
       return PriorityEnum.NORM_PRIORITY.getInt();
    }
-
-   /*
-   public boolean isExpired() {
-      return getMsgQosData().isExpired();
-   }
-   */
 
    public MsgQosData getMsgQosData() {
       return (MsgQosData)this.msgUnit.getQosData();
@@ -557,21 +519,22 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          }
          this.state = EXPIRED;
       }
-
+      
       if (this.referenceCounter <= 0L) {
          toDestroyed();
          return;
       }
-
-      TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
-      if (topicHandler != null) // Topic could be erased in the mean time with forceDestroy=true
-         topicHandler.entryExpired(this);
+      
+      if (this.historyReferenceCounter > 0) {
+         StorageId st = new StorageId(Constants.RELATING_HISTORY, "dummy");
+         incrementReferenceCounter((-1)*this.historyReferenceCounter, st);
+      }
    }
 
    /**
     */
    public boolean isDestroyed() {
-      return this.state == DESTROYED || this.state == PRE_DESTROYED;
+      return this.state == DESTROYED;
    }
 
    /**
@@ -588,12 +551,26 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
          }
          this.state = DESTROYED;
       }
+      
+      if (log.isLoggable(Level.FINEST)) {
+         log.finest("toDestroyed: " + toXml());
+         Thread.dumpStack();
+      }
 
-      RequestBroker broker = glob.getRequestBroker();
-      if (broker != null) {
-         TopicHandler topicHandler = broker.getMessageHandlerFromOid(getKeyOid());
-         if (topicHandler != null) // Topic could be erased in the mean time with forceDestroy=true
-            topicHandler.entryDestroyed(this);
+      boolean async = false;
+      
+      if (async)
+         this.glob.getTopicAccessor().entryDestroyed_scheduleForExecution(this);
+      else {
+         TopicHandler topicHandler = this.glob.getTopicAccessor().access(getKeyOid());
+         if (topicHandler != null) { // Topic could be erased in the mean time with forceDestroy=true
+            try {
+               topicHandler.entryDestroyed(this);
+            }
+            finally {
+               this.glob.getTopicAccessor().release(topicHandler);
+            }
+         }
       }
    }
 
@@ -601,14 +578,6 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     * This timeout occurs after a configured expiration delay
     */
    public final void timeout(Object userData) {
-      /*
-      synchronized (this) {
-         if (this.timerKey != null) {
-            this.destroyTimer.removeTimeoutListener(this.timerKey);
-            this.timerKey = null;
-         }
-      }
-      */
       if (getMsgQosData().isForceDestroy()) {
          toDestroyed();
       }
@@ -697,7 +666,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       this.sortTimestamp = timestamp;
    }
 
-   /**
+   /*
     * Measure size for XML-ASCII versus java.io.Serializable persistence. 
     * <pre> 
     * java org.xmlBlaster.engine.MsgUnitWrapper
@@ -706,9 +675,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     * <p>
     * java.io.Serialized file 'MsgUnitWrapper.ser' size=1407 bytes versus XML dump=123 bytes
     * </p>
-    */
    public static void main(String[] args) {
-   /*
       Global glob = new Global(args);
       String fileName = "MsgUnitWrapper.ser";
       try {
@@ -734,7 +701,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       catch (XmlBlasterException e) {
          System.err.println("ERROR: " + e.getMessage());
       }
-   */
    }
+   */
 }
 
