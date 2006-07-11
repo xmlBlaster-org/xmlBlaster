@@ -151,26 +151,32 @@ public final class TopicAccessor {
    public TopicHandler findOrCreate(SessionInfo sessionInfo, String oid)
          throws XmlBlasterException {
       TopicContainer tc = null;
-      Object obj;
+      Object oldOne;
       synchronized (this.topicHandlerMap) {
-         obj = this.topicHandlerMap.get(oid);
-         if (obj == null) {
+         oldOne = this.topicHandlerMap.get(oid);
+         if (oldOne == null) {
             TopicHandler topicHandler = new TopicHandler(this.serverScope
                   .getRequestBroker(), sessionInfo, oid);
             tc = new TopicContainer(topicHandler);
             this.topicHandlerMap.put(topicHandler.getUniqueKey(), tc);
          } else {
-            tc = (TopicContainer) obj;
+            tc = (TopicContainer) oldOne;
          }
       }
-      tc.lock();
+      TopicHandler topicHandler = tc.lock();
+      
+      if (topicHandler == null) { // try again recursive
+         log.warning("Trying again to get a TopicHandler '"+oid+"': " + sessionInfo.toXml());
+         return findOrCreate(sessionInfo, oid);
+      }
+      
       // old, pre 1.3 behaviour:
       // if (obj == null && sessionInfo != null) { // is new created for a
       // publish(), but not when created for a subscribe
-      if (obj == null) { // is new created
-         fireTopicEvent(tc.getTopicHandler()); // is locked!
+      if (oldOne == null) { // is new created
+         fireTopicEvent(topicHandler); // is locked!
       }
-      return tc.getTopicHandler();
+      return topicHandler;
    }
 
    /**
@@ -345,8 +351,10 @@ public final class TopicAccessor {
       }
 
       public void erase() {
-         this.topicHandler = null;
+         if (this.topicHandler == null)
+            return;
          synchronized (this.lock) {
+            this.topicHandler = null;
             int c = this.lock.getHoldCount();
             for (int i = 0; i < c; i++)
                this.lock.unlock();
@@ -357,7 +365,12 @@ public final class TopicAccessor {
          if (this.topicHandler == null)
             return null;
          this.lock.lock();
-         return this.topicHandler;
+         TopicHandler th = this.topicHandler;
+         if (th == null) {
+            this.lock.unlock();
+            return null;
+         }
+         return th;
       }
 
       public void unlock() {
