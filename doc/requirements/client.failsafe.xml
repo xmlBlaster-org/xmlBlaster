@@ -370,7 +370,7 @@ try {
    ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
 
    // Setup fail-safe handling ...
-   connectQos.getClientQueueProperty().setMaxEntries(55); // queue up to 1000 messages
+   connectQos.getClientQueueProperty().setMaxEntries(1000); // queue up to 1000 messages
    Address addressProp = connectQos.getAddress();
    addressProp.setDelay(4000L);      // retry connecting every 4 sec
    addressProp.setRetries(-1);       // -1 == forever
