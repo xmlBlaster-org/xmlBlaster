@@ -365,19 +365,18 @@ import org.xmlBlaster.util.qos.address.Address;
 // Example with hard coded fail-safe settings
 // Here the callback methods are not shown
 try {
-   con = glob.getXmlBlasterAccess(); // Find orb
+   con = glob.getXmlBlasterAccess();
 
    ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
 
    // Setup fail-safe handling ...
-   Address addressProp = new Address(glob);
+   connectQos.getClientQueueProperty().setMaxEntries(55); // queue up to 1000 messages
+   Address addressProp = connectQos.getAddress();
    addressProp.setDelay(4000L);      // retry connecting every 4 sec
    addressProp.setRetries(-1);       // -1 == forever
    addressProp.setPingInterval(0L);  // switched off
-   addressProp.getClientQueueProperty().setMaxEntries(1000);      // queue up to 1000 messages
+   
    con.registerConnectionListener(this);
-
-   connectQos.setAddress(addressProp);
 
    // and do the login ...
    con.connect(connectQos, this);  // Login to xmlBlaster, register for updates
