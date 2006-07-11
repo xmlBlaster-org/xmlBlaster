@@ -145,6 +145,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    private boolean isRegisteredInBigXmlDom = false;
 
+   private boolean isHistoryHandling; // marker if we are working on the history queue, whe have to prevent topic status changes triggered which would spoil our publish thread
+   
    /**
     * This topic is destroyed after given timeout
     * The timer is activated on state change to UNREFERENCED
@@ -163,7 +165,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    private I_SubscriptionListener subscriptionListener;
 
-   private Map msgUnitWrapperUnderConstruction = new HashMap();
+   private Object msgUnitWrapperUnderConstructionMutex = new Object();
+   private MsgUnitWrapper msgUnitWrapperUnderConstruction;
    
    /** this is used for administrative gets (queries on callback queue) */
    private QueueQueryPlugin queueQueryPlugin;
@@ -543,61 +546,70 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          
          // Forcing RAM entry temporary (reset in finally below) to avoid performance critical harddisk IO during initialization, every callback/subject/history queue put()/take() is changing the reference counter of MsgUnitWrapper. For persistent messages this needs to be written to harddisk
          // If the server crashed during this RAM operation it is not critical as the publisher didn't get an ACK yet
-         synchronized(this.msgUnitWrapperUnderConstruction) {
+         synchronized(this.msgUnitWrapperUnderConstructionMutex) {
             // A queue (e.g. callback queue) could swap its entry and reload it during this initialization phase,
             // in this case we need to assure that it receives our RAM based MsgUnitWrapper (with all current settings)
             // in case it changes the referenceCounter
-            this.msgUnitWrapperUnderConstruction.put(new Long(msgUnitWrapper.getUniqueId()), msgUnitWrapper);
+            this.msgUnitWrapperUnderConstruction = msgUnitWrapper;
          }
     
-         if (addToHistoryQueue && msgUnitWrapper.hasRemainingLife()) { // no sense to remember
-            if (msgQosData.isForceUpdate() == false && hasHistoryEntries()) {
-               MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
-               if (entry != null) {
-                  MsgUnitWrapper old = entry.getMsgUnitWrapper();
-                  if (old != null) {
-                     changed = !old.getMsgUnit().sameContent(msgUnit.getContent());
+         try {
+            // marker if we are working on the history queue
+            // A historyQueue.take() could trigger entry.remove() -> topicHandler.entryDestroyed() -> toUnreferenced() ==> The topic would be invalid for the current publish
+            this.isHistoryHandling = true; 
+            
+            if (addToHistoryQueue && msgUnitWrapper.hasRemainingLife()) { // no sense to remember
+               if (msgQosData.isForceUpdate() == false && hasHistoryEntries()) {
+                  MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)this.historyQueue.peek();
+                  if (entry != null) {
+                     MsgUnitWrapper old = entry.getMsgUnitWrapper();
+                     if (old != null) {
+                        changed = !old.getMsgUnit().sameContent(msgUnit.getContent());
+                     }
                   }
                }
-            }
-
-            try { // Cleanup if persistent queue was temporary unavailable
-               long numHist = getNumOfHistoryEntries();
-               if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
-                  long count = numHist-this.historyQueue.getMaxNumOfEntries();
-                  // TODO: Implement count>1 in takeLowest():
-                  ArrayList entryList = this.historyQueue.takeLowest((int)count, -1L, null, false);
-                  if (entryList.size() != count) {
-                     log.severe(ME+": Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
+   
+               try { // Cleanup if persistent queue was temporary unavailable
+                  long numHist = getNumOfHistoryEntries();
+                  if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
+                     long count = numHist-this.historyQueue.getMaxNumOfEntries();
+                     // TODO: Implement count>1 in takeLowest():
+                     ArrayList entryList = this.historyQueue.takeLowest((int)count, -1L, null, false);
+                     if (entryList.size() != count) {
+                        log.severe(ME+": Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
+                     }
                   }
                }
-            }
-            catch (XmlBlasterException e) {
-               log.severe(ME+": History queue take() problem: " + e.getMessage());
-            }
-
-            try { // increments reference counter += 1
-               this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
-            }
-            catch (XmlBlasterException e) {
-               log.severe(ME+": History queue put() problem: " + e.getMessage());
-            }
-
-            try {
-               long numHist = getNumOfHistoryEntries();
-               if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
-                  ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
-                  if (entryList.size() != 1) {
-                     throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
-                           "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
+               catch (XmlBlasterException e) {
+                  log.severe(ME+": History queue take() problem: " + e.getMessage());
+               }
+   
+               try { // increments reference counter += 1
+                  this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
+               }
+               catch (XmlBlasterException e) {
+                  log.severe(ME+": History queue put() problem: " + e.getMessage());
+               }
+   
+               try {
+                  long numHist = getNumOfHistoryEntries();
+                  if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
+                     ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
+                     if (entryList.size() != 1) {
+                        throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
+                              "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
+                     }
+                     MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
+                     if (log.isLoggable(Level.FINE)) { if (!entry.isInternal()) log.fine(ME+": Removed oldest entry in history queue."); }
                   }
-                  MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
-                  if (log.isLoggable(Level.FINE)) { if (!entry.isInternal()) log.fine(ME+": Removed oldest entry in history queue."); }
+               }
+               catch (XmlBlasterException e) {
+                  log.severe(ME+": History queue take() problem: " + e.getMessage());
                }
             }
-            catch (XmlBlasterException e) {
-               log.severe(ME+": History queue take() problem: " + e.getMessage());
-            }
+         }
+         finally {
+            this.isHistoryHandling = false;
          }
 
          // NOTE: Putting entries into callback queues must be outside of a synchronized(topicHandler) to avoid deadlock
@@ -642,8 +654,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                }
             }
             finally {
-               synchronized(this.msgUnitWrapperUnderConstruction) {
-                  this.msgUnitWrapperUnderConstruction.remove(new Long(msgUnitWrapper.getUniqueId()));
+               synchronized(this.msgUnitWrapperUnderConstructionMutex) {
+                  this.msgUnitWrapperUnderConstruction = null;
                }
             }
          }
@@ -656,8 +668,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * NOTE: You need to synchronize this call over msgUnitCache
     */
    boolean isInMsgStore(MsgUnitWrapper msgUnitWrapper) {
-      synchronized(this.msgUnitWrapperUnderConstruction) {
-         return !this.msgUnitWrapperUnderConstruction.containsKey(new Long(msgUnitWrapper.getUniqueId()));
+      synchronized(this.msgUnitWrapperUnderConstructionMutex) {
+         return this.msgUnitWrapperUnderConstruction == null || this.msgUnitWrapperUnderConstruction.getUniqueId() != msgUnitWrapper.getUniqueId();
+         //return !this.msgUnitWrapperUnderConstruction.containsKey(new Long(msgUnitWrapper.getUniqueId()));
       }
    }
    
@@ -804,7 +817,6 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    //   return this.msgUnitCache.change(entry, callback);
    //}
    void change(MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
-      //synchronized(this.msgUnitWrapperUnderConstruction)
       if (isInMsgStore(msgUnitWrapper)) {
          I_Map msgUnitCache = this.msgUnitCache;
          if (msgUnitCache == null) { // on startup
@@ -816,13 +828,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    public MsgUnitWrapper getMsgUnitWrapper(long uniqueId) throws XmlBlasterException {
 
-      synchronized(this.msgUnitWrapperUnderConstruction) {
-         if (this.msgUnitWrapperUnderConstruction.size() > 0) {
-            Object obj = this.msgUnitWrapperUnderConstruction.get(new Long(uniqueId));
-            if (obj != null) {
-               return (MsgUnitWrapper)obj;
-            }
-         }
+      synchronized(this.msgUnitWrapperUnderConstructionMutex) {
+         if (this.msgUnitWrapperUnderConstruction != null && this.msgUnitWrapperUnderConstruction.getUniqueId() == uniqueId)
+            return this.msgUnitWrapperUnderConstruction;
       }
 
       I_Map msgUnitCache = this.msgUnitCache;
@@ -834,20 +842,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    /**
-    * Event triggered by MsgUnitWrapper itself when it reaches destroy state
+    * Event triggered by MsgUnitWrapper itself when it reaches destroy state. 
+    * This is an important entry point, and may not be called from a concurrent thread
     */
    public void entryDestroyed(MsgUnitWrapper msgUnitWrapper) {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering entryDestroyed(" + msgUnitWrapper.getLogId() + ")");
 
-      boolean underConstruction = false;
-      synchronized(this.msgUnitWrapperUnderConstruction) {
-         if (this.msgUnitWrapperUnderConstruction.size() > 0) {
-            Object obj = this.msgUnitWrapperUnderConstruction.get(new Long(msgUnitWrapper.getUniqueId()));
-            if (obj != null) {
-               underConstruction = true;
-            }
-         }
-      }
+      boolean underConstruction = !isInMsgStore(msgUnitWrapper);
 
       /*
       if (this.historyQueue != null) {
@@ -880,7 +881,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       
       // if it was a volatile message we need to check unreferenced state
       ArrayList notifyList = null;
-      if (!hasCacheEntries() && !hasExactSubscribers()) {
+      if (!hasCacheEntries() && !hasExactSubscribers() && !this.isHistoryHandling) {
          try {
             if (isSoftErased()) {
                notifyList = toDead(this.creatorSessionName, null, null);
@@ -1237,7 +1238,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    /**
-    * Send update to subscribed client (Pub/Sub mode only).
+    * Put the message into the callback queue of the subscribed client (Pub/Sub mode only).
     * @param publisherSessionInfo The sessionInfo of the publisher or null if not known or not online
     * @param sub The subscription handle of the client
     * @return -1 in case it was not able to complete the invocation due to an incorrect status (for example
@@ -1267,6 +1268,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             if (!checkFilter(publisherSessionInfo, sub, msgUnitWrapper, true)) return 1;
          }
          catch (XmlBlasterException ex) {
+            if (log.isLoggable(Level.FINEST)) log.finest(ex.getMessage());
             return 0;
          }
 
@@ -1699,7 +1701,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    /**
     * @param sessionInfo The session which triggered the erase
-    * @param eraseQosServer TODO
+    * @param eraseKey The erase request
+    * @param eraseQos The erase request
     */
    private ArrayList toSoftErased(SessionInfo sessionInfo, QueryKeyData eraseKey, EraseQosServer eraseQos) {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering toSoftErased(oldState="+getStateStr()+")");
@@ -1728,7 +1731,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    /**
     * @param sessionName The session which triggered this event
-    * @param eraseKey TODO
+    * @param eraseKey The erase request
+    * @param eraseQos The erase request
     */
    private ArrayList toDead(SessionName sessionName, QueryKeyData eraseKey, EraseQosServer eraseQos) {
       
