@@ -108,7 +108,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    private String lastError = "";
 
    /** the authentication service */
-   private Authenticate authenticate = null;          // The authentication service
+   private Authenticate authenticate;
 
    private final Set remotePropertiesListeners = new TreeSet();
 
@@ -439,18 +439,6 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       return this.publishPluginManager;
    }
 
-   /**
-    * The cluster may access an internal session to publish its received messages.
-    * AWARE: The clusterManager is responsible for the security as it call directly
-    * into RequestBroker.
-    * See ClusterNode.java update() where we check the cbSessionId
-    * TODO: Security audit.
-    */
-    /*
-   public final SessionInfo getClusterSessionInfo() {
-      return this.unsecureSessionInfo;
-   }
-      */
    final SessionInfo getInternalSessionInfo() {
       // Note: We could change to 'public' as the CommandManager transports it to public scope already
       //       with glob.getCommandManager().getSessionInfo()
@@ -535,8 +523,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                origMsgUnit.getQosData().addClientProperty("__isErrorHandled", true); // Mark the original to avoid looping if failed client is the dead message listener
                String text = "Generating dead message '" + entry.getLogId() + "'" +
                             " from publisher=" + entry.getSender() +
-                            " because delivery with queue '" +            // entry.getReceiver() is recognized in queueId
-                            ((queue == null) ? "null" : queue.getStorageId().toString()) + "' failed" +
+                            " because delivery " +            // entry.getReceiver() is recognized in queueId
+                            ((queue == null) ? "" : "with queue '"+queue.getStorageId().toString()+"' ") + "failed" +
                             ((reason != null) ? (": " + reason) : "");
                log.warning(text);
                PublishKey publishKey = new PublishKey(glob, Constants.OID_DEAD_LETTER);
@@ -598,159 +586,6 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       return new String[0];
    }
 
-   /**
-    * Try to load all persistent stored messages.
-    */
-/*   
-   private void loadPersistentMessages()
-   {
-      if (this.useOldStylePersistence == false) return;
-
-      if(log.isLoggable(Level.FINER)) log.call(ME,"Loading messages from persistence to Memory ...");
-      this.persistenceDriver = getPersistenceDriver(); // Load persistence driver
-      if (this.persistenceDriver == null) return;
-      int num=0;
-      try {
-         boolean lazyRecovery = glob.getProperty().get("Persistence.LazyRecovery", true);
-         if(log.isLoggable(Level.FINE)) log.trace(ME,"LazyRecovery is switched="+lazyRecovery);
-
-         if (lazyRecovery)
-         {
-            // Recovers all persistent messages from the loaded persistence driver.
-            // The RequestBroker must self pulish messages.
-            Enumeration oidContainer = this.persistenceDriver.fetchAllOids();
-
-            while(oidContainer.hasMoreElements())
-            {
-               String oid = (String)oidContainer.nextElement();
-               // Fetch the MsgUnit by oid from the persistence
-               MsgUnit msgUnit = this.persistenceDriver.fetch(oid);
-
-               // PublishQosServer flag: 'fromPersistenceStore' must be true
-               MsgQosData msgQosData = (MsgQosData)msgUnit.getQosData();
-               msgQosData.setFromPersistenceStore(true);
-
-               // RequestBroker publishes messages self
-               this.publish(unsecureSessionInfo, msgUnit);
-
-               num++;
-            }
-         }
-      }
-      catch (XmlBlasterException e) {
-         log.error(ME, "Complete recover from persistence store failed: " + e.toString());
-      }
-      catch (Exception e) {
-         log.error(ME, "Complete recover from persistence store failed: " + e.toString());
-         e.printStackTrace();
-      }
-
-      if (num > 0)
-         log.info(ME,"Loaded " + num + " persistent messages from persistence to Memory.");
-   }
-*/
-
-   /**
-    * This Interface allows to hook in your own persistence driver.
-    * <p />
-    * Configure the driver through xmlBlaster.properties<br />
-    *    Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver<br />
-    * is default.
-    * <p />
-    * Note that you can't change the driver during runtime (this would need some code added).
-    * @return interface to the configured persistence driver or null if no is available
-    */
-/*
-   final I_PersistenceDriver getPersistenceDriver()
-   {
-      if (this.useOldStylePersistence == false) return (I_PersistenceDriver)null;
-
-      if (this.persistenceDriver == null) {
-         String pluginType    = glob.getProperty().get("Persistence.Driver.Type", "filestore");
-         String pluginVersion = glob.getProperty().get("Persistence.Driver.Version", "1.0");
-
-         try {
-            this.persistenceDriver = pluginManager.getPlugin(pluginType, pluginVersion);
-         } catch (Exception e) {
-            log.error(ME, "xmlBlaster will run memory based only, no persistence driver is avalailable, can't instantiate [" + pluginType + "][" + pluginVersion +"]: " + e.toString());
-            e.printStackTrace();
-            this.useOldStylePersistence = false;
-            return (I_PersistenceDriver)null;
-         }
-
-         //log.info(ME, "Loaded persistence driver '" + this.persistenceDriver.getName() + "[" + pluginType + "][" + pluginVersion +"]'");
-         log.info(ME, "Loaded persistence driver plugin '[" + pluginType + "][" + pluginVersion +"]'");
-         //Thread.currentThread().dumpStack();
-      }
-      return this.persistenceDriver;
-   }
-*/
-
-   /**
-    * Setting attributes for a client.
-    * <p>
-    * NOTE: This method is under construction, don't use it yet.
-    *
-    * @param clientName  The client which shall be administered
-    * @param xmlAttr     the attributes of the client in xml syntax like group/role infos<br>
-    *                    They are later queryable with XPath syntax<p>
-    * <pre>
-    *    &lt;client name='tim'>
-    *       &lt;group>
-    *          Marketing
-    *       &lt;/group>
-    *       &lt;role>
-    *          Managing director
-    *       &lt;/role>
-    *    &lt;/client>
-    * </pre>
-    * @param qos         Quality of Service, flags for additional informations to control administration
-    */
-   public void setClientAttributes(String clientName, String xmlAttr_literal,
-                            String qos_literal) throws XmlBlasterException
-   {
-      // !!! TODO
-      log.warning("setting client attributes is not yet supported: " + xmlAttr_literal);
-   }
-
-
-   /**
-    * Invoked by a client, to subscribe to one/many MsgUnit.
-    * <p />
-    * Asynchronous read-access method.
-    * <p>
-    * The results are returned to the
-    * Client-Callback interface via the update() method.
-    * You need to implement the method BlasterCallback.update()<br />
-    * This is the push modus.
-    * <p />
-    * See addListener in Java event model<br />
-    * See addObserver in Java observer pattern
-    *
-    * @param xmlKey  Key allowing XPath or exact selection<br>
-    *                See XmlKey.dtd for a description
-    * @param qos     Quality of Service, flags to control subscription<br>
-    *                See XmlQoS.dtd for a description, XmlQoS.xml for examples<p />
-    *         Example (note that the qos are not yet fully implemented):<p />
-    * <pre>
-    *    &lt;qos>
-    *       &lt;meta>false&lt;/meta>       &lt;!-- Don't send me the key meta data on updates -->
-    *       &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
-    *       &lt;local>false&lt;/false>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
-    *    &lt;/qos>
-    * </pre>
-    * @return oid    A unique subscription ID embeded on XML<br>
-    *                If you subscribed using a query, the subscription ID of this<br>
-    *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
-    *                You should use this ID if you wish to unSubscribe()<br>
-    *                If no match is found, an empty string "" is returned.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
-    */
-/*   
-   String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {
-      return subscribe(sessionInfo, xmlKey, subscribeQos, false);
-   }   
-*/
    public String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {
       if (!sessionInfo.hasCallback()) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
