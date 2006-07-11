@@ -3,7 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
- o #15280 Bugfix in xmlBlaster server-core: Major redesign to handle race conditions:
+ o #15280, #15288-#15290 Bugfix in xmlBlaster server-core (TopicHandler)
+          Major redesign to handle race conditions:
           All access to a TopicHandler instance is no single threaded and done over TopicAccessor
           All access over reference counting / weak references is done as 'dirty read'
           Fixed double TopicHandler unregister on erase(false)
