@@ -46,11 +46,12 @@
  The first two &lt;action> tags just configure the plugin itself to be loaded by xmlBlaster on startup
  and to be removed again on shutdown</p>
  <p>
- In the above example an email is send if any <font color="blue">logging/severe/*</font> (==log.error) or <font color="blue">logging/warning/*</font> occurs.
- Further an event is emitted on xmlBlaster startup in run level 8
- and if a new client logs in.
- Those events are send as JMX notifications as well.
- Adding <font color="red"><code>&lt;attribute id='destination.publish'/></code></font> would send
+ In the above example an email (see <font color="red"><code>&lt;attribute id='destination.smtp'/></code></font>) 
+ is send if any <font color="blue">logging/severe/*</font> (==log.error) or <font color="blue">logging/warning/*</font> occurs.
+ Further an event is emitted on xmlBlaster startup in run level 8 (see <font color="blue">service/RunlevelManager/event/startupRunlevel8</font>)
+ and if a new client logs in (see <font color="blue">client/*/session/*/event/connect</font>).
+ Those events are send as JMX notifications as well (see <font color="red"><code>&lt;attribute id='destination.jmx'/></code></font>).
+ <br />Adding <font color="red"><code>&lt;attribute id='destination.publish'/></code></font> would send
  the event as a xmlBlaster message as well, but take care to not send logging events
  as such messages will most certainly loop (if they log something they will trigger another message and so forth)!
  </p>
