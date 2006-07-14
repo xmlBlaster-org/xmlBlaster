@@ -578,7 +578,7 @@ public class MsgInfo {
          return e;
       }
       
-      return XmlBlasterException.parseByteArr(glob, msg.getContent());
+      return XmlBlasterException.parseByteArr(glob, msg.getContent(), ErrorCode.USER_UPDATE_INTERNALERROR);
    }
 
    /**

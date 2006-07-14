@@ -553,12 +553,15 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       return result;
    }
 
+   public static XmlBlasterException parseByteArr(Global glob, byte[] data) {
+      return parseByteArr(glob, data, ErrorCode.INTERNAL_UNKNOWN);
+   }
    /**
     * Serialize the complete exception. 
     * Take care when changing!!!
     * Is used e.g. in CallbackServerUnparsed.c and XmlScriptInterpreter.java
     */
-   public static XmlBlasterException parseByteArr(Global glob, byte[] data) {
+   public static XmlBlasterException parseByteArr(Global glob, byte[] data, ErrorCode fallback) {
       if (data == null)
          return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, "XmlBlasterException", "Can't parse given serial XmlBlasterException data");
       int start = 0;
@@ -644,7 +647,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       catch (java.lang.StringIndexOutOfBoundsException e) {
          log.severe("Receiving invalid format for XmlBlasterException in '" + new String(data) + "'");
       }
-      ErrorCode errorCode = ErrorCode.INTERNAL_UNKNOWN;
+      ErrorCode errorCode = (fallback == null) ? ErrorCode.INTERNAL_UNKNOWN : fallback;
       try {
          errorCode = ErrorCode.toErrorCode(errorCodeStr);
       }
