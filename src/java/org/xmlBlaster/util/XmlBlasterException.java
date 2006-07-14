@@ -655,7 +655,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
          errorCode = ErrorCode.toErrorCode(errorCodeStr);
       }
       catch (Throwable e) {
-         log.severe("Receiving invalid errorCode in XmlBlasterException in '" + new String(data) + "'");
+         log.severe("Receiving invalid errorCode in XmlBlasterException in '" + new String(data) + "', handling it as " + errorCode.toString());
          message = "Can't parse XmlBlasterException in method parseByteArr(). original message is '" + new String(data) + "'";
       }
       Timestamp ti = new Timestamp();
