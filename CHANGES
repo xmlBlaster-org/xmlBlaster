@@ -3,8 +3,11 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ o #15294 Fix for XMLRPC protocol layer to transform all weired, client thrown exceptions into a "user.update.internalError"
+          instead of a "internal.unkown"
+
  o #15293 Fix for SOCKET protocol layer to transform all weired, client thrown exceptions into a "user.update.internalError"
-          instead of a "internal.unkown", as correctly done by IOR protocol
+          instead of a "internal.unkown". (Is correctly done by IOR protocol)
 
  o #15280, #15288-#15290 Bugfix in xmlBlaster server-core (TopicHandler)
           Major redesign to handle race conditions:

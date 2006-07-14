@@ -534,13 +534,20 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
 
+   public static XmlBlasterException extractXmlBlasterException(Global glob, XmlRpcException e) {
+      return extractXmlBlasterException(glob, e, ErrorCode.INTERNAL_UNKNOWN);
+   }
+   
    /**
     * Helma XmlRpc does in XmlRpcServer.java:314 an exception.toString() which is sent back to the client. 
     * <br />
     * xml-rpc exception: org.apache.xmlrpc.XmlRpcException: java.lang.Exception: errorCode=resource.unavailable message=The key 'NotExistingMessage' is not available.
+    * @param glob
+    * @param e The original exception
+    * @param fallback The error code to use if e is unparsable
     */
-   public static XmlBlasterException extractXmlBlasterException(Global glob, XmlRpcException e) {
-      XmlBlasterException ex = XmlBlasterException.parseToString(glob, e.toString());
+   public static XmlBlasterException extractXmlBlasterException(Global glob, XmlRpcException e, ErrorCode fallback) {
+      XmlBlasterException ex = XmlBlasterException.parseToString(glob, e.toString(), fallback);
       ex.isServerSide(true);
       return ex;
    }

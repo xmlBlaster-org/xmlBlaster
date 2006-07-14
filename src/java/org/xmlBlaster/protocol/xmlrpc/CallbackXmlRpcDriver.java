@@ -146,12 +146,12 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          if (start == -1 && !isServerSide) {
             ex.printStackTrace();
             String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed, received unexpected exception format from client";
-            XmlBlasterException e2 = new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, ex);
+            XmlBlasterException e2 = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, str, ex);
             e2.isServerSide(false);
             e2.setLocation("client");
             throw e2;
          }
-         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
+         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex, ErrorCode.USER_UPDATE_ERROR);
          e.isServerSide(false);
          e.setLocation(this.getClass().getName());
          String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed in client: " + ex.toString();

@@ -457,8 +457,11 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
    /**
     * Parsing what toString() produced
-    */
-   public static XmlBlasterException parseToString(Global glob, String toString) {
+   * @param glob
+   * @param toString The original exception
+   * @param fallback The error code to use if 'toString' is unparsable
+   */
+   public static XmlBlasterException parseToString(Global glob, String toString, ErrorCode fallback) {
       String errorCode = toString;
       String reason = toString;
       int start = toString.indexOf("errorCode=");
@@ -479,7 +482,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       }
       catch (IllegalArgumentException e) {
          log.warning("Parsing exception string <" + toString + "> failed: " + e.toString());
-         return new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "XmlBlasterException", toString);
+         return new XmlBlasterException(glob, fallback, "XmlBlasterException", toString);
       }
    }
 

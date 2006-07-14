@@ -90,7 +90,7 @@ public class XmlBlasterExceptionTest extends TestCase {
       
       XmlBlasterException ex = new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, "LOC", "Bla bla");
       String serial = ex.toString();
-      XmlBlasterException back = XmlBlasterException.parseToString(glob, serial);
+      XmlBlasterException back = XmlBlasterException.parseToString(glob, serial, ErrorCode.INTERNAL_UNKNOWN);
 
       System.out.println("ORIGINAL:\n" + ex.toXml());
       System.out.println("BACK:\n" + back.toXml());
