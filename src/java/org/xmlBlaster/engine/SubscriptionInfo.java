@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.key.KeyData;
@@ -23,8 +24,8 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.Vector;
 
 
 /**
@@ -48,17 +49,17 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    /** reference to keyData */
    private KeyData keyData;
    /** reference to 'Quality of Service' of subscribe() / unSubscribe() */
-   private SubscribeQosServer subscribeQos = null;
+   private SubscribeQosServer subscribeQos;
    /** The unique key of a subscription (subscriptionId), which is a function of f(keyData,xmlQos). <br />
        This is the returned id of a subscribe() invocation */
-   private String uniqueKey=null;
+   private String uniqueKey;
    /** reference to my managing container */
    private TopicHandler topicHandler;
    /** A reference to the query subscription (XPATH), which created this subscription
        If the subscription was EXACT, querySub is null */
-   private SubscriptionInfo querySub = null;
+   private SubscriptionInfo querySub;
    /** It it is a query subscription, we remember all subscriptions which resulted from this query */
-   private Vector childrenVec = null;
+   private ArrayList childrenList;
 
    /** If duplicateUpdates=false is set we can check here how often this message is
        subscribed from the same client */
@@ -92,7 +93,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     */
    public SubscriptionInfo(ServerScope glob, SessionInfo sessionInfo, SubscriptionInfo querySub, KeyData keyData) throws XmlBlasterException {
       this.querySub = querySub;
-      init(glob, sessionInfo, keyData, querySub.subscribeQos);
+      init(glob, sessionInfo, keyData, querySub.getSubscribeQosServer());
    }
 
    private void init(ServerScope glob, SessionInfo sessionInfo, KeyData keyData, SubscribeQosServer qos) throws XmlBlasterException {
@@ -101,6 +102,14 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       this.sessionInfo = sessionInfo;
       this.keyData = keyData;
       this.subscribeQos = qos;
+      
+      if (this.sessionInfo == null) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "No sessionInfo passed"+toXml());
+      }
+
+      if (this.subscribeQos == null) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "No subscribeQos passed"+toXml());
+      }
 
       AccessFilterQos[] filterQos = this.subscribeQos.getAccessFilterArr();
       if (filterQos != null) {
@@ -123,7 +132,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    }
 
    /**
-    * If same client subscribes multiple times on same message but wants
+    * If same client subscribes multiple times on same topic but wants
     * to suppress multi-updates (e.g. cluster node clients).
     */
    public void incrSubscribeCounter() {
@@ -131,7 +140,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    }
 
    /**
-    * If same client subscribes multiple times on same message but wants
+    * If same client subscribes multiple times on same topic but wants
     * to suppress multi-updates (e.g. cluster node clients).
     */
    public void decrSubscribeCounter() {
@@ -139,7 +148,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    }
 
    /**
-    * If same client subscribes multiple times on same message but wants
+    * If same client subscribes multiple times on same topic but wants
     * to suppress multi-updates (e.g. cluster node clients).
     */
    public int getSubscribeCounter() {
@@ -147,9 +156,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    }
    /**
     * The session info of the client who initiated this subscription
+    * @return Never null, but the sessionInfo instance may be meanwhile shutdown 
     */
-   public SessionInfo getSessionInfo()
-   {
+   public SessionInfo getSessionInfo() {
       return this.sessionInfo;
    }
 
@@ -157,7 +166,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * My destination queue. 
     */
    public I_Queue getMsgQueue() {
-      return this.sessionInfo.getSessionQueue();
+      return getSessionInfo().getSessionQueue();
    }
 
    /**
@@ -165,8 +174,8 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     */
    public synchronized void addSubscription(SubscriptionInfo subs)
    {
-      if (this.childrenVec == null) this.childrenVec = new Vector();
-      this.childrenVec.addElement(subs);
+      if (this.childrenList == null) this.childrenList = new ArrayList();
+      this.childrenList.add(subs);
    }
 
    /**
@@ -174,9 +183,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     */
    public synchronized void removeChildSubscription(SubscriptionInfo subs)
    {
-      if (this.childrenVec == null) return;
+      if (this.childrenList == null) return;
 
-      boolean found = this.childrenVec.remove(subs);
+      boolean found = this.childrenList.remove(subs);
       
       if (!found) {
          log.severe("Failed to remove XPATH children subscription " + uniqueKey);
@@ -192,8 +201,8 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * @return null if not a query subscription with children
     */
    public synchronized SubscriptionInfo[] getChildrenSubscriptions() {
-      if (this.childrenVec==null) return null;
-      return (SubscriptionInfo[])this.childrenVec.toArray(new SubscriptionInfo[this.childrenVec.size()]);
+      if (this.childrenList==null) return null;
+      return (SubscriptionInfo[])this.childrenList.toArray(new SubscriptionInfo[this.childrenList.size()]);
    }
 
    public boolean isQuery() {
@@ -221,7 +230,11 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collect " + uniqueKey);
    }
 
+   /**
+    * @return Null if none configured
+    */
    public AccessFilterQos[] getAccessFilterArr() {
+      if (this.subscribeQos == null) return null;
       return subscribeQos.getAccessFilterArr();
    }
 
@@ -238,7 +251,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       this.topicHandler = topicHandler;
 
       if (this.topicHandler != null) {
-         if (log.isLoggable(Level.FINE)) log.fine("Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + sessionInfo.getId() + "' message '" + this.topicHandler.getUniqueKey() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + getSessionInfo().getId() + "' message '" + this.topicHandler.getUniqueKey() + "'");
       }
    }
 
@@ -368,6 +381,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       */
    }
 
+   /**
+    * @return Can be null
+    */
    public SubscribeQosServer getSubscribeQosServer() {
       return this.subscribeQos;
    }
@@ -398,7 +414,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
             if (log.isLoggable(Level.FINE)) log.fine("Generated child subscription ID=" + this.uniqueKey);
          }
          else {
-            this.uniqueKey = SubscriptionInfo.generateUniqueKey(keyData, subscribeQos.getData(), this.glob.useCluster());
+            this.uniqueKey = SubscriptionInfo.generateUniqueKey(keyData, this.subscribeQos.getData(), this.glob.useCluster());
             if (log.isLoggable(Level.FINE)) log.fine("Generated subscription ID=" + this.uniqueKey);
          }
       }
@@ -419,17 +435,24 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
    /**
     * Cleanup subscription. 
     */
-   public void shutdown()
-   {
+   public void shutdown() {
       if (this.isShutdown) return;
+      synchronized (this) { // to prevent two threads calling unregisterMBean()
+         if (this.isShutdown) return;
+         this.isShutdown = true;
+      }
+
       this.glob.unregisterMBean(this.mbeanHandle);
       if (this.querySub != null) {
          this.querySub.removeChildSubscription(this);
       }
-      this.subscribeQos = null;
-      this.isShutdown = true;
+      //this.subscribeQos = null; Not setting to null because of multi thread access
       // Keep keyData for further processing
       // Keep uniqueKey for further processing
+   }
+
+   public boolean isShutdown() {
+      return this.isShutdown;
    }
 
    /**
@@ -506,8 +529,8 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       //sb.append(offset + "   <keyData oid='" + (keyData==null ? "null" : keyData.getUniqueKey()) + "'/>");
       if (keyData != null)
          sb.append(keyData.toXml(extraOffset+Constants.INDENT));
-      if (subscribeQos != null) 
-         sb.append(subscribeQos.toXml(extraOffset+Constants.INDENT));
+      if (this.subscribeQos != null) 
+         sb.append(this.subscribeQos.toXml(extraOffset+Constants.INDENT));
       else 
          sb.append(extraOffset+Constants.INDENT).append("<!-- subscribe qos is null ERROR -->");
       //sb.append(offset).append(" <topicHandler id='").append((topicHandler==null ? "null" : topicHandler.getUniqueKey())).append("'/>");
@@ -542,8 +565,10 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       if (this.querySub != null) {
          sb.append(" parent='").append(this.querySub.getSubscriptionId()).append("'");
       }
-      if (this.childrenVec != null) {
-         sb.append(" numChilds='").append(this.childrenVec.size()).append("'");
+      if (this.childrenList != null) {
+         synchronized (this) {
+            sb.append(" numChilds='").append(this.childrenList.size()).append("'");
+         }
       }
       sb.append(" creationTime='" + IsoDateParser.getUTCTimestamp(this.creationTime) + "'");
       sb.append("/>");
@@ -574,8 +599,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       return getSubscriptionId();
    }
    public String getSessionName() {
-      if (this.sessionInfo == null) return "";
-      return sessionInfo.getId();
+      return getSessionInfo().getId();
    }
    public String getTopicId() {
       if (this.topicHandler == null) return (getKeyOid()==null)?"":getKeyOid();
@@ -595,7 +619,8 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       return (this.keyData==null) ? "" : this.keyData.toXml();
    }
    public String[] getAccessFilters() {
-      AccessFilterQos[] arr = subscribeQos.getAccessFilterArr();
+      if (this.subscribeQos == null) return new String[0];
+      AccessFilterQos[] arr = this.subscribeQos.getAccessFilterArr();
       if (arr == null) return new String[0];
       String[] ret = new String[arr.length];
       for (int i=0; i<arr.length; i++) {
@@ -604,10 +629,10 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       return ret;
    }
    public synchronized String[] getDependingSubscriptions() {
-      if (this.childrenVec==null || this.childrenVec.size() < 1) return new String[0];
-      String[] ret = new String[this.childrenVec.size()];
-      for (int i=0; i<this.childrenVec.size(); i++) {
-         SubscriptionInfo info = (SubscriptionInfo)this.childrenVec.elementAt(i);
+      if (this.childrenList==null || this.childrenList.size() < 1) return new String[0];
+      String[] ret = new String[this.childrenList.size()];
+      for (int i=0; i<this.childrenList.size(); i++) {
+         SubscriptionInfo info = (SubscriptionInfo)this.childrenList.get(i);
          ret[i] = info.toXml();
       }
       return ret;
