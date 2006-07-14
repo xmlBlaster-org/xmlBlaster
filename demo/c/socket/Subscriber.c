@@ -136,7 +136,7 @@ int main(int argc, char** argv)
    updateSleep = xa->props->getLong(xa->props, "updateSleep", 0L);
    reportUpdateProgress = xa->props->getBool(xa->props, "reportUpdateProgress", false); /* Report update progress */
    updateExceptionErrorCode = xa->props->getString(xa->props, "updateException.errorCode", 0); /* "user.clientCode" */
-   updateExceptionMessage = xa->props->getString(xa->props, "updateException.message", 0);  /* "I don't want these messages" */
+   updateExceptionMessage = xa->props->getString(xa->props, "updateException.message", "");  /* "I don't want these messages" */
 
    {  /* connect */
       char *response = (char *)0;
