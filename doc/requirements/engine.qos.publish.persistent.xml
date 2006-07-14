@@ -6,7 +6,8 @@
    <description>
       Using the QOS flag &lt;persistent/&gt; allows to mark a published message
       as persistent. It will be stored into the persistence store as specified in
-      xmlBlaster.properties file. Default is a primitive file-system based driver org.xmlBlaster.engine.persistence.FileDriver.
+      xmlBlaster.properties file.
+      Default is a <a href="queue.jdbc.commontable.html" target="others">persistent queue implementation</a> which uses a back end database.
       You may plug in other drivers to store the message into your own database.
    </description>
    <example lang="Java">

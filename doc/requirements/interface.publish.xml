@@ -37,6 +37,40 @@
        <li>publishOneway() Publishes many messages in a bulk without a return value (without synchronous ACK)</li>
       </ul>
 
+
+      <p class="celltitel"><a name="qos"/>PublishQos example (publish/subscribe mode)</p>
+<pre class="BORDER">
+&lt;qos>
+   &lt;!-- 5 is NORM priority, 0 is slowest, 9 is highest -->
+   &lt;priority>5&lt;/priority>
+
+   &lt;!-- The message is automatically destroyed after 60000 milliseconds -->
+   &lt;expiration lifeTime='60000' forceDestroy='false'/>
+
+   &lt;!-- The message is saved to harddisk to be recoverable after a crash -->
+   &lt;persistent/>
+
+   &lt;!-- Don't update messages with identical content as the predecessor -->
+   &lt;forceUpdate>false&lt;/forceUpdate>
+
+   &lt;clientProperty name='transactionId'>0x23345&lt;/clientProperty>
+   &lt;clientProperty name='myName'>jack&lt;/clientProperty>
+   &lt;clientProperty name='myAge' type='int'>12&lt;/clientProperty>
+
+   &lt;!-- Administration: configure the topic on first publish (optional) -->
+   &lt;topic readonly='false' destroyDelay='30000' createDomEntry='true'>
+      &lt;persistence relating='msgUnitStore' maxEntries='1000' maxBytes='4000'/>
+      &lt;queue relating='history' type='CACHE' version='1.0'
+                maxEntries='1000' maxBytes='4000'/>
+   &lt;/topic>
+&lt;/qos>
+</pre>
+
+      <h3>&lt;priority>5&lt;/priority></h3>
+      <p>The message priority can be chosen between 0 and 9 whereas 5 is the default,
+      see <a href="engine.qos.publish.priority.html" target="others">requirement engine.qos.publish.priority</a>.
+      </p>
+
       <h3>&lt;expiration lifeTime='60000'/></h3>
       <p>Control the life time of a message, given in milli seconds.</p>
       <p>This value is calculated relative to the rcvTimestamp in the xmlBlaster server.</p>
@@ -50,8 +84,99 @@
       <p>
       Setting it to a value > 0 will expire the message after the given milliseconds,
       even if they remain in any callback queue.
-      </p>   
+      </p>            
+      <p>See <a href="engine.qos.publish.isVolatile.html" target="others">requirement engine.qos.publish.isVolatile</a>.
+      </p>
      
+      <h3>&lt;persistent/></h3>
+      <p>Messages are sent transient as default.
+      Here we have chosen that the message survives a server crash or shutdown as it
+      is marked to be persistent, see <a href="engine.qos.publish.persistent.html" target="others">requirement engine.qos.publish.persistent</a>.
+      </p>
+
+      <h3>&lt;forceUpdate>false&lt;/forceUpdate></h3>
+      <p>This flag allows to set the behavior for follow up messages with the same content,
+      see <a href="engine.qos.publish.forceUpdate.html" target="others">requirement engine.qos.publish.forceUpdate</a>.
+      </p>
+
+      <h3>&lt;clientProperty></h3>
+      <p>You can choose to send any number of problem domain specific client properties which each message.
+      The receiver can access those in the UpdateQos,
+      see <a href="engine.qos.clientProperty.html" target="others">requirement engine.qos.clientProperty</a>.
+      </p>
+
+      <h3>&lt;topic ...></h3>
+     <p>
+      Here we send the configuration for the topic. This is only evaluated
+      if the topic didn't exist yet and needs to be created automatically
+      when this publish arrives. We can omit these topic settings as
+      there are chosen useful default values in this case.<br />
+      See <a href="engine.message.lifecycle.html" target="others">requirement engine.message.lifecycle</a>.
+     </p>
+
+     <p />
+
+      <p class="celltitel"><a name="qos"/>PublishQos PtP example (point to point mode)</p>
+<pre class="BORDER">
+&lt;qos>
+   &lt;!-- 5 is NORM priority, 0 is slowest, 9 (or MAX) is highest -->
+   &lt;priority>MAX&lt;/priority>
+
+   &lt;!-- false to make PtP message invisible for subscribes -->
+   &lt;subscribable>false&lt;/subscribable>
+
+   &lt;expiration lifeTime='129595811'/>
+
+   &lt;persistent/>  &lt;!-- message is recovered on server crash -->
+
+   &lt;forceUpdate>false&lt;/forceUpdate>
+                 &lt;!-- messages with identical content as the predecessor
+                         are not updated -->
+
+   &lt;!-- Send to all login sessions of user 'Tim',
+           if Tim is offline queue it -->
+   &lt;destination queryType='EXACT' forceQueuing='true'>
+      Tim
+   &lt;/destination>
+
+   &lt;!-- The login session '-2' of 'Ben' logged in
+           at cluster node 'heron' -->
+   &lt;destination>
+      /node/heron/client/Ben/session/-2
+   &lt;/destination>
+
+   &lt;destination queryType='XPATH'>   &lt;!-- Not supported yet -->
+      //[GROUP='Manager']
+   &lt;/destination>
+
+   &lt;!-- Administration: configure the topic on first publish
+          (optional) -->
+   &lt;topic readonly='false' destroyDelay='60000' createDomEntry='false'>
+      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0'
+                maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;queue relating='history' type='CACHE' version='1.0'
+                maxEntries='1000' maxBytes='4000' onOverflow='exception'/>
+   &lt;/topic>
+&lt;/qos>
+</pre>
+     <p>
+     If we want to send a message to specific other clients we address
+     the clients by their login names or session names.
+     If a destination contains the session identifier (like '-2') only this
+     specific login session of the client will receive the message.
+     If we don't specify a publicSessionId, all login sessions of the user
+     will receive the message.
+     </p>
+     <p>
+     If we want to hide the PtP message from other subscribers of this topic
+     we add the <b>subscribable</b> tag and set it to false.
+     </p>
+     <p>
+     If a destination client is off-line the publisher gets thrown back an exception
+     and the message is not delivered.
+     By adding the tag <b>forceQueuing</b> the message will be queued in xmlBlaster
+     until the destination client logs in and will then be delivered to the destination.
+     </p>
 
    </description>
 
@@ -127,118 +252,6 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
 
 ->    2003-01-17 16:03:56.675000001
      </pre>
-   </example>
-
-   <example lang="XML" type="HTML">
-      <p>
-      Here is a full QoS of a published message in <b>publish/subscribe</b> mode:
-      </p>
-<pre>
-&lt;qos>
-   &lt;!-- 5 is NORM priority, 0 is slowest, 9 is highest -->
-   &lt;priority>5&lt;/priority>
-
-   &lt;!-- The message is automatically destroyed after 60000 milliseconds -->
-   &lt;expiration lifeTime='60000'/>
-
-   &lt;!-- The message is saved to harddisk to be recoverable after a crash -->
-   &lt;persistent/>
-
-   &lt;!-- Don't update messages with identical content as the predecessor -->
-   &lt;forceUpdate>false&lt;/forceUpdate>
-
-   &lt;!-- Control life cycle of still referenced message on message expiry -->
-   &lt;forceDestroy>false&lt;/forceDestroy>
-
-   &lt;clientProperty name='transactionId'>0x23345&lt;/clientProperty>
-   &lt;clientProperty name='myName'>jack&lt;/clientProperty>
-   &lt;clientProperty name='myAge' type='int'>12&lt;/clientProperty>
-
-   &lt;!-- Administration: configure the topic on first publish (optional) -->
-   &lt;topic readonly='false' destroyDelay='30000' createDomEntry='true'>
-      &lt;persistence relating='msgUnitStore' maxEntries='1000' maxBytes='4000'/>
-      &lt;queue relating='history' type='CACHE' version='1.0'
-                maxEntries='1000' maxBytes='4000'/>
-   &lt;/topic>
-&lt;/qos>
-</pre>
-     <p>
-      The message is sent with NORM priority and dies automatically after one minute.
-      As it is important that the message survives a server crash or shutdown it
-      is marked to be persistent.
-     <p>
-     </p>
-      Finally we send the configuration for the topic. This is only evaluated
-      if the topic didn't exist yet and needs to be created automatically
-      when this publish arrives. We can omit these topic settings as
-      there are choosen useful default values in this case.
-     </p>
-   </example>
-
-   <example lang="XML" type="HTML">
-      <p>
-      Here is a full QoS of a published message in <b>PtP</b> (point to point) mode:
-      </p>
-<pre>
-&lt;qos>
-   &lt;!-- 5 is NORM priority, 0 is slowest, 9 (or MAX) is highest -->
-   &lt;priority>MAX&lt;/priority>
-
-   &lt;!-- false to make PtP message invisible for subscribes -->
-   &lt;subscribable>false&lt;/subscribable>
-
-   &lt;expiration lifeTime='129595811'/>
-
-   &lt;persistent/>  &lt;!-- message is recovered on server crash -->
-
-   &lt;forceUpdate>false&lt;/forceUpdate>
-                 &lt;!-- messages with identical content as the predecessor
-                         are not updated -->
-
-   &lt;!-- Send to all login sessions of user 'Tim',
-           if Tim is offline queue it -->
-   &lt;destination queryType='EXACT' forceQueuing='true'>
-      Tim
-   &lt;/destination>
-
-   &lt;!-- The login session '-2' of 'Ben' logged in
-           at cluster node 'heron' -->
-   &lt;destination>
-      /node/heron/client/Ben/-2
-   &lt;/destination>
-
-   &lt;destination queryType='XPATH'>   &lt;!-- Not supported yet -->
-      //[GROUP='Manager']
-   &lt;/destination>
-
-   &lt;!-- Administration: configure the topic on first publish
-          (optional) -->
-   &lt;topic readonly='false' destroyDelay='60000' createDomEntry='false'>
-      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0'
-                maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'/>
-      &lt;queue relating='history' type='CACHE' version='1.0'
-                maxEntries='1000' maxBytes='4000' onOverflow='exception'/>
-   &lt;/topic>
-&lt;/qos>
-</pre>
-     <p>
-     When we want to send a message to specific other clients we address
-     the clients by there login names or session names.
-     If a destination contains the session identifier (like '-2') only this
-     specific login session of the client will receive the message.
-     If we don't specify a publicSessionId, all login sessions of the user
-     will receive the message.
-     </p>
-     <p>
-     If we want to hide the PtP message from other subscribers of this topic
-     we add the <b>subscribable</b> tag and set it to false.
-     </p>
-     <p>
-     If a destination client is offline the publisher gets thrown back an exception
-     and the message is not delivered.
-     By adding the tag <b>forceQueuing</b> the message will be queued in xmlBlaster
-     until the destination client logs in and will then be delivered to the destination.
-     </p>
    </example>
 
    <example lang="XML" type="HTML">
