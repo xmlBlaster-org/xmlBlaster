@@ -624,7 +624,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
          for (int jj=0; jj<keyDataArr.length; jj++) {
             KeyData xmlKeyExact = keyDataArr[jj];
-            if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
+            if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown topic ...
                xmlKeyExact = xmlKey;
             else if (xmlKeyExact != null && xmlKey.isDomain()) {
                xmlKeyExact.setQueryType(xmlKey.getQueryType());
@@ -636,7 +636,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   if (vec.size() > 0) {
                      subs = (SubscriptionInfo)vec.firstElement();
                      if (log.isLoggable(Level.FINE)) log.fine("Session '" + sessionInfo.getId() +
-                                    "', message '" + xmlKeyExact.getOid() + "' is subscribed " +
+                                    "', topic '" + xmlKeyExact.getOid() + "' is subscribed " +
                                     vec.size() + " times with duplicateUpdates==false");
                   }
                   if (vec.size() > 1)
