@@ -80,7 +80,9 @@
 
       <p class="celltitel"><a name="exception"></a>Behavior on exceptions thrown by a client in update()</p>
 
-      <p>If the <code>update()</code> methods throws an exception of type <code>ErrorCode.USER_UPDATE_...</code>
+      <p>If the <code>update()</code> methods throws an exception of type <code>
+      <a href="http://www.xmlblaster.org/xmlBlaster/doc/client-api/org/xmlBlaster/util/def/ErrorCode.html" target="others">ErrorCode.USER_UPDATE_...</a></code>
+      (for example <code>"user.update.error"</code>)
       the server forwards the rejected message to its error handler. The current
       error handler is implemented to publish this message as a 'dead letter', that
       is a message with the <code>key oid='__sys__deadMessage'</code>.<br />
@@ -92,21 +94,29 @@
       exception the server keeps the message in its callback queue and sets the <code>dispatcherActive=false</code>, that
       means that the xmlBlaster server goes to sleep for this client and won't deliver further update messages.
       It is now up to an administrative command to activate the callback dispatcher again to try to
-      redeliver the last message.
+      redeliver the last message.<br />This is done by a key oid <tt>__cmd:client/receiver/1/?dispatcherActive=true</tt>,
+      for more details please see <a href="admin.commands.html#dispatcherActive" target="others">requirement admin.commands</a>.
       </p>
       <p>
       Please note that in the Java client library all other exception types thrown in your
       <code>update()</code> method are
-      converted to an <code>ErrorCode.USER_UPDATE_INTERNALERROR</code> before
+      converted to an <code>ErrorCode.USER_UPDATE_INTERNALERROR="user.update.internalError"</code> before
       being propagated to the server.
+      <br />If clients written in other programming languages send a weird exception error code, it is
+      handled by the server as "user.update.internalError" (for Corba access since ever,
+      for SOCKET and XMLRPC since xmlBlaster 1.3, befor it was a "internal.unknown" or "internal.illegalargument").
       </p>
       <p>If the server gets a communication exception from its dispatcher framework
       it assumes that the client has never seen or processed the message and
-      retries to deliver it as configurated. A communication exception occurs 
+      retries to deliver it as configured. A communication exception occurs 
       for example if the network is down or if the client has disappeared. <br />
       The main configuration settings to control the redeliver behavior are
-      <code>-dispatch/callback/retries</code> and <code>-dispatch/callback/delay</code>.
+      <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/retries</code></a> and
+      <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/delay</code></a>.
       </p>
+      <p>A typical fail safe subscriber needs to set at least:</p>
+      <pre class="BORDER">java javaclients.HelloWorldSubscribe -session.name SUBSCRIBER/1 -dispatch/callback/retries -1</pre>
+
       <p>The server side error handler is hidden by an interface and will be
       a plugin in a future version of xmlBlaster to support customized error behavior.<br />
       For example such a plugin can look at the thrown error code or error message and follow specific recovery

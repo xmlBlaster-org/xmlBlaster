@@ -287,7 +287,7 @@
 
       <subscriptionList>__subId:3,__subId:XPATH2</subscriptionList>
       <subscription id='__subId:3'
-                  sessionName='/node/heron/client/joe/-3'
+                  sessionName='/node/heron/client/joe/session/-3'
                   topicId='hello'
                   creationTime='Mar 7, 2003 6:33:14 PM'/>
       
@@ -444,7 +444,7 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>client/joe/ses17/?uptime</td>
+            <td>client/joe/session/1/?uptime</td>
             <td>How long is session ID 17 logged in (in seconds)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -454,22 +454,22 @@
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>client/joe/ses17/?cbQueueMaxMsgs=30000</td>
+            <td>client/joe/session/1/?cbQueueMaxMsgs=30000</td>
             <td>Change max. callback queue size of client joe with login session ID 17 to 30 thousand messages</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>client/joe/ses17/?cbQueueNumMsgs</td>
+            <td>client/joe/session/1/?cbQueueNumMsgs</td>
             <td>Access the current number of messages in joe's callback queue waiting to be delivered</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>client/joe/-5/?subscriptionList</td>
+            <td>client/joe/session/-5/?subscriptionList</td>
             <td>Show all subscriptions 'joe' has made (with his login session '-5')</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>client/joe/-5/?numUpdate</td>
+            <td>client/joe/session/-5/?numUpdate</td>
             <td>How many update messages were delivered to joe's session '-5' since server startup?</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -524,17 +524,17 @@
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>client/joe/1/?killSession</td>
+            <td>client/joe/session/1/?killSession</td>
             <td>Kills the first session of joe (force logout)</td>
             <td><img src="ok.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>client/joe/1/?dispatcherActive</td>
+            <td>client/joe/session/1/?dispatcherActive</td>
             <td>tells if the DispatchManager of the specified session is active for asynchronous dispatch</td>
             <td><img src="ok.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>client/joe/1/?dispatcherActive=true</td>
+            <td>client/joe/session/1/?dispatcherActive=true</td>
             <td>tells the DispatchManager of the specified session to become active</td>
             <td><img src="ok.gif" border="0" alt="no" /></td>
          </tr>
@@ -676,11 +676,11 @@ UserInfo: joe:mypasswd
    </example>
 
    <example lang="any" type="HTML">
-   <h2 id="dispatcherActive">Example for activating or prohibiting message delivery to a subscriber</h2>
+   <h2 class="celltitel" id="dispatcherActive">Example for activating or prohibiting message delivery to a subscriber</h2>
    <p>Here is a command line example of controlling message delivery to a subscriber
     <tt>joe/1</tt>, open three console windows and start the server, a publisher
     and a subscriber:</p>
-<pre>
+<pre class="BORDER">
 java org.xmlBlaster.Main
 
 java javaclients.HelloWorldSubscribe -session.name joe/1
@@ -690,19 +690,24 @@ java javaclients.HelloWorldPublish -numPublish 100
 </pre>
    <p>Publish some messages to see them arriving at the subscriber, now we deactivate
    the delivery of messages using <tt>telnet</tt>:</p>
-<pre>
+<pre class="BORDER">
 telnet localhost 2702
 127.0.0.1 : eecchhoo  ooffff
 127.0.0.1 : connect jack secret
-127.0.0.1 : set client/joe/1/?dispatcherActive=false
+127.0.0.1 : set client/joe/session/1/?dispatcherActive=false
 </pre>
    <p>If you now publish more messsages they won't arrive at the subscriber,
    now activate delivery again:
    </p>
-<pre>
-127.0.0.1 : set client/joe/1/?dispatcherActive=true
+<pre class="BORDER">
+127.0.0.1 : set client/joe/session/1/?dispatcherActive=true
 </pre>
    <p>and all missing messages will arrive.</p>
+   <p>The same you can do over the jconsole GUI or by publishing the administrative command from command line:</p>
+<pre class="BORDER">
+java javaclients.HelloWorldPublish -oid __cmd:client/joe/session/1/?dispatcherActive=true
+</pre>
+
    </example>
 
    <configuration where="server">
