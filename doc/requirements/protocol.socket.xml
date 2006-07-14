@@ -747,14 +747,14 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
 <pre class="BORDER">
 #xmlBlaster.properties (server side)
 
-CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
+CbProtocolPlugin[socket_script][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
                              compress/type=,\
                              isNullTerminated=true,\
                              parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 
 #xmlBlasterPlugins.xml
 
-&lt;plugin create='true' id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+&lt;plugin create='true' id='socket_script' className='org.xmlBlaster.protocol.socket.SocketDriver'>
    &lt;action do='LOAD' onStartupRunlevel='4' sequence='20'
             onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='3' sequence='50'/>
@@ -769,13 +769,13 @@ CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDrive
 <pre class="BORDER">
 #xmlBlaster.properties (client side)
 
-ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection,\
+ClientProtocolPlugin[socket_script][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection,\
                              compress/type=,\
                              isNullTerminated=true,\
                              parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 
 
-ClientCbServerProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl,\
+ClientCbServerProtocolPlugin[socket_script][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl,\
                              compress/type=,\
                              isNullTerminated=true,\
                              parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
