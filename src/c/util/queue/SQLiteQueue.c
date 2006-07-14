@@ -578,6 +578,11 @@ static bool compilePreparedQuery(I_Queue *queueP, const char *methodName,
  * For each SQL result row parse it into a QueueEntry. 
  * No parameters are checked, they must be valid
  * Implements a ParseDataFp (function pointer)
+ * @param queueP The 'this' pointer
+ * @param currIndex
+ * @param userP
+ * @param pazValue
+ * @param pazColName
  * @param exception The exception is set to *exception->errorCode==0 on success, else to != 0
  * @return false on error and exception->errorCode is not null
  */
@@ -1219,6 +1224,7 @@ Dll_Export void freeEntryDump(char *entryDump)
  * @param queueP The queue instance
  * @param methodName For logging
  * @param checkIsConnected If true does check the connection state as well 
+ * @param exception Transporting errors 
  * @return false if the parameters are not usable,
  *         in this case 'exception' is filled with detail informations
  */

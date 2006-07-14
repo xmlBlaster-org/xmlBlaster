@@ -329,10 +329,10 @@ Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
 }
 
 /**
- * Guarantees a '\0' terminated string
+ * Guarantees a 0 terminated string
  * @param to The destination string must be big enough
  * @param from The source to be copied
- * @param maxLen (maxLen-1) of 'to' will be filled with a '\0',
+ * @param maxLen (maxLen-1) of 'to' will be filled with a 0,
  *        so effectively only maxLen-1 from 'from' are copied.
  * @return The destination string 'to'
  */
@@ -423,7 +423,7 @@ Dll_Export void trimEnd(char *s)
 
 /**
  * Converts the given binary data to a more readable string,
- * the '\0' are replaced by '*'
+ * the zero bytes are replaced by '*'
  * @param data The data to convert
  * @param len The length of the binary data
  * @return readable is returned, it must be free()'d.
@@ -719,7 +719,7 @@ Dll_Export BlobHolder *freeBlobHolderContent(BlobHolder *blob)
 
 /**
  * Converts the given binary data to a more readable string,
- * the '\0' are replaced by '*'
+ * the zero bytes are replaced by '*'
  * @param blob The binary data
  * @return readable is returned, it must be free()'d
  */

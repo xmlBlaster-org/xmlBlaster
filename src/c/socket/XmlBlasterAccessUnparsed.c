@@ -540,6 +540,8 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
 }
 
 /**
+ * Free lock. 
+ * @param msgRequestInfoP Transporting data
  * @param exception The exception struct, can be null
  * @return false on error, the exception struct is filled in this case and the lock is not released
  */
