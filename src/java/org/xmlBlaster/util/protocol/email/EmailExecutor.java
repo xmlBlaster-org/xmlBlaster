@@ -368,7 +368,8 @@ public abstract class EmailExecutor extends  RequestReplyExecutor implements I_R
          String parserClassName = MsgInfoParserFactory.instance().guessParserName(msgUnitAttachmentHolder.getFileName(), msgUnitAttachmentHolder.getContentType());
          msgInfos = MsgInfo.parse(glob, this.progressListener, encodedMsgUnit, parserClassName, this.pluginConfig);
          if (msgInfos.length < 1) {
-            log.severe("Unexpected msgInfo with length==0");
+            // spam?
+            log.warning("Unexpected msgInfo with length==0, requestId=" + requestId + " data=" + emailData.toXml(true));
             Thread.dumpStack();
             return;
          }
