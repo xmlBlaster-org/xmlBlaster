@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Current svn
 ===========
+ o #15308 C client library: Removed pthread dependency when compiling single thread version with -DXB_NO_PTHREADS
+
  o #15294 Fix for XMLRPC protocol layer to transform all weired, client thrown exceptions into a "user.update.internalError"
           instead of a "internal.unkown"
 
