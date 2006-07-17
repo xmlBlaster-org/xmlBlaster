@@ -87,8 +87,8 @@ typedef struct MsgRequestInfoStruct {
    pthread_mutex_t responseMutex; /* Needed for boss/worker model to block until an update arrives */
    bool responseMutexIsLocked;
    pthread_cond_t responseCond;
-   bool rollback;
 #endif
+   bool rollback;
 } MsgRequestInfo;
 
 /* See helper.h */

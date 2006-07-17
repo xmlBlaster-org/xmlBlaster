@@ -114,7 +114,9 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #  include <unistd.h>
 #endif
 
-#define XB_USE_PTHREADS 1 /**< Used to dump thread ID in default logging output, undef it if you run single threaded */
+#ifndef XB_NO_PTHREADS
+#  define XB_USE_PTHREADS 1 /**< Used to dump thread ID in default logging output, undef it if you run single threaded */
+#endif
 
 /**
  * Declare function callback pointer about how many bytes are read from socket. 
