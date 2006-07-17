@@ -1633,7 +1633,7 @@ TODO
 
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/concurrent.jar" dest="${dist-classes.dir}" />
-      <unjar src="${lib.dir}/backport-util-concurrent" dest="${dist-classes.dir}" />
+      <unjar src="${lib.dir}/backport-util-concurrent.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/jzlib.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/gnu-regexp.jar" dest="${dist-classes.dir}" />
       <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-classes.dir}" />
