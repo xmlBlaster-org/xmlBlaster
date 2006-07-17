@@ -171,16 +171,16 @@ build -Duse-icc=true c
 cd xmlBlaster/src/c
 
 Linux C:
-  gcc -Wall -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
-      util/Properties.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
+  gcc -Wall -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Properties.c
+      socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterZlib.c
 
 Linux C++:
   g++ -Wall -g -DXMLBLASTER_C_COMPILE_AS_CPP -I. -o HelloWorld HelloWorld.c
-       util/*.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
+       util/*.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c
 
 Windows:
-  cl -D_WINDOWS -I. HelloWorld.c util\*.c socket\XmlBlasterConnectionUnparsed.c
-                                   socket\xmlBlasterSocket.c ws2_32.lib
+  cl -D_WINDOWS -DDLL_IGNORE -DXB_NO_PTHREADS -I. HelloWorld.c util\*.c socket\XmlBlasterConnectionUnparsed.c
+     socket\xmlBlasterSocket.c socket\xmlBlasterZlib.c ws2_32.lib
 
 Solaris:
   cc -Xc -g -I. -o HelloWorld HelloWorld.c util/*.c
@@ -206,10 +206,16 @@ Linux C:
     -lpthread
 
 Windows:
-  cl /MT /W4 -DXmlBlasterAccessUnparsedMain -D_WINDOWS -I.. -I../pthreads
-   /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\util\*.c
-   xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c
-   ws2_32.lib pthreadVC2.lib
+   cd xmlBlaster\src\c\socket
+   cl /MT /W4 -DDLL_IGNORE -DXmlBlasterAccessUnparsedMain -D_WINDOWS
+      -I.. -I../pthreads /FeXmlBlasterAccessUnparsedMain.exe  XmlBlasterAccessUnparsed.c ..\util\*.c
+      xmlBlasterSocket.c XmlBlasterConnectionUnparsed.c CallbackServerUnparsed.c xmlBlasterZlib.c
+      ws2_32.lib pthreadVC2.lib
+
+Windows (including zlib compression):
+   cl /MT /W4 -DDLL_IGNORE -DXmlBlasterAccessUnparsedMain -D_WINDOWS /DXMLBLASTER_ZLIB=1 \
+      -I.. -I../pthreads  /FeXmlBlasterAccessUnparsedMain.exe \
+      XmlBlasterAccessUnparsed.c ..\util\*.c *.c  ws2_32.lib pthreadVC2.lib \zlib121\lib\zdll.lib
     
 Solaris:
   cc  -DXmlBlasterAccessUnparsedMain -v -Xc -g -D_REENTRANT -I..
