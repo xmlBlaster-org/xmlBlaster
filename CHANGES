@@ -1,8 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Current svn
-===========
+ o #15313 htpasswd plugin extension: Added primitive authorization support based on method name and topic oid
+          See: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html#authorization
+
  o #15308 C client library: Removed pthread dependency when compiling single thread version with -DXB_NO_PTHREADS
 
  o #15294 Fix for XMLRPC protocol layer to transform all weired, client thrown exceptions into a "user.update.internalError"
