@@ -12,7 +12,7 @@ import java.util.Hashtable;
  * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html">The interface requirement</a>
  */
-public final class MethodName implements java.io.Serializable
+public final class MethodName implements java.io.Serializable, Comparable
 {
    private static final long serialVersionUID = -6644144030401574462L;
    private final static Hashtable hash = new Hashtable(); // The key is the 'methodName' String and the value is an 'MethodName' instance
@@ -63,12 +63,30 @@ public final class MethodName implements java.io.Serializable
       this.returnType = returnType;
       hash.put(methodName, this);
    }
+   
+   public static MethodName[] getAll() {
+      return new MethodName[] { CONNECT, DISCONNECT, GET, ERASE, PUBLISH, PUBLISH_ARR, PUBLISH_ONEWAY,
+                                SUBSCRIBE, UNSUBSCRIBE, UPDATE, UPDATE_ONEWAY, PING/*, DUMMY, UNKNOWN, EXCEPTION*/ };
+   }
 
    /**
     * Return the methodName. 
     */
    public String toString() {
       return this.methodName;
+   }
+
+   /**
+    * @return the comma separated methodNames, never null 
+    */
+   public static String toString(MethodName[] nameArr) {
+      if (nameArr == null || nameArr.length < 1) return "";
+      StringBuffer sb = new StringBuffer();
+      for (int i=0; i<nameArr.length; i++) {
+         if (i>0) sb.append(",");
+         sb.append(nameArr[i]);
+      }
+      return sb.toString();
    }
 
    /**
@@ -97,6 +115,11 @@ public final class MethodName implements java.io.Serializable
     */
    public boolean equals(String other) {
       return getMethodName().equals(other);
+   }
+
+   // For TreeSet
+   public int compareTo(Object other) {
+      return getMethodName().compareTo(((MethodName)other).getMethodName());
    }
 
    /**
