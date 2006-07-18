@@ -20,7 +20,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * StringPairTokenizer is a utility class used to parse a string giving
  * back a map containing pairs of key/value strings. 
  * <br />
- * The method parseLine repsects quoted '"' tokens and ignores the separator inside the quotes.
+ * The method parseLine respects quoted '"' tokens and ignores the separator inside the quotes.
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:mr@marcelruff.info">Marcel Ruff</a>
