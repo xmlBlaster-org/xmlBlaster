@@ -19,6 +19,7 @@ import org.xmlBlaster.authentication.plugins.SessionHolder;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.util.logging.Logger;
@@ -119,6 +120,18 @@ public class Session implements I_Session, I_Subject {
          return false;
       }
       
+      if (!this.htpasswd.isAuthorized(sessionHolder, dataHolder)) return false;
+      
+      /*
+      if (sessionHolder.getSessionInfo().getSessionName().getLoginName().equals("jackTheSubscriber") &&
+          (dataHolder.getAction().equals(MethodName.PUBLISH) ||
+          dataHolder.getAction().equals(MethodName.PUBLISH_ARR) ||
+          dataHolder.getAction().equals(MethodName.PUBLISH_ONEWAY))) {
+         log.warning("Reject publish attempt by " + sessionHolder.getSessionInfo().getSessionName().getAbsoluteName());
+         return false;
+      }
+      */
+      
       /*
       // Is buggy: Currently this is the SocketDrivers AddressServer singleton
       // and has no client specific address informations: 
@@ -134,7 +147,7 @@ public class Session implements I_Session, I_Subject {
       */
       
       if (log.isLoggable(Level.FINER))
-            log.finer("No authorization check for action='" + dataHolder.getAction() + "' on key='" +dataHolder.getKeyOid() + "' is implemented, access generously granted.");
+         log.finer("Action='" + dataHolder.getAction() + "' on key='" +dataHolder.getKeyOid() + "' access granted.");
       return true;
    }
 

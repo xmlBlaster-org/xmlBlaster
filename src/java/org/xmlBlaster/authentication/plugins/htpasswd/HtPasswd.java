@@ -6,16 +6,24 @@
 */
 package org.xmlBlaster.authentication.plugins.htpasswd;
 
+import org.xmlBlaster.authentication.plugins.DataHolder;
+import org.xmlBlaster.authentication.plugins.SessionHolder;
 import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import java.io.* ;
+import java.util.HashSet;
 import java.util.Hashtable ;
 import java.util.Enumeration ;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 //import org.xmlBlaster.authentication.plugins.htpasswd.jcrypt;
 
@@ -56,11 +64,34 @@ public class HtPasswd {
 
    protected int useFullUsername = ALLOW_PARTIAL_USERNAME;
    protected String htpasswdFilename = null ;
-   /* Key is user name, values is the encrypted password */
+   /* Key is user name, values is the Container with encrypted password */
    protected Hashtable htpasswd = null ;
 
    private static boolean first = true;
    private static boolean firstWild = true;
+   
+   private class Container {
+      public String userName="";
+      public String password="";
+      public Map allowedMethodNames; // contains MethodNames for authorization as key, set of topic oids as value
+      public Container(String user) {
+         this.userName = user;
+      }
+      public String toString() {
+         String ret = "user='" + userName + "' passwd='" + password + "'";
+         if (this.allowedMethodNames != null)
+            ret += " allowedMethods=" + MethodName.toString((MethodName[])this.allowedMethodNames.keySet().toArray(new MethodName[this.allowedMethodNames.size()]));
+         return ret;
+      }
+      public boolean isAllowed(MethodName methodName, String topicOid) {
+         if (this.allowedMethodNames == null) return true;
+         Set oidSet = (Set)this.allowedMethodNames.get(methodName);
+         if (oidSet == null) return false;
+         if (topicOid == null) return true;
+         if (oidSet.size() == 0) return true;
+         return oidSet.contains(topicOid);
+      }
+   }
 
    /**
     * Check password
@@ -109,6 +140,7 @@ public class HtPasswd {
      String encoded = null,salt,userEncoded;
      for (Enumeration e = fileEncodedPass.elements();e.hasMoreElements();)
      { encoded = (String)e.nextElement();
+       if (encoded != null && encoded.length() == 0) return true; // empty password "joe::"
        if (encoded != null && encoded.length() > 2) 
        {  salt = encoded.substring(0,2);
           userEncoded = jcrypt.crypt(salt,userPassword);
@@ -140,17 +172,19 @@ public class HtPasswd {
          String key;
          boolean found = false;
          if ( useFullUsername == FULL_USERNAME ) {
-            String pw = (String)this.htpasswd.get(userName);
-            pws.addElement(pw);
-            found = true;
+            Container container = (Container)this.htpasswd.get(userName);
+            if (container != null) {
+               pws.addElement(container.password);
+               found = true;
+            }
          }
          else { // ALLOW_PARTIAL_USERNAME
             for (Enumeration e = this.htpasswd.keys();e.hasMoreElements() ; ) {
                key = (String)e.nextElement();
                if (log.isLoggable(Level.FINE)) log.fine("Checking userName=" + userName + " with key='" + key + "'");
                if (userName.startsWith(key) || userName.endsWith(key)) {
-                  String pw = (String)this.htpasswd.get(key);
-                  pws.addElement(pw);
+                  Container container = (Container)this.htpasswd.get(key);
+                  pws.addElement(container.password);
                   found = true;
                }
             }
@@ -160,7 +194,8 @@ public class HtPasswd {
             for (Enumeration e = this.htpasswd.keys();e.hasMoreElements() ; ) {
                key = (String)e.nextElement();
                if (key.equals("*")) {
-                  pws.addElement(this.htpasswd.get(key));
+                  Container container = (Container)this.htpasswd.get(key);
+                  pws.addElement(container.password);
                }
             }
          }
@@ -171,6 +206,20 @@ public class HtPasswd {
    }//checkPassword
 
    /**
+    * Check of MethodName is allowed to be invoked by user. 
+    * 
+    * @param sessionHolder The user
+    * @param dataHolder The method called
+    * @return true if is authorized, false if no access
+    */
+   public boolean isAuthorized(SessionHolder sessionHolder, DataHolder dataHolder) {
+      if (this.htpasswd == null) return true;
+      Container container = (Container)this.htpasswd.get(sessionHolder.getSessionInfo().getSessionName().getLoginName());
+      if (container.allowedMethodNames == null) return true;
+      return container.isAllowed(dataHolder.getAction(), dataHolder.getKeyOid());
+   }
+
+   /**
     * Read passwords file
     * 16/11/01 20:42 mad@ktaland.com
     * @param the password filename
@@ -179,7 +228,7 @@ public class HtPasswd {
    boolean readHtpasswordFile( String htpasswdFilename )
         throws XmlBlasterException {
 
-      if (log.isLoggable(Level.FINER)) log.finer( "readHtpasswordFile : "+htpasswdFilename );
+      if (log.isLoggable(Level.FINER)) log.finer(htpasswdFilename);
       File            htpasswdFile ;
 
       if( htpasswdFilename == null)
@@ -206,12 +255,64 @@ public class HtPasswd {
             if (user.startsWith("#" ) || user.length() < 1) {
                continue;
             }
-            String passwd = (String)map.get(user);
-            if (passwd == null) passwd = "";
-            passwd = passwd.trim();
+            String tail = (String)map.get(user); // joe:secret:CONNECT,PUBLISH,ERASE:other stuff in future
+            String[] tokens = StringPairTokenizer.parseLine(tail, ':', StringPairTokenizer.DEFAULT_QUOTE_CHARACTER, false);
+            Container container = new Container(user);
+            if (tokens.length > 0)
+               container.password = tokens[0].trim();
+            if (tokens.length > 1) {
+               // parse "!SUBSCRIBE,ERASE" or "CONNECT,DISCONNECT,PUBLISH"
+               // joe:079cv::  allows all methods
+               String methodNames = tokens[1].trim();
+               if (methodNames != null && methodNames.length() > 0) {
+                  boolean positiveList = !methodNames.startsWith("!");
+                  container.allowedMethodNames = new java.util.HashMap();
+                  if (positiveList) {
+                     String[] nameArr = org.xmlBlaster.util.StringPairTokenizer.parseLine(methodNames, ',');
+                     for (int j=0; j<nameArr.length; j++) {
+                        String name = nameArr[j].trim();
+                        HashSet set = new HashSet();
+                        int start = name.indexOf('(');
+                        if (start != -1) {
+                           int end = name.indexOf(')');
+                           if (end != -1) {
+                              String topics = name.substring(start+1, end);
+                              String[] topicArr = org.xmlBlaster.util.StringPairTokenizer.parseLine(topics, ';');
+                              for (int n=0; n<topicArr.length; n++)
+                                 set.add(topicArr[n]);
+                           }
+                           name = name.substring(0, start);
+                        }
+                        try {
+                           MethodName methodName = MethodName.toMethodName(name);
+                           container.allowedMethodNames.put(methodName, set);
+                        }
+                        catch (IllegalArgumentException e) {
+                           log.severe("Ignoring allowed method name, please check your configuration in '" + htpasswdFilename + "': " + e.toString());
+                        }
+                     }
+                  }
+                  else {
+                     MethodName[] all = MethodName.getAll();
+                     HashSet set = new HashSet();
+                     for (int k=0; k<all.length; k++) container.allowedMethodNames.put(all[k], set);
+                     String[] nameArr = org.xmlBlaster.util.StringPairTokenizer.parseLine(methodNames.substring(1), ',');
+                     for (int j=0; j<nameArr.length; j++) {
+                        try {
+                           MethodName methodName = MethodName.toMethodName(nameArr[j].trim());
+                           container.allowedMethodNames.remove(methodName);
+                        }
+                        catch (IllegalArgumentException e) {
+                           log.severe("Ignoring allowed method name, please check your configuration in '" + htpasswdFilename + "': " + e.toString());
+                        }
+                     }
+                     
+                  }
+               }
+            }
             if (this.htpasswd == null) this.htpasswd = new Hashtable();
-            this.htpasswd.put(user, passwd);
-            if (user.equals("*") && passwd.length() < 1) {
+            this.htpasswd.put(user, container);
+            if (user.equals("*") && container.password.length() < 1) {
                //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
                useFullUsername = SWITCH_OFF;
                if (firstWild) {
@@ -221,14 +322,15 @@ public class HtPasswd {
             }
          }
 
+
          // Dump it:
          if (log.isLoggable(Level.FINEST)) {
             if (this.htpasswd != null) {
-               java.util.Iterator i = this.htpasswd.keySet().iterator();
+               java.util.Iterator i = this.htpasswd.values().iterator();
                System.out.println("========================================");
                while (i.hasNext()) {
-                  String user = (String)i.next();
-                  System.out.println("user='" + user + "' passwd='" + this.htpasswd.get(user) + "'");
+                  Container container = (Container)i.next();
+                  System.out.println(container.toString());
                }
                System.out.println("========================================");
             }
@@ -243,91 +345,6 @@ public class HtPasswd {
          this.htpasswd = null ;
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problem when reading password file '"+htpasswdFilename+"'", ex);
       }
-
-      /*
-      FileInputStream fis = null ;
-
-      try {
-         fis = new FileInputStream( htpasswdFile );
-         Reader r = new BufferedReader( new InputStreamReader( fis ) );
-         StreamTokenizer st = new StreamTokenizer(r);
-         st.slashSlashComments(true); // Recognize C++ comments '//'
-         //st.slashStarComments(true);
-         st.ordinaryChars( 0,255 );
-         st.eolIsSignificant(true);
-
-         htpasswd = new Hashtable();
-         StringBuffer    user = new StringBuffer() ;
-         StringBuffer    password = new StringBuffer() ;
-
-         boolean readUser = true ;
-         boolean end = false ;
-         while( ! end ){
-            switch( st.nextToken() ){
-
-            default:
-               if( st.ttype>=0 ){
-                  if( ((char)st.ttype) == ':' ){  // user:password
-                     readUser = false ;
-                  }
-                  else{
-                     if( readUser ){
-                        user.append( (char)st.ttype );
-                     }else{
-                        password.append( (char)st.ttype );
-                     }
-                  }
-               }
-               break;
-
-            case StreamTokenizer.TT_WORD:
-               //println( st.ttype +": "+st.sval );
-               if( readUser ){
-                  user.append( st.sval );
-               }else{
-                  password.append( st.sval );
-               }
-               break;
-
-            case StreamTokenizer.TT_EOL:
-               readUser = true ;
-               String u = user.toString().trim();
-               String p = password.toString().trim();
-               if (u.equals("*") && p.length()==0) {
-                  //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
-                  useFullUsername = SWITCH_OFF;
-                  if (first) {
-                     log.warn(ME, "Security risk, no access control: '" + htpasswdFile + "' contains '*'");
-                     first = false;
-                  }
-                  end = true;                                  
-               }
-               else {
-                  htpasswd.put(u, p);
-                  user.setLength(0);
-                  password.setLength(0);
-               }
-               break;
-
-            case StreamTokenizer.TT_EOF:
-               end = true ;
-               break ;
-
-            }   // end Switch
-         }  // end while
-
-         fis.close();
-         return true ;
-
-      }catch( Exception ex ){
-         try{
-            fis.close();
-         }catch( IOException ioex ){}
-         htpasswd = null ;
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "problem append when reading file : "+htpasswdFilename+". Ex="+ex );
-      }
-         */
-
    }//readHtpasswordFile
 
    public String getPasswdFileName() {
