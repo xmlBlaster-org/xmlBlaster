@@ -3,6 +3,7 @@ The "#99999" numbers are Subversion revision numbers.
 
  o #15313 htpasswd plugin extension: Added primitive authorization support based on method name and topic oid
           See: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html#authorization
+	  Changed to allow empty passwords (like "joe::") which grants access for joe
 
  o #15308 C client library: Removed pthread dependency when compiling single thread version with -DXB_NO_PTHREADS
 
