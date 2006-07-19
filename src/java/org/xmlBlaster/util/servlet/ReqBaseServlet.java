@@ -8,7 +8,6 @@ Version:   $Id$
 package org.xmlBlaster.util.servlet;
 
 import java.io.*;
-import java.util.*;
 import java.net.*;
 
 import javax.servlet.*;
@@ -22,7 +21,6 @@ import com.jclark.xsl.sax.OutputMethodHandlerImpl;
 import com.jclark.xsl.sax.XSLProcessorImpl;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 
 /*
@@ -129,7 +127,7 @@ abstract public class ReqBaseServlet extends HttpServlet
 
       String xslPath = reqDir+"/"+xslFile+".xsl";
 
-      XSLProcessorImpl xsl             = xsl  = new XSLProcessorImpl();
+      XSLProcessorImpl xsl  = new XSLProcessorImpl();
       xsl.setParser(createParser());
 
       try {
