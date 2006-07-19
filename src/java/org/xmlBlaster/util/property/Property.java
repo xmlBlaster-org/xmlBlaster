@@ -305,6 +305,10 @@ public class Property implements Cloneable {
       
       String completePropName = parentCtx.getAbsoluteName() + ContextNode.SEP + shortKey;
       Map specific1 = getPropertiesStartingWith(completePropName + ContextNode.SEP);
+      Object tmp = this.properties.get(completePropName);
+      if (tmp != null)
+         specific1.put(completePropName, tmp);
+      
       if (keyForDefault != null) {
          Object def = this.properties.getProperty(completePropName);
          if (def != null)
