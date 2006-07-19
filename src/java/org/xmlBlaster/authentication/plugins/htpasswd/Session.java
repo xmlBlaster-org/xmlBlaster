@@ -19,7 +19,6 @@ import org.xmlBlaster.authentication.plugins.SessionHolder;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.util.logging.Logger;
@@ -27,10 +26,21 @@ import java.util.logging.Level;
 
 
 /**
- * This implements the session AND the subject interface in the same class.
+ * This implements the session AND the subject interface in the same class
+ * and supports simple authorization.
+ * <p>Example password configuration:</p> 
+ * <pre>
+ * guest:yZ24stvIel1j6:connect,disconnect,publish(tennis;sailing)
+ * admin:yZ24stvIel1j6:!erase
+ * other:yZ24stvIel1j6:! subscribe,unSubscribe
+ * all:yZ24stvIel1j6::
+ * </pre>
+ * [userName] : [cryptedPassword] : [optional authorization]
  *
  * @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a>.
+ * @author <a href="mailto:mr@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.authentication.plugins.htpasswd.HtPasswd
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html">The security.htpasswd requirement</a>
  */
 public class Session implements I_Session, I_Subject {
 

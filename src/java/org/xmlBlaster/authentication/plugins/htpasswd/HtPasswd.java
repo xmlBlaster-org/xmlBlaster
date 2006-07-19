@@ -46,8 +46,14 @@ import java.util.Vector;
  *   </li>
  *  </ol>
  * <p />
+ * Changes: mr@marcelruff.info<br />
+ * Added simple authorization support.
+ * <p />
  * NOTE: Currently the htpasswd file is reread every time a client logs in (see Session.java new HtPasswd())
  *       we should change this to check the timestamp of the file.
+ *       On client - reconnect there is no reload forced.
+ * <p />
+ * Switch on logging with: -logging/org.xmlBlaster.authentication.plugins.htpasswd FINEST
  * @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a> 16/11/01 09:06
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html">The security.htpasswd requirement</a>
  */
@@ -288,7 +294,7 @@ public class HtPasswd {
                            container.allowedMethodNames.put(methodName, set);
                         }
                         catch (IllegalArgumentException e) {
-                           log.severe("Ignoring allowed method name, please check your configuration in '" + htpasswdFilename + "': " + e.toString());
+                           log.severe("Ignoring authorization method name, please check your configuration in '" + htpasswdFilename + "': " + e.toString());
                         }
                      }
                   }
@@ -303,7 +309,7 @@ public class HtPasswd {
                            container.allowedMethodNames.remove(methodName);
                         }
                         catch (IllegalArgumentException e) {
-                           log.severe("Ignoring allowed method name, please check your configuration in '" + htpasswdFilename + "': " + e.toString());
+                           log.severe("Ignoring authorization method name, please check your configuration in '" + htpasswdFilename + "': " + e.toString());
                         }
                      }
                      
