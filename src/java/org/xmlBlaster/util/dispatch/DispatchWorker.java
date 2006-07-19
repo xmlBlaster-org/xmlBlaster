@@ -184,6 +184,9 @@ public final class DispatchWorker implements Runnable
             this.msgQueue.removeRandom(entries);
          }
          */
+         if (msgInterceptor != null) {
+            msgInterceptor.postHandleNextMessages(dispatchManager, entries);
+         }
          if (log.isLoggable(Level.FINE)) log.fine("Commit of successful sending of " + entryList.size() + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + ((MsgQueueEntry)entryList.get(0)).getLogId() + "'");
       }
       catch(Throwable throwable) {
