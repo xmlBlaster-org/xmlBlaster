@@ -52,8 +52,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private String transactionId;
    private String replPrefix;
    private I_DbPool dbPool;
-   
-   // just for testing
+   private String transSeqPropertyName;
+   private long transSeq;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -122,6 +122,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.dbPool = DbWatcher.getDbPool(this.info);
       this.persistentInfo = new DbInfo(this.dbPool, "replication");
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
+      this.transSeqPropertyName = this.dbSpecific.getName() + ".transactionSequence";
+      this.transSeq = this.persistentInfo.getLong(this.transSeqPropertyName, 0L);
       long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {
          this.oldReplKey = tmp;
@@ -170,7 +172,10 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    
    
    /**
-    * Add another result set to the XML string
+    * Add another result set to the XML string.
+    * This method is invoked for each SQL Operation. Each transaction, i.e. each message
+    * can contain several such operations.
+    * 
     * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#addInfo(ResultSet, int)
     */
    public void addInfo(ResultSet rs, int what) throws Exception {
@@ -188,8 +193,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
        */
       long replKey = rs.getLong(1);
       boolean markProcessed = false;
-      
-      long tmpOldKey = this.oldReplKey; // TODO REMOVE THIS AFTER TESTING
       
       if (replKey <= this.oldReplKey) {
          log.warning("the replication key '" + replKey + "' has already been processed since the former key was '" + this.oldReplKey + "'. It will be marked ");
@@ -210,14 +213,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       String catalog = rs.getString(7);
       String schema = rs.getString(8);
 
-      // TODO REMOVE THIS AFTER TESTING
-      if (replKey != (tmpOldKey+1)) {
-         log.warning("REPLICATION KEY INCREMENT new='" + replKey + "' old='" + tmpOldKey + "' for table='" + tableName + "' and action='" + action + "'");
-      }
-
-      // TODO remove this after testing.
-      // puts this in the metadata attributes of the message to be sent over the mom
-      this.event.getAttributeMap().put("_tableName__", tableName);
       if (transKey == null)
          log.severe("The transaction key was not set. Must be set in order to be processed correctly");
       else {
@@ -357,16 +352,26 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       // nothing to be done here
    }
 
+   /**
+    * This method is invoked before sending the message over the mom.
+    */
    public int done() throws Exception {
       int ret = this.sqlInfo.getRowCount();
+      boolean doSend = true;
       if (ret < 1) {
          // mark it to block delivery if it has no data and is not a STATEMENT
          String command = this.sqlInfo.getDescription().getCommand();
          if (command == null || REPLICATION_CMD.equals(command)) {
             // puts this in the metadata attributes of the message to be sent over the mom
             this.event.getAttributeMap().put("_ignore_this_message", "" + true);
+            doSend = false;
          }
       }
+      if (doSend) { // we put it in the attribute map not in the message itself
+         this.event.getAttributeMap().put(TRANSACTION_SEQ, "" + this.transSeq++);
+         this.persistentInfo.put(this.transSeqPropertyName, "" + this.transSeq);
+      }
+         
       String tmp = this.sqlInfo.toXml("");
       this.out.write(tmp.getBytes());
       this.out.flush();
@@ -392,8 +397,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             log.severe("No transaction id has been found for " + this.sqlInfo.toXml(""));
          return null;
       }
-      // TODO REMOVE THIS AFTER TESTING
-      log.info("sending '" + this.event.getAttributeMap().get(REPL_KEY_ATTR) + "' for table '" + this.event.getAttributeMap().get("_tableName__") + "'");
       String statement = "DELETE FROM " + this.replPrefix + "ITEMS WHERE TRANS_KEY='" + this.transactionId + "'";
       return statement;
    }

@@ -38,6 +38,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.xbformat.XmlScriptParser;
 
@@ -91,13 +92,23 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private String lastMessage;
    private String lastDispatcherException = "";
 
+   private boolean dispatcherActive;
+   private long queueEntries;
+   private boolean connected;
+   private String sessionName = "";
+   private long transactionSeq;
+   
+   /** we don't want to sync the check method because the jmx will synchronize on the object too */
+   private Object initSync = new Object();
+   
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.global = global;
       this.pool = pool;
       this.manager = manager;
       this.slaveSessionId = slaveSessionId;
       // this.status = STATUS_UNUSED;
-      setStatus(STATUS_NORMAL);
+      // setStatus(STATUS_NORMAL);
+      this.status = STATUS_INCONSISTENT;
       this.lastMessage = "";
       //final boolean doPersist = false;
       //final boolean dispatcherActive = false;
@@ -126,7 +137,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       return this.maxReplKey;
    }
 
-   public synchronized String getStatus() {
+   public String getStatus() {
       switch (this.status) {
          case STATUS_INITIAL : return "INITIAL";
          case STATUS_TRANSITION : return "TRANSITION";
@@ -139,60 +150,62 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    /**
     * The info comes as the client properties of the subscription Qos. Avoids double configuration.
     */
-   public synchronized void init(I_Info info) throws Exception {
-      // we currently allow re-init since we can serve severeal dbWatchers for one DbWriter 
-      this.replPrefix = info.get("_replName", null);
-      if (this.replPrefix == null) 
-         throw new Exception("The replication name '_replName' has not been defined");
-      this.name = "replSlave" + this.replPrefix + slaveSessionId;
-      this.dataTopic = info.get("mom.topicName", "replication." + this.replPrefix);
-      // only send status messages if it has been configured that way
-      this.statusTopic = info.get("mom.statusTopicName", null);
-      
-      // TODO Remove this when a better solution is found : several ReplSlaves for same Writer if data comes from several DbWatchers.
-      boolean forceSending = info.getBoolean("replication.forceSending", false);
-      if (forceSending)
-         this.forceSending = true; 
-      String instanceName = this.manager.getInstanceName() + ContextNode.SEP + this.slaveSessionId;
-      ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
-            this.global.getContextNode());
-      this.mbeanHandle = this.global.registerMBean(contextNode, this);
-      
-      this.dbWatcherSessionName = info.get(DBWATCHER_SESSION_NAME, null);
-      this.cascadedReplPrefix = this.persistentInfo.get(CASCADED_REPL_PREFIX, null);
-      this.cascadedReplSlave = this.persistentInfo.get(CASCADED_REPL_SLAVE, null);
-      log.info(this.name + ": associated DbWatcher='" + this.dbWatcherSessionName + "' cascaded replication prefix='" + this.cascadedReplPrefix + "' and cascaded repl. slave='" + this.cascadedReplSlave + "'");
-      int tmpStatus = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
-      if (tmpStatus > -1)
-         setStatus(tmpStatus);
-      
-      final boolean doPersist = false;
-      setDispatcher(this.persistentInfo.getBoolean(this.slaveSessionId + ".dispatcher", false), doPersist);
-      this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplKey";
-      long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
-      if (tmp > -1L) {
-         this.maxReplKey = tmp;
-         log.info("One entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.maxReplKey + "'");
+   public void init(I_Info info) throws Exception {
+      synchronized(this.initSync) {
+         // we currently allow re-init since we can serve severeal dbWatchers for one DbWriter 
+         this.replPrefix = info.get("_replName", null);
+         if (this.replPrefix == null) 
+            throw new Exception("The replication name '_replName' has not been defined");
+         this.name = "replSlave" + this.replPrefix + slaveSessionId;
+         this.dataTopic = info.get("mom.topicName", "replication." + this.replPrefix);
+         // only send status messages if it has been configured that way
+         this.statusTopic = info.get("mom.statusTopicName", null);
+         
+         // TODO Remove this when a better solution is found : several ReplSlaves for same Writer if data comes from several DbWatchers.
+         boolean forceSending = info.getBoolean("replication.forceSending", false);
+         if (forceSending)
+            this.forceSending = true; 
+         String instanceName = this.manager.getInstanceName() + ContextNode.SEP + this.slaveSessionId;
+         ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
+               this.global.getContextNode());
+         this.mbeanHandle = this.global.registerMBean(contextNode, this);
+         
+         this.dbWatcherSessionName = info.get(DBWATCHER_SESSION_NAME, null);
+         this.cascadedReplPrefix = this.persistentInfo.get(CASCADED_REPL_PREFIX, null);
+         this.cascadedReplSlave = this.persistentInfo.get(CASCADED_REPL_SLAVE, null);
+         log.info(this.name + ": associated DbWatcher='" + this.dbWatcherSessionName + "' cascaded replication prefix='" + this.cascadedReplPrefix + "' and cascaded repl. slave='" + this.cascadedReplSlave + "'");
+         int tmpStatus = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
+         if (tmpStatus > -1)
+            setStatus(tmpStatus);
+         
+         final boolean doPersist = false;
+         setDispatcher(this.persistentInfo.getBoolean(this.slaveSessionId + ".dispatcher", false), doPersist);
+         this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplKey";
+         long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
+         if (tmp > -1L) {
+            this.maxReplKey = tmp;
+            log.info("One entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.maxReplKey + "'");
+         }
+         else {
+            log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
+            this.maxReplKey = 0L;
+         }
+         this.srcVersion = info.get("replication.version", "0.0");
+         this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, null);
+         
+         if (this.ownVersion != null) {
+            this.persistentInfo.put(this.slaveSessionId + "." + ReplicationConstants.REPL_VERSION, this.ownVersion);
+         }
+         else {
+            this.ownVersion = this.persistentInfo.get(this.slaveSessionId + "." + ReplicationConstants.REPL_VERSION, this.srcVersion);
+         }
+         
+         if (this.srcVersion != null && this.ownVersion != null && !this.srcVersion.equalsIgnoreCase(this.ownVersion))
+            this.doTransform = true;
+         this.initialized = true;
+         this.forcedCounter = 0L;
+         this.initialFilesLocation = info.get(ReplicationConstants.INITIAL_FILES_LOCATION, null);
       }
-      else {
-         log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
-         this.maxReplKey = 0L;
-      }
-      this.srcVersion = info.get("replication.version", "0.0");
-      this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, null);
-      
-      if (this.ownVersion != null) {
-         this.persistentInfo.put(this.slaveSessionId + "." + ReplicationConstants.REPL_VERSION, this.ownVersion);
-      }
-      else {
-         this.ownVersion = this.persistentInfo.get(this.slaveSessionId + "." + ReplicationConstants.REPL_VERSION, this.srcVersion);
-      }
-      
-      if (this.srcVersion != null && this.ownVersion != null && !this.srcVersion.equalsIgnoreCase(this.ownVersion))
-         this.doTransform = true;
-      this.initialized = true;
-      this.forcedCounter = 0L;
-      this.initialFilesLocation = info.get(ReplicationConstants.INITIAL_FILES_LOCATION, null);
    }
    
    private final void setStatus(int status) {
@@ -299,7 +312,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       // this fills the client properties with the contents of the individualInfo object.
       new ClientPropertiesInfo(subQos.getData().getClientProperties(), individualInfo);
       session.subscribe(this.dataTopic, subQos.toXml());
-      synchronized(this) {
+      synchronized(this.initSync) {
          setStatus(STATUS_INITIAL);
       }
    }
@@ -361,26 +374,30 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    /**
     * @see org.xmlBlaster.contrib.replication.I_ReplSlave#reactivateDestination()
     */
-   public synchronized void reactivateDestination(long minReplKey, long maxReplKey) throws Exception {
-      log.info("Initial Operation completed with replication key interval [" + minReplKey + "," + maxReplKey + "]");
-      if (!this.initialized)
-         throw new Exception("prepareForRequest: '" + this.name + "' has not been initialized properly or is already shutdown, check your logs");
+   public void reactivateDestination(long minReplKey, long maxReplKey) throws Exception {
+      synchronized(this.initSync) {
+         log.info("Initial Operation completed with replication key interval [" + minReplKey + "," + maxReplKey + "]");
+         if (!this.initialized)
+            throw new Exception("prepareForRequest: '" + this.name + "' has not been initialized properly or is already shutdown, check your logs");
 
-      this.minReplKey = minReplKey;
-      this.maxReplKey = maxReplKey;
-      setStatus(STATUS_TRANSITION);
-      final boolean doPersist = true;
-      doContinue(doPersist);
+         this.minReplKey = minReplKey;
+         this.maxReplKey = maxReplKey;
+         setStatus(STATUS_TRANSITION);
+         final boolean doPersist = true;
+         doContinue(doPersist);
+      }
    }
 
    /**
     * @see org.xmlBlaster.contrib.dbwriter.I_ContribPlugin#shutdown()
     */
-   public synchronized void shutdown() {
-      if (!this.initialized)
-         return;
-      this.global.unregisterMBean(this.mbeanHandle);
-      this.initialized = false;
+   public void shutdown() {
+      synchronized (this.initSync) {
+         if (!this.initialized)
+            return;
+         this.global.unregisterMBean(this.mbeanHandle);
+         this.initialized = false;
+      }
    }
 
 
@@ -441,149 +458,153 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    /**
     * FIXME TODO HERE
     */
-   public synchronized ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
-      this.forcedCounter++;
-      this.lastMessage = "";
-      log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' (invocation since start is '" + this.forcedCounter + "'");
-      if (!this.initialized) {
-         log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
-         return new ArrayList();
-      }
-      if (this.status == STATUS_INITIAL && !this.forceSending) { // should not happen since Dispatcher is set to false
-         final boolean doPersist = true;
-         doPause(doPersist);
-         return new ArrayList();
-      }
+   public ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
+      synchronized (this.initSync) {
+         this.forcedCounter++;
+         this.lastMessage = "";
+         log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' (invocation since start is '" + this.forcedCounter + "'");
+         if (!this.initialized) {
+            log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
+            return new ArrayList();
+         }
+         if (this.status == STATUS_INITIAL && !this.forceSending) { // should not happen since Dispatcher is set to false
+            final boolean doPersist = true;
+            doPause(doPersist);
+            return new ArrayList();
+         }
 
-      if (entries.size() > 0) {
+         if (entries != null && entries.size() > 1)
+            log.severe("the entries are '" + entries.size() + "' but we currently only can process one single entry at a time");
+         
+         if (entries.size() > 0) {
+            for (int i=entries.size()-1; i > -1; i--) {
+               ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+               MsgUnit msgUnit = entry.getMsgUnit();
+               long tmpTransSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, 0L);
+               if (tmpTransSeq != 0)
+                  this.transactionSeq = tmpTransSeq;
+               long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+               if (replKey > -1L) {
+                  setMaxReplKey(replKey);
+                  break; // the other messages will have lower numbers (if any) so we break for performance.
+               }
+            }      
+         }
+         
+         // check if already processed ... and at the same time do the versioning transformation (if needed)
          for (int i=entries.size()-1; i > -1; i--) {
+            ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+            MsgUnit msgUnit = entry.getMsgUnit();
+            ClientProperty alreadyProcessed = msgUnit.getQosData().getClientProperty(ReplicationConstants.ALREADY_PROCESSED_ATTR);
+            if (alreadyProcessed != null) {
+               log.info("Received entry for client '" + this.slaveSessionId + "' which was already processed. Will remove it");
+               queue.removeRandom(entry);
+               entries.remove(i);
+            }
+            else
+               doTransform(msgUnit);
+         }
+         
+         // check if one of the messages is the transition end tag            
+         for (int i=0; i < entries.size(); i++) {
+            ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+            MsgUnit msgUnit = entry.getMsgUnit();
+            ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
+            
+            // check if the message is the end of the data (only sent in case the initial data has to be stored on file in which
+            // case the dispatcher shall return in its waiting state.
+            ClientProperty endOfData = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END);
+            ClientProperty initialFilesLocation = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_FILES_LOCATION);
+            ClientProperty subDirName = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_ID);
+            if (endOfData != null) {
+               final boolean doPersist = true;
+               doPause(doPersist);
+               queue.removeRandom(entry);
+               entries.remove(i);
+               String dirName = "unknown";
+               if (subDirName != null) {
+                  if (initialFilesLocation != null) {
+                     File base = new File(initialFilesLocation.getStringValue().trim());
+                     File complete = new File(base, subDirName.getStringValue().trim());
+                     dirName = complete.getAbsolutePath();
+                  }
+               }
+               this.lastMessage = "Manual Data transfer: WAITING (stored on '" + dirName + "')";
+               continue;
+            }
+
+            // check if the message has to be stored locally
+            ClientProperty endToRemote = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
+            if (initialFilesLocation != null && (endToRemote == null || !endToRemote.getBooleanValue())) {
+               storeChunkLocally(entry, initialFilesLocation, subDirName);
+               queue.removeRandom(entry);
+               entries.remove(i); // TODO INVERT SEQUENCE SINCE THEORETICALLY IT COULD BE MORE THAN ONE MSG IN THE LIST
+               continue;
+            }
+            
+            if (endMsg != null) {
+               log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
+               setStatus(STATUS_NORMAL);
+               queue.removeRandom(entry);
+               entries.remove(i);
+               // initiate a cascaded replication (if configured that way)
+               if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
+                  log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'. Was entry '" + i + "' of a set of '" + entries.size() + "'");
+                  this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
+               }
+               else {
+                  log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
+               }
+               break; // there should only be one such message 
+            }
+         }
+
+         // if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
+         // TODO find a clean solution for this: currently we have the case where several masters send data to one single
+         // slave, this can result in a conflict where min- and maxReplKey are overwritten everytime. A quick and dirty solution
+         // is to let everything pass for now.
+         if (this.status == STATUS_NORMAL || this.status == STATUS_INCONSISTENT)
+            return entries;
+         
+         ArrayList ret = new ArrayList();
+         for (int i=0; i < entries.size(); i++) {
             ReferenceEntry entry = (ReferenceEntry)entries.get(i);
             MsgUnit msgUnit = entry.getMsgUnit();
             long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
             if (replKey > -1L) {
                setMaxReplKey(replKey);
-               break; // the other messages will have lower numbers (if any) so we break for performance.
             }
-         }      
-      }
-      
-      // check if already processed ... and at the same time do the versioning transformation (if needed)
-      for (int i=entries.size()-1; i > -1; i--) {
-         ReferenceEntry entry = (ReferenceEntry)entries.get(i);
-         MsgUnit msgUnit = entry.getMsgUnit();
-         ClientProperty alreadyProcessed = msgUnit.getQosData().getClientProperty(ReplicationConstants.ALREADY_PROCESSED_ATTR);
-         if (alreadyProcessed != null) {
-            log.info("Received entry for client '" + this.slaveSessionId + "' which was already processed. Will remove it");
-            queue.removeRandom(entry);
-            entries.remove(i);
-         }
-         else
-            doTransform(msgUnit);
-      }
-      
-      // check if one of the messages is the transition end tag            
-      for (int i=0; i < entries.size(); i++) {
-         ReferenceEntry entry = (ReferenceEntry)entries.get(i);
-         MsgUnit msgUnit = entry.getMsgUnit();
-         ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
-         
-         // check if the message is the end of the data (only sent in case the initial data has to be stored on file in which
-         // case the dispatcher shall return in its waiting state.
-         ClientProperty endOfData = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END);
-         ClientProperty initialFilesLocation = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_FILES_LOCATION);
-         ClientProperty subDirName = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_ID);
-         if (endOfData != null) {
-            final boolean doPersist = true;
-            doPause(doPersist);
-            queue.removeRandom(entry);
-            entries.remove(i);
-            String dirName = "unknown";
-            if (subDirName != null) {
-               if (initialFilesLocation != null) {
-                  File base = new File(initialFilesLocation.getStringValue().trim());
-                  File complete = new File(base, subDirName.getStringValue().trim());
-                  dirName = complete.getAbsolutePath();
+            log.info("check: processing '" + replKey + "' for client '" + this.slaveSessionId + "' ");
+            if (replKey < 0L) { // this does not come from the normal replication, so these are other messages which we just deliver
+               ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
+               if (endMsg == null) {
+                  log.warning("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "'  for client '" + this.slaveSessionId + "' has no 'replKey' Attribute defined.");
+                  ret.add(entry);
+                  continue;
                }
             }
-            this.lastMessage = "Manual Data transfer: WAITING (stored on '" + dirName + "')";
-            continue;
-         }
-
-         // check if the message has to be stored locally
-         ClientProperty endToRemote = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
-         if (initialFilesLocation != null && (endToRemote == null || !endToRemote.getBooleanValue())) {
-            storeChunkLocally(entry, initialFilesLocation, subDirName);
-            queue.removeRandom(entry);
-            entries.remove(i); // TODO INVERT SEQUENCE SINCE THEORETICALLY IT COULD BE MORE THAN ONE MSG IN THE LIST
-            continue;
-         }
-         
-         if (endMsg != null) {
-            log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
-            setStatus(STATUS_NORMAL);
-            queue.removeRandom(entry);
-            entries.remove(i);
-            // initiate a cascaded replication (if configured that way)
-            if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
-               log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'. Was entry '" + i + "' of a set of '" + entries.size() + "'");
-               this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
-            }
-            else {
-               log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
-            }
-            break; // there should only be one such message 
-         }
-         
-         
-         
-      }
-
-      // if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
-      // TODO find a clean solution for this: currently we have the case where several masters send data to one single
-      // slave, this can result in a conflict where min- and maxReplKey are overwritten everytime. A quick and dirty solution
-      // is to let everything pass for now.
-      if (this.status == STATUS_NORMAL || this.status == STATUS_INCONSISTENT)
-         return entries;
-      
-      ArrayList ret = new ArrayList();
-      for (int i=0; i < entries.size(); i++) {
-         ReferenceEntry entry = (ReferenceEntry)entries.get(i);
-         MsgUnit msgUnit = entry.getMsgUnit();
-         long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
-         if (replKey > -1L) {
-            setMaxReplKey(replKey);
-         }
-         log.info("check: processing '" + replKey + "' for client '" + this.slaveSessionId + "' ");
-         if (replKey < 0L) { // this does not come from the normal replication, so these are other messages which we just deliver
-            ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
-            if (endMsg == null) {
-               log.warning("the message unit with qos='" + msgUnit.getQosData().toXml() + "' and key '" + msgUnit.getKey() + "'  for client '" + this.slaveSessionId + "' has no 'replKey' Attribute defined.");
+            log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "] for client '" + this.slaveSessionId + "' ");
+            if (replKey >= this.minReplKey || this.forceSending) {
+               log.info("repl adding the entry for client '" + this.slaveSessionId + "' ");
+               doTransform(msgUnit);
                ret.add(entry);
-               continue;
-            }
-         }
-         log.info("repl entry '" + replKey + "' for range [" + this.minReplKey + "," + this.maxReplKey + "] for client '" + this.slaveSessionId + "' ");
-         if (replKey >= this.minReplKey || this.forceSending) {
-            log.info("repl adding the entry for client '" + this.slaveSessionId + "' ");
-            doTransform(msgUnit);
-            ret.add(entry);
-            if (replKey > this.maxReplKey || this.forceSending) {
-               log.info("entry with replKey='" + replKey + "' is higher as maxReplKey)='" + this.maxReplKey + "' switching to normal operationa again for client '" + this.slaveSessionId + "' ");
-               setStatus(STATUS_NORMAL);
-               // initiate a cascaded replication (if so configured)
-               if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
-                  log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
-                  this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
+               if (replKey > this.maxReplKey || this.forceSending) {
+                  log.info("entry with replKey='" + replKey + "' is higher than maxReplKey)='" + this.maxReplKey + "' switching to normal operation again for client '" + this.slaveSessionId + "' ");
+                  setStatus(STATUS_NORMAL);
+                  // initiate a cascaded replication (if so configured)
+                  if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
+                     log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
+                     this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
+                  }
                }
             }
+            else { // such messages have been already from the initial update. (obsolete messages are removed)
+               log.info("removing entry with replKey='" + replKey + "' since older than minEntry='" + this.minReplKey + "' for client '" + this.slaveSessionId + "' ");
+               queue.removeRandom(entry);
+            }
          }
-         else { // such messages have been already from the initial update. (obsolete messages are removed)
-            log.info("removing entry with replKey='" + replKey + "' since older than minEntry='" + this.minReplKey + "' for client '" + this.slaveSessionId + "' ");
-            queue.removeRandom(entry);
-            
-         }
+         return ret;
       }
-      return ret;
    }
    
    /**
@@ -647,11 +668,13 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     * @see org.xmlBlaster.contrib.replication.ReplSlaveMBean#toggleActive()
     * @return the actual state.
     */
-   public synchronized boolean toggleActive() throws Exception {
-      I_AdminSession session = getSession();
-      final boolean doPersist = true;
-      setDispatcher(!session.getDispatcherActive(), doPersist);
-      return session.getDispatcherActive();
+   public boolean toggleActive() throws Exception {
+      synchronized(this.initSync) {
+         I_AdminSession session = getSession();
+         final boolean doPersist = true;
+         setDispatcher(!session.getDispatcherActive(), doPersist);
+         return session.getDispatcherActive();
+      }
    }
    
    /**
@@ -687,44 +710,17 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       setStatus(STATUS_INCONSISTENT);
    }
 
-   /**
-    * Convenience method enforced by the MBean which returns the number of entries in 
-    * the queue.
-    */
-   public long getQueueEntries() throws Exception {
-      return getSession().getCbQueueNumMsgs();
-   }
-
-   /**
-    * Convenience method enforced by the MBean which returns true if the dispatcher of
-    * the slave session is active, false otherwise.
-    */
-   public boolean isActive() {
-      try {
-         return getSession().getDispatcherActive();
-      }
-      catch (Exception ex) {
-         ex.printStackTrace();
-         return false;
-      } 
-   }
-   
-   /**
-    * Convenience method enforced by the MBean which returns true if the real slave is
-    * connected or false otherwise.
-    */
-   public boolean isConnected() {
-      try {
-         return getSession().getConnectionState().equals(ConnectionStateEnum.ALIVE.toString());
-      }
-      catch (Exception ex) {
-         ex.printStackTrace();
-         return false;
-      } 
-   }
-
    public void clearQueue() throws Exception {
-      getSession().clearCallbackQueue();
+      (new Thread() {
+         public void run() {
+            try {
+               getSession().clearCallbackQueue();
+            }
+            catch (Exception ex) {
+               ex.printStackTrace();
+            }
+         }
+      }).start();
    }
 
    public long removeQueueEntries(long entries) throws Exception {
@@ -734,10 +730,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
 
    public void kill() throws Exception {
       getSession().killSession();
-   }
-
-   public String getSessionName() throws Exception {
-      return getSession().getLoginName() + "/" + getSession().getPublicSessionId(); 
    }
 
    public String reInitiateReplication() throws Exception {
@@ -751,17 +743,114 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    public String getVersion() {
       return this.ownVersion;
    }
- 
+
+   
+   
+   
+   
+   /**
+    * Convenience method enforced by the MBean which returns true if the dispatcher of
+    * the slave session is active, false otherwise.
+    */
+   public boolean isActive() {
+      return this.dispatcherActive;
+   }
+   
+   /**
+    * Convenience method enforced by the MBean which returns the number of entries in 
+    * the queue.
+    */
+   public long getQueueEntries() {
+      return this.queueEntries;
+   }
+
+   /**
+    * Convenience method enforced by the MBean which returns true if the real slave is
+    * connected or false otherwise.
+    */
+   public boolean isConnected() {
+      return this.connected;
+   }
+
+   public String getSessionName() {
+      return this.sessionName;
+   }
+
    public String getLastMessage() {
+      return this.lastMessage;
+   }
+
+   public void checkStatus() {
+      log.finest("invoked for '" + this.sessionName + "'");
+      I_AdminSession session = null;
       try {
-         String tmp = getSession().getLastCallbackException();
+         session = getSession();
+      }
+      catch (Exception ex) {
+         log.severe("an exception occured when retieving the session for '" + this.sessionName + "':" + ex.getMessage());
+         ex.printStackTrace();
+      }
+      
+      // isActive
+      try {
+         this.dispatcherActive = session.getDispatcherActive();
+      }
+      catch (Exception ex) {
+         log.severe("an exception occured when retieving the status of the dispatcher for '" + this.sessionName + "':" + ex.getMessage());
+         ex.printStackTrace();
+         this.dispatcherActive = false;
+      }
+      
+      // getQueueEntries
+      try {
+         this.queueEntries = session.getCbQueueNumMsgs();
+      }
+      catch (Exception ex) {
+         log.severe("an exception occured when retieving the number of queue entries for '" + this.sessionName + "':" + ex.getMessage());
+         ex.printStackTrace();
+         this.queueEntries = -1L;
+      }
+      
+      // isConnected
+      try {
+         this.connected = session.getConnectionState().equals(ConnectionStateEnum.ALIVE.toString());
+      }
+      catch (Exception ex) {
+         log.severe("an exception occured when checking if connected for '" + this.sessionName + "':" + ex.getMessage());
+         ex.printStackTrace();
+         this.connected = false;
+      } 
+      
+      // sessionName
+      try {
+         this.sessionName = session.getLoginName() + "/" + session.getPublicSessionId(); 
+      }
+      catch (Exception ex) {
+         log.severe("an exception occured when getting the session name:" + ex.getMessage());
+         ex.printStackTrace();
+      } 
+
+      // lastMessage
+      try {
+         String tmp = session.getLastCallbackException();
          if (!this.lastDispatcherException.equals(tmp)) { 
             this.lastDispatcherException = tmp;
             this.lastMessage = tmp;
          }
       }
       catch (Exception ex) {
+         log.severe("an exception occured when getting the last dispatcher exception for '" + this.sessionName + "':" + ex.getMessage());
+         ex.printStackTrace();
       }
-      return this.lastMessage;
    }
+   
+   public void postCheck(MsgQueueEntry[] processedEntries) throws Exception {
+      log.warning("not implemented yet");
+   }
+
+   public long getTransactionSeq() {
+      return this.transactionSeq;
+   }
+
+   
 }

@@ -67,5 +67,5 @@ public interface ReplicationConstants {
    public final static String INITIAL_DATA_ID = "_initialDataId"; // used for the directory name where to store the initial dump by manual transfer
    
    public final static String REPL_PREFIX_DEFAULT = "REPL_";
-   
+   public final static String TRANSACTION_SEQ = "_TRANS_SEQ";
 }

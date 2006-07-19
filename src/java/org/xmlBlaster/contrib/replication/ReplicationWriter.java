@@ -37,10 +37,11 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
 import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
+import org.xmlBlaster.jms.XBConnectionMetaData;
+import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.xbformat.XmlScriptParser;
@@ -579,15 +580,15 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       boolean isException = false;
       int seqNumber = -1;
       String exTxt = "";
-      prop = (ClientProperty)attrMap.get(Constants.CHUNK_SEQ_NUM);
+      prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_SEQ, attrMap);
       if (prop != null) {
          seqNumber = prop.getIntValue();
-         prop = (ClientProperty)attrMap.get(Constants.CHUNK_EOF);
+         prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EOF, attrMap);
          if (prop == null) {
             isEof = false;
          }
          else {
-            prop = (ClientProperty)attrMap.get(Constants.CHUNK_EXCEPTION);
+            prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EX, attrMap);
             if (prop != null) {
                exTxt = prop.getStringValue();
                isException = true;

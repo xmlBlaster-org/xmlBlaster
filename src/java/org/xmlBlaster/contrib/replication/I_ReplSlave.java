@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * I_ReplSlave
@@ -69,6 +70,7 @@ public interface I_ReplSlave extends I_ContribPlugin {
 
    ArrayList check(ArrayList pushEntries, I_Queue queue) throws Exception;
 
+   void postCheck(MsgQueueEntry[] processedEntries) throws Exception;
    
    /**
     * @param sqlResponse The sqlResponse to set.
@@ -79,5 +81,11 @@ public interface I_ReplSlave extends I_ContribPlugin {
     * Pauses the dispatcher. and sets the message. 
     */
    void handleException(Throwable ex);
+   
+   /**
+    * Checks on the backend data which has to be displayed on the MBean.
+    *
+    */
+   void checkStatus();
    
 }

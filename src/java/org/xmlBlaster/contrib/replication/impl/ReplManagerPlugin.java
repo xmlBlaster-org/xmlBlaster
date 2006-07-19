@@ -55,8 +55,10 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -65,6 +67,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -91,7 +94,7 @@ import java.util.logging.Logger;
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor, I_ClientListener, I_SubscriptionListener {
+public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor, I_ClientListener, I_SubscriptionListener, I_Timeout {
    
    public final static String SESSION_ID = "replManager/1";
    private final static String SENDER_SESSION = "_senderSession";
@@ -114,6 +117,11 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private VersionTransformerCache transformerCache;
    private String cachedListOfReplications;
    private String initialFilesLocation;
+   private Timestamp timeoutHandle;
+   private Timeout timeout = new Timeout("ReplManagerPlugin-StatusPoller");
+   private long statusPollerInterval = 5000L;
+   private long statusProcessingTime;
+   private long numRefresh;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -375,6 +383,11 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             }
          }
          this.initialFilesLocation = this.get("replication.initialFilesLocation", "${user.home}/tmp");
+         
+         if (this.statusPollerInterval >= 0)
+            this.timeoutHandle = timeout.addTimeoutListener(this, this.statusPollerInterval, null);
+         
+         
          this.initialized = true;
       }
       catch (Throwable e) {
@@ -396,6 +409,11 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          return;
       super.shutdown();
       try {
+         if (this.timeoutHandle != null) {
+            this.timeout.removeTimeoutListener(this.timeoutHandle);
+            this.timeoutHandle = null;
+         }
+         
          this.global.unregisterMBean(this.mbeanHandle);
          getEngineGlobal(this.global).getRequestBroker().getAuthenticate(null).removeClientListener(this);
          getEngineGlobal(this.global).getRequestBroker().removeSubscriptionListener(this);
@@ -685,11 +703,12 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       log.info("handleNextMessages after cleaning up with '" + entryList.size() + " entries");
 
       I_ReplSlave slave = null;
+      String relativeName = dispatchManager.getSessionName().getRelativeName();
       synchronized (this.replSlaveMap) {
-         slave = (I_ReplSlave)this.replSlaveMap.get(dispatchManager.getSessionName().getRelativeName());
+         slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);
       }
       if (slave == null) {
-         log.warning("could not find a slave for replication client '" + dispatchManager.getSessionName().getRelativeName() + "'");
+         log.warning("could not find a slave for replication client '" + relativeName + "'");
          return entryList;
       }
       try {
@@ -1120,5 +1139,94 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          ex.printStackTrace();
       }
    }
+
+   public void timeout(Object userData) {
+      long start = System.currentTimeMillis();
+      try {
+         I_ReplSlave[] slaves = null;
+         synchronized(this.replSlaveMap) {
+            slaves = (I_ReplSlave[])this.replSlaveMap.values().toArray(new I_ReplSlave[this.replSlaveMap.size()]);
+         }
+         if (slaves != null) {
+            for (int i=0; i < slaves.length; i++) {
+               slaves[i].checkStatus();
+            }
+         }
+      }
+      catch (Throwable ex) {
+         log.severe("An exception occurred when retrieving the status for all replication writers: " + ex.getMessage());
+         ex.printStackTrace();
+      }
+      finally {
+         this.numRefresh++;
+         if (this.numRefresh > Integer.MAX_VALUE)
+            this.numRefresh = 0;
+         this.statusProcessingTime = System.currentTimeMillis() - start;
+         if (this.statusPollerInterval >= 0)
+            this.timeoutHandle = timeout.addTimeoutListener(this, this.statusPollerInterval, null);
+      }
+   }
+   
+   
+   public long getStatusPollerInterval() {
+      return this.statusPollerInterval;
+   }
+
+   public long getNumOfRefreshes() {
+      return this.numRefresh;
+   }
+   
+   public void setStatusPollerInterval(long statusPollerInterval) {
+      this.statusPollerInterval = statusPollerInterval;
+
+      if (this.timeoutHandle != null) {
+         this.timeout.removeTimeoutListener(this.timeoutHandle);
+         this.timeoutHandle = null;
+      }
+      
+      if (this.statusPollerInterval >= 0)
+         this.timeoutHandle = timeout.addTimeoutListener(this, this.statusPollerInterval, null);
+   }
+
+   public long getStatusProcessingTime() {
+      return this.statusProcessingTime;
+   }
+
+   /**
+    * Does cleanup, particularly it sets the status and counters. 
+    */
+   public void postHandleNextMessages(DispatchManager dispatchManager, MsgQueueEntry[] processedEntries) throws XmlBlasterException {
+      if (!this.initialized) {
+         synchronized(this) {
+            if (!this.initialized) {
+               log.warning("too early to get messages since not initialized yet");
+               try {
+                  Thread.sleep(500L);
+               }
+               catch (Throwable ex) {
+                  ex.printStackTrace();
+               }
+            }
+         }
+      }
+      I_ReplSlave slave = null;
+      String relativeName = dispatchManager.getSessionName().getRelativeName();
+      synchronized (this.replSlaveMap) {
+         slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);
+      }
+      if (slave == null) {
+         log.warning("could not find a slave for replication client '" + relativeName + "'");
+      }
+      try {
+         slave.postCheck(processedEntries);
+      }
+      catch (Exception ex) {
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "exception occured when filtering replication messages", "", ex);
+      }
+      catch (Throwable ex) {
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "throwable occured when filtering replication messages. " + Global.getStackTraceAsString(ex), "", ex);
+      }
+   }
+
    
 }

@@ -30,7 +30,7 @@
 
 <xsl:template match ='/'>
 <html>
-<head>											     
+<head>                                                                                       
 <title>Replication List</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 
@@ -73,25 +73,25 @@ function refresh() {
         <tr> 
           <td>
             <table class="inner" width="550" align="center" summary="" border="1">
-    	  <tr>
-    	    <th class="normal" title="Name of the destination of the replication" colspan="2">Destination Name</th>
-    	    <th class="normal" title="Amount of entries in the queue. These entries have not been delivered yet" colspan="1">Holdback Messages</th>
-    	    <th class="normal" title="Current counter for this replication. This is a monoton increasing positive integer" colspan="1">Counter</th>
-    	    <th class="normal" title="Status of the replication initiation." colspan="1">Status</th>
-    	    <th class="normal" title="Status of the dispacher, can either be active or disactivated." colspan="1">Active / Standby</th>
-    	    <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Connection</th>
-    	    <th class="normal" title="Current version of the data on the slave." colspan="1">Version</th>
-    	  </tr>
+          <tr>
+            <th class="normal" title="Name of the destination of the replication" colspan="2">Destination Name</th>
+            <th class="normal" title="Amount of entries in the queue. These entries have not been delivered yet" colspan="1">Holdback Messages</th>
+            <th class="normal" title="Current counter for this replication. This is a monoton increasing positive integer" colspan="1">Counter</th>
+            <th class="normal" title="Status of the replication initiation." colspan="1">Status</th>
+            <th class="normal" title="Status of the dispacher, can either be active or disactivated." colspan="1">Active / Standby</th>
+            <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Connection</th>
+            <th class="normal" title="Current version of the data on the slave." colspan="1">Version</th>
+          </tr>
     
     <xsl:apply-templates/>
 
             </table>
             <table width="450" align="center" border="0" summary="">
-    	      <tr>
-    	        <td align="center" colspan="4" class="normal"><button title="Click to refresh this page manually" class="common" onClick="refresh()">Refresh</button></td>
-    	        <td align="center" colspan="4" class="normal"><button title="Click to go to the statements page" class="common" onClick="gotoStatements()">Statements</button></td>
-    	        <td align="center" colspan="4" class="normal"><button title="Click to initiate one more replications" class="common" onClick="gotoInitiate()">Initate Repl.</button></td>
-    	      </tr>
+              <tr>
+                <td align="center" colspan="4" class="normal"><button title="Click to refresh this page manually" class="common" onClick="refresh()">Refresh</button></td>
+                <td align="center" colspan="4" class="normal"><button title="Click to go to the statements page" class="common" onClick="gotoStatements()">Statements</button></td>
+                <td align="center" colspan="4" class="normal"><button title="Click to initiate one more replications" class="common" onClick="gotoInitiate()">Initate Repl.</button></td>
+              </tr>
             </table>
           </td>
         </tr>
@@ -115,7 +115,7 @@ function refresh() {
    <xsl:param name="sessionName" select="Attribute[@name='SessionName']/@value"/>
    <xsl:param name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
    <xsl:param name="objectName" select="@objectname"/>
-   <xsl:param name="maxReplKey" select="Attribute[@name='MaxReplKey']/@value"/>
+   <xsl:param name="transactionSeq" select="Attribute[@name='TransactionSeq']/@value"/>
    <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
    <xsl:param name="activeStatus" select="Attribute[@name='Active']/@value"/>
    <xsl:param name="connectedStatus" select="Attribute[@name='Connected']/@value"/>
@@ -125,83 +125,83 @@ function refresh() {
    <xsl:param name="sessionName"/>
    <xsl:param name="queueEntries"/>
    <xsl:param name="objectName"/>
-   <xsl:param name="maxReplKey"/>
+   <xsl:param name="transactionSeq"/>
    <xsl:param name="replStatus"/>
    <xsl:param name="activeStatus"/>
    <xsl:param name="connectedStatus""/>
 -->
 
-    	  <tr class="inner">
-    	    <td colspan="2" class="normal" title="Click to get details on this replication">
-	      <xsl:element name="a">
-		 <xsl:attribute name="href">mbean?objectname=<xsl:value-of select="$objectName"/>&amp;template=destinationDetails</xsl:attribute>
-		 <xsl:call-template name="modifySessionName">
+          <tr class="inner">
+            <td colspan="2" class="normal" title="Click to get details on this replication">
+              <xsl:element name="a">
+                 <xsl:attribute name="href">mbean?objectname=<xsl:value-of select="$objectName"/>&amp;template=destinationDetails</xsl:attribute>
+                 <xsl:call-template name="modifySessionName">
                     <xsl:with-param name="content" select="$sessionName"/>
-		 </xsl:call-template>
-	      </xsl:element>
-	    </td>
+                 </xsl:call-template>
+              </xsl:element>
+            </td>
   
             <xsl:choose>
               <xsl:when test="$queueEntries > $queue.highwarn">
                  <xsl:choose>
                    <xsl:when test="$queueEntries > $queue.highalarm">
-       	    <td align="center" colspan="1" class="highalarm" title="alarm: too many entries in queue. Check connection and dispatcher.">
+            <td align="center" colspan="1" class="highalarm" title="alarm: too many entries in queue. Check connection and dispatcher.">
               <xsl:value-of select="$queueEntries"/>
-	    </td>
+            </td>
                    </xsl:when>
                    <xsl:otherwise>
-       	    <td align="center" colspan="1" class="highwarn" title="warning: Some entries in queue.">
+            <td align="center" colspan="1" class="highwarn" title="warning: Some entries in queue.">
               <xsl:value-of select="$queueEntries"/>
-	    </td>
-		   </xsl:otherwise>
+            </td>
+                   </xsl:otherwise>
                  </xsl:choose>
               </xsl:when>
               <xsl:otherwise>
-       	    <td align="center" colspan="1" class="number">
+            <td align="center" colspan="1" class="number">
               <xsl:value-of select="$queueEntries"/>
-	    </td>
+            </td>
               </xsl:otherwise>
             </xsl:choose>
 
-	    <xsl:choose>
-	       <xsl:when test="$maxReplKey = '0'">
-    	    <td align="right" colspan="1" class="hidden"><xsl:value-of select="$maxReplKey"/></td>
-	       </xsl:when>
-	       <xsl:otherwise>
-    	    <td align="right" colspan="1" class="number"><xsl:value-of select="$maxReplKey"/></td>
-	       </xsl:otherwise>
-	    </xsl:choose>
+            <xsl:choose>
+               <xsl:when test="$transactionSeq = '0'">
+            <td align="right" colspan="1" class="hidden"><xsl:value-of select="$transactionSeq"/></td>
+               </xsl:when>
+               <xsl:otherwise>
+            <td align="right" colspan="1" class="number"><xsl:value-of select="$transactionSeq"/></td>
+               </xsl:otherwise>
+            </xsl:choose>
 
 
-    	    <td align="center" colspan="1" class="normal">
-	       <xsl:element name="img">
-	          <xsl:attribute name="height">18</xsl:attribute>
-	          <xsl:attribute name="src">./<xsl:value-of select="$replStatus"/>.png</xsl:attribute>
-	          <xsl:attribute name="alt"><xsl:value-of select="$replStatus"/></xsl:attribute>
-	          <xsl:attribute name="title"><xsl:value-of select="$replStatus"/></xsl:attribute>
-	       </xsl:element>
-	    </td>
+            <td align="center" colspan="1" class="normal">
+               <xsl:element name="img">
+                  <xsl:attribute name="height">18</xsl:attribute>
+                  <xsl:attribute name="src">./<xsl:value-of select="$replStatus"/>.png</xsl:attribute>
+                  <xsl:attribute name="alt"><xsl:value-of select="$replStatus"/></xsl:attribute>
+                  <xsl:attribute name="title"><xsl:value-of select="$replStatus"/></xsl:attribute>
+               </xsl:element>
+            </td>
   
             <xsl:choose>
               <xsl:when test="$activeStatus = 'true'">
-       	    <td align="center" colspan="1" class="normal"><img height="18" src="./active.png" alt="active" title="active" /></td>
+            <td align="center" colspan="1" class="normal"><img height="18" src="./active.png" alt="active" title="active" /></td>
               </xsl:when>
               <xsl:otherwise>
-       	    <td align="center" colspan="1" class="normal"><img height="18" src="./inactive.png" alt="inactive" title="inactive" /></td>
+            <td align="center" colspan="1" class="normal"><img height="18" src="./inactive.png" alt="inactive" title="inactive" /></td>
               </xsl:otherwise>
             </xsl:choose>
             <xsl:choose>
               <xsl:when test="$connectedStatus = 'true'">
-       	    <td align="center" colspan="1" class="normal"><img height="18" src="./connected.png" alt="connected" title="connected" /></td>
+            <td align="center" colspan="1" class="normal"><img height="18" src="./connected.png" alt="connected" title="connected" /></td>
               </xsl:when>
               <xsl:otherwise>
-       	    <td align="center" colspan="1" class="normal"><img height="18" src="./disconnected.png" alt="disconnected" title="disconnected" /></td>
+            <td align="center" colspan="1" class="normal"><img height="18" src="./disconnected.png" alt="disconnected" title="disconnected" /></td>
               </xsl:otherwise>
             </xsl:choose>
 
-       	    <td align="center" colspan="1" class="normal"><xsl:value-of select="$version"/></td>
+            <td align="center" colspan="1" class="normal"><xsl:value-of select="$version"/></td>
 
-    	  </tr>
+          </tr>
 
 </xsl:template>      
 

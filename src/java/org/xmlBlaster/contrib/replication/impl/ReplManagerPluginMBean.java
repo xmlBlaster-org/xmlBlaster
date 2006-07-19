@@ -85,5 +85,33 @@ public interface ReplManagerPluginMBean {
     * @return
     */
    String getInitialFilesLocation();
+
+   /**
+    * This method returns the polling interval for retrieval of the status data of the slaves which
+    * has to be retrieved asynchronously in order not to block the monitor. 
+    * @return
+    */
+   long getStatusPollerInterval();
+
+   /**
+    * This method sets the polling interval for retrieval of the status data of the slaves which
+    * has to be retrieved asynchronously in order not to block the monitor. If you set it to zero or 
+    * a negative value it will not refresh. 
+    * 
+    * @param statusPollerInterval
+    */
+   void setStatusPollerInterval(long statusPollerInterval);
+
+   /**
+    * Returns the time in milliseconds it took to retrieve all the status information for all the slaves.
+    * @return
+    */
+   long getStatusProcessingTime();
+
+   /**
+    * Returns the number of refreshes occured (to get the status of the slaves).
+    * @return
+    */
+   long getNumOfRefreshes();
    
 }

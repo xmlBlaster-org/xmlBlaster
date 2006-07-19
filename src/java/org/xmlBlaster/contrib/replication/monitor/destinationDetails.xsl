@@ -13,7 +13,7 @@
 
 <xsl:template match ='/'>
 <html>
-<head>											     
+<head>                                                                                       
 <title>Replication Details</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 
@@ -90,12 +90,12 @@ function toggleDispatcher() {
     
     <xsl:apply-templates/> 
 
-    	      <tr>
-    	        <td align="center" colspan="1" class="normal"><button class="danger" onClick="killSession()" title="Click to delete definitively this replication">Remove</button></td>
-    	        <td align="center" colspan="1" class="normal"><button class="small" onClick="gotoDestinationList()" title="Click to go back to replication list">Back</button></td>
-    	        <td align="center" colspan="1" class="normal"><button class="small" onClick="refresh()" title="Click to refresh this page manually">Refresh</button></td>
-    	        <td align="center" colspan="1" class="normal"><!-- <button class="small" onClick="reInitiateReplication()" title="Click if you want to restart this replication (initial update)">Restart Repl</button> --></td>
-    	      </tr>
+              <tr>
+                <td align="center" colspan="1" class="normal"><button class="danger" onClick="killSession()" title="Click to delete definitively this replication">Remove</button></td>
+                <td align="center" colspan="1" class="normal"><button class="small" onClick="gotoDestinationList()" title="Click to go back to replication list">Back</button></td>
+                <td align="center" colspan="1" class="normal"><button class="small" onClick="refresh()" title="Click to refresh this page manually">Refresh</button></td>
+                <td align="center" colspan="1" class="normal"><!-- <button class="small" onClick="reInitiateReplication()" title="Click if you want to restart this replication (initial update)">Restart Repl</button> --></td>
+              </tr>
             </table>
          </td>
         </tr>
@@ -115,130 +115,130 @@ function toggleDispatcher() {
 
    <xsl:param name="sessionName" select="Attribute[@name='SessionName']/@value"/>
    <xsl:param name="beanName" select="$sessionName"/>
-    	 <tr>
-    	   <td colspan="4" class="normal" align="center" title="The name identifying this destination of the replication">
- 	     <xsl:call-template name="modifySessionName">
+         <tr>
+           <td colspan="4" class="normal" align="center" title="The name identifying this destination of the replication">
+             <xsl:call-template name="modifySessionName">
                <xsl:with-param name="content" select="Attribute[@name='SessionName']/@value"/>
-	     </xsl:call-template>
-	   </td>
-    	 </tr>
+             </xsl:call-template>
+           </td>
+         </tr>
  
- 	 <!-- Queue Entries Line -->
-    	 <tr class="inner">
+         <!-- Queue Entries Line -->
+         <tr class="inner">
            <xsl:variable name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
 
-    	   <td colspan="1" class="normal" title="The queue holding the replicated data">Holdback Messages</td>
+           <td colspan="1" class="normal" title="The queue holding the replicated data">Holdback Messages</td>
            <xsl:choose>
              <xsl:when test="$queueEntries > $queue.highwarn">
                 <xsl:choose>
                   <xsl:when test="$queueEntries > $queue.highalarm">
-       	   <td align="right" colspan="1" class="highalarm" title="alarm: too many entries in queue. Check connection and dispatcher.">
+           <td align="right" colspan="1" class="highalarm" title="alarm: too many entries in queue. Check connection and dispatcher.">
              <xsl:value-of select="$queueEntries"/>
-	   </td>
+           </td>
                   </xsl:when>
                   <xsl:otherwise>
-       	   <td align="right" colspan="1" class="highwarn" title="warning: Some entries in queue.">
+           <td align="right" colspan="1" class="highwarn" title="warning: Some entries in queue.">
              <xsl:value-of select="$queueEntries"/>
-	   </td>
-	          </xsl:otherwise>
+           </td>
+                  </xsl:otherwise>
                 </xsl:choose>
              </xsl:when>
              <xsl:otherwise>
-       	   <td align="right" colspan="1" class="number">
+           <td align="right" colspan="1" class="number">
              <xsl:value-of select="$queueEntries"/>
-	   </td>
+           </td>
              </xsl:otherwise>
            </xsl:choose>
-    	   <td align="center" colspan="1" class="normal">
+           <td align="center" colspan="1" class="normal">
                  <button class="small" onClick="clearQueue()" title="Click to clear/delete all entries from the Holdback message queue">Clear Queue</button>
-    	   </td>
-    	    <td align="center" colspan="1" class="normal">
+           </td>
+            <td align="center" colspan="1" class="normal">
                   <button class="small" onClick="removeFirst()" title="Click to remove only the first entry of the holdback message queue">Remove First</button>
-    	    </td>
+            </td>
          </tr>
 
- 	 <!-- Counter Line -->
-    	  <tr class="inner">
-    	    <td colspan="1" class="normal" title="Current counter of the replicated data">Count</td>
-	    
-	    <xsl:choose>
-	       <xsl:when test="Attribute[@name='MaxReplKey']/@value = '0'">
-    	    <td align="right" colspan="1" class="hidden"><xsl:value-of select="Attribute[@name='MaxReplKey']/@value"/></td>
-	       </xsl:when>
-	       <xsl:otherwise>
-    	    <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='MaxReplKey']/@value"/></td>
-	       </xsl:otherwise>
-	    </xsl:choose>
+         <!-- Counter Line -->
+          <tr class="inner">
+            <td colspan="1" class="normal" title="Current counter of the replicated data">Count</td>
+            
+            <xsl:choose>
+               <xsl:when test="Attribute[@name='TransactionSeq']/@value = '0'">
+            <td align="right" colspan="1" class="hidden"><xsl:value-of select="Attribute[@name='TransactionSeq']/@value"/></td>
+               </xsl:when>
+               <xsl:otherwise>
+            <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='TransactionSeq']/@value"/></td>
+               </xsl:otherwise>
+            </xsl:choose>
 
-    	    <td colspan="1" class="normal" title="Current Version of the replication data">Version</td>
-    	    <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='Version']/@value"/></td>
+            <td colspan="1" class="normal" title="Current Version of the replication data">Version</td>
+            <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='Version']/@value"/></td>
 
-    	    <!-- <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td> -->
+            <!-- <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td> -->
 
-	  </tr>
-	 
- 	 <!-- Status Of Initial Update Line -->
-    	  <tr class="inner">
-    	    <td colspan="1" class="normal" title="Status of initial Update">Status</td>
-    	    <td align="center" colspan="1" class="normal">
-	       <xsl:variable name="replStatus" select="Attribute[@name='Status']/@value"/>
-	       <xsl:element name="img">
-	          <xsl:attribute name="height">20</xsl:attribute>
-	          <xsl:attribute name="src">./<xsl:value-of select="$replStatus"/>.png</xsl:attribute>
-	          <xsl:attribute name="alt"><xsl:value-of select="$replStatus"/></xsl:attribute>
-	          <xsl:attribute name="title"><xsl:value-of select="$replStatus"/></xsl:attribute>
-	       </xsl:element>
-	    </td>
-    	    <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
-    	    <td align="center" colspan="1" class="normal">
+          </tr>
+         
+         <!-- Status Of Initial Update Line -->
+          <tr class="inner">
+            <td colspan="1" class="normal" title="Status of initial Update">Status</td>
+            <td align="center" colspan="1" class="normal">
+               <xsl:variable name="replStatus" select="Attribute[@name='Status']/@value"/>
+               <xsl:element name="img">
+                  <xsl:attribute name="height">20</xsl:attribute>
+                  <xsl:attribute name="src">./<xsl:value-of select="$replStatus"/>.png</xsl:attribute>
+                  <xsl:attribute name="alt"><xsl:value-of select="$replStatus"/></xsl:attribute>
+                  <xsl:attribute name="title"><xsl:value-of select="$replStatus"/></xsl:attribute>
+               </xsl:element>
+            </td>
+            <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+            <td align="center" colspan="1" class="normal">
                   <button class="small" onClick="cancelInitialUpdate()" title="Click to cancel an initiated replication (if the status is not running)">Cancel Update</button>
-    	    </td>
-	  </tr>
+            </td>
+          </tr>
 
 
- 	 <!-- Status Of Active/Inactive Dispatcher Line -->
-	  <tr class="inner">
-    	    <td colspan="1" class="normal" title="Status of the dispatcher: active or destactivated">Active / Standby</td>
+         <!-- Status Of Active/Inactive Dispatcher Line -->
+          <tr class="inner">
+            <td colspan="1" class="normal" title="Status of the dispatcher: active or destactivated">Active / Standby</td>
             <xsl:choose>
               <xsl:when test="Attribute[@name='Active']/@value = 'true'">
-       	    <td align="center" colspan="1" class="normal"><img height="20" src="./active.png" alt="active" title="active" /></td>
-    	    <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
-    	    <td align="center" colspan="1" class="normal">
+            <td align="center" colspan="1" class="normal"><img height="20" src="./active.png" alt="active" title="active" /></td>
+            <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+            <td align="center" colspan="1" class="normal">
                   <button class="small" onClick="toggleDispatcher()" title="Click to pause: i.e. disactivate the dispatcher">Standby</button>
-    	    </td>
-	             </xsl:when>
+            </td>
+                     </xsl:when>
               <xsl:otherwise>
 
-       	    <td align="center" colspan="1" class="normal"><img height="20" src="./inactive.png" alt="inactive" title="inactive" /></td>
-    	    <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
-    	    <td align="center" colspan="1" class="normal">
+            <td align="center" colspan="1" class="normal"><img height="20" src="./inactive.png" alt="inactive" title="inactive" /></td>
+            <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+            <td align="center" colspan="1" class="normal">
                   <button class="small" onClick="toggleDispatcher()" title="Click to continue: go from Standby to Active">Activate</button>
-    	    </td>
+            </td>
               </xsl:otherwise>
             </xsl:choose>
-	  </tr>
+          </tr>
 
- 	 <!-- Status Of Connection Line -->
-    	  <tr class="inner">
-    	    <td colspan="1" class="normal" title="Status of the connection: connected (online) or disconnected (offline)">Connection</td>
+         <!-- Status Of Connection Line -->
+          <tr class="inner">
+            <td colspan="1" class="normal" title="Status of the connection: connected (online) or disconnected (offline)">Connection</td>
             <xsl:choose>
               <xsl:when test="Attribute[@name='Connected']/@value = 'true'">
-       	    <td align="center" colspan="1" class="normal"><img height="20" src="./connected.png" alt="connected" title="connected" /></td>
+            <td align="center" colspan="1" class="normal"><img height="20" src="./connected.png" alt="connected" title="connected" /></td>
               </xsl:when>
               <xsl:otherwise>
-       	    <td align="center" colspan="1" class="normal"><img height="20" src="./disconnected.png" alt="disconnected" title="disconnected" /></td>
+            <td align="center" colspan="1" class="normal"><img height="20" src="./disconnected.png" alt="disconnected" title="disconnected" /></td>
               </xsl:otherwise>
             </xsl:choose>
-    	    <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
-    	  </tr>
+            <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+          </tr>
 
- 	 <!-- Last Message -->
-    	  <tr class="inner">
-    	    <td colspan="1" class="normal" title="The last message (for example exceptions)">Last message</td>
-       	    <td align="center" colspan="3" class="normal">
+         <!-- Last Message -->
+          <tr class="inner">
+            <td colspan="1" class="normal" title="The last message (for example exceptions)">Last message</td>
+            <td align="center" colspan="3" class="normal">
               <center><textarea id="sqlTxt" name="sqlTxt" cols="45" rows="2"><xsl:value-of select="Attribute[@name='LastMessage']/@value"/></textarea></center>
-    	    </td>
-    	  </tr>
+            </td>
+          </tr>
 
 </xsl:template>      
 
