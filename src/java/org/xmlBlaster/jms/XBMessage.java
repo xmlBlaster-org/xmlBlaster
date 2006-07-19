@@ -8,7 +8,11 @@ package org.xmlBlaster.jms;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -37,7 +41,7 @@ public class XBMessage implements Message {
    public final static int STREAM       = 4;
    public final static int STREAMING    = 5;
    public final static int DEFAULT_TYPE = XBMessage.STREAM;
-   
+   private static Logger log = Logger.getLogger(XBMessage.class.getName());
    private final static String ME = "XBMessage";
    protected Global  global;
    protected byte[]  content;
@@ -218,14 +222,24 @@ public class XBMessage implements Message {
    }
 
    public Object getObjectProperty(String key) throws JMSException {
-      ClientProperty prop = (ClientProperty)this.props.get(key);
+      ClientProperty prop = (ClientProperty)this.props.get(addToKeyAndCheck(key));
       if (prop == null)
          return null;
       return prop.getObjectValue();
    }
 
    public Enumeration getPropertyNames() throws JMSException {
-      return Collections.enumeration(this.props.keySet());
+      Set set = new HashSet();
+      Iterator iter = this.props.keySet().iterator();
+      while (iter.hasNext()) {
+         String completeName = (String)iter.next();
+         int pos = completeName.indexOf(Constants.JMS_PREFIX);
+         if (pos == 0)
+            set.add(completeName.substring(Constants.JMS_PREFIX.length()));
+         else
+            set.add(completeName);
+      }
+      return Collections.enumeration(set);
    }
 
    /**
@@ -240,36 +254,49 @@ public class XBMessage implements Message {
    }
 
    public String getStringProperty(String key) throws JMSException {
-      return ((ClientProperty)this.props.get(key)).getStringValue();
+      return ((ClientProperty)this.props.get(addToKeyAndCheck(key))).getStringValue();
    }
 
    public boolean propertyExists(String key) throws JMSException {
-      return this.props.containsKey(key);
+      return this.props.containsKey(addToKeyAndCheck(key));
    }
-
+   
+   public static String addToKeyAndCheck(String key) {
+      return Constants.addJmsPrefix(key, log);
+   }
+   
+   public static ClientProperty get(String key, Map map) {
+      return (ClientProperty)map.get(addToKeyAndCheck(key));
+   }
+   
    public void setBooleanProperty(String key, boolean value)
       throws JMSException {
+      key = addToKeyAndCheck(key);
       checkPropertiesReadOnly("setBooleanProperty", key);
       this.props.put(key, new ClientProperty(key, Constants.TYPE_BOOLEAN, null, "" + value));   
    }
 
    public void setByteProperty(String key, byte value) throws JMSException {
+      key = addToKeyAndCheck(key);
       checkPropertiesReadOnly("setByteProperty", key);
       this.props.put(key, new ClientProperty(key, Constants.TYPE_BYTE, null, "" + value));   
    }
 
    public void setDoubleProperty(String key, double value)
       throws JMSException {
+      key = addToKeyAndCheck(key);
       checkPropertiesReadOnly("setDoubleProperty", key);
       this.props.put(key, new ClientProperty(key, Constants.TYPE_DOUBLE, null, "" + value));   
    }
 
    public void setFloatProperty(String key, float value) throws JMSException {
+      key = addToKeyAndCheck(key);
       checkPropertiesReadOnly("setFloatProperty", key);
       this.props.put(key, new ClientProperty(key, Constants.TYPE_FLOAT, null, "" + value));   
    }
 
    public void setIntProperty(String key, int value) throws JMSException {
+      key = addToKeyAndCheck(key);
       checkPropertiesReadOnly("setIntProperty", key);
       this.props.put(key, new ClientProperty(key, Constants.TYPE_INT, null, "" + value));   
    }
@@ -342,6 +369,7 @@ public class XBMessage implements Message {
    }
 
    public void setLongProperty(String key, long value) throws JMSException {
+      key = addToKeyAndCheck(key);
       checkPropertiesReadOnly("setLongProperty", key);
       this.props.put(key, new ClientProperty(key, Constants.TYPE_LONG, null, "" + value));
    }
@@ -369,11 +397,13 @@ public class XBMessage implements Message {
    }
 
    public void setShortProperty(String key, short value) throws JMSException {
+      key = addToKeyAndCheck(key);
       checkPropertiesReadOnly("setShortProperty", key);
       this.props.put(key, new ClientProperty(key, Constants.TYPE_SHORT, null, "" + value));   
    }
 
    public void setStringProperty(String key, String value) throws JMSException {
+      key = addToKeyAndCheck(key);
       checkPropertiesReadOnly("setStringProperty", key);
       this.props.put(key, new ClientProperty(key, null, null, value));   
    }

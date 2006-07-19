@@ -155,10 +155,9 @@ public class MessageHelper {
       }
       else
          throw new XBException("client.configuration", "A destination must be specified in the message to be sent");
-      
       String corrId = msg.getJMSCorrelationID();
       if (corrId != null)
-         qos.addClientProperty(XBPropertyNames.JMS_CORRELATION_ID, corrId);
+         qos.addClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_CORRELATION_ID), corrId);
       int deliveryMode = msg.getJMSDeliveryMode();
       if (deliveryMode == DeliveryMode.PERSISTENT)
          qos.setPersistent(true);
@@ -178,15 +177,15 @@ public class MessageHelper {
       while (eNum.hasMoreElements()) {
          String propKey = (String)eNum.nextElement();
          Object obj = msg.getObjectProperty(propKey);
-         qos.addClientProperty(propKey, obj);
+         qos.addClientProperty(XBMessage.addToKeyAndCheck(propKey), obj);
       }
       byte[] content = null;
       if (msg instanceof TextMessage) {
-         qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.TEXT);
+         qos.addClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_MESSAGE_TYPE), XBMessage.TEXT);
          content = ((TextMessage)msg).getText().getBytes();
       }
       else if (msg instanceof StreamMessage) {
-         qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.STREAM);
+         qos.addClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_MESSAGE_TYPE), XBMessage.STREAM);
          StreamMessage streamMsg = (StreamMessage)msg;
          if (streamMsg instanceof XBStreamMessage) {
             long length = ((XBStreamMessage)streamMsg).getBodyLength();
@@ -199,7 +198,7 @@ public class MessageHelper {
             throw new XBException("feature.missing", "Handling of non XBStreamMessage types not implemented");
       }
       else if (msg instanceof BytesMessage) {
-         qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.BYTES);
+         qos.addClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_MESSAGE_TYPE), XBMessage.BYTES);
          BytesMessage bytesMsg = (BytesMessage)msg;
          long length = bytesMsg.getBodyLength();
          if (length >= Integer.MAX_VALUE)
@@ -208,7 +207,7 @@ public class MessageHelper {
          bytesMsg.readBytes(content);
       }
       else if (msg instanceof ObjectMessage) {
-         qos.addClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.OBJECT);
+         qos.addClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_MESSAGE_TYPE), XBMessage.OBJECT);
          ObjectMessage objMsg = (ObjectMessage)msg;
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
          ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -266,7 +265,7 @@ public class MessageHelper {
     */
    public static XBMessage convertFromMsgUnit(XBSession session, String sender, MsgKeyData keyData, byte[] content, MsgQosData qosData) throws JMSException, XmlBlasterException, IOException {
       XBMessage msg = null;
-      int type = qosData.getClientProperty(XBPropertyNames.JMS_MESSAGE_TYPE, XBMessage.DEFAULT_TYPE);
+      int type = qosData.getClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_MESSAGE_TYPE), XBMessage.DEFAULT_TYPE);
       switch (type) {
          case XBMessage.TEXT : msg = new XBTextMessage(session, content); break;
          case XBMessage.BYTES : msg = new XBBytesMessage(session, content); break;
@@ -276,7 +275,7 @@ public class MessageHelper {
          default : throw new XBException("feature.missing", "message type '" + type + "' is unknown to the XmlBlaster JMS Implementation");
       }
 
-      String corrId = qosData.getClientProperty(XBPropertyNames.JMS_CORRELATION_ID, (String)null);
+      String corrId = qosData.getClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_CORRELATION_ID), (String)null);
       if (corrId != null)
          msg.setJMSCorrelationID(corrId);
 
@@ -304,7 +303,7 @@ public class MessageHelper {
 
       msg.setJMSPriority(qosData.getPriority().getInt());
 
-      boolean redelivered = qosData.getClientProperty(XBPropertyNames.JMS_REDELIVERED, false);
+      boolean redelivered = qosData.getClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_REDELIVERED), false);
       if (redelivered)
          msg.setJMSRedelivered(true);
 
@@ -314,7 +313,7 @@ public class MessageHelper {
          msg.setJMSReplyTo(senderDest);
       }
 
-      long timestamp = qosData.getClientProperty(XBPropertyNames.JMS_TIMESTAMP, 0L);
+      long timestamp = qosData.getClientProperty(XBMessage.addToKeyAndCheck(XBPropertyNames.JMS_TIMESTAMP), 0L);
       if (timestamp != 0L)
          msg.setJMSTimestamp(timestamp);
       msg.setReadOnly(true);

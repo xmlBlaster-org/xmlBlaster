@@ -14,7 +14,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.def.Constants;
 
 /**
  * XBStreamingMessage. This is an xmlBlaster specific implementation to
@@ -47,7 +46,7 @@ public class XBStreamingMessage extends XBTextMessage {
    
    void send(Session session, MessageProducer producer, Destination dest) throws JMSException {
       String streamId = (new org.xmlBlaster.util.Global()).getId() + "-" + (new Timestamp()).getTimestamp();
-      setStringProperty(Constants.STREAM_ID, streamId);
+      setStringProperty(XBConnectionMetaData.JMSX_GROUP_ID, streamId);
       int bufSize = 0;
       if (propertyExists(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE))
          bufSize = getIntProperty(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE);
@@ -73,8 +72,8 @@ public class XBStreamingMessage extends XBTextMessage {
             
             chunk.writeBytes(buf, 0, length);
             if (length < bufSize)
-               chunk.setBooleanProperty(Constants.CHUNK_EOF, true);
-            chunk.setLongProperty(Constants.CHUNK_SEQ_NUM, count);
+               chunk.setBooleanProperty(XBConnectionMetaData.JMSX_GROUP_EOF, true);
+            chunk.setLongProperty(XBConnectionMetaData.JMSX_GROUP_SEQ, count);
             chunk.reset();
             producer.send(dest, chunk);
             count++;
@@ -85,14 +84,14 @@ public class XBStreamingMessage extends XBTextMessage {
       catch (Exception ex) {
          if (count > 0) {
             BytesMessage chunk = session.createBytesMessage();
-            chunk.setBooleanProperty(Constants.CHUNK_EOF, true);
-            chunk.setLongProperty(Constants.CHUNK_SEQ_NUM, count);
+            chunk.setBooleanProperty(XBConnectionMetaData.JMSX_GROUP_EOF, true);
+            chunk.setLongProperty(XBConnectionMetaData.JMSX_GROUP_SEQ, count);
             Enumeration eNum = chunk.getPropertyNames();
             while (eNum.hasMoreElements()) {
                String key = (String)eNum.nextElement();
                chunk.setObjectProperty(key, getObjectProperty(key));
             }
-            chunk.setStringProperty(Constants.CHUNK_EXCEPTION, ex.getMessage());
+            chunk.setStringProperty(XBConnectionMetaData.JMSX_GROUP_EX, ex.getMessage());
             producer.send(dest, chunk);
          }
          if (ex instanceof JMSException)
