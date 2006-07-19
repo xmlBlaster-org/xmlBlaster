@@ -6,9 +6,9 @@ Comment:   Holding destination address attributes
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.def;
 
-import org.xmlBlaster.jms.XBConnectionMetaData;
-import org.xmlBlaster.jms.XBPropertyNames;
+import java.util.logging.Logger;
 
+import org.xmlBlaster.jms.XBConnectionMetaData;
 
 /**
  * Holding some Constants
@@ -242,24 +242,26 @@ public class Constants {
     * this chunk in the sequence. The value itself is a long.
     */
    // public final static String CHUNK_SEQ_NUM = "__CHUNK_SEQ_NUM";
-   public final static String CHUNK_SEQ_NUM = XBConnectionMetaData.JMSX_GROUP_SEQ;
+   // public final static String CHUNK_SEQ_NUM = XBConnectionMetaData.JMSX_GROUP_SEQ;
    
    /** If this exists it is always set to boolean 'true' */
    // public final static String CHUNK_EOF = "__CHUNK_EOF";
-   public final static String CHUNK_EOF = XBConnectionMetaData.JMSX_GROUP_EOF;
+   // public final static String CHUNK_EOF = XBConnectionMetaData.JMSX_GROUP_EOF;
    
    /** If set, an exception occured in this chunk. It contains the 
     * exception. It is used to perform clean up in case of exceptions.
     */
    // public final static String CHUNK_EXCEPTION = "__CHUNK_EXCEPTION";
-   public final static String CHUNK_EXCEPTION = XBConnectionMetaData.JMSX_GROUP_EX;
+   // public final static String CHUNK_EXCEPTION = XBConnectionMetaData.JMSX_GROUP_EX;
    
    /** This is the same for all chunks in a message. It shall be a 
     * globally unique Identifier. */
    // public final static String STREAM_ID = "__STREAM_ID";
-   public final static String STREAM_ID = XBConnectionMetaData.JMSX_GROUP_ID;
+   // public final static String STREAM_ID = XBConnectionMetaData.JMSX_GROUP_ID;
+
+   public final static String JMS_PREFIX = "__jms:";
    
-   public final static String JMS_REPLY_TO = XBPropertyNames.JMS_REPLY_TO; // "__jms:JMSReplyTo"  
+   public final static String JMS_REPLY_TO = "JMSReplyTo";  
 
    
    /** Mimetypes */
@@ -300,5 +302,26 @@ public class Constants {
     * GIF Image
     */
    public final static String MIME_GIF = "image/gif";
+   
+   /**
+    * Adds to the key a prefix JMS_PREFIX if and only if the key is one of the JMSX properties
+    * defined by the XmlBlaster. It does not add anything if it already starts with JMS_PREFIX.
+    * 
+    * @param key
+    * @param log
+    * @return
+    */
+   public static String addJmsPrefix(String key, Logger log) {
+      if (key.indexOf(JMS_PREFIX) == 0) {
+         log.warning("JMS Property '" + key + "' is already starting with '" + JMS_PREFIX + "'");
+         return key;
+      }
+      if (XBConnectionMetaData.getReservedProps().contains(key) || XBConnectionMetaData.getStandardProps().contains(key))
+         key = JMS_PREFIX + key;
+      return key;
+   }
+   
+   
+   
 }
 
