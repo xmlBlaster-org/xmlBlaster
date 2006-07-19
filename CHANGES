@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.3 [not yet released]
 ==================================
 
+ o #15337 Property.java: when retrieving someCtx* only someCtx's childs where returned, now the exact match is returned too.
+
+ o #15334 changed the threading pool of dispatcher since it was only using minimumPoolSize 
+
  o #15326 Fixed spam prevention if client logs in after a PtP arrived in its callback queue (with forceQueueing=true)
 
  o #15323 Changed server side behavior on COMMUNICATION exceptions thrown actively from client side
