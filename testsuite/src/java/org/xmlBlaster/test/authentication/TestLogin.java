@@ -22,7 +22,6 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 
 import junit.framework.*;
 
@@ -330,7 +329,7 @@ public class TestLogin extends TestCase implements I_Callback
          sum += pollingInterval;
          if (sum > timeout) {
             log.severe("Timeout of " + timeout + " occurred without update");
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
          }
          assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
@@ -339,7 +338,7 @@ public class TestLogin extends TestCase implements I_Callback
       try { Thread.sleep(timeout); } catch( InterruptedException i) {}
       if (numWait != numReceived) {
          log.severe("Wrong number of messages arrived, expected numWait=" + numWait + " but got numReceived=" + numReceived);
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
       assertEquals("Wrong number of messages arrived", numWait, numReceived);
 
@@ -354,7 +353,7 @@ public class TestLogin extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestLogin(new Global(), "testLoginLogout", "Tim", "Joe"));
+       suite.addTest(new TestLogin(new Global(), "testLoginLogout", loginName, "Joe"));
        return suite;
    }
 

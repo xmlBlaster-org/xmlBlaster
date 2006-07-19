@@ -21,7 +21,6 @@ import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 
@@ -48,7 +47,6 @@ import junit.framework.*;
  */
 public class TestSessionReconnect extends TestCase
 {
-   private static String ME = "TestSessionReconnect";
    private final Global glob;
    private static Logger log = Logger.getLogger(TestSessionReconnect.class.getName());
    private String passwd = "secret";
@@ -140,7 +138,7 @@ public class TestSessionReconnect extends TestCase
          historyQos.setNumEntries(1);
          sq.setHistoryQos(historyQos);
 
-         SubscribeReturnQos srq = conSub.subscribe(sk.toXml(), sq.toXml());
+         /*SubscribeReturnQos srq = */conSub.subscribe(sk.toXml(), sq.toXml());
          log.info("Subscription to '" + oid + "' done");
 
          log.info("============ STEP 2: Start publisher");
@@ -210,7 +208,7 @@ public class TestSessionReconnect extends TestCase
 
          assertEquals("", 0, updateInterceptorSub.count()); // The first login session should not receive anything
 
-         assertEquals("", numPub, updateInterceptorSub2.waitOnUpdate(2000L, oid, Constants.STATE_OK));
+         assertEquals("", numPub, updateInterceptorSub2.waitOnUpdate(4000L, oid, Constants.STATE_OK));
          updateInterceptorSub2.compareToReceived(sentArr, secretCbSessionId2);
          updateInterceptorSub2.compareToReceived(sentQos);
 
@@ -233,7 +231,6 @@ public class TestSessionReconnect extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       String loginName = "TestSessionReconnect";
        suite.addTest(new TestSessionReconnect(Global.instance(), "testSessionReconnect"));
        return suite;
    }
