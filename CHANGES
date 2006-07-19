@@ -1,6 +1,15 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for 1.3 [not yet released]
+==================================
+
+ o #15326 Fixed spam prevention if client logs in after a PtP arrived in its callback queue (with forceQueueing=true)
+
+ o #15323 Changed server side behavior on COMMUNICATION exceptions thrown actively from client side
+          Accept now client side COMMUNICATION exception
+	  This should only be thrown by the client side low level protocol library on demand (e.g. on socket shutdownCbServer())
+
  o #15313 htpasswd plugin extension: Added primitive authorization support based on method name and topic oid
           See: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html#authorization
 	  Changed to allow empty passwords (like "joe::") which grants access for joe
