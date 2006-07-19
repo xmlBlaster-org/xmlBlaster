@@ -55,7 +55,7 @@
       50 milli seconds). This increases latency of message delivery for 50 msec
       but allows a much higher message throughput. The overall performance increases.
       </li>
-      <li>Protect against misbehaving clients [TODO]<br />
+      <li>Protect against misbehaving clients<br />
       Every callback is controlled by a timer, to avoid leakage of threads
       and memory resources in the server when clients misconduct.
       </li>
@@ -86,17 +86,16 @@
       Note that only CORBA and our native SOCKET protocol support oneway invocations.
       XmlRpc, RMI and the like don't support this mode.
       </li>
-      <li>Message compression [TODO]<br />
+      <li>Message compression<br />
       Messages can be compressed with the zip format. The zip applies for the content of
       the message only. Zipping happens before sending a message to a callback server which
       requested this service.
-      Zipping is applied only to contents bigger a configurable value, typically contents
-      bigger 1.2 kBytes.
+      This is currently implemented with the SOCKET and EMAIL protocol only.
       </li>
       <li>Pinging of callback server<br />
       The callback server is pinged every minute as default. Pinging with method ping() is similar
       implemented as the update() invocation on the client callback server.
-      If the ping fails ('onExhaust') the session is killed - the client is auto logged out.
+      If the ping fails ('onExhaust') the session is killed - the client is auto logged out (depending on the retries setting).
       </li>
       <li>Error handling<br />
       We distinguish recovery procedures for callback connection problems
@@ -109,18 +108,19 @@
          Depending on configuration we try to redeliver. When we give up
          a dead letter is published and the client is logged out.
          </li>
-         <li>Receiver blocks [TODO]<br />
+         <li>Receiver blocks<br />
          Currently we can't detect this, the callback worker thread is blocked
          and lost.
          </li>
          <li>Receiver sends error in return string<br />
          The return value is ignored, the message counts as delivered.
          In future this information may be used for transaction processing.
+         Only exceptions thrown by a client have influence as described in requirement interface.update.
          </li>
       </ol>
       <p>
       A possible approach for a lost PtP messages is to send a NAK to the
-      sender of the message [TODO - needs to be specified]
+      sender of the message.
       </p>
       </li>
       

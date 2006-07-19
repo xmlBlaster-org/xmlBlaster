@@ -94,7 +94,7 @@
       exception the behavior is different, the server keeps the message in its callback queue and sets the <code>dispatcherActive=false</code>, that
       means that the xmlBlaster server goes to sleep for this client and won't deliver further update messages.
       It is now up to an administrative command to activate the callback dispatcher again to try to
-      redeliver the last message.<br />This is done by a key oid <tt>__cmd:client/receiver/1/?dispatcherActive=true</tt>,
+      redeliver the queued messages.<br />This is done manually over the <code>jconsole</code> or by sending a key oid <tt>__cmd:client/receiver/1/?dispatcherActive=true</tt>,
       for more details please see <a href="admin.commands.html#dispatcherActive" target="others">requirement admin.commands</a>.
       </p>
       <p>
@@ -106,9 +106,14 @@
       handled by the server as "user.update.internalError" (for Corba access since ever,
       for SOCKET and XMLRPC since xmlBlaster 1.3, before it was a "internal.unknown" or "internal.illegalargument").
       </p>
-      <p>If the server gets a communication exception from its dispatcher framework
+      <p>If the server gets a communication exception
+      <code><a href="http://www.xmlblaster.org/xmlBlaster/doc/client-api/org/xmlBlaster/util/def/ErrorCode.html" target="others">ErrorCode.COMMUNICATION_*</a></code>
+      (for example <code>"communication.responseTimeout"</code>)
+      from its dispatcher framework
       it assumes that the client has never seen or processed the message and
-      retries to deliver it as configured. A communication exception occurs 
+      retries to deliver it as configured: In fail safe mode the dispatcher framework goes to status POLLING and queues
+      messages until the client reconnects else the status goes to DEAD and the message is published as a dead message.
+      A communication exception occurs 
       for example if the network is down or if the client has disappeared. <br />
       The main configuration settings to control the redeliver behavior are
       <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/retries</code></a> and
@@ -116,6 +121,43 @@
       </p>
       <p>A typical fail safe subscriber needs to set at least:</p>
       <pre class="BORDER">java javaclients.HelloWorldSubscribe -session.name SUBSCRIBER/1 -dispatch/callback/retries -1</pre>
+      <br />
+      <h3>Summary</h3>
+      <table class="BORDER" border="1">
+         <tr>
+         <th>Exception errorCode thrown</th><th>Message Handling</th><th>Description</th>
+         </tr>
+         <tr>
+            <td>user.*</td>
+            <td><a href="admin.errorHandling.html" target="others">dead message</a></td>
+            <td>If any user exception is thrown the dispatcher callback state goes to DEAD and
+            all arriving messages will be redirected as <a href="admin.errorHandling.html" target="others">dead messages</a>.
+            (See "user.update.holdback" for different behavior).
+            </td>
+         </tr>
+         <tr>
+           <td>user.update.holdback</td>
+           <td><a href="engine.callback.html" target="others">queued in callback queue</a></td>
+           <td>The dispatcher will change to inactive and all arriving messages are queued (<a href="admin.commands.html" target="others">dispatcherActive=false</a>).
+           </td>
+         </tr>
+         <tr>
+           <td>communication.*</td>
+           <td><a href="engine.callback.html" target="others">queued in callback queue</a></td>
+           <td>On communication problems the dispatcher goes to polling depending on the configuration of
+           <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/retries</code></a>.<br />
+           Depending on the configuration setting <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/delay</code></a>
+           xmlBlaster tries to reconnect again to the clients callback server.
+           During this time all arriving messages are safely queued.
+           </td>
+         </tr>
+         <tr>
+           <td>other exceptions</td>
+            <td><a href="admin.errorHandling.html" target="others">dead message</a></td>
+           <td>All other exceptions coming from the clients are transformed to "user.update.internalError" and the first use case "user.*" applies.</td>
+         </tr>
+      </table>
+      <p>Please see <a href="admin.errorcodes.listing.html" target="others">requirement admin.errorcodes.listing</a> for a list of error codes.</p>
 
       <p>The server side error handler is hidden by an interface and will be
       a plugin in a future version of xmlBlaster to support customized error behavior.<br />

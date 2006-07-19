@@ -76,10 +76,10 @@
       updates or zero when browsed synchronously.
       The SubjectQueue has no callback address, it uses the sessions callback.
       </li>
-      <li>Synchronous browsing [TODO]<br />
+      <li>Synchronous browsing<br />
       A message queue may be browsed with the synchronous get() method.
       </li>
-      <li>Sequence on XPath subscription [TODO]<br />
+      <li>Sequence on XPath subscription<br />
       A subscription with XPath may collect many messages with one query.
       The sequence of those message is guaranteed (priority and timestamp subordering).
       </li>
