@@ -119,6 +119,18 @@
       <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/retries</code></a> and
       <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/delay</code></a>.
       </p>
+
+      <p><a name="timeout"></a>Behavior on blocking/timeout during a update() call:</p>
+      <p>
+      When the <code>update()</code> callback method is invoked we wait a given time on a response. This
+      setting is depending on the communication protocol used.
+      The response is the return value or an exception for method invocations which are not marked oneway.
+      On timeout an exception of type <code>communication.*</code> is thrown which leads on server side to a dead message (depending on the installed error handler)
+      or if <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/retries</code></a> is not 0 to a POLLING dispatcher.<br />
+      For the <a href="protocol.socket.html#configuration" target="others">SOCKET protocol</a> see <i>plugin/socket/updateResponseTimeout</i>, it defaults to forever - that means
+      the <code>update()</code> callback does never timeout.
+      </p>
+
       <p>A typical fail safe subscriber needs to set at least:</p>
       <pre class="BORDER">java javaclients.HelloWorldSubscribe -session.name SUBSCRIBER/1 -dispatch/callback/retries -1</pre>
       <br />
@@ -144,11 +156,19 @@
          <tr>
            <td>communication.*</td>
            <td><a href="engine.callback.html" target="others">queued in callback queue</a></td>
-           <td>On communication problems the dispatcher goes to polling depending on the configuration of
-           <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/retries</code></a>.<br />
+           <td>On communication problems the dispatcher goes to POLLING depending on the configuration of
+           <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/retries</code></a>, if retries is set to -1
+           we poll forever, if retries is > 0 we poll the given number before we give up and go to DEAD.<br />
            Depending on the configuration setting <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/delay</code></a>
            xmlBlaster tries to reconnect again to the clients callback server.
            During this time all arriving messages are safely queued.
+           </td>
+         </tr>
+         <tr>
+           <td>communication.* and retries=0</td>
+           <td><a href="admin.errorHandling.html" target="others">dead message</a></td>
+           <td>On communication problems the dispatcher goes to DEAD if
+           <a href="client.failsafe.html#configuration" target="others"><code>-dispatch/callback/retries</code></a> is set to zero (which is the default).
            </td>
          </tr>
          <tr>
@@ -163,16 +183,6 @@
       a plugin in a future version of xmlBlaster to support customized error behavior.<br />
       For example such a plugin can look at the thrown error code or error message and follow specific recovery
       strategies.
-      </p>
-
-      <p class="celltitel"><a name="timeout"></a>Behavior on blocking/timeout update()</p>
-      <p>
-      When the <code>update()</code> callback method is invoked we wait a given time on a response. This
-      setting is depending on the communication protocol used.
-      The response is the return value or an exception for method invocations which are not marked oneway.
-      On timeout an exception is thrown which leads on server side to a dead message (depending on the installed error handler).<br />
-      For the <a href="protocol.socket.html#configuration" target="others">SOCKET protocol</a> see <i>plugin/socket/updateResponseTimeout</i>, it defaults to forever - that means
-      the <code>update()</code> callback does never timeout.
       </p>
 
       <h3>Note</h3>
