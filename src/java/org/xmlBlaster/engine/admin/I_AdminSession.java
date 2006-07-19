@@ -6,6 +6,7 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.I_AdminUsage;
@@ -242,4 +243,7 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html">The admin.events requirement</a>
     */
    public String addRemoteProperty(String key, String value);
+   
+   // Used internally
+   public ConnectQosServer getConnectQos();
 }

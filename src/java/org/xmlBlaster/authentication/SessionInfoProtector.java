@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -285,4 +286,8 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}
+   
+   public ConnectQosServer getConnectQos() {
+      return this.sessionInfo.getConnectQos();
+   }
 }

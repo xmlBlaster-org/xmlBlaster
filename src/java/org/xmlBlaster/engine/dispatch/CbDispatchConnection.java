@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -23,6 +24,8 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.SubscriptionInfo;
+import org.xmlBlaster.engine.admin.I_AdminSession;
+import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -47,8 +50,9 @@ public final class CbDispatchConnection extends DispatchConnection
    private static Logger log = Logger.getLogger(CbDispatchConnection.class.getName());
    
    public final String ME;
-   private I_CallbackDriver cbDriver = null;
-   private String cbKey = null;
+   private I_CallbackDriver cbDriver;
+   private String cbKey;
+   private I_AdminSession session;
 
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -57,12 +61,12 @@ public final class CbDispatchConnection extends DispatchConnection
    public CbDispatchConnection(Global glob, CbDispatchConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
       this.ME = "CbDispatchConnection-" + connectionsHandler.getDispatchManager().getQueue().getStorageId();
-      // How to access ConnectQos? refactor and pass SessionInfo to DispatchManager?
-      //ServerScope serverScope = (ServerScope)glob;
-      //SessionInfo sessionInfo = serverScope.getAuthenticate().getSubjectInfoByName(connectionsHandler.getDispatchManager().getSessionName());
-      // -- in doSend
-      //if (msg.isPtp() && !sessionInfo.getConnectQos().isPtpAllowed())
-      //   throaway msg 
+      
+      SessionName sessionName = connectionsHandler.getDispatchManager().getSessionName();
+      ServerScope serverScope = (ServerScope)glob;
+      I_AdminSubject subject = serverScope.getAuthenticate().getSubjectInfoByName(sessionName);
+      if (subject != null)
+         this.session = subject.getSessionByPubSessionId(sessionName.getPublicSessionId());
    }
 
    /**
@@ -161,6 +165,12 @@ public final class CbDispatchConnection extends DispatchConnection
                entry.setReturnObj(new UpdateReturnQosServer(this.glob, Constants.RET_EXPIRED)); //"<qos><state id='EXPIRED'/></qos>";
                continue;
             }
+            if (msgUnitWrapper.getMsgQosData().isPtp() && session!=null && !session.getConnectQos().isPtpAllowed()) {
+               if (log.isLoggable(Level.FINE)) log.fine("doSend("+entry.getLogId()+") ignoring callback message as PtP is not wanted");
+               entry.setReturnObj(new UpdateReturnQosServer(this.glob, Constants.RET_ERASED));
+               continue;
+            }
+            
             MsgUnit mu = msgUnitWrapper.getMsgUnit();
             //MsgUnit mu = entry.getMsgUnit(); throws unwanted exception if meat==null (forceDestroy)
             MsgQosData msgQosData = (MsgQosData)mu.getQosData().clone();
