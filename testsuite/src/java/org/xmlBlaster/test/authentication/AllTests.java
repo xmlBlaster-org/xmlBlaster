@@ -21,6 +21,7 @@ public class AllTests {
       suite.addTest(TestLogin.suite());
       suite.addTest(TestLoginLogoutEvent.suite());
       suite.addTest(new TestSuite(org.xmlBlaster.test.authentication.TestAuthenticationHtPassWd.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.authentication.TestHtpasswdAuthorization.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.authentication.TestLogout.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.authentication.TestSessionReconnect.class));
       return suite;
