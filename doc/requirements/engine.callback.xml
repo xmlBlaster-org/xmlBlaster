@@ -272,6 +272,56 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
          </tr>
       </table>
    </configuration>
+
+
+   <configuration where="server">
+      <p>
+      These parameters can be specified on serverside.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+         <tr>
+            <td>dispatch/callback/threadPrio</td>
+            <td>5</td>
+            <td>The priority by which the dispatcher threads have to be run.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>dispatch/callback/maximumPoolSize</td>
+            <td>200</td>
+            <td>The maximum number of threads allowed to run to dispatch. This is for all clients together.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>dispatch/callback/minimumPoolSize</td>
+            <td>4</td>
+            <td>The minimum number of threads allowed to run to dispatch. This is for all clients together. If 
+              you have less threads when the dispatcher requests come, new threads are instantiated. You should
+              avoid choose this value to be less than three since if a dispatcher blocks you could block the 
+              all others.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>dispatch/callback/createThreads</td>
+            <td>mimiumPoolSize</td>
+            <td>The maximum number of threads which have to be initially created.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>dispatch/callback/maximumQueueSize</td>
+            <td>mimiumPoolSize</td>
+            <td>The maximum number of requests to be queued before a new thread is created if minimumPoolSize has been reached.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
    <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
    <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
    <see type="API">org.xmlBlaster.util.qos.address.CallbackAddress</see>
