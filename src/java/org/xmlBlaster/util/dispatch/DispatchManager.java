@@ -128,6 +128,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.dispatchConnectionsHandler.initialize(addrArr);
    }
 
+   /**
+    * @return Never null
+    */
    public SessionName getSessionName() {
       return this.sessionName;
    }
