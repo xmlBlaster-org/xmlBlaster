@@ -588,4 +588,12 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
    public String toXml(String extraOffset) {
       return "";
    }
+
+   /**
+    * Not doing anything in this method since no cleanup needed.
+    */
+   public void postHandleNextMessages(DispatchManager dispatchManager, MsgQueueEntry[] processedEntries) throws XmlBlasterException {
+   }
+   
+   
 }
