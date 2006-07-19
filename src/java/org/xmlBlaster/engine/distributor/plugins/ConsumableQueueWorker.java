@@ -19,14 +19,11 @@ import java.util.logging.Level;
  */
 public class ConsumableQueueWorker implements Runnable {
 
-   private final static String ME = "ConsumableQueueWorker";
-   // private Global global;
-   private static Logger log = Logger.getLogger(ConsumableQueueWorker.class.getName());
+   private static Logger log;
    private ConsumableQueuePlugin consumableQueuePlugin;
-   
 
-   public ConsumableQueueWorker(Logger log, ConsumableQueuePlugin consumableQueuePlugin) {
-      this.log = log;
+   public ConsumableQueueWorker(Logger log_, ConsumableQueuePlugin consumableQueuePlugin) {
+      log = log_;
       if (log.isLoggable(Level.FINER)) log.finer("constructor");
       this.consumableQueuePlugin = consumableQueuePlugin;
    }
