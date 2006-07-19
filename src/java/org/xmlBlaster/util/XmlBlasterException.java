@@ -742,7 +742,9 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    
       
       // and server side communication problems (how to assure if from server?)
-      if (e.isCommunication() && e.isServerSide())
+      //if (e.isCommunication() && e.isServerSide())
+      //it can also be thrown by client side, if for example the client side SOCKET callback server is marked shutdown
+      if (e.isCommunication())
          return e;
    
       // The SOCKET protocol plugin throws this when a client has shutdown its callback server
