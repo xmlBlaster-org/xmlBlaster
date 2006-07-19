@@ -17,7 +17,8 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.client.filepoller.FilenameFilter;
 import org.xmlBlaster.contrib.I_Update;
-import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.jms.XBConnectionMetaData;
+import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
@@ -323,14 +324,14 @@ public class FileWriterCallback implements I_Update {
                throw new Exception("update: the message '" + topic + "' should contain either the filename or the timestamp in the properties, but none was found. Can not create a filename to store the data on.");
          }
 
-         prop = (ClientProperty)attrMap.get(Constants.CHUNK_SEQ_NUM);
+         prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_SEQ, attrMap);
          if (prop != null) {
             isLastMsg = false;
             chunkCount = prop.getLongValue();
-            prop = (ClientProperty)attrMap.get(Constants.CHUNK_EOF);
+            prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EOF, attrMap);
             if (prop != null) {
                isLastMsg = prop.getBooleanValue();
-               prop = (ClientProperty)attrMap.get(Constants.CHUNK_EXCEPTION);
+               prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EX, attrMap);
                if (prop != null)
                   exMsg = prop.getStringValue();
             }
@@ -383,13 +384,13 @@ public class FileWriterCallback implements I_Update {
       boolean isLastMsg = false;
       String exMsg = null;
       long chunkCount = 0L;
-      ClientProperty prop = (ClientProperty)attrMap.get(Constants.CHUNK_SEQ_NUM);
+      ClientProperty prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_SEQ, attrMap); 
       if (prop != null) {
          chunkCount = prop.getLongValue();
-         prop = (ClientProperty)attrMap.get(Constants.CHUNK_EOF);
+         prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EOF, attrMap);
          if (prop != null) {
             isLastMsg = prop.getBooleanValue();
-            prop = (ClientProperty)attrMap.get(Constants.CHUNK_EXCEPTION);
+            prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EX, attrMap);
             if (prop != null)
                exMsg = prop.getStringValue();
          }
