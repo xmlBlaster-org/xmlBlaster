@@ -1,7 +1,6 @@
 package org.xmlBlaster.test.classtest.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -31,7 +30,6 @@ import junit.framework.*;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html" target="others">the interface.publish requirement</a>
  */
 public class MsgQosFactoryTest extends TestCase {
-   private final String ME = "MsgQosFactoryTest";
    protected Global glob;
    private static Logger log = Logger.getLogger(MsgQosFactoryTest.class.getName());
    int counter = 0;
