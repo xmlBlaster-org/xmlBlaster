@@ -1828,7 +1828,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       
       try {
          // Send the request ...
-         msgUnit.getQosData().addClientProperty(Constants.JMS_REPLY_TO, tempTopic.getKeyOid()); // "__jms:JMSReplyTo"
+         msgUnit.getQosData().addClientProperty(Constants.addJmsPrefix(Constants.JMS_REPLY_TO, log), tempTopic.getKeyOid()); // "__jms:JMSReplyTo"
          publish(msgUnit);
          
          // Access the reply ...
