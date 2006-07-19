@@ -9,6 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.util.ArrayList;
 
@@ -91,6 +92,15 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     */
    public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException;
 
+   /**
+    * Method invoked after having successfully sent the entries in asynchronous modus.
+    * 
+    * @param dispatchManager The used dispatch manager.
+    * @param processedEntries The entries which have been previously processed.
+    * @throws XmlBlasterException
+    */
+   public void postHandleNextMessages(DispatchManager dispatchManager, MsgQueueEntry[] processedEntries) throws XmlBlasterException;
+   
    /**
     * Deregister the given dispatchManager
     */
