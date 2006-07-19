@@ -518,8 +518,9 @@ static bool isListening(CallbackServerUnparsed *cb)
 
 /**
  * Parse the update message from xmlBlaster. 
+ * <p>
  * This method blocks until data arrives.
- * <br />
+ * </p>
  * The socketDataHolder holds all informations about the returned data from xmlBlaster,
  * on error the exception struct is filled.
  *
