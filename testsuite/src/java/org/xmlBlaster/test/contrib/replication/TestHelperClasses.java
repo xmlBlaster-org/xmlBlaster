@@ -27,7 +27,8 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.contrib.replication.impl.DefaultMapper;
-import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.jms.XBConnectionMetaData;
+import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
@@ -174,18 +175,22 @@ public class TestHelperClasses extends XMLTestCase {
          checkFile.delete();
          HashMap map = new HashMap();
          map.put("_filename", new ClientProperty("_filename", null, null, filename));
-         map.put(Constants.CHUNK_SEQ_NUM, new ClientProperty(Constants.CHUNK_SEQ_NUM, null, null, "" + 0L));
+         String key = XBMessage.addToKeyAndCheck(XBConnectionMetaData.JMSX_GROUP_SEQ);
+         map.put(key, new ClientProperty(key, null, null, "" + 0L));
          callback.update("dummy", "first".getBytes(), map);
 
          map.clear();
          map.put("_filename", new ClientProperty("_filename", null, null, filename));
-         map.put(Constants.CHUNK_SEQ_NUM, new ClientProperty(Constants.CHUNK_SEQ_NUM, null, null, "" + 1L));
+         key = XBMessage.addToKeyAndCheck(XBConnectionMetaData.JMSX_GROUP_SEQ);
+         map.put(key, new ClientProperty(key, null, null, "" + 1L));
          callback.update("dummy", "second".getBytes(), map);
          
          map.clear();
          map.put("_filename", new ClientProperty("_filename", null, null, filename));
-         map.put(Constants.CHUNK_SEQ_NUM, new ClientProperty(Constants.CHUNK_SEQ_NUM, null, null, "" + 2L));
-         map.put(Constants.CHUNK_EOF, new ClientProperty(Constants.CHUNK_EOF, null, null, "true"));
+         key = XBMessage.addToKeyAndCheck(XBConnectionMetaData.JMSX_GROUP_SEQ);
+         map.put(key, new ClientProperty(key, null, null, "" + 2L));
+         key = XBMessage.addToKeyAndCheck(XBConnectionMetaData.JMSX_GROUP_EOF);
+         map.put(key, new ClientProperty(key, null, null, "true"));
          callback.update("dummy", "third".getBytes(), map);
          
          assertTrue("The file 'dummy' must exist", checkFile.exists());
