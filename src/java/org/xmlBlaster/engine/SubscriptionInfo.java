@@ -128,7 +128,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
                            this.glob.getContextNode());
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
 
-      if (log.isLoggable(Level.FINE)) log.fine("Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getLoginName() + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Created SubscriptionInfo '" + getSubscriptionId() + "' for client '" + sessionInfo.getSessionName().getRelativeName() + "' for topic '" + this.keyData.getOid() + "'");
    }
 
    /**
@@ -251,7 +251,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       this.topicHandler = topicHandler;
 
       if (this.topicHandler != null) {
-         if (log.isLoggable(Level.FINE)) log.fine("Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + getSessionInfo().getId() + "' message '" + this.topicHandler.getUniqueKey() + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Assign to SubscriptionInfo '" + uniqueKey + "' for client '" + getSessionInfo().getId() + "' topic '" + this.topicHandler.getUniqueKey() + "'");
       }
    }
 

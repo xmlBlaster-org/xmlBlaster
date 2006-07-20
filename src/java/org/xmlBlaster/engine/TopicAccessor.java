@@ -390,8 +390,6 @@ public final class TopicAccessor {
     * @param msgUnitWrapper
     */
    public void entryDestroyed_scheduleForExecution(MsgUnitWrapper msgUnitWrapper) {
-      // SynchronousQueue has no capacity but blocks until other thread takes it
-      // out
       try {
          this.blockingQueue.put(msgUnitWrapper);
       } catch (InterruptedException e) {

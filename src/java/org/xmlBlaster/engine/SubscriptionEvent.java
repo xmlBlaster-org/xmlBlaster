@@ -36,4 +36,10 @@ public class SubscriptionEvent extends java.util.EventObject {
    public SubscriptionInfo getSubscriptionInfo() {
        return (SubscriptionInfo)source;
    }
+   
+   public String toString() {
+      SubscriptionInfo i = getSubscriptionInfo();
+      if (i == null) return "";
+      return i.getSubscriptionId() + " / " + i.getSessionName() + " / " + i.getKeyOid();
+   }
 }

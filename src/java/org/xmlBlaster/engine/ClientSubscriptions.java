@@ -437,7 +437,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
          return;
       }
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
-      if (log.isLoggable(Level.FINE)) log.fine("Subscription add event for client " + sessionInfo.getId());
+      if (log.isLoggable(Level.FINE)) log.fine("Subscription add event " + e);
       KeyData keyData = subscriptionInfo.getKeyData();
 
       String uniqueKey = sessionInfo.getSessionName().getRelativeName();
@@ -485,7 +485,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       String subscriptionInfoUniqueKey = subscriptionInfo.getSubscriptionId();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
 
-      if (log.isLoggable(Level.FINE)) log.fine("Subscription remove event for client " + sessionInfo.toString() + " for subscriptionId=" + subscriptionInfoUniqueKey);
+      if (log.isLoggable(Level.FINE)) log.fine("Subscription remove event " + e.toString());
 
       try {
          removeFromClientSubscriptionMap(sessionInfo, subscriptionInfoUniqueKey);

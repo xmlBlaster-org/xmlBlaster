@@ -591,7 +591,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
       try {
-         if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getId() + "' ...");
          String returnOid = "";
 
          if (subscribeQos.getMultiSubscribe() == false) {
@@ -684,7 +684,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             if (qos == null) qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
             qos.setSubscriptionId(returnOid);
          }
-         if (log.isLoggable(Level.FINER)) log.finer("Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getLoginName() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");
+         if (log.isLoggable(Level.FINER)) log.finer("Leaving subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() +
+                                          "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" +
+                                          sessionInfo.getId() + "' -> subscriptionId='" + qos.getSubscriptionId() + "'");
          return qos.toXml();
       }
       catch (XmlBlasterException e) {
@@ -719,7 +721,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    public MsgUnit[] get(SessionInfo sessionInfo, QueryKeyData xmlKey, GetQosServer getQos) throws XmlBlasterException
    {
       try {
-         if (log.isLoggable(Level.FINER)) log.finer("Entering get(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "') ...");
+         if (log.isLoggable(Level.FINER)) log.finer("Entering get(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "') from client '" + sessionInfo.getId() + " ...");
 
          if ("__refresh".equals(xmlKey.getOid())) {
             return new MsgUnit[0]; // get() with oid="__refresh" do only refresh the login session

@@ -146,7 +146,7 @@ public class XmlKeyDom implements I_MergeDomNode
          }
          try {
             String uniqueKey = getKeyOid(node);
-            if (log.isLoggable(Level.FINE)) log.fine("Client " + clientName + " is accessing message oid='" + uniqueKey + "' after successful query");
+            if (log.isLoggable(Level.FINE)) log.fine("Client " + clientName + " is accessing topic oid='" + uniqueKey + "' after successful xpath query");
             list.add(uniqueKey);
          } catch (XmlBlasterException e) {
             throw e;
@@ -180,7 +180,7 @@ public class XmlKeyDom implements I_MergeDomNode
       }
 
       String nodeName = node.getNodeName();
-      if (log.isLoggable(Level.FINE)) log.fine("Checking node name=" + nodeName);
+      if (log.isLoggable(Level.FINEST)) log.finest("Checking node name=" + nodeName);
 
       if ("xmlBlaster".equals(nodeName) && (node.getParentNode() == null || "#document".equals(node.getParentNode().getNodeName()))) {       // ERROR: the root node, must be specially handled
          log.warning("<xmlBlaster> node not allowed");

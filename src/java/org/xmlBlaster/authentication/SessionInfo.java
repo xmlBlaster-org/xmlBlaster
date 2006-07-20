@@ -79,6 +79,7 @@ import org.xmlBlaster.util.ReentrantLock;
  */
 public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 {
+   private String ME = "SessionInfo";
    private final ContextNode contextNode;
    /** The cluster wide unique identifier of the session e.g. "/node/heron/client/joe/2" */
    private final SessionName sessionName;
@@ -159,9 +160,10 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
       this.contextNode = new ContextNode(ContextNode.SESSION_MARKER_TAG, ""+this.sessionName.getPublicSessionId(), 
                                        subjectInfo.getContextNode());
+      this.ME = this.instanceId + "-" + this.sessionName.getRelativeName();
 
 
-      if (log.isLoggable(Level.FINER)) log.finer("Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
       this.startupTime = System.currentTimeMillis();
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
@@ -170,14 +172,14 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       this.msgErrorHandler = new MsgErrorHandler(glob, this);
       String type = connectQos.getSessionCbQueueProperty().getType();
       String version = connectQos.getSessionCbQueueProperty().getVersion();
-      if (log.isLoggable(Level.FINE)) log.fine("Creating callback queue type=" + type + " version=" + version);
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Creating callback queue type=" + type + " version=" + version);
       this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
       this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
       this.sessionQueue.addQueueSizeListener(this);
 
       CallbackAddress[] cba = this.connectQos.getSessionCbQueueProperty().getCallbackAddresses();
       if (cba.length > 0) {
-         if (log.isLoggable(Level.FINE)) log.fine("Creating dispatch manager as ConnectQos contains callback addresses");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Creating dispatch manager as ConnectQos contains callback addresses");
          for (int i=0; i<cba.length; i++) {
             cba[i].setSessionName(this.sessionName);
             cba[i].addClientProperty(new ClientProperty("__ContextNode", "String", null, this.contextNode.getAbsoluteName()));
@@ -187,16 +189,16 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
                                 cba, this.sessionName);
       }
       else { // No callback configured
-         if (log.isLoggable(Level.FINE)) log.fine("Don't create dispatch manager as ConnectQos contains no callback addresses");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Don't create dispatch manager as ConnectQos contains no callback addresses");
          this.dispatchManager = null;
       }
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
-         if (log.isLoggable(Level.FINE)) log.fine("Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
          this.timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
       else {
-         if (log.isLoggable(Level.FINE)) log.fine("Session lasts forever, requested expiry timer was 0");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Session lasts forever, requested expiry timer was 0");
       }
 
       // JMX register "client/joe/1"
@@ -292,7 +294,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 
    public void finalize() {
       removeExpiryTimer();
-      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collected " + getSecretSessionId());
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected " + getSecretSessionId());
    }
 
    public boolean isShutdown() {
@@ -315,7 +317,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
    
    public void shutdown() {
-      if (log.isLoggable(Level.FINER)) log.finer("shutdown() of session");
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": shutdown() of session");
       this.glob.unregisterMBean(this.mbeanHandle);
       this.lock.lock();
       try {
@@ -393,13 +395,13 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       this.lock.lock();
       try {
          this.timerKey = null;
-         log.warning("Session timeout for " + getLoginName() + " occurred, session '" + getSecretSessionId() + "' is expired, autologout");
+         log.warning(ME+": Session timeout for " + getLoginName() + " occurred, session '" + getSecretSessionId() + "' is expired, autologout");
          DisconnectQosServer qos = new DisconnectQosServer(glob);
          qos.deleteSubjectQueue(true);
          try {
             glob.getAuthenticate().disconnect(getAddressServer(), getSecretSessionId(), qos.toXml());
          } catch (XmlBlasterException e) {
-            log.severe("Internal problem with disconnect: " + e.toString());
+            log.severe(ME+": Internal problem with disconnect: " + e.toString());
          }
       }
       finally {
@@ -444,7 +446,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
       I_Queue sessionQueue = this.sessionQueue;
       if (!hasCallback() || sessionQueue == null) {
-         if (log.isLoggable(Level.FINE)) log.fine("Queing PtP message without having configured a callback to the client, the client needs to reconnect with a valid callback address later");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Queing PtP message without having configured a callback to the client, the client needs to reconnect with a valid callback address later");
          //if (!connectQos.getSessionName().isPubSessionIdUser()) { // client has specified its own publicSessionId (> 0)
          //   throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "No callback server is configured, can't callback client to send message " + entry.getKeyOid());
          //}
@@ -466,12 +468,12 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          DispatchManager dispatchManager = this.dispatchManager;
          if (dispatchManager != null) {
             dispatchManager.updateProperty(cbQueueProperty.getCallbackAddresses());
-            log.info("Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
+            log.info(ME+": Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
             dispatchManager.notifyAboutNewEntry();
          }
       }
       else if (wantsCallbacks && !hasCallback()) {
-         log.info("Successfully reconfigured and created dispatch manager with given callback address");
+         log.info(ME+": Successfully reconfigured and created dispatch manager with given callback address");
          DispatchManager tmpDispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                               this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                               newConnectQos.getSessionCbQueueProperty().getCallbackAddresses(), this.sessionName);
@@ -484,12 +486,12 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          DispatchManager dispatchManager = this.dispatchManager;
          if (dispatchManager != null) {
             dispatchManager.shutdown();
-            log.info("Successfully shutdown dispatch manager as no callback address is configured");
+            log.info(ME+": Successfully shutdown dispatch manager as no callback address is configured");
          }
          this.dispatchManager = null;
       }
       else if (!wantsCallbacks && !hasCallback()) {
-         if (log.isLoggable(Level.FINE)) log.fine("No callback exists and no callback is desired");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": No callback exists and no callback is desired");
          // nothing to do
       }
 
@@ -576,7 +578,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          I_Queue sessionQueue = this.sessionQueue;
          long max = (sessionQueue == null) ? 0 : sessionQueue.getMaxNumOfEntries();
          if (hasSubjectEntries && numEntries < max && lastNumEntries > numEntries) {
-            if (log.isLoggable(Level.FINE)) log.fine("SessionQueue has emptied from " + lastNumEntries +
+            if (log.isLoggable(Level.FINE)) log.fine(ME+": SessionQueue has emptied from " + lastNumEntries +
                            " to " + numEntries + " entries, calling SubjectInfoShuffler.shuffle()");
             this.glob.getSubjectInfoShuffler().shuffle(subjectInfo);
          }
@@ -766,7 +768,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          return "Please pass a valid topic oid";
       }
 
-      log.info("Administrative subscribe() of '" + url + "' for client '" + getId() + "' qos='" + qos + "'");
+      log.info(ME+": Administrative subscribe() of '" + url + "' for client '" + getId() + "' qos='" + qos + "'");
       SubscribeKey uk = new SubscribeKey(glob, url);
       SubscribeQos uq;
       if (qos == null || qos.length() == 0 || qos.equalsIgnoreCase("String")) {
@@ -807,7 +809,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       if (url == null)
          return new String[] { "Please pass a valid topic oid" };
 
-      log.info("Administrative unSubscribe() of '" + url + "' for client '" + getId() + "'");
+      log.info(ME+": Administrative unSubscribe() of '" + url + "' for client '" + getId() + "'");
       UnSubscribeKey uk = new UnSubscribeKey(glob, url);
 
       UnSubscribeQos uq;

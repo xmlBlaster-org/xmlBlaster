@@ -197,7 +197,7 @@ final public class Authenticate implements I_RunlevelListener
    {
       // [1] Try reconnecting with secret sessionId
       try {
-         if (log.isLoggable(Level.FINER)) log.finer("Entering connect(sessionName=" + connectQos.getSessionName() + ")"); // " secretSessionId=" + secretSessionId + ")");
+         if (log.isLoggable(Level.FINE)) log.fine("Entering connect(sessionName=" + connectQos.getSessionName().getAbsoluteName() + ")"); // " secretSessionId=" + secretSessionId + ")");
          if (log.isLoggable(Level.FINEST)) log.finest("ConnectQos=" + connectQos.toXml());
 
          // Get or create the secretSessionId (we respect a user supplied secretSessionId) ...

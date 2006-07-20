@@ -81,7 +81,7 @@ abstract public class DispatchConnectionsHandler
     * @param cbAddr The addresses i shall connect to
     */
    public DispatchConnectionsHandler(Global glob, DispatchManager dispatchManager) throws XmlBlasterException {
-      this.ME = "DispatchConnectionsHandler-" + dispatchManager.getQueue().getStorageId();
+      this.ME = dispatchManager.getQueue().getStorageId().toString();
       this.glob = glob;
 
       this.dispatchManager = dispatchManager;
@@ -115,7 +115,7 @@ abstract public class DispatchConnectionsHandler
    public final void initialize(AddressBase[] cbAddr) throws XmlBlasterException {
       int oldConSize = conList.size();
       DispatchConnection reconfiguredCon = null;
-      if (log.isLoggable(Level.FINER)) log.finer("Initialize old connections=" + oldConSize +
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": Initialize old connections=" + oldConSize +
                                  " new connections=" + ((cbAddr==null)?0:cbAddr.length));
       ArrayList toShutdown = new ArrayList();
       try {
@@ -143,7 +143,7 @@ abstract public class DispatchConnectionsHandler
                }
                if (!found) {
                   DispatchConnection con = (DispatchConnection)tmpList.get(ii);
-                  log.info("Shutting down callback connection '" + con.getName() + "' because of new configuration.");
+                  log.info(ME+": Shutting down callback connection '" + con.getName() + "' because of new configuration.");
                   toShutdown.add(con);
                   tmpList.remove(ii);
                   ii--;
@@ -168,7 +168,7 @@ abstract public class DispatchConnectionsHandler
                if (!found) {
                   try {  // This creates a client or cb instance with its plugin
                      DispatchConnection con = createDispatchConnection(cbAddr[ii]);
-                     if (log.isLoggable(Level.FINE)) log.fine("Create new DispatchConnection, retries=" + cbAddr[ii].getRetries() + " :" + cbAddr[ii].toXml());
+                     if (log.isLoggable(Level.FINE)) log.fine(ME+": Create new DispatchConnection, retries=" + cbAddr[ii].getRetries() + " :" + cbAddr[ii].toXml());
                      try {
                         conList.add(con);
                         con.initialize();
@@ -177,10 +177,10 @@ abstract public class DispatchConnectionsHandler
                      catch (XmlBlasterException e) {
                         if (e.isCommunication()) { // Initial POLLING ?
                            this.dispatchManager.toPolling(this.state);
-                           if (log.isLoggable(Level.FINE)) log.fine("Load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                           if (log.isLoggable(Level.FINE)) log.fine(ME+": Load " + cbAddr[ii].toString() + ": " + e.getMessage());
                         }
                         else {
-                           log.severe("Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                           log.severe(ME+": Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
                            toShutdown.add(con);
                            //con.shutdown();
                            conList.remove(con);
@@ -188,11 +188,11 @@ abstract public class DispatchConnectionsHandler
                      }
                   }
                   catch (XmlBlasterException e) {
-                     log.warning("Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                     log.warning(ME+": Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
                      throw e;
                   }
                   catch (Throwable e) {
-                     log.severe("Can't load " + cbAddr[ii].toXml() + ": " + e.toString());
+                     log.severe(ME+": Can't load " + cbAddr[ii].toXml() + ": " + e.toString());
                      throw XmlBlasterException.convert(glob, ME, "", e);
                   }
                   // TODO: cleanup if exception is thrown by createDispatchConnection()
@@ -213,7 +213,7 @@ abstract public class DispatchConnectionsHandler
          }
 
          updateState(null);  // Redundant??
-         if (log.isLoggable(Level.FINE)) log.fine("Reached state = " + state.toString());
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Reached state = " + state.toString());
 
          if (reconfiguredCon != null && /*reconfiguredCon.*/isPolling() && oldConSize > 0) {
             this.glob.getPingTimer().addTimeoutListener(reconfiguredCon, 0L, "poll");  // force a reconnect try
@@ -317,7 +317,7 @@ abstract public class DispatchConnectionsHandler
    private final void updateState(XmlBlasterException ex) {
       ConnectionStateEnum oldState = this.state;
       ConnectionStateEnum tmp = ConnectionStateEnum.DEAD;
-      if (log.isLoggable(Level.FINE)) log.fine("updateState() oldState="+oldState+" conList.size="+conList.size());
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": updateState() oldState="+oldState+" conList.size="+conList.size());
       //Thread.currentThread().dumpStack();
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
@@ -344,7 +344,7 @@ abstract public class DispatchConnectionsHandler
       }
       else {
          this.state = tmp;
-         log.severe("Internal error in updateState(oldState="+oldState+","+this.state+") " + toXml(""));
+         log.severe(ME+": Internal error in updateState(oldState="+oldState+","+this.state+") " + toXml(""));
          Thread.dumpStack();
       }
    }
@@ -382,7 +382,7 @@ abstract public class DispatchConnectionsHandler
    }
 
    private final void removeDispatchConnection(DispatchConnection con) {
-      if (log.isLoggable(Level.FINER)) log.finer("removeDispatchConnection(" + con.getName() + ") ...");
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": removeDispatchConnection(" + con.getName() + ") ...");
       synchronized (conList) {
          conList.remove(con);
       }
@@ -390,9 +390,9 @@ abstract public class DispatchConnectionsHandler
          con.shutdown();
       }
       catch (XmlBlasterException ex) {
-         log.severe("removeDispatchConnection() could not shutdown properly. " + ex.getMessage());
+         log.severe(ME+": Could not shutdown properly. " + ex.getMessage());
       }
-      if (log.isLoggable(Level.FINE)) log.fine("Destroyed one callback connection, " + conList.size() + " remain.");
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Destroyed one callback connection, " + conList.size() + " remain.");
    }
 
    /**
@@ -424,14 +424,14 @@ abstract public class DispatchConnectionsHandler
       DispatchConnection[] cons = getConnectionsArrCopy(); // take a snapshot
       for (int ii=0; ii<cons.length; ii++) {
          DispatchConnection con = cons[ii];
-         if (log.isLoggable(Level.FINE)) log.fine("Trying cb# " + ii + " state=" + con.getState().toString() + " ...");
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": Trying cb# " + ii + " state=" + con.getState().toString() + " ...");
          if (con.isAlive()) {
             try {
                con.send(msgArr);
                return;
             } catch(Throwable e) {
                ex = e;
-               if (ii<(cons.length-1)) log.warning("Callback failed, trying other addresses");
+               if (ii<(cons.length-1)) log.warning(ME+": Callback failed, trying other addresses");
             }
          }
       }
@@ -476,14 +476,14 @@ abstract public class DispatchConnectionsHandler
     * Stop all callback drivers of this client.
     */
    public final void shutdown() {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown ...");
+      if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering shutdown ...");
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
             try {
                ((DispatchConnection)conList.get(ii)).shutdown();
             }
             catch (XmlBlasterException ex) {
-               log.severe("shutdown() could not shutdown properly. " + ex.getMessage());
+               log.severe(ME+": Could not shutdown properly. " + ex.getMessage());
             }
          }
          conList.clear();
