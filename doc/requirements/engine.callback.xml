@@ -299,7 +299,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
          </tr>
          <tr>
             <td>dispatch/callback/minimumPoolSize</td>
-            <td>4</td>
+            <td>50</td>
             <td>The minimum number of threads allowed to run to dispatch. This is for all clients together. If 
               you have less threads when the dispatcher requests come, new threads are instantiated. You should
               avoid choose this value to be less than three since if a dispatcher blocks you could block the 
@@ -309,14 +309,14 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
          </tr>
          <tr>
             <td>dispatch/callback/createThreads</td>
-            <td>mimiumPoolSize</td>
+            <td>5</td>
             <td>The maximum number of threads which have to be initially created.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>dispatch/callback/maximumQueueSize</td>
-            <td>mimiumPoolSize</td>
-            <td>The maximum number of requests to be queued before a new thread is created if minimumPoolSize has been reached.</td>
+            <td>dispatch/callback/threadLifetime</td>
+            <td>180000</td>
+            <td>The time expressed in milliseconds a thread lives with no activity before it is removed.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
