@@ -11,9 +11,9 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.property.PropInt;
+import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.def.Constants;
 
-import EDU.oswego.cs.dl.util.concurrent.BoundedBuffer;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
 
@@ -27,10 +27,10 @@ public class DispatchWorkerPool //implements I_RunlevelListener
    private static Logger log = Logger.getLogger(DispatchWorkerPool.class.getName());
    private PooledExecutor pool;
    private PropInt threadPrio = new PropInt(Thread.NORM_PRIORITY);
+   private PropLong threadLifetime = new PropLong(180 * 1000L);
    private PropInt maximumPoolSize = new PropInt(200);
-   private PropInt minimumPoolSize = new PropInt(5);
-   private PropInt createThreads = new PropInt(minimumPoolSize.getValue());
-   private PropInt maximumQueueSize = new PropInt(minimumPoolSize.getValue());
+   private PropInt minimumPoolSize = new PropInt(20);
+   private PropInt createThreads = new PropInt(5);
    private boolean isShutdown = false;
    private final String poolId = "dispatch";
 
@@ -78,19 +78,19 @@ public class DispatchWorkerPool //implements I_RunlevelListener
       this.maximumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "maximumPoolSize");
       this.minimumPoolSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "minimumPoolSize");
       this.createThreads.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "createThreads");
-      this.maximumQueueSize.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "createThreads");
+      this.threadLifetime.setFromEnv(glob, glob.getStrippedId(), context, this.poolId, instanceName, "threadLifetime");
       if (log.isLoggable(Level.FINE)) log.fine("maximumPoolSize=" + this.maximumPoolSize.getValue() + " minimumPoolSize=" +
-                    this.minimumPoolSize.getValue() + " createThreads=" + this.createThreads.getValue());
+                    this.minimumPoolSize.getValue() + " createThreads=" + this.createThreads.getValue() + " threadLifetime=" + this.threadLifetime + "' ms");
 
       // this.pool = new PooledExecutor(new LinkedQueue());
       if (this.minimumPoolSize.getValue() < 3)
          log.warning("The minimumPoolSize of '" + this.minimumPoolSize.getValue() + "' is less than 2: if one single callback blocks it could block all other callbacks");
-      this.pool = new PooledExecutor(new BoundedBuffer(this.maximumQueueSize.getValue()));
+      this.pool = new PooledExecutor();
       this.pool.setThreadFactory(new DeamonThreadFactory(glob.getId(), this.threadPrio.getValue()));
       this.pool.setMaximumPoolSize(this.maximumPoolSize.getValue());
       this.pool.setMinimumPoolSize(this.minimumPoolSize.getValue());
       this.pool.createThreads(this.createThreads.getValue());
-      this.pool.setKeepAliveTime(-1); // Threads live forever
+      this.pool.setKeepAliveTime(this.threadLifetime.getValue());
       this.pool.waitWhenBlocked();
    }
 
