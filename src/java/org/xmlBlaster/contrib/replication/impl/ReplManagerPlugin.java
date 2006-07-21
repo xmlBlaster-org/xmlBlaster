@@ -443,6 +443,22 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    }
    
    /**
+    * Gets the properties associated to this replication. Note that the info is this of the last
+    * registration. This method can return null if no object is found or if the replicationPrefix
+    * was null.
+    * 
+    * @param replicationPrefix
+    * @return
+    */
+   public I_Info getReplicationInfo(String replicationPrefix) {
+      if (replicationPrefix == null)
+         return null;
+      synchronized (this.replications) {
+         return (I_Info)this.replications.get(replicationPrefix);
+      }
+   }
+   
+   /**
     * Used to register a dbWatcher. This is a request coming directly from the
     * DbWatcher which registeres himself to this plugin.
     * Note that if you are using the same id for the replication on several DbWatcher
