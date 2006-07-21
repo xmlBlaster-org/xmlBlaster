@@ -97,11 +97,17 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private boolean connected;
    private String sessionName = "";
    private long transactionSeq;
+   /** These properties are used to transport the information from the check to the postCheck method. */
+   private long tmpTransSeq;
+   private long tmpTransSeq2;
+   private long tmpReplKey;
+   private int tmpStatus;
    
    /** we don't want to sync the check method because the jmx will synchronize on the object too */
    private Object initSync = new Object();
    
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
+      this.forcedCounter = 0L;
       this.global = global;
       this.pool = pool;
       this.manager = manager;
@@ -203,7 +209,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          if (this.srcVersion != null && this.ownVersion != null && !this.srcVersion.equalsIgnoreCase(this.ownVersion))
             this.doTransform = true;
          this.initialized = true;
-         this.forcedCounter = 0L;
          this.initialFilesLocation = info.get(ReplicationConstants.INITIAL_FILES_LOCATION, null);
       }
    }
@@ -380,6 +385,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          if (!this.initialized)
             throw new Exception("prepareForRequest: '" + this.name + "' has not been initialized properly or is already shutdown, check your logs");
 
+         if (STATUS_INCONSISTENT == this.status) {
+            log.warning("Will not change the status to transition since the initialUpdate has been cancelled");
+            return;
+         }
+            
          this.minReplKey = minReplKey;
          this.maxReplKey = maxReplKey;
          setStatus(STATUS_TRANSITION);
@@ -460,14 +470,17 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
     */
    public ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
       synchronized (this.initSync) {
+         this.tmpStatus = -1;
          this.forcedCounter++;
          this.lastMessage = "";
          log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' (invocation since start is '" + this.forcedCounter + "'");
          if (!this.initialized) {
             log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
+            Thread.sleep(250L); // to avoid too fast looping
             return new ArrayList();
          }
          if (this.status == STATUS_INITIAL && !this.forceSending) { // should not happen since Dispatcher is set to false
+            log.warning("check invoked in INITIAL STATUS. Will stop the dispatcher");
             final boolean doPersist = true;
             doPause(doPersist);
             return new ArrayList();
@@ -480,12 +493,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             for (int i=entries.size()-1; i > -1; i--) {
                ReferenceEntry entry = (ReferenceEntry)entries.get(i);
                MsgUnit msgUnit = entry.getMsgUnit();
-               long tmpTransSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, 0L);
-               if (tmpTransSeq != 0)
-                  this.transactionSeq = tmpTransSeq;
-               long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
-               if (replKey > -1L) {
-                  setMaxReplKey(replKey);
+               this.tmpTransSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, 0L);
+               this.tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+               if (this.tmpReplKey > -1L) {
                   break; // the other messages will have lower numbers (if any) so we break for performance.
                }
             }      
@@ -544,6 +554,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             
             if (endMsg != null) {
                log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
+               // this.tmpStatus = STATUS_NORMAL;
                setStatus(STATUS_NORMAL);
                queue.removeRandom(entry);
                entries.remove(i);
@@ -591,6 +602,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
                if (replKey > this.maxReplKey || this.forceSending) {
                   log.info("entry with replKey='" + replKey + "' is higher than maxReplKey)='" + this.maxReplKey + "' switching to normal operation again for client '" + this.slaveSessionId + "' ");
                   setStatus(STATUS_NORMAL);
+                  // this.tmpStatus = STATUS_NORMAL;
                   // initiate a cascaded replication (if so configured)
                   if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
                      log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
@@ -629,11 +641,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       return new HashSet();
    }
 
-   private final void setDispatcher(boolean status, boolean doPersist) throws Exception {
+   private final boolean setDispatcher(boolean status, boolean doPersist) throws Exception {
       I_AdminSession session = getSession(); 
       session.setDispatcherActive(status);
       if (doPersist)
          this.persistentInfo.put(this.slaveSessionId + ".dispatcher", "" + status);
+      // to speed up refresh on monitor
+      this.dispatcherActive = session.getDispatcherActive();
+      return this.dispatcherActive;
    }
    
    /**
@@ -672,8 +687,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       synchronized(this.initSync) {
          I_AdminSession session = getSession();
          final boolean doPersist = true;
-         setDispatcher(!session.getDispatcherActive(), doPersist);
-         return session.getDispatcherActive();
+         return setDispatcher(!session.getDispatcherActive(), doPersist);
       }
    }
    
@@ -804,6 +818,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       // getQueueEntries
       try {
          this.queueEntries = session.getCbQueueNumMsgs();
+         if (this.tmpTransSeq2 != 0) {
+            this.transactionSeq = this.tmpTransSeq2;
+            this.tmpTransSeq2 = 0;
+         }
       }
       catch (Exception ex) {
          log.severe("an exception occured when retieving the number of queue entries for '" + this.sessionName + "':" + ex.getMessage());
@@ -845,7 +863,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
    
    public void postCheck(MsgQueueEntry[] processedEntries) throws Exception {
-      log.warning("not implemented yet");
+      if (this.tmpTransSeq != 0)
+        this.tmpTransSeq2 = this.tmpTransSeq;
+      setMaxReplKey(this.tmpReplKey);
+      if (this.tmpStatus > -1)
+         setStatus(this.tmpStatus);
    }
 
    public long getTransactionSeq() {
