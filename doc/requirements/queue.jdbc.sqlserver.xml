@@ -46,7 +46,7 @@ set CLASSPATH=\tmp\msbase.jar;\tmp\mssqlserver.jar;\tmp\msutil.jar;%CLASSPATH%
     </description>
 
     <example lang="Java" type="HTML">
-        <h2>Setup SQL Server 2000</h2>
+        <h2 id="2000">Setup SQL Server 2000</h2>
     <p>This is a configuration example from xmlBlaster.properties, please adjust
     it with your password:
     </p>
@@ -86,15 +86,18 @@ osql -E
    </example>
 
     <example lang="Java" type="HTML">
-        <h2>Setup SQL Server 2005</h2>
+        <h2 id="2005">Setup SQL Server 2005</h2>
     <p>This is a configuration example from xmlBlaster.properties, please adjust
     it with your password:
     </p>
+    <p>See http://msdn2.microsoft.com/en-us/library/ms378428.aspx for a description of the URL syntax!
+       (In the beta 2005 it was 'url=jdbc:sqlserver://localhost:1433/database=xmlBlaster')</p>
+
     <pre>
 JdbcDriver.drivers=com.microsoft.sqlserver.jdbc.SQLServerDriver
 
 JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                  url=jdbc:sqlserver://localhost:1433/database=xmlBlaster,\
+                  url=jdbc:sqlserver://localhost:1433;databaseName=xmlBlaster,\
                   user=sa,\
                   password=xxx,\
                   connectionPoolSize=5,\
