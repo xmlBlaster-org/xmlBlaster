@@ -58,6 +58,8 @@ public interface I_Entry extends java.io.Serializable
     * NOTE: This event is NOT triggered on startup if entries come from harddisk
     * from the last run. It is NOT triggered during swapping.
     *</p>
+    * <p>This callback may or may not be called from within the queue specific synchronized block</p>
+    * <p>NOTE: This callback is currently only implemented for I_Queue, but not for I_Map!</p>
     */
    void added(StorageId storageId);
 
@@ -66,6 +68,11 @@ public interface I_Entry extends java.io.Serializable
     * <p>
     * NOTE: This event is NOT triggered during swapping.
     *</p>
+    * <p>
+    * The callback is guaranteed to be NEVER called from inside a queue specific synchronized block.
+    * </p>
+    * <p>NOTE: This callback is currently only implemented for I_Queue, but not for I_Map!</p>
+    * @param storageId The storage id
     */
    void removed(StorageId storageId);
 
@@ -73,6 +80,10 @@ public interface I_Entry extends java.io.Serializable
     * Is invoked by the storage implementation with 'true' when the entry is put
     * in a storage and with 'false' when the entry is removed from the storage.
     * The storage is for example a 'cache', a 'ram' or a 'jdbc' implementation.
+    * <p>Note that this callback is guaranteed to be called from within the queue specific synchronized block</p>
+    * Todo: Remove this in favour of added()/removed() (isStored() is currently only used by CacheQueueInterceptorPlugin.java)
+    *       I'm not sure if this usage relies on being inside sync
+    * <p>This method may never throw any exception</p>
     * @param stored 'true' if the entry will be put into the storage, 'false' if it is removed.
     */
    void setStored(boolean stored);
