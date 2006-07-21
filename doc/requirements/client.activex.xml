@@ -286,6 +286,54 @@ Private Sub XmlScriptAccess_update(ByVal msg As Object) _
 <span class="NOTHING">   }</span>
 <span class="NOTHING">}</span>
    </pre>
+
+   <br />
+   <p>
+   Tim Heilig posted how to retrieve the MsgUnit from callback calls in the update() method
+   </p>
+<pre class="BORDER">
+While I don't have time to update the examples on the website,
+I figured I'd send a code snippet to the list of a working C# client with the activex bridge.
+
+this code should reside in a try/catch so you can appropriately set the update return if problems occur,
+I just included the success case.
+
+
+public void update(object o)
+{
+ string key;
+ string content;
+ string qos;
+ object k;
+ object q;
+
+ Type eventType = o.GetType();
+ k = eventType.InvokeMember("getKey", System.Reflection.BindingFlags.InvokeMethod,
+                            null, o, null);
+ q = eventType.InvokeMember("getQos", System.Reflection.BindingFlags.InvokeMethod,
+                            null, o,null);
+ content = (string)eventType.InvokeMember("getContentStr",
+                                          System.Reflection.BindingFlags.InvokeMethod,
+                                          null, o, null);
+ eventType = k.GetType();
+ key = (string)eventType.InvokeMember("toXml",
+                                      System.Reflection.BindingFlags.InvokeMethod,
+                                      null, k, null);
+ eventType = q.GetType();
+ qos = (string)eventType.InvokeMember("toXml",
+                                      System.Reflection.BindingFlags.InvokeMethod,
+                                      null, k, null);
+           MemoryStream memoryStream = new MemoryStream(new UTF8Encoding().GetBytes(content));
+ XmlTextWriter xmlTextWriter = new XmlTextWriter(memoryStream, Encoding.UTF8);
+
+ XmlDocument keyDoc = new XmlDocument();
+ keyDoc.LoadXml(key);
+
+ xmlBlaster.setUpdateReturn("<qos><state id='OK'/></qos>");
+ return;
+}
+</pre>
+
    </example>
 
    <example lang="VisualBasic" type="HTML">
