@@ -825,25 +825,34 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       I_Entry[] entries = null;
       ArrayList  list = null;
       boolean[] tmp = null;
-      synchronized(this) {
-         while ((nmax > 0) && (numOfBytes > 0L)) {
-            list = peek(nmax, numOfBytes);
-            if ((list == null) || (list.size() < 1)) break;
-            long delta = this.transientQueue.getNumOfBytes();
-            removedEntries = 0;
-            entries = (I_Entry[])list.toArray(new I_Entry[list.size()]);
-            tmp = removeRandomNoNotify(entries);
-            for (int i=0; i < tmp.length; i++) if (tmp[i]) removedEntries++;
-        
-            delta -= this.transientQueue.getNumOfBytes();
-            nmax -= removedEntries;
-            ret += removedEntries;
-            numOfBytes -= delta;
+      ArrayList entriesToRemove = new ArrayList();
+      try {
+         synchronized(this) {
+            while ((nmax > 0) && (numOfBytes > 0L)) {
+               list = peek(nmax, numOfBytes);
+               if ((list == null) || (list.size() < 1)) break;
+               long delta = this.transientQueue.getNumOfBytes();
+               removedEntries = 0;
+               entries = (I_Entry[])list.toArray(new I_Entry[list.size()]);
+               tmp = removeRandomNoNotify(entries);
+               for (int i=0; i < tmp.length; i++) if (tmp[i]) removedEntries++;
+           
+               delta -= this.transientQueue.getNumOfBytes();
+               nmax -= removedEntries;
+               ret += removedEntries;
+               numOfBytes -= delta;
 
-            if (this.notifiedAboutAddOrRemove && tmp!=null) {
-               for(int i=0; i<tmp.length; i++)
-                  if (tmp[i]) entries[i].removed(this.queueId);
+               if (this.notifiedAboutAddOrRemove && tmp!=null) {
+                  for(int i=0; i<tmp.length; i++)
+                     if (tmp[i])
+                        entriesToRemove.add(entries[i]);
+               }
             }
+         }
+      }
+      finally {
+         for (int i=0; i < entriesToRemove.size(); i++) {
+            ((I_Entry)entriesToRemove.get(i)).removed(this.queueId);
          }
       }
       if (this.queueSizeListeners != null) invokeQueueSizeListener();                  
