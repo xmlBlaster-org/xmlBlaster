@@ -825,7 +825,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       I_Entry[] entries = null;
       ArrayList  list = null;
       boolean[] tmp = null;
-      ArrayList entriesToRemove = new ArrayList();
       try {
          synchronized(this) {
             while ((nmax > 0) && (numOfBytes > 0L)) {
@@ -841,18 +840,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                nmax -= removedEntries;
                ret += removedEntries;
                numOfBytes -= delta;
-
-               if (this.notifiedAboutAddOrRemove && tmp!=null) {
-                  for(int i=0; i<tmp.length; i++)
-                     if (tmp[i])
-                        entriesToRemove.add(entries[i]);
-               }
             }
          }
       }
       finally {
-         for (int i=0; i < entriesToRemove.size(); i++) {
-            ((I_Entry)entriesToRemove.get(i)).removed(this.queueId);
+         if (this.notifiedAboutAddOrRemove && tmp!=null && entries!=null) {
+            for(int i=0; i<tmp.length; i++)
+               if (tmp[i])
+                  entries[i].removed(this.queueId);
          }
       }
       if (this.queueSizeListeners != null) invokeQueueSizeListener();                  
