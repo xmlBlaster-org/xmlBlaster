@@ -197,6 +197,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private I_DbSpecific dbSpecific;
    private String stringToCheck;
    private Map runningExecutes = new HashMap();
+   private String initialDataTopic;
+   
    
    /**
     * Not doing anything.
@@ -273,6 +275,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
       // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
       this.stringToCheck = info.get("replication.initial.stringToCheck", null);
+      this.initialDataTopic = info.get("replication.initialDataTopic", null);
       // rewrite the default behaviour of the timestamp detector to detect even UPDATES (deletes are also updates)
       /*
       boolean detectUpdates = this.info.getBoolean("detector.detectUpdates", false);
@@ -498,7 +501,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       XBSession session = this.publisher.getJmsSession();
       // XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
       
-      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(null, slaveSessionName));
+      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(this.initialDataTopic, slaveSessionName));
       producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
       
