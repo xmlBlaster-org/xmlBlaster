@@ -54,6 +54,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private I_DbPool dbPool;
    private String transSeqPropertyName;
    private long transSeq;
+   private long newReplKey;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -124,6 +125,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
       this.transSeqPropertyName = this.dbSpecific.getName() + ".transactionSequence";
       this.transSeq = this.persistentInfo.getLong(this.transSeqPropertyName, 0L);
+      this.info.put(TRANSACTION_SEQ, "" + this.transSeq);
       long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {
          this.oldReplKey = tmp;
@@ -191,19 +193,18 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       /*
        * Note that this test implies that the replKeys come in a growing sequence. If this is not the case, this test is useless.
        */
-      long replKey = rs.getLong(1);
+      this.newReplKey = rs.getLong(1);
       boolean markProcessed = false;
       
-      if (replKey <= this.oldReplKey) {
-         log.warning("the replication key '" + replKey + "' has already been processed since the former key was '" + this.oldReplKey + "'. It will be marked ");
+      if (this.newReplKey <= this.oldReplKey) {
+         log.warning("the replication key '" + this.newReplKey + "' has already been processed since the former key was '" + this.oldReplKey + "'. It will be marked ");
          markProcessed = true;
       }
-      else { // TODO move this after the sending of the message since this could still fail.
-         this.oldReplKey = replKey;
-         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
+      else {
+         this.oldReplKey = this.newReplKey;
       }
       // puts this in the metadata attributes of the message to be sent over the mom
-      this.event.getAttributeMap().put(REPL_KEY_ATTR, "" + replKey);
+      this.event.getAttributeMap().put(REPL_KEY_ATTR, "" + this.newReplKey);
 
       String transKey = rs.getString(2);
       String dbId = rs.getString(3);
@@ -222,12 +223,12 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             throw new Exception(txt);
          }
       }
-      log.fine("sequence number '" + replKey + "' processing now for table '" + tableName + "'");
+      log.fine("sequence number '" + this.newReplKey + "' processing now for table '" + tableName + "'");
       if (this.transactionId == null)
          this.transactionId = transKey;
       else {
          if (!this.transactionId.equals(transKey)) {
-            log.severe("the entry with replKey='" + replKey + "' tableName='" + tableName + "' with action='" + action + "' had transaction '" + transKey + "' but was expected '" + this.transactionId + "'");
+            log.severe("the entry with replKey='" + this.newReplKey + "' tableName='" + tableName + "' with action='" + action + "' had transaction '" + transKey + "' but was expected '" + this.transactionId + "'");
          }
       }
       
@@ -275,7 +276,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (what == ALL || what == ROW_ONLY) {
          Map completeAttrs = new HashMap();
          completeAttrs.put(TABLE_NAME_ATTR, tableName);
-         completeAttrs.put(REPL_KEY_ATTR, "" + replKey);
+         completeAttrs.put(REPL_KEY_ATTR, "" + this.newReplKey);
          completeAttrs.put(TRANSACTION_ATTR, transKey);
          completeAttrs.put(DB_ID_ATTR, dbId);
          completeAttrs.put(GUID_ATTR, guid);
@@ -370,6 +371,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       if (doSend) { // we put it in the attribute map not in the message itself
          this.event.getAttributeMap().put(TRANSACTION_SEQ, "" + this.transSeq++);
          this.persistentInfo.put(this.transSeqPropertyName, "" + this.transSeq);
+         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
       }
          
       String tmp = this.sqlInfo.toXml("");
