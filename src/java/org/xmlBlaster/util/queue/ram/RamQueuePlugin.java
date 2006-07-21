@@ -206,18 +206,16 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @return The number of messages erased
     */
    public long clear() {
-      long ret = 0L;      
+      long ret = 0L;
+      I_QueueEntry[] entries = null;
       synchronized(this) {
          ret = this.storage.size();
 
          // Take a copy to avoid java.util.ConcurrentModificationException
-         I_QueueEntry[] entries = (I_QueueEntry[])this.storage.toArray(new I_QueueEntry[this.storage.size()]);
+         entries = (I_QueueEntry[])this.storage.toArray(new I_QueueEntry[this.storage.size()]);
 
          for (int ii=0; ii<entries.length; ii++) {
             entries[ii].setStored(false);
-            if (this.notifiedAboutAddOrRemove) {
-               entries[ii].removed(this.storageId);
-            }
          }
 
          this.storage.clear();
@@ -225,6 +223,12 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          this.persistentSizeInBytes = 0L;
          this.numOfPersistentEntries = 0L;
       }
+      if (this.notifiedAboutAddOrRemove) {
+         for (int ii=0; ii<entries.length; ii++) {
+            entries[ii].removed(this.storageId);
+         }
+      }
+
       if (this.queueSizeListeners != null) invokeQueueSizeListener();
       return ret;
    }
@@ -245,27 +249,36 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       if (numOfEntries > Integer.MAX_VALUE)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "remove: too many entries to remove " + numOfEntries);
       long size = 0;
-      synchronized(this) {
-         ReturnDataHolder ret = this.genericPeek((int)numOfEntries, numOfBytes, 0, 9);
-         ArrayList elementsToDelete = ret.list;
+      ArrayList entriesToBeRemoved = new ArrayList();
+      try {
+         synchronized(this) {
+            ReturnDataHolder ret = this.genericPeek((int)numOfEntries, numOfBytes, 0, 9);
+            ArrayList elementsToDelete = ret.list;
 
-         // count the persistent entries (and the persistent sizes)
-         for (int i=0; i < elementsToDelete.size(); i++) {
-            I_QueueEntry entry = (I_QueueEntry)elementsToDelete.get(i);
-            if (entry.isPersistent()) {
-               this.numOfPersistentEntries--;
-               this.persistentSizeInBytes -= entry.getSizeInBytes();
+            // count the persistent entries (and the persistent sizes)
+            for (int i=0; i < elementsToDelete.size(); i++) {
+               I_QueueEntry entry = (I_QueueEntry)elementsToDelete.get(i);
+               if (entry.isPersistent()) {
+                  this.numOfPersistentEntries--;
+                  this.persistentSizeInBytes -= entry.getSizeInBytes();
+               }
+               entry.setStored(false); // tell the entry it has been removed from the storage ...
+               if (this.notifiedAboutAddOrRemove) {
+                  entriesToBeRemoved.add(entry);
+               }
             }
-            entry.setStored(false); // tell the entry it has been removed from the storage ...
-            if (this.notifiedAboutAddOrRemove) {
-               entry.removed(this.storageId);
-            }
+
+            this.storage.removeAll(elementsToDelete);
+            this.sizeInBytes -= ret.countBytes;
+            size = elementsToDelete.size();
          }
-
-         this.storage.removeAll(elementsToDelete);
-         this.sizeInBytes -= ret.countBytes;
-         size = elementsToDelete.size();
       }
+      finally {
+         for (int i=0; i < entriesToBeRemoved.size(); i++) {
+            ((I_Entry)entriesToBeRemoved.get(i)).removed(this.storageId);
+         }
+      }
+      
       if (this.queueSizeListeners != null) invokeQueueSizeListener();
       return size;
    }
@@ -482,27 +495,36 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    public boolean[] removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
       if ((queueEntries == null) || (queueEntries.length == 0)) return new boolean[0];
       boolean ret[] = new boolean[queueEntries.length];
-      synchronized(this) {
-         if (this.storage.size() == 0) return ret; // all entries are false 
 
-         /* Did not work with all virtual machines ...
-         this.storage.removeAll(java.util.Arrays.asList(queueEntries));
-         */
-         for (int j=0; j<queueEntries.length; j++) {
-            if (queueEntries[j] == null) continue;
-            if (this.notifiedAboutAddOrRemove) {
-               queueEntries[j].removed(this.storageId);
-            }
-            queueEntries[j].setStored(false); // tell the entry it has been removed from the storage ...
-            if (this.storage.remove(queueEntries[j])) {
-               ret[j] = true;
-               I_Entry entry = queueEntries[j];
-               this.sizeInBytes -= entry.getSizeInBytes();
-               if (entry.isPersistent()) {
-                  this.persistentSizeInBytes -= entry.getSizeInBytes();
-                  this.numOfPersistentEntries--;
+      ArrayList entriesToRemove = new ArrayList();
+      try {
+         synchronized(this) {
+            if (this.storage.size() == 0) return ret; // all entries are false 
+
+            /* Did not work with all virtual machines ...
+            this.storage.removeAll(java.util.Arrays.asList(queueEntries));
+            */
+            for (int j=0; j<queueEntries.length; j++) {
+               if (queueEntries[j] == null) continue;
+               if (this.notifiedAboutAddOrRemove) {
+                  entriesToRemove.add(queueEntries[j]);
+               }
+               queueEntries[j].setStored(false); // tell the entry it has been removed from the storage ...
+               if (this.storage.remove(queueEntries[j])) {
+                  ret[j] = true;
+                  I_Entry entry = queueEntries[j];
+                  this.sizeInBytes -= entry.getSizeInBytes();
+                  if (entry.isPersistent()) {
+                     this.persistentSizeInBytes -= entry.getSizeInBytes();
+                     this.numOfPersistentEntries--;
+                  }
                }
             }
+         }
+      }
+      finally {
+         for (int i=0; i < entriesToRemove.size(); i++) {
+            ((I_Entry)entriesToRemove.get(i)).removed(this.storageId);
          }
       }
       if (this.queueSizeListeners != null) invokeQueueSizeListener();
@@ -541,23 +563,33 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "The queue is shutdown, no message access is possible.");
       }
       ArrayList ret = null;
-      synchronized (this) {
-         ret = genericPeek(numOfEntries, numOfBytes, minPriority, maxPriority).list;
-         for (int i=0; i < ret.size(); i++) {
-            I_QueueEntry entry = (I_QueueEntry)ret.get(i);
-            if (this.notifiedAboutAddOrRemove) {
-               entry.removed(this.storageId);
-            }
-            entry.setStored(false); // tell the entry it has been removed from the storage ...
-            if (this.storage.remove(entry)) {
-               this.sizeInBytes -= entry.getSizeInBytes();
-               if (entry.isPersistent()) {
-                  this.numOfPersistentEntries--;
-                  this.persistentSizeInBytes -= entry.getSizeInBytes();
+
+      ArrayList entriesToRemove = new ArrayList();
+      try {
+         synchronized (this) {
+            ret = genericPeek(numOfEntries, numOfBytes, minPriority, maxPriority).list;
+            for (int i=0; i < ret.size(); i++) {
+               I_QueueEntry entry = (I_QueueEntry)ret.get(i);
+               if (this.notifiedAboutAddOrRemove) {
+                  entriesToRemove.add(entry);
+               }
+               entry.setStored(false); // tell the entry it has been removed from the storage ...
+               if (this.storage.remove(entry)) {
+                  this.sizeInBytes -= entry.getSizeInBytes();
+                  if (entry.isPersistent()) {
+                     this.numOfPersistentEntries--;
+                     this.persistentSizeInBytes -= entry.getSizeInBytes();
+                  }
                }
             }
          }
       }
+      finally {
+         for (int i=0; i < entriesToRemove.size(); i++) {
+            ((I_Entry)entriesToRemove.get(i)).removed(this.storageId);
+         }
+      }
+      
       if (this.queueSizeListeners != null) invokeQueueSizeListener();
       return ret;
    }
@@ -601,46 +633,55 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       throws XmlBlasterException {
 
       ArrayList ret = null; 
-      synchronized(this) {
-         LinkedList list = new LinkedList(this.storage);
-         ListIterator iter = list.listIterator(list.size());
-         int count = 0;
-         long currentSizeInBytes = 0L;
-         long totalSizeInBytes = 0L;
-         ret = new ArrayList();
+      ArrayList entriesToRemove = new ArrayList();
+      try {
+         synchronized(this) {
+            LinkedList list = new LinkedList(this.storage);
+            ListIterator iter = list.listIterator(list.size());
+            int count = 0;
+            long currentSizeInBytes = 0L;
+            long totalSizeInBytes = 0L;
+            ret = new ArrayList();
 
-         // it leaves at least one entry in the list
-         while (iter.hasPrevious()) {
-            I_QueueEntry entry = (I_QueueEntry)iter.previous();
-            currentSizeInBytes = entry.getSizeInBytes();
-            if (!isInsideRange(count, numOfEntries, totalSizeInBytes, numOfBytes)) break;
-            totalSizeInBytes += currentSizeInBytes;
+            // it leaves at least one entry in the list
+            while (iter.hasPrevious()) {
+               I_QueueEntry entry = (I_QueueEntry)iter.previous();
+               currentSizeInBytes = entry.getSizeInBytes();
+               if (!isInsideRange(count, numOfEntries, totalSizeInBytes, numOfBytes)) break;
+               totalSizeInBytes += currentSizeInBytes;
 
-            if (limitEntry != null && this.comparator.compare(limitEntry, entry) >= 0) break;
-            ret.add(entry);
-            count++;
-         }
-         if (leaveOne && this.storage.size() == ret.size()) ret.remove(ret.size()-1);
+               if (limitEntry != null && this.comparator.compare(limitEntry, entry) >= 0) break;
+               ret.add(entry);
+               count++;
+            }
+            if (leaveOne && this.storage.size() == ret.size()) ret.remove(ret.size()-1);
 
-         if (doDelete) {
-            for (int i=0; i < ret.size(); i++) {
-               // this.storage.removeAll(ret);
-               I_QueueEntry entry =  (I_QueueEntry)ret.get(i);
-               if (this.notifiedAboutAddOrRemove) {
-                  entry.removed(this.storageId);
-               }
-               entry.setStored(false); // tell the entry it has been removed from the storage ...
-               if (this.storage.remove(entry)) {
-                  this.sizeInBytes -= entry.getSizeInBytes();
-                  if (entry.isPersistent()) {
-                     this.numOfPersistentEntries--;
-                     this.persistentSizeInBytes -= entry.getSizeInBytes();
+            if (doDelete) {
+               for (int i=0; i < ret.size(); i++) {
+                  // this.storage.removeAll(ret);
+                  I_QueueEntry entry =  (I_QueueEntry)ret.get(i);
+                  if (this.notifiedAboutAddOrRemove) {
+                     entry.removed(this.storageId);
+                  }
+                  entry.setStored(false); // tell the entry it has been removed from the storage ...
+                  if (this.storage.remove(entry)) {
+                     this.sizeInBytes -= entry.getSizeInBytes();
+                     if (entry.isPersistent()) {
+                        this.numOfPersistentEntries--;
+                        this.persistentSizeInBytes -= entry.getSizeInBytes();
+                     }
                   }
                }
             }
+            // this.sizeInBytes -= totalSizeInBytes;
          }
-         // this.sizeInBytes -= totalSizeInBytes;
       }
+      finally {
+         for (int i=0; i < entriesToRemove.size(); i++) {
+            ((I_Entry)entriesToRemove.get(i)).removed(this.storageId);
+         }
+      }
+      
       if (this.queueSizeListeners != null) invokeQueueSizeListener();
       return ret;
    }
