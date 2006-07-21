@@ -75,6 +75,17 @@
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
 
+         <tr>
+            <td>Visual J# 2005</td>
+            <td>Providing our java client library to the .net framework with <a href="http://msdn.microsoft.com/vjsharp/" target="others">Visual J#</a>.
+            Afaik J# support JDK 1.1.4 only, so we can't compile our java client library to .net binaries?<br />
+            See this interop discussion: http://msdn.microsoft.com/vstudio/java/interop/default.aspx
+            </td>
+            <td>not known</td>
+            <td>not known</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+
      </table>
 
      <br />
