@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for 1.3 [not yet released]
 ==================================
+
+ o #15357 I_Entry.removed is now invoked outside synchronize in queues to avoid deadlock
+
  o #15348 Increased information density of server side logging (similar to good old org.jutils times)
 
  o #15337 Property.java: when retrieving someCtx* only someCtx's childs where returned, now the exact match is returned too.
