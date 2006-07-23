@@ -48,13 +48,38 @@ Dll_Export extern  bool  xmlBlasterUnmanagedInitialize(struct XmlBlasterAccessUn
 Dll_Export extern  bool  xmlBlasterUnmanagedDisconnect(struct XmlBlasterAccessUnparsed *xa, const char * qos, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  char *xmlBlasterUnmanagedPublish(struct XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  QosArr *xmlBlasterUnmanagedPublishArr(struct XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterUnmanagedException *exception);
-Dll_Export extern  void  xmlBlasterUnmanagedPublishOneway(struct XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterUnmanagedException *exception);
+/*Dll_Export extern  void  xmlBlasterUnmanagedPublishOneway(struct XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterUnmanagedException *exception);*/
+Dll_Export extern void xmlBlasterUnmanagedPublishOneway(struct XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnitArr, int length, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  char *xmlBlasterUnmanagedSubscribe(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  QosArr *xmlBlasterUnmanagedUnSubscribe(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  QosArr *xmlBlasterUnmanagedErase(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  MsgUnitArr *xmlBlasterUnmanagedGet(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  char *xmlBlasterUnmanagedPing(struct XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  bool xmlBlasterUnmanagedIsConnected(struct XmlBlasterAccessUnparsed *xa);
+
+
+typedef struct Test1 {
+   char secretSessionId[256];
+} Test1;
+Dll_Export extern  void setTest1(Test1 *test1);
+Dll_Export extern Test1 getTest1();
+
+typedef struct Test2 {
+   int len;
+   char **p;
+} Test2;
+Dll_Export extern Test2 getTest2();
+Dll_Export int getTest3(MsgUnit** pList);
+Dll_Export int MinArray(MsgUnit* pData, int length);
+
+
+typedef struct MsgUnitUnmanagedArr {
+   char *secretSessionId;
+   int len;
+   MsgUnit *msgUnitArr;
+} MsgUnitUnmanagedArr;
+
+Dll_Export extern int setMsgUnitArr(MsgUnitUnmanagedArr pData);
 
 
 #ifdef __cplusplus
