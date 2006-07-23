@@ -12,8 +12,9 @@
 //
 // @author mr@marcelruff.info
 //
-// @compile mcs -debug+ NativeC.cs
-// @run     mono NativeC.exe
+// @prepare  cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
+// @compile  mcs -debug+ NativeC.cs
+// @run      mono NativeC.exe
 /*
 Up to now i have avoided unsafe code sections:
 unsafe:
@@ -120,7 +121,7 @@ namespace org::xmlBlaster
       
       public struct MsgUnitArr {
          public bool isOneway;
-         public fixed char secretSessionId[MAX_SESSIONID_LEN];
+         internal fixed char secretSessionId[MAX_SESSIONID_LEN];
          //public string secretSessionId;
          public int len;
          public MsgUnit msgUnitArr;
@@ -205,11 +206,11 @@ namespace org::xmlBlaster
       [DllImport(Library)]
       private extern static QosArr xmlBlasterUnmanagedUnSubscribe(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
 
-      [DllImport(Library)]
-      private extern static QosArr xmlBlasterUnmanagedErase(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
+      //[DllImport(Library)]
+      //private extern static QosArr xmlBlasterUnmanagedErase(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
 
-      [DllImport(Library)]
-      private extern static MsgUnitArr xmlBlasterUnmanagedGet(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
+      //[DllImport(Library)]
+      //private extern static MsgUnitArr xmlBlasterUnmanagedGet(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(Library)]
       private extern static string xmlBlasterUnmanagedPing(IntPtr xa, string qos, ref XmlBlasterUnmanagedException exception);
