@@ -263,6 +263,7 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 /**
  * Allocates the string with malloc for you. 
  * You need to free it with free()
+ * @param src The text to copy
  * @return The allocated string or NULL if out of memory
  */
 Dll_Export char *strcpyAlloc(const char *src)
