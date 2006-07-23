@@ -135,6 +135,7 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
     * &lt;/qos>
     * </pre>
     * @param clientUpdateFp The clients callback function pointer #UpdateFp, if NULL our default handler is used
+    *                       Is ignored if set by initialize already.
     * @param The exception struct, exception->errorCode is filled on exception
     * @return The ConnectReturnQos raw xml string, you need to free() it
     * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html
