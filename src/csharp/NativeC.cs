@@ -1,4 +1,4 @@
-// Simple layer to delegate C# calls to xmlBlaster client C library.
+// Simple layer to delegate C# calls to xmlBlaster client C library (using P/Invoke).
 // libxmlBlasterClientC.so (Mono/Linux) or dll (Windows) is accessed and must be available
 //
 // This code is functional (connect/publish/subscribe/update/disconnect) but still pre-alpha (2006-07)
@@ -8,13 +8,52 @@
 // Features: All features of the client C library (compression, tunnel callbacks), see
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 //
-// @todo passing command line args, does hang on exit, subscribe, erase
+// @todo passing command line args crashes if not ended with empty '-XXXX')
+//       does hang on exit (how to debug?)
+//       publishOneway crashes for arrays > 2
+//       unSubscribe (how to pass QosArr back?)
+//       erase (how to pass QosArr back?)
+//       get (how to pass MsgUnitArr back?)
+//       port content from 'string' to bye[]
 //
 // @author mr@marcelruff.info
 //
 // @prepare  cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
 // @compile  mcs -debug+ NativeC.cs
 // @run      mono NativeC.exe
+//           mono NativeC.exe -logLevel TRACE -XX   (without a dummy -XX it crashes?!)
+//
+/*
+Usage:
+XmlBlaster C SOCKET client @version@
+
+   -dispatch/connection/plugin/socket/hostname [localhost]
+                       Where to find xmlBlaster.
+   -dispatch/connection/plugin/socket/port [7607]
+                       The port where xmlBlaster listens.
+   -dispatch/connection/plugin/socket/localHostname [NULL]
+                       Force the local IP, useful on multi homed computers.
+   -dispatch/connection/plugin/socket/localPort [0]
+                       Force the local port, useful to tunnel firewalls.
+   -dispatch/connection/plugin/socket/compress/type []
+                       Switch on compression with 'zlib:stream'.
+   -dispatch/connection/plugin/socket/useUdpForOneway [false]
+                       Use UDP for publishOneway() calls.
+   -dispatch/callback/plugin/socket/hostname [localhost]
+                       The IP where to establish the callback server.
+                       Can be useful on multi homed hosts.
+   -dispatch/callback/plugin/socket/port [7611]
+                       The port of the callback server.
+   -plugin/socket/multiThreaded  [true]
+                       If true the update() call to your client code is a separate thread.
+   -plugin/socket/responseTimeout  [60000 (one minute)]
+                       The time in millis to wait on a response, 0 is forever.
+   -logLevel            ERROR | WARN | INFO | TRACE | DUMP [WARN]
+   -sleepInterval       Milliseconds to wait on callback messages [0]
+
+Example:
+  HelloWorld3 -logLevel TRACE -dispatch/connection/plugin/socket/hostname 192.168.2.9 -sleepInterval 100000
+*/
 /*
 Up to now i have avoided unsafe code sections:
 unsafe:
@@ -106,25 +145,157 @@ namespace org::xmlBlaster
          public string[] qosArr;
       }
       
+      //[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi,Pack=4)] /* default is 8 byte alignement */
+      [StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]
       public struct MsgUnit {
          public string key;
+
          public int contentLen;
+         //[MarshalAs(UnmanagedType.I4)] public int contentLen;
+         
          public string content; // TODO: Port to byte[]
          //public byte[] content; // ** ERROR **: Structure field of type Byte[] can't be marshalled as LPArray
          //unsafe internal byte* content; // warning CS8023: Only private or internal fixed sized buffers are supported by .NET 1.x
                                    // further down: error CS1503: Argument 1: Cannot convert from `byte*' to `byte[]'
          public string qos;
+         
          public string responseQos;
+
+         public MsgUnit(string key, string content, string qos) {
+            this.key = key;
+            this.contentLen = content.Length;
+            this.content = content;
+            this.qos = qos;
+            this.responseQos = null;
+         }
+
+         public override string ToString() {
+            return key + "\n" + content + "\n" + qos;
+         }
       }
       
+      public struct MsgUnitUnmanagedArr {
+         public string secretSessionId;
+         public int len;
+         public MsgUnit[] msgUnitArr;
+      }
+
+///////////////////
+      //Dll_Export void setTest1(Test1 *test1) {
+      public struct Test1 {
+         [MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
+         public string secretSessionId;
+      }
+      [DllImport(Library)]      
+      private extern static void setTest1(ref Test1 test1);
+      [DllImport(Library)]      
+      private extern static Test1 getTest1();
+      public struct Test2 {
+         public int len;
+         public MsgUnit p;
+      }
+      [DllImport(Library)]      
+      private extern static Test2 getTest2();
+
+      // Dll_Export int getTest3(MsgUnit** pList);
+      [DllImport(Library)]      
+      public static extern int getTest3(out IntPtr pList);
+      //public static extern int MtGetAccountList(out IntPtr pList);
+      //public static extern int getTest3([MarshalAs(typeof(MsgUnit*))]out IntPtr pList);
+      
+      [DllImport(Library)]      
+      extern static int MinArray(MsgUnit[] pData, int length);
+      // ref MsgUnit[] pData does tranport unreadable to C
+      // Structure field of type MsgUnit[] can't be marshalled as LPArray
+
+      [DllImport(Library)]      
+      //extern static int setMsgUnitArr(MsgUnitArr pData);
+      extern static int setMsgUnitArr(MsgUnitUnmanagedArr pData);
+
+
+      public void test() {
+         Test1 test1 = new Test1();
+         test1.secretSessionId = "Very secret";
+         setTest1(ref test1); // Success
+         
+         Test1 res = getTest1();
+         Console.WriteLine("C#: got from C: '" + res.secretSessionId + "'"); // Success, but is empty for C: Test1*getTest1();
+
+         Test2 test2 = getTest2();
+         Console.WriteLine("C#: got from C: '" + test2.len + "' " + test2.p); // But how to access the elements??
+
+         {
+         MsgUnit[] sampleData = new MsgUnit[3];
+         sampleData[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
+         sampleData[1] = new MsgUnit("<key oid='1'/>","HiHo1","<qos/>");
+         sampleData[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
+         int result = MinArray(sampleData, sampleData.Length);
+         Console.WriteLine("C# got from MinArray(): " + result);
+         }
+
+         {
+         MsgUnit[] sampleData = new MsgUnit[3];
+         sampleData[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
+         sampleData[1] = new MsgUnit("<key oid='1'/>","HiHo1","<qos/>");
+         sampleData[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
+         MsgUnitUnmanagedArr arr = new MsgUnitUnmanagedArr();
+         arr.secretSessionId = "SECRET";
+         arr.len = sampleData.Length;
+         arr.msgUnitArr = sampleData;
+         setMsgUnitArr(arr);
+         }
+
+         /*
+         IntPtr pList;
+         int num = getTest3(out pList);
+         MsgUnit[] m_pList = new  MsgUnit[num];
+         
+         IntPtr names;
+result = ReadList(db, out names, ref count);
+MessageBox.Show(Marshal.PtrToStringAnsi(names));
+
+then I can retrieve the first string. But I'm afraid there is an
+additional pointer dereferencing going on here... advancing the
+IntPtr by using
+
+IntPtr n2 = new IntPtr(names.toInt32() + Marshal.SizeOf(typeOf(IntPtr)));
+MessageBox.Show(Marshal.PtrToStringAnsi(n2)); 
+*/
+/*
+         IntPtr current = pList;
+         for (int i=0; i<num; i++) {
+            m_pList[i] = new MsgUnit();
+           // Copy the struct the "current" pointer points on into the C# array element
+           Marshal.PtrToStructure( current, m_pList[ i ]);
+           //MsgUnit ds = (MsgUnit) Marshal.PtrToStructure (m_pList[ i ] , typeof(MsgUnit));
+
+           // In some case call one of this functions if one have to destroy the dynamically allocated
+           // memory in the unmanaged DLL...
+           // Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
+           // Marshal.DestroyStructure( current, typeof(TMList) );
+
+           // let the "current" pointer point to the next unmanaged C struct
+           current = (IntPtr)((int)current + Marshal.SizeOf( m_pList[ i ] ));
+         }
+         // Eventually clean dynamically created unmanaged memory block within the DLL
+         // Marshal.FreeCoTaskMem( pList ); 
+         foreach (MsgUnit msgUnit in m_pList) {
+            Console.WriteLine("C# got from getTest3(): " + msgUnit);         
+         }
+*/
+      }
+///////////////////
+
       const int MAX_SESSIONID_LEN = 256;
       
       public struct MsgUnitArr {
          public bool isOneway;
-         internal fixed char secretSessionId[MAX_SESSIONID_LEN];
+         [MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
+         public string secretSessionId;
+         //internal fixed char secretSessionId[MAX_SESSIONID_LEN];
          //public string secretSessionId;
-         public int len;
-         public MsgUnit msgUnitArr;
+         [MarshalAs(UnmanagedType.I8)] public long len;
+         public MsgUnit[] msgUnitArr;
       }
 
       //public delegate bool UpdateFp(ref MsgUnitArr msg, ref IntPtr userData, ref XmlBlasterException xmlBlasterException);
@@ -177,7 +348,7 @@ namespace org::xmlBlaster
       //[DllImport( "..\\LIB\\PinvokeLib.dll" )]
 		//[DllImport("user32.dll", CharSet = CharSet.Auto)]
       [DllImport(Library)]      
-      private extern static IntPtr getXmlBlasterAccessUnparsed(int argc, string argv);
+      private extern static IntPtr getXmlBlasterAccessUnparsed(int argc, string[] argv);
       
       [DllImport(Library)]      
       private extern static void freeXmlBlasterAccessUnparsed(IntPtr xa);
@@ -197,7 +368,8 @@ namespace org::xmlBlaster
       //[DllImport(Library)]
       //private extern static QosArr xmlBlasterUnmanagedPublishArr(IntPtr xa, ref MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
 
-      //[DllImport(Library)]
+      [DllImport(Library)]
+      private extern static void xmlBlasterUnmanagedPublishOneway(IntPtr xa, MsgUnit[] msgUnitArr, int length, ref XmlBlasterUnmanagedException exception);
       //private extern static void xmlBlasterUnmanagedPublishOneway(IntPtr xa, ref MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(Library)]
@@ -218,18 +390,21 @@ namespace org::xmlBlaster
       [DllImport(Library)]
       private extern static bool xmlBlasterUnmanagedIsConnected(IntPtr xa);
       
-      //[DllImport(Library)]     
-      //private extern static void XmlBlaster3(UpdateFp update);
-      
       private IntPtr xa;
       private UpdateFp myUpdateFp;
       
       public NativeC(string[] argv) {
+         if (argv == null) argv = new String[0];
+
          myUpdateFp = new UpdateFp(NativeC.update);
 
-         foreach (string arg in argv)
-            Console.WriteLine("NativeC() arg=" + arg);         
-         xa = getXmlBlasterAccessUnparsed(0, ""); // TODO: How to pass?
+         // Convert command line arguments: C client lib expects the executable name as first entry
+         string[] c_argv = new string[argv.Length+1];
+         c_argv[0] = "NativC"; // my executable name
+         for (int i=0; i<argv.Length; ++i)
+            c_argv[i+1] = argv[i];
+            
+         xa = getXmlBlasterAccessUnparsed(c_argv.Length, c_argv);
             
          Console.WriteLine("NativeC() ...");         
       }
@@ -329,6 +504,27 @@ namespace org::xmlBlaster
             throw new XmlBlasterException("internal.unknown", "publish failed", e);
          }
       }
+
+      // TODO: Crashs for array size > 2
+      public void publishOneway(MsgUnit[] msgUnitArr) {
+         check("publishOneway");
+         try {
+            XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
+            xmlBlasterUnmanagedPublishOneway(xa, msgUnitArr, msgUnitArr.Length, ref exception);
+            if (exception.errorCode.Length > 0) {
+               Console.WriteLine("publishOneway: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
+            }
+            else
+               Console.WriteLine("publishOneway: SUCCESS");
+         }
+         catch (XmlBlasterException e) {
+            throw e;
+         }
+         catch (Exception e) {
+            throw new XmlBlasterException("internal.unknown", "publishOneway failed", e);
+         }
+      }
       
       public string subscribe(string key, string qos) {
          check("subscribe");
@@ -351,6 +547,7 @@ namespace org::xmlBlaster
          }
       }
 
+      // fails: ** ERROR **: Structure field of type String[] can't be marshalled as LPArray
       public string[] unSubscribe(string key, string qos) {
          check("unSubscribe");
          try {
@@ -416,39 +613,50 @@ namespace org::xmlBlaster
       }
 
       static void Main(string[] argv) {
-         {
-         NativeC nc = new NativeC(argv);
-         
-         string callbackSessionId = "secretCb";
-         string callbackQos = String.Format(
-               "<queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>"+
-               "  <callback type='SOCKET' sessionId='{0}'>"+
-               "  </callback>"+ /*"    socket://{1}:{2}"+*/
-               "</queue>",
-               callbackSessionId);
-         string connectQos = String.Format(
-               "<qos>"+
-               " <securityService type='htpasswd' version='1.0'>"+
-               "  <![CDATA["+
-               "   <user>fritz</user>"+
-               "   <passwd>secret</passwd>"+
-               "  ]]>"+
-               " </securityService>"+
-               "{0}"+
-               "</qos>", callbackQos);
-         
-         nc.connect(connectQos);
-         nc.subscribe("<key oid='Hello'/>", "<qos/>");
-         nc.publish("<key oid='C#C#C#'/>", "HIII", "<qos/>");
-         nc.ping("<qos/>");
-         nc.isConnected();
+         /*
+         if (false) {
+            NativeC nc = new NativeC(argv);
+            nc.test();
+         }
+         */
+         if (true) {
+            NativeC nc = new NativeC(argv);
+            
+            // crashed with [3], why??
+            MsgUnit[] msgUnitArr = new MsgUnit[2];
+            msgUnitArr[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
+            msgUnitArr[1] = new MsgUnit("<key oid='1'/>","HiHoHa1","<qos/>");
+            //msgUnitArr[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
 
-         //nc.unSubscribe("<key oid='Hello'/>", "<qos/>"); // still marshal problems with []
+            const string callbackSessionId = "secretCb";
+            string connectQos = String.Format(
+                  "<qos>"+
+                  " <securityService type='htpasswd' version='1.0'>"+
+                  "  <![CDATA["+
+                  "   <user>fritz</user>"+
+                  "   <passwd>secret</passwd>"+
+                  "  ]]>"+
+                  " </securityService>"+
+                  " <queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>"+
+                  "   <callback type='SOCKET' sessionId='{0}'>"+
+                  "   </callback>"+
+                  " </queue>"+
+                  "</qos>", callbackSessionId);  /*"    socket://{1}:{2}"+*/
+            Console.WriteLine(connectQos);         
+            
+            nc.connect(connectQos);
+            nc.publishOneway(msgUnitArr);
+            nc.subscribe("<key oid='Hello'/>", "<qos/>");
+            nc.publish("<key oid='C#C#C#'/>", "HIII", "<qos/>");
+            nc.ping("<qos/>");
+            nc.isConnected();
 
-         Console.WriteLine("Hit a key");         
-         Console.ReadLine();
-         nc.disconnect("<qos/>");
-         nc.isConnected();
+            //nc.unSubscribe("<key oid='Hello'/>", "<qos/>"); // ** ERROR **: Structure field of type String[] can't be marshalled as LPArray
+            
+            Console.WriteLine("Hit a key");         
+            Console.ReadLine();
+            nc.disconnect("<qos/>");
+            nc.isConnected();
          }
          Console.Out.WriteLine("DONE");
       }
@@ -478,3 +686,40 @@ using System;
      }
  }
 */
+
+/*
+ typedef struct
+// {
+//  char szBLZ[15];
+//  char szKNr[15];
+//  char szType[15];
+//  char  szCurrency[15];
+//  char cSH;
+//  long  lSaldo;
+//  char szCustomer[30];
+
+> } TMList;
+
+[StructLayout(LayoutKind.Explicit, Size=95, CharSet=CharSet.Ansi)]
+  public class TMList
+  {
+   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=15)]
+   [FieldOffset(0)]public String szBLZ;
+
+   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=15)]
+   [FieldOffset(15)]public String szKNr;
+
+   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=15)]
+   [FieldOffset(30)]public String szType;
+
+   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=15)]
+   [FieldOffset(45)]public String szCurrency;
+
+   [FieldOffset(60)]public char cSH;
+   [FieldOffset(61)]public int lSaldo;
+
+   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=30)]
+   [FieldOffset(65)]public String szCustomer;
+
+  }; 
+  */
