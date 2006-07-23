@@ -95,6 +95,8 @@ typedef MsgUnitArr *( * XmlBlasterAccessUnparsedGet)(struct XmlBlasterAccessUnpa
 typedef char *( * XmlBlasterAccessUnparsedPing)(struct XmlBlasterAccessUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterAccessUnparsedIsConnected)(struct XmlBlasterAccessUnparsed *xb);
 
+typedef void ( * XmlBlasterAccessGenericFp)();
+
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
  *
@@ -117,6 +119,7 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
    const char * const *argv;  /**< Environment configuration, usually from the command line */
    Properties *props;         /**< Further configuration parameters */
    void *userObject;          /**< A client can use this pointer to point to any client specific information */
+   XmlBlasterAccessGenericFp userFp; /**< A client can use this function pointer to do any client specific handling */
    /**
     * Connect to the server. 
     * @param xa The 'this' pointer
