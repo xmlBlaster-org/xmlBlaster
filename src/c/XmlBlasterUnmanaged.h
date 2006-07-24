@@ -16,6 +16,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
  for example fixed size arrays like "char errorCode[256]" are tricky.
  We implement here a simple wrapper around XmlBlasterAccessUnparsed.h
  This code is called from xmlBlaster/src/csharp/NativeC.cs
+ See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
  */
 
 
@@ -60,31 +61,6 @@ Dll_Export extern void xmlBlasterUnmanagedErase(struct XmlBlasterAccessUnparsed 
 Dll_Export extern  void xmlBlasterUnmanagedGet(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception, uint32_t* pSize, MsgUnit** ppStruct);
 Dll_Export extern  char *xmlBlasterUnmanagedPing(struct XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterUnmanagedException *exception);
 Dll_Export extern  bool xmlBlasterUnmanagedIsConnected(struct XmlBlasterAccessUnparsed *xa);
-
-
-typedef struct Test1 {
-   char secretSessionId[256];
-} Test1;
-Dll_Export extern  void setTest1(Test1 *test1);
-Dll_Export extern Test1 getTest1();
-
-typedef struct Test2 {
-   int len;
-   char **p;
-} Test2;
-Dll_Export extern Test2 getTest2();
-Dll_Export int getTest3(MsgUnit** pList);
-Dll_Export int MinArray(MsgUnit* pData, int length);
-
-
-typedef struct MsgUnitUnmanagedArr {
-   char *secretSessionId;
-   int len;
-   MsgUnit *msgUnitArr;
-} MsgUnitUnmanagedArr;
-
-Dll_Export extern int setMsgUnitArr(MsgUnitUnmanagedArr pData);
-
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP
