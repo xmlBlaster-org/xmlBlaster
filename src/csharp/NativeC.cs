@@ -267,11 +267,44 @@ public class StringArr
 
       [DllImport(Library)]      
       extern static void TestOutArrayOfMsgUnits(out int size, out IntPtr ptr);
+      
+      [DllImport(Library)]      
+      extern static void passBytes(int contentLen, byte[] content);
 
-
-
+/*
+But you don't have to use MC++ for this, using C# you can declare a delegate
+and pass this one as callback to your unmanaged function.
+Declare your delegate taking an IntPtr as argument for the unmanaged buffer
+address (the char*).
+When the callback is called you can simply copy the buffer pointed to by the
+IntPtr to a managed array using Marshal.Copy(IntPtr, dest, 0, length).
+*/
       public void test() {
-      /*
+     
+        int contentLen = 5;
+        byte[] content = new byte[5];
+        for (int i=0; i<contentLen; i++)
+           content[i] = (byte)'X';
+        passBytes(contentLen, content);
+        
+           /*
+        IntPtr intPtr = new IntPtr(contentLen);
+for (int i = 0; i < 10; i++)
+  Marshal.WriteByte(intPtr, i,content[i]);
+  */
+        //copy from IntPtr -> content (not what i need here) 
+        //Marshal.Copy(intPtr, content, 0, contentLen);
+        /*
+        Marshal.Copy(newArray, 0, unmanagedArray, 10);
+// Another way to set the 10 elements of the C-style unmanagedArray
+for (int i = 0; i < 10; i++)
+  Marshal.WriteByte(unmanagedArray, i, i+1);
+        passBytes(contentLen, intPtr);
+  */
+
+
+
+     /*
          Test1 test1 = new Test1();
          test1.secretSessionId = "Very secret";
          setTest1(ref test1); // Success
@@ -305,6 +338,8 @@ public class StringArr
          }
          
 */
+
+/* Runs fine
    {
       int size;
       IntPtr outArray;
@@ -325,6 +360,7 @@ public class StringArr
       }
       Marshal.FreeCoTaskMem( outArray );
    }
+   */
 
    //      public static void UsingMarshal()
    /* Runs fine:
@@ -482,7 +518,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       private extern static IntPtr getXmlBlasterAccessUnparsedUnmanaged(int argc, string[] argv);
       
       [DllImport(Library)]      
-      private extern static void freeXmlBlasterAccessUnparsed(IntPtr xa);
+      private extern static void freeXmlBlasterAccessUnparsedUnmanaged(IntPtr xa);
 
       [DllImport(Library)]
       private extern static string xmlBlasterUnmanagedConnect(IntPtr xa, string qos, UpdateFp update, ref XmlBlasterUnmanagedException exception);
@@ -541,7 +577,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
 
       ~NativeC() {
          if (xa != new IntPtr(0))
-            freeXmlBlasterAccessUnparsed(xa);
+            freeXmlBlasterAccessUnparsedUnmanaged(xa);
          Console.WriteLine("~NativeC() ...");         
       }
       
@@ -594,7 +630,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
             else
                Console.WriteLine("xmlBlasterUnmanagedDisconnect: SUCCESS '" + bb + "'");
 
-            freeXmlBlasterAccessUnparsed(xa);
+            freeXmlBlasterAccessUnparsedUnmanaged(xa);
             xa = new IntPtr(0);
             Console.WriteLine("xmlBlasterUnmanagedDisconnect: SUCCESS freed all resources");
 
@@ -844,7 +880,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
             NativeC nc = new NativeC(argv);
             nc.test();
          }
-         if (true) {
+         else {
             NativeC nc = new NativeC(argv);
             
             // crashed with [3], why??
