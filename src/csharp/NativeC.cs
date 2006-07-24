@@ -9,7 +9,8 @@
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 //
 // @todo     port content from 'string' to byte[]
-//           publishOneway crashes for more than 2 messages
+//           publishOneway crashes
+//           create the same wrapper for the xmlBlaster C++ library
 //
 // @author   mr@marcelruff.info
 //
