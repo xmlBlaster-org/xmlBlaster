@@ -255,12 +255,15 @@ char *encodeSocketMessage(
    *(rawMsg+MSG_FLAG_POS_VERSION) = XMLBLASTER_SOCKET_VERSION;
 
    currpos = MSG_POS_REQESTID;
+   if (requestId == 0) printf("*** assert: xmlBlasterSocket.c requestId is NULL!\n");
    memcpy(rawMsg+currpos, requestId, strlen(requestId)+1); /* inclusive '\0' */
    currpos += strlen(requestId)+1;
 
+   if (methodName == 0) printf("*** assert: xmlBlasterSocket.c methodName is NULL!\n");
    memcpy(rawMsg+currpos, methodName, strlen(methodName)+1); /* inclusive '\0' */
    currpos += strlen(methodName)+1;
 
+   if (secretSessionId == 0) printf("*** assert: xmlBlasterSocket.c secretSessionId is NULL!\n");
    memcpy(rawMsg+currpos, secretSessionId, strlen(secretSessionId)+1); /* inclusive '\0' */
    currpos += strlen(secretSessionId)+1;
    
@@ -268,6 +271,7 @@ char *encodeSocketMessage(
    memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); /* inclusive '\0' */
    currpos += strlen(tmp)+1;
 
+   if (data == 0) printf("*** assert: xmlBlasterSocket.c data is NULL!\n");
    memcpy(rawMsg+currpos, data, dataLen);      /* add the msgUnit data */
    *rawMsgLen = currpos+dataLen;
 
