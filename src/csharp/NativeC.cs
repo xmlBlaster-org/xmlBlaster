@@ -20,7 +20,7 @@
 //
 /*
 Usage:
-XmlBlaster C SOCKET client @version@
+XmlBlaster C SOCKET client
 
    -dispatch/connection/plugin/socket/hostname [localhost]
                        Where to find xmlBlaster.
@@ -47,21 +47,10 @@ XmlBlaster C SOCKET client @version@
    -sleepInterval       Milliseconds to wait on callback messages [0]
 
 Example:
-  HelloWorld3 -logLevel TRACE -dispatch/connection/plugin/socket/hostname 192.168.2.9 -sleepInterval 100000
-*/
-/*
-Up to now i have avoided unsafe code sections:
-unsafe:
- http://msdn2.microsoft.com/en-us/library/chfa2zb8.aspx
-because of:
- NativeC.cs(111,65): error CS0214: Pointers and fixed size buffers may only be used in an unsafe context
-If using fixed char in exception struct
-
-http://msdn2.microsoft.com/en-us/library/s9ts558h.aspx
+  mono NativeC -logLevel TRACE -dispatch/connection/plugin/socket/hostname 192.168.2.9 -sleepInterval 100000
 */
 using System;
 using System.Runtime.InteropServices;
-
 
 namespace org::xmlBlaster
 {
@@ -104,29 +93,10 @@ namespace org::xmlBlaster
    /// Calling unmanagegd code: libxmlBlasterClientC.so (Mono) or xmlBlasterClient.dll (Windows)
    public class NativeC
    {
+      // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
+      //[DllImport( "..\\LIB\\PinvokeLib.dll" )]
+		//[DllImport("user32.dll", CharSet = CharSet.Auto)]
       const string Library = "xmlBlasterClientCD"; //libxmlBlasterClientCD.so
-
-/*      
-      const int EXCEPTIONSTRUCT_ERRORCODE_LEN = 56;
-      const int EXCEPTIONSTRUCT_MESSAGE_LEN = 1024;
-      
-      // In C# 2.0, a struct can be declared with an embedded array:
-      // http://msdn2.microsoft.com/en-us/library/zycewsya.aspx
-      //   unsafe {
-      [StructLayout(LayoutKind.Sequential)]
-      public struct XmlBlasterException {
-         public int remote;
-         //char *errorCode = stackalloc char[EXCEPTIONSTRUCT_ERRORCODE_LEN];
-         // may only be used in unsafe context
-         // Accessing this member crashes in my environment
-         internal fixed char errorCode[EXCEPTIONSTRUCT_ERRORCODE_LEN];
-         internal fixed char message[EXCEPTIONSTRUCT_MESSAGE_LEN];
-         //Frees the pointer?:
-         //public String errorCode;
-         //public String message;
-      }
-      //   }
-*/
 
       // Helper struct for DLL calls to avoid 'fixed' and unsafe
       struct XmlBlasterUnmanagedException {
@@ -140,329 +110,55 @@ namespace org::xmlBlaster
          public string[] qosArr;
       }
 
-      //[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi,Pack=4)] /* default is 8 byte alignement */
-      /*
-      [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
-      public struct MsgUnit {
-         public String key;
-
-         public int contentLen;
-         //[MarshalAs(UnmanagedType.I4)] public int contentLen;
-         
-         public String content; // TODO: Port to byte[]
-         //public byte[] content; // ** ERROR **: Structure field of type Byte[] can't be marshalled as LPArray
-         //unsafe internal byte* content; // warning CS8023: Only private or internal fixed sized buffers are supported by .NET 1.x
-                                   // further down: error CS1503: Argument 1: Cannot convert from `byte*' to `byte[]'
-         public String qos;
-         
-         public String responseQos;
-         
-         //public MsgUnit() {}
-
-         public MsgUnit(string key, string content, string qos) {
-            this.key = key;
-            this.contentLen = content.Length;
-            this.content = content;
-            this.qos = qos;
-            this.responseQos = null;
-         }
-
-         public override string ToString() {
-            return key + "\n" + content + "\n" + qos;
-         }
-      }
-      */
       public struct MsgUnitUnmanagedArr {
          public string secretSessionId;
          public int len;
          public MsgUnit[] msgUnitArr;
       }
 
-///////////////////
-/*
-NativeC() ...
-C code: setTest1() secretSessionId=Very secret
-C code: getTest1()
-C#: getTest1() got from C: 'Back from C'
-C#: getTest2() got from C: '0'
-
-
-C: MinArray <key oid='0'/> <qos/>
-C: MinArray <key oid='1'/> <qos/>
-C: MinArray <key oid='2'/> <qos/>
-C: MinArray <key oid='3'/> <qos/>
-C# got from MinArray(): 4
-C: setMsgUnitArr 3
-C: setMsgUnitArr SECRET 3 key=@� qos=@�
-C: setMsgUnitArr SECRET 5 key=@� qos=@�
-C: setMsgUnitArr SECRET 7 key=@� qos=@�
-C: TestOutArrayOfStructs
-
-*/
-      //Dll_Export void setTest1(Test1 *test1) {
-      public struct Test1 {
-         [MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
-         public string secretSessionId;
-      }
-      [DllImport(Library)]      
-      private extern static void setTest1(ref Test1 test1);
-      [DllImport(Library)]      
-      private extern static Test1 getTest1();
-      public struct Test2 {
-         public int len;
-         public IntPtr p;
-      }
-      [DllImport(Library)]      
-      private extern static Test2 getTest2();
-
-      // Dll_Export int getTest3(MsgUnit** pList);
-      [DllImport(Library)]      
-      public static extern int getTest3(out IntPtr pList);
-      //public static extern int MtGetAccountList(out IntPtr pList);
-      //public static extern int getTest3([MarshalAs(typeof(MsgUnit*))]out IntPtr pList);
-      
-      [DllImport(Library)]      
-      extern static int MinArray(MsgUnit[] pData, int length);
-      // ref MsgUnit[] pData does tranport unreadable to C
-      // Structure field of type MsgUnit[] can't be marshalled as LPArray
-
-      [DllImport(Library)]      
-      //extern static int setMsgUnitArr(MsgUnitArr pData);
-      extern static int setMsgUnitArr(MsgUnitUnmanagedArr pData);
-      
-      [DllImport(Library)]      
-      extern static int TestOutArrayOfStructs(out int size, out IntPtr ptr);
-
-      [DllImport(Library)]   // Didn't work to pass string[] directly   
-      extern static void TestOutQosArr(out int size, out IntPtr ptr);
-
-      [DllImport(Library)]      
-      extern static void TestOutStringArr(out int size, out IntPtr ptr);
 
       // SEE http://msdn2.microsoft.com/en-us/library/2k1k68kw.aspx
       // Declares a class member for each structure element.
       // Must match exactly the C struct MsgUnit (sequence!)
-[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
-public class MsgUnit 
-{
-   public string key;
-   public int contentLen;
-   public string content;
-   public string qos;
-   public string responseQos;
-   public MsgUnit() { }
-   public MsgUnit(string key, string content, string qos) {
-     this.key = key;
-     this.contentLen = content.Length;
-     this.content = content;
-     this.qos = qos;
-  }
-}
-
-[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
-public class StringArr
-{
-   public string str;
-}
-
-      [DllImport(Library)]      
-      extern static void TestOutArrayOfMsgUnits(out int size, out IntPtr ptr);
-      
-      [DllImport(Library)]      
-      extern static void passBytes(int contentLen, byte[] content);
-
-/*
-But you don't have to use MC++ for this, using C# you can declare a delegate
-and pass this one as callback to your unmanaged function.
-Declare your delegate taking an IntPtr as argument for the unmanaged buffer
-address (the char*).
-When the callback is called you can simply copy the buffer pointed to by the
-IntPtr to a managed array using Marshal.Copy(IntPtr, dest, 0, length).
-*/
-      public void test() {
-     
-        int contentLen = 5;
-        byte[] content = new byte[5];
-        for (int i=0; i<contentLen; i++)
-           content[i] = (byte)'X';
-        passBytes(contentLen, content);
-        
-           /*
-        IntPtr intPtr = new IntPtr(contentLen);
-for (int i = 0; i < 10; i++)
-  Marshal.WriteByte(intPtr, i,content[i]);
-  */
-        //copy from IntPtr -> content (not what i need here) 
-        //Marshal.Copy(intPtr, content, 0, contentLen);
-        /*
-        Marshal.Copy(newArray, 0, unmanagedArray, 10);
-// Another way to set the 10 elements of the C-style unmanagedArray
-for (int i = 0; i < 10; i++)
-  Marshal.WriteByte(unmanagedArray, i, i+1);
-        passBytes(contentLen, intPtr);
-  */
-
-
-
-     /*
-         Test1 test1 = new Test1();
-         test1.secretSessionId = "Very secret";
-         setTest1(ref test1); // Success
-         
-         Test1 res = getTest1();
-         Console.WriteLine("C#: getTest1() got from C: '" + res.secretSessionId + "'"); // Success, but is empty for C: Test1*getTest1();
-
-         Test2 test2 = getTest2();
-         Console.WriteLine("C#: getTest2() got from C: '" + test2.len + "' " + test2.p); // But how to access the elements??
-
-         { // runs perfectly!
-         MsgUnit[] sampleData = new MsgUnit[4];
-         sampleData[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
-         sampleData[1] = new MsgUnit("<key oid='1'/>","HiHo1","<qos/>");
-         sampleData[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
-         sampleData[3] = new MsgUnit("<key oid='3'/>","Hi3","<qos/>");
-         int result = MinArray(sampleData, sampleData.Length);
-         Console.WriteLine("C# got from MinArray(): " + result);
-         }
-
-         {
-         MsgUnit[] sampleData = new MsgUnit[3];
-         sampleData[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
-         sampleData[1] = new MsgUnit("<key oid='1'/>","HiHo1","<qos/>");
-         sampleData[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
-         MsgUnitUnmanagedArr arr = new MsgUnitUnmanagedArr();
-         arr.secretSessionId = "SECRET";
-         arr.len = sampleData.Length;
-         arr.msgUnitArr = sampleData;
-         setMsgUnitArr(arr);
-         }
-         
-*/
-
-/* Runs fine
-   {
-      int size;
-      IntPtr outArray;
-      TestOutStringArr( out size, out outArray );
-      Console.WriteLine("TestOutStringArr() size=" + size);
-      StringArr[] manArray = new StringArr[ size ];
-      IntPtr current = outArray;
-      for( int i = 0; i < size; i++ )
+      [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
+      public class MsgUnit 
       {
-         manArray[ i ] = new StringArr();
-         Marshal.PtrToStructure( current, manArray[ i ]);
-         Marshal.DestroyStructure( current, typeof(StringArr) );
-         current = (IntPtr)((long)current + 
-            Marshal.SizeOf( manArray[ i ] ));
-         
-         Console.WriteLine( "Element {0}: str={1}", i, 
-            manArray[ i ].str );
-      }
-      Marshal.FreeCoTaskMem( outArray );
-   }
-   */
-
-   //      public static void UsingMarshal()
-   /* Runs fine:
-   {
-      int size;
-      IntPtr outArray;
-      TestOutArrayOfStructs( out size, out outArray );
-      Console.WriteLine("TestOutArrayOfStructs() size=" + size);
-      MsgUnit[] manArray = new MsgUnit[ size ];
-      IntPtr current = outArray;
-      for( int i = 0; i < size; i++ )
-      {
-         manArray[ i ] = new MsgUnit();
-         Marshal.PtrToStructure( current, manArray[ i ]);
-         
-         //Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
-         Marshal.DestroyStructure( current, typeof(MsgUnit) );
-         current = (IntPtr)((long)current + 
-            Marshal.SizeOf( manArray[ i ] ));
-         
-         Console.WriteLine( "Element {0}: key={1} qos={2} buffer={3} contentLength={4}", i, 
-            manArray[ i ].key, manArray[ i ].qos, manArray[ i ].content, manArray[ i ].contentLen );
-      }
-      Marshal.FreeCoTaskMem( outArray );
-   }
-   */
-   
-   /* Didn't work directly with strings, why?
-   {
-      int size;
-      IntPtr outArray;
-      TestOutQosArr( out size, out outArray );
-      Console.WriteLine("TestOutQosArr() size=" + size);
-      string[] manArray = new string[ size ];
-      IntPtr current = outArray;
-      for( int i = 0; i < size; i++ )
-      {
-         manArray[ i ] = Marshal.PtrToStringAuto( current );
-         
-         //Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
-         //Marshal.DestroyString( current, typeof(string) );
-         current = (IntPtr)((long)current + 
-            Marshal.SizeOf( manArray[ i ] ));
-         
-         Console.WriteLine( "Element {0}: retQos={1}", i, 
-            manArray[ i ] );
-      }
-      Marshal.FreeCoTaskMem( outArray );
-   }
-   */
-
-         /*
-         IntPtr pList;
-         int num = getTest3(out pList);
-         MsgUnit[] m_pList = new  MsgUnit[num];
-         
-         IntPtr names;
-result = ReadList(db, out names, ref count);
-MessageBox.Show(Marshal.PtrToStringAnsi(names));
-
-then I can retrieve the first string. But I'm afraid there is an
-additional pointer dereferencing going on here... advancing the
-IntPtr by using
-
-IntPtr n2 = new IntPtr(names.toInt32() + Marshal.SizeOf(typeOf(IntPtr)));
-MessageBox.Show(Marshal.PtrToStringAnsi(n2)); 
-*/
-/*
-         IntPtr current = pList;
-         for (int i=0; i<num; i++) {
-            m_pList[i] = new MsgUnit();
-           // Copy the struct the "current" pointer points on into the C# array element
-           Marshal.PtrToStructure( current, m_pList[ i ]);
-           //MsgUnit ds = (MsgUnit) Marshal.PtrToStructure (m_pList[ i ] , typeof(MsgUnit));
-
-           // In some case call one of this functions if one have to destroy the dynamically allocated
-           // memory in the unmanaged DLL...
-           // Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
-           // Marshal.DestroyStructure( current, typeof(TMList) );
-
-           // let the "current" pointer point to the next unmanaged C struct
-           current = (IntPtr)((int)current + Marshal.SizeOf( m_pList[ i ] ));
+         public string key;
+         public int contentLen;
+         // Without MarshalAs: ** ERROR **: Structure field of type Byte[] can't be marshalled as LPArray
+         //[MarshalAs (UnmanagedType.ByValArray, SizeConst=100)] // does not work unlimited without SizeConst -> SIGSEGV
+         // public byte[] content; // Ensure UTF8 encoding for strings
+         public string content;
+         public string qos;
+         public string responseQos;
+         public MsgUnit() { }
+         public MsgUnit(string key, string contentStr, string qos) {
+            this.key = key;
+            this.contentLen = contentStr.Length;
+            setContentStr(contentStr);
+            this.qos = qos;
          }
-         // Eventually clean dynamically created unmanaged memory block within the DLL
-         // Marshal.FreeCoTaskMem( pList ); 
-         foreach (MsgUnit msgUnit in m_pList) {
-            Console.WriteLine("C# got from getTest3(): " + msgUnit);         
+         /// We return a string in the default codeset
+         public string getContentStr() {
+            //System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+            //return enc.GetString(this.content);
+            // How does this work? System.Text.Decoder d = System.Text.Encoding.UTF8.GetDecoder();
+            return this.content;
          }
-*/
+         /// The binary string is UTF8 encoded (xmlBlaster default)
+         public void setContentStr(string contentStr) {
+            //this.content = System.Text.Encoding.UTF8.GetBytes(contentStr);
+            this.content = contentStr;
+         }
+         public override string ToString() {
+            return key + "\n" + content + "\n" + qos;
+         }
       }
-///////////////////
 
-      const int MAX_SESSIONID_LEN = 256;
-      
-      public struct MsgUnitArr {
-         public bool isOneway;
-         [MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
-         public string secretSessionId;
-         //internal fixed char secretSessionId[MAX_SESSIONID_LEN];
-         //public string secretSessionId;
-         [MarshalAs(UnmanagedType.I8)] public long len;
-         public MsgUnit[] msgUnitArr;
+      [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
+      public class StringArr
+      {
+         public string str;
       }
 
       //public delegate bool UpdateFp(ref MsgUnitArr msg, ref IntPtr userData, ref XmlBlasterException xmlBlasterException);
@@ -472,9 +168,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       static string update(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception) {
          Console.WriteLine("C# update invoked START ==================");
          Console.WriteLine(msgUnit.key);
-         //unsafe { Console.WriteLine(ByteArrayToString(msgUnit.content)); }
-         string content = msgUnit.content.Substring(0,msgUnit.contentLen);
-         Console.WriteLine(content);
+         Console.WriteLine(msgUnit.getContentStr());
          Console.WriteLine(msgUnit.qos);
          string ret = "<qos><state id='OK'/></qos>";
          Console.WriteLine("C# update invoked DONE ===================");
@@ -483,7 +177,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       
       // C# to convert a string to a byte array.
       public static byte[] StrToByteArray(string str) {
-         //byte[] data = Encoding.UTF8.GetBytes(str); // TODO
+         //byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // TODO
          System.Text.ASCIIEncoding  encoding=new System.Text.ASCIIEncoding();
          return encoding.GetBytes(str);
       }
@@ -510,10 +204,6 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
          }
       */
 		
-      // Declares managed prototypes for unmanaged functions.
-      // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
-      //[DllImport( "..\\LIB\\PinvokeLib.dll" )]
-		//[DllImport("user32.dll", CharSet = CharSet.Auto)]
       [DllImport(Library)]      
       private extern static IntPtr getXmlBlasterAccessUnparsedUnmanaged(int argc, string[] argv);
       
@@ -650,7 +340,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
             MsgUnit msgUnit = new MsgUnit();
             msgUnit.key = key;
-            msgUnit.content =  content;
+            msgUnit.setContentStr(content);
             //unsafe { msgUnit.content =  StrToByteArray(content); }
             msgUnit.contentLen = content.Length;
             msgUnit.qos = qos;
@@ -876,114 +566,49 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       }
 
       static void Main(string[] argv) {
-         if (false) {
-            NativeC nc = new NativeC(argv);
-            nc.test();
-         }
-         else {
-            NativeC nc = new NativeC(argv);
-            
-            // crashed with [3], why??
-            MsgUnit[] msgUnitArr = new MsgUnit[3];
-            msgUnitArr[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
-            msgUnitArr[1] = new MsgUnit("<key oid='1'/>","HiHoHa1","<qos/>");
-            msgUnitArr[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
+         NativeC nc = new NativeC(argv);
 
-            const string callbackSessionId = "secretCb";
-            string connectQos = String.Format(
-                  "<qos>"+
-                  " <securityService type='htpasswd' version='1.0'>"+
-                  "  <![CDATA["+
-                  "   <user>fritz</user>"+
-                  "   <passwd>secret</passwd>"+
-                  "  ]]>"+
-                  " </securityService>"+
-                  " <queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>"+
-                  "   <callback type='SOCKET' sessionId='{0}'>"+
-                  "   </callback>"+
-                  " </queue>"+
-                  "</qos>", callbackSessionId);  //"    socket://{1}:{2}"+
-            Console.WriteLine(connectQos);         
-            
-            nc.connect(connectQos);
-            for (int i=0; i<50; i++) {
-               MsgUnit[] msgs = nc.get("<key oid='Hello'/>", "<qos><history numEntries='6'/></qos>");
-               //nc.publishOneway(msgUnitArr);
-               nc.subscribe("<key oid='Hello'/>", "<qos/>");
-               nc.publish("<key oid='C#C#C#'/>", "HIII", "<qos/>");
-               nc.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
-               nc.ping("<qos/>");
-               nc.isConnected();
-               nc.unSubscribe("<key oid='Hello'/>", "<qos/>");
-               nc.erase("<key oid='Hello'/>", "<qos/>");
-               Console.WriteLine("Hit a key " + i);         
-               Console.ReadLine();
-            }
-            nc.disconnect("<qos/>");
+         // crashed with [3], why??
+         MsgUnit[] msgUnitArr = new MsgUnit[3];
+         msgUnitArr[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
+         msgUnitArr[1] = new MsgUnit("<key oid='1'/>","HiHoHa1","<qos/>");
+         msgUnitArr[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
+
+         const string callbackSessionId = "secretCb";
+         string connectQos = String.Format(
+               "<qos>"+
+               " <securityService type='htpasswd' version='1.0'>"+
+               "  <![CDATA["+
+               "   <user>fritz</user>"+
+               "   <passwd>secret</passwd>"+
+               "  ]]>"+
+               " </securityService>"+
+               " <queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>"+
+               "   <callback type='SOCKET' sessionId='{0}'>"+
+               "   </callback>"+
+               " </queue>"+
+               "</qos>", callbackSessionId);  //"    socket://{1}:{2}"+
+         Console.WriteLine(connectQos);         
+
+         nc.connect(connectQos);
+         for (int i=0; i<50; i++) {
+            //nc.publishOneway(msgUnitArr);
+            nc.subscribe("<key oid='Hello'/>", "<qos/>");
+            //nc.publish("<key oid='Hello'/>", "HIII", "<qos/>");
+            nc.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+            nc.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
+            MsgUnit[] msgs = nc.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
+            Console.WriteLine("get() returned " + msgs.Length + " messages");         
+            nc.ping("<qos/>");
             nc.isConnected();
+            nc.unSubscribe("<key oid='Hello'/>", "<qos/>");
+            nc.erase("<key oid='Hello'/>", "<qos/>");
+            Console.WriteLine("Hit a key " + i);         
+            Console.ReadLine();
          }
+         nc.disconnect("<qos/>");
+         nc.isConnected();
          Console.Out.WriteLine("DONE");
       }
    }
 }
-
-/*
-using System;
- using System.Runtime.InteropServices;
- public class LibWrap
- {
- // C# doesn't support varargs so all arguments must be explicitly defined.
- // CallingConvention.Cdecl must be used since the stack is 
- // cleaned up by the caller.
- // int printf(stringformat [, argument]...)
- [DllImport("msvcrt.dll", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)]
- public static extern int printf(String format, int i, double d); 
- [DllImport("msvcrt.dll", CharSet=CharSet.Ansi, CallingConvention=CallingConvention.Cdecl)]
- public static extern int printf(String format, int i, String s); 
- }
- public class App
- {
-     public static void Main()
-     {
-         LibWrap.printf("\nPrint params: %i %f", 99, 99.99);
-         LibWrap.printf("\nPrint params: %i %s", 99, "abcd");
-     }
- }
-*/
-
-/*
- typedef struct
-// {
-//  char szBLZ[15];
-//  char szKNr[15];
-//  char szType[15];
-//  char  szCurrency[15];
-//  char cSH;
-//  long  lSaldo;
-//  char szCustomer[30];
-
-> } TMList;
-
-[StructLayout(LayoutKind.Explicit, Size=95, CharSet=CharSet.Ansi)]
-  public class TMList
-  {
-   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=15)]
-   [FieldOffset(0)]public String szBLZ;
-
-   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=15)]
-   [FieldOffset(15)]public String szKNr;
-
-   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=15)]
-   [FieldOffset(30)]public String szType;
-
-   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=15)]
-   [FieldOffset(45)]public String szCurrency;
-
-   [FieldOffset(60)]public char cSH;
-   [FieldOffset(61)]public int lSaldo;
-
-   [MarshalAs(UnmanagedType.ByValTStr, SizeConst=30)]
-   [FieldOffset(65)]public String szCustomer;
-
-  }; 
-  */
