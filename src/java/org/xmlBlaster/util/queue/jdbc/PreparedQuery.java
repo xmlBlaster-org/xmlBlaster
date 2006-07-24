@@ -21,6 +21,9 @@ import java.util.logging.Level;
  */
 
 class PreparedQuery {
+   public final static boolean WITH_FAILURES = false;
+   public final static boolean SUCCESS = true;
+   
    public final static String ME = "PreparedQuery";
    private static Logger log = Logger.getLogger(PreparedQuery.class.getName());
    Connection conn;
@@ -41,9 +44,8 @@ class PreparedQuery {
     * @param log
     * @param fetchSize
     */
-   public PreparedQuery(JdbcConnectionPool pool, String request, boolean isAutoCommit, Logger log, int fetchSize)
+   public PreparedQuery(JdbcConnectionPool pool, String request, boolean isAutoCommit, int fetchSize)
       throws SQLException, XmlBlasterException {
-      this.log = log;
       this.pool = pool;
       this.isClosed = false;
       if (log.isLoggable(Level.FINER))
@@ -80,7 +82,8 @@ class PreparedQuery {
                   log.warning("constructor exception occured when closing statement " + additionalInfo + ": " + ex3.toString());
                }
             }   
-            if (this.conn != null) this.pool.releaseConnection(this.conn);
+            if (this.conn != null) 
+               this.pool.discardConnection(this.conn);
             this.conn = null;
          }
          this.isClosed = true;
@@ -100,7 +103,8 @@ class PreparedQuery {
             catch (Throwable ex2) {
                log.warning("constructor: exception occured when handling SQL Exception: " + additionalInfo + ex2.toString());
             }
-            if (this.conn != null) this.pool.releaseConnection(this.conn);
+            if (this.conn != null) 
+               this.pool.discardConnection(this.conn);
             this.conn = null;
          }
          this.isClosed = true;
@@ -120,7 +124,8 @@ class PreparedQuery {
             catch (Throwable ex2) {
                log.warning("constructor: " + additionalInfo + " exception occured when handling SQL Exception: " + ex2.toString());
             }
-            if (this.conn != null) this.pool.releaseConnection(this.conn);
+            if (this.conn != null) 
+               this.pool.discardConnection(this.conn);
             this.conn = null;
          }
          this.isClosed = true;
@@ -158,23 +163,22 @@ class PreparedQuery {
       catch (SQLException ex) {
          log.fine("inTransactionRequest. Exception: " + ex.getMessage());
          this.isException = true;
-         close();
+         close(WITH_FAILURES);
          throw ex;
       }
       catch (Throwable ex) {
          log.warning("inTransactionRequest. Throwable: " + ex.toString());
-         close();
+         this.isException = true;
+         close(WITH_FAILURES);
          throw new XmlBlasterException(this.pool.getGlobal(), ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".inTransactionRequest", "", ex);
       }
       return this.rs;
    }
 
-
-   public PreparedQuery(JdbcConnectionPool pool, String request, Logger log, int fetchSize)
+   public PreparedQuery(JdbcConnectionPool pool, String request, int fetchSize)
       throws SQLException, XmlBlasterException {
-      this(pool, request, false, log, fetchSize);
+      this(pool, request, false, fetchSize);
    }
-
 
    /**
     * Close the connection. 
@@ -183,13 +187,16 @@ class PreparedQuery {
     * it makes a rollback, otherwise a commit in case the flag isAutoCommit
     * is false.
     */
-   public final void close() throws XmlBlasterException, SQLException {
+   public final void close(boolean success) throws XmlBlasterException, SQLException {
 
       if (this.isClosed) return;
-
+      if (!success)
+         this.isException = true;
+      
       try {
          if (!this.conn.getAutoCommit()) {
-            if (log.isLoggable(Level.FINE)) this.log.fine("close with autocommit 'false'");
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("close with autocommit 'false'");
             try {
                if (this.isException) {
                   log.warning("close with autocommit 'false': rollback");
@@ -222,16 +229,21 @@ class PreparedQuery {
          log.warning("close: exception when closing statement: " + ex.toString());
       }
 
-     if (this.conn != null) this.pool.releaseConnection(this.conn);
-     // TODO: if we had an exception: this.pool.destroyConnection(this.conn)
+     if (this.conn != null) {
+        boolean finalSuccess = !this.isException;
+        this.pool.releaseConnection(conn, finalSuccess);
+     }
      this.conn = null;
      this.isClosed = true;
    }
 
 
+   /**
+    * TODO this method should not be needed. Check if close is really always invoked.
+    */
    public void finalize() {
       try {
-         if (!this.isClosed) close();
+         if (!this.isClosed) close(SUCCESS);
       }
       catch(Exception ex) {
       }

@@ -218,6 +218,57 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    }
 
    /**
+    * Discards the passed connection from the pool and instead adds a new fresh connection to the pool.
+    * This method is to be invoked when an exception occured and it can be supposed that the connection
+    * is not good anymore.
+    * 
+    * @param conn
+    * @throws XmlBlasterException
+    */
+   public void discardConnection(Connection conn) throws XmlBlasterException {
+      if (conn == null)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, "discardConnection", "The connection to discard is null"); 
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("discardConnection " + this.connections.size() + " waiting calls: " + this.waitingCalls);
+      try {
+         SQLWarning warns = conn.getWarnings();
+         if (log.isLoggable(Level.FINE)) {
+            while (warns != null) {
+               log.fine("errorCode=" + warns.getErrorCode() + " state=" + warns.getSQLState() + ": " + warns.toString().trim());
+               warns = warns.getNextWarning();
+            }
+         }
+      }
+      catch (Throwable e) {
+         log.warning("clearWarnings() failed: " + e.toString());
+      }
+      
+      try {
+         conn.close();
+      }
+      catch (Throwable ex) {
+         log.warning("Could not close the connection to be discarded");
+      }
+      try {
+         addConnectionToPool();
+      }
+      catch (SQLException ex) {
+         log.warning("Could not close the connection to be discarded");
+      }
+   }
+   
+   
+   private synchronized void addConnectionToPool() throws SQLException {
+      try {
+         this.connections.put(DriverManager.getConnection(url, user, password));
+      //   log.info(ME, "DriverManager:" + buf.toString());
+      }
+      catch (InterruptedException e) {
+         log.severe("connect: an interrupted exception occured " + e.getMessage());
+      }
+   }
+   
+   /**
     * Connects to the DB (so many connections as configured)
     * @param disconnectFirst if 'true' then all connections to the db are closed before reconnecting.
     */
@@ -232,14 +283,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             //java.io.OutputStream buf = new java.io.ByteArrayOutputStream();
             //java.io.PrintStream pr = new java.io.PrintStream(buf);
             //DriverManager.setLogStream(pr);
-            try {
-               this.connections.put(DriverManager.getConnection(url, user, password));
-            //   log.info(ME, "DriverManager:" + buf.toString());
-            }
-            catch (InterruptedException e) {
-               log.severe("connect: an interrupted exception occured " + e.getMessage());
-            }
-            if (log.isLoggable(Level.FINE)) log.fine("initialized DB connection "+ i + " success");
+            addConnectionToPool();
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("initialized DB connection "+ i + " success");
          }
          oldStatus = this.status;
          this.status = I_StorageProblemListener.AVAILABLE;
@@ -421,7 +467,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.connections.setCapacity(this.capacity);
       try {
          // initializing and establishing of connections to DB (but first disconnect if already connected)
-         connect(true);
+         final boolean disconnectFirst = true;
+         connect(disconnectFirst);
 
          parseMapping(prop);
          if (log.isLoggable(Level.FINEST)) dumpMetaData();
@@ -654,12 +701,24 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
    }
 
+   /**
+    * Used to give back a connection to the pool. If the pool is already full
+    * it will throw an exception. If the success flag is true, it well release the
+    * connection back to the pool, otherwise it will throw away the current connection
+    * and add to the pool a new one.
+    */
+   public void releaseConnection(Connection conn, boolean success) throws XmlBlasterException {
+       if (success)
+          releaseConnection(conn);
+       else
+          discardConnection(conn);
+   }
 
    /**
     * Used to give back a connection to the pool. If the pool is already full
     * it will throw an exception.
     */
-   public void releaseConnection(Connection conn) throws XmlBlasterException {
+   private void releaseConnection(Connection conn) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("releaseConnection " + this.connections.size() + " waiting calls: " + this.waitingCalls);
       try {
          SQLWarning warns = conn.getWarnings();
