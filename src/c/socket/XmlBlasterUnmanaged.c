@@ -10,6 +10,18 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <stdio.h> /* printf */
 #include <XmlBlasterUnmanaged.h>
 
+Dll_Export void passBytes(int contentLen, char *content) {
+   int i;
+   char *str;
+   printf("C code: passBytes() len=%d\n", contentLen);
+   for (i=0; i<contentLen; ++i)
+      printf("'%c' ", content[i]);
+   str = toReadableDump(content, contentLen);
+   printf("C code: passBytes() %s\n", str);
+   free(str);
+}
+
+
 Dll_Export void setTest1(Test1 *test1) {
    printf("C code: setTest1() secretSessionId=%s\n", test1->secretSessionId);
 }
@@ -287,6 +299,16 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanaged(int ar
       ptr[i] = strcpyAlloc(argv[i]);
    }
    return getXmlBlasterAccessUnparsed(argc, ptr);
+}
+
+Dll_Export void freeXmlBlasterAccessUnparsedUnmanaged(XmlBlasterAccessUnparsed *xmlBlasterAccess) {
+   if (xmlBlasterAccess != 0) {
+      int i;
+      for (i=0; i<xmlBlasterAccess->argc; ++i)
+         free((void*)xmlBlasterAccess->argv[i]);
+      free((void*)xmlBlasterAccess->argv);
+      freeXmlBlasterAccessUnparsed(xmlBlasterAccess);
+   }
 }
 
 Dll_Export bool xmlBlasterUnmanagedInitialize(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedUpdateFp update, XmlBlasterUnmanagedException *exception) {
