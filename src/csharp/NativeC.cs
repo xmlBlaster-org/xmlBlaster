@@ -8,15 +8,10 @@
 // Features: All features of the client C library (compression, tunnel callbacks), see
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 //
-// @todo passing command line args crashes if not ended with empty '-XXXX')
-//       does hang on exit (how to debug?)
-//       publishOneway crashes for arrays > 2
-//       unSubscribe (how to pass QosArr back?)
-//       erase (how to pass QosArr back?)
-//       get (how to pass MsgUnitArr back?)
-//       port content from 'string' to bye[]
+// @todo     port content from 'string' to byte[]
+//           publishOneway crashes for more than 2 messages
 //
-// @author mr@marcelruff.info
+// @author   mr@marcelruff.info
 //
 // @prepare  cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
 // @compile  mcs -debug+ NativeC.cs
@@ -144,22 +139,25 @@ namespace org::xmlBlaster
          public int len;  /* Number of XML QoS strings */
          public string[] qosArr;
       }
-      
+
       //[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi,Pack=4)] /* default is 8 byte alignement */
-      [StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]
+      /*
+      [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
       public struct MsgUnit {
-         public string key;
+         public String key;
 
          public int contentLen;
          //[MarshalAs(UnmanagedType.I4)] public int contentLen;
          
-         public string content; // TODO: Port to byte[]
+         public String content; // TODO: Port to byte[]
          //public byte[] content; // ** ERROR **: Structure field of type Byte[] can't be marshalled as LPArray
          //unsafe internal byte* content; // warning CS8023: Only private or internal fixed sized buffers are supported by .NET 1.x
                                    // further down: error CS1503: Argument 1: Cannot convert from `byte*' to `byte[]'
-         public string qos;
+         public String qos;
          
-         public string responseQos;
+         public String responseQos;
+         
+         //public MsgUnit() {}
 
          public MsgUnit(string key, string content, string qos) {
             this.key = key;
@@ -173,7 +171,7 @@ namespace org::xmlBlaster
             return key + "\n" + content + "\n" + qos;
          }
       }
-      
+      */
       public struct MsgUnitUnmanagedArr {
          public string secretSessionId;
          public int len;
@@ -181,6 +179,26 @@ namespace org::xmlBlaster
       }
 
 ///////////////////
+/*
+NativeC() ...
+C code: setTest1() secretSessionId=Very secret
+C code: getTest1()
+C#: getTest1() got from C: 'Back from C'
+C#: getTest2() got from C: '0'
+
+
+C: MinArray <key oid='0'/> <qos/>
+C: MinArray <key oid='1'/> <qos/>
+C: MinArray <key oid='2'/> <qos/>
+C: MinArray <key oid='3'/> <qos/>
+C# got from MinArray(): 4
+C: setMsgUnitArr 3
+C: setMsgUnitArr SECRET 3 key=@� qos=@�
+C: setMsgUnitArr SECRET 5 key=@� qos=@�
+C: setMsgUnitArr SECRET 7 key=@� qos=@�
+C: TestOutArrayOfStructs
+
+*/
       //Dll_Export void setTest1(Test1 *test1) {
       public struct Test1 {
          [MarshalAs(UnmanagedType.ByValTStr, SizeConst=256)]
@@ -192,7 +210,7 @@ namespace org::xmlBlaster
       private extern static Test1 getTest1();
       public struct Test2 {
          public int len;
-         public MsgUnit p;
+         public IntPtr p;
       }
       [DllImport(Library)]      
       private extern static Test2 getTest2();
@@ -211,24 +229,65 @@ namespace org::xmlBlaster
       [DllImport(Library)]      
       //extern static int setMsgUnitArr(MsgUnitArr pData);
       extern static int setMsgUnitArr(MsgUnitUnmanagedArr pData);
+      
+      [DllImport(Library)]      
+      extern static int TestOutArrayOfStructs(out int size, out IntPtr ptr);
+
+      [DllImport(Library)]   // Didn't work to pass string[] directly   
+      extern static void TestOutQosArr(out int size, out IntPtr ptr);
+
+      [DllImport(Library)]      
+      extern static void TestOutStringArr(out int size, out IntPtr ptr);
+
+      // SEE http://msdn2.microsoft.com/en-us/library/2k1k68kw.aspx
+      // Declares a class member for each structure element.
+      // Must match exactly the C struct MsgUnit (sequence!)
+[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
+public class MsgUnit 
+{
+   public string key;
+   public int contentLen;
+   public string content;
+   public string qos;
+   public string responseQos;
+   public MsgUnit() { }
+   public MsgUnit(string key, string content, string qos) {
+     this.key = key;
+     this.contentLen = content.Length;
+     this.content = content;
+     this.qos = qos;
+  }
+}
+
+[ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
+public class StringArr
+{
+   public string str;
+}
+
+      [DllImport(Library)]      
+      extern static void TestOutArrayOfMsgUnits(out int size, out IntPtr ptr);
+
 
 
       public void test() {
+      /*
          Test1 test1 = new Test1();
          test1.secretSessionId = "Very secret";
          setTest1(ref test1); // Success
          
          Test1 res = getTest1();
-         Console.WriteLine("C#: got from C: '" + res.secretSessionId + "'"); // Success, but is empty for C: Test1*getTest1();
+         Console.WriteLine("C#: getTest1() got from C: '" + res.secretSessionId + "'"); // Success, but is empty for C: Test1*getTest1();
 
          Test2 test2 = getTest2();
-         Console.WriteLine("C#: got from C: '" + test2.len + "' " + test2.p); // But how to access the elements??
+         Console.WriteLine("C#: getTest2() got from C: '" + test2.len + "' " + test2.p); // But how to access the elements??
 
-         {
-         MsgUnit[] sampleData = new MsgUnit[3];
+         { // runs perfectly!
+         MsgUnit[] sampleData = new MsgUnit[4];
          sampleData[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
          sampleData[1] = new MsgUnit("<key oid='1'/>","HiHo1","<qos/>");
          sampleData[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
+         sampleData[3] = new MsgUnit("<key oid='3'/>","Hi3","<qos/>");
          int result = MinArray(sampleData, sampleData.Length);
          Console.WriteLine("C# got from MinArray(): " + result);
          }
@@ -244,6 +303,78 @@ namespace org::xmlBlaster
          arr.msgUnitArr = sampleData;
          setMsgUnitArr(arr);
          }
+         
+*/
+   {
+      int size;
+      IntPtr outArray;
+      TestOutStringArr( out size, out outArray );
+      Console.WriteLine("TestOutStringArr() size=" + size);
+      StringArr[] manArray = new StringArr[ size ];
+      IntPtr current = outArray;
+      for( int i = 0; i < size; i++ )
+      {
+         manArray[ i ] = new StringArr();
+         Marshal.PtrToStructure( current, manArray[ i ]);
+         Marshal.DestroyStructure( current, typeof(StringArr) );
+         current = (IntPtr)((long)current + 
+            Marshal.SizeOf( manArray[ i ] ));
+         
+         Console.WriteLine( "Element {0}: str={1}", i, 
+            manArray[ i ].str );
+      }
+      Marshal.FreeCoTaskMem( outArray );
+   }
+
+   //      public static void UsingMarshal()
+   /* Runs fine:
+   {
+      int size;
+      IntPtr outArray;
+      TestOutArrayOfStructs( out size, out outArray );
+      Console.WriteLine("TestOutArrayOfStructs() size=" + size);
+      MsgUnit[] manArray = new MsgUnit[ size ];
+      IntPtr current = outArray;
+      for( int i = 0; i < size; i++ )
+      {
+         manArray[ i ] = new MsgUnit();
+         Marshal.PtrToStructure( current, manArray[ i ]);
+         
+         //Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
+         Marshal.DestroyStructure( current, typeof(MsgUnit) );
+         current = (IntPtr)((long)current + 
+            Marshal.SizeOf( manArray[ i ] ));
+         
+         Console.WriteLine( "Element {0}: key={1} qos={2} buffer={3} contentLength={4}", i, 
+            manArray[ i ].key, manArray[ i ].qos, manArray[ i ].content, manArray[ i ].contentLen );
+      }
+      Marshal.FreeCoTaskMem( outArray );
+   }
+   */
+   
+   /* Didn't work directly with strings, why?
+   {
+      int size;
+      IntPtr outArray;
+      TestOutQosArr( out size, out outArray );
+      Console.WriteLine("TestOutQosArr() size=" + size);
+      string[] manArray = new string[ size ];
+      IntPtr current = outArray;
+      for( int i = 0; i < size; i++ )
+      {
+         manArray[ i ] = Marshal.PtrToStringAuto( current );
+         
+         //Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
+         //Marshal.DestroyString( current, typeof(string) );
+         current = (IntPtr)((long)current + 
+            Marshal.SizeOf( manArray[ i ] ));
+         
+         Console.WriteLine( "Element {0}: retQos={1}", i, 
+            manArray[ i ] );
+      }
+      Marshal.FreeCoTaskMem( outArray );
+   }
+   */
 
          /*
          IntPtr pList;
@@ -299,10 +430,10 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       }
 
       //public delegate bool UpdateFp(ref MsgUnitArr msg, ref IntPtr userData, ref XmlBlasterException xmlBlasterException);
-      delegate string UpdateFp(string cbSessionId, ref MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
+      delegate string UpdateFp(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
 
       /// Callback by xmlBlaster, see UpdateFp
-      static string update(string cbSessionId, ref MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception) {
+      static string update(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception) {
          Console.WriteLine("C# update invoked START ==================");
          Console.WriteLine(msgUnit.key);
          //unsafe { Console.WriteLine(ByteArrayToString(msgUnit.content)); }
@@ -348,7 +479,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       //[DllImport( "..\\LIB\\PinvokeLib.dll" )]
 		//[DllImport("user32.dll", CharSet = CharSet.Auto)]
       [DllImport(Library)]      
-      private extern static IntPtr getXmlBlasterAccessUnparsed(int argc, string[] argv);
+      private extern static IntPtr getXmlBlasterAccessUnparsedUnmanaged(int argc, string[] argv);
       
       [DllImport(Library)]      
       private extern static void freeXmlBlasterAccessUnparsed(IntPtr xa);
@@ -363,26 +494,25 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       private extern static bool xmlBlasterUnmanagedDisconnect(IntPtr xa, string qos, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(Library)]
-      private extern static string xmlBlasterUnmanagedPublish(IntPtr xa, ref MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
+      private extern static string xmlBlasterUnmanagedPublish(IntPtr xa, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
 
       //[DllImport(Library)]
-      //private extern static QosArr xmlBlasterUnmanagedPublishArr(IntPtr xa, ref MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
+      //private extern static QosArr xmlBlasterUnmanagedPublishArr(IntPtr xa, MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(Library)]
       private extern static void xmlBlasterUnmanagedPublishOneway(IntPtr xa, MsgUnit[] msgUnitArr, int length, ref XmlBlasterUnmanagedException exception);
-      //private extern static void xmlBlasterUnmanagedPublishOneway(IntPtr xa, ref MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(Library)]
       private extern static string xmlBlasterUnmanagedSubscribe(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(Library)]
-      private extern static QosArr xmlBlasterUnmanagedUnSubscribe(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
+      private extern static void xmlBlasterUnmanagedUnSubscribe(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
-      //[DllImport(Library)]
-      //private extern static QosArr xmlBlasterUnmanagedErase(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
+      [DllImport(Library)]
+      private extern static void xmlBlasterUnmanagedErase(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
-      //[DllImport(Library)]
-      //private extern static MsgUnitArr xmlBlasterUnmanagedGet(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
+      [DllImport(Library)]
+      private extern static void xmlBlasterUnmanagedGet(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
       [DllImport(Library)]
       private extern static string xmlBlasterUnmanagedPing(IntPtr xa, string qos, ref XmlBlasterUnmanagedException exception);
@@ -404,7 +534,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
          for (int i=0; i<argv.Length; ++i)
             c_argv[i+1] = argv[i];
             
-         xa = getXmlBlasterAccessUnparsed(c_argv.Length, c_argv);
+         xa = getXmlBlasterAccessUnparsedUnmanaged(c_argv.Length, c_argv);
             
          Console.WriteLine("NativeC() ...");         
       }
@@ -488,7 +618,7 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
             //unsafe { msgUnit.content =  StrToByteArray(content); }
             msgUnit.contentLen = content.Length;
             msgUnit.qos = qos;
-            string ret = xmlBlasterUnmanagedPublish(xa, ref msgUnit, ref exception);
+            string ret = xmlBlasterUnmanagedPublish(xa, msgUnit, ref exception);
             if (exception.errorCode.Length > 0) {
                Console.WriteLine("xmlBlasterUnmanagedPublish: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
@@ -506,6 +636,14 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       }
 
       // TODO: Crashs for array size > 2
+      /*
+       Invalid read of size 1
+         at 0x63FFF14: encodeMsgUnitArr (xmlBlasterSocket.c:222)
+            by 0x63FD11E: xmlBlasterPublishOneway (XmlBlasterConnectionUnparsed.c:1004)
+            by 0x63F9125: xmlBlasterPublishOneway (XmlBlasterAccessUnparsed.c:726)
+            by 0x63FF0B8: xmlBlasterUnmanagedPublishOneway (XmlBlasterUnmanaged.c:365)
+            by 0x6524CC8: ???
+      */
       public void publishOneway(MsgUnit[] msgUnitArr) {
          check("publishOneway");
          try {
@@ -547,19 +685,31 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
          }
       }
 
-      // fails: ** ERROR **: Structure field of type String[] can't be marshalled as LPArray
       public string[] unSubscribe(string key, string qos) {
          check("unSubscribe");
          try {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
-            /*TODO: QosArr ret = */xmlBlasterUnmanagedUnSubscribe(xa, key, qos, ref exception);
+            int size;
+            IntPtr outArray;
+            xmlBlasterUnmanagedUnSubscribe(xa, key, qos, ref exception, out size, out outArray);
             if (exception.errorCode.Length > 0) {
                Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
-            else
-               Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: SUCCESS '"/* + ret.qosArr[0] */+"'");
-            return new String[0]; /*ret.qosArr;*/
+            StringArr[] manArray = new StringArr[ size ];
+            String[] retQosArr = new String[size];
+            IntPtr current = outArray;
+            for( int i = 0; i < size; i++ ) {
+               manArray[ i ] = new StringArr();
+               Marshal.PtrToStructure( current, manArray[ i ]);
+               Marshal.DestroyStructure( current, typeof(StringArr) );
+               current = (IntPtr)((long)current + Marshal.SizeOf( manArray[ i ] ));
+               Console.WriteLine( "Element {0}: str={1}", i, manArray[ i ].str );
+               retQosArr[i] = manArray[ i ].str;
+            }
+            Marshal.FreeCoTaskMem( outArray );
+            Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: SUCCESS");
+            return retQosArr;
          }
          catch (XmlBlasterException e) {
             throw e;
@@ -572,6 +722,83 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
             //   Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: Ignoring " + e2.ToString() + " root was " +e.ToString());
             //}
             throw new XmlBlasterException("internal.unknown", "unSubscribe failed", e);
+         }
+      }
+
+      public string[] erase(string key, string qos) {
+         check("erase");
+         try {
+            XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
+            int size;
+            IntPtr outArray;
+            xmlBlasterUnmanagedErase(xa, key, qos, ref exception, out size, out outArray);
+            if (exception.errorCode.Length > 0) {
+               Console.WriteLine("xmlBlasterUnmanagedErase: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
+            }
+            StringArr[] manArray = new StringArr[ size ];
+            String[] retQosArr = new String[size];
+            IntPtr current = outArray;
+            for( int i = 0; i < size; i++ ) {
+               manArray[ i ] = new StringArr();
+               Marshal.PtrToStructure( current, manArray[ i ]);
+               Marshal.DestroyStructure( current, typeof(StringArr) );
+               current = (IntPtr)((long)current + Marshal.SizeOf( manArray[ i ] ));
+               Console.WriteLine( "Element {0}: str={1}", i, manArray[ i ].str );
+               retQosArr[i] = manArray[ i ].str;
+            }
+            Marshal.FreeCoTaskMem( outArray );
+            Console.WriteLine("xmlBlasterUnmanagedErase: SUCCESS");
+            return retQosArr;
+         }
+         catch (XmlBlasterException e) {
+            throw e;
+         }
+         catch (Exception e) {
+            //try {
+            //   disconnect("<qos/>");
+            //}
+            //catch (Exception e2) {
+            //   Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: Ignoring " + e2.ToString() + " root was " +e.ToString());
+            //}
+            throw new XmlBlasterException("internal.unknown", "unSubscribe failed", e);
+         }
+      }
+
+      public MsgUnit[] get(string key, string qos) {
+         check("get");
+         try {
+            XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
+            int size;
+            IntPtr outArray;
+            xmlBlasterUnmanagedGet(xa, key, qos, ref exception, out size, out outArray);
+            if (exception.errorCode.Length > 0) {
+               Console.WriteLine("xmlBlasterUnmanagedGet: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
+            }
+            
+            Console.WriteLine("get() size=" + size);
+            MsgUnit[] manArray = new MsgUnit[ size ];
+            IntPtr current = outArray;
+            for( int i = 0; i < size; i++ ) {
+               manArray[ i ] = new MsgUnit();
+               Marshal.PtrToStructure( current, manArray[ i ]);
+               //Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
+               Marshal.DestroyStructure( current, typeof(MsgUnit) );
+               current = (IntPtr)((long)current + 
+               Marshal.SizeOf( manArray[ i ] ));
+               Console.WriteLine( "Element {0}: key={1} qos={2} buffer={3} contentLength={4}", i, 
+                  manArray[ i ].key, manArray[ i ].qos, manArray[ i ].content, manArray[ i ].contentLen );
+            }
+            Marshal.FreeCoTaskMem( outArray );
+            Console.WriteLine("xmlBlasterUnmanagedGet: SUCCESS");
+            return manArray;
+         }
+         catch (XmlBlasterException e) {
+            throw e;
+         }
+         catch (Exception e) {
+            throw new XmlBlasterException("internal.unknown", "get failed", e);
          }
       }
 
@@ -613,20 +840,18 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
       }
 
       static void Main(string[] argv) {
-         /*
          if (false) {
             NativeC nc = new NativeC(argv);
             nc.test();
          }
-         */
          if (true) {
             NativeC nc = new NativeC(argv);
             
             // crashed with [3], why??
-            MsgUnit[] msgUnitArr = new MsgUnit[2];
+            MsgUnit[] msgUnitArr = new MsgUnit[3];
             msgUnitArr[0] = new MsgUnit("<key oid='0'/>","Hi0","<qos/>");
             msgUnitArr[1] = new MsgUnit("<key oid='1'/>","HiHoHa1","<qos/>");
-            //msgUnitArr[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
+            msgUnitArr[2] = new MsgUnit("<key oid='2'/>","HiHoHa2","<qos/>");
 
             const string callbackSessionId = "secretCb";
             string connectQos = String.Format(
@@ -641,20 +866,23 @@ MessageBox.Show(Marshal.PtrToStringAnsi(n2));
                   "   <callback type='SOCKET' sessionId='{0}'>"+
                   "   </callback>"+
                   " </queue>"+
-                  "</qos>", callbackSessionId);  /*"    socket://{1}:{2}"+*/
+                  "</qos>", callbackSessionId);  //"    socket://{1}:{2}"+
             Console.WriteLine(connectQos);         
             
             nc.connect(connectQos);
-            nc.publishOneway(msgUnitArr);
-            nc.subscribe("<key oid='Hello'/>", "<qos/>");
-            nc.publish("<key oid='C#C#C#'/>", "HIII", "<qos/>");
-            nc.ping("<qos/>");
-            nc.isConnected();
-
-            //nc.unSubscribe("<key oid='Hello'/>", "<qos/>"); // ** ERROR **: Structure field of type String[] can't be marshalled as LPArray
-            
-            Console.WriteLine("Hit a key");         
-            Console.ReadLine();
+            for (int i=0; i<50; i++) {
+               MsgUnit[] msgs = nc.get("<key oid='Hello'/>", "<qos><history numEntries='6'/></qos>");
+               //nc.publishOneway(msgUnitArr);
+               nc.subscribe("<key oid='Hello'/>", "<qos/>");
+               nc.publish("<key oid='C#C#C#'/>", "HIII", "<qos/>");
+               nc.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
+               nc.ping("<qos/>");
+               nc.isConnected();
+               nc.unSubscribe("<key oid='Hello'/>", "<qos/>");
+               nc.erase("<key oid='Hello'/>", "<qos/>");
+               Console.WriteLine("Hit a key " + i);         
+               Console.ReadLine();
+            }
             nc.disconnect("<qos/>");
             nc.isConnected();
          }
