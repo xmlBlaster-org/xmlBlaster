@@ -1,7 +1,7 @@
 // Simple layer to delegate C# calls to xmlBlaster client C library (using P/Invoke).
 // libxmlBlasterClientC.so (Mono/Linux) or dll (Windows) is accessed and must be available
 //
-// This code is functional (connect/publish/subscribe/update/disconnect) but still pre-alpha (2006-07)
+// This code is functional but still pre-alpha (2006-07)
 //
 // Currently only tested on Linux with Mono, the port to Windows is still missing
 //
@@ -10,6 +10,8 @@
 //
 // @todo     port content from 'string' to byte[]
 //           publishOneway crashes
+//           port to Windows
+//           create an assembly with ant or nant
 //           create the same wrapper for the xmlBlaster C++ library
 //
 // @author   mr@marcelruff.info
