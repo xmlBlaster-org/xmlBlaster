@@ -203,7 +203,7 @@ Dll_Export void xmlBlasterUnmanagedErase(struct XmlBlasterAccessUnparsed *xa, co
    }
 }
 
-Dll_Export extern void xmlBlasterUnmanagedGet(struct XmlBlasterAccessUnparsed *xa,
+Dll_Export void xmlBlasterUnmanagedGet(struct XmlBlasterAccessUnparsed *xa,
         const char * const key, const char * qos, XmlBlasterUnmanagedException *exception,
         uint32_t* pSize, MsgUnit** ppStruct) {
    XmlBlasterException e;
@@ -233,13 +233,19 @@ Dll_Export extern void xmlBlasterUnmanagedGet(struct XmlBlasterAccessUnparsed *x
    }
 }
 
-Dll_Export extern char *xmlBlasterUnmanagedPing(struct XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterUnmanagedException *exception) {
+Dll_Export char *xmlBlasterUnmanagedPing(struct XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterUnmanagedException *exception) {
    XmlBlasterException e;
    char *ret = xa->ping(xa, qos, &e);
    convert(&e, exception);
    return ret; 
 }
 
-Dll_Export extern bool xmlBlasterUnmanagedIsConnected(struct XmlBlasterAccessUnparsed *xa) {
+Dll_Export bool xmlBlasterUnmanagedIsConnected(struct XmlBlasterAccessUnparsed *xa) {
    return xa->isConnected(xa);
 }
+
+Dll_Export const char *xmlBlasterUnmanagedUsage() {
+   char *usage = malloc(XMLBLASTER_MAX_USAGE_LEN*sizeof(char));
+   return xmlBlasterAccessUnparsedUsage(usage);
+}
+
