@@ -593,7 +593,9 @@ Dll_Export const char *xmlBlasterAccessUnparsedUsage(char *usage)
                   "\n   -plugin/socket/multiThreaded  [true]"
                   "\n                       If true the update() call to your client code is a separate thread."
                   "\n   -plugin/socket/responseTimeout  [60000 (one minute)]"
-                  "\n                       The time in millis to wait on a response, 0 is forever.");
+                  "\n                       The time in millis to wait on a response, 0 is forever."
+                  "\n   -logLevel           ERROR | WARN | INFO | TRACE | DUMP [WARN]"
+                  );
    
    return usage;
 }
