@@ -50,6 +50,123 @@ Dll_Export int getTest3(MsgUnit** pList) {
    return 2;
 }
 
+typedef struct MsgUnitUnmanaged {
+   const char *key;         /**< XML formatted ASCII string of the message topic */
+   size_t contentLen;       /**< Number of bytes in content */
+   const char *content;     /**< Raw data (not 0 terminated) */
+   const char *qos;         /**< XML formatted ASCII string of Quality of Service */
+   char *responseQos;       /**< Used to transport the response QoS string back to caller */
+} MsgUnitUnmanaged;
+
+/*
+typedef struct MsgUnitUnmanaged
+{
+   const char *key;
+   const char *qos;
+   size_t contentLen;
+   const char *content;
+   char *responseQos;
+} MsgUnitUnmanaged;
+*/
+/*extern "C" PINVOKELIB_API void TestOutArrayOfStructs( int* pSize, MYSTRSTRUCT2** ppStruct )*/
+Dll_Export void TestOutArrayOfStructs( uint32_t* pSize, MsgUnit** ppStruct )
+{
+   int i;
+   const int cArraySize = 15;
+   *pSize = cArraySize;
+   *ppStruct = (MsgUnit*)malloc( cArraySize * sizeof( MsgUnit ));
+   {
+     MsgUnit* pCurStruct = *ppStruct;
+     /*char* buffer;*/
+     printf("C: TestOutArrayOfStructs %ud\n", cArraySize);
+     for( i = 0; i < cArraySize; i++, pCurStruct++ )
+     {
+          char tmp[126];
+          sprintf(tmp, "<key oid='%d'/>", i);
+          pCurStruct->key = strcpyAlloc(tmp);
+          pCurStruct->qos = strcpyAlloc("<qos/>");
+          pCurStruct->responseQos = 0;
+          
+          /*
+          buffer = (char*)CoTaskMemAlloc( 4 );
+          strcpy_s( buffer, 4, "***" );
+          pCurStruct->buffer = buffer;
+          */
+          pCurStruct->content = strcpyAlloc("***");
+          pCurStruct->contentLen = strlen(pCurStruct->content);
+     }
+   }
+}
+
+Dll_Export void TestOutArrayOfMsgUnits( int* pSize, MsgUnit** ppStruct )
+{
+   int i;
+   const int cArraySize = 4;
+   *pSize = cArraySize;
+   *ppStruct = (MsgUnit*)malloc( cArraySize * sizeof( MsgUnit ));
+   {
+     MsgUnit* pCurStruct = *ppStruct;
+     /*char* buffer;*/
+     for( i = 0; i < cArraySize; i++, pCurStruct++ )
+     {
+        char tmp[126];
+     printf("C: TestOutArrayOfStructs %ud\n", cArraySize);
+          /*
+          buffer = (char*)CoTaskMemAlloc( 4 );
+          strcpy_s( buffer, 4, "***" );
+          pCurStruct->buffer = buffer;
+          */
+        pCurStruct->content = strcpyAlloc("Some content");
+        pCurStruct->contentLen = strlen(pCurStruct->content);
+        sprintf(tmp, "<key oid='%d'/>", i);
+        pCurStruct->key = strcpyAlloc(tmp);
+        pCurStruct->qos = strcpyAlloc("<qos/>");
+        pCurStruct->responseQos = strcpyAlloc("<qos><response/></qos>");
+     }
+   }
+}
+
+typedef struct StringArr {
+   const char *str; 
+} StringArr;
+Dll_Export void TestOutStringArr( int* pSize, StringArr** ppStruct )
+{
+   int i;
+   const int cArraySize = 4;
+   *pSize = cArraySize;
+   *ppStruct = (StringArr*)malloc( cArraySize * sizeof( StringArr ));
+   {
+     StringArr* pCurStruct = *ppStruct;
+     /*char* buffer;*/
+     for( i = 0; i < cArraySize; i++, pCurStruct++ )
+     {
+        char tmp[126];
+         printf("C: TestOutStringArr %d/%d\n", i, cArraySize);
+          /*
+          buffer = (char*)CoTaskMemAlloc( 4 );
+          */
+        sprintf(tmp, "<qos>%d</qos>", i);
+        pCurStruct->str = strcpyAlloc(tmp);
+     }
+   }
+}
+
+
+Dll_Export void TestOutQosArr( char* ppStrArray[], int *pSize )
+{
+        int i;
+        *pSize = 4;
+   *ppStrArray = (char*)malloc( (*pSize) * sizeof( char * ));
+      printf("C: TestOutQosArr\n");
+        for(i = 0; i < (*pSize); i++ ) {
+             /*char tmp[256];
+             sprintf(tmp, "Hello%d", i);*/
+             /* (char*)CoTaskMemAlloc( sizeof(char) * 10 ); */
+             ppStrArray[ i ] = strcpyAlloc("Hello");
+        }
+}
+
+
 /*extern "C" _declspec(dllexport) int MinArray(int* pData, int length)*/
 Dll_Export int MinArray(MsgUnit* pData, int length)
 {
@@ -101,6 +218,16 @@ static void convert(XmlBlasterException *in, XmlBlasterUnmanagedException *out) 
    out->remote = in->remote;
 }
 
+/*
+ * ==3245== Invalid read of size 1
+==3245==    at 0x4A21402: strlen (in /usr/lib64/valgrind/amd64-linux/vgpreload_memcheck.so)
+==3245==    by 0x48D0A8: mono_string_new (in /usr/bin/mono)
+==3245==    by 0x6C8E584: ???
+==3245==    by 0x63F9631: runUpdate (XmlBlasterAccessUnparsed.c:866)
+==3245==    by 0x50DE192: start_thread (in /lib64/libpthread-2.4.so)
+==3245==    by 0x550B45C: clone (in /lib64/libc-2.4.so)
+==3245==  Address 0x6F2079656B3C200A is not stack'd, malloc'd or (recently) free'd
+ */
 /**
  * We intercept the callbacks here and convert it to a more simple form to
  * be easy transferable to C# (Csharp). 
@@ -115,17 +242,26 @@ static bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterEx
    if (userData != 0) ;  /* Supress compiler warning */
    if (unmanagedUpdate == 0) return false;
    
-   memset(&unmanagedException, 0, sizeof(struct XmlBlasterUnmanagedException));
+   /*memset(&unmanagedException, 0, sizeof(struct XmlBlasterUnmanagedException));*/
+   unmanagedException.remote = false;
+   unmanagedException.errorCode = (char)0;
+   unmanagedException.message = (char)0;
+   
 
    for (i=0; i<msgUnitArr->len; i++) {
       const char *cbSessionId = strcpyAlloc(msgUnitArr->secretSessionId);
       const char *ret = 0;
+      /*
+      char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
+      printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",
+             xml);
+      xmlBlasterFree(xml);
       
-      /*printf("XmlBlasterUnmanaged.c: before update() %d\n", (int)msgUnitArr->len);*/
+      printf("XmlBlasterUnmanaged.c: before update() %d\n", (int)msgUnitArr->len);
+      */
       
       /* Call C# ... */
       ret = unmanagedUpdate(cbSessionId, &msgUnitArr->msgUnitArr[i], &unmanagedException);
-      /*printf("XmlBlasterUnmanaged.c: after update() %s\n", ret);*/
 
       if (unmanagedException.errorCode != 0) {
          /* catch first exception set and return */
@@ -140,6 +276,17 @@ static bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterEx
    }
    
    return true;
+}
+
+Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanaged(int argc, const char* const* argv){
+   /** argv seems to be freed by C#, so we clone it here */
+   int i=0;
+   const char ** ptr;
+   ptr = malloc(argc*sizeof(char *));
+   for (i=0; i<argc; ++i) {
+      ptr[i] = strcpyAlloc(argv[i]);
+   }
+   return getXmlBlasterAccessUnparsed(argc, ptr);
 }
 
 Dll_Export bool xmlBlasterUnmanagedInitialize(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedUpdateFp update, XmlBlasterUnmanagedException *exception) {
@@ -168,6 +315,31 @@ Dll_Export extern bool xmlBlasterUnmanagedDisconnect(struct XmlBlasterAccessUnpa
    return ret; 
 }
 
+/* Ohne "ref MsgUnit"
+ * ==4281== Conditional jump or move depends on uninitialised value(s)
+==4281==    at 0x548F0B6: vfprintf (in /lib64/libc-2.4.so)
+==4281==    by 0x54AB6F8: vsprintf (in /lib64/libc-2.4.so)
+==4281==    by 0x54961A7: sprintf (in /lib64/libc-2.4.so)
+==4281==    by 0x63B27AB: encodeMsgUnit (xmlBlasterSocket.c:115)
+==4281==    by 0x63AFDC3: xmlBlasterPublish (XmlBlasterConnectionUnparsed.c:931)
+==4281==    by 0x63ABFF3: xmlBlasterPublish (XmlBlasterAccessUnparsed.c:699)
+==4281==    by 0x63B1F5C: xmlBlasterUnmanagedPublish (XmlBlasterUnmanaged.c:319)
+==4281==    by 0x64D4132: ???
+==4281==    by 0x64D3C71: ???
+==4281==    by 0x4106E85: ???
+ * 
+*/
+/*
+ * ==3940== Invalid write of size 1
+==3940==    at 0x63B28E0: encodeMsgUnit (xmlBlasterSocket.c:129)
+==3940==    by 0x63AFDC3: xmlBlasterPublish (XmlBlasterConnectionUnparsed.c:931)
+==3940==    by 0x63ABFF3: xmlBlasterPublish (XmlBlasterAccessUnparsed.c:699)
+==3940==    by 0x63B1F5C: xmlBlasterUnmanagedPublish (XmlBlasterUnmanaged.c:308)
+==3940==    by 0x64D43D0: ???
+==3940==    by 0x64D3EFA: ???
+==3940==    by 0x4106E85: ???
+==3940==  Address 0x0 is not stack'd, malloc'd or (recently) free'd
+ * */
 Dll_Export extern char *xmlBlasterUnmanagedPublish(struct XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, XmlBlasterUnmanagedException *exception) {
    XmlBlasterException e;
    char *ret = xa->publish(xa, msgUnit, &e);
@@ -193,13 +365,6 @@ Dll_Export extern void xmlBlasterUnmanagedPublishOneway(struct XmlBlasterAccessU
    xa->publishOneway(xa, &arr, &e);
    convert(&e, exception);
 }
-/*
-Dll_Export extern void xmlBlasterUnmanagedPublishOneway(struct XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterUnmanagedException *exception) {
-   XmlBlasterException e;
-   xa->publishOneway(xa, msgUnitArr, &e);
-   convert(&e, exception);
-}
-*/
 
 Dll_Export extern char *xmlBlasterUnmanagedSubscribe(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception) {
    XmlBlasterException e;
@@ -208,25 +373,90 @@ Dll_Export extern char *xmlBlasterUnmanagedSubscribe(struct XmlBlasterAccessUnpa
    return ret; 
 }
 
-Dll_Export extern QosArr *xmlBlasterUnmanagedUnSubscribe(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception) {
+Dll_Export void xmlBlasterUnmanagedUnSubscribe(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception, uint32_t* pSize, XmlBlasterUnmanagedStringArr** ppStruct) {
    XmlBlasterException e;
-   QosArr *ret = xa->unSubscribe(xa, key, qos, &e);
+   QosArr *ret = 0;
+   initializeXmlBlasterException(&e);
+   ret = xa->unSubscribe(xa, key, qos, &e);
    convert(&e, exception);
-   return ret; 
+   if (*e.errorCode != 0) {
+      printf("C: Caught exception in unSubscribe errorCode=%s, message=%s\n",
+                  e.errorCode, e.message);
+      if (ret) freeQosArr(ret);
+      return;
+   }
+   if (ret) {
+      size_t i;
+      XmlBlasterUnmanagedStringArr* pCurStruct = 0;
+      const int cArraySize = ret->len;
+      *pSize = cArraySize;
+      *ppStruct = (XmlBlasterUnmanagedStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedStringArr ));
+      pCurStruct = *ppStruct;
+      for (i=0; i<ret->len; i++) {
+         /*printf("C: Unsubscribe success, returned status is '%s'\n", ret->qosArr[i]);*/
+         pCurStruct->str = strcpyAlloc(ret->qosArr[i]);
+      }
+      freeQosArr(ret);
+   }
 }
 
-Dll_Export extern QosArr *xmlBlasterUnmanagedErase(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception) {
+Dll_Export void xmlBlasterUnmanagedErase(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception, uint32_t* pSize, XmlBlasterUnmanagedStringArr** ppStruct) {
    XmlBlasterException e;
-   QosArr *ret = xa->erase(xa, key, qos, &e);
+   QosArr *ret = 0;
+   initializeXmlBlasterException(&e);
+   ret = xa->erase(xa, key, qos, &e);
    convert(&e, exception);
-   return ret; 
+   if (*e.errorCode != 0) {
+      printf("C: Caught exception in erase errorCode=%s, message=%s\n",
+                  e.errorCode, e.message);
+      if (ret) freeQosArr(ret);
+      return;
+   }
+   if (ret) {
+      size_t i;
+      XmlBlasterUnmanagedStringArr* pCurStruct = 0;
+      const int cArraySize = ret->len;
+      *pSize = cArraySize;
+      *ppStruct = (XmlBlasterUnmanagedStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedStringArr ));
+      pCurStruct = *ppStruct;
+      for (i=0; i<ret->len; i++) {
+         /*printf("C: Erase success, returned status is '%s'\n", ret->qosArr[i]);*/
+         pCurStruct->str = strcpyAlloc(ret->qosArr[i]);
+      }
+      freeQosArr(ret);
+   }
 }
 
-Dll_Export extern MsgUnitArr *xmlBlasterUnmanagedGet(struct XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterUnmanagedException *exception) {
+Dll_Export extern void xmlBlasterUnmanagedGet(struct XmlBlasterAccessUnparsed *xa,
+        const char * const key, const char * qos, XmlBlasterUnmanagedException *exception,
+        uint32_t* pSize, MsgUnit** ppStruct) {
    XmlBlasterException e;
-   MsgUnitArr *ret = xa->get(xa, key, qos, &e);
+   int i;
+   MsgUnitArr *msgUnitArr = xa->get(xa, key, qos, &e);
    convert(&e, exception);
-   return ret; 
+   if (*e.errorCode != 0) {
+      printf("C: Caught exception in get errorCode=%s, message=%s\n",
+                  e.errorCode, e.message);
+      return;
+   }
+   if (msgUnitArr != (MsgUnitArr *)0) {
+      const int cArraySize = msgUnitArr->len;
+      MsgUnit* pCurStruct = 0;
+      *pSize = cArraySize;
+      *ppStruct = (MsgUnit*)malloc( cArraySize * sizeof( MsgUnit ));
+      pCurStruct = *ppStruct;
+      printf("C: xmlBlasterUnmanagedGet %ud\n", cArraySize);
+      for( i=0; i < cArraySize; i++, pCurStruct++ ) {
+         MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[i];
+         /* TODO: pass as byte[] */
+         pCurStruct->content = strFromBlobAlloc(msgUnit->content, msgUnit->contentLen);
+         pCurStruct->contentLen = msgUnit->contentLen;
+         pCurStruct->key = strcpyAlloc(msgUnit->key);
+         pCurStruct->qos = strcpyAlloc(msgUnit->qos);
+         pCurStruct->responseQos = strcpyAlloc("<qos/>");
+      }
+      freeMsgUnitArr(msgUnitArr);
+   }
 }
 
 Dll_Export extern char *xmlBlasterUnmanagedPing(struct XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterUnmanagedException *exception) {
