@@ -1,3 +1,4 @@
+// NativeC.cs
 // Simple layer to delegate C# calls to xmlBlaster client C library (using P/Invoke).
 // libxmlBlasterClientC.so (Mono/Linux) or dll (Windows) is accessed and must be available
 //
@@ -17,10 +18,12 @@
 // @author   mr@marcelruff.info
 //
 // @prepare  cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
-// @compile  mcs -debug+ NativeC.cs
+// @compile  mcs /d:NATIVE_C_MAIN -debug+ -out:NativeC.exe NativeC.cs
 // @run      mono NativeC.exe
+//           mono NativeC.exe --help
 //           mono NativeC.exe -logLevel TRACE
 // @see      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
+// @c        http://www.xmlBlaster/org
 //
 /*
 Usage:
@@ -56,7 +59,7 @@ Example:
 using System;
 using System.Runtime.InteropServices;
 
-namespace org::xmlBlaster
+namespace org.xmlBlaster
 {
    public class XmlBlasterAccessFactory
    {
@@ -273,6 +276,10 @@ namespace org::xmlBlaster
       [DllImport(Library)]
       private extern static bool xmlBlasterUnmanagedIsConnected(IntPtr xa);
       
+      [DllImport(Library)]
+      private extern static string xmlBlasterUnmanagedUsage();
+
+      
       private IntPtr xa;
       private UpdateFp myUpdateFp;
       
@@ -284,8 +291,13 @@ namespace org::xmlBlaster
          // Convert command line arguments: C client lib expects the executable name as first entry
          string[] c_argv = new string[argv.Length+1];
          c_argv[0] = "NativC"; // my executable name
-         for (int i=0; i<argv.Length; ++i)
+         for (int i=0; i<argv.Length; ++i) {
+            if (argv[i] == "--help") {
+               Console.WriteLine("Usage:\n" + xmlBlasterUnmanagedUsage());
+               throw new XmlBlasterException("user", "Good bye");
+            }
             c_argv[i+1] = argv[i];
+         }
             
          xa = getXmlBlasterAccessUnparsedUnmanaged(c_argv.Length, c_argv);
             
@@ -592,6 +604,11 @@ namespace org::xmlBlaster
          }
       }
 
+      public static string usage() {
+         return xmlBlasterUnmanagedUsage();
+      }
+
+#if NATIVE_C_MAIN
       static void Main(string[] argv) {
          I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance(argv);
 
@@ -637,5 +654,6 @@ namespace org::xmlBlaster
          nc.isConnected();
          Console.Out.WriteLine("DONE");
       }
+#endif
    }
 }
