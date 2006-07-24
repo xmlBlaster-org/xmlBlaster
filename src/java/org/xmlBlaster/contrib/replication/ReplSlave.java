@@ -208,8 +208,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          
          if (this.srcVersion != null && this.ownVersion != null && !this.srcVersion.equalsIgnoreCase(this.ownVersion))
             this.doTransform = true;
-         this.initialized = true;
+
          this.initialFilesLocation = info.get(ReplicationConstants.INITIAL_FILES_LOCATION, null);
+         this.initialized = true;
       }
    }
    
@@ -422,7 +423,15 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       }
    }
    
-   private void storeChunkLocally(ReferenceEntry entry, ClientProperty location, ClientProperty subDirProp) throws Exception {
+   /**
+    * Returns the name of the directory where the entries have been stored.
+    * @param entry The entry to add as a chunk.
+    * @param location The location where to add it.
+    * @param subDirProp
+    * @return
+    * @throws Exception
+    */
+   private String storeChunkLocally(ReferenceEntry entry, ClientProperty location, ClientProperty subDirProp) throws Exception {
       if (entry == null)
          throw new Exception("The entry to store is null, can not store");
       MsgUnit msgUnit = entry.getMsgUnit();
@@ -443,9 +452,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       if (subDirName == null || subDirName.trim().length() < 1)
          throw new Exception("The subdirectory to be used to store the initial data is empty");
       File subDir = new File(dirWhereToStore, subDirName);
+      String completeSubdirName = subDir.getAbsolutePath();
       if (!subDir.exists()) {
          if (!subDir.mkdir()) {
-            String txt = "could not make '" + subDir.getAbsolutePath() + "' to be a directory. Check your rights";
+            String txt = "could not make '" + completeSubdirName + "' to be a directory. Check your rights";
             log.severe(txt);
             throw new Exception(txt);
          }
@@ -463,6 +473,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       fos.write(parser.toLiteral(msgInfo).getBytes());
       fos.close();
       log.info("MsgUnit '" + msgUnit.getQosData().getRcvTimestamp().getTimestamp() + "' has been written to file '" + file.getAbsolutePath() + "'");
+      return completeSubdirName;
    }
    
    /**
@@ -874,5 +885,4 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       return this.transactionSeq;
    }
 
-   
 }
