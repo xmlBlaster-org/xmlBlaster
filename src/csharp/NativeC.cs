@@ -51,10 +51,9 @@ XmlBlaster C SOCKET client
    -plugin/socket/responseTimeout  [60000 (one minute)]
                        The time in millis to wait on a response, 0 is forever.
    -logLevel            ERROR | WARN | INFO | TRACE | DUMP [WARN]
-   -sleepInterval       Milliseconds to wait on callback messages [0]
 
 Example:
-  mono NativeC -logLevel TRACE -dispatch/connection/plugin/socket/hostname 192.168.2.9 -sleepInterval 100000
+  mono NativeC -logLevel TRACE -dispatch/connection/plugin/socket/hostname 192.168.2.9
 */
 using System;
 using System.Runtime.InteropServices;
