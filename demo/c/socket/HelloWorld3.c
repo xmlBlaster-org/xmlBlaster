@@ -104,8 +104,7 @@ int main(int argc, char** argv)
       if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
          char usage[XMLBLASTER_MAX_USAGE_LEN];
          const char *pp =
-         "\n   -logLevel            ERROR | WARN | INFO | TRACE | DUMP [WARN]"
-         "\n   -sleepInterval       Milliseconds to wait on callback messages [0]"
+         "\n   -sleepInterval      Milliseconds to wait on callback messages [0]"
          "\n\nExample:"
          "\n  HelloWorld3 -logLevel TRACE"
          " -dispatch/connection/plugin/socket/hostname 192.168.2.9"
