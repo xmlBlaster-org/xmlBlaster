@@ -54,11 +54,13 @@ public class JdbcQueueTest extends TestCase {
       }
       
       public void run() {
+         boolean success = true;
          try {
             log.info("connectionConsumer " + this.count + " starting");
             Connection conn = this.pool.getConnection();
             log.info("connectionConsumer " + this.count + " got the connection " + conn);
-            if (conn != null) this.pool.releaseConnection(conn);
+            if (conn != null) 
+               this.pool.releaseConnection(conn, success);
          }
          catch (XmlBlasterException ex) {
             log.info("connectionConsumer exception " + ex.getMessage());
@@ -419,8 +421,8 @@ public class JdbcQueueTest extends TestCase {
          }
          // should wait 10 seconds and then return null
          assertNull("the extra connection should be null", extraConn);
-         
-         pool.releaseConnection(conn[0]);
+         boolean success = true;
+         pool.releaseConnection(conn[0], success);
          extraConn = pool.getConnection();
          assertNotNull("the extra connection should not be null", extraConn);
          //pool.releaseConnection(extraConn);
