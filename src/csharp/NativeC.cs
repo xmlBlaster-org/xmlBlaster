@@ -160,10 +160,14 @@ namespace org.xmlBlaster
    /// Calling unmanagegd code: libxmlBlasterClientC.so (Mono) or xmlBlasterClient.dll (Windows)
    public class NativeC : I_XmlBlasterAccess
    {
+#     if XMLBLASTER_CLIENT_WIN // Windows
+      // mcs /d:NATIVE_C_MAIN /d:XMLBLASTER_CLIENT_WIN -debug+ -out:NativeC.exe NativeC.cs
       // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
-      //[DllImport( "..\\LIB\\PinvokeLib.dll" )]
 		//[DllImport("user32.dll", CharSet = CharSet.Auto)]
-      const string Library = "xmlBlasterClientCD"; //libxmlBlasterClientCD.so
+      const string XMLBLASTER_C_LIBRARY  = "\\xmlBlaster\\lib\\xmlBlasterClientC.dll";
+#     else // Mono/Linux debug
+      const string XMLBLASTER_C_LIBRARY  = "xmlBlasterClientCD"; //libxmlBlasterClientCD.so
+#     endif
 
       // Helper struct for DLL calls to avoid 'fixed' and unsafe
       struct XmlBlasterUnmanagedException {
@@ -234,49 +238,49 @@ namespace org.xmlBlaster
          }
       */
 		
-      [DllImport(Library)]      
+      [DllImport(XMLBLASTER_C_LIBRARY )]      
       private extern static IntPtr getXmlBlasterAccessUnparsedUnmanaged(int argc, string[] argv);
       
-      [DllImport(Library)]      
+      [DllImport(XMLBLASTER_C_LIBRARY )]      
       private extern static void freeXmlBlasterAccessUnparsedUnmanaged(IntPtr xa);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static string xmlBlasterUnmanagedConnect(IntPtr xa, string qos, UpdateFp update, ref XmlBlasterUnmanagedException exception);
       
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static bool xmlBlasterUnmanagedInitialize(IntPtr xa, UpdateFp update, ref XmlBlasterUnmanagedException exception);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static bool xmlBlasterUnmanagedDisconnect(IntPtr xa, string qos, ref XmlBlasterUnmanagedException exception);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static string xmlBlasterUnmanagedPublish(IntPtr xa, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
 
-      //[DllImport(Library)]
+      //[DllImport(XMLBLASTER_C_LIBRARY )]
       //private extern static QosArr xmlBlasterUnmanagedPublishArr(IntPtr xa, MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static void xmlBlasterUnmanagedPublishOneway(IntPtr xa, MsgUnit[] msgUnitArr, int length, ref XmlBlasterUnmanagedException exception);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static string xmlBlasterUnmanagedSubscribe(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static void xmlBlasterUnmanagedUnSubscribe(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static void xmlBlasterUnmanagedErase(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static void xmlBlasterUnmanagedGet(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static string xmlBlasterUnmanagedPing(IntPtr xa, string qos, ref XmlBlasterUnmanagedException exception);
  
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static bool xmlBlasterUnmanagedIsConnected(IntPtr xa);
       
-      [DllImport(Library)]
+      [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static string xmlBlasterUnmanagedUsage();
 
       
@@ -294,7 +298,7 @@ namespace org.xmlBlaster
          for (int i=0; i<argv.Length; ++i) {
             if (argv[i] == "--help") {
                Console.WriteLine("Usage:\n" + xmlBlasterUnmanagedUsage());
-               throw new XmlBlasterException("user", "Good bye");
+               throw new XmlBlasterException("user.usage", "Good bye");
             }
             c_argv[i+1] = argv[i];
          }
@@ -610,6 +614,7 @@ namespace org.xmlBlaster
 
 #if NATIVE_C_MAIN
       static void Main(string[] argv) {
+        
          I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance(argv);
 
          // crashed with [3], why??
