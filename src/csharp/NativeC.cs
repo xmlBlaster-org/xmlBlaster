@@ -17,6 +17,7 @@
 // @compile  mcs -debug+ NativeC.cs
 // @run      mono NativeC.exe
 //           mono NativeC.exe -logLevel TRACE
+// @see      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
 //
 /*
 Usage:
@@ -54,6 +55,28 @@ using System.Runtime.InteropServices;
 
 namespace org::xmlBlaster
 {
+   public class XmlBlasterAccessFactory
+   {
+      public static I_XmlBlasterAccess createInstance(String[] argv) {
+         return new NativeC(argv);
+      }
+   }
+   
+   public interface I_XmlBlasterAccess
+   {
+      string connect(string qos);
+      /// After calling diconnect() this class is not usable anymore
+      /// you need to create a new instance to connect again
+      bool disconnect(string qos);
+      string publish(string key, string content, string qos);
+      void publishOneway(MsgUnit[] msgUnitArr);
+      string subscribe(string key, string qos);
+      string[] unSubscribe(string key, string qos);
+      string[] erase(string key, string qos);
+      MsgUnit[] get(string key, string qos);
+      string ping(string qos);
+      bool isConnected();
+   }
 
    public class XmlBlasterException : Exception {
       bool remote;
@@ -90,8 +113,46 @@ namespace org::xmlBlaster
       }
    }
    
+   // SEE http://msdn2.microsoft.com/en-us/library/2k1k68kw.aspx
+   // Declares a class member for each structure element.
+   // Must match exactly the C struct MsgUnit (sequence!)
+   [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
+   public class MsgUnit 
+   {
+      public string key;
+      public int contentLen;
+      // Without MarshalAs: ** ERROR **: Structure field of type Byte[] can't be marshalled as LPArray
+      //[MarshalAs (UnmanagedType.ByValArray, SizeConst=100)] // does not work unlimited without SizeConst -> SIGSEGV
+      // public byte[] content; // Ensure UTF8 encoding for strings
+      public string content;
+      public string qos;
+      public string responseQos;
+      public MsgUnit() { }
+      public MsgUnit(string key, string contentStr, string qos) {
+         this.key = key;
+         this.contentLen = contentStr.Length;
+         setContentStr(contentStr);
+         this.qos = qos;
+      }
+      /// We return a string in the default codeset
+      public string getContentStr() {
+         //System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+         //return enc.GetString(this.content);
+         // How does this work? System.Text.Decoder d = System.Text.Encoding.UTF8.GetDecoder();
+         return this.content;
+      }
+      /// The binary string is UTF8 encoded (xmlBlaster default)
+      public void setContentStr(string contentStr) {
+         //this.content = System.Text.Encoding.UTF8.GetBytes(contentStr);
+         this.content = contentStr;
+      }
+      public override string ToString() {
+         return key + "\n" + content + "\n" + qos;
+      }
+   }
+
    /// Calling unmanagegd code: libxmlBlasterClientC.so (Mono) or xmlBlasterClient.dll (Windows)
-   public class NativeC
+   public class NativeC : I_XmlBlasterAccess
    {
       // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
       //[DllImport( "..\\LIB\\PinvokeLib.dll" )]
@@ -117,43 +178,6 @@ namespace org::xmlBlaster
       }
 
 
-      // SEE http://msdn2.microsoft.com/en-us/library/2k1k68kw.aspx
-      // Declares a class member for each structure element.
-      // Must match exactly the C struct MsgUnit (sequence!)
-      [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
-      public class MsgUnit 
-      {
-         public string key;
-         public int contentLen;
-         // Without MarshalAs: ** ERROR **: Structure field of type Byte[] can't be marshalled as LPArray
-         //[MarshalAs (UnmanagedType.ByValArray, SizeConst=100)] // does not work unlimited without SizeConst -> SIGSEGV
-         // public byte[] content; // Ensure UTF8 encoding for strings
-         public string content;
-         public string qos;
-         public string responseQos;
-         public MsgUnit() { }
-         public MsgUnit(string key, string contentStr, string qos) {
-            this.key = key;
-            this.contentLen = contentStr.Length;
-            setContentStr(contentStr);
-            this.qos = qos;
-         }
-         /// We return a string in the default codeset
-         public string getContentStr() {
-            //System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-            //return enc.GetString(this.content);
-            // How does this work? System.Text.Decoder d = System.Text.Encoding.UTF8.GetDecoder();
-            return this.content;
-         }
-         /// The binary string is UTF8 encoded (xmlBlaster default)
-         public void setContentStr(string contentStr) {
-            //this.content = System.Text.Encoding.UTF8.GetBytes(contentStr);
-            this.content = contentStr;
-         }
-         public override string ToString() {
-            return key + "\n" + content + "\n" + qos;
-         }
-      }
 
       [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
       public class StringArr
@@ -566,7 +590,7 @@ namespace org::xmlBlaster
       }
 
       static void Main(string[] argv) {
-         NativeC nc = new NativeC(argv);
+         I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance(argv);
 
          // crashed with [3], why??
          MsgUnit[] msgUnitArr = new MsgUnit[3];
