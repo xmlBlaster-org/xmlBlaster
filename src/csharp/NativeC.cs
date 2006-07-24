@@ -16,7 +16,7 @@
 // @prepare  cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
 // @compile  mcs -debug+ NativeC.cs
 // @run      mono NativeC.exe
-//           mono NativeC.exe -logLevel TRACE -XX   (without a dummy -XX it crashes?!)
+//           mono NativeC.exe -logLevel TRACE
 //
 /*
 Usage:
