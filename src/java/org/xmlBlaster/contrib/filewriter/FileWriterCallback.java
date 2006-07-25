@@ -179,7 +179,8 @@ public class FileWriterCallback implements I_Update {
     * @param fileName The name of the complete (destination) file.
     * @param expectedChunks The number of expected chunks. If the number of chunks found is
     * bigger, the exceeding ones are ignored and a warning is written to the logs. If the number
-    * is too low an exception is thrown. Keeps also track of locking the file.
+    * is too low it checks if the file already exists. If it exists a warning is written and
+    * the method returns, otherwise an exception is thrown. Keeps also track of locking the file.
     * @param lastContent the content of the last chunk of the message (can be null).
     * @param isCompleteMsg is true if the content of the message is contained in one single
     * chunk (i.e. if the message is not chunked).
@@ -198,7 +199,7 @@ public class FileWriterCallback implements I_Update {
             return;
          }
          else
-            log.warning("file '" + fileName + "' in directory '" + this.directory + "' exists already. Will overwrite it");
+            log.warning("file '" + fileName + "' in directory '" + this.directory + "' exists already. Will overwrite it unless the chunks are not there anymore");
       }
       try {
          File lock = null;
@@ -216,8 +217,14 @@ public class FileWriterCallback implements I_Update {
             files = getChunkFilenames(fileName, '.'); // retrieves the chunks in correct order
             if (files.length > expectedChunks)
                log.warning("Too many chunks belonging to '" + fileName + "' are found. They are '" + files.length + "' but should be '" + expectedChunks + "'");
-            else if (files.length < expectedChunks)
-               throw new Exception("Too few chunks belonging to '" + fileName + "' are found. They are '" + files.length + "' but should be '" + expectedChunks + "'");
+            else if (files.length < expectedChunks) {
+               if (file.exists()) {
+                  log.warning("The number of chunks is '" + files.length + "' which is less than the expected '" + expectedChunks + "' but the file '" + file.getAbsolutePath() + "' exists. So we will use the exisiting file (the chunks where probably already deleted");
+                  return;
+               }
+               else
+                  throw new Exception("Too few chunks belonging to '" + fileName + "' are found. They are '" + files.length + "' but should be '" + expectedChunks + "'");
+            }
             numChunks = files.length > expectedChunks ? expectedChunks : files.length; 
          }
          // put all chunks toghether in one single file
