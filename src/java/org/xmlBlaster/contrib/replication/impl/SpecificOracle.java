@@ -32,6 +32,16 @@ public class SpecificOracle extends SpecificDefault {
    
    private boolean debug;
    private String debugFunction;
+   private boolean wipeoutTriggers;
+   private boolean wipeoutSequences;
+   private boolean wipeoutFunctions;
+   private boolean wipeoutPackages;
+   private boolean wipeoutProcedures; 
+   private boolean wipeoutViews; 
+   private boolean wipeoutTables;
+   private boolean wipeoutSynonyms; 
+   private boolean wipeoutIndexes;
+
    
    /**
     * Not doing anything.
@@ -45,6 +55,16 @@ public class SpecificOracle extends SpecificDefault {
       this.ownSchema = this.info.get("db.user", null);
       this.debug = this.info.getBoolean("replication.plsql.debug", false);
       this.debugFunction = this.info.get("replication.plsql.debugFunction", null);
+
+      this.wipeoutTriggers = this.info.getBoolean("replication.oracle.wipeoutTriggers", true);
+      this.wipeoutSequences = this.info.getBoolean("replication.oracle.wipeoutSequences", true);
+      this.wipeoutFunctions = this.info.getBoolean("replication.oracle.wipeoutFunctions", true);
+      this.wipeoutPackages = this.info.getBoolean("replication.oracle.wipeoutPackages", true);
+      this.wipeoutProcedures = this.info.getBoolean("replication.oracle.wipeoutProcedures", true);
+      this.wipeoutViews = this.info.getBoolean("replication.oracle.wipeoutViews", true);
+      this.wipeoutTables = this.info.getBoolean("replication.oracle.wipeoutTables", true);
+      this.wipeoutSynonyms = this.info.getBoolean("replication.oracle.wipeoutSynonyms", true);
+      this.wipeoutIndexes = this.info.getBoolean("replication.oracle.wipeoutIndexes", true);
    }
    
    /**
@@ -651,7 +671,7 @@ public class SpecificOracle extends SpecificDefault {
          catch (Throwable ex) { ex.printStackTrace(); }
       }
    }
-
+   
    private int wipeoutSchemaSingleSweep(String catalog, String schema, boolean[] objectsToWipeout) throws Exception {
       Connection conn = null;
       int sum = 0;
@@ -661,7 +681,7 @@ public class SpecificOracle extends SpecificDefault {
          
          try {  
             // TRIGGERS
-            if (objectsToWipeout[WIPEOUT_TRIGGERS]) {
+            if (objectsToWipeout[WIPEOUT_TRIGGERS] && this.wipeoutTriggers) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TRIGGER'";
                log.info("going to execute sql statement '" + sql + "'");
@@ -676,7 +696,7 @@ public class SpecificOracle extends SpecificDefault {
          }
          
          try {  // SEQUENCES
-            if (objectsToWipeout[WIPEOUT_SEQUENCES]) {
+            if (objectsToWipeout[WIPEOUT_SEQUENCES] && this.wipeoutSequences) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SEQUENCE'";
                log.info("going to execute sql statement '" + sql + "'");
@@ -690,7 +710,7 @@ public class SpecificOracle extends SpecificDefault {
             ex.printStackTrace();
          }
          try {  // FUNCTIONS
-            if (objectsToWipeout[WIPEOUT_FUNCTIONS]) {
+            if (objectsToWipeout[WIPEOUT_FUNCTIONS] && this.wipeoutFunctions) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='FUNCTION'";
                log.info("going to execute sql statement '" + sql + "'");
@@ -704,7 +724,7 @@ public class SpecificOracle extends SpecificDefault {
             ex.printStackTrace();
          }
          try {  // PACKAGES
-            if (objectsToWipeout[WIPEOUT_PACKAGES]) {
+            if (objectsToWipeout[WIPEOUT_PACKAGES] && this.wipeoutPackages) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PACKAGE'";
                log.info("going to execute sql statement '" + sql + "'");
@@ -718,7 +738,7 @@ public class SpecificOracle extends SpecificDefault {
             ex.printStackTrace();
          }
          try {  // PROCEDURES
-            if (objectsToWipeout[WIPEOUT_PROCEDURES]) {
+            if (objectsToWipeout[WIPEOUT_PROCEDURES] && this.wipeoutProcedures) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='PROCEDURE'";
                log.info("going to execute sql statement '" + sql + "'");
@@ -731,8 +751,8 @@ public class SpecificOracle extends SpecificDefault {
          catch (Exception ex) {
             ex.printStackTrace();
          }
-         try {  // VIEWS
-            if (objectsToWipeout[WIPEOUT_VIEWS]) {
+         try {  // VIEWS 
+            if (objectsToWipeout[WIPEOUT_VIEWS] && this.wipeoutViews) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='VIEW'";
                log.info("going to execute sql statement '" + sql + "'");
@@ -745,8 +765,8 @@ public class SpecificOracle extends SpecificDefault {
          catch (Exception ex) {
             ex.printStackTrace();
          }
-         try {  // TABLES
-            if (objectsToWipeout[WIPEOUT_TABLES]) {
+         try {  // TABLES  
+            if (objectsToWipeout[WIPEOUT_TABLES] && this.wipeoutTables) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='TABLE'";
                log.info("going to execute sql statement '" + sql + "'");
@@ -760,7 +780,7 @@ public class SpecificOracle extends SpecificDefault {
             ex.printStackTrace();
          }
          try {  // SYNONYMS
-            if (objectsToWipeout[WIPEOUT_SYNONYMS]) {
+            if (objectsToWipeout[WIPEOUT_SYNONYMS] && this.wipeoutSynonyms) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='SYNONYM'";
                log.info("going to execute sql statement '" + sql + "'");
@@ -774,7 +794,7 @@ public class SpecificOracle extends SpecificDefault {
             ex.printStackTrace();
          }
          try {  // INDEXES
-            if (objectsToWipeout[WIPEOUT_INDEXES]) {
+            if (objectsToWipeout[WIPEOUT_INDEXES] && this.wipeoutIndexes) {
                ArrayList names = new ArrayList();
                String sql = "SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OWNER='" + schema + "' AND OBJECT_TYPE='INDEX'";
                log.info("going to execute sql statement '" + sql + "'");
