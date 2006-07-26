@@ -13,42 +13,82 @@ using System;
 using System.Runtime.InteropServices;
 using org.xmlBlaster;
 
-public class Hello
+public class Hello : I_Callback
 {
+   const string callbackSessionId = "secretCb";
+   
    static void Main(string[] argv) {
+      new Hello(argv);
+   }
+   
+   public Hello(string[] argv) {
       I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance(argv);
 
-      const string callbackSessionId = "secretCb";
       string connectQos = String.Format(
-         "<qos>"+
-         " <securityService type='htpasswd' version='1.0'>"+
-         "  <![CDATA["+
-         "   <user>fritz</user>"+
-         "   <passwd>secret</passwd>"+
-         "  ]]>"+
-         " </securityService>"+
-         " <queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>"+
-         "   <callback type='SOCKET' sessionId='{0}'>"+
-         "   </callback>"+
-         " </queue>"+
+         "<qos>\n"+
+         " <securityService type='htpasswd' version='1.0'>\n"+
+         "  <![CDATA[\n"+
+         "   <user>fritz</user>\n"+
+         "   <passwd>secret</passwd>\n"+
+         "  ]]>\n"+
+         " </securityService>\n"+
+         " <queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>\n"+
+         "   <callback type='SOCKET' sessionId='{0}'>\n"+
+         "   </callback>\n"+
+         " </queue>\n"+
          "</qos>", callbackSessionId);  //"    socket://{1}:{2}"+
-      Console.WriteLine(connectQos);
+      Console.WriteLine("Connecting with:" + connectQos);
 
-      nc.connect(connectQos);
+      I_Callback callback = this;
+      nc.connect(connectQos, callback);
+
       for (int i=0; i<5; i++) {
-         nc.subscribe("<key oid='Hello'/>", "<qos/>");
-         nc.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+         string srq = nc.subscribe("<key oid='Hello'/>", "<qos/>");
+         Console.WriteLine("subscribe() returned " + srq);
+         
+         //nc.publish("<key oid='Hello'/>", "HIII", "<qos/>");
+         string prq = nc.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+         Console.WriteLine("publish() returned " + prq);         
+         
          nc.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
+         Console.WriteLine("publish() returned " + prq);         
+         
          MsgUnit[] msgs = nc.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
-         Console.WriteLine("get() returned " + msgs.Length + " messages");
-         nc.ping("<qos/>");
-         nc.isConnected();
-         nc.unSubscribe("<key oid='Hello'/>", "<qos/>");
-         nc.erase("<key oid='Hello'/>", "<qos/>");
-         Console.WriteLine("Hit a key " + i);
+         Console.WriteLine("get() returned " + msgs.Length + " messages");         
+         
+         string p = nc.ping("<qos/>");
+         Console.WriteLine("ping() returned " + p);         
+         
+         bool b = nc.isConnected();
+         Console.WriteLine("isConnected() returned " + b);         
+         
+         string[] urq = nc.unSubscribe("<key oid='Hello'/>", "<qos/>");
+         Console.WriteLine("unSubscribe() returned " + urq[0]);         
+         
+         string[] erq = nc.erase("<key oid='C#C#C#'/>", "<qos/>");
+         Console.WriteLine("erase() returned " + erq[0]);         
+         
+         Console.WriteLine("\nHit a key " + i);
          Console.ReadLine();
       }
-      nc.disconnect("<qos/>");
+      bool drq = nc.disconnect("<qos/>");
+      Console.WriteLine("disconnect() returned " + drq);
+      
       Console.Out.WriteLine("DONE");
    }
+   
+   #region I_Callback Members
+   public string OnUpdate(string cbSessionId, MsgUnit msgUnit) {
+      Console.WriteLine("OnUpdate() invoked START ==================");
+      if (callbackSessionId != cbSessionId)
+         Console.WriteLine("Not authorized");
+      Console.WriteLine(msgUnit.key);
+      Console.WriteLine(msgUnit.getContentStr());
+      Console.WriteLine(msgUnit.qos);
+      string ret = "<qos><state id='OK'/></qos>";
+      Console.WriteLine("OnUpdate() invoked DONE ===================");
+      //throw new XmlBlasterException("user.update.illegalArgument", "A test exception from OnUpdate()");
+      return ret;
+   }
+   #endregion
 }

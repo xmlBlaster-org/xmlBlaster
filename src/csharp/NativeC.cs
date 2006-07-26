@@ -11,7 +11,11 @@
 //
 // @todo     port content from 'string' to byte[]
 //           publishOneway crashes
+//           OnUpdate() throwing exception seems not to be passed to C
+//           logging with log4net
 //           port to Windows
+//           write a testsuite
+//           write a requirement
 //           create an assembly with ant or nant
 //           create the same wrapper for the xmlBlaster C++ library
 //
@@ -67,9 +71,14 @@ namespace org.xmlBlaster
       }
    }
    
+   public interface I_Callback
+   {
+      string OnUpdate(string cbSessionId, MsgUnit msgUnit);
+   }
+
    public interface I_XmlBlasterAccess
    {
-      string connect(string qos);
+      string connect(string qos, I_Callback listener);
       /// After calling diconnect() this class is not usable anymore
       /// you need to create a new instance to connect again
       bool disconnect(string qos);
@@ -156,13 +165,15 @@ namespace org.xmlBlaster
       }
    }
 
-   /// Calling unmanagegd code: libxmlBlasterClientC.so (Mono) or xmlBlasterClient.dll (Windows)
+   /// Calling unmanagegd code: libxmlBlasterClientC.so (Mono) or xmlBlasterClientC.dll (Windows)
    public class NativeC : I_XmlBlasterAccess
    {
+      bool verbose = false; // TODO: log4net
+
 #     if XMLBLASTER_CLIENT_WIN // Windows
       // mcs /d:NATIVE_C_MAIN /d:XMLBLASTER_CLIENT_WIN -debug+ -out:NativeC.exe NativeC.cs
       // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
-		//[DllImport("user32.dll", CharSet = CharSet.Auto)]
+      //[DllImport("user32.dll", CharSet = CharSet.Auto)]
       const string XMLBLASTER_C_LIBRARY  = "\\xmlBlaster\\lib\\xmlBlasterClientC.dll";
 #     else // Mono/Linux debug
       const string XMLBLASTER_C_LIBRARY  = "xmlBlasterClientCD"; //libxmlBlasterClientCD.so
@@ -189,36 +200,56 @@ namespace org.xmlBlaster
 
 
       [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
-      public class StringArr
-      {
+      public class StringArr {
          public string str;
       }
 
-      //public delegate bool UpdateFp(ref MsgUnitArr msg, ref IntPtr userData, ref XmlBlasterException xmlBlasterException);
-      delegate string UpdateFp(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
+      public void logger(String str) {
+         if (verbose) Console.WriteLine(str);
+      }
 
-      /// Callback by xmlBlaster, see UpdateFp
-      static string update(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception) {
-         Console.WriteLine("C# update invoked START ==================");
-         Console.WriteLine(msgUnit.key);
-         Console.WriteLine(msgUnit.getContentStr());
-         Console.WriteLine(msgUnit.qos);
+      delegate string UpdateUnmanagedFp(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
+
+      /// Callback by xmlBlaster, see UpdateUnmanagedFp
+      string updateUnmanaged(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception) {
+         if (null != onUpdate) {
+            try {
+               return onUpdate(cbSessionId, msgUnit);
+            }
+            // TODO: Exception seems not to reach the C code
+            catch (XmlBlasterException e) {
+               logger("OnUpdate() exception: " + e.ToString());
+               exception.errorCode = e.ErrorCode;
+               exception.message = e.Message;
+               exception.remote = 1;
+               return null;
+            }
+            catch (Exception e) {
+               logger("OnUpdate() exception: " + e.ToString());
+               exception.errorCode = "user.update.internalError";
+               exception.message = e.ToString();
+               exception.remote = 1;
+               return null;
+            }
+         }
+         logger("C# updateUnmanaged invoked START ==================");
+         logger(msgUnit.key);
+         logger(msgUnit.getContentStr());
+         logger(msgUnit.qos);
          string ret = "<qos><state id='OK'/></qos>";
-         Console.WriteLine("C# update invoked DONE ===================");
+         logger("C# updateUnmanaged invoked DONE ===================");
          return ret;
       }
       
-      // C# to convert a string to a byte array.
+      // Convert a string to a byte array.
       public static byte[] StrToByteArray(string str) {
+         //return (new UnicodeEncoding()).GetBytes(stringToConvert);
          //byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // TODO
          System.Text.ASCIIEncoding  encoding=new System.Text.ASCIIEncoding();
          return encoding.GetBytes(str);
       }
-      //public static byte[] StrToByteArray(string stringToConvert) {
-      //   return (new UnicodeEncoding()).GetBytes(stringToConvert);
-      //}
 
-      // C# to convert a byte array to a string.
+      // Convert a byte array to a string.
       public static string ByteArrayToString(byte[] dBytes) {
          string str;
          System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
@@ -226,7 +257,6 @@ namespace org.xmlBlaster
          return str;
       }
       
-   
       /*
          [StructLayout(LayoutKind.Explicit)]
          public struct Rect {
@@ -236,7 +266,7 @@ namespace org.xmlBlaster
              [FieldOffset(12)] public int bottom;
          }
       */
-		
+      
       [DllImport(XMLBLASTER_C_LIBRARY )]      
       private extern static IntPtr getXmlBlasterAccessUnparsedUnmanaged(int argc, string[] argv);
       
@@ -244,10 +274,10 @@ namespace org.xmlBlaster
       private extern static void freeXmlBlasterAccessUnparsedUnmanaged(IntPtr xa);
 
       [DllImport(XMLBLASTER_C_LIBRARY )]
-      private extern static string xmlBlasterUnmanagedConnect(IntPtr xa, string qos, UpdateFp update, ref XmlBlasterUnmanagedException exception);
+      private extern static string xmlBlasterUnmanagedConnect(IntPtr xa, string qos, UpdateUnmanagedFp updateUnmanaged, ref XmlBlasterUnmanagedException exception);
       
       [DllImport(XMLBLASTER_C_LIBRARY )]
-      private extern static bool xmlBlasterUnmanagedInitialize(IntPtr xa, UpdateFp update, ref XmlBlasterUnmanagedException exception);
+      private extern static bool xmlBlasterUnmanagedInitialize(IntPtr xa, UpdateUnmanagedFp updateUnmanaged, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static bool xmlBlasterUnmanagedDisconnect(IntPtr xa, string qos, ref XmlBlasterUnmanagedException exception);
@@ -284,12 +314,12 @@ namespace org.xmlBlaster
 
       
       private IntPtr xa;
-      private UpdateFp myUpdateFp;
+      private UpdateUnmanagedFp updateUnmanagedFp;
       
       public NativeC(string[] argv) {
          if (argv == null) argv = new String[0];
 
-         myUpdateFp = new UpdateFp(NativeC.update);
+         updateUnmanagedFp = new UpdateUnmanagedFp(this.updateUnmanaged);
 
          // Convert command line arguments: C client lib expects the executable name as first entry
          string[] c_argv = new string[argv.Length+1];
@@ -304,40 +334,46 @@ namespace org.xmlBlaster
             
          xa = getXmlBlasterAccessUnparsedUnmanaged(c_argv.Length, c_argv);
             
-         Console.WriteLine("NativeC() ...");         
+         logger("NativeC() ...");         
       }
 
       ~NativeC() {
          if (xa != new IntPtr(0))
             freeXmlBlasterAccessUnparsedUnmanaged(xa);
-         Console.WriteLine("~NativeC() ...");         
+         logger("~NativeC() ...");         
       }
       
       void check(string methodName) {
-         Console.WriteLine(methodName + "() ...");         
+         logger(methodName + "() ...");         
          if (xa == new IntPtr(0))
             throw new XmlBlasterException("internal.illegalState", "Can't process " + methodName + ", xmlBlaster pointer is reset, please create a new instance of NativeC.cs class after a disconnect() call");
       }
+
+      private delegate string OnUpdate(string cbSessionId, MsgUnit msgUnit);
+      private event OnUpdate onUpdate;
       
-      public string connect(string qos) {
+      public string connect(string qos, I_Callback listener) {
          check("connect");
+         if (listener != null) {
+            onUpdate += new OnUpdate(listener.OnUpdate);
+         }
          try {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
-            bool bb = xmlBlasterUnmanagedInitialize(xa, myUpdateFp, ref exception);
+            bool bb = xmlBlasterUnmanagedInitialize(xa, updateUnmanagedFp, ref exception);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedInitialize: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedInitialize: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             else
-               Console.WriteLine("xmlBlasterUnmanagedInitialize: SUCCESS '" + bb + "' xa:"/* + xa.isInitialized*/);
+               logger("xmlBlasterUnmanagedInitialize: SUCCESS '" + bb + "' xa:"/* + xa.isInitialized*/);
             
-            string ret = xmlBlasterUnmanagedConnect(xa, qos, myUpdateFp, ref exception);
+            string ret = xmlBlasterUnmanagedConnect(xa, qos, updateUnmanagedFp, ref exception);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedConnect: Got exception from C: '" + ret + "' exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedConnect: Got exception from C: '" + ret + "' exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             else
-               Console.WriteLine("xmlBlasterUnmanagedConnect: SUCCESS '" + ret + "'");
+               logger("xmlBlasterUnmanagedConnect: SUCCESS '" + ret + "'");
             return ret;
          }
          catch (XmlBlasterException e) {
@@ -356,15 +392,15 @@ namespace org.xmlBlaster
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
             bool bb = xmlBlasterUnmanagedDisconnect(xa, qos, ref exception);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedDisconnect: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedDisconnect: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             else
-               Console.WriteLine("xmlBlasterUnmanagedDisconnect: SUCCESS '" + bb + "'");
+               logger("xmlBlasterUnmanagedDisconnect: SUCCESS '" + bb + "'");
 
             freeXmlBlasterAccessUnparsedUnmanaged(xa);
             xa = new IntPtr(0);
-            Console.WriteLine("xmlBlasterUnmanagedDisconnect: SUCCESS freed all resources");
+            logger("xmlBlasterUnmanagedDisconnect: SUCCESS freed all resources");
 
             return bb;
          }
@@ -388,11 +424,11 @@ namespace org.xmlBlaster
             msgUnit.qos = qos;
             string ret = xmlBlasterUnmanagedPublish(xa, msgUnit, ref exception);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedPublish: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedPublish: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             else
-               Console.WriteLine("xmlBlasterUnmanagedPublish: SUCCESS '" + ret + "'");
+               logger("xmlBlasterUnmanagedPublish: SUCCESS '" + ret + "'");
             return ret;
          }
          catch (XmlBlasterException e) {
@@ -418,11 +454,11 @@ namespace org.xmlBlaster
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
             xmlBlasterUnmanagedPublishOneway(xa, msgUnitArr, msgUnitArr.Length, ref exception);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("publishOneway: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("publishOneway: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             else
-               Console.WriteLine("publishOneway: SUCCESS");
+               logger("publishOneway: SUCCESS");
          }
          catch (XmlBlasterException e) {
             throw e;
@@ -438,11 +474,11 @@ namespace org.xmlBlaster
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
             string ret = xmlBlasterUnmanagedSubscribe(xa, key, qos, ref exception);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedSubscribe: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedSubscribe: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             else
-               Console.WriteLine("xmlBlasterUnmanagedSubscribe: SUCCESS '" + ret + "'");
+               logger("xmlBlasterUnmanagedSubscribe: SUCCESS '" + ret + "'");
             return ret;
          }
          catch (XmlBlasterException e) {
@@ -461,7 +497,7 @@ namespace org.xmlBlaster
             IntPtr outArray;
             xmlBlasterUnmanagedUnSubscribe(xa, key, qos, ref exception, out size, out outArray);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedUnSubscribe: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             StringArr[] manArray = new StringArr[ size ];
@@ -472,11 +508,11 @@ namespace org.xmlBlaster
                Marshal.PtrToStructure( current, manArray[ i ]);
                Marshal.DestroyStructure( current, typeof(StringArr) );
                current = (IntPtr)((long)current + Marshal.SizeOf( manArray[ i ] ));
-               Console.WriteLine( "Element {0}: str={1}", i, manArray[ i ].str );
+               //Console.WriteLine( "Element {0}: str={1}", i, manArray[ i ].str );
                retQosArr[i] = manArray[ i ].str;
             }
             Marshal.FreeCoTaskMem( outArray );
-            Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: SUCCESS");
+            logger("xmlBlasterUnmanagedUnSubscribe: SUCCESS");
             return retQosArr;
          }
          catch (XmlBlasterException e) {
@@ -487,7 +523,7 @@ namespace org.xmlBlaster
             //   disconnect("<qos/>");
             //}
             //catch (Exception e2) {
-            //   Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: Ignoring " + e2.ToString() + " root was " +e.ToString());
+            //   logger("xmlBlasterUnmanagedUnSubscribe: Ignoring " + e2.ToString() + " root was " +e.ToString());
             //}
             throw new XmlBlasterException("internal.unknown", "unSubscribe failed", e);
          }
@@ -501,7 +537,7 @@ namespace org.xmlBlaster
             IntPtr outArray;
             xmlBlasterUnmanagedErase(xa, key, qos, ref exception, out size, out outArray);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedErase: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedErase: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             StringArr[] manArray = new StringArr[ size ];
@@ -512,23 +548,17 @@ namespace org.xmlBlaster
                Marshal.PtrToStructure( current, manArray[ i ]);
                Marshal.DestroyStructure( current, typeof(StringArr) );
                current = (IntPtr)((long)current + Marshal.SizeOf( manArray[ i ] ));
-               Console.WriteLine( "Element {0}: str={1}", i, manArray[ i ].str );
+               //Console.WriteLine( "Element {0}: str={1}", i, manArray[ i ].str );
                retQosArr[i] = manArray[ i ].str;
             }
             Marshal.FreeCoTaskMem( outArray );
-            Console.WriteLine("xmlBlasterUnmanagedErase: SUCCESS");
+            logger("xmlBlasterUnmanagedErase: SUCCESS");
             return retQosArr;
          }
          catch (XmlBlasterException e) {
             throw e;
          }
          catch (Exception e) {
-            //try {
-            //   disconnect("<qos/>");
-            //}
-            //catch (Exception e2) {
-            //   Console.WriteLine("xmlBlasterUnmanagedUnSubscribe: Ignoring " + e2.ToString() + " root was " +e.ToString());
-            //}
             throw new XmlBlasterException("internal.unknown", "unSubscribe failed", e);
          }
       }
@@ -541,11 +571,11 @@ namespace org.xmlBlaster
             IntPtr outArray;
             xmlBlasterUnmanagedGet(xa, key, qos, ref exception, out size, out outArray);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedGet: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedGet: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             
-            Console.WriteLine("get() size=" + size);
+            logger("get() size=" + size);
             MsgUnit[] manArray = new MsgUnit[ size ];
             IntPtr current = outArray;
             for( int i = 0; i < size; i++ ) {
@@ -555,11 +585,11 @@ namespace org.xmlBlaster
                Marshal.DestroyStructure( current, typeof(MsgUnit) );
                current = (IntPtr)((long)current + 
                Marshal.SizeOf( manArray[ i ] ));
-               Console.WriteLine( "Element {0}: key={1} qos={2} buffer={3} contentLength={4}", i, 
-                  manArray[ i ].key, manArray[ i ].qos, manArray[ i ].content, manArray[ i ].contentLen );
+               //Console.WriteLine( "Element {0}: key={1} qos={2} buffer={3} contentLength={4}", i, 
+               //   manArray[ i ].key, manArray[ i ].qos, manArray[ i ].content, manArray[ i ].contentLen );
             }
             Marshal.FreeCoTaskMem( outArray );
-            Console.WriteLine("xmlBlasterUnmanagedGet: SUCCESS");
+            logger("xmlBlasterUnmanagedGet: SUCCESS");
             return manArray;
          }
          catch (XmlBlasterException e) {
@@ -576,11 +606,11 @@ namespace org.xmlBlaster
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
             string ret = xmlBlasterUnmanagedPing(xa, qos, ref exception);
             if (exception.errorCode.Length > 0) {
-               Console.WriteLine("xmlBlasterUnmanagedPing: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
+               logger("xmlBlasterUnmanagedPing: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
             }
             else
-               Console.WriteLine("xmlBlasterUnmanagedPing: SUCCESS '" + ret + "'");
+               logger("xmlBlasterUnmanagedPing: SUCCESS '" + ret + "'");
             return ret;
          }
          catch (XmlBlasterException e) {
@@ -592,11 +622,11 @@ namespace org.xmlBlaster
       }
  
       public bool isConnected() {
-         Console.WriteLine("isConnected() ...");         
+         logger("isConnected() ...");         
          if (xa == new IntPtr(0)) return false;
          try {
             bool bb = xmlBlasterUnmanagedIsConnected(xa);
-            Console.WriteLine("xmlBlasterUnmanagedIsConnected: SUCCESS '" + bb + "'");
+            logger("xmlBlasterUnmanagedIsConnected: SUCCESS '" + bb + "'");
             return bb;
          }
          catch (XmlBlasterException e) {
@@ -638,20 +668,28 @@ namespace org.xmlBlaster
                "</qos>", callbackSessionId);  //"    socket://{1}:{2}"+
          Console.WriteLine(connectQos);         
 
-         nc.connect(connectQos);
+         I_Callback callback = null;
+         nc.connect(connectQos, callback);
          for (int i=0; i<50; i++) {
             //nc.publishOneway(msgUnitArr);
-            nc.subscribe("<key oid='Hello'/>", "<qos/>");
+            string srq = nc.subscribe("<key oid='Hello'/>", "<qos/>");
+            Console.WriteLine("subscribe() returned " + srq);         
             //nc.publish("<key oid='Hello'/>", "HIII", "<qos/>");
-            nc.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+            string prq = nc.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+            Console.WriteLine("publish() returned " + prq);         
             nc.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
+            Console.WriteLine("publish() returned " + prq);         
             MsgUnit[] msgs = nc.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
             Console.WriteLine("get() returned " + msgs.Length + " messages");         
-            nc.ping("<qos/>");
-            nc.isConnected();
-            nc.unSubscribe("<key oid='Hello'/>", "<qos/>");
-            nc.erase("<key oid='Hello'/>", "<qos/>");
-            Console.WriteLine("Hit a key " + i);         
+            string p = nc.ping("<qos/>");
+            Console.WriteLine("ping() returned " + p);         
+            bool b = nc.isConnected();
+            Console.WriteLine("isConnected() returned " + b);         
+            string[] urq = nc.unSubscribe("<key oid='Hello'/>", "<qos/>");
+            Console.WriteLine("unSubscribe() returned " + urq[0]);         
+            string[] erq = nc.erase("<key oid='C#C#C#'/>", "<qos/>");
+            Console.WriteLine("erase() returned " + erq[0]);         
+            Console.WriteLine("\nHit a key " + i);         
             Console.ReadLine();
          }
          nc.disconnect("<qos/>");
