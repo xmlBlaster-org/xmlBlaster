@@ -8,6 +8,7 @@ package org.xmlBlaster.util;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.util.Properties;
 
 import org.xmlBlaster.util.def.Constants;
 
@@ -128,7 +129,7 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
       sb.append(offset).append("<MsgUnitRaw>");
       try {
-         toXml(extraOffset, out);
+         toXml(extraOffset, out, (Properties)null);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -161,7 +162,9 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
     * @param out
     * @throws IOException
     */
-   public void toXml(String extraOffset, OutputStream out) throws IOException {
+   public void toXml(String extraOffset, OutputStream out, Properties props) throws IOException {
+      boolean forceReadable = (props!=null && props.contains(Constants.TOXML_FORCEREADABLE)) ?
+            (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE)).booleanValue()) : false;
       StringBuffer sb = new StringBuffer(qos.length() + key.length() + 256);
       String offset = "\n";
       if (extraOffset == null) extraOffset = "";
@@ -178,9 +181,14 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       }
       
       if (this.encodedContent != null) {
-         out.write(this.encodedContent.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG).getBytes());
+         out.write(this.encodedContent.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable).getBytes());
          return;
       }
+      
+      dumpContent(extraOffset, out, this.content, forceReadable); 
+   }
+      
+   public static void dumpContent(String extraOffset, OutputStream out, byte[] content, boolean forceReadable) throws IOException { 
 
       // TODO: Potential charset problem when not Base64 protected
       boolean doEncode = false;
@@ -199,8 +207,8 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       // Needs to be parseable by XmlScriptInterpreter
       if (doEncode) {
          // link=''?  name=null, size=1000L type=Constants.TYPE_BLOB encoding=Constants.ENCODING_BASE64
-         EncodableData data = new EncodableData(MsgUnitRaw.CONTENT_TAG, null, this.content);
-         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG); 
+         EncodableData data = new EncodableData(MsgUnitRaw.CONTENT_TAG, null, content);
+         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable); 
          out.write(contentXml.getBytes());
       }
       else {
@@ -209,8 +217,8 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
                name,
                Constants.TYPE_STRING,
                Constants.ENCODING_NONE,
-               new String(this.content));
-         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG); 
+               new String(content));
+         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable); 
          out.write(contentXml.getBytes());
       }
    }

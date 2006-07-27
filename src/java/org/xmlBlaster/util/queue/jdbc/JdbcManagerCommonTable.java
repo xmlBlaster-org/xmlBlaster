@@ -35,6 +35,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.WeakHashMap;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -129,8 +130,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       this.glob = this.pool.getGlobal();
 
       this.storage = storage;
-      if (log.isLoggable(Level.FINER)) 
-         log.finer("Constructor called");
+      if (log.isLoggable(Level.FINER)) log.finer("Constructor called");
 
       this.factory = factory;
 
@@ -258,16 +258,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     */
 // isClosed() does not work
    private boolean ping(Connection conn) {
-      if (log.isLoggable(Level.FINER)) 
-         log.finer("ping");
+      if (log.isLoggable(Level.FINER)) log.finer("ping");
       if (conn == null) return false; // this could occur if it was not possible to create the connection
 
 //      Statement st = null;
       try {
          // conn.isClosed();
 
-         if (log.isLoggable(Level.FINE)) 
-            log.fine("Trying ping ...");
+         if (log.isLoggable(Level.FINE)) log.fine("Trying ping ...");
          conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
 
          /*
@@ -1145,7 +1143,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          else {
             long dataId = rs.getLong(DATA_ID);            // preStatement.setLong(1, dataId);
-            /*String queueName =*/ rs.getString(QUEUE_NAME); // preStatement.setString(3, queueName);
+            String queueName = rs.getString(QUEUE_NAME); // preStatement.setString(3, queueName);
             int prio = rs.getInt(PRIO);                // preStatement.setInt(4, prio);
             String typeName = rs.getString(TYPE_NAME);      // preStatement.setString(5, typeName);
             if (typeName != null) 
@@ -1160,6 +1158,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             long sizeInBytes = rs.getLong(SIZE_IN_BYTES);
             InputStream is = rs.getBinaryStream(BLOB);
             // byte[] blob = rs.getBytes(7); // preStatement.setObject(5, blob);
+            if (storageId == null)
+               storageId = StorageId.valueOf(queueName);
             if (is == null) {
                String txt = "dataId='" + dataId + "' prio='" + prio + "' typeName='" + typeName + "' persistent='" + persistent + "' sizeInBytes='" + sizeInBytes + "'";
                log.warning("The stream for the blob of data: " + txt + " is null");
@@ -1564,8 +1564,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    private boolean[] deleteEntriesNoSplit(String queueName, long[] uniqueIds)
       throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) 
-         log.finer("Entering");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering");
 
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE))
@@ -1983,12 +1982,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    public ArrayList getEntries(StorageId storageId, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter)
       throws XmlBlasterException {
       String queueName = storageId.getStrippedId();
-      if (log.isLoggable(Level.FINER)) 
-         log.finer("Entering");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering");
 
       if (!this.isConnected) {
-         if (log.isLoggable(Level.FINE)) 
-            log.fine("Currently not possible. No connection to the DB");
+         if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
@@ -2027,6 +2024,53 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
    }
 
+   /**
+    * Raw access to the table. 
+    * If there are not so many entries in the queue, all elements in the queue
+    * are returned.
+    *
+    * @param numOfEntries the maximum number of elements to retrieve
+    *
+    */
+   public ArrayList getEntriesLike(String queueNamePattern, String flag,
+                    int numOfEntries, long numOfBytes,
+                    I_EntryFilter entryFilter)
+      throws XmlBlasterException {
+      if (log.isLoggable(Level.FINER)) log.finer("Entering");
+      StorageId storageId = null;
+
+      if (!this.isConnected) {
+         if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
+         return new ArrayList();
+      }
+
+      String req = "SELECT * from " + this.entriesTableName + " where queueName like'" + queueNamePattern + "'";
+      if (flag != null) req += " and flag='" + flag + "'";
+      req += " ORDER BY prio DESC, " + this.dataIdColName + " ASC";
+      if (log.isLoggable(Level.FINE)) log.fine("Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
+      PreparedQuery query = null;
+      try {
+         query = new PreparedQuery(pool, req, numOfEntries);
+         ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false, entryFilter);
+         if (log.isLoggable(Level.FINE)) log.fine("Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
+         return ret;
+      }
+      catch (SQLException ex) {
+         if (query != null) query.closeStatement();
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueNamePattern, "getEntriesLike"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesLike", "", ex); 
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesLike", "", ex); 
+      }
+      finally {
+         try {
+            if (query != null) query.close(true);
+         }
+         catch (Throwable ex1) {
+            log.severe("exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
+      }
+   }
 
 
    /**
@@ -2343,7 +2387,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
-    * wipes out the db. The Properties to use as a default are these from the QueuePlugin with the 
+    * The Properties to use as a default are these from the QueuePlugin with the 
     * configuration name specified by defaultConfName (default is 'JDBC'). You can overwrite these 
     * properties entirely or partially with 'properties'.
     * @param confType the name of the configuration to use as default. If you pass null, then 
@@ -2351,12 +2395,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param confVersion the version to use as a default. If you pass null, then '1.0' will be taken.
     * @param properties the properties to use to overwrite the default properties. If you pass null, no 
     *        properties will be overwritten, and the default will be used.
-    * @param setupNewTables tells the manager to recreate empty tables if set to 'true'. Note that this flag only
-    *        has effect if the JdbcManagerCommonTable is used.
     */
-   public static void wipeOutDB(Global glob, String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
+   public static JdbcManagerCommonTable createInstance(Global glob, I_EntryFactory factory, String confType, String confVersion, Properties properties) 
       throws XmlBlasterException {
-
       if (confType == null) confType = "JDBC";
       if (confVersion == null) confVersion = "1.0";
       QueuePluginManager pluginManager = new QueuePluginManager(glob);
@@ -2383,23 +2424,42 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       catch (SQLException ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB SQL exception", ex);
       }
-
+   
       // determine which jdbc manager class to use
       String queueClassName = pluginInfo.getClassName();
       if ("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin".equals(queueClassName)) {
-         log.severe("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin is not supported anymore");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin is not supported anymore");
       }
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
          // then it is a JdbcManagerCommontTable
          // then it is a JdbcManager
-         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null, "cleaner", null);
+         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, factory, "cleaner", null);
          pool.registerStorageProblemListener(manager);
          manager.setUp();
-         manager.wipeOutDB(setupNewTables);
+         return manager;
       }
       else {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "wipeOutDB for plugin '" + queueClassName + "' is not implemented");
       }
+   }
+
+   /**
+    * wipes out the db. The Properties to use as a default are these from the QueuePlugin with the 
+    * configuration name specified by defaultConfName (default is 'JDBC'). You can overwrite these 
+    * properties entirely or partially with 'properties'.
+    * @param confType the name of the configuration to use as default. If you pass null, then 
+    *                 'JDBC' will be taken.
+    * @param confVersion the version to use as a default. If you pass null, then '1.0' will be taken.
+    * @param properties the properties to use to overwrite the default properties. If you pass null, no 
+    *        properties will be overwritten, and the default will be used.
+    * @param setupNewTables tells the manager to recreate empty tables if set to 'true'. Note that this flag only
+    *        has effect if the JdbcManagerCommonTable is used.
+    */
+   public static void wipeOutDB(Global glob, String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
+      throws XmlBlasterException {
+      JdbcManagerCommonTable manager = createInstance(glob, glob.getEntryFactory(), confType, confVersion,
+                                       properties); 
+      manager.wipeOutDB(setupNewTables);
    }
 
    /**
@@ -2431,8 +2491,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    synchronized public void shutdown() {
 //      if (this.pool != null) this.pool.shutdown();
-      if (log.isLoggable(Level.FINER)) 
-         log.finer("shutdown");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown");
       if (this.pool != null) {
          this.pool.unregisterManager(this);
       }

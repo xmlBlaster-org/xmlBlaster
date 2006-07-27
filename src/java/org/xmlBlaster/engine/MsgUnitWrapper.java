@@ -411,19 +411,27 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    }
 
    public final String toXml() {
-      return toXml((String)null);
+      return toXml((String)null, false);
    }
    
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
-      if (getMsgUnit() != null)
-         out.write(getMsgUnit().toXml().getBytes());
+      /*
+      boolean forceReadable = (props!=null) && props.contains("forceReadable"); Constants.TOXML_FORCEREADABLE
+      int maxContentLen = -1;
+      if (props!=null && props.contains("maxContentLen")) { Constants.TOXML_MAXCONTENTLEN
+         try { maxContentLen = new Integer((String)props.get("maxContentLen")).intValue(); } catch(NumberFormatException e) {}
+      }
+      */
+      MsgUnit msgUnit = getMsgUnit();
+      if (msgUnit != null)
+         msgUnit.toXml(out, props);
    }
 
    /**
     * Dumps the message. 
     * NOTE: max 80 bytes of the content are displayed
     */
-   public String toXml(String extraOffset) {
+   public String toXml(String extraOffset, boolean forceReadable) {
       StringBuffer sb = new StringBuffer(1024);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -432,7 +440,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       sb.append(offset).append("<MsgUnitWrapper id='").append(getLogId());
       sb.append("' referenceCount='").append(getReferenceCounter());
       sb.append("' state='").append(getStateStr()).append("'>");
-      sb.append(this.msgUnit.toXml(Constants.INDENT + extraOffset, maxContentDumpSize));
+      sb.append(this.msgUnit.toXml(Constants.INDENT + extraOffset, maxContentDumpSize, forceReadable));
       sb.append(offset).append("</MsgUnitWrapper>");
       return sb.toString();
    }

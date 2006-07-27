@@ -24,6 +24,7 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
 import org.xml.sax.*;
 
@@ -774,20 +775,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @return internal state of the RequestBroker as a XML ASCII string
-    */
-   public final String writeObject(MsgQosData msgQosData, String extraOffset) {
-      return writeObject(msgQosData, extraOffset, false);
-   }
-
-   /**
-    * Dump state of this object into a XML ASCII string.
-    * <br>
-    * @param extraOffset indenting of tags for nice output
     * @param forceReadable If true, any base64 is decoded to be more human readable and timestamps are human readable
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final String writeObject(MsgQosData msgQosData, String extraOffset, boolean forceReadable) {
+   public final String writeObject(MsgQosData msgQosData, String extraOffset, Properties props) {
+      final boolean forceReadable = (props!=null) && props.containsKey(Constants.TOXML_FORCEREADABLE) ?
+            (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE)).booleanValue()) : false; // "forceReadable"
+
       StringBuffer sb = new StringBuffer(1024);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -944,7 +938,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          xml = FileLocator.readAsciiFile(fn);
          //xml = new String(FileLocator.readFile(fn), "windows-1252");
          MsgQosData data = f.readObject(xml);
-         String newXml = data.toXml("",true);
+         String newXml = data.toXml("",null);
          System.out.println("CP1252=" + data.getClientProperty("CP1252"));
          System.out.println("CP1252-BASE64=" + data.getClientProperty("CP1252-BASE64"));
          System.out.println(newXml);

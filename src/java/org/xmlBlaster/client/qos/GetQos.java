@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -130,12 +132,17 @@ public final class GetQos
       return this.queryQosData.toXml();
    }
 
+   public String toXml() {
+      return toXml((Properties)null);
+   }
+   
    /**
     * Converts the data into a valid XML ASCII string.
+    * @param props Formatting control, see Constants.TOXML_*
     * @return An XML ASCII string
     */
-   public String toXml() {
-      return this.queryQosData.toXml();
+   public String toXml(Properties props) {
+      return this.queryQosData.toXml((String)null, props);
    }
 
    /** For testing: java org.xmlBlaster.client.qos.GetQos */

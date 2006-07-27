@@ -193,8 +193,9 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
    }
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
-      if (this.msgUnit != null)
-         out.write(this.msgUnit.toXml().getBytes());
+      MsgUnit msgUnit = this.msgUnit;
+      if (msgUnit != null)
+         msgUnit.toXml(out, props);
    }
 
    /**

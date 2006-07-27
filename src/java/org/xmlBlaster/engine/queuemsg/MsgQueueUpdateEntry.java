@@ -208,6 +208,8 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       StringBuffer sb = new StringBuffer(1000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
+      
+      boolean forceReadable = true;
 
       Timestamp ts = new Timestamp(msgUnitWrapperUniqueId);
 
@@ -228,7 +230,7 @@ public final class MsgQueueUpdateEntry extends ReferenceEntry
       {
          MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
             if (msgUnitWrapper != null)
-               sb.append(offset).append(msgUnitWrapper.toXml(extraOffset+Constants.INDENT));
+               sb.append(offset).append(msgUnitWrapper.toXml(extraOffset+Constants.INDENT, forceReadable));
       }
       sb.append("/>");
       return sb.toString();

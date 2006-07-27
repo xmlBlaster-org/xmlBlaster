@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 
 
@@ -693,11 +694,11 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * @return internal state of the message QoS as a XML ASCII string
     */
    public String toXml() {
-      return toXml((String)null, false);
+      return toXml((String)null, (Properties)null);
    }
 
    public String toXml(String extraOffset) {
-      return toXml(extraOffset, false);
+      return toXml(extraOffset, (Properties)null);
    }
    
    /**
@@ -707,8 +708,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * @param forceReadable If true, any base64 is decoded to be more human readable 
     * @return internal state of the message QoS as a XML ASCII string
     */
-   public String toXml(String extraOffset, boolean forceReadable) {
-      return this.factory.writeObject(this, extraOffset, forceReadable);
+   public String toXml(String extraOffset, Properties props) {
+      return this.factory.writeObject(this, extraOffset, props);
    }
 
    /**

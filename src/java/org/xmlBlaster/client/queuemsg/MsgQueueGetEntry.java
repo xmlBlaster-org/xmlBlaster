@@ -140,7 +140,7 @@ public final class MsgQueueGetEntry extends MsgQueueEntry
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
       out.write(this.getKey.toXml().getBytes());
-      out.write(this.getQos.toXml().getBytes());
+      out.write(this.getQos.toXml(props).getBytes());
    }
 
    /**

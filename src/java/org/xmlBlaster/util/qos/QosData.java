@@ -19,6 +19,7 @@ import org.xmlBlaster.util.property.PropBoolean;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Properties;
 
 
 /**
@@ -369,9 +370,16 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
+    * @param forceReadable hint to dump in human readable form (avoid Base64)
     * @return internal state of the query as a XML ASCII string
+    * 
     */
-   public abstract String toXml(String extraOffset);
+   public abstract String toXml(String extraOffset, Properties props);
+   /*
+   public String toXml(String extraOffset, Properties props) {
+      // Derived classes may implement it
+      return toXml();
+   }*/
 
    public final Global getGlobal() {
       return this.glob;

@@ -112,6 +112,17 @@ public interface I_AdminMap extends I_AdminPlugin {
     * @return Status string
     */
    public String dumpEmbeddedObjectsToFile(String fileName) throws Exception;
+   
+   /**
+    * Check if all messages in the storage are referenced by queue entries (history and callback queue).
+    * <br />
+    * Caution: The check does not check queues from plugins which may reference the messageUnit,
+    * please set fixIt=true only if you know what you are doing! 
+    * @param fixIt "true": Unreferenced entries are deleted (ignoring case); else check is readonly,
+    * @param reportFileName The file name to dump the details 
+    * @return The status report
+    */
+   public String checkConsistency(String fixIt, String reportFileName);
 
    /**
     * @return a human readable usage help string

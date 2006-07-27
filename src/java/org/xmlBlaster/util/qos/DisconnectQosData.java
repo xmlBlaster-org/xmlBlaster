@@ -7,6 +7,7 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
@@ -109,7 +110,7 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final String toXml() {
-      return toXml("");
+      return toXml(null, null);
    }
 
    /**
@@ -118,8 +119,8 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final String toXml(String extraOffset) {
-      return this.factory.writeObject(this, extraOffset);
+   public final String toXml(String extraOffset, Properties props) {
+      return this.factory.writeObject(this, extraOffset, props);
    }
 
    /**

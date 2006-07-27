@@ -77,7 +77,7 @@ public final class TopicAccessor {
    /**
     * Access a topicHandler by its unique oid.
     * <p />
-    * You need to call release(topicHandler) after usage.
+    * You need to call release(topicHandler) after usage!
     * 
     * @param oid
     *           topicHandler.getUniqueKey()
@@ -89,6 +89,19 @@ public final class TopicAccessor {
       if (tc == null)
          return null;
       return tc.lock(); // Here the calling threads block until its their turn
+   }
+   
+   /**
+    * The topicHandler is not locked, use for read only access only and when you know what you are doing.
+    * @param oid
+    *           topicHandler.getUniqueKey()
+    * @return The topicHandler instance or null, you don't need to release anything
+    */
+   public TopicHandler accessDirtyRead(String oid) {
+      TopicContainer tc = accessTopicContainer(oid);
+      if (tc == null)
+         return null;
+      return tc.getTopicHandler();
    }
 
    // Is NOT locked!
@@ -253,6 +266,29 @@ public final class TopicAccessor {
          return this.topicHandlerMap.size();
       }
    }
+   
+   /**
+    * Called from SessionPersistencePlugin after all sessions / subscriptions are
+    * alive after a server startup.
+    * <p/>
+    * The topic destroy timers where inhibited and can now be activated
+    */
+   public void spanTopicDestroyTimeout() {
+      String[] oids = getTopics();
+      // Other topics which are created in this sync gap don't need it
+      // as they are not from persistence store
+      for (int i=0; i<oids.length; i++) {
+         TopicHandler topicHandler = access(oids[i]);
+         if (topicHandler == null) continue;
+         try {
+            topicHandler.startDestroyTimer();
+         }
+         finally {
+            release(topicHandler);
+         }
+      }
+   }
+
 
    /**
     * Access the message meat without a lock.

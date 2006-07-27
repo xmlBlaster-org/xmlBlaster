@@ -355,5 +355,12 @@ public interface I_AdminNode extends I_AdminUsage {
     * The overall sent updates (callback to client)
     */
    public long getNumUpdate();
-
+   
+   /**
+    * Do consistency check. 
+    * @param fixIt If "true" (ignoring case) there will be attempts to fix problems, defaults to "false"
+    * @param reportFileName The file to dump the report
+    * @return A short status report
+    */
+   String checkConsistency(String fixIt, String reportFileName);
 }

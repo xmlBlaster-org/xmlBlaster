@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -98,5 +100,9 @@ public final class UnSubscribeQos
     */
    public String toXml() {
       return this.queryQosData.toXml();
+   }
+
+   public String toXml(Properties props) {
+      return this.queryQosData.toXml((String)null, props);
    }
 }

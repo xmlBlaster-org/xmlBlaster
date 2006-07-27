@@ -8,9 +8,11 @@ package org.xmlBlaster.util.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.property.PropBoolean;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Data container handling of query / access QoS. 
@@ -380,7 +382,17 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @return internal state of the query as a XML ASCII string
     */
    public String toXml() {
-      return toXml((String)null);
+      return toXml((String)null, (Properties)null);
+   }
+
+   // deprecated
+   public String toXml(String extraOffset) {
+      Properties props = null;
+      if (extraOffset != null && extraOffset.length() > 0) {
+         props = new Properties();
+         props.put(Constants.TOXML_EXTRAOFFSET, extraOffset);
+      }
+      return toXml(extraOffset, props);
    }
 
    /**
@@ -389,8 +401,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the query as a XML ASCII string
     */
-   public String toXml(String extraOffset) {
-      return factory.writeObject(this, extraOffset);
+   public String toXml(String extraOffset, Properties props) {
+      return factory.writeObject(this, extraOffset, props);
    }
 
    /**

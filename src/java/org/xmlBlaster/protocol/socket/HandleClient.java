@@ -255,7 +255,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
                      if (oldCallback != null) { // Remove old and lost login of client with same callback address
-                        log.warning("Destroying old callback driver '" + cbKey + "' ...");
+                        log.warning("Destroying old callback driver '" + cbArr[ii].getRawAddress() + "' ...");
                         //oldCallback.shutdown(); don't destroy socket, is done by others
                         driver.getGlobal().removeNativeCallbackDriver(cbKey);
                         oldCallback = null;

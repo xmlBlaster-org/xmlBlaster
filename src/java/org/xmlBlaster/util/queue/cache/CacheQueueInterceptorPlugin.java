@@ -1455,8 +1455,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       FileOutputStream out = new FileOutputStream(to_file);
       out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>".getBytes());
       out.write(("\n<"+this.queueId.getPrefix()+">").getBytes());
-      long count = embeddedObjectsToXml(out, null);
+      Properties props = new Properties();
+      props.put(Constants.TOXML_FORCEREADABLE, ""+true);  // to be human readable (minimize base64)
+      props.put(Constants.TOXML_ENCLOSINGTAG, "publish"); // to look similar to XmlScript
+      long count = embeddedObjectsToXml(out, props);
       out.write(("\n</"+this.queueId.getPrefix()+">").getBytes());
+      out.close();
       return "Dumped " + count + " entries to '" + to_file.toString() + "'";
    }
 }

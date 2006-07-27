@@ -33,6 +33,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Properties;
 import java.io.File;
 
 
@@ -747,7 +748,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       if (comment != null && comment.length() > 0) sb.append("\n<!-- " + comment + " -->");
       for (int i=0; i<msgUnitArr.length; i++) {
          MsgUnit msgUnit = msgUnitArr[i];
-         String xml = msgUnit.toXml("", Integer.MAX_VALUE);
+         String xml = msgUnit.toXml((String)null, (Properties)null);
          sb.append("\n <").append(msgUnit.getMethodName().toString()).append(">");
          sb.append(xml);
          sb.append("\n </").append(msgUnit.getMethodName().toString()).append(">");
@@ -823,13 +824,13 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
                out.write(buf.toString().getBytes(Constants.UTF8_ENCODING));
             }
             else {
-               msgUnits[0].toXml(offset, out);
+               msgUnits[0].toXml(offset, out, (Properties)null);
             }
          }
          else {
             for (int i=0; i < msgUnits.length; i++) {
                out.write("\n  <message>".getBytes());
-               msgUnits[i].toXml(offset, out);
+               msgUnits[i].toXml(offset, out, (Properties)null);
                out.write("\n  </message>\n".getBytes());
             }
          }

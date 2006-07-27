@@ -17,6 +17,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.def.MethodName;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * QoS (quality of service) informations sent from server to client<br />
@@ -59,9 +60,7 @@ import java.util.Map;
  */
 public final class UpdateQos
 {
-   private String ME = "UpdateQos";
    private final Global glob;
-   private static Logger log = Logger.getLogger(UpdateQos.class.getName());
    private final MsgQosData msgQosData;
 
    /**
@@ -365,7 +364,7 @@ public final class UpdateQos
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public String toXml() {
-      return toXml((String)null);
+      return toXml((String)null, (Properties)null);
    }
 
    /**
@@ -376,6 +375,16 @@ public final class UpdateQos
     */
    public String toXml(String extraOffset) {
       return this.msgQosData.toXml(extraOffset);
+   }
+
+   /**
+    * Overwrite qosData.toXml
+    * @param extraOffset
+    * @param forceReadable
+    * @return
+    */
+   public String toXml(String extraOffset, Properties props) {
+      return this.msgQosData.toXml(extraOffset, props);
    }
 
    public String toString() {

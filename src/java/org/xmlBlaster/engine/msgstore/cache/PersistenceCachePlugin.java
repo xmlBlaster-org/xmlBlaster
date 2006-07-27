@@ -827,6 +827,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @return the pluginInfo object.
     */
    public PluginInfo getInfo() { return this.pluginInfo; }
+   
+   public String checkConsistency(String fixIt, String reportFileName) {
+      boolean fix = Boolean.valueOf(fixIt).booleanValue();
+      return glob.getRequestBroker().checkConsistency(this, fix, reportFileName);
+   }
 
    /**
     * destroys all the resources associated to this queue. Even the persistent
@@ -929,7 +934,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception {
       I_Map ps = this.persistentStore;
       if (ps != null) {
-         return ps.embeddedObjectsToXml(out, null);
+         return ps.embeddedObjectsToXml(out, props);
       }
       log.warning("Sorry, dumping transient entries to '" + out + "' is not implemented");
       return 0;
@@ -948,10 +953,14 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       }
       FileOutputStream out = new FileOutputStream(to_file);
       out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>".getBytes());
-      out.write(("\n<"+this.storageId.getPrefix()+">").getBytes());
-      long count = embeddedObjectsToXml(out, null);
+      out.write(("\n<"+this.storageId.getPrefix()+" id='"+this.storageId.getStrippedId()+"'>").getBytes());
+      Properties props = new Properties();
+      props.put(Constants.TOXML_FORCEREADABLE, ""+true);  // to be human readable (minimize base64)
+      props.put(Constants.TOXML_ENCLOSINGTAG, "publish"); // to look similar to XmlScript
+      long count = embeddedObjectsToXml(out, props);
       out.write(("\n</"+this.storageId.getPrefix()+">").getBytes());
-      return "Dumped " + count + " entries to '" + to_file.toString() + "'";
+      out.close();
+      return "Dumped " + count + " entries to '" + to_file.getAbsolutePath() + "'";
    }
 
 }

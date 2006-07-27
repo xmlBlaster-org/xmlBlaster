@@ -269,6 +269,9 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          HashMap sessionIds = recoverSessions();
          recoverSubscriptions(sessionIds);
       }
+      
+      //The topics restored from persistence didn't switch on the destroyTimeout to not diappear until we are finished
+      this.global.getTopicAccessor().spanTopicDestroyTimeout();
    }
 
    /**

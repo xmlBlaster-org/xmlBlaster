@@ -132,6 +132,10 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       return this.persistent;
    }
 
+   public void setPersistent(boolean persistent) {
+      this.persistent = persistent;
+   }
+
    /**
     * The unique creation timestamp (unique in a Global of a virtual machine)
     * Enforced by I_QueueEntry

@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
@@ -334,11 +336,11 @@ public final class ConnectQosServer
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
-    * @param flag For example Constants.TOXML_FLAG_NOSECURITY
+    * @param flag For example Constants.TOXML_NOSECURITY
     * @return internal state of the connect QoS as a XML ASCII string
     */
-   public String toXml(String extraOffset, int flag) {
-      return this.connectQosData.toXml(extraOffset, flag);
+   public String toXml(String extraOffset, Properties props) {
+      return this.connectQosData.toXml(extraOffset, props);
    }
 
    /**

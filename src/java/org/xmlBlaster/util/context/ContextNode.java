@@ -369,6 +369,16 @@ public final class ContextNode
    }
 
    /**
+    * Search down the children tree for the given className. 
+    * Only the first match is returned
+    * @param className If null only a given instanceName is searched
+    * @return The child, is null if not found
+    */
+   public ContextNode getChild(String className) {
+      return getChild(this, className, null);
+   }
+
+   /**
     * Recursive search
     */
    protected ContextNode getChild(ContextNode node, String className, String instanceName) {

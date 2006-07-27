@@ -13,6 +13,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -21,6 +22,8 @@ import org.xmlBlaster.client.qos.UnSubscribeQos;
 
 import java.awt.event.*;
 import java.awt.*;
+import java.util.Properties;
+
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -145,7 +148,8 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
                UpdateKey updateKey = selection.getUpdateKey();
                byte[] content = selection.getContent();
                UpdateQos updateQos = selection.getUpdateQos();
-
+               Properties props = new Properties();
+               props.put(Constants.TOXML_FORCEREADABLE, ""+true);
                String text = (
                   new StringBuffer()
                      .append(" - - - secretCallbackSessionId: - - -\n")
@@ -155,7 +159,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
                      .append("\n - - - content: - - -\n")
                      .append(new String(content))
                      .append("\n - - - updateQos: - - -")
-                     .append(updateQos.getData().toXml("", true)))
+                     .append(updateQos.getData().toXml("", props)))
                      .append("\n - - - end - - -\n")
                      .toString();
                jTextArea1.setText(text);

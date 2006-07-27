@@ -6,6 +6,8 @@ Comment:   Parsing disconnect QoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -120,8 +122,8 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the DisconnectQos as a XML ASCII string
     */
-   public String writeObject(DisconnectQosData disconnectQosData, String extraOffset) {
-      return toXml(disconnectQosData, extraOffset);
+   public String writeObject(DisconnectQosData disconnectQosData, String extraOffset, Properties props) {
+      return toXml(disconnectQosData, extraOffset, props);
    }
 
    /**
@@ -130,7 +132,7 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public static final String toXml(DisconnectQosData data, String extraOffset) {
+   public static final String toXml(DisconnectQosData data, String extraOffset, Properties props) {
       StringBuffer sb = new StringBuffer(512);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";

@@ -140,7 +140,7 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
       out.write(this.subscribeKeyData.toXml().getBytes());
-      out.write(this.subscribeQosData.toXml().getBytes());
+      out.write(this.subscribeQosData.toXml((String)null, props).getBytes());
    }
    /**
     * Returns a shallow clone

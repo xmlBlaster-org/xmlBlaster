@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -27,9 +29,10 @@ public interface I_QueryQosFactory
     * <br>
     * @param The data object to serialize
     * @param extraOffset Formatting hints
+    * @param props Configuration/formatting hints for the dump (see Constants.TOXML_*)
     * @return The serialized representation
     */
-   String writeObject(QueryQosData queryQosData, String extraOffset);
+   String writeObject(QueryQosData queryQosData, String extraOffset, Properties props);
 
    /** A human readable name of this factory */
    String getName();

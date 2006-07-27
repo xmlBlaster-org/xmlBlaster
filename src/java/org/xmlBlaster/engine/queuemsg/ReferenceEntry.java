@@ -360,7 +360,7 @@ public class ReferenceEntry extends MsgQueueEntry
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
       MsgUnit msgUnit = getMsgUnitOrNull();
       if (msgUnit != null) // TODO: Messages with no meat can't be loaded again by ServerEntryFactory 
-         out.write(msgUnit.toXml().getBytes());
+         msgUnit.toXml(out, props);
    }
    
    /**

@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -26,19 +28,10 @@ public interface I_ConnectQosFactory
     * <br>
     * @param qosData The data object to serialize
     * @param extraOffset Formatting hints
-    * @return The serialized representation
-    */
-   String writeObject(ConnectQosData qosData, String extraOffset);
-
-   /**
-    * Serialize the given data object.  
-    * <br>
-    * @param qosData The data object to serialize
-    * @param extraOffset Formatting hints
     * @param flag For example Constants.TOXML_FLAG_NOSECURITY
     * @return The serialized representation
     */
-   String writeObject(ConnectQosData qosData, String extraOffset, int flag);
+   String writeObject(ConnectQosData qosData, String extraOffset, Properties props);
 
    /** A human readable name of this factory */
    String getName();

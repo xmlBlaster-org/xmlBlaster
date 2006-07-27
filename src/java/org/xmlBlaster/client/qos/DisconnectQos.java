@@ -6,6 +6,8 @@ Comment:   Handling one xmlQoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -164,8 +166,8 @@ public class DisconnectQos
       return this.disconnectQosData.toXml();
    }
    
-   public final String toXml(String extraOffset) {
-      return this.disconnectQosData.toXml(extraOffset);
+   public final String toXml(String extraOffset, Properties props) {
+      return this.disconnectQosData.toXml(extraOffset, props);
    }
 
    /**

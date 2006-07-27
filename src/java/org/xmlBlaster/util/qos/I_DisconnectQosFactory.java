@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -28,7 +30,7 @@ public interface I_DisconnectQosFactory
     * @param extraOffset Formatting hints
     * @return The serialized representation
     */
-   String writeObject(DisconnectQosData qosData, String extraOffset);
+   String writeObject(DisconnectQosData qosData, String extraOffset, Properties props);
 
    /** A human readable name of this factory */
    String getName();

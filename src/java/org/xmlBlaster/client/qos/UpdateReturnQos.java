@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
+import java.util.Properties;
+
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.StatusQosData;
@@ -27,7 +29,6 @@ import org.xmlBlaster.util.def.MethodName;
  */
 public final class UpdateReturnQos
 {
-   private String ME = "UpdateReturnQos";
    private final StatusQosData statusQosData;
 
    /**
@@ -82,7 +83,7 @@ public final class UpdateReturnQos
     * @return The XML representation
     */
    public String toXml(String extraOffset) {
-      return this.statusQosData.toXml(extraOffset);
+      return this.statusQosData.toXml(extraOffset, (Properties)null);
    }
 
    public String toString() {

@@ -6,8 +6,8 @@ Comment:   Parsing connect QoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.Properties;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -99,7 +99,6 @@ import org.xml.sax.Attributes;
  */
 public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements I_ConnectQosFactory
 {
-   private String ME = "ConnectQosSaxFactory";
    private final Global glob;
    private static Logger log = Logger.getLogger(ConnectQosSaxFactory.class.getName());
 
@@ -563,36 +562,19 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
     * <br>
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the ConnectQos as a XML ASCII string
-    */
+    *//*
    public String writeObject(ConnectQosData connectQosData, String extraOffset) {
-      return toXml(connectQosData, extraOffset);
-   }
+      return toXml("qos", connectQosData, extraOffset, (Properties)null);
+   }*/
 
-   public String writeObject(ConnectQosData connectQosData, String extraOffset, int flag) {
-      return toXml(connectQosData, extraOffset, flag);
-   }
-
-   /**
-    * Dump state of this object into a XML ASCII string.
-    * <br>
-    * @param extraOffset indenting of tags for nice output
-    * @return internal state of the RequestBroker as a XML ASCII string
-    */
-   public static final String toXml(ConnectQosData data, String extraOffset) {
-      return toXml("qos", data, extraOffset, Constants.TOXML_FLAG_DEFAULT);
-   }
-
-   /**
-    * @param rootTag Usually "qos" to form "&lt;qos>", but could be "connectQos". 
-    */
-   public static final String toXml(ConnectQosData data, String extraOffset, int flag) {
-      return toXml("qos", data, extraOffset, flag);
+   public String writeObject(ConnectQosData connectQosData, String extraOffset, Properties props) {
+      return toXml("qos", connectQosData, extraOffset, props);
    }
 
    /**
     * @param flag For example Constants.TOXML_FLAG_NOSECURITY
     */
-   public static final String toXml(String rootTag, ConnectQosData data, String extraOffset, int flag) {
+   public static final String toXml(String rootTag, ConnectQosData data, String extraOffset, Properties props) {
       StringBuffer sb = new StringBuffer(2000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -600,7 +582,11 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
       sb.append(offset).append("<").append(rootTag).append(">");
 
       if (data.getSecurityQos() != null) { // <securityService ...
-         if ((flag & Constants.TOXML_FLAG_NOSECURITY) != Constants.TOXML_FLAG_NOSECURITY) {
+         final boolean noSecurity = ((props!=null) && props.containsKey(Constants.TOXML_NOSECURITY)) ?
+                       (Boolean.valueOf((String)props.get(Constants.TOXML_NOSECURITY)).booleanValue()) :
+                        false;
+
+         if (!noSecurity) {
             sb.append(data.getSecurityQos().toXml(extraOffset+Constants.INDENT)); // includes the qos of the ClientSecurityHelper
          }
       }

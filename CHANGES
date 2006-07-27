@@ -4,6 +4,14 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.3 [not yet released]
 ==================================
 
+ o #15397 -Fixed dump to file (added out.close())
+          -Nicer, human readable dump conforming to XmlScript markup
+	  -Added reference counting check, see I_AdminMap.checkConsistency() and I_AdminNode.checkConsistency()
+	  -Fixed to activate destroyTimeout setting when administrative or coming from persistence on startup
+	  -Fixed eliminating topicHandler duplicates in persistent store during startup
+	  -Changed persistent messages to be transient for session callback queues with negative session ID
+	   as those wouldn't be found deterministic after restart
+
  o #15390 ConnectionPool now throws away Connection in case of an exception in the jdbc queue
 
  o #15381 C# client library: Added Csharp wrapper around xmlBlaster client C library (xmlBlaster/src/csharp/NativeC.cs)

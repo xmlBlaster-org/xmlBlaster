@@ -420,18 +420,18 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       return sw.toString().trim();
    }
 
-   public String createVersionInfo() {
+   public static String createVersionInfo() {
       StringBuffer buf = new StringBuffer(512);
-      buf.append("version=").append(this.glob.getVersion()).append(",");
-      buf.append("revision=").append(this.glob.getRevisionNumber()).append(",");
+      buf.append("version=").append(Global.instance().getVersion()).append(",");
+      buf.append("revision=").append(Global.instance().getRevisionNumber()).append(",");
       buf.append("os.name=").append(System.getProperty("os.name", "unknown").trim()).append(",");
       buf.append("os.version=").append(System.getProperty("os.version", "unknown").trim()).append(",");
       buf.append("java.vm.vendor=").append(System.getProperty("java.vm.vendor", "unknown").trim()).append(",");
       buf.append("java.vm.version=").append(System.getProperty("java.vm.version", "unknown").trim()).append(",");
       buf.append("os.arch=").append(System.getProperty("os.arch", "unknown").trim()).append(",");
-      buf.append("build.timestamp=").append(this.glob.getBuildTimestamp()).append(",");
-      buf.append("build.java.vendor=").append(this.glob.getBuildJavaVendor()).append(",");
-      buf.append("build.java.version=").append(this.glob.getBuildJavaVersion()); // .append(",");
+      buf.append("build.timestamp=").append(Global.instance().getBuildTimestamp()).append(",");
+      buf.append("build.java.vendor=").append(Global.instance().getBuildJavaVendor()).append(",");
+      buf.append("build.java.version=").append(Global.instance().getBuildJavaVersion()); // .append(",");
       return buf.toString();
    }
 

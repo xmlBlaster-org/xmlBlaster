@@ -7,6 +7,7 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -360,14 +361,14 @@ public final class NodeInfo
     * Dump state of this object into a XML ASCII string.
     */
    public final String toXml() {
-      return toXml((String)null);
+      return toXml((String)null, (Properties)null);
    }
 
    /**
     * Dump state of this object into a XML ASCII string.
     * @param extraOffset indenting of tags for nice output
     */
-   public final String toXml(String extraOffset) {
+   public final String toXml(String extraOffset, Properties props) {
       StringBuffer sb = new StringBuffer(512);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -379,7 +380,7 @@ public final class NodeInfo
       DisconnectQos dis = getDisconnectQos();
       if (dis != null) {
          sb.append(offset).append("<").append(MethodName.DISCONNECT.getMethodName()).append(">");
-         sb.append(dis.toXml(extraOffset + Constants.INDENT));
+         sb.append(dis.toXml(extraOffset + Constants.INDENT, props));
          sb.append(offset).append("</").append(MethodName.DISCONNECT.getMethodName()).append(">");
       }
 

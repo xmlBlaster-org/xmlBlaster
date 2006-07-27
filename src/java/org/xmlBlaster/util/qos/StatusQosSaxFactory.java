@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -244,11 +245,11 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final String writeObject(StatusQosData statusQosData, String extraOffset) {
-      return writeObject_(statusQosData, extraOffset);
+   public final String writeObject(StatusQosData statusQosData, String extraOffset, Properties props) {
+      return writeObject_(statusQosData, extraOffset, props);
    }
 
-   public static final String writeObject_(StatusQosData statusQosData, String extraOffset) {
+   public static final String writeObject_(StatusQosData statusQosData, String extraOffset, Properties props) {
       StringBuffer sb = new StringBuffer(180);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;

@@ -27,6 +27,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Iterator;
 
@@ -397,24 +398,22 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * Dump state of this object into a XML ASCII string.
     */
-   public final String toXml()
-   {
-      return toXml((String)null);
+   public final String toXml() {
+      return toXml((String)null, (Properties)null);
    }
 
    /**
     * Dump state of this object into a XML ASCII string.
     * @param extraOffset indenting of tags for nice output
     */
-   public final String toXml(String extraOffset)
-   {
+   public final String toXml(String extraOffset, Properties props) {
       StringBuffer sb = new StringBuffer(512);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<clusternode id='").append(getId()).append("'>");
 
-      sb.append(getNodeInfo().toXml(extraOffset + Constants.INDENT));
+      sb.append(getNodeInfo().toXml(extraOffset + Constants.INDENT, props));
       
       if (getDomainInfoMap() != null) {
          Iterator it = getDomainInfoMap().values().iterator();

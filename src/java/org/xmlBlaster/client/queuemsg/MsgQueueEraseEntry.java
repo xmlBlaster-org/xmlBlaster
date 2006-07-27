@@ -145,7 +145,7 @@ public final class MsgQueueEraseEntry extends MsgQueueEntry
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
       out.write(this.eraseKey.toXml().getBytes());
-      out.write(this.eraseQos.toXml().getBytes());
+      out.write(this.eraseQos.toXml(props).getBytes());
    }
 
    /**

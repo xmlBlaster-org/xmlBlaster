@@ -135,7 +135,7 @@ public class HelloWorldGet
             System.out.println("============= START #" + (imsg+1) + " '" + grk.getOid() + "' =======================");
             log.info("Receiving update #" + (imsg+1) + " of a message ...");
             System.out.println("<xmlBlaster>");
-            System.out.println(msgs[imsg].toXml("", 100));
+            System.out.println(msgs[imsg].toXml("", 100, true));
             System.out.println("</xmlBlaster>");
             System.out.println("============= END #" + (imsg+1) + " '" + grk.getOid() + "' =========================");
             System.out.println("");

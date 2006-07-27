@@ -298,8 +298,9 @@ public final class TopicEntry implements I_MapEntry
    }
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
-      if (getMsgUnit() != null)
-         out.write(getMsgUnit().toXml().getBytes());
+      MsgUnit msgUnit = getMsgUnit();
+      if (msgUnit != null)
+         msgUnit.toXml(out, props);
    }
    
    /**

@@ -9,6 +9,7 @@ package org.xmlBlaster.authentication;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -105,6 +106,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private final SessionInfoProtector sessionInfoProtector;
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
+   /** To prevent noisy warnings */
+   private boolean transientWarn;
    
    /** Holding properties send by our remote client via the topic __sys__sessionProperties */
    private ClientPropertiesInfo remoteProperties;
@@ -451,6 +454,13 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          //   throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "No callback server is configured, can't callback client to send message " + entry.getKeyOid());
          //}
       }
+      if (getPublicSessionId() < 0 && entry.isPersistent()) {
+         entry.setPersistent(false);
+         if (!this.transientWarn) {
+            log.warning(ME+": Handling persistent messages in callback queue as transient as we have a login session with a negative public session id (we can't reconnect to same queue after restart)");
+            this.transientWarn = true;
+         }
+      }
       sessionQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
    }
 
@@ -599,7 +609,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * @return internal state of SessionInfo as a XML ASCII string
     */
    public final String toXml() {
-      return toXml((String)null);
+      return toXml((String)null, (Properties)null);
    }
 
    /**
@@ -608,7 +618,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * @param extraOffset indenting of tags for nice output
     * @return internal state of SessionInfo as a XML ASCII string
     */
-   public final String toXml(String extraOffset) {
+   public final String toXml(String extraOffset, Properties props) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -620,7 +630,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       sb.append("' timeout='").append(timeToLife).append("'>");
 
       // Avoid dump of password
-      sb.append(this.connectQos.toXml(extraOffset+Constants.INDENT, Constants.TOXML_FLAG_NOSECURITY));
+      if (props == null) props = new Properties();
+      props.put(Constants.TOXML_NOSECURITY, ""+true);
+      sb.append(this.connectQos.toXml(extraOffset+Constants.INDENT, props));
       
       DispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null) {

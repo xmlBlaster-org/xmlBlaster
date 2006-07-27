@@ -608,6 +608,12 @@ final public class Authenticate implements I_RunlevelListener
       }
    }
 
+   public final SessionInfo getSessionInfoByName(SessionName sessionName) {
+      SubjectInfo subjectInfo = getSubjectInfoByName(sessionName);
+      if (subjectInfo == null) return null;
+      return subjectInfo.getSession(sessionName);
+   }
+
    /**
     * Replace the old by the new session id
     */

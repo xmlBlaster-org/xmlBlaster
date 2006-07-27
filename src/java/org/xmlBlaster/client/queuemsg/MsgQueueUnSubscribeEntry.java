@@ -23,6 +23,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  */
 public final class MsgQueueUnSubscribeEntry extends MsgQueueEntry
 {
+   private static final long serialVersionUID = 1L;
    private final static String ME = "UnSubscribeQueueEntry";
    private final UnSubscribeQos unSubscribeQos;
    private final UnSubscribeKey unSubscribeKey;
@@ -142,7 +143,7 @@ public final class MsgQueueUnSubscribeEntry extends MsgQueueEntry
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
       out.write(this.unSubscribeKey.toXml().getBytes());
-      out.write(this.unSubscribeQos.toXml().getBytes());
+      out.write(this.unSubscribeQos.toXml(props).getBytes());
    }
 	   
    /**

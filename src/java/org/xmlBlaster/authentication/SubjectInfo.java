@@ -41,6 +41,7 @@ import org.xmlBlaster.engine.MsgErrorHandler;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -921,7 +922,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          SessionInfo[] sessions = getSessions();
          for (int i=0; i<sessions.length; i++) {
             SessionInfo sessionInfo = sessions[i];
-            sb.append(sessionInfo.toXml(extraOffset+Constants.INDENT));
+            sb.append(sessionInfo.toXml(extraOffset+Constants.INDENT, (Properties)null));
          }
       }
       sb.append(offset).append("</SubjectInfo>");

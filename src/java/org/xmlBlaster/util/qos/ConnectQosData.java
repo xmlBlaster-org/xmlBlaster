@@ -22,6 +22,7 @@ import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
+import java.util.Properties;
 import java.util.Vector;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -786,15 +787,20 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @return internal state of the connect QoS as a XML ASCII string
     */
    public String toXml(String extraOffset) {
-      return this.factory.writeObject(this, extraOffset);
+      return toXml(extraOffset, (Properties)null);
    }
 
-   /**
-    * @param extraOffset indenting of tags for nice output
-    * @param flag For example Constants.TOXML_FLAG_NOSECURITY
-    */
-   public String toXml(String extraOffset, int flag) {
-      return this.factory.writeObject(this, extraOffset, flag);
+   public String toXml(String extraOffset, Properties props) {
+      return this.factory.writeObject(this, extraOffset, props);
+   }
+   
+   public String toXml(String extraOffset, boolean forceReadable) {
+      Properties props = null;
+      if (forceReadable) {
+         props = new Properties();
+         props.put(Constants.TOXML_FORCEREADABLE, ""+forceReadable);
+      }
+      return this.factory.writeObject(this, extraOffset, props);
    }
 
    /**

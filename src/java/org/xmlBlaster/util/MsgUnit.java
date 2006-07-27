@@ -7,6 +7,7 @@ package org.xmlBlaster.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Properties;
 
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -345,7 +346,7 @@ public final class MsgUnit implements java.io.Serializable
     * @return The data of this MsgUnit as a XML ASCII string
     */
    public String toXml() {
-      return toXml((String)null, -1);
+      return toXml((String)null, -1, false);
    }
 
    /**
@@ -355,7 +356,17 @@ public final class MsgUnit implements java.io.Serializable
     * @return The data of this MsgUnit as a XML ASCII string
     */
    public String toXml(String extraOffset) {
-      return toXml(extraOffset, -1);
+      return toXml(extraOffset, -1, false);
+   }
+
+   /**
+    * Overwrite QosData.toXml()
+    * @param extraOffset
+    * @param forceReadable
+    * @return
+    */
+   public String toXml(String extraOffset, boolean forceReadable) {
+      return toXml(extraOffset, -1, forceReadable);
    }
 
    /**
@@ -369,18 +380,82 @@ public final class MsgUnit implements java.io.Serializable
     *        0 dumps no content
     * @return The data of this MsgUnit as a XML ASCII string
     */
-   public String toXml(String extraOffset, int maxContentLen) {
+   public String toXml(String extraOffset, int maxContentLen, boolean forceReadable) {
+      Properties props = new Properties();
+      props.put(Constants.TOXML_MAXCONTENTLEN, ""+maxContentLen);
+      props.put(Constants.TOXML_FORCEREADABLE, ""+forceReadable);
+      return toXml(extraOffset, props);
+   }      
+   
+   public String toXml(String extraOffset, Properties props) {
+      
       MsgUnitRaw msgUnitRaw = new MsgUnitRaw(
             (this.keyData != null) ? this.keyData.toXml(extraOffset) : "",
             this.content,
-            this.qosData.toXml(extraOffset));
+            this.qosData.toXml(extraOffset, props));
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       try {
-         msgUnitRaw.toXml(extraOffset, out);
+         msgUnitRaw.toXml(extraOffset, out, props);
          return out.toString(Constants.UTF8_ENCODING);
       } catch (IOException e) {
          e.printStackTrace();
          throw new IllegalArgumentException("Can't dump message to xml: " + e.toString());
+      }
+   }
+   
+   public final void toXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      toXml(null, out, props);
+   }
+   
+   /**
+    * Dump status as XML to outstream. 
+    * @param extraOffset Indenting, can be null
+    * @param out Destination
+    * @param props Configuration settings
+    * @throws java.io.IOException
+    */
+   private final void toXml(String extraOffset, java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      String offset = "\n";
+      if (extraOffset == null) {
+         extraOffset = (props!=null && props.containsKey(Constants.TOXML_EXTRAOFFSET)) ? ((String)props.get(Constants.TOXML_EXTRAOFFSET)) : ""; // "extraOffset"
+      }
+      offset += extraOffset;
+      byte[] offsetB = offset.getBytes();
+      byte[] offsetB2 = offsetB;
+
+      final boolean forceReadable = (props!=null) && props.containsKey(Constants.TOXML_FORCEREADABLE) ?
+            (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE)).booleanValue()) : false; // "forceReadable"
+      final String enclosingTag = (props!=null && props.containsKey(Constants.TOXML_ENCLOSINGTAG)) ?
+            ((String)props.get(Constants.TOXML_ENCLOSINGTAG)) : null; // "enclosingTag"
+            
+      if (enclosingTag != null) {
+         offsetB2 = (offset+" ").getBytes();
+         out.write(offsetB);
+         out.write(("<" + enclosingTag + ">").getBytes());
+      }
+
+
+      String qosXml = (qosData==null) ? "" : qosData.toXml(extraOffset, props);
+      if (qosXml.length() > 0) {
+         out.write(offsetB2);
+         out.write(qosXml.getBytes());
+      }
+      
+      String keyXml = (keyData==null) ? "" : keyData.toXml(extraOffset);
+      if (keyXml.length() > 0) {
+         out.write(offsetB2);
+         out.write(keyXml.getBytes());
+      }
+      
+      if (this.content == null || this.content.length == 0) {
+         return;
+      }
+      
+      MsgUnitRaw.dumpContent(extraOffset, out, this.content, forceReadable);
+      
+      if (enclosingTag != null) {
+         out.write(offsetB);
+         out.write(("</" + enclosingTag + ">").getBytes());
       }
    }
 }

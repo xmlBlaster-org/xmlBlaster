@@ -232,9 +232,11 @@ public class Constants {
    public static final String DOMAIN = "DOMAIN";
    public static final String REGEX = "REGEX";
 
-   public static final int TOXML_FLAG_DEFAULT = 0;
-   public static final int TOXML_FLAG_NOSECURITY = 0x1;
-   
+   public static final String TOXML_NOSECURITY = "noSecurity";
+   public static final String TOXML_EXTRAOFFSET = "extraOffset";
+   public static final String TOXML_FORCEREADABLE = "forceReadable";
+   public static final String TOXML_ENCLOSINGTAG = "enclosingTag";
+   public static final String TOXML_MAXCONTENTLEN = "maxContentLen";
    
    /** Stuff used for Streaming */
    

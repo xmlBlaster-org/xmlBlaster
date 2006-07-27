@@ -129,8 +129,9 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
    }
 
    public final void embeddedObjectToXml(java.io.OutputStream out, java.util.Properties props) throws java.io.IOException {
+      //TODO final boolean noSecurity = (props!=null) && props.containsKey("noSecurity");//Constants.TOXML_FLAG_NOSECURITY)
       if (this.connectQosData != null)
-         out.write(this.connectQosData.toXml().getBytes());
+         out.write(this.connectQosData.toXml((String)null, props).getBytes());
    }
    
    /**

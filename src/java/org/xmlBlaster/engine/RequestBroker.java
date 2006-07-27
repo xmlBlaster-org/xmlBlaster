@@ -7,6 +7,9 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -17,6 +20,7 @@ import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -27,8 +31,13 @@ import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.def.Constants;
@@ -39,6 +48,7 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
@@ -416,8 +426,21 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                PublishQosServer publishQosServer = new PublishQosServer(glob,
                        (MsgQosData)topicEntry.getMsgUnit().getQosData(), fromPersistenceStore);
                publishQosServer.setTopicEntry(topicEntry); // Misuse PublishQosServer to transport the topicEntry
+               boolean existsAlready = (glob.getTopicAccessor().accessDirtyRead(topicEntry.getKeyOid()) != null);
+               if (existsAlready) {
+                  log.warning("Removing duplicate of topic '" + topicEntry.getLogId() + "' from persistence store");
+                  try {
+                     this.topicStore.remove(topicEntry);
+                  }
+                  catch (XmlBlasterException e) {
+                     log.severe("Removing duplicate of topic '" + topicEntry.getLogId() + "' from persistence store makes problems: " + e.getMessage());
+                  }
+                  continue;
+               }
                try {
                   publish(unsecureSessionInfo, topicEntry.getMsgUnit(), publishQosServer);
+                  // Called after sessions/subscriptions are recovered from SessionPersistencePlugin:
+                  //   glob.getTopicAccessor().spanTopicDestroyTimeout();
                }
                catch (XmlBlasterException e) {
                   log.severe("Restoring topic '" + topicEntry.getMsgUnit().getKeyOid() + "' from persistency failed: " + e.getMessage());
@@ -1328,7 +1351,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
 
          if (log.isLoggable(Level.FINER)) log.finer("Entering " + (publishQos.isClusterUpdate()?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getId() + "' ...");
-         if (log.isLoggable(Level.FINEST)) log.finest("Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgUnit.toXml("",80) + "\n" + publishQos.toXml() + "\nfrom\n" + sessionInfo.toXml());
+         if (log.isLoggable(Level.FINEST)) log.finest("Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgUnit.toXml("",80, true) + "\n" + publishQos.toXml() + "\nfrom\n" + sessionInfo.toXml());
 
          PublishReturnQos publishReturnQos = null;
 
@@ -2291,4 +2314,380 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          numUpdate += arr[i].getDispatchStatistic().getNumUpdate();
       return numUpdate;
    }
+
+   public String checkConsistency(String fixIt, String reportFileName) {
+      boolean fix = Boolean.valueOf(fixIt).booleanValue();
+      return checkCallbackEntriesConsistency(fix, reportFileName);
+   }
+   
+   /**
+    * Loop through all database entries of relating='callback' and check if there are
+    * entries from not existing sessions with pubSessionId=<0
+    * @param fixIt default to false which is readonly
+    * @param reportFileName
+    * @return A short report
+    */
+   public String checkCallbackEntriesConsistency(boolean fixIt, String reportFileName) {
+      final StringBuffer sb = new StringBuffer(1024);
+      FileOutputStream out_ = null;
+      File to_file = null;
+      try {
+         if (reportFileName == null || reportFileName.equalsIgnoreCase("String")) {
+            reportFileName = glob.getStrippedId() + "-callbackCheck.xml";
+         }
+         to_file = new File(reportFileName);
+         if (to_file.getParent() != null) {
+            to_file.getParentFile().mkdirs();
+         }
+         final FileOutputStream out = new FileOutputStream(to_file);
+         out_ = out;
+         out_.write(("XmlBlaster " + new Timestamp().toString()).getBytes());
+         out_.write(("\n"+XmlBlasterException.createVersionInfo()+"\n").getBytes());
+
+         log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
+         
+         // Check no 1: find callback entries with negative session id and no logged in such session
+         final JdbcManagerCommonTable manager = JdbcManagerCommonTable.createInstance(glob, glob.getEntryFactory(), null, null, null);
+         final Set leakedEntries = new HashSet();
+         if (manager != null) {
+            try {
+               String queueNamePattern = Constants.RELATING_CALLBACK + "%";
+               String flag = "UPDATE_REF";
+               manager.getEntriesLike(queueNamePattern, flag, -1, -1,
+                     new I_EntryFilter() {
+                  public I_Entry intercept(I_Entry ent, I_Storage storage) {
+                     try {
+                        if (ent instanceof ReferenceEntry) {
+                           ReferenceEntry callbackEntry = (ReferenceEntry)ent;
+                           final long refId = callbackEntry.getMsgUnitWrapperUniqueId();
+                           // TODO: extract if negative sessionId
+                           SessionName sessionName = callbackEntry.getReceiver();
+                           long publicSessionId = sessionName.getPublicSessionId();
+                           if (publicSessionId < 0) {
+                              SessionInfo sessionInfo = authenticate.getSessionInfoByName(sessionName);
+                              if (sessionInfo == null) {
+                                 leakedEntries.add(ent);
+                                 out.write(("Found leak entry '" + ent.getLogId() + "' of unknown session " + sessionName.getAbsoluteName() + "\n").getBytes());
+                              }
+                           }
+                        }
+                        else {
+                           // todo: other checks
+                        }
+                        return null; // Filter away so getAll returns nothing
+                     }
+                     catch (Throwable e) {
+                        log.warning("Ignoring during callback queue processing exception: " + e.toString());
+                        return null; // Filter away so getAll returns nothing
+                     }
+                  }
+               });
+               if (fixIt && leakedEntries.size() > 0) {
+                  Properties props = new Properties();
+                  props.put(Constants.TOXML_FORCEREADABLE, ""+true);
+                  log.severe("Removing now "+leakedEntries.size()+" leak entries");
+                  Iterator it = leakedEntries.iterator();
+                  while (it.hasNext()) {
+                     I_Entry entry = (I_Entry)it.next();
+                     ReferenceEntry callbackEntry = (ReferenceEntry)entry;
+                     try {
+                        long num = manager.deleteEntry(callbackEntry.getStorageId().getStrippedId(), entry.getUniqueId());
+                        out.write(("\nRemoving " + num + " leaking entry:").getBytes());
+                        out.write(("'"+callbackEntry.getStorageId().getStrippedId() + "': " + entry.getLogId()).getBytes());
+                        if (num > 0)
+                           entry.embeddedObjectToXml(out, props);
+                        log.fine("Removing " + num + " leaking entry '"+entry.getLogId()+"'");
+                     }
+                     catch (XmlBlasterException e) {
+                        log.warning("Failed to remove leaking entry '"+entry.getLogId()+"': " + e.getMessage());
+                        
+                     }
+                  }
+               }
+            }
+            catch (Throwable e) {
+               e.printStackTrace();
+               log.severe("Raw access to database failed: " + e.toString());
+            }
+         }
+         else {
+            log.warning("Raw access to database is not possible");
+         }
+         
+         sb.append("\nSummary\n");
+         sb.append("Leaked callback entries :      ").append(leakedEntries.size()).append("\n");
+         if (fixIt)
+            sb.append("Removed all not referenced entries.\n");
+         else
+            sb.append("Check was readonly nothing is changed.\n");
+         if (to_file != null)
+            sb.append("Report file is " + to_file.getAbsoluteFile()+"\n");
+      }
+      catch (IOException e) {
+         log.warning(e.toString());
+         return e.toString();
+      }
+      catch (XmlBlasterException e) {
+         log.warning(e.getMessage());
+         return e.getMessage();
+      }
+      finally {
+         if (out_ != null) {
+            try {
+               out_.write(sb.toString().getBytes());
+               out_.close();
+            }
+            catch (IOException e) {
+               log.warning(e.toString());
+               return e.toString();
+            }
+         }
+      }
+      
+      return sb.toString();
+   }
+   
+   public String checkConsistency(final I_Map map, boolean fixIt, String reportFileName) {
+      FileOutputStream out = null;
+      final StringBuffer sb = new StringBuffer(1024);
+      try {
+         /*
+          * Probably not functional:
+          * 1. Queue references from (unknown) plugins are not checked
+          * 2. If a session is not logged in after a server restart we don't see the session but there may be callback queue entries
+          */
+         // Find the corresponding topic
+         String relating = map.getStorageId().getPrefix(); // Constants.RELATING_MSGUNITSTORE="msgUnitStore"
+         String id = map.getStorageId().getPostfix(); // "/node/heron/topic/hello"
+
+         if (reportFileName == null || reportFileName.equalsIgnoreCase("String")) {
+            reportFileName = map.getStorageId().getStrippedId() + "_checkConsistency.xml";
+         }
+         File to_file = new File(reportFileName);
+         if (to_file.getParent() != null) {
+            to_file.getParentFile().mkdirs();
+         }
+         out = new FileOutputStream(to_file);
+         out.write(("XmlBlaster " + new Timestamp().toString()).getBytes());
+         out.write(("\n"+XmlBlasterException.createVersionInfo()+"\n").getBytes());
+         
+         log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
+         
+         sb.append("Checking storage '").append(id).append("' relating '").append(relating).append("'\n");
+         ContextNode parent = ContextNode.valueOf(id); 
+         if (parent == null) {
+            sb.append("The corresponding topic is not found, relating=" + relating + " is strange.\n");
+            out.write(sb.toString().getBytes());
+            return sb.toString();
+         }
+         ContextNode topicContext = parent.getChild(ContextNode.TOPIC_MARKER_TAG);
+         String topicOid = null;
+         if (topicContext != null) {
+            topicOid = topicContext.getInstanceName();
+         }
+         else { // Old style???: "heron/Hello"
+            topicOid = parent.getInstanceName();
+            sb.append("Parsing msgUnitStore of topic '" + topicOid + "'\n");
+         }
+
+         final Map foundInHistoryQueue = new HashMap();
+         final Map notFoundInHistoryQueue = new HashMap();
+         final Map foundInCallbackQueue = new HashMap();
+         final Map notFoundInCallbackQueue = new HashMap();
+
+         final JdbcManagerCommonTable manager = JdbcManagerCommonTable.createInstance(glob, glob.getEntryFactory(), null, null, null);
+
+         // Process each msgUnit of this topic
+         final TopicHandler topicHandler = glob.getTopicAccessor().access(topicOid);
+         try {
+            map.getAll(new I_EntryFilter() {
+               public I_Entry intercept(final I_Entry entry, I_Storage storage) {
+                  try {
+                     final long currMsgUnitId = entry.getUniqueId();
+                     final Long currMsgUnitIdL = new Long(currMsgUnitId);
+                     
+                     // Process the history queue of this topic if the messagUnit is referenced
+                     int before = foundInHistoryQueue.size() + notFoundInHistoryQueue.size();
+                     I_Queue historyQueue = topicHandler.getHistoryQueue();
+                     if (historyQueue != null) {
+                        historyQueue.getEntries(new I_EntryFilter() {
+                           public I_Entry intercept(I_Entry ent, I_Storage storage) {
+                              try {
+                                 ReferenceEntry historyEntry = (ReferenceEntry)ent;
+                                 final long refId = historyEntry.getMsgUnitWrapperUniqueId();
+                                 if (refId == currMsgUnitId)
+                                    foundInHistoryQueue.put(currMsgUnitIdL, historyEntry);
+                                 else
+                                    notFoundInHistoryQueue.put(currMsgUnitIdL, entry);
+                                 return null; // Filter away so getAll returns nothing
+                              }
+                              catch (Throwable e) {
+                                 log.warning("Ignoring during history queue processing exception: " + e.toString());
+                                 return null; // Filter away so getAll returns nothing
+                              }
+                           }
+                        });
+                     }
+                     if (before == (foundInHistoryQueue.size() + notFoundInHistoryQueue.size())) // no hit
+                        notFoundInHistoryQueue.put(currMsgUnitIdL, entry);  
+
+                     // Raw database access: process all queues used by plugins which also may reference the msgUnitStore
+                     before = foundInCallbackQueue.size() + notFoundInCallbackQueue.size();
+                     if (manager != null) {
+                        try {
+                           // needs tuning as we make a wildcard query for each msgUnit ...
+                           //ArrayList ret = manager.getEntries(StorageId storageId, long[] dataids); // not possible as we need to lookup the referenced dataid
+                           String queueNamePattern = Constants.RELATING_CALLBACK + "%";
+                           String flag = "UPDATE_REF";
+                           manager.getEntriesLike(queueNamePattern, flag, -1, -1,
+                                 new I_EntryFilter() {
+                              public I_Entry intercept(I_Entry ent, I_Storage storage) {
+                                 try {
+                                    if (ent instanceof ReferenceEntry) {
+                                       ReferenceEntry callbackEntry = (ReferenceEntry)ent;
+                                       final long refId = callbackEntry.getMsgUnitWrapperUniqueId();
+                                       if (refId == currMsgUnitId)
+                                          foundInCallbackQueue.put(currMsgUnitIdL, callbackEntry);
+                                       else
+                                          notFoundInCallbackQueue.put(currMsgUnitIdL, entry);
+                                    }
+                                    else {
+                                       // todo
+                                    }
+                                    return null; // Filter away so getAll returns nothing
+                                 }
+                                 catch (Throwable e) {
+                                    log.warning("Ignoring during callback queue processing exception: " + e.toString());
+                                    return null; // Filter away so getAll returns nothing
+                                 }
+                              }
+                           });
+                        }
+                        catch (Throwable e) {
+                           log.severe("Raw access to database failed: " + e.toString());
+                        }
+                     }
+                     else {
+                        log.warning("Raw access to database is not possible");
+                     }
+
+                     if (manager == null) { // fallback if raw access failed
+                        // Process the callback queue of each loaded client (we won't find transient clients with positive session id and not yet re-connected) 
+                        SessionInfo[] arr = authenticate.getSessionInfoArr();
+                        for (int i=0; i<arr.length; i++) {
+                           SessionInfo sessionInfo = arr[i];
+                           I_Queue callbackQueue = sessionInfo.getSessionQueue();
+                           if (callbackQueue != null) {
+                              callbackQueue.getEntries(new I_EntryFilter() {
+                                 public I_Entry intercept(I_Entry ent, I_Storage storage) {
+                                    try {
+                                       ReferenceEntry callbackEntry = (ReferenceEntry)ent;
+                                       final long refId = callbackEntry.getMsgUnitWrapperUniqueId();
+                                       if (refId == currMsgUnitId)
+                                          foundInCallbackQueue.put(currMsgUnitIdL, callbackEntry);
+                                       else
+                                          notFoundInCallbackQueue.put(currMsgUnitIdL, entry);
+                                       return null; // Filter away so getAll returns nothing
+                                    }
+                                    catch (Throwable e) {
+                                       log.warning("Ignoring during callback queue processing exception: " + e.toString());
+                                       return null; // Filter away so getAll returns nothing
+                                    }
+                                 }
+                              });
+                           }
+                        }
+                     }
+                     if (before == (foundInCallbackQueue.size() + notFoundInCallbackQueue.size())) // no hit
+                        notFoundInCallbackQueue.put(currMsgUnitIdL, entry);  
+                     
+                     return null;  // The maps intercept shall not collect any entries
+
+                  }
+                  catch (Throwable e) {
+                     sb.append("Ignoring exception during '").append(map.getStorageId()).append("' processing: ").append(e.toString()).append("\n");
+                     log.warning("Ignoring exception during '"+map.getStorageId()+"' processing: " + e.toString());
+                     return null; // Filter away so getAll returns nothing
+                  }
+               }
+            });
+         }
+         finally {
+            if (topicHandler!=null) glob.getTopicAccessor().release(topicHandler);
+         }
+         
+         long num = map.getNumOfEntries();
+         Set numUnref = new HashSet();
+
+         Properties props = new Properties();
+         props.put(Constants.TOXML_FORCEREADABLE, ""+true);
+         Iterator noHistoryRefIt = notFoundInHistoryQueue.keySet().iterator();
+         while (noHistoryRefIt.hasNext()) {
+            Long refId = (Long)noHistoryRefIt.next();
+            if (!foundInCallbackQueue.containsKey(refId)) {
+               I_Entry entry = (I_Entry)notFoundInHistoryQueue.get(refId);
+               out.write(("\nNot referenced:").getBytes());
+               entry.embeddedObjectToXml(out, props);
+               out.write(("\n").getBytes());
+               numUnref.add(refId);
+               if (fixIt) {
+                  map.remove(refId.longValue());
+               }
+            }
+         }
+         Iterator noCallbackRefIt = notFoundInCallbackQueue.keySet().iterator();
+         while (noCallbackRefIt.hasNext()) {
+            Long refId = (Long)noCallbackRefIt.next();
+            if (!foundInHistoryQueue.containsKey(refId)) {
+               I_Entry entry = (I_Entry)notFoundInCallbackQueue.get(refId);
+               out.write(("\nNot referenced:").getBytes());
+               entry.embeddedObjectToXml(out, props);
+               out.write(("\n").getBytes());
+               numUnref.add(refId);
+               if (fixIt) {
+                  map.remove(refId.longValue());
+               }
+            }
+         }
+
+         
+         sb.append("\nCaution: Only references of history and callback queues where checked, queues used by plugins which also may reference the msgUnitStore have not been checked.\n\n");
+         sb.append("Summary\n");
+         sb.append("Total msgUnit entries:             ").append(num).append("\n");
+         sb.append("Referenced by history queue:       ").append(foundInHistoryQueue.size()).append("\n");
+         sb.append("Not referenced by history queue:   ").append(notFoundInHistoryQueue.size()).append("\n");
+         sb.append("Not referenced by callback queues: ").append(notFoundInCallbackQueue.size()).append("\n");
+         sb.append("Leaked msgUnit entries:            ").append(numUnref.size()).append("\n");
+         
+         if (fixIt)
+            sb.append("Removed " + numUnref.size() + " not referenced entries.\n");
+         else
+            sb.append("Check was readonly nothing is changed.\n");
+         if (to_file != null)
+            sb.append("Report file is " + to_file.getAbsoluteFile()+"\n");
+      }
+      catch (IOException e) {
+         log.warning(e.toString());
+         return e.toString();
+      }
+      catch (XmlBlasterException e) {
+         log.warning(e.getMessage());
+         return e.getMessage();
+      }
+      finally {
+         if (out != null) {
+            try {
+               out.write(sb.toString().getBytes());
+               out.close();
+            }
+            catch (IOException e) {
+               log.warning(e.toString());
+               return e.toString();
+            }
+         }
+      }
+      
+      return sb.toString();
+   }
+   
 }

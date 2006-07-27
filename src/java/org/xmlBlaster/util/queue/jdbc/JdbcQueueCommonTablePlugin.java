@@ -1364,14 +1364,14 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    /**
     * @see I_Map#embeddedObjectsToXml(OutputStream, Properties)
     */
-   public long embeddedObjectsToXml(final OutputStream out, Properties props) throws Exception {
+   public long embeddedObjectsToXml(final OutputStream out, final Properties props) throws Exception {
       if (out == null) return 0;
       entryCounter = 0;
       /*I_Entry[] results = */getAll(new I_EntryFilter() {
          public I_Entry intercept(I_Entry entry, I_Storage storage) {
             entryCounter++;
             try {
-               entry.embeddedObjectToXml(out, null);
+               entry.embeddedObjectToXml(out, props);
             }
             catch (IOException e) {
                log.warning("Ignoring dumpToFile() problem: "+e.toString());

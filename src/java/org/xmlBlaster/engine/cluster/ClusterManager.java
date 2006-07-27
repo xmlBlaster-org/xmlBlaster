@@ -46,6 +46,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map;
@@ -883,7 +884,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       if (this.clusterNodeMap != null && this.clusterNodeMap.size() > 0) {
          ClusterNode[] clusterNodes = getClusterNodes();
          for(int i=0; i<clusterNodes.length; i++) {
-            sb.append(clusterNodes[i].toXml(extraOffset + Constants.INDENT));
+            sb.append(clusterNodes[i].toXml(extraOffset + Constants.INDENT, (Properties)null));
          }
       }
       sb.append(offset).append("</clusterManager>");

@@ -6,12 +6,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import java.util.Hashtable;
+import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.MethodName;
-
-//import java.util.Map;
-//import java.util.TreeMap;
 
 /**
  * Data container handling of status returned by subscribe(), unSubscribe(), erase() and ping(). 
@@ -32,7 +30,8 @@ import org.xmlBlaster.util.def.MethodName;
  */
 public final class StatusQosData extends QosData implements java.io.Serializable, Cloneable
 {
-   private String ME = "StatusQosData";
+   private static final long serialVersionUID = 1L;
+
    private transient final I_StatusQosFactory factory;
 
    /** The subscription ID of a subscribe() invocation */
@@ -154,7 +153,7 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     * @return internal state of the status as a XML ASCII string
     */
    public String toXml() {
-      return toXml((String)null);
+      return toXml((String)null, (Properties)null);
    }
 
    /**
@@ -163,8 +162,8 @@ public final class StatusQosData extends QosData implements java.io.Serializable
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the status as a XML ASCII string
     */
-   public String toXml(String extraOffset) {
-      return factory.writeObject(this, extraOffset);
+   public String toXml(String extraOffset, Properties props) {
+      return factory.writeObject(this, extraOffset, props);
    }
 
    /*

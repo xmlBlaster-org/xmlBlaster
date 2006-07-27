@@ -7,6 +7,7 @@ package org.xmlBlaster.util.queue;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 
 /**
@@ -18,7 +19,7 @@ public class StorageId implements java.io.Serializable
 {
    private transient final String prefix;
    private transient final String postfix;
-   private transient String strippedId;
+   private String strippedId;
    private final String id;
 
    /**
@@ -30,6 +31,7 @@ public class StorageId implements java.io.Serializable
       this.prefix = prefix;
       this.postfix = postfix;
       this.id = this.prefix + ":" + this.postfix;
+      this.strippedId = Global.getStrippedString(this.id);
    }
 
    /**
@@ -51,6 +53,43 @@ public class StorageId implements java.io.Serializable
 
       this.prefix = this.id.substring(0, pos);
       this.postfix = this.id.substring(pos+1);
+      this.strippedId = Global.getStrippedString(this.id);
+   }
+   
+   /**
+    * Not functional, we have no guaranteed way to find out the real id from the stripped id. 
+    * @param glob
+    * @param strippedStorageId
+    * @return storageId.getId() is not recovered properly, can be null
+    */
+   public static StorageId valueOf(String strippedStorageId) {
+      if (strippedStorageId == null) return null;
+      String prefix = null;
+      if (strippedStorageId.startsWith(Constants.RELATING_CALLBACK))
+         prefix = Constants.RELATING_CALLBACK;
+      else if (strippedStorageId.startsWith(Constants.RELATING_HISTORY))
+         prefix = Constants.RELATING_HISTORY;
+      else if (strippedStorageId.startsWith(Constants.RELATING_MSGUNITSTORE))
+         prefix = Constants.RELATING_MSGUNITSTORE;
+      else if (strippedStorageId.startsWith(Constants.RELATING_CLIENT))
+         prefix = Constants.RELATING_CLIENT;
+      else if (strippedStorageId.startsWith(Constants.RELATING_SESSION))
+         prefix = Constants.RELATING_SESSION;
+      else if (strippedStorageId.startsWith(Constants.RELATING_SUBJECT))
+         prefix = Constants.RELATING_SUBJECT;
+      else if (strippedStorageId.startsWith(Constants.RELATING_SUBSCRIBE))
+         prefix = Constants.RELATING_SUBSCRIBE;
+      else if (strippedStorageId.startsWith(Constants.RELATING_TOPICSTORE))
+         prefix = Constants.RELATING_TOPICSTORE;
+      else
+         return null;
+      // "callback_nodexmlBlaster_172_23_254_15_10412clientcore900_prod_sc_r1-9"
+      // "topicStore_xmlBlaster_172_23_254_15_10412"
+      // "msgUnitStore_xmlBlaster_172_23_254_15_10412lidb"
+      String postfix = strippedStorageId;
+      StorageId tmp = new StorageId(prefix, postfix);
+      tmp.strippedId = strippedStorageId;
+      return tmp;
    }
 
    /**
@@ -83,9 +122,6 @@ public class StorageId implements java.io.Serializable
     * @see Global#getStrippedString(String)
     */
    public String getStrippedId() {
-      if (this.strippedId == null) {
-         this.strippedId = Global.getStrippedString(this.id);
-      }
       return this.strippedId;
    }
 

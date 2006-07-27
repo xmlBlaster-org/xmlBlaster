@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine;
 
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Set;
 import java.util.HashSet;
@@ -261,7 +262,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
       if (isUnconfigured()) { // Startup of topic
          if (!hasCacheEntries() && !hasExactSubscribers()) {
-            toUnreferenced(true);
+            toUnreferenced(true, publishQosServer.isFromPersistenceStore());
          }
          else {
             toAlive();
@@ -287,6 +288,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (this.msgUnitCache == null) {
          String type = msgUnitStoreProperty.getType();
          String version = msgUnitStoreProperty.getVersion();
+         // TODO: Port to ContextNode syntax: "/node/heron/topic/hello" (similar to callback queue) instead of "msgUnitStore_heronHello" 
          StorageId msgUnitStoreId = new StorageId("msgUnitStore", glob.getNodeId()+"/"+getUniqueKey());
          this.msgUnitCache = glob.getStoragePluginManager().getPlugin(type, version, msgUnitStoreId, msgUnitStoreProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
          if (this.msgUnitCache == null) {
@@ -886,7 +888,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                notifyList = toDead(this.creatorSessionName, null, null);
             }
             else {
-               notifyList = toUnreferenced(false);
+               notifyList = toUnreferenced(false, false);
             }
          }
          catch (XmlBlasterException e) {
@@ -1027,7 +1029,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             notifyList = toDead(this.creatorSessionName, null, null);
          else {
             try {
-               notifyList = toUnreferenced(false);
+               notifyList = toUnreferenced(false, false);
             }
             catch (XmlBlasterException e) {
                log.severe(ME+": Internal problem with removeSubscriber: " + e.getMessage() + ": " + toXml());
@@ -1126,7 +1128,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    private boolean checkIfAllowedToSend(SessionInfo publisherSessionInfo, SubscriptionInfo sub) {
       if (!sub.getSessionInfo().hasCallback()) {
          log.warning(ME+": A client which subscribes " + sub.toXml() + " should have a callback server: "
-                       + sub.getSessionInfo().toXml(""));
+                       + sub.getSessionInfo().toXml("", (Properties)null));
          Thread.dumpStack();
          return false;
       }
@@ -1648,7 +1650,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
    }
 
-   private ArrayList toUnreferenced(boolean onAdministrativeCreate) throws XmlBlasterException {
+   private ArrayList toUnreferenced(boolean onAdministrativeCreate, boolean fromPersistenceStore) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering toUnreferenced(oldState="+getStateStr()+", onAdministrativeCreate="+onAdministrativeCreate+")");
       ArrayList notifyList = null;
       if (isUnreferenced() || isDead()) {
@@ -1674,7 +1676,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             notifyList = toDead(this.creatorSessionName, null, eraseQos);
             return notifyList; // ALIVE -> UNREFERENCED
          }
-
+      }
+      
+      if (fromPersistenceStore) {
+         if (log.isLoggable(Level.FINE))
+            log.fine(ME+": Delay to set destroyDelay for topics from persistent store until all clients and subcriptions are recovered"); // SessionPersistencePlugin.java
+      }
+      else {
          if (topicProperty.getDestroyDelay() > 0L) {
             if (this.timerKey == null) {
                this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), getUniqueKey());
@@ -1696,6 +1704,14 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          persistTopicEntry();
       }
       return notifyList;
+   }
+
+   public void startDestroyTimer() {
+      if (topicProperty.getDestroyDelay() > 0L) {
+         if (this.timerKey == null) {
+            this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), getUniqueKey());
+         }
+      }
    }
 
    /**
@@ -2190,6 +2206,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       StringBuffer sb = new StringBuffer(4000);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
+      
+      boolean forceReadable = true;
 
       sb.append(offset).append("<TopicHandler id='").append(getId()).append("' state='").append(getStateStr()).append("'>");
       sb.append(offset).append(" <uniqueKey>").append(getUniqueKey()).append("</uniqueKey>");
@@ -2218,7 +2236,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          for (int ii=0; ii<msgUnitWrapperArr.length; ii++) {
             MsgUnitWrapper msgUnitWrapper = msgUnitWrapperArr[ii];
             if (msgUnitWrapper != null)
-               sb.append(msgUnitWrapper.toXml(extraOffset + Constants.INDENT));
+               sb.append(msgUnitWrapper.toXml(extraOffset + Constants.INDENT, forceReadable));
          }
       }
       catch (XmlBlasterException e) {
