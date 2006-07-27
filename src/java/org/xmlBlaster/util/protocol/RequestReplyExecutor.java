@@ -600,7 +600,11 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             removeLatch(startSignal); // synchronized (this.latchSet) { this.latchSet.remove(startSignal); }
          }
          String tmp = (msgInfo==null) ? "" : msgInfo.getMethodNameStr();
-         String str = "Request blocked and timedout, giving up now waiting on " + tmp + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
+         String str = "Request blocked and timedout, giving up now waiting on " +
+                      tmp + "(" + requestId + ") response. Please check settings of " +
+                      "responseTimeout="+this.responseTimeout+
+                      " pingResponseTimeout="+this.pingResponseTimeout+
+                      " updateResponseTimeout="+this.updateResponseTimeout;
          if (e instanceof XmlBlasterException) {
             if (log.isLoggable(Level.FINE)) log.fine(str + ": " + e.toString());
             throw (XmlBlasterException)e;
@@ -648,7 +652,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             String str = "Timeout of " + getResponseTimeout(msgInfo.getMethodName()) 
                        + " milliseconds occured when waiting on " + msgInfo.getMethodName() + "(" + requestId 
                        + ") response. You can change it with -plugin/"
-                       + getType()+"/"+getResponseTimeoutPropertyName(msgInfo.getMethodName())+" <millis>";
+                       + getType().toLowerCase()+"/"+getResponseTimeoutPropertyName(msgInfo.getMethodName())+" <millis>";
             removeResponseListener(requestId);
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT, ME, str);
          }
