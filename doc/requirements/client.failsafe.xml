@@ -14,7 +14,7 @@
       </p>
 
       <br />
-      <h2>Standard client connection</h2>
+      <p class="celltitel" id="connect" name="connect">Standard client connection</p>
       <p>
       Lets have a look at the states of a client connection without any fail-safe behaviour:
       </p>
@@ -27,7 +27,7 @@
       </p>
 
       <br />
-      <h2>Fail save mode</h2>
+      <p class="celltitel" id="failsave" name="failsave">Fail save mode</p>
       <p>
       In fail-safe mode the status diagram of a client connection (and similar a callback connection in xmlBlaster)
       is a bit more complicated, but you should remember that you have to solve these problems
@@ -60,9 +60,7 @@
       </p>
 
       <br />
-      <h2>
-      What is a <b>pubSessionId</b>?
-      </h2>
+      <p class="celltitel" id="pubSessionId" name="pubSessionId">What is a <b>pubSessionId</b>?</p>
       <p>
       Every client which connects to xmlBlaster needs to supply a login name and optionally a public session identifier
       which identifies the login session. The session identifier is <i>public</i> as everybody may see it, in contrast
@@ -104,8 +102,9 @@
       </p>
 
       <br />
+      <p class="celltitel" id="cluster" name="cluster">Client connection scenarios in a cluster environment</p>
       <h2>
-      Client connection scenarios in a cluster environment
+      
       </h2>
       <p>
       The following figure illustrates typical environments where a client must
@@ -192,9 +191,7 @@
       </p>
 
       <br />
-      <h2>
-      Client side queuing during reconnect-polling
-      </h2>
+      <p class="celltitel" id="queuing" name="queuing">Client side queuing during reconnect-polling</p>
       <p>
       When a client has lost its connection to the server the Java and C++ client
       libraries support to a certain grade a client side queuing of messages from the client.
