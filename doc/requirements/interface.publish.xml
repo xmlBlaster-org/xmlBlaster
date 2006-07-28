@@ -279,16 +279,27 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;/topic>
 &lt;/qos>
 </pre>
+     <h3>&lt;administrative/></h3>
+     <p>
+     This tags marks the message to be for configuration only.
+     </p>
+     <h3>&lt;topic>...&lt;/topic></h3>
      <p>
      The topic settings are described in detail in the requirement <a href="engine.message.lifecycle.html" target="others">engine.message.lifecycle</a>.
      </p>
+     <h3>&lt;persistence>...&lt;/persistence></h3>
+     <p>
+     These settings configure the message store which contains the real 'meat' of the message
+     (the queue only hold references on this storage).
+     </p>
+     <h3>&lt;queue>...&lt;/queue></h3>
      <p>
      The supported settings and default values are described in the
       <a href="queue.html" target="others">queue</a> requirements.
      </p>
      <p>Note that we have set the <b>destroyDelay</b> to unlimited (=-1), else the new created
      topic will die if no activity happens during this time. Such a topic
-     can only be deleted by an explicit call or <code>erase()</code>.</p>
+     can only be deleted by an explicit call with <code>erase()</code>.</p>
    </example>
 
    <example lang="XmlRpc" type="HTML">
