@@ -38,7 +38,7 @@
       </ul>
 
 
-      <p class="celltitel"><a name="qos"/>PublishQos example (publish/subscribe mode)</p>
+      <p class="celltitel" id="qos" name="pubsub">PublishQos example (publish/subscribe mode)</p>
 <pre class="BORDER">
 &lt;qos>
    &lt;!-- 5 is NORM priority, 0 is slowest, 9 is highest -->
@@ -116,7 +116,7 @@
 
      <p />
 
-      <p class="celltitel"><a name="qos"/>PublishQos PtP example (point to point mode)</p>
+      <p class="celltitel" id="ptp" name="ptp">PublishQos PtP example (point to point mode)</p>
 <pre class="BORDER">
 &lt;qos>
    &lt;!-- 5 is NORM priority, 0 is slowest, 9 (or MAX) is highest -->
@@ -159,17 +159,14 @@
    &lt;/topic>
 &lt;/qos>
 </pre>
+     <h3>&lt;destination forceQueuing='true'>Tim&lt;/destination></h3>
      <p>
      If we want to send a message to specific other clients we address
      the clients by their login names or session names.
-     If a destination contains the session identifier (like '-2') only this
+     If a destination contains the session identifier (like <code>'client/Tim/session/-2'</code>) only this
      specific login session of the client will receive the message.
-     If we don't specify a publicSessionId, all login sessions of the user
+     If we don't specify a publicSessionId, all current login sessions of the user
      will receive the message.
-     </p>
-     <p>
-     If we want to hide the PtP message from other subscribers of this topic
-     we add the <b>subscribable</b> tag and set it to false.
      </p>
      <p>
      If a destination client is off-line the publisher gets thrown back an exception
@@ -178,13 +175,17 @@
      until the destination client logs in and will then be delivered to the destination.
      </p>
 
+     <h3>&lt;subscribable>false&lt;/subscribable></h3>
+     <p>
+     If we want to hide the PtP message from other subscribers of this topic
+     we add the <b>subscribable</b> tag and set it to false.
+     </p>
+
    </description>
 
 
    <example lang="XML" type="HTML">
-      <p>
-      Here is an example MsgUnit:
-      </p>
+      <p class="celltitel" id="msgunit">MsgUnit example</p>
       <table border="1">
          <tr><th>Field</th><th>Example</th></tr>
          <tr><td>Key</td><td>&lt;key oid='MyMessageOid' contentMime='text/plain'/></td></tr>
@@ -255,9 +256,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    </example>
 
    <example lang="XML" type="HTML">
-      <p>
-      Here is a full QoS of an <b>administrative</b> message.
-      </p>
+      <p class="celltitel" id="administrative">Administrative messages</p>
       <p>
       Such a message configures the topic only and does not contain any user content,
       it is not updated to subscribers and is not put to the history queue.<br />
@@ -272,7 +271,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;administrative/>
 
    &lt;!-- Configure the topic on first publish -->
-   &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
+   &lt;topic readonly='false' destroyDelay='-1' createDomEntry='true'>
       &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0'
                  maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'/>
       &lt;queue relating='history' type='CACHE' version='1.0'
@@ -281,14 +280,19 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
 &lt;/qos>
 </pre>
      <p>
-     The supported settings and default values are described in the <i>queue</i> requirements
+     The topic settings are described in detail in the requirement <a href="engine.message.lifecycle.html" target="others">engine.message.lifecycle</a>.
      </p>
+     <p>
+     The supported settings and default values are described in the
+      <a href="queue.html" target="others">queue</a> requirements.
+     </p>
+     <p>Note that we have set the <b>destroyDelay</b> to unlimited (=-1), else the new created
+     topic will die if no activity happens during this time. Such a topic
+     can only be deleted by an explicit call or <code>erase()</code>.</p>
    </example>
 
    <example lang="XmlRpc" type="HTML">
-      <p>
-      This is the XmlRpc server interface variant:
-      </p>
+      <p class="celltitel" id="xmlrpc">The XmlRpc server interface</p>
       <pre>
    public String publish (String sessionId, Vector msgUnitWrap)
                                              throws XmlBlasterException
@@ -296,9 +300,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    </example>
 
    <example lang="Java" type="HTML">
-      <p>
-      A typical Java client code in <b>publish/subscribe</b> mode:
-      </p>
+      <p class="celltitel" id="java">A typical Java client code in <b>publish/subscribe</b> mode</p>
       <pre>
    import org.xmlBlaster.client.key.PublishKey;
    import org.xmlBlaster.client.qos.PublishQos;
