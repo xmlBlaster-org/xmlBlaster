@@ -290,7 +290,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
      <h3>&lt;persistence>...&lt;/persistence></h3>
      <p>
      These settings configure the message store which contains the real 'meat' of the message
-     (the queue only hold references on this storage).
+     (the queue only hold references on this storage), see <a href="engine.persistence.html" target="others">engine.persistence</a>.
      </p>
      <h3>&lt;queue>...&lt;/queue></h3>
      <p>
