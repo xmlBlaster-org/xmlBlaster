@@ -102,6 +102,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    private long tmpTransSeq2;
    private long tmpReplKey;
    private int tmpStatus;
+   private String lastMessageKey;
    
    /** we don't want to sync the check method because the jmx will synchronize on the object too */
    private Object initSync = new Object();
@@ -118,9 +119,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
       this.lastMessage = "";
       //final boolean doPersist = false;
       //final boolean dispatcherActive = false;
+      this.lastMessageKey = this.slaveSessionId + ".lastMessage";
       try {
          //setDispatcher(dispatcherActive, doPersist);
          this.persistentInfo = new DbInfo(this.pool, "replication");
+         this.lastMessage = this.persistentInfo.get(this.lastMessageKey, "");
       }
       catch (Exception ex) {
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE, "ReplSlave constructor", "could not instantiate correctly", ex);
@@ -477,13 +480,34 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
    
    /**
+    * 
+    * @param newMsg If newMsg is null, it cleans the message otherwise the behaviour depens on doAdd
+    * @param doAdd if true, the message is added to the current message, if false it is replaced.
+    */
+   private void changeLastMessage(String newMsg, boolean doAdd) {
+      log.warning("'" + newMsg + "' invoked with add='" + doAdd + "'");
+      if (newMsg == null) {
+         if (this.lastMessage != null && this.lastMessage.length() > 0) {
+            this.lastMessage = "";
+            this.persistentInfo.put(this.lastMessageKey, this.lastMessage);
+         }
+      }
+      else {
+         if (doAdd)
+            this.lastMessage += "\n" + newMsg.trim();
+         else
+            this.lastMessage = newMsg.trim();
+         this.persistentInfo.put(this.lastMessageKey, this.lastMessage);
+      }
+   }
+   
+   /**
     * FIXME TODO HERE
     */
    public ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
       synchronized (this.initSync) {
          this.tmpStatus = -1;
          this.forcedCounter++;
-         this.lastMessage = "";
          log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' (invocation since start is '" + this.forcedCounter + "'");
          if (!this.initialized) {
             log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
@@ -497,6 +521,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             return new ArrayList();
          }
 
+         changeLastMessage(null, false); // clean last message
          if (entries != null && entries.size() > 1)
             log.severe("the entries are '" + entries.size() + "' but we currently only can process one single entry at a time");
          
@@ -550,7 +575,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
                      dirName = complete.getAbsolutePath();
                   }
                }
-               this.lastMessage = "Manual Data transfer: WAITING (stored on '" + dirName + "')";
+               changeLastMessage("Manual Data transfer: WAITING (stored on '" + dirName + "')", false);
                continue;
             }
 
@@ -678,7 +703,17 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    
    public void handleException(Throwable ex) {
       try {
-         this.lastMessage = ex.getMessage();
+         final boolean add = true;
+         if (ex instanceof XmlBlasterException) {
+            XmlBlasterException xmlblEx = ((XmlBlasterException)ex);
+            log.warning(xmlblEx.toXml());
+            if (xmlblEx.getEmbeddedException() != null)
+               changeLastMessage(xmlblEx.getEmbeddedMessage(), add);
+            else
+               changeLastMessage(ex.getMessage(), add);
+         }
+         else
+            changeLastMessage(ex.getMessage(), add);
          final boolean doPersist = true;
          doPause(doPersist);
       }
@@ -864,7 +899,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          String tmp = session.getLastCallbackException();
          if (!this.lastDispatcherException.equals(tmp)) { 
             this.lastDispatcherException = tmp;
-            this.lastMessage = tmp;
+            final boolean add = true;
+            changeLastMessage(tmp, add);
          }
       }
       catch (Exception ex) {

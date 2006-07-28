@@ -731,10 +731,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          return slave.check(entryList, cbQueue);
       }
       catch (Exception ex) {
-         if (ex instanceof XmlBlasterException)
-            throw (XmlBlasterException)ex;
          if (slave != null)
             slave.handleException(ex);
+         if (ex instanceof XmlBlasterException)
+            throw (XmlBlasterException)ex;
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "exception occured when filtering replication messages", "", ex);
       }
       catch (Throwable ex) {
@@ -1244,5 +1244,18 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       }
    }
 
+   public void onDispatchWorkerException(DispatchManager dispatchManager, Throwable ex) {
+      I_ReplSlave slave = null;
+      String relativeName = dispatchManager.getSessionName().getRelativeName();
+      synchronized (this.replSlaveMap) {
+         slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);
+      }
+      if (slave == null) {
+         log.severe("could not find a slave for replication client '" + relativeName + "'");
+      }
+      else
+         slave.handleException(ex);
+   }
+   
    
 }

@@ -1158,6 +1158,13 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    }
 
    /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommandPre()
+    */
+   public void initialCommandPre() throws Exception {
+      this.initialUpdater.initialCommandPre();
+   }
+
+   /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#broadcastStatement(java.lang.String, long, long, boolean, boolean, String, String)
     */
    public byte[] broadcastStatement(String sql, long maxResponseEntries, boolean isHighPrio, boolean isMaster, String sqlTopic, String statementId) throws Exception {

@@ -191,6 +191,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    protected I_ChangePublisher publisher;
    protected I_Info info;
    private String initialCmd;
+   private String initialCmdPre;
    private String initialCmdPath;
    private boolean keepDumpFiles;
    private String replPrefix;
@@ -198,7 +199,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private String stringToCheck;
    private Map runningExecutes = new HashMap();
    private String initialDataTopic;
-   
    
    /**
     * Not doing anything.
@@ -272,6 +272,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          this.publisher.registerAlertListener(this, subscriptionMap);
       this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
       this.initialCmd = this.info.get("replication.initialCmd", null);
+      this.initialCmdPre = info.get("replication.initialCmdPre", null);
       this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
       // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
       this.stringToCheck = info.get("replication.initial.stringToCheck", null);
@@ -597,13 +598,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       producer.send(endMsg);
    }
    
-
    /**
     * Executes an Operating System command.
     * 
     * @param cmd
     * @throws Exception
-    * @return true if the transaction has already been committed, false otherwise
     */
    private void osExecute(String slaveName, String cmd, ConnectionInfo connInfo) throws Exception {
       try {
@@ -699,7 +698,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       return filename;
    }
 
-   
+   public final void initialCommandPre() throws Exception {
+      if (this.initialCmdPre == null)
+         return;
+      osExecute(null, this.initialCmdPre, null);
+   }
    
    /**
     * Sends a new registration message

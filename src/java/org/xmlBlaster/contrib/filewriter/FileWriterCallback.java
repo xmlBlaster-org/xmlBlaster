@@ -219,7 +219,7 @@ public class FileWriterCallback implements I_Update {
                log.warning("Too many chunks belonging to '" + fileName + "' are found. They are '" + files.length + "' but should be '" + expectedChunks + "'");
             else if (files.length < expectedChunks) {
                if (file.exists()) {
-                  log.warning("The number of chunks is '" + files.length + "' which is less than the expected '" + expectedChunks + "' but the file '" + file.getAbsolutePath() + "' exists. So we will use the exisiting file (the chunks where probably already deleted");
+                  log.warning("The number of chunks is '" + files.length + "' which is less than the expected '" + expectedChunks + "' but the file '" + file.getAbsolutePath() + "' exists. So we will use the exisiting file (the chunks where probably already deleted)");
                   return;
                }
                else
@@ -311,7 +311,6 @@ public class FileWriterCallback implements I_Update {
    
    
    public void update(String topic, byte[] content, Map attrMap) throws Exception {
-
       String fileName = null;
       boolean isLastMsg = true;
       String exMsg = null;

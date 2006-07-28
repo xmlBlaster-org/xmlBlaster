@@ -204,6 +204,14 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @throws Exception
     */
    void initialCommand(String slaveName, String completeFilename, String version) throws Exception;
+
+   /**
+    * This is the command/script which is invoked before cleaning up resources on the initial update
+    * on the slave side (before the wipeout of the schema to be replicated).
+    * 
+    * @throws Exception if an exception occurs when executing the script.
+    */
+   public void initialCommandPre() throws Exception;
    
    /**
     * removes the specified trigger from the specified table.

@@ -145,14 +145,16 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          if (log.isLoggable(Level.FINE)) 
             log.fine(prePostStatementClass + " created and initialized");
       }
-      String tmp = info.get("replication.initialCmd", null);
+
+      String key = "replication.initialCmd";
+      String tmp = info.get(key, null);
       this.hasInitialCmd = (tmp != null);
       // log.info(GlobalInfo.dump(info));
       
       if (tmp == null)
-         log.info("The property 'replication.initialCmd' was not found in the configuration");
+         log.fine("The property '" + key  + "' was not found in the configuration");
       else
-         log.info("The property 'replication.initialCmd' is '" + tmp + "' and hasInitialCmd is '" + this.hasInitialCmd + "'");
+         log.fine("The property '" + key  + "' is '" + tmp + "' and hasInitialCmd is '" + this.hasInitialCmd + "'");
       
       String parserClass = this.info.get("parser.class", "org.xmlBlaster.contrib.dbwriter.SqlInfoParser").trim();
       if (parserClass.length() > 0) {
@@ -598,6 +600,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       log.info("'" + topic + "' dumped file '" + filename + "' on '" + this.importLocation + "' seq nr. '" + seqNumber + "' ex='" + exTxt + "'");
       
       if (isEof && !isException) {
+         this.dbSpecific.initialCommandPre();
          if (this.hasInitialCmd) {
             String completeFilename = this.importLocation + File.separator + filename;
             
