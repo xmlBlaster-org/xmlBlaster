@@ -49,11 +49,14 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #endif
 
 #if defined(_WINDOWS)
+  typedef unsigned __int64 uint64_t;
   typedef __int64 int64_t;
 # define PRINTF_PREFIX_INT64_T "%I64d"
 # define PRINTF_PREFIX_UINT64_T "%I64u"
   /*typedef long long int64_t;*/
+  typedef unsigned __int32 uint32_t;
   typedef __int32 int32_t;
+  typedef unsigned __int16 uint16_t;
   typedef __int16 int16_t;
 #else
 
