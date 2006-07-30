@@ -13,10 +13,13 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
@@ -169,7 +172,34 @@ public class HelloWorld4
          else
             log.info("Not connected to xmlBlaster, proceeding in fail save mode ...");
 
-         doOurWork();
+         while (true) {
+            // Wait a second for messages to arrive before we logout
+            try { Thread.sleep(1000); } catch( InterruptedException i) {}
+            int key = Global.waitOnKeyboardHit("Hit a key: 'p'=publish, 'g'=get, 'q'=exit");
+            if (key == 'p') {
+               publishMessages();
+               continue;
+            }
+            else if (key == 'g') {
+               GetKey gk = new GetKey(glob, "Banking");
+               GetQos gq = new GetQos(glob);
+               try {
+                  MsgUnit[] msgs = con.get(gk, gq);
+                  if (msgs.length > 0) {
+                     GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
+                     log.info("Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
+                               "' and status=" + grq.getState());
+                  }
+               }
+               catch (XmlBlasterException e) {
+                  log.warning("get() failed:" + e.getMessage());
+               }
+               continue;
+            }
+            else if (key == 'q') {
+               break;
+            }
+         }
       }
       catch (XmlBlasterException e) {
          log.severe("Houston, we have a problem: " + e.getMessage());
@@ -235,9 +265,8 @@ public class HelloWorld4
    /**
     * We publish some messages. 
     */
-   private void doOurWork() {
+   private void publishMessages() {
       try {
-         Global.waitOnKeyboardHit("Success, hit a key to publish messages");
 
          PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
@@ -253,9 +282,6 @@ public class HelloWorld4
          con.publish(msgUnit);
          log.info("Published message '" + pk.getOid() + "'");
 
-         // Wait a second for messages to arrive before we logout
-         try { Thread.sleep(1000); } catch( InterruptedException i) {}
-         Global.waitOnKeyboardHit("Success, hit a key to exit");
       }
       catch (XmlBlasterException e) {
          log.severe("Houston, we have a problem: " + e.getMessage());
