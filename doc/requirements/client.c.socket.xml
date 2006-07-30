@@ -11,7 +11,7 @@
      For C client applications you can use the header XmlBlasterAccessUnparsed.h which provides access to
      xmlBlaster in an easy way.
      </p>
-     <h2>Features</h2>
+     <p class="celltitel" id="features">Features</p>
      <ul>
         <li> Support on many OS like Windows, Windows-CE / Pocket PC,
              UNIX, Linux and the code is easy portable to embedded devices</li>
@@ -62,7 +62,7 @@
           </li>
     </ul>
 
-     <h2>Functionality</h2>
+     <p class="celltitel" id="functionality">Functionality</p>
      <p>
      All invocations to xmlBlaster are done by invoking function pointers
      on struct XmlBlasterAccessUnparsed.
@@ -80,7 +80,7 @@
      </ul>
      </p>
 
-     <h2>Memory footprint</h2>
+     <p class="celltitel" id="footprint">Memory footprint</p>
      <p>
      On Linux the 'hello world' client executable has a very little footprint,
      on Windows you need to add the pthreadVC2.lib size of ~ 29 kBytes:
@@ -118,7 +118,7 @@
 
      </pre>
 
-     <h2>Compilation with ant</h2>
+     <p class="celltitel" id="ant">Compilation with ant</p>
      <p>
      You can try the ant based compilation, our build.xml supports
      Linux GNU gcc, Linux Intel icc, Solaris CC and Windows VC++:
@@ -163,7 +163,8 @@ build -Dc.debug=false -verbose c
      <pre>
 build -Duse-icc=true c
      </pre>
-     <h2>Compilation manually</h2>
+
+     <p class="celltitel" id="manually">Compilation manually</p>
      <p>
      Here are some complete examples how to compile a simple C client 'manually':
      </p>
@@ -228,7 +229,7 @@ Solaris:
      <i>xmlBlaster/src/c/XmlBlasterConnectionUnparsedMain.c</i> (for synchronous access)
      <i>xmlBlaster/src/c/socket/XmlBlasterAccessUnparsed.c</i> (for complete multi threaded access including callbacks).
      </p>
-     <h2>Implementation detail</h2>
+     <p class="celltitel" id="detail">Implementation detail</p>
      <p>
      The C library consists of 3 independent modules which are <i>XmlBlasterConnectionUnparsed</i>
      for synchronous access, <i>CallbackServerUnparsed</i> for the client callbacks and
@@ -245,8 +246,56 @@ Solaris:
      A demo using XmlRpc is available as well (see xmlBlaster/demo/c/xmlrpc/README).
      </p>
    </description>
+
+   
    <example lang="C" type="HTML">
-      <p><a NAME="example"></a></p>
+      <p class="celltitel" id="windows">Example for a Windows XP setup</p>
+      <p>
+      Here is an example how to setup the development environment for free on Windows,
+      using our ant build to compile.
+      </p>
+     <p>
+     Compilation steps on a Windows (XP,2003) platform (using free microsoft tools only):
+     </p>
+     <ol>
+     <li>Download <a href="http://msdn.microsoft.com/vstudio/express/visualc/default.aspx" target="others">Visual C++ 2005 Express Edition</a> and install it</li>
+     <li>Download <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&amp;displaylang=en" target="others">Microsoft SDK</a> and install it</li>
+     <li>Configure <a href="http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/" target="others">VC++ express as documented</a>. This is optional
+     as we compile the dll and demo clients with <code>ant</code></li>
+     <li>Configure your command prompt environment to find the SDK and the C++ compiler:
+        <pre>call "C:\Program Files\Microsoft Platform SDK\SetEnv.Cmd"
+call "C:\Program Files\Microsoft Visual Studio 8\VC\vcvarsall.bat"</pre>
+         Or set manually in your command shell:
+<pre>set INCLUDE=C:\Program Files\Microsoft Platform SDK\Include;%INCLUDE%
+set LIB=C:\Program Files\Microsoft Platform SDK\Lib;%LIB%
+set Path=C:\Program Files\Microsoft Platform SDK\Bin;%PATH%</pre>
+     </li>
+     <li>Compile the C library with <code>build c</code></li>
+     </ol>
+     <p>
+     Steps to run the executable:
+     </p>
+     <ol>
+     <li>Configure the environment:
+<pre>REM to find xmlBlasterClientCD.dll:
+set PATH=%PATH%;\xmlBlaster\lib
+
+REM to find HelloWorld3.exe:
+set PATH=%PATH%;\xmlBlaster\demo\c\socket\bin</pre></li>
+     <li>Run the demo <pre>HelloWorld3</pre></li>
+      </ol>
+
+      <p>If you want to use compressed communication, please download <code>zlib</code> from <code>http://www.zlib.net/</code> and
+      configure it in <code>build.properties</code></p>
+
+      <p>Note for C++: You need to download the xerces XML parser <code>http://xerces.apache.org</code> and configure it in <code>build.properties</code>,
+      after that call <code>build cpp</code> to compile everything. If you want to use client side queuing download
+      <code>sqlitedll-2_8_17.zip</code> from <code>http://www.sqlite.org</code> and configure its usage in <code>build.properties</code>.</p>
+   </example>
+
+
+   <example lang="C" type="HTML">
+      <p class="celltitel" id="example">Single threaded example</p>
       <p>
       This example shows a single threaded synchronous access:
       </p>
@@ -355,7 +404,7 @@ Solaris:
    </example>
 
    <example lang="C" type="HTML">
-      <p><a NAME="example"></a></p>
+      <p class="celltitel" id="example2">Multi threaded example</p>
       <p>
       Here is an example showing multi threaded access with asynchronous callbacks:
       </p>
@@ -666,7 +715,7 @@ Solaris:
    </example>
 
    <example lang="C" type="HTML">
-      <p><a NAME="example"></a></p>
+      <p class="celltitel" id="logging">Redirect logging</p>
       <p>
       This example shows how to redirect the logging output from the C lib:
       </p>
@@ -945,19 +994,6 @@ Solaris:
 
        <tr>
        <td>6</td>
-       <td>IBM s390 with Linux 2.4.19</td>
-       <td><a href="http://gcc.gnu.org/" target="others">gcc 3.2.2</a></td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.85d+</a></td>
-       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
-       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
-       <td>Unparsed access with raw XML strings</td>
-       <td>2003-10-26</td>
-       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
-       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a><br /><i>build c</i></td>
-       </tr>
-
-       <tr>
-       <td>7</td>
        <td>OSF1 V5.1 1885 DEC alpha</td>
        <td><a href="http://gcc.gnu.org/" target="others">gcc 3.3.1</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.85f</a></td>
@@ -970,7 +1006,7 @@ Solaris:
        </tr>
 
        <tr>
-       <td>8</td>
+       <td>7</td>
        <td>IBM s390 with Linux 2.4.19</td>
        <td><a href="http://gcc.gnu.org/" target="others">gcc 3.2.2</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.9</a></td>
@@ -983,7 +1019,7 @@ Solaris:
        </tr>
 
        <tr>
-       <td>9</td>
+       <td>8</td>
        <td><a href="http://wwws.sun.com/software/download/index.html" target="others">SunOS 5.8 sparc</a></td>
        <td>gcc (GCC) 3.3.2</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.RC2</a></td>
@@ -999,7 +1035,7 @@ Solaris:
        </tr>
 
        <tr>
-       <td>10</td>
+       <td>9</td>
        <td><a href="http://wwws.hp.com/" target="others">HP-UX B.11.11 9000/800</a></td>
        <td>gcc (GCC) 3.4.3</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.01</a></td>
@@ -1012,7 +1048,7 @@ Solaris:
        </tr>
 
        <tr>
-       <td>11</td>
+       <td>10</td>
        <td>Linux 2.6.11</td>
        <td><a href="http://gcc.gnu.org/" target="others">gcc 4.0.0</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.0.3</a></td>
@@ -1025,7 +1061,7 @@ Solaris:
        </tr>
 
        <tr>
-       <td>12</td>
+       <td>11</td>
        <td>Windows XP Home with <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&amp;displaylang=en" target="others">SDK</a></td>
        <td><a href="http://msdn.microsoft.com/visualc/whidbey/default.aspx" target="others">VC++ 8 express 2005 (beta 2)</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.0.3</a></td>
@@ -1037,6 +1073,20 @@ Solaris:
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
        </tr>
 
+       <tr>
+       <td>12</td>
+       <td>Windows XP Professional with <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&amp;displaylang=en" target="others">SDK (free)</a></td>
+       <td><a href="http://msdn.microsoft.com/vstudio/express/visualc/default.aspx" target="others">Visual C++ 2005 Express Edition (free)</a>,
+           <a href="http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/" target="others">Install steps</a>
+       </td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">pre1.3</a></td>
+       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
+       <td>2006-07-29</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
+       </tr>
 
       </table>
 
@@ -1151,7 +1201,7 @@ Solaris:
          </tr>
          </table>
 
-         <h2>Testing</h2>
+         <p class="celltitel" id="testing">Testing</p>
          <p>
          The testsuite resides in <i>xmlBlaster/testsuite/src/c</i> to compile it
          use ant:
@@ -1171,7 +1221,7 @@ build reportShow
         And go for a cup of coffee as the complete testsuite will run.
         </p>
 
-        <h2>How to create the Doxygen documentation</h2>
+         <p class="celltitel" id="doxygen">How to create the Doxygen documentation</p>
         <p>The C code is commented to suit the Doxygen tool from <a href="http://www.doxygen.org" target="others">http://www.doxygen.org</a>.
         You need to install Doxygen and GraphViz as described in their manuals to
         create the html or pdf documentation and additionally man pages:
@@ -1226,6 +1276,7 @@ doxygen Doxyfile
    <see type="CODE" lang="C">XmlBlasterAccessUnparsed.h</see>
    <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
    <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
+   <see type="INTERNET">http://www.gzip.org/zlib/</see>
    <see type="REQ">protocol.socket</see>
    <see type="REQ">client.c.queue</see>
    <see type="REQ">client.cpp.socket</see>
