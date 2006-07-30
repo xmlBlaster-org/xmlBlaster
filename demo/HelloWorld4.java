@@ -190,6 +190,9 @@ public class HelloWorld4
                      log.info("Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                                "' and status=" + grq.getState());
                   }
+                  else {
+                     log.info("No message matched get() call on " + gk.getOid());
+                  }
                }
                catch (XmlBlasterException e) {
                   log.warning("get() failed:" + e.getMessage());
