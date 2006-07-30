@@ -759,6 +759,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (log.isLoggable(Level.FINE)) log.fine("Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
          return entry.getReturnObj();
       }
+      catch (XmlBlasterException e) {
+         if (log.isLoggable(Level.FINE)) log.fine(e.getMessage());
+         throw e;
+      }
       catch (Throwable e) {
          if (log.isLoggable(Level.FINE)) log.fine(e.toString());
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,null,null,e);
@@ -868,7 +872,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueueGetEntry entry  = new MsgQueueGetEntry(glob,
                                       this.clientQueue.getStorageId(), getKey, getQos);
-      return (MsgUnit[])queueMessage(entry);
+      MsgUnit[] arr = (MsgUnit[])queueMessage(entry);
+      return (arr == null) ? new MsgUnit[0] : arr;
    }
 
    /**
