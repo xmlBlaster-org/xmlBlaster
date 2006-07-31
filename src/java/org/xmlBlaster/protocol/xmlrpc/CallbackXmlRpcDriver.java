@@ -142,8 +142,11 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
          
          // org.apache.xmlrpc.XmlRpcException: java.lang.Exception: RPC handler object not found for "update": no default handler registered.
          boolean isServerSide = ex.toString().indexOf("no default handler registered") != -1;
+         if (isServerSide) {
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, ex.toString());
+         }
          
-         if (start == -1 && !isServerSide) {
+         if (start == -1) {
             ex.printStackTrace();
             String str = "Sending message to " + ((callbackAddress!=null)?callbackAddress.getRawAddress():"?") + " failed, received unexpected exception format from client";
             XmlBlasterException e2 = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, str, ex);
@@ -194,11 +197,10 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
             if (log.isLoggable(Level.FINE)) log.fine("Successfully sent message update to '" + callbackAddress.getSecretSessionId() + "'");
          }
       }
-      catch (XmlRpcException ex) {
-         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
+      catch (XmlRpcException ex) { // oneway: the client never sends an XmlBlasterException
          String str = "Sending oneway message to " + callbackAddress.getRawAddress() + " failed in client: " + ex.toString();
          if (log.isLoggable(Level.FINE)) log.fine(str);
-         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "CallbackFailed", e);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, ex.toString());
       }
       catch (Throwable e) {
          String str = "Sending oneway message to " + callbackAddress.getRawAddress() + " failed: " + e.toString();
@@ -219,12 +221,13 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
    {
       try {
          Vector args = new Vector();
-         args.addElement("");
+         args.addElement(qos);
          return (String)xmlRpcClient.execute("ping", args);
       }
       catch (XmlRpcException ex) {
-         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(glob, ex);
-         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "XmlRpc callback ping - got exception from client", e);
+         String str = "Sending ping to " + callbackAddress.getRawAddress() + " failed in client: " + ex.toString();
+         if (log.isLoggable(Level.FINEST)) log.finest(str);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, ex.toString());
       }
       catch (Throwable e) {
          if (!(e instanceof IOException)) // IOException: callback connection refused if client is away, is normal behavior
