@@ -119,7 +119,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private String initialFilesLocation;
    private Timestamp timeoutHandle;
    private Timeout timeout = new Timeout("ReplManagerPlugin-StatusPoller");
-   private long statusPollerInterval = 5000L;
+   private final static long STATUS_POLLER_INTERVAL_DEFAULT = 5000L;
+   private long statusPollerInterval = STATUS_POLLER_INTERVAL_DEFAULT;
    private long statusProcessingTime;
    private long numRefresh;
    
@@ -258,9 +259,34 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @param cascadedReplicationPrefix the prefix identifing the DbWatcher for the cascaded replication. Can be null.  
     * @param realInitialFilesLocation the file location where the initial dump is stored. If null or an empty String, then it
     * is assumed to be transfered the "normal" way, that is over the choosen communication protocol.
+    */
+   public String initiateReplication(String slaveSessionName, String prefixWithVersion, String cascadeSlaveSessionName, String cascadeReplicationPrefix, String realInitialFilesLocation) {
+      try {
+         return initiateReplicationNonMBean(slaveSessionName, prefixWithVersion, cascadeSlaveSessionName, cascadeReplicationPrefix, realInitialFilesLocation);
+      }
+      catch (Exception ex) {
+         return "error: " + ex.getMessage();
+      }
+   }
+
+   /**
+    * Intiates the replication for the given slave.
+    * TODO Specify that the replicationKey (dbmasterid) must be short and DB conform.
+    * Usually called by Human being via JMX Console.
+    * 
+    * The cascaded replication is the replication which will be automatically started once the initial update of the first replication is finished. This is 
+    * used to concatenate replications. A typical usecase is in two way replication, then the initial update of the back replication can be automatically triggered
+    * once the initial update of the main replication is finished.
+    * 
+    * @param slaveSessionName
+    * @param replicationKey This is the dbWatcher replication.prefix attribute.
+    * @param cascadeSlaveSessionName The Name of the session of the dbWriter to be used for the cascaded replication. Can be null.
+    * @param cascadedReplicationPrefix the prefix identifing the DbWatcher for the cascaded replication. Can be null.  
+    * @param realInitialFilesLocation the file location where the initial dump is stored. If null or an empty String, then it
+    * is assumed to be transfered the "normal" way, that is over the choosen communication protocol.
     * @throws Exception
     */
-   public String initiateReplication(String slaveSessionName, String prefixWithVersion, String cascadeSlaveSessionName, String cascadeReplicationPrefix, String realInitialFilesLocation) throws Exception {
+   public String initiateReplicationNonMBean(String slaveSessionName, String prefixWithVersion, String cascadeSlaveSessionName, String cascadeReplicationPrefix, String realInitialFilesLocation) throws Exception {
       try {
          if (slaveSessionName == null || slaveSessionName.trim().length() < 1)
             throw new Exception("ReplManagerPlugin.initiateReplication: The slave session name is null, please provide one");
@@ -298,13 +324,15 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                   // check to avoid loops
                   cascadeSlaveSessionName = cascadeSlaveSessionName.trim();
                   if (slaveSessionName.equals(cascadeSlaveSessionName))
-                     return "error: " + ret + " did fail since having the same slave '" + slaveSessionName + "' for both replications would result in a loop";
+                     throw new Exception(ret + " did fail since having the same slave '" + slaveSessionName + "' for both replications would result in a loop");
+                     // return "error: " + ret + " did fail since having the same slave '" + slaveSessionName + "' for both replications would result in a loop";
                }
                
                boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId, cascadeReplicationPrefix, cascadeSlaveSessionName);
                if (isOkToStart == false) {
                   ret += " did fail since your status is '" + slave.getStatus() + "'. Please invoke first 'Cancel Update'";
-                  return "error: " + ret; // don't throw an exception here since MX4J seems to loose exception msg.
+                  throw new Exception(ret);
+                  // return "error: " + ret; // don't throw an exception here since MX4J seems to loose exception msg.
                }
             }
             else
@@ -383,10 +411,13 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             }
          }
          this.initialFilesLocation = this.get("replication.initialFilesLocation", "${user.home}/tmp");
+
+         this.statusPollerInterval = this.getLong("replication.monitor.statusPollerInterval", STATUS_POLLER_INTERVAL_DEFAULT);
          
-         if (this.statusPollerInterval >= 0)
+         if (this.statusPollerInterval > 0)
             this.timeoutHandle = timeout.addTimeoutListener(this, this.statusPollerInterval, null);
-         
+         else
+            log.warning("The 'replication.monitor.statusPollerInterval' is set to '" + this.statusPollerInterval + "' which is lower than 1 ms, I will not activate it");
          
          this.initialized = true;
       }

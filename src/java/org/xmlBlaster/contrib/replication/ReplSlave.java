@@ -597,7 +597,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
                // initiate a cascaded replication (if configured that way)
                if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
                   log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'. Was entry '" + i + "' of a set of '" + entries.size() + "'");
-                  this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
+                  this.manager.initiateReplicationNonMBean(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
                }
                else {
                   log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
