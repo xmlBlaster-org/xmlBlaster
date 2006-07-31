@@ -485,10 +485,10 @@ public class TableToWatchInfo {
    public void store(String replPrefix, I_DbPool dbPool, Connection conn) throws Exception {
       String selectSql = "SELECT * FROM " + replPrefix + "tables WHERE CATALOGNAME='" + getCatalog() + "' AND SCHEMANAME='" + getSchema() + "' AND TABLENAME='" + getTable() + "'";
       log.info("executing '" + selectSql + "'");
-      ResultSet rs = null;
+      Statement st = null;
       try {
-         Statement st = conn.createStatement();
-         rs = st.executeQuery(selectSql);
+         st = conn.createStatement();
+         ResultSet rs = st.executeQuery(selectSql);
          if (rs.next()) {
             String delSql = "DELETE FROM " + replPrefix + "tables WHERE CATALOGNAME='" + getCatalog() + "' AND SCHEMANAME='" + getSchema() + "' AND TABLENAME='" + getTable() + "'";
             log.info("executing '" + delSql + "'");
@@ -496,8 +496,8 @@ public class TableToWatchInfo {
          }
       }
       finally {
-         if (rs != null) {
-            rs.close();
+         if (st != null) {
+            st.close();
          }
       }
       String sql = "INSERT INTO " + replPrefix + "tables VALUES ('" + getCatalog() + "','"
