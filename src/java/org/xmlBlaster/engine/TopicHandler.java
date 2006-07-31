@@ -1669,8 +1669,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
       this.state = UNREFERENCED;
 
+      TopicProperty topicProperty = this.topicProperty;
       if (!onAdministrativeCreate) {
-         if (this.topicProperty == null) {
+         if (topicProperty == null) {
             EraseQosServer eraseQos = new EraseQosServer(glob, "<qos/>");
             eraseQos.setForceDestroy(true);
             notifyList = toDead(this.creatorSessionName, null, eraseQos);
@@ -1682,7 +1683,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (log.isLoggable(Level.FINE))
             log.fine(ME+": Delay to set destroyDelay for topics from persistent store until all clients and subcriptions are recovered"); // SessionPersistencePlugin.java
       }
-      else {
+      else if (topicProperty != null) {
          if (topicProperty.getDestroyDelay() > 0L) {
             if (this.timerKey == null) {
                this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), getUniqueKey());
@@ -1707,7 +1708,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    public void startDestroyTimer() {
-      if (topicProperty.getDestroyDelay() > 0L) {
+      TopicProperty topicProperty = this.topicProperty;
+      if (topicProperty != null && topicProperty.getDestroyDelay() > 0L) {
          if (this.timerKey == null) {
             this.timerKey = this.destroyTimer.addTimeoutListener(this, topicProperty.getDestroyDelay(), getUniqueKey());
          }
@@ -1875,7 +1877,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (isRegisteredInBigXmlDom) {
          return;
       }
-      if (!this.topicProperty.createDomEntry()) {
+      TopicProperty topicProperty = this.topicProperty;
+      if (topicProperty != null && !topicProperty.createDomEntry()) {
          return;
       }
       getXmlKey().mergeRootNode(requestBroker.getBigXmlKeyDOM());
