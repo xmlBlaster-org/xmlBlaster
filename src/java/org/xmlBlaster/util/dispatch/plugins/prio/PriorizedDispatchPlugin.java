@@ -594,6 +594,12 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
     */
    public void postHandleNextMessages(DispatchManager dispatchManager, MsgQueueEntry[] processedEntries) throws XmlBlasterException {
    }
+
+   /**
+    * Not doing anything in this method since no Exception handling is done.
+    */
+   public void onDispatchWorkerException(DispatchManager dispatchManager, Throwable ex) {
+   }
    
    
 }

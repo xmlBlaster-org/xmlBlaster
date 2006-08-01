@@ -127,4 +127,13 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     * @return An xml encoded dump
     */
    public String toXml(String extraOffset);
+   
+   /**
+    * Invoked when the dispatching failed due to an exception. This way the implementation of the
+    * plugin gets a notification that an exception occurred. 
+    * @param dispatchManager
+    * @param ex
+    */
+   public void onDispatchWorkerException(DispatchManager dispatchManager, Throwable ex);
+   
 }
