@@ -132,8 +132,9 @@ abstract public class DispatchConnection implements I_Timeout
          handleTransition(true, null);
       }
       catch (XmlBlasterException e) {
-         if (ErrorCode.COMMUNICATION_FORCEASYNC.equals(e.getErrorCode()))
-            log.fine("initialize:" + e.getMessage());
+         if (ErrorCode.COMMUNICATION_FORCEASYNC.equals(e.getErrorCode())) {
+            if (log.isLoggable(Level.FINE)) log.fine("initialize:" + e.getMessage());
+         }
          else
             log.warning("initialize:" + e.getMessage());
          if (retry(e)) {    // all types of ErrorCode.COMMUNICATION*
@@ -284,15 +285,15 @@ abstract public class DispatchConnection implements I_Timeout
       data = (data==null)?"":data;
       try {
          DispatchStatistic stats = this.connectionsHandler.getDispatchStatistic(); 
-         log.fine(stats.toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine(stats.toXml(""));
          
          // check if an ongoing write operation on the same client
          if ((stats.ongoingWrite() || stats.ongoingRead()) && this.bypassPingOnActivity) {
-            log.fine("AN ONGOING WRITE- OR READ OPERATION WHILE PINGING");
+            if (log.isLoggable(Level.FINE)) log.fine("AN ONGOING WRITE- OR READ OPERATION WHILE PINGING");
             long currentBytesWritten = stats.getOverallBytesWritten() + stats.getCurrBytesWritten();
             long currentBytesRead = stats.getOverallBytesRead() + stats.getCurrBytesRead();
             if (this.previousBytesWritten != currentBytesWritten || this.previousBytesRead != currentBytesRead) {
-               log.fine("there was an activity since last ping, previousWritten='" + this.previousBytesWritten + "' and currentWritten='" + currentBytesWritten + "' previousRead='" + this.previousBytesRead + "' currentRead='" + currentBytesRead + "'");
+               if (log.isLoggable(Level.FINE)) log.fine("there was an activity since last ping, previousWritten='" + this.previousBytesWritten + "' and currentWritten='" + currentBytesWritten + "' previousRead='" + this.previousBytesRead + "' currentRead='" + currentBytesRead + "'");
                this.previousBytesWritten = currentBytesWritten;
                this.previousBytesRead = currentBytesRead;
                handleTransition(false, null);
@@ -301,7 +302,7 @@ abstract public class DispatchConnection implements I_Timeout
             else {
                boolean forceFailure = true;
                if (forceFailure) {
-                  log.fine("there was NO activity since last ping, throwing an exception");
+                  if (log.isLoggable(Level.FINE)) log.fine("there was NO activity since last ping, throwing an exception");
                   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT,
                         glob.getId(), ME, (String)null,
                         "Ping result: The dispatcher was busy sending data but there was no activity since last ping",
@@ -309,8 +310,9 @@ abstract public class DispatchConnection implements I_Timeout
                         (String)null, (String)null, (String)null,
                         true);  /* We need to set serverSide==true ! */
                }
-               else
-                  log.fine("there was NO activity since last ping, previous='" + this.previousBytesWritten + "' and current='" + currentBytesWritten + "' will force a ping anyway");
+               else {
+                  if (log.isLoggable(Level.FINE)) log.fine("there was NO activity since last ping, previous='" + this.previousBytesWritten + "' and current='" + currentBytesWritten + "' will force a ping anyway");
+               }
             }
          }
          this.previousBytesWritten = stats.getOverallBytesWritten() + stats.getCurrBytesWritten();
@@ -370,7 +372,7 @@ abstract public class DispatchConnection implements I_Timeout
          }
          catch (XmlBlasterException e) {
             if (isDead()) {
-               log.fine("We are shutdown already: " + e.toString());
+               if (log.isLoggable(Level.FINE)) log.fine("We are shutdown already: " + e.toString());
             }
             else {
                e.printStackTrace();
@@ -387,7 +389,7 @@ abstract public class DispatchConnection implements I_Timeout
             } 
             catch (XmlBlasterException e) {
                if (isDead()) {
-                  log.fine("We are shutdown already: " + e.toString());
+                  if (log.isLoggable(Level.FINE)) log.fine("We are shutdown already: " + e.toString());
                }
                else {
                   e.printStackTrace();
