@@ -12,6 +12,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
 
 /**
@@ -114,5 +115,14 @@ public interface I_XmlBlasterConnection extends I_Plugin
    public String[] publishArr(org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) throws XmlBlasterException;
 
    public java.lang.String[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
+   
+   /**
+    * Register a listener for to receive information about the progress of incoming data. 
+    * Only one listener is supported, the last call overwrites older calls.
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener);
+
 }
 

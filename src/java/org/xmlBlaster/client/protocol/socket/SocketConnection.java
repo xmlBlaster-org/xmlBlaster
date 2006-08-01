@@ -24,6 +24,7 @@ import org.xmlBlaster.util.protocol.socket.SocketUrl;
 
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
@@ -72,6 +73,9 @@ public class SocketConnection implements I_XmlBlasterConnection
     */
    private boolean useUdpForOneway = false;
 
+   /** Placeholder for the progess listener in case the registration happens before the cbReceiver has been registered */
+   private I_ProgressListener tmpProgressListener;
+   
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
     */
@@ -412,6 +416,11 @@ public class SocketConnection implements I_XmlBlasterConnection
     */
    final void registerCbReceiver(SocketCallbackImpl cbReceiver) {
       this.cbReceiver = cbReceiver;
+      if (this.tmpProgressListener != null) {
+         this.log.warning("The progressListener will be registered now since it could not register it before");
+         this.cbReceiver.registerProgressListener(this.tmpProgressListener);
+         this.tmpProgressListener = null;
+      }
       if (this.cbReceiver != null) {
          this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
       }
@@ -599,9 +608,9 @@ public class SocketConnection implements I_XmlBlasterConnection
     * Check server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String ping(String qos) throws XmlBlasterException
-   {
-      if (getCbReceiver() == null) {
+   public String ping(String qos) throws XmlBlasterException {
+      SocketCallbackImpl receiver = getCbReceiver(); 
+      if (receiver == null) {
          return Constants.RET_OK; // fake a return for ping on startup
          /*
          // SocketCallbackImpl.java must be instantiated first
@@ -613,18 +622,7 @@ public class SocketConnection implements I_XmlBlasterConnection
          // NOTE: This happens only if the client has no callback configured, we create a faked one here (as the SOCKET plugin needs it)
          */
       }
-
-      try {
-         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
-         parser.setPluginConfig(this.pluginInfo);
-         parser.addMessage(qos); // ("<qos><state id='OK'/></qos>");
-         Object response = getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
-         return (String)response;
-      }
-      catch (IOException e1) {
-         if (log.isLoggable(Level.FINE)) log.fine("IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, MethodName.PING.toString(), e1);
-      }
+      return receiver.ping(qos);
    }
 
    /**
@@ -644,6 +642,25 @@ public class SocketConnection implements I_XmlBlasterConnection
       else return "<connected/>";
    }
 
+   /**
+    * Register a listener for to receive information about the progress of incoming data. 
+    * Only one listener is supported, the last call overwrites older calls.
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      SocketCallbackImpl cbRec = this.cbReceiver;
+      if (cbRec != null)
+         return this.cbReceiver.registerProgressListener(listener);
+      else {
+         log.warning("The callback receiver is null, will be registered when the callback receiver is registered.");
+         I_ProgressListener ret = this.tmpProgressListener;
+         this.tmpProgressListener = listener;
+         return ret;
+      }
+   }
+
+   
    /**
     * Command line usage.
     * <p />

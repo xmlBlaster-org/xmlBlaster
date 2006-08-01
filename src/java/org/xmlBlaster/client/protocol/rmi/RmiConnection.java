@@ -22,10 +22,10 @@ import org.xmlBlaster.util.XmlBlasterSecurityManager;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
 import java.rmi.RemoteException;
 import java.rmi.Naming;
-import java.rmi.RMISecurityManager;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.net.MalformedURLException;
@@ -413,6 +413,18 @@ public class RmiConnection implements I_XmlBlasterConnection
       }
    }
 
+   /**
+    * Register a listener for to receive information about the progress of incoming data. 
+    * Only one listener is supported, the last call overwrites older calls. This implementation
+    * does nothing here, it just returns null.
+    * 
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      log.fine("This method is currently not implemeented.");
+      return null;
+   }
 
    /**
     * Check server.

@@ -16,8 +16,8 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.engine.qos.AddressServer;
-import org.xmlBlaster.util.plugin.PluginInfo;
 
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -45,7 +45,6 @@ public class LocalConnection implements I_XmlBlasterConnection
    private I_Authenticate authenticate;
    private I_XmlBlaster xmlBlasterImpl;
    private AddressServer addressServer;
-   private PluginInfo pluginInfo;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -69,7 +68,6 @@ public class LocalConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob_, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
-      this.pluginInfo = pluginInfo;
       this.glob = (glob_ == null) ? Global.instance() : glob_;
 
       org.xmlBlaster.engine.ServerScope engineGlob = (org.xmlBlaster.engine.ServerScope)this.glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
@@ -290,6 +288,19 @@ public class LocalConnection implements I_XmlBlasterConnection
    {
       if (!isLoggedIn()) return "<noConnection />";
       return "<LocalConnection/>";
+   }
+
+   /**
+    * Register a listener for to receive information about the progress of incoming data. 
+    * Only one listener is supported, the last call overwrites older calls. This implementation
+    * does nothing here, it just returns null.
+    * 
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      log.fine("This method is currently not implemeented.");
+      return null;
    }
 
    /**

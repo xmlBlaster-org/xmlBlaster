@@ -18,6 +18,7 @@ import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -745,6 +746,19 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       } catch(Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "get", e);
       }
+   }
+
+   /**
+    * Register a listener for to receive information about the progress of incoming data. 
+    * Only one listener is supported, the last call overwrites older calls. This implementation
+    * does nothing here, it just returns null.
+    * 
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      log.fine("This method is currently not implemeented.");
+      return null;
    }
 
    /**
