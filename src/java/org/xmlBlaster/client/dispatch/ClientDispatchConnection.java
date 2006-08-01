@@ -33,6 +33,7 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.CryptDataHolder;
@@ -603,5 +604,13 @@ public final class ClientDispatchConnection extends DispatchConnection
 
       return sb.toString();
    }
+   
+   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
+      if (this.driver == null) return null;
+      return this.driver.registerProgressListener(listener);
+   }
+
+   
+   
 }
 
