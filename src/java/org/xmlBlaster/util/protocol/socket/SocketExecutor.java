@@ -8,6 +8,8 @@ package org.xmlBlaster.util.protocol.socket;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -57,7 +59,10 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
     */
    private boolean isNullTerminated;
    
-   private int maxChunkSize = 50 * 1024;
+   private final static int MAX_CHUNKSIZE_DEFAULT = 50 * 1024; 
+   protected int maxChunkSize = MAX_CHUNKSIZE_DEFAULT;
+
+   protected boolean running = true;
 
    public SocketExecutor() {
    }
@@ -77,7 +82,8 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       super.initialize(glob, addressConfig);
 
       this.isNullTerminated = addressConfig.getEnv("isNullTerminated", false).getValue();
-
+      this.maxChunkSize = addressConfig.getEnv("maxChunkSize", MAX_CHUNKSIZE_DEFAULT).getValue();
+      log.info("Max chunk size is '" + this.maxChunkSize + "'");
       if (isCompressZlibStream()) { // Statically configured for server side protocol plugin
          this.iStream = new ZFlushInputStream(iStream);
          this.oStream =  new ZFlushOutputStream(oStream);
@@ -155,6 +161,32 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
    }
 
    /**
+    * Ping to check if callback server (or server protocol) is alive.
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception XmlBlasterException If client not reachable
+    */
+   public final String ping(String qos) throws XmlBlasterException
+   {
+      if (!running)
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping() invocation ignored, we are shutdown.");
+      try {
+         String cbSessionId = "";
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
+         parser.addMessage(qos);
+         Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
+         if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + response.toString());
+         return (String)response; // return the QoS
+      } catch (Throwable e) {
+         boolean weAreOnServerSide = this.xmlBlasterImpl != null;
+         String txt = weAreOnServerSide ? "Callback ping failed" :  MethodName.PING.toString();
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, txt, e);
+      }
+   }
+
+   
+   /**
     * Flush the data to the socket. 
     * Overwrite this in your derived class to send UDP 
     */
@@ -165,6 +197,9 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       if (listener != null) {
          listener.progressWrite("", 0, msg.length);
       }
+      else
+         log.fine("The progress listener is null");
+      
       int bytesLeft = msg.length;
       int bytesRead = 0;
       synchronized (oStream) {
