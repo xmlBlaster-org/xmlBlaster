@@ -167,7 +167,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
     * @return    Currently an empty string ""
     * @exception XmlBlasterException If client not reachable
     */
-   public final String ping(String qos) throws XmlBlasterException
+   public String ping(String qos) throws XmlBlasterException
    {
       if (!running)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping() invocation ignored, we are shutdown.");
