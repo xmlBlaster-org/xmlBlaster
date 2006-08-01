@@ -50,7 +50,6 @@ public class HandleClient extends SocketExecutor implements Runnable
    private CallbackSocketDriver callback;
    /** The socket connection to/from one client */
    protected DatagramSocket sockUDP;
-   private boolean running = true;
    private String cbKey = null; // Remember the key for the Global map
    /** Holds remote "host:port" for logging */
    protected String remoteSocketStr;
@@ -199,30 +198,6 @@ public class HandleClient extends SocketExecutor implements Runnable
       }
    }
 
-   /**
-    * Ping to check if callback server is alive.
-    * This ping checks the availability on the application level.
-    * @param qos Currently an empty string ""
-    * @return    Currently an empty string ""
-    * @exception XmlBlasterException If client not reachable
-    */
-   public final String ping(String qos) throws XmlBlasterException
-   {
-      if (!running)
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping() invocation ignored, we are shutdown.");
-      try {
-         String cbSessionId = "";
-         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
-         parser.addMessage(qos);
-         Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
-         if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + response.toString());
-         return (String)response; // return the QoS
-      } catch (Throwable e) {
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                     "Callback ping failed", e);
-      }
-   }
-
    public void handleMessage(MsgInfo receiver, boolean udp) {
       try {
 
@@ -321,6 +296,9 @@ public class HandleClient extends SocketExecutor implements Runnable
       if (listener != null) {
          listener.progressWrite("", 0, msg.length);
       }
+      else
+         log.fine("The progress listener is null");
+      
       if (udp && this.sockUDP!=null) {
          DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
          //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
@@ -328,10 +306,18 @@ public class HandleClient extends SocketExecutor implements Runnable
          if (log.isLoggable(Level.FINE)) log.fine("UDP datagram is send");
       }
       else {
+         int bytesLeft = msg.length;
+         int bytesRead = 0;
          synchronized (oStream) {
-            oStream.write(msg);
-            oStream.flush();
-            if (log.isLoggable(Level.FINE)) log.fine("TCP data is send");
+            while (bytesLeft > 0) {
+               int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;  
+               oStream.write(msg, bytesRead, toRead);
+               oStream.flush();
+               bytesRead += toRead;
+               bytesLeft -= toRead;
+               if (listener != null)
+                  listener.progressWrite("", bytesRead, msg.length);
+            }
          }
       }
       if (listener != null) {
