@@ -275,33 +275,55 @@ public class DispatchStatistic implements I_ProgressListener
       String offset = Constants.OFFSET + extraOffset;
       sb.append(offset).append("<DispatchStatistic");
       if (getNumUpdate() > 0) {
-         sb.append("' numUpdate='").append(getNumUpdate());
+         sb.append(" numUpdate='").append(getNumUpdate()).append("'");
       }
       if (getNumUpdateOneway() > 0) {
-         sb.append("' numUpdateOneway='").append(getNumUpdateOneway());
+         sb.append(" numUpdateOneway='").append(getNumUpdateOneway()).append("'");
       }
       if (getNumPublish() > 0) {
-         sb.append("' numPublish='").append(getNumPublish());
+         sb.append(" numPublish='").append(getNumPublish()).append("'");
       }
       //sb.append("' numGet='").append(getNumGet());
       if (getNumSubscribe() > 0) {
-         sb.append("' numSubscribe='").append(getNumSubscribe()).append("'/>");
+         sb.append(" numSubscribe='").append(getNumSubscribe()).append("'");
       }
       if (getNumUnSubscribe() > 0) {
-         sb.append("' numUnSubscribe='").append(getNumUnSubscribe()).append("'/>");
+         sb.append(" numUnSubscribe='").append(getNumUnSubscribe()).append("'");
       }
       if (getNumErase() > 0) {
-         sb.append("' numErase='").append(getNumErase()).append("'/>");
+         sb.append(" numErase='").append(getNumErase()).append("'");
       }
       if (getNumGet() > 0) {
-         sb.append("' numGet='").append(getNumGet()).append("'/>");
+         sb.append(" numGet='").append(getNumGet()).append("'");
       }
       if (getNumConnect() > 0) {
-         sb.append("' numConnect='").append(getNumConnect()).append("'/>");
+         sb.append(" numConnect='").append(getNumConnect()).append("'");
       }
       if (getNumDisconnect() > 0) {
-         sb.append("' numDisconnect='").append(getNumDisconnect()).append("'/>");
+         sb.append(" numDisconnect='").append(getNumDisconnect()).append("'");
       }
+      
+      // added 
+      if (getOverallBytesWritten() > 0) {
+         sb.append(" overallBytesWritten='").append(getOverallBytesWritten()).append("'");
+      }
+      if (getCurrBytesWritten() > 0) {
+         sb.append(" currBytesWritten='").append(getCurrBytesWritten()).append("'");
+      }
+      if (getNumBytesToWrite() > 0) {
+         sb.append(" numBytesToWrite='").append(getNumBytesToWrite()).append("'");
+      }
+      if (getOverallBytesRead() > 0) {
+         sb.append(" overallBytesRead='").append(getOverallBytesRead()).append("'");
+      }
+      if (getCurrBytesRead() > 0) {
+         sb.append(" currBytesRead='").append(getCurrBytesRead()).append("'");
+      }
+      if (getNumBytesToRead() > 0) {
+         sb.append(" numBytesToRead='").append(getNumBytesToRead()).append("'");
+      }
+      
+      sb.append("/>");
       return sb.toString();
    }
 
@@ -332,5 +354,26 @@ public class DispatchStatistic implements I_ProgressListener
    public void setRoundTripDelay(long roundTripDelay) {
       this.roundTripDelay = roundTripDelay;
    }
+   
+   /**
+    * returns true if a write operation is ongoing 
+    * @return
+    */
+   public boolean ongoingWrite() {
+      if (getNumBytesToWrite() <1)
+         return false;
+      return getNumBytesToWrite() != getCurrBytesWritten();
+   }
+   
+   /**
+    * returns true if a read operation is ongoing 
+    * @return
+    */
+   public boolean ongoingRead() {
+      if (getNumBytesToRead() <1)
+         return false;
+      return getNumBytesToRead() != getCurrBytesRead();
+   }
+   
 }
 

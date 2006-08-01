@@ -73,7 +73,10 @@ abstract public class DispatchConnection implements I_Timeout
     */
    protected boolean serverAcceptsRequests = false;
    protected boolean physicalConnectionOk = false;
-
+   protected long previousBytesWritten;
+   protected long previousBytesRead;
+   private boolean bypassPingOnActivity = true;
+   
    /**
     * Our loadPlugin() and initialize() needs to be called next. 
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -86,7 +89,8 @@ abstract public class DispatchConnection implements I_Timeout
       this.glob = glob;
 
       this.logEveryMillis = glob.getProperty().get("dispatch/logRetryEveryMillis", 60000L); // every minute a log
-      if (log.isLoggable(Level.FINE)) log.fine("dispatch/logRetryEveryMillis=" + this.logEveryMillis);
+      if (log.isLoggable(Level.FINE)) 
+         log.fine("dispatch/logRetryEveryMillis=" + this.logEveryMillis);
       this.connectionsHandler = connectionsHandler;
       this.myId = connectionsHandler.getDispatchManager().getQueue().getStorageId().getId();
       this.address = address;
@@ -203,9 +207,7 @@ abstract public class DispatchConnection implements I_Timeout
    /**
     * Should be overwritten by extending classes. 
     */
-   public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
-      return null;
-   }
+   abstract public I_ProgressListener registerProgressListener(I_ProgressListener listener);
 
    /**
     * Send the messages back to the client. 
@@ -280,8 +282,40 @@ abstract public class DispatchConnection implements I_Timeout
       }
       
       data = (data==null)?"":data;
-
       try {
+         DispatchStatistic stats = this.connectionsHandler.getDispatchStatistic(); 
+         log.fine(stats.toXml(""));
+         
+         // check if an ongoing write operation on the same client
+         if ((stats.ongoingWrite() || stats.ongoingRead()) && this.bypassPingOnActivity) {
+            log.fine("AN ONGOING WRITE- OR READ OPERATION WHILE PINGING");
+            long currentBytesWritten = stats.getOverallBytesWritten() + stats.getCurrBytesWritten();
+            long currentBytesRead = stats.getOverallBytesRead() + stats.getCurrBytesRead();
+            if (this.previousBytesWritten != currentBytesWritten || this.previousBytesRead != currentBytesRead) {
+               log.fine("there was an activity since last ping, previousWritten='" + this.previousBytesWritten + "' and currentWritten='" + currentBytesWritten + "' previousRead='" + this.previousBytesRead + "' currentRead='" + currentBytesRead + "'");
+               this.previousBytesWritten = currentBytesWritten;
+               this.previousBytesRead = currentBytesRead;
+               handleTransition(false, null);
+               return Constants.RET_OK;
+            }
+            else {
+               boolean forceFailure = true;
+               if (forceFailure) {
+                  log.fine("there was NO activity since last ping, throwing an exception");
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT,
+                        glob.getId(), ME, (String)null,
+                        "Ping result: The dispatcher was busy sending data but there was no activity since last ping",
+                        (String)null, (Timestamp)null,
+                        (String)null, (String)null, (String)null,
+                        true);  /* We need to set serverSide==true ! */
+               }
+               else
+                  log.fine("there was NO activity since last ping, previous='" + this.previousBytesWritten + "' and current='" + currentBytesWritten + "' will force a ping anyway");
+            }
+         }
+         this.previousBytesWritten = stats.getOverallBytesWritten() + stats.getCurrBytesWritten();
+         this.previousBytesRead = stats.getOverallBytesRead() + stats.getCurrBytesRead();
+         
          long now = System.currentTimeMillis();
          String returnVal = doPing(data);
          this.connectionsHandler.getDispatchStatistic().setPingRoundTripDelay(System.currentTimeMillis() - now);
@@ -329,7 +363,8 @@ abstract public class DispatchConnection implements I_Timeout
       boolean isPing = (userData == null);
 
       if (isPing) {
-         if (log.isLoggable(Level.FINE)) log.fine("timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
+         if (log.isLoggable(Level.FINE)) 
+            log.fine(ME + " timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
          try {
             /*String result = */ping("", false);
          }
