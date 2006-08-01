@@ -293,35 +293,42 @@ public class HandleClient extends SocketExecutor implements Runnable
     */
    protected void sendMessage(byte[] msg, boolean udp) throws IOException {
       I_ProgressListener listener = this.progressListener;
-      if (listener != null) {
-         listener.progressWrite("", 0, msg.length);
-      }
-      else
-         log.fine("The progress listener is null");
-      
-      if (udp && this.sockUDP!=null) {
-         DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
-         //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
-         this.sockUDP.send(dp);
-         if (log.isLoggable(Level.FINE)) log.fine("UDP datagram is send");
-      }
-      else {
-         int bytesLeft = msg.length;
-         int bytesRead = 0;
-         synchronized (oStream) {
-            while (bytesLeft > 0) {
-               int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;  
-               oStream.write(msg, bytesRead, toRead);
-               oStream.flush();
-               bytesRead += toRead;
-               bytesLeft -= toRead;
-               if (listener != null)
-                  listener.progressWrite("", bytesRead, msg.length);
+      try {
+         if (listener != null) {
+            listener.progressWrite("", 0, msg.length);
+         }
+         else
+            log.fine("The progress listener is null");
+         
+         if (udp && this.sockUDP!=null) {
+            DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
+            //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
+            this.sockUDP.send(dp);
+            if (log.isLoggable(Level.FINE)) log.fine("UDP datagram is send");
+         }
+         else {
+            int bytesLeft = msg.length;
+            int bytesRead = 0;
+            synchronized (oStream) {
+               while (bytesLeft > 0) {
+                  int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;  
+                  oStream.write(msg, bytesRead, toRead);
+                  oStream.flush();
+                  bytesRead += toRead;
+                  bytesLeft -= toRead;
+                  if (listener != null)
+                     listener.progressWrite("", bytesRead, msg.length);
+               }
             }
          }
+         if (listener != null) {
+            listener.progressWrite("", msg.length, msg.length);
+         }
       }
-      if (listener != null) {
-         listener.progressWrite("", msg.length, msg.length);
+      catch (IOException ex) {
+         if (listener != null)
+            listener.clearCurrentWrites();
+         throw ex;
       }
    }
 

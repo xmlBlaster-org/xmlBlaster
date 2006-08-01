@@ -32,5 +32,12 @@ public interface I_ProgressListener
        * @param numBytes The overall number of bytes
        */
       void progressWrite(String name, long currBytesWritten, long numBytes);
+      
+      /**
+       * Used to clear current (ongoing) write operations. This is invoked if an exception occurs
+       * when writing.
+       */
+      public void clearCurrentWrites();
+      
 }
 

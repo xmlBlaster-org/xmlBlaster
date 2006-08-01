@@ -191,37 +191,52 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
     * Overwrite this in your derived class to send UDP 
     */
    protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
-      byte[] msg = msgInfo.createRawMsg(this.msgInfoParserClassName);
-      if (log.isLoggable(Level.FINEST)) log.finest("Sending TCP data [" + new String(msg) + "]");
       I_ProgressListener listener = this.progressListener;
-      if (listener != null) {
-         listener.progressWrite("", 0, msg.length);
-      }
-      else
-         log.fine("The progress listener is null");
-      
-      int bytesLeft = msg.length;
-      int bytesRead = 0;
-      synchronized (oStream) {
-         while (bytesLeft > 0) {
-            int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;  
-            oStream.write(msg, bytesRead, toRead);
-            oStream.flush();
-            bytesRead += toRead;
-            bytesLeft -= toRead;
-            if (listener != null)
-               listener.progressWrite("", bytesRead, msg.length);
+      try {
+         byte[] msg = msgInfo.createRawMsg(this.msgInfoParserClassName);
+         if (log.isLoggable(Level.FINEST)) log.finest("Sending TCP data [" + new String(msg) + "]");
+         if (listener != null) {
+            listener.progressWrite("", 0, msg.length);
          }
-         if (this.isNullTerminated) { // If using XmlScriptInterpreter as parserClass, we finish each script with a null byte
-            oStream.write(0);
-            oStream.flush();
+         else
+            log.fine("The progress listener is null");
+         
+         int bytesLeft = msg.length;
+         int bytesRead = 0;
+         synchronized (oStream) {
+            while (bytesLeft > 0) {
+               int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;  
+               oStream.write(msg, bytesRead, toRead);
+               oStream.flush();
+               bytesRead += toRead;
+               bytesLeft -= toRead;
+               if (listener != null)
+                  listener.progressWrite("", bytesRead, msg.length);
+            }
+            if (this.isNullTerminated) { // If using XmlScriptInterpreter as parserClass, we finish each script with a null byte
+               oStream.write(0);
+               oStream.flush();
+            }
+            if (log.isLoggable(Level.FINE)) log.fine("TCP data is send");
          }
-         if (log.isLoggable(Level.FINE)) log.fine("TCP data is send");
+         if (listener != null) {
+            listener.progressWrite("", msg.length, msg.length);
+         }
+         
       }
-      if (listener != null) {
-         listener.progressWrite("", msg.length, msg.length);
+      catch (IOException ex) {
+         if (listener != null)
+            listener.clearCurrentWrites();
+         throw ex;
+      }
+      catch (XmlBlasterException ex) {
+         if (listener != null)
+            listener.clearCurrentWrites();
+         throw ex;
       }
    }
+   
+   
    
    public String getVersion() {
       return "1.0";

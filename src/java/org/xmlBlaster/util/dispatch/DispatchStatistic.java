@@ -375,5 +375,9 @@ public class DispatchStatistic implements I_ProgressListener
       return getNumBytesToRead() != getCurrBytesRead();
    }
    
+   public void clearCurrentWrites() {
+      this.currBytesWritten = 0L;
+      this.numBytesToWrite = 0L;
+   }
 }
 
