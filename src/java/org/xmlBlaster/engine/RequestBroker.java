@@ -32,7 +32,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Storage;
