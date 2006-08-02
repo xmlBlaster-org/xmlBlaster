@@ -98,6 +98,10 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
       this.clientTags = tags;
    }
 
+   /**
+    * The XML meta information of the topic. 
+    * @return Can be null
+    */
    public String getClientTags() {
       return this.clientTags;
    }
