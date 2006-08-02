@@ -17,6 +17,7 @@ import org.xmlBlaster.util.def.ErrorCode;
  */
 public class StorageId implements java.io.Serializable
 {
+   private static final long serialVersionUID = 485407826616456805L;
    private transient final String prefix;
    private transient final String postfix;
    private String strippedId;
