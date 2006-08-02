@@ -2,10 +2,10 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 <requirement id='mime.plugin.access.xpath' type='NEW' prio='MEDIUM' status='CLOSED'>
-   <topic>XmlBlaster allows to access messages filtered with XPath expressions</topic>
+   <topic>XmlBlaster allows to access message instances filtered with XPath expressions</topic>
    <description>
       <p>
-      XmlBlaster allows you to query messages based on their meta information with XPath.
+      XmlBlaster allows you to query topics based on their meta information with XPath.
       Sometimes this is not enough and you want to do sort of a <i>full text search</i> over
       the message content, also with XPath, thereby supplying full XML/XPath content based routing of messages.
       </p>
@@ -41,9 +41,11 @@
       <p>
       The cascading approach for XPath/exact query and filters:<br />
       On subscribe first the usual XPATH or exact subscription is checked.
-      The client is added as subscriber to all matching message types.
-      If now real messages arrive, the filter plugin is additionally filtering
-      messages away. The same applies for get() invocations. With the XPath filter is therefore possible to emulate a JMS like topic destination: send messages with the same OID. Subscribe with an exact query on the messages, and filter with the XPathFilter on the content.
+      The client is added as subscriber to all matching topics.
+      If now message instances arrive, the filter plugin is additionally filtering
+      messages away. The same applies for get() invocations.
+      With the XPath filter is therefore possible to emulate a JMS like topic destination: send messages with the same OID.
+      Subscribe with an exact query on the messages, and filter with the XPathFilter on the content or QoS.
       </p>
       <p>
       The XPathFilter is currently based on the Jaxen xpath engine. It is
@@ -51,10 +53,12 @@
       in the property <code>engine.mime.xpath.extension_functions</code>. The
       functions must implement the <code>org.jaxen.Function</code> interface.
       </p>
+      <!--
       <p>
       It is possible to specify an XSL file name, this will be applied on the
       message content if the match was successful.
       </p>
+      -->
    </description>
    <example lang="any" type="HTML">
 
@@ -143,6 +147,10 @@ Match: false
       <p>You can now play further with the XPath query as shown above.</p>
    </example>
 
+<!--
+     To be removed since the transformation would affect all
+     other subscribers as well (the message meat is referenced)
+
    <example lang="Java" type="HTML">
       <h2>Command line example: Testing XSLT transformation</h2>
 
@@ -166,6 +174,7 @@ Transformed content:
       </pre>
       <p>The original file <code>Airport.xml</code> is transformed to the above example output.</p>
    </example>
+-->
 
    <example lang="Java" type="HTML">
       <h2>Command line example: Test the plugin with xmlBlaster</h2>
