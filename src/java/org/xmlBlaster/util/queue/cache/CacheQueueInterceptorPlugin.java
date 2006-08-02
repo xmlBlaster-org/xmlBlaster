@@ -106,7 +106,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          String reason = queueName + " queue overflow, " + queue.getNumOfBytes() +
                          " bytes are in queue, try increasing '" + 
                          this.property.getPropName(maxBytes) + "' on client login.";
-         if (log.isLoggable(Level.FINE)) log.fine(reason + this.toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine(ME+ reason + this.toXml(""));
          if (ifFullThrowException)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -129,7 +129,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          String reason = queueName + " queue overflow, " + queue.getNumOfEntries() +
                          " entries are in queue, try increasing '" + 
                          this.property.getPropName(maxEntries) + "' on client login.";
-         if (log.isLoggable(Level.FINE)) log.fine(reason + this.toXml(""));
+         if (log.isLoggable(Level.FINE)) log.fine(ME+ reason + this.toXml(""));
          if (ifFullThrowException)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -504,8 +504,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
                // handle swapping (if any)
                // TODO swap only if bigger than max entries (not same as max entries)
-               long exceedingSize = -checkSpaceAvailable(this.transientQueue, 0L, false, "");
-               long exceedingEntries = -checkEntriesAvailable(this.transientQueue, 0L, false, "");
+               long exceedingSize = -checkSpaceAvailable(this.transientQueue, 0L, false, "second check in put");
+               long exceedingEntries = -checkEntriesAvailable(this.transientQueue, 0L, false, "second check in put");
                if ( (exceedingSize >= 0L && this.persistentQueue.getMaxNumOfBytes() > this.transientQueue.getMaxNumOfBytes()) || 
                     (exceedingEntries >= 0L && this.persistentQueue.getMaxNumOfEntries() > this.transientQueue.getMaxNumOfEntries())) {
                   if (log.isLoggable(Level.FINE)) log.fine(ME+"Swapping. Exceeding size (in bytes): " + exceedingSize + " exceeding entries: " + exceedingEntries + " state: " + toXml(""));
