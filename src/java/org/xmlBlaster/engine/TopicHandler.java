@@ -176,6 +176,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    
    private boolean administrativeInitialize;
    
+   private boolean clientTagLog = false;
+   
    protected Object clone() {
       throw new RuntimeException("TopicHandler NO CLONEING PLEASE");
    }
@@ -487,6 +489,27 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          msgQosData.setSender(publisherSessionInfo.getSessionName());
       }
       */
+      
+      // Do a log.warning if topic meta XML is different
+      if (!clientTagLog) {
+         try {
+            XmlKey xmlKey = this.xmlKey;
+            if (xmlKey != null) {
+               String newTags = msgKeyData.getClientTags();
+               if (newTags != null && newTags.length() > 0) {
+                  String oldTags = ((MsgKeyData)xmlKey.getKeyData()).getClientTags();
+                  if (!newTags.equals(oldTags)) {
+                     log.warning("Changing topic meta information from '" + oldTags + "' to '" + newTags + "' is not supported and this change is ignored, please check your publisher.");
+                     clientTagLog = true;
+                  }
+               }
+            }
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+            log.severe(ME+": Ignoring unexpected exception during meta info check:" + e.toString());
+         }
+      }
 
       if (msgQosData.isAdministrative()) {
          if (!isUnconfigured() && !isSoftErased())
