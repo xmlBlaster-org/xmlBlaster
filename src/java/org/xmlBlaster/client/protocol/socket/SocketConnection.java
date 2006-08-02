@@ -417,7 +417,7 @@ public class SocketConnection implements I_XmlBlasterConnection
    final void registerCbReceiver(SocketCallbackImpl cbReceiver) {
       this.cbReceiver = cbReceiver;
       if (this.tmpProgressListener != null) {
-         this.log.warning("The progressListener will be registered now since it could not register it before");
+         if (log.isLoggable(Level.FINE)) log.fine("The progressListener will be registered now since it could not register it before");
          this.cbReceiver.registerProgressListener(this.tmpProgressListener);
          this.tmpProgressListener = null;
       }
@@ -653,7 +653,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       if (cbRec != null)
          return this.cbReceiver.registerProgressListener(listener);
       else {
-         log.warning("The callback receiver is null, will be registered when the callback receiver is registered.");
+         if (log.isLoggable(Level.FINE)) log.fine("The callback receiver is null, will be registered when the callback receiver is registered.");
          I_ProgressListener ret = this.tmpProgressListener;
          this.tmpProgressListener = listener;
          return ret;
