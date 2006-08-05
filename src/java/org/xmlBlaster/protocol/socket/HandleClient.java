@@ -22,6 +22,9 @@ import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.MsgUnitRaw;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
+import edu.emory.mathcs.backport.java.util.concurrent.Executors;
+
 import java.net.DatagramPacket;
 import java.net.Socket;
 import java.net.DatagramSocket;
@@ -56,7 +59,11 @@ public class HandleClient extends SocketExecutor implements Runnable
    /** The socket connection to/from one client */
    protected Socket sock;
    /** The unique client sessionId */
-   public String secretSessionId = null;
+   private String secretSessionId = null;
+
+   private boolean callCoreInSeparateThread=true;
+   protected static ExecutorService executorService;
+   
 
    /**
     * Creates an instance which serves exactly one client.
@@ -68,6 +75,14 @@ public class HandleClient extends SocketExecutor implements Runnable
       this.sockUDP = sockUDP;
       this.authenticate = driver.getAuthenticate();
       this.ME = driver.getType()+"-HandleClient";
+      
+      if (executorService == null) {
+         synchronized (HandleClient.class) {
+            if (executorService == null) {
+               executorService = Executors.newCachedThreadPool();
+            }
+         }
+      }
 
       super.initialize(glob, driver.getAddressServer(), sock.getInputStream(), sock.getOutputStream());
       super.setXmlBlasterCore(driver.getXmlBlaster());
@@ -89,6 +104,8 @@ public class HandleClient extends SocketExecutor implements Runnable
       }
       else
          this.sock.setSoLinger(false, 0); // false: default handling, kernel tries to send queued data after close() (the 0 is ignored)
+
+      this.callCoreInSeparateThread = driver.getAddressServer().getEnv("callCoreInSeparateThread", callCoreInSeparateThread).getValue();
       
       Thread t = new Thread(this, "XmlBlaster."+this.driver.getType() + (this.driver.isSSL()?".SSL":""));
       int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
@@ -125,6 +142,8 @@ public class HandleClient extends SocketExecutor implements Runnable
       if (!running)
          return;
       synchronized (this) {
+         if (!running)
+            return;
          if (log.isLoggable(Level.FINE)) log.fine("Shutdown cb connection to " + loginName + " ...");
          if (cbKey != null)
             driver.getGlobal().removeNativeCallbackDriver(cbKey);
@@ -343,8 +362,18 @@ public class HandleClient extends SocketExecutor implements Runnable
          while (running) {
             try {
                // blocks until a message arrives
-               MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), driver.getPluginConfig())[0];
-               handleMessage(msgInfo, false);
+               final MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), driver.getPluginConfig())[0];
+               
+               if (this.callCoreInSeparateThread) {
+                  executorService.execute(new Runnable() {
+                     public void run() {
+                        handleMessage(msgInfo, false);
+                     }
+                  });
+               }
+               else {
+                  handleMessage(msgInfo, false);
+               }
             }
             catch (Throwable e) {
                if (e.toString().indexOf("closed") != -1) {
