@@ -228,8 +228,11 @@ public class Constants {
 
    /** XmlKey queryType enum */
    public static final String XPATH = "XPATH";
+   public static final String XPATH_URL_PREFIX = "xpath:";
    public static final String EXACT = "EXACT";
+   public static final String EXACT_URL_PREFIX = "exact:";
    public static final String DOMAIN = "DOMAIN";
+   public static final String DOMAIN_URL_PREFIX = "domain:";
    public static final String REGEX = "REGEX";
 
    public static final String TOXML_NOSECURITY = "noSecurity";
