@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.3 [not yet released]
 ==================================
 
+ o #15446 htpassed plugin: Extended to support authorization on 'xpath:' and 'domain:' specific access
+
  o #15438 SOCKET protocol: Calling xmlBlaster core is now in a dispatched thread to support concurrent ping()
           and other method invocations. Fixes for example long lasting subscribes and blocking gets.
 
