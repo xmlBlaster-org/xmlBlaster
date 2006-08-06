@@ -25,11 +25,3 @@ For example:
 ================================================
 
    See http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html
-
-
-Switch on debugging in xmlBlaster.properties:
-
- trace[org.xmlBlaster.util.protocol.email.EmailExecutor] true
- trace[org.xmlBlaster.util.protocol.email.Pop3Driver] true
- #call[org.xmlBlaster.util.protocol.email.Pop3Driver] true
-
