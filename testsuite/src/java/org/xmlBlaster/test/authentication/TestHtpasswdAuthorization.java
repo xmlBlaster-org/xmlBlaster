@@ -46,6 +46,7 @@ public class TestHtpasswdAuthorization extends TestCase implements I_Callback {
       try {
          FileLocator.writeFile(this.passwdFileName,
                "guest:yZ24stvIel1j6:connect,disconnect,publish(tennis;sailing;jogging),subscribe(surfing),unSubscribe(surfing),erase(tennis)\n" +
+               "snoopy:yZ24stvIel1j6:subscribe(\"exact:tennis\";\"domain:sport\";\"xpath:/xmlBlaster/key[starts-with(@oid,'sport.')]\")\n" +
                "admin:yZ24stvIel1j6:!erase\n" +
                "other:yZ24stvIel1j6:! subscribe,unSubscribe\n" +
                "weird:yZ24stvIel1j6:connect,disconnect,subscribe,subscribe(),()\n" +
@@ -178,6 +179,29 @@ public class TestHtpasswdAuthorization extends TestCase implements I_Callback {
          catch (XmlBlasterException e) {
             log.info("OK, expected this exception: " + e.getMessage());
          }
+         con.disconnect(null);
+      } catch (XmlBlasterException ex) {
+         fail("Could not connect: " + ex.toString());
+      }
+   }
+
+   public void testXPathSubscribeAuthorization() {
+      log.info("testXPathSubscribeAuthorization()");
+      try {
+         con = glob.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(glob, "snoopy", RIGHT_PASSWORD);
+         con.connect(qos, this);
+
+         con.subscribe("<key oid='' queryType='XPATH'>/xmlBlaster/key[starts-with(@oid,'sport.')]</key>", "<qos/>");
+         try {
+            con.subscribe("<key oid='' queryType='XPATH'>/xmlBlaster/key[starts-with(@oid,'sportX.')]</key>",
+                          "<qos/>");
+            fail("Expected to get a authorization exception for subscribe() invocation");
+         }
+         catch (XmlBlasterException e) {
+            log.info("OK, expected this exception: " + e.getMessage());
+         }
+
          con.disconnect(null);
       } catch (XmlBlasterException ex) {
          fail("Could not connect: " + ex.toString());
