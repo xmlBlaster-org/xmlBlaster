@@ -46,13 +46,22 @@ public class StringPairTokenizer {
    }
 
    /**
-    * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty, boolean)
     */
-   public static String[] parseLine(String nextLine, char separator, char quotechar, boolean trimEmpty) {
+   public static String[] parseLine(String nextLine, char separator,
+         char quotechar, boolean trimEmpty) {
+      return parseLine(nextLine, separator, quotechar, trimEmpty, false);
+   }
+   /**
+    * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty, boolean)
+    */
+   public static String[] parseLine(String nextLine, char separator,
+                                    char quotechar, boolean trimEmpty,
+                                    boolean preserveInsideQuoteChar) {
       if (nextLine == null || nextLine.length()==0) return new String[0];
       String[] nextLines = new String[1];
       nextLines[0] = nextLine;
-      return parseLine(nextLines, separator, quotechar, trimEmpty);
+      return parseLine(nextLines, separator, quotechar, trimEmpty, preserveInsideQuoteChar);
    }
    
    /**
@@ -73,9 +82,11 @@ public class StringPairTokenizer {
     * @param separator Defaults to StringPairTokenizer.DEFAULT_SEPARATOR=','
     * @param quotechar Defaults to StringPairTokenizer.DEFAULT_QUOTE_CHARACTER='"'
     * @param trimEmpty if true removes silently empy tokens
+    * @param preserveInsideQuoteChar true: Preserve the  inside quotes of "bla, bla, "blu blu", bli"  
     * @return Never null, if nextLines is null or empty we return an empty array
     */
-   public static String[] parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty) {
+   public static String[] parseLine(String[] nextLines, char separator,
+                char quotechar, boolean trimEmpty, boolean preserveInsideQuoteChar) {
       List tokensOnThisLine = new ArrayList();
       StringBuffer sb = new StringBuffer();
       boolean inQuotes = false;
@@ -94,6 +105,8 @@ public class StringPairTokenizer {
             char c = nextLine.charAt(i);
             if (c == quotechar) {
                inQuotes = !inQuotes;
+               if (preserveInsideQuoteChar && i>0 && i<(nextLine.length()-1))
+                  sb.append(c);
             } else if (c == separator && !inQuotes) {
                if (trimEmpty && sb.toString().trim().length() == 0) {
                   ;
@@ -136,7 +149,7 @@ public class StringPairTokenizer {
     * @see #parseLine(String[] nextLines, char separator, char quotechar, boolean trimEmpty)
     */
    public static Map parseLine(String[] nextLines, char separator, char quotechar, char innerSeparator, boolean trimEmpty, boolean wantClientProperties, boolean trimValue) {
-      String[] toks = parseLine(nextLines, separator, quotechar, trimEmpty);
+      String[] toks = parseLine(nextLines, separator, quotechar, trimEmpty, false);
       Map ret = new HashMap();
       for (int i=0; i<toks.length; i++) {
          String tok = toks[i];
