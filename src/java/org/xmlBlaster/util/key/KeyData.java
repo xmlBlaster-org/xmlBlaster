@@ -91,6 +91,23 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
    public boolean hasOid() {
       return this.oid != null;
    }
+   
+   /**
+    * Access simplified URL like string. 
+    * 
+    * @return examples are "exact:hello", "xpath://key", "domain:sport"
+    */
+   public String getUrl() {
+      if (isExact())
+         return Constants.EXACT_URL_PREFIX+this.oid;
+      else if (isXPath())
+         return Constants.XPATH_URL_PREFIX+this.queryString;
+      else if (isDomain())
+         return Constants.DOMAIN_URL_PREFIX+this.domain;
+      //else if (regex)
+      
+      throw new IllegalArgumentException("getUrl() failed: Unknown query type: " + toXml());
+   }
 
    /**
     * Test if oid is '__sys__deadMessage'. 
