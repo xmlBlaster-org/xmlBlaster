@@ -395,9 +395,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       SessionHolder sessionHolder = new SessionHolder(sessionInfo, addressServer);
       DataHolder dataHolder = new DataHolder(action, msgUnit);
       if (!sessionSecCtx.isAuthorized(sessionHolder, dataHolder)) {
+         String key = (msgUnit.getKeyData()==null) ? msgUnit.getKey() : msgUnit.getKeyData().getUrl();
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED, ME,
                        "Subject '" + subjSecCtx.getName() + "' is not permitted to perform action '" + action +
-                       "' on key '" + msgUnit.getKey() + "'");
+                       "' on key '" + key + "'");
       }
       
       return msgUnit;
