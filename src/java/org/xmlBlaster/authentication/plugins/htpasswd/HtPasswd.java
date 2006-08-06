@@ -12,6 +12,7 @@ import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 
@@ -71,7 +72,7 @@ public class HtPasswd {
    protected int useFullUsername = ALLOW_PARTIAL_USERNAME;
    protected String htpasswdFilename = null ;
    /* Key is user name, values is the Container with encrypted password */
-   protected Hashtable htpasswd = null ;
+   protected Hashtable htpasswdMap = null ;
 
    private static boolean first = true;
    private static boolean firstWild = true;
@@ -95,7 +96,7 @@ public class HtPasswd {
          if (oidSet == null) return false;
          if (topicOid == null) return true;
          if (oidSet.size() == 0) return true;
-         return oidSet.contains(topicOid);
+         return oidSet.contains(topicOid.trim());
       }
    }
 
@@ -171,25 +172,25 @@ public class HtPasswd {
       if ( useFullUsername == SWITCH_OFF ) {
         return true;
       }
-      if( this.htpasswd != null && userName!=null && userPassword!=null ){
+      if( this.htpasswdMap != null && userName!=null && userPassword!=null ){
          Vector pws = new Vector();
 
          //find user in Hashtable htpasswd
          String key;
          boolean found = false;
          if ( useFullUsername == FULL_USERNAME ) {
-            Container container = (Container)this.htpasswd.get(userName);
+            Container container = (Container)this.htpasswdMap.get(userName);
             if (container != null) {
                pws.addElement(container.password);
                found = true;
             }
          }
          else { // ALLOW_PARTIAL_USERNAME
-            for (Enumeration e = this.htpasswd.keys();e.hasMoreElements() ; ) {
+            for (Enumeration e = this.htpasswdMap.keys();e.hasMoreElements() ; ) {
                key = (String)e.nextElement();
                if (log.isLoggable(Level.FINE)) log.fine("Checking userName=" + userName + " with key='" + key + "'");
                if (userName.startsWith(key) || userName.endsWith(key)) {
-                  Container container = (Container)this.htpasswd.get(key);
+                  Container container = (Container)this.htpasswdMap.get(key);
                   pws.addElement(container.password);
                   found = true;
                }
@@ -197,10 +198,10 @@ public class HtPasswd {
          }
 
          if (!found) { // allow wildcard entry, for example "*:ad9dfjhf0"
-            for (Enumeration e = this.htpasswd.keys();e.hasMoreElements() ; ) {
+            for (Enumeration e = this.htpasswdMap.keys();e.hasMoreElements() ; ) {
                key = (String)e.nextElement();
                if (key.equals("*")) {
-                  Container container = (Container)this.htpasswd.get(key);
+                  Container container = (Container)this.htpasswdMap.get(key);
                   pws.addElement(container.password);
                }
             }
@@ -219,10 +220,13 @@ public class HtPasswd {
     * @return true if is authorized, false if no access
     */
    public boolean isAuthorized(SessionHolder sessionHolder, DataHolder dataHolder) {
-      if (this.htpasswd == null) return true;
-      Container container = (Container)this.htpasswd.get(sessionHolder.getSessionInfo().getSessionName().getLoginName());
+      if (this.htpasswdMap == null) return true;
+      Container container = (Container)this.htpasswdMap.get(sessionHolder.getSessionInfo().getSessionName().getLoginName());
       if (container.allowedMethodNames == null) return true;
-      return container.isAllowed(dataHolder.getAction(), dataHolder.getKeyOid());
+      if (dataHolder.getMsgUnit() == null || dataHolder.getMsgUnit().getKeyData() == null)
+         return false;
+      return container.isAllowed(dataHolder.getAction(),
+             dataHolder.getKeyUrl());
    }
 
    /**
@@ -262,30 +266,36 @@ public class HtPasswd {
                continue;
             }
             String tail = (String)map.get(user); // joe:secret:CONNECT,PUBLISH,ERASE:other stuff in future
-            String[] tokens = StringPairTokenizer.parseLine(tail, ':', StringPairTokenizer.DEFAULT_QUOTE_CHARACTER, false);
+            String[] tokens = StringPairTokenizer.parseLine(tail, ':', StringPairTokenizer.DEFAULT_QUOTE_CHARACTER, false, true);
             Container container = new Container(user);
             if (tokens.length > 0)
                container.password = tokens[0].trim();
             if (tokens.length > 1) {
-               // parse "!SUBSCRIBE,ERASE" or "CONNECT,DISCONNECT,PUBLISH"
+               // parse "!SUBSCRIBE,ERASE" or 'CONNECT,DISCONNECT,PUBLISH("xpath://key"),subscribe("exact:hello")'
                // joe:079cv::  allows all methods
                String methodNames = tokens[1].trim();
                if (methodNames != null && methodNames.length() > 0) {
                   boolean positiveList = !methodNames.startsWith("!");
                   container.allowedMethodNames = new java.util.HashMap();
                   if (positiveList) {
-                     String[] nameArr = org.xmlBlaster.util.StringPairTokenizer.parseLine(methodNames, ',');
+                     String[] nameArr = org.xmlBlaster.util.StringPairTokenizer.parseLine(methodNames, ',', StringPairTokenizer.DEFAULT_QUOTE_CHARACTER, false);
                      for (int j=0; j<nameArr.length; j++) {
                         String name = nameArr[j].trim();
                         HashSet set = new HashSet();
                         int start = name.indexOf('(');
                         if (start != -1) {
-                           int end = name.indexOf(')');
+                           int end = name.lastIndexOf(')');
                            if (end != -1) {
                               String topics = name.substring(start+1, end);
                               String[] topicArr = org.xmlBlaster.util.StringPairTokenizer.parseLine(topics, ';');
-                              for (int n=0; n<topicArr.length; n++)
-                                 set.add(topicArr[n]);
+                              for (int n=0; n<topicArr.length; n++) {
+                                 String url = topicArr[n].trim(); // expecting: "hello" or "exact:hello" or "xpath://key" or "domain:sport"
+                                 if (url.length() == 0) continue;
+                                 if (url.indexOf(":") == -1) {
+                                    url = Constants.EXACT_URL_PREFIX+url;
+                                 }
+                                 set.add(url.trim());
+                              }
                            }
                            name = name.substring(0, start);
                         }
@@ -316,8 +326,8 @@ public class HtPasswd {
                   }
                }
             }
-            if (this.htpasswd == null) this.htpasswd = new Hashtable();
-            this.htpasswd.put(user, container);
+            if (this.htpasswdMap == null) this.htpasswdMap = new Hashtable();
+            this.htpasswdMap.put(user, container);
             if (user.equals("*") && container.password.length() < 1) {
                //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
                useFullUsername = SWITCH_OFF;
@@ -331,8 +341,8 @@ public class HtPasswd {
 
          // Dump it:
          if (log.isLoggable(Level.FINEST)) {
-            if (this.htpasswd != null) {
-               java.util.Iterator i = this.htpasswd.values().iterator();
+            if (this.htpasswdMap != null) {
+               java.util.Iterator i = this.htpasswdMap.values().iterator();
                System.out.println("========================================");
                while (i.hasNext()) {
                   Container container = (Container)i.next();
@@ -348,7 +358,7 @@ public class HtPasswd {
          return true;
       }
       catch(Exception ex) {
-         this.htpasswd = null ;
+         this.htpasswdMap = null ;
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Problem when reading password file '"+htpasswdFilename+"'", ex);
       }
    }//readHtpasswordFile
