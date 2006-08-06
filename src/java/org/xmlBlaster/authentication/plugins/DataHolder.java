@@ -8,48 +8,47 @@ import org.xmlBlaster.util.def.MethodName;
  * @author xmlblast@marcelruff.info
  */
 public class DataHolder {
-   private MethodName action;
-   private MsgUnit msgUnit;
+   private final MethodName action;
+   private final MsgUnit msgUnit;
+   
    /**
-    * @param action
-    * @param msgUnit
+    * @param action May not be null
+    * @param msgUnit May not be null
     */
    public DataHolder(MethodName action, MsgUnit msgUnit) {
       super();
+      if (action == null) throw new IllegalArgumentException("Creating DataHolder expects none null action");
+      if (msgUnit == null) throw new IllegalArgumentException("Creating DataHolder expects none null msgUnit");
       this.action = action;
       this.msgUnit = msgUnit;
    }
    /**
-    * @return Returns the action.
+    * @return Returns the action, never null
     */
    public MethodName getAction() {
       return this.action;
    }
+   
    /**
-    * @param action The action to set.
-    */
-   public void setAction(MethodName action) {
-      this.action = action;
-   }
-   /**
-    * @return Returns the msgUnit.
+    * @return Returns the msgUnit, is never null
     */
    public MsgUnit getMsgUnit() {
       return this.msgUnit;
    }
-   /**
-    * @param msgUnit The msgUnit to set.
-    */
-   public void setMsgUnit(MsgUnit msgUnit) {
-      this.msgUnit = msgUnit;
-   }
-   
+
    /**
     * The key oid
-    * @return Never null, but empty if msgUnit is null
+    * @return Never null, but can be empty
     */
    public String getKeyOid() {
-      return (this.msgUnit != null) ? this.msgUnit.getKeyOid() : "";
+      return this.msgUnit.getKeyOid() == null ? "" : this.msgUnit.getKeyOid();
    }
    
+   /**
+    * The key url notation like "exact:hello", "xpath://key", "domain:sport"
+    * @return Never null, but can be empty
+    */
+   public String getKeyUrl() {
+      return this.msgUnit.getKeyData() == null ? "" : this.msgUnit.getKeyData().getUrl();
+   }
 }
