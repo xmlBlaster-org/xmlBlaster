@@ -9,6 +9,9 @@
 // Features: All features of the client C library (compression, tunnel callbacks), see
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 //
+// IMPORTANT: Please edit/change the lookup path below for xmlBlasterClientC.dll
+//            and set the PATH to access it
+//
 // @todo     port content from 'string' to byte[]
 //           publishOneway crashes
 //           OnUpdate() throwing exception seems not to be passed to C
@@ -21,8 +24,12 @@
 //
 // @author   mr@marcelruff.info
 //
-// @prepare  cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
-// @compile  mcs /d:NATIVE_C_MAIN -debug+ -out:NativeC.exe NativeC.cs
+// @prepare Linux: cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
+// @compile Linux: mcs /d:NATIVE_C_MAIN /d:XMLBLASTER_CLIENT_MONO -debug+ -out:NativeC.exe NativeC.cs
+//
+// @prepare Windows: Compile the C client library first (see xmlBlaster\src\c\xmlBlasterClientC.sln)
+// @compile Windows: csc /d:NATIVE_C_MAIN -debug+ -out:NativeC.exe NativeC.cs   (Windows)
+//
 // @run      mono NativeC.exe
 //           mono NativeC.exe --help
 //           mono NativeC.exe -logLevel TRACE
@@ -170,13 +177,12 @@ namespace org.xmlBlaster
    {
       bool verbose = false; // TODO: log4net
 
-#     if XMLBLASTER_CLIENT_WIN // Windows
-      // mcs /d:NATIVE_C_MAIN /d:XMLBLASTER_CLIENT_WIN -debug+ -out:NativeC.exe NativeC.cs
-      // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
-      //[DllImport("user32.dll", CharSet = CharSet.Auto)]
-      const string XMLBLASTER_C_LIBRARY  = "\\xmlBlaster\\lib\\xmlBlasterClientC.dll";
-#     else // Mono/Linux debug
-      const string XMLBLASTER_C_LIBRARY  = "xmlBlasterClientCD"; //libxmlBlasterClientCD.so
+#     if XMLBLASTER_CLIENT_MONO // Linux Debug, set LD_LIBRARY_PATH to find the shared library
+         const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD"; //libxmlBlasterClientCD.so
+#     else // Windows
+         // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
+         //[DllImport("user32.dll", CharSet = CharSet.Auto)]
+         const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
 #     endif
 
       // Helper struct for DLL calls to avoid 'fixed' and unsafe
