@@ -163,9 +163,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          
          // zero means not limit (to be sure we also check negative Values
-         this.maxNumStatements = conn.getMetaData().getMaxStatements();
-         if (this.maxNumStatements < 0)
-            this.maxNumStatements = 0;
+         this.maxNumStatements = glob.getProperty().get("queue.persistent.maxNumStatements", conn.getMetaData().getMaxStatements());
          log.fine("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
       }
       catch (XmlBlasterException ex) {
