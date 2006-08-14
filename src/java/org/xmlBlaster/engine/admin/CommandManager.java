@@ -154,7 +154,7 @@ public final class CommandManager implements I_RunlevelListener
     *        wrapped inside the cmd, i.e. here it is inside the oid of the key).
     * @return The found data or an array of size 0 if not found. 
     */
-   public synchronized final MsgUnit[] get(AddressServer addressServer, String sessionId, QueryKeyData keyData, String querySpec) throws XmlBlasterException {
+   public final MsgUnit[] get(AddressServer addressServer, String sessionId, QueryKeyData keyData, String querySpec) throws XmlBlasterException {
       String oid = keyData.getOid();
       if (log.isLoggable(Level.FINER)) log.finer("get(" + oid + ")");
       if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
@@ -172,7 +172,7 @@ public final class CommandManager implements I_RunlevelListener
     * @return
     * @throws XmlBlasterException
     */
-   public synchronized final MsgUnit[] get(AddressServer addressServer, String sessionId, String oid, String[] args) throws XmlBlasterException {
+   public final MsgUnit[] get(AddressServer addressServer, String sessionId, String oid, String[] args) throws XmlBlasterException {
       if (addressServer == null) {
          addressServer = this.sessionInfo.getAddressServer(); // uses requestBroker.unsecureSessionInfo
       }
@@ -247,7 +247,7 @@ public final class CommandManager implements I_RunlevelListener
     * @return The SetReturn object:<br />
     *         setReturn.returnString contains the actually set value or is null if not set. 
     */
-   public synchronized final SetReturn set(AddressServer addressServer,
+   public final SetReturn set(AddressServer addressServer,
                 String sessionId, String cmd) throws XmlBlasterException {
       if (addressServer == null) {
          addressServer = this.sessionInfo.getAddressServer(); // uses requestBroker.unsecureSessionInfo

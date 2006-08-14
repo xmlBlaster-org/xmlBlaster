@@ -129,8 +129,10 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
                }
             }
          }
-         if (method == null)
+         if (method == null) {
+            log.warning("Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed: No such method found");
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed: No such method found");
+         }
       }
       Object[] argValues = convertMethodArguments(method.getParameterTypes(), cmd.getArgs());
 
@@ -164,6 +166,13 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          return msgs;
         
       } catch (Exception e) {
+         if (e.getCause() != null && e.getCause() instanceof XmlBlasterException) {
+            log.warning("Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed:" + ((XmlBlasterException)e.getCause()).getMessage());
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed", e.getCause());
+         }
+         String str = e.toString();
+         if (e.getCause() != null) str = e.getCause().toString();
+         log.warning("Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed: No such method found:" + str);
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + clazz + " on object=" + impl.getClass() + " failed: No such method found", e);
       }
    }
@@ -171,7 +180,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
    /**
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MsgUnit[] get(AddressServer addressServer, String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public MsgUnit[] get(AddressServer addressServer, String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
 
@@ -459,8 +468,10 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             for (int i=0; m!=null&&i<m.length;i++)
                if (m[i].getName().equals(property))
                   method = m[i];
-            if (method == null)
+            if (method == null) {
+               log.warning("Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: No such method found");
                throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: No such method found");
+            }
          }
          // for property '?exit=-1' the setExit is not found as no getExit exist, so try again
          if (argValuesAsStrings.length > 0 && "exit".equals(property)) {
