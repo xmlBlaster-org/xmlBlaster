@@ -105,6 +105,17 @@ public final class MethodName implements java.io.Serializable, Comparable
    public boolean equals(MethodName other) {
       if (other == null) return false;
       return getMethodName().equals(other.getMethodName());
+      /*
+         Class local = MethodName.class;
+         Class other = reference.getReferencedObject().getClass();
+         System.err.println( "LOCAL: " + System.identityHashCode( local ) );
+         System.err.println( "other: " + System.identityHashCode( other ) );
+
+         URL localURL = local.getProtectionDomain().getCodeSource().getLocation();
+         URL otherURL = other.getProtectionDomain().getCodeSource().getLocation();
+         System.err.println( "LOCAL-URL: " + localURL );
+         System.err.println( "other-URL: " + otherURL );
+     */
    }
 
    /**
