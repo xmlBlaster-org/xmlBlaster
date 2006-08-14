@@ -75,6 +75,5 @@ public interface ReplicationConstants {
    public final static String REPLICATION_PREFIX = "replication.prefix";
    public final static String REPLICATION_VERSION = "replication.version";
    public final static String REPLICATION_FORCE_SENDING = "replication.forceSending";
-   
-   
+   public final static String REPLICATION_SEND_UNCHANGED_UPDATES = "replication.sendUnchangedUpdates";   
 }

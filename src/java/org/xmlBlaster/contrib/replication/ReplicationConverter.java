@@ -59,6 +59,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private String transSeqPropertyName;
    private long transSeq;
    private long newReplKey;
+   private boolean sendUnchangedUpdates = true;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -148,6 +149,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.transSeqPropertyName = this.dbSpecific.getName() + ".transactionSequence";
       this.transSeq = this.persistentInfo.getLong(this.transSeqPropertyName, 0L);
       this.info.put(TRANSACTION_SEQ, "" + this.transSeq);
+      this.sendUnchangedUpdates = this.info.getBoolean(REPLICATION_SEND_UNCHANGED_UPDATES, true);
       long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {
          this.oldReplKey = tmp;
@@ -288,7 +290,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       }
       // check if it needs to read the new content explicitly, this is used for cases
       // where it was not possible to fill with meat in the synchronous PL/SQL part.
-      if (newContent == null && ("INSERT".equals(action) || ("UPDATE".equals(action)))) {
+      if (newContent == null && (INSERT_ACTION.equals(action) || (UPDATE_ACTION.equals(action)))) {
          if (guid == null)
             log.severe("could not operate since no guid and no newContent on UPDATE or INSERT");
          else
@@ -356,9 +358,16 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             row.addAttributes(completeAttrs);
          }
          else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
-            completeAttrs.put(OLD_CONTENT_ATTR, oldContent);
-            SqlRow row = this.sqlInfo.fillOneRow(rs, newContent, this.transformer);
-            row.addAttributes(completeAttrs);
+            boolean doSend = true;
+            if (!this.sendUnchangedUpdates && oldContent.equals(newContent))
+               doSend = false;
+            if (doSend) {
+               completeAttrs.put(OLD_CONTENT_ATTR, oldContent);
+               SqlRow row = this.sqlInfo.fillOneRow(rs, newContent, this.transformer);
+               row.addAttributes(completeAttrs);
+            }
+            else
+               log.warning("an update with unchanged content was detected on table '" + tableName + "' : will not send it");
          }
          else if (action.equalsIgnoreCase(DELETE_ACTION)) {
             SqlRow row = this.sqlInfo.fillOneRow(rs, oldContent, this.transformer);
