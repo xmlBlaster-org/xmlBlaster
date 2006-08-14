@@ -174,7 +174,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
             causeStr = ((XmlBlasterException)this.cause).getMessage();
          }
          else {
-            this.cause.toString();
+            causeStr = this.cause.toString();
          }
       }
       this.embeddedMessage = (embeddedMessage == null) ?
