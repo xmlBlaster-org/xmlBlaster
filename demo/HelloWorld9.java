@@ -29,12 +29,14 @@ public class HelloWorld9 implements I_Callback
    private final Global glob;
    private static Logger log = Logger.getLogger(HelloWorld9.class.getName());
    private boolean stopThis;
+   private long timeout = 60000; // Avoid unlimited = -1 to prevent a potential thread leak
    private boolean consuming = true;
    private String queueOid;
 
    public HelloWorld9(Global glob) {
       this.glob = glob;
       final I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
+      this.timeout = this.glob.getProperty().get("timeout", timeout);
       this.consuming = this.glob.getProperty().get("consuming", consuming);
       this.queueOid = this.glob.getProperty().get("queueOid", "topic/hello");
       
@@ -53,7 +55,8 @@ public class HelloWorld9 implements I_Callback
                      }
                      int count = 1;
                      if (ret > '0' && ret <= '9') count = ret - '0';
-                     MsgUnit[] msgs = con.receive(queueOid, count, -1, consuming);
+                     System.out.println("Waiting on '" + queueOid + "' maxEntries=" + count + " timeout=" + timeout + " consumable=" + consuming + " ...");
+                     MsgUnit[] msgs = con.receive(queueOid, count, timeout, consuming);
                      System.out.println("Received " + msgs.length + " messages");
                      for (int i=0; i<msgs.length; i++)
                         System.out.println("#" + i + ": " + msgs[i].getContentStr());
