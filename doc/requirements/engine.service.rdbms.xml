@@ -17,12 +17,19 @@
       to access dBase files from any xmlBlaster client.
       </p>
       <p>
-      You need to setup the xmlBlaster JDBC driver in xmlBlaster.properties to use the RDBMS service.<br />
+      You need to setup the xmlBlaster JDBC driver in <code>xmlBlaster.properties</code> to use the RDBMS service.<br />
       First the xmlBlaster driver has to be activated (which is default):
       </p>
       <table border="1"><tr><td><pre>
 ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver
 CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
+      </pre></td></tr></table>
+      <table border="1"><tr><td><pre>
+   &lt;!-- xmlBlasterPlugins.xml: -->
+   &lt;plugin create='true' id='JDBC' className='org.xmlBlaster.protocol.jdbc.JdbcDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='5' sequence='5' />
+      &lt;action do='STOP' onShutdownRunlevel='4' sequence='1'/>   
+   &lt;/plugin>
       </pre></td></tr></table>
       <p>
       Second, you have to activate the JDBC driver of your databases:
