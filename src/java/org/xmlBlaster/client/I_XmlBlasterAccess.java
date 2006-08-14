@@ -423,6 +423,12 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * This method synchronously accesses maxEntries messages from any xmlBlaster server side queue.
     * <p>
     * This is a convenience method which uses get() with a specific Qos.
+    * <p>Important note:<br />
+    * Currently you shouldn't use unlimited timeout==-1 as this could
+    * lead to a server side thread leak on client disconnect.
+    * As a workaround please use a loop and a timeout of for example 60000
+    * and just ignore returned arrays of length 0.
+    * </p>
     * @param oid The identifier like 
     *            "topic/hello" to access a history queue,
     *            "client/joe" to access a subject queue or
@@ -438,6 +444,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *                has elapsed or when the maxEntries has been reached (whichever comes first). 
     * @param consumable  Expressed with 'true' or 'false'.
     *                    If true the entries returned are deleted from the queue
+    * @return An array of messages, is never null but may be an array of length=0 if no message is delivered
     * @see org.xmlBlaster.util.context.ContextNode
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">engine.qos.queryspec.QueueQuery requirement</a>
     * @see javax.jms.MessageConsumer#receive
@@ -494,6 +501,10 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  This approach is similar to the JMS approach for request/reply (TopicRequestor.java)
     *  but we have the choice to send the msgUnit directly to another client or to a topic (as JMS),
     *  and we can handle multiple replies for one request.
+    *  <p>
+    *  The feature is implemented on client side with a temporary response topic and a <code>receive()</code> call.
+    *  Please note the timeout limitation as described at
+    *  {@link #receive(String, int, long, boolean)})
     *
     * @param msgUnit The request to send
     * @param timeout The milliseconds to block, 0 is none blocking, -1 blocks forever
