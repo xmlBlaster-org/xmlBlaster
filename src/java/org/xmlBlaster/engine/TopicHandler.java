@@ -499,7 +499,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                if (newTags != null && newTags.length() > 0) {
                   String oldTags = ((MsgKeyData)xmlKey.getKeyData()).getClientTags();
                   if (!newTags.equals(oldTags)) {
-                     log.warning("Changing topic meta information from '" + oldTags + "' to '" + newTags + "' is not supported and this change is ignored, please check your publisher.");
+                     log.warning(ME+": Changing topic meta information from '" + oldTags + "' to '" + newTags + "' is not supported and this change is ignored, please check your publisher.");
                      clientTagLog = true;
                   }
                }
