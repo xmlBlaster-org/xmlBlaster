@@ -168,8 +168,17 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
       this.cause = cause;
       this.stackTrace = (stackTrace == null) ? createStackTrace() : stackTrace;
+      String causeStr = "";
+      if (this.cause != null) {
+         if (this.cause instanceof XmlBlasterException) {
+            causeStr = ((XmlBlasterException)this.cause).getMessage();
+         }
+         else {
+            this.cause.toString();
+         }
+      }
       this.embeddedMessage = (embeddedMessage == null) ?
-                                ((this.cause == null) ? "" : this.cause.toString()) : embeddedMessage; // cause.toString() is <classname>:getMessage()
+                                causeStr : embeddedMessage; // cause.toString() is <classname>:getMessage()
       this.transactionInfo = (transcationInfo == null) ? "<transaction/>" : transcationInfo;
       this.isServerSide = isServerSide;
       I_XmlBlasterExceptionHandler eh = exceptionHandler;
