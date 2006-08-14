@@ -75,13 +75,13 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
     * "maxEntries=3&maxSize=1000&consumable=true&waitingDelay=1000"      
     */
    public MsgUnit[] query(Object source, String query) throws XmlBlasterException {
-      //if (log.isLoggable(Level.FINER)) this.log.call(ME, "query for '" + keyData.getOid() + "'");
+      //if (log.isLoggable(Level.FINER)) log.call(ME, "query for '" + keyData.getOid() + "'");
       if (source == null)
-         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".query", "the source on which do the query is null");
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "The source on which do the query is null");
       if (! (source instanceof I_Queue) )
-         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".query", "wrong type of source for query. Expected an 'I_Queue' implementation but was '" + source.getClass().getName() + "'");
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Wrong type of source for query. Expected an 'I_Queue' implementation but was '" + source.getClass().getName() + "'");
       if (query == null)
-         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".query", "the query string is null");
+         throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "The query string is null");
          
       I_Queue queue = (I_Queue)source;         
 
@@ -111,8 +111,10 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
       if (prop != null) this.maxEntries = prop.getIntValue();
       prop = (ClientProperty)props.get("maxSize");
       if (prop != null) this.maxSize = prop.getLongValue();
-      if (this.maxSize > -1L)
-         throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + ".query: specification of maxSize is not implemented, please use the default value -1 or leave it untouched"); 
+      if (this.maxSize > -1L) {
+         log.warning(" Query specification of maxSize is not implemented, please use the default value -1 or leave it untouched: '" + query + "'");
+         throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME, "Query specification of maxSize is not implemented, please use the default value -1 or leave it untouched");
+      }
       prop = (ClientProperty)props.get("consumable");
       if (prop != null) consumable = prop.getBooleanValue();
       prop = (ClientProperty)props.get("waitingDelay");
@@ -122,33 +124,36 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
       log.fine("query: waitingDelay='" + waitingDelay + "' consumable='" + consumable + "' maxEntries='" + this.maxEntries + "' maxSize='" + this.maxSize + "'");
       
       if (waitingDelay != 0L) {
-         if (log.isLoggable(Level.FINE)) this.log.fine("query: waiting delay is " + waitingDelay);
-         if (maxEntries < 1 && maxSize < 1L && waitingDelay < 0L)
-            throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + ".query: if you specify a blocking get you must also specify a maximum size or maximum number of entries to retreive, otherwise specify non-blocking by setting 'waitingDelay' to zero");
+         if (log.isLoggable(Level.FINE)) log.fine("query: waiting delay is " + waitingDelay);
+         if (maxEntries < 1 && maxSize < 1L && waitingDelay < 0L) {
+            log.warning("If you specify a blocking get you must also specify a maximum size or maximum number of entries to retreive, otherwise specify non-blocking by setting 'waitingDelay' to zero, query is illegal: '" + query + "'");
+            throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME, "If you specify a blocking get you must also specify a maximum size or maximum number of entries to retreive, otherwise specify non-blocking by setting 'waitingDelay' to zero");
+         }
          if (checkIfNeedsWaiting((int)queue.getNumOfEntries(), queue.getNumOfBytes(), maxEntries, maxSize)) {
-            if (log.isLoggable(Level.FINE)) this.log.fine("query: going to wait due to first check");
+            if (log.isLoggable(Level.FINE)) log.fine("query: going to wait due to first check");
             synchronized(this) {
+            //synchronized(queue) {
                try {
                   queue.addQueueSizeListener(this);
                   if (checkIfNeedsWaiting((int)queue.getNumOfEntries(), queue.getNumOfBytes(), maxEntries, maxSize)) {
-                     if (log.isLoggable(Level.FINE)) this.log.fine("query: going to wait due to second check (inside sync now)");
+                     if (log.isLoggable(Level.FINE)) log.fine("query: going to wait due to second check (inside sync now)");
                      try {
                         if (waitingDelay < 0L) this.wait();
                         else this.wait(waitingDelay);
-                        if (log.isLoggable(Level.FINE)) this.log.fine("did not wake up after waiting");
+                        if (log.isLoggable(Level.FINE)) log.fine("did not wake up after waiting");
                      }
                      catch (InterruptedException ex) {
-                        if (log.isLoggable(Level.FINE)) this.log.fine("just waked up after waiting for incoming entries");
+                        if (log.isLoggable(Level.FINE)) log.fine("just waked up after waiting for incoming entries");
                      }
                   }
                }
                finally {
                   try {
                      queue.removeQueueSizeListener(this);
-                     if (log.isLoggable(Level.FINE)) this.log.fine("query: removed myself as a QueueSizeListener");
+                     if (log.isLoggable(Level.FINE)) log.fine("query: removed myself as a QueueSizeListener");
                   }
                   catch (Throwable ex) {
-                     if (log.isLoggable(Level.FINE)) this.log.fine("query: exception occurred when removing the QueueSizeListener from the queue");
+                     if (log.isLoggable(Level.FINE)) log.fine("query: exception occurred when removing the QueueSizeListener from the queue");
                   }
                }
             }
@@ -156,7 +161,7 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
       }
       
       ArrayList list = queue.peek(maxEntries, maxSize);
-      ArrayList entryListChecked = DispatchManager.prepareMsgsFromQueue(ME, this.log, queue, list);
+      ArrayList entryListChecked = DispatchManager.prepareMsgsFromQueue(ME, log, queue, list);
       
       MsgQueueEntry[] entries = (MsgQueueEntry[])entryListChecked.toArray(new MsgQueueEntry[entryListChecked.size()]);
       
@@ -188,10 +193,11 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
    }
 
    public void changed(I_Queue queue, long numEntries, long numBytes) {
-      if (log.isLoggable(Level.FINER)) this.log.finer("changed numEntries='" + numEntries + "' numBytes='" + numBytes + "'");
+      if (log.isLoggable(Level.FINER)) log.finer("changed numEntries='" + numEntries + "' numBytes='" + numBytes + "'");
       if (!checkIfNeedsWaiting((int)numEntries, numBytes, this.maxEntries, this.maxSize)) {
-         if (log.isLoggable(Level.FINE)) this.log.fine("changed going to notify");
+         if (log.isLoggable(Level.FINE)) log.fine("changed going to notify");
          synchronized(this) {
+         //synchronized(queue) {
             this.notify();
          }
       }
