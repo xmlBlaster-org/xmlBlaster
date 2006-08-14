@@ -2298,6 +2298,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (this.queueQueryPlugin == null) {
          this.queueQueryPlugin = new QueueQueryPlugin(this.glob);
       }
+      this.glob.getTopicAccessor().release(this); // In case we were locked and now block forever!
       return this.queueQueryPlugin.query(this.historyQueue, querySpec);
    }
 
