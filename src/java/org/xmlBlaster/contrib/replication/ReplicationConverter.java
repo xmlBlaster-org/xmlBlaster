@@ -10,7 +10,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.io.OutputStream;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -22,6 +25,7 @@ import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
+import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
@@ -105,6 +109,24 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
     */
    public synchronized void init(I_Info info) throws Exception {
       this.info = info;
+      String propsToConnect = this.info.get(DbWatcherConstants.MOM_PROPS_TO_ADD_TO_CONNECT, null);
+      if (propsToConnect == null) {
+         // String val = REPL_PREFIX_KEY + "," + REPL_VERSION;
+         String val = "*";
+         log.info("Adding the property '" + DbWatcherConstants.MOM_PROPS_TO_ADD_TO_CONNECT + "' with value '" + val + "'");
+         this.info.put(DbWatcherConstants.MOM_PROPS_TO_ADD_TO_CONNECT, val);
+      }
+      else {
+         Set set = getKeys(propsToConnect, ",");
+         if (!set.contains(REPL_PREFIX_KEY)) {
+            String txt = "the property '" + DbWatcherConstants.MOM_PROPS_TO_ADD_TO_CONNECT + "' has been explicitly set to '" + propsToConnect + "' but it must contain '" + REPL_PREFIX_KEY + "'";
+            throw new Exception(txt); 
+         }
+         if (!set.contains(REPL_VERSION)) {
+            String txt = "the property '" + DbWatcherConstants.MOM_PROPS_TO_ADD_TO_CONNECT + "' has been explicitly set to '" + propsToConnect + "' but it must contain '" + REPL_VERSION + "'";
+            throw new Exception(txt); 
+         }
+      }
       ClassLoader cl = this.getClass().getClassLoader();
       String transformerClassName = info.get("transformer.class", "");
       if (transformerClassName != null && transformerClassName.length() > 0) {
@@ -155,6 +177,16 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          log.info("No entry found in persistent map '" + CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
          this.oldReplKey = 0L;
       }
+   }
+
+   private static Set getKeys(String val, String sep) {
+      Set ret = new HashSet();
+      if (val == null || val.trim().length() < 1)
+         return ret;
+      StringTokenizer tokenizer = new StringTokenizer(val, sep);
+      while (tokenizer.hasMoreTokens())
+         ret.add(tokenizer.nextToken().trim());
+      return ret;
    }
    
    /**

@@ -21,6 +21,7 @@ import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.admin.I_AdminSession;
@@ -61,7 +62,7 @@ import org.xmlBlaster.util.xbformat.XmlScriptParser;
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
+public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConstants {
 
    private static Logger log = Logger.getLogger(ReplSlave.class.getName());
    private String slaveSessionId;
@@ -166,12 +167,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
          if (this.replPrefix == null) 
             throw new Exception("The replication name '_replName' has not been defined");
          this.name = "replSlave" + this.replPrefix + slaveSessionId;
-         this.dataTopic = info.get("mom.topicName", "replication." + this.replPrefix);
+         this.dataTopic = info.get(DbWatcherConstants.MOM_TOPIC_NAME, "replication." + this.replPrefix);
          // only send status messages if it has been configured that way
-         this.statusTopic = info.get("mom.statusTopicName", null);
+         this.statusTopic = info.get(DbWatcherConstants.MOM_STATUS_TOPIC_NAME, null);
          
          // TODO Remove this when a better solution is found : several ReplSlaves for same Writer if data comes from several DbWatchers.
-         boolean forceSending = info.getBoolean("replication.forceSending", false);
+         boolean forceSending = info.getBoolean(REPLICATION_FORCE_SENDING, false);
          if (forceSending)
             this.forceSending = true; 
          String instanceName = this.manager.getInstanceName() + ContextNode.SEP + this.slaveSessionId;
@@ -199,8 +200,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
             log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
             this.maxReplKey = 0L;
          }
-         this.srcVersion = info.get("replication.version", "0.0");
-         this.ownVersion = info.get(ReplicationConstants.REPL_VERSION, null);
+         this.srcVersion = info.get(REPLICATION_VERSION, "0.0");
+         this.ownVersion = info.get(REPL_VERSION, null);
          
          if (this.ownVersion != null) {
             this.persistentInfo.put(this.slaveSessionId + "." + ReplicationConstants.REPL_VERSION, this.ownVersion);
@@ -218,9 +219,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
    
    private final void setStatus(int status) {
+      boolean doStore = status != this.status;
       this.status = status;
-      if (this.persistentInfo != null) // can also be called before init is called.
+      if (this.persistentInfo != null && doStore) { // can also be called before init is called.
          this.persistentInfo.put(this.slaveSessionId + ".status", "" + status);
+      }
       // this is a temporary solution for the monitoring
       String client = "client/";
       int pos = this.slaveSessionId.indexOf(client);
@@ -239,8 +242,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean {
    }
    
    private final void setMaxReplKey(long replKey) {
+      boolean doStore = this.maxReplKey != replKey;
       this.maxReplKey = replKey;
-      this.persistentInfo.put(this.oldReplKeyPropertyName, "" + replKey);
+      if (doStore)
+         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + replKey);
       String client = "client/";
       if (this.slaveSessionId == null)
          return;

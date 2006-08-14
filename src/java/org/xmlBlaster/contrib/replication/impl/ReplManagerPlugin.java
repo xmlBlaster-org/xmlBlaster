@@ -640,24 +640,6 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                log.warning("reactivateDestination encountered an exception '" + ex.getMessage());
             }
          }
-         // 3. then it must be a register or unregister requests coming from a DbWatcher (when they connect or reconnect)
-         else { // PtP Messages from DbWatcher (Register/Unregister)
-            String replId = updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
-            if (replId == null || replId.length() < 1)
-               log.severe(request + ": the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
-            else {
-               if (request.equals(ReplicationConstants.REPL_MANAGER_REGISTER)) {
-                  I_Info info = new ClientPropertiesInfo(updateQos.getClientProperties());
-                  register(senderSession.getRelativeName(), replId, info);
-               }
-               else if (request.equals(ReplicationConstants.REPL_MANAGER_UNREGISTER)) {
-                  unregister(senderSession.getRelativeName(), replId);
-               }
-               else {
-                  log.warning("The Replication Manager does not recognize the command '" + request + "' it only knows 'REGISTER' and 'UNREGISTER'");
-               }
-            }
-         }
          return "OK";
       }
       catch (Throwable ex) {
@@ -950,7 +932,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    // For I_ClientListener ...
 
    /**
-    * This code is called always and could be avoided since addManager is always called .
+    * The part of this code inherent to the slave can be removed since it is always invoked in the
+    * addDispatchManager method too. 
     * TODO Remove this functionality.
     * 
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionAdded(org.xmlBlaster.authentication.ClientEvent)
@@ -959,6 +942,18 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (e == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with null event object");
       ConnectQosServer connQos = e.getConnectQos();
+      
+      // code for the DbWatchers here
+      String replId = connQos.getData().getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
+      if (replId == null || replId.length() < 1)
+         log.severe("the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
+      else {
+         I_Info info = new ClientPropertiesInfo(connQos.getData().getClientProperties());
+         String relativeName = e.getSessionInfo().getSessionName().getRelativeName();
+         register(relativeName, replId, info);
+      }
+      // code for DbWatchers ends here
+      
       if (!hasUsAsDispatchPlugin(connQos))
          return;
       log.fine("Connecting with qos : " + connQos.toXml());
@@ -979,6 +974,17 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (e == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_UNKNOWN, "ReplManagerPlugin.sessionAdded with null event object");
       ConnectQosServer connQos = e.getConnectQos();
+      
+      // code for the DbWatcher
+      String replId = connQos.getData().getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
+      if (replId == null || replId.length() < 1)
+         log.severe("the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
+      else {
+         String relativeName = e.getSessionInfo().getSessionName().getRelativeName();
+         unregister(relativeName, replId);
+      }
+      // end of code for the DbWatcher
+      
       if (!hasUsAsDispatchPlugin(connQos))
          return;
       String sessionName = e.getSessionInfo().getSessionName().getRelativeName();

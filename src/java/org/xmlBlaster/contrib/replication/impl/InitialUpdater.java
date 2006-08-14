@@ -27,7 +27,6 @@ import javax.jms.TextMessage;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
@@ -101,36 +100,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       public ExecuteListener(String stringToCheck, ConnectionInfo connInfo) {
          this.stringToCheck = stringToCheck;
          this.connInfo = connInfo;
-      }
-      
-      /**
-       * Use since the CPU time is getting high when outputs are coming slowly
-       * @param sleepTime
-       */
-      private final void sleep(long sleepTime) {
-         if (sleepTime < 1L)
-            return;
-         try {
-            Thread.sleep(sleepTime);
-         }
-         catch (Exception ex) {
-         }
-      }
-
-      /**
-       * This method will commit the current transaction on the connection passed in case
-       * the string to be searched is found. 
-       * @param data
-       */
-      private final void checkForCommit(String data) {
-         if (this.connInfo == null || this.connInfo.isCommitted())
-            return;
-         synchronized (this) {
-            if (this.connInfo == null || this.connInfo.isCommitted())
-               return;
-            if (data != null && this.stringToCheck != null && data.indexOf(this.stringToCheck) > -1)
-               this.connInfo.commit();
-         }
       }
       
       public void stderr(String data) {
@@ -223,33 +192,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       return new ConnectionInfo(conn);
    }
    
-   
-   private synchronized void sendRegistrationMessage(String currentVersion) throws Exception {
-      if (this.publisher != null) {
-         log.info("Sending registration message for '" + this.replPrefix + "'");
-         this.info.put(ReplicationConstants.SUPPORTED_VERSIONS, getSupportedVersions(currentVersion));
-         // fill the info to be sent with the own info objects
-         HashMap msgMap = new HashMap();
-         new ClientPropertiesInfo(msgMap, this.info);
-         msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
-         msgMap.put("_command", ReplicationConstants.REPL_MANAGER_REGISTER);
-         log.info("going to initialize publisher for replication '" + this.replPrefix + "'");
-         synchronized(this.info) {
-            boolean isRegistered = this.info.getBoolean("_InitialUpdaterRegistered", false);
-            log.info("replication '" + this.replPrefix + "' registered='" + isRegistered + "'");
-            if (!isRegistered) {
-               String topic = this.info.get("mom.topicName", null);
-               if (topic == null)
-                  throw new Exception("InitialUpdater.init: registering the dbWatcher to the Replication Manager: no topic was defined but need one. Please add to your configuration 'mom.topicName'");
-               msgMap.put("_topic", topic);
-               log.info("replication '" + this.replPrefix + "' publishing registration message on topic '" + topic + "'");
-               this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_REGISTER.getBytes(), msgMap);
-               this.info.put("_InitialUpdaterRegistered", "true");
-            }
-         }
-      }
-   }
-   
    /**
     * @see I_DbSpecific#init(I_Info)
     * 
@@ -285,8 +227,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       log.info("overwriting the default for 'detector.detectUpdates' from 'true' to 'false' since we are in replication");
       this.info.put("detector.detectUpdates", "" + false);
       */
-      String currentVersion = this.info.get("replication.version", "0.0");
-      sendRegistrationMessage(currentVersion);
    }
 
    /**
@@ -296,13 +236,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       try {
          if (this.publisher != null) {
             log.info("going to shutdown: cleaning up resources");
-            // registering this instance to the Replication Manager
-            // fill the info to be sent with the own info objects
-            HashMap msgMap = new HashMap();
-            new ClientPropertiesInfo(msgMap, this.info);
-            msgMap.put("_destination", ReplicationConstants.REPL_MANAGER_SESSION);
-            msgMap.put("_command", ReplicationConstants.REPL_MANAGER_UNREGISTER);
-            this.publisher.publish(ReplicationConstants.REPL_MANAGER_TOPIC, ReplicationConstants.REPL_MANAGER_UNREGISTER.getBytes(), msgMap);
             this.publisher.shutdown();
             this.publisher = null;
          }
@@ -711,8 +644,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       try {
          log.info("connection is going from '" + oldState + " to 'ALIVE'");
-         String currentVersion = this.info.get("replication.version", "0.0");
-         sendRegistrationMessage(currentVersion);
       }
       catch (Exception ex) {
          ex.printStackTrace();

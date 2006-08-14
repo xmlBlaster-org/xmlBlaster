@@ -10,9 +10,9 @@ public interface ReplicationConstants {
    // special topics and session names
    public final static String REPL_MANAGER_SESSION = "replManager/1";
    public final static String REPL_MANAGER_TOPIC = "replManagerTopic";
-   public final static String REPL_MANAGER_REGISTER = "REGISTER";
-   public final static String REPL_MANAGER_UNREGISTER = "UNREGISTER";
-   public final static String REPL_PREFIX_KEY = "replication.prefix";
+   
+   public final static String PURPOSE_REPLICATION = "REPLICATION"; 
+   
    public final static String REPL_REQUEST_UPDATE = "REQUEST_UPDATE";
    public final static String CONTRIB_PERSISTENT_MAP = "contribPersistentMap";
    
@@ -68,4 +68,13 @@ public interface ReplicationConstants {
    
    public final static String REPL_PREFIX_DEFAULT = "REPL_";
    public final static String TRANSACTION_SEQ = "_TRANS_SEQ";
+   
+   
+   // properties
+   public final static String REPL_PREFIX_KEY = "replication.prefix";
+   public final static String REPLICATION_PREFIX = "replication.prefix";
+   public final static String REPLICATION_VERSION = "replication.version";
+   public final static String REPLICATION_FORCE_SENDING = "replication.forceSending";
+   
+   
 }

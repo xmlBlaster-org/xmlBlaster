@@ -8,6 +8,7 @@ package org.xmlBlaster.contrib.dbwatcher.mom;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -37,6 +38,7 @@ import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
+import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
 import org.xmlBlaster.jms.XBSession;
@@ -80,9 +82,10 @@ import org.xmlBlaster.util.MsgUnit;
  *
  * @author Marcel Ruff
  */
-public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, I_Callback, I_ConnectionStateListener
-{
+public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, I_Callback, I_ConnectionStateListener, DbWatcherConstants {
+   
    private static Logger log = Logger.getLogger(XmlBlasterPublisher.class.getName());
+
    protected I_ChangeDetector changeDetector;
    protected Global glob;
    protected I_XmlBlasterAccess con;
@@ -162,17 +165,18 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     */
    public Set getUsedPropertyKeys() {
       Set set = new HashSet();
-      set.add("mom.topicName");
-      set.add("mom.loginName");
-      set.add("mom.password");
-      set.add("mom.eraseOnDrop");
-      set.add("mom.eraseOnDelete");
-      set.add("mom.publishKey");
-      set.add("mom.publishQos");
-      set.add("mom.alertSubscribeKey");
-      set.add("mom.alertSubscribeQos");
-      set.add("mom.connectQos");
-      set.add("mom.maxSessions");
+      set.add(MOM_TOPIC_NAME);
+      set.add(MOM_LOGIN_NAME);
+      set.add(MOM_PASSWORD);
+      set.add(MOM_ERASE_ON_DROP);
+      set.add(MOM_ERASE_ON_DELETE);
+      set.add(MOM_PUBLISH_KEY);
+      set.add(MOM_PUBLISH_QOS);
+      set.add(MOM_ALERT_SUBSCRIBE_KEY);
+      set.add(MOM_ALERT_SUBSCRIBE_QOS);
+      set.add(MOM_CONNECT_QOS);
+      set.add(MOM_PROPS_TO_ADD_TO_CONNECT);
+      set.add(MOM_MAX_SESSIONS);
       return set;
    }
 
@@ -209,14 +213,14 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          }
       }
 
-      this.topicNameTemplate = info.get("mom.topicName", "db.change.event.${groupColValue}");
-      this.loginName = info.get("mom.loginName", "dbWatcher/1");
-      this.password  = info.get("mom.password", "secret");
+      this.topicNameTemplate = info.get(MOM_TOPIC_NAME, "db.change.event.${groupColValue}");
+      this.loginName = info.get(MOM_LOGIN_NAME, "dbWatcher/1");
+      this.password  = info.get(MOM_PASSWORD, "secret");
 
-      this.eraseOnDrop = info.getBoolean("mom.eraseOnDrop", false);
-      this.eraseOnDelete = info.getBoolean("mom.eraseOnDelete", false);
+      this.eraseOnDrop = info.getBoolean(MOM_ERASE_ON_DROP, false);
+      this.eraseOnDelete = info.getBoolean(MOM_ERASE_ON_DELETE, false);
 
-      this.publishKey = info.get("mom.publishKey", (String)null);
+      this.publishKey = info.get(MOM_PUBLISH_KEY, (String)null);
       if (this.publishKey != null && this.topicNameTemplate != null) {
          log.warning("constructor: since 'mom.publishKey' is defined, 'mom.topicName' will be ignored");
       }
@@ -228,20 +232,20 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          this.publishKey = (new PublishKey(this.glob, this.topicNameTemplate)).toXml(); 
       }
       
-      this.publishQos = info.get("mom.publishQos", "<qos/>");
+      this.publishQos = info.get(MOM_PUBLISH_QOS, "<qos/>");
 
-      this.alertSubscribeKey = info.get("mom.alertSubscribeKey", (String)null);
+      this.alertSubscribeKey = info.get(MOM_ALERT_SUBSCRIBE_KEY, (String)null);
       if (this.alertSubscribeKey != null && this.alertSubscribeKey.length() < 1)
           this.alertSubscribeKey = null;
-      this.alertSubscribeQos = info.get("mom.alertSubscribeQos", "<qos/>");
+      this.alertSubscribeQos = info.get(MOM_ALERT_SUBSCRIBE_QOS, "<qos/>");
 
-      String tmp  = info.get("mom.connectQos", (String)null);
-      if (tmp != null) {
-         this.connectQos = new ConnectQos(this.glob, this.glob.getConnectQosFactory().readObject(tmp));
+      String hardConnectQos  = info.get(MOM_CONNECT_QOS, (String)null);
+      if (hardConnectQos != null) {
+         this.connectQos = new ConnectQos(this.glob, this.glob.getConnectQosFactory().readObject(hardConnectQos));
       }
       else {
          this.connectQos = new ConnectQos(this.glob, this.loginName, this.password);
-         int maxSessions = info.getInt("mom.maxSessions", 100);
+         int maxSessions = info.getInt(MOM_MAX_SESSIONS, 100);
          this.connectQos.setMaxSessions(maxSessions);
          this.connectQos.getAddress().setRetries(-1);
          this.connectQos.setSessionTimeout(0L);
@@ -265,6 +269,31 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
             this.connectQos.getData().getSubjectQueueProperty().setVersion("1.0");
          }
          */
+      }
+
+      String propKeysToAdd = info.get(MOM_PROPS_TO_ADD_TO_CONNECT, "").trim();
+      if (propKeysToAdd.length() > 0) {
+         if ("*".equals(propKeysToAdd)) { // then all properties are added to the connectQos
+            if (hardConnectQos != null)
+               log.warning("The property '" + MOM_PROPS_TO_ADD_TO_CONNECT + "' was is set to '*' and and '" + MOM_CONNECT_QOS + "' was set too (some of the properties could be overwritten");
+            // fill the client properties of the connectQos with the info object
+            new ClientPropertiesInfo(this.connectQos.getData().getClientProperties(), info);
+         }
+         else {
+            StringTokenizer tokenizer = new StringTokenizer(propKeysToAdd, ",");
+            while (tokenizer.hasMoreTokens()) {
+               String key = tokenizer.nextToken().trim();
+               String val = info.get(key, null);
+               if (val == null)
+                  log.warning("The property '" + key + "' shall be added to the connectQos but was not found among the properties");
+               else {
+                  if (this.connectQos.getClientProperty(key) != null)
+                     log.warning("The property '" + key + "' is already set in the client properties of the connect qos. Will be overwritten with the value '" + val + "'");
+                  this.connectQos.addClientProperty(key, val);
+               }
+                  
+            }
+         }
       }
       
       this.con = this.glob.getXmlBlasterAccess();
@@ -327,7 +356,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       }
       
       // this is used to register the owner of this object (typically the DbWatcher)
-      if ("REGISTER".equals(command) || "UNREGISTER".equals(command) || "INITIAL_DATA_RESPONSE".equals(command) || "STATEMENT".equals(command)) {
+      if ("INITIAL_DATA_RESPONSE".equals(command) || "STATEMENT".equals(command)) {
          
          PublishQos qos = null;
          if (destination != null) {
@@ -335,8 +364,6 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          }
          else
             qos = new PublishQos(this.glob);
-         if (!"UNREGISTER".equals(command)) // unregister are not persistent
-            qos.setPersistent(true);
          qos.setSubscribable(true);
          // to force to fill the client properties map !!
          ClientPropertiesInfo tmpInfo = new ClientPropertiesInfo(attrMap);

@@ -161,7 +161,8 @@ public class DbWatcher implements I_ChangeListener {
       }
       else
          log.info("Couldn't initialize I_DataConverter, please configure 'converter.class' if you need a conversion.");
-
+      // this must be invoked after the converter class has been initialized since the converter class can set properties on the info object
+      // for example to register applications such as replication (for example the purpose)
       this.publisher = getChangePublisher(this.info);
 
       if (changeDetectorClass.length() > 0) {
