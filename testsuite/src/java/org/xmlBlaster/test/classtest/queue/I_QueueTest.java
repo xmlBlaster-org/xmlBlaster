@@ -79,7 +79,7 @@ public class I_QueueTest extends TestCase {
          this.count = 0;
       }
       
-      public void changed(I_Queue queue, long numEntries, long numBytes) {
+      public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
          this.lastIncrementEntries = numEntries - this.lastNumEntries;
          this.lastIncrementBytes = numBytes - this.lastNumBytes;
          this.lastNumEntries = numEntries;
@@ -1752,7 +1752,7 @@ public class I_QueueTest extends TestCase {
          testSub.tearDown();
 
          long usedTime = System.currentTimeMillis() - startTime;
-         testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
+         I_QueueTest.log.info("time used for tests: " + usedTime/1000 + " seconds");
       }
    }
 }

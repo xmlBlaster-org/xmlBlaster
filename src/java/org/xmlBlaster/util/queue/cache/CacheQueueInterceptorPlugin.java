@@ -1236,41 +1236,44 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    /**
     * Shutdown the implementation, sync with data store
     */
-   synchronized public void shutdown() {
-      if (log.isLoggable(Level.FINER)) log.finer(ME+"shutdown(isDown="+this.isDown+")");
-      if (this.isDown) {
-         return;
+   public void shutdown() {
+      synchronized (this) {
+         if (log.isLoggable(Level.FINER)) log.finer(ME+"shutdown(isDown="+this.isDown+")");
+         if (this.isDown) {
+            return;
+         }
+         this.isDown = true;
+         this.glob.unregisterMBean(this.mbeanHandle);
+         long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
+         if (numTransients > 0) {
+            log.warning(ME+"Shutting down cache queue which contains " + numTransients + " transient messages");
+         }
+   
+         try {
+            this.transientQueue.shutdown();
+         }
+         catch (Throwable ex) {
+            log.severe(ME+"shutdown: exception when processing transient queue. Reason: " + ex.toString());
+            ex.printStackTrace();
+         }
+   
+         try {
+            if (this.persistentQueue != null) this.persistentQueue.shutdown();
+         }
+         catch (Throwable ex) {
+            log.severe(ME+"shutdown: exception when processing transient queue. Reason: " + ex.toString());
+            ex.printStackTrace();
+         }
+         try {
+   //         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+            if (this.persistentQueue != null) this.persistentQueue.unRegisterStorageProblemListener(this);
+         }
+         catch (Exception ex) {
+            log.severe(ME+"could not unregister listener. Cause: " + ex.getMessage());
+            ex.printStackTrace();
+         }
       }
-      this.isDown = true;
-      this.glob.unregisterMBean(this.mbeanHandle);
-      long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
-      if (numTransients > 0) {
-         log.warning(ME+"Shutting down cache queue which contains " + numTransients + " transient messages");
-      }
-
-      try {
-         this.transientQueue.shutdown();
-      }
-      catch (Throwable ex) {
-         log.severe(ME+"shutdown: exception when processing transient queue. Reason: " + ex.toString());
-         ex.printStackTrace();
-      }
-
-      try {
-         if (this.persistentQueue != null) this.persistentQueue.shutdown();
-      }
-      catch (Throwable ex) {
-         log.severe(ME+"shutdown: exception when processing transient queue. Reason: " + ex.toString());
-         ex.printStackTrace();
-      }
-      try {
-//         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
-         if (this.persistentQueue != null) this.persistentQueue.unRegisterStorageProblemListener(this);
-      }
-      catch (Exception ex) {
-         log.severe(ME+"could not unregister listener. Cause: " + ex.getMessage());
-         ex.printStackTrace();
-      }
+      invokeQueueSizeListener();
       removeQueueSizeListener(null);
    }
 
@@ -1406,7 +1409,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          for (int i=0; i < listeners.length; i++) {
             try {
-               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes());
+               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes(), isShutdown());
             }
             catch (NullPointerException e) {
                if (log.isLoggable(Level.FINE)) log.fine(ME+"Call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");

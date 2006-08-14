@@ -1104,12 +1104,19 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    /**
     * Shutdown the implementation, sync with data store
     */
-   synchronized public void shutdown() {
-      if (log.isLoggable(Level.FINER)) log.finer("shutdown '" + this.storageId + "' (currently the value of 'isDown' is '" + this.isDown + "'");
-      if (this.isDown) return;
-      this.isDown = true;
-      this.manager.unregisterQueue(this);
-      this.removeQueueSizeListener(null);      
+   public void shutdown() {
+      synchronized (this) {
+         if (log.isLoggable(Level.FINER)) log.finer("shutdown '" + this.storageId + "' (currently the value of 'isDown' is '" + this.isDown + "'");
+         if (this.isDown) return;
+         this.isDown = true;
+      }
+      
+      invokeQueueSizeListener();
+      this.removeQueueSizeListener(null);
+      
+      synchronized (this) {
+         this.manager.unregisterQueue(this);
+      }
    }
 
    public boolean isShutdown() {
@@ -1342,7 +1349,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          }
          for (int i=0; i < listeners.length; i++) {
             try {
-               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes());
+               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes(), isShutdown());
             }
             catch (NullPointerException e) {
                if (log.isLoggable(Level.FINE)) log.fine("invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
@@ -1357,8 +1364,11 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public boolean hasQueueSizeListener(I_QueueSizeListener listener) {
       if (listener == null)
          return this.queueSizeListeners != null;
-      else
-         return this.queueSizeListeners.contains(listener);
+      else {
+         synchronized(this.queueSizeListenersSync) {
+            return this.queueSizeListeners.contains(listener);
+         }
+      }
    }
 
    /**

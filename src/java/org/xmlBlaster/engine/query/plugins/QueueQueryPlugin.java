@@ -192,9 +192,13 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
       return (MsgUnit[])ret.toArray(new MsgUnit[ret.size()]);
    }
 
-   public void changed(I_Queue queue, long numEntries, long numBytes) {
+   /**
+    * We register for queue size changes and our blocking thread returns if we are done.  
+    * Enforced by I_QueueSizeListener
+    */
+   public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
       if (log.isLoggable(Level.FINER)) log.finer("changed numEntries='" + numEntries + "' numBytes='" + numBytes + "'");
-      if (!checkIfNeedsWaiting((int)numEntries, numBytes, this.maxEntries, this.maxSize)) {
+      if (isShutdown || !checkIfNeedsWaiting((int)numEntries, numBytes, this.maxEntries, this.maxSize)) {
          if (log.isLoggable(Level.FINE)) log.fine("changed going to notify");
          synchronized(this) {
          //synchronized(queue) {

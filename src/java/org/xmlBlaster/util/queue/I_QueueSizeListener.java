@@ -18,10 +18,13 @@ public interface I_QueueSizeListener {
    /**
     * This event is sent every time a change in entries has occurred in the
     * queue. 
-    * <p /
+    * <p />
     * It is invoked after the change has taken place. 
     * It allows for example to generate threshold alarms.
-    * <p /
+    * <p />
+    * changed() is additionally called if the queue is shutdown (you can't operate on the queue
+    * anymore in this case).
+    * <p />
     * The changed() invocation is guaranteed to NOT be in any Queue specific synchronize
     *
     * @param queue The queue which fires the change event 
@@ -29,7 +32,8 @@ public interface I_QueueSizeListener {
     *        change has taken place
     * @param numBytes number of bytes in the queue after the change
     *        has taken change.
+    * @param isShutdown Is set to true if queue.shutdown() was executed
     */
-   public void changed(I_Queue queue, long numEntries, long numBytes);
+   public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown);
 
 }

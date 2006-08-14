@@ -581,7 +581,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * we are willing to accept messages again. 
     * Enforced by I_QueueSizeListener
     */
-   public void changed(I_Queue queue, long numEntries, long numBytes) {
+   public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
+      if (isShutdown) return;
       SubjectInfo subjectInfo = getSubjectInfo();
       boolean hasSubjectEntries = (subjectInfo == null) ? false : subjectInfo.getSubjectQueue().getNumOfEntries() > 0;
       if (lastNumEntries != numEntries) {

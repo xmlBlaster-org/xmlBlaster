@@ -180,20 +180,26 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    public void shutdown() {
-      if (log.isLoggable(Level.FINE)) log.fine("Entering shutdown(" + this.storage.size() + ")");
+      int size = 0;
       synchronized (this) {
-         if (this.storage.size() > 0) {
-            String reason = "Shutting down RAM queue which contains " + this.storage.size() + " messages";
-            if (log.isLoggable(Level.FINE)) log.fine(reason);
-            //throw new XmlBlasterException(ME, reason);
-            //handleFailure !!!
-         }
-         isShutdown = true;
-         this.removeQueueSizeListener(null);
+         if (log.isLoggable(Level.FINE)) log.fine("Entering shutdown(" + this.storage.size() + ")");
+         if (this.isShutdown) return;
+         this.isShutdown = true;
+         size = this.storage.size();
+      }
+
+      invokeQueueSizeListener();
+      this.removeQueueSizeListener(null);
+
+      if (size > 0) {
+         String reason = "Shutting down RAM queue which contains " + size + " messages";
+         if (log.isLoggable(Level.FINE)) log.fine(reason);
+         //throw new XmlBlasterException(ME, reason);
+         //handleFailure !!!
       }
 
       if (log.isLoggable(Level.FINER)) {
-         log.finer("shutdown() of queue " + this.getStorageId() + " which contains " + this.storage.size() + "messages");
+         log.finer("shutdown() of queue " + this.getStorageId() + " which contains " + size + "messages");
       }
    }
 
@@ -945,7 +951,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          }
          for (int i=0; i < listeners.length; i++) {
             try {
-               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes());
+               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes(), isShutdown());
             }
             catch (NullPointerException e) {
                if (log.isLoggable(Level.FINE)) log.fine("invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
