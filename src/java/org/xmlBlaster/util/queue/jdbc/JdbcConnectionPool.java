@@ -71,7 +71,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private String configurationIdentifier;
    private boolean cascadeDeleteSupported;
    private boolean nestedBracketsSupported;
-
+   
    private final int MIN_POOL_SIZE = 1;
 
    /**
@@ -296,6 +296,25 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       log.info("Successfully reconnected to database");
    }
 
+   public String getProp(String key, String def) {
+      final String prefix = "queue.persistent.";
+      org.xmlBlaster.util.property.Property prop = glob.getProperty();
+      def = prop.get(prefix + key, def);
+      return pluginProp.getProperty(key, def);
+   }
+   
+   public int getProp(String key, int def) {
+      final String prefix = "queue.persistent.";
+      org.xmlBlaster.util.property.Property prop = glob.getProperty();
+      def = prop.get(prefix + key, def);
+      String tmp = pluginProp.getProperty(key, "" + def);
+      try {
+         return Integer.parseInt(tmp.trim());
+      }
+      catch (Exception ex) {
+         return def;
+      }
+   }
 
    /**
     * Is called after the instance is created. It reads the needed properties,

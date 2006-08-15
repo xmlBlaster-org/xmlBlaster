@@ -8,6 +8,7 @@ package org.xmlBlaster.util.queue.jdbc;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
@@ -163,7 +164,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          
          // zero means not limit (to be sure we also check negative Values
-         this.maxNumStatements = glob.getProperty().get("queue.persistent.maxNumStatements", conn.getMetaData().getMaxStatements());
+         this.maxNumStatements = this.pool.getProp("maxNumStatements", conn.getMetaData().getMaxStatements());
          log.fine("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
       }
       catch (XmlBlasterException ex) {
@@ -661,7 +662,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       String typeName = entry.getEmbeddedType();
       boolean persistent = entry.isPersistent();
       long sizeInBytes = entry.getSizeInBytes();
-      
+
       if (log.isLoggable(Level.FINEST))
          log.finest("addition. dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
       
@@ -1544,9 +1545,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          int offset = 0;
          boolean[] ret = new boolean[rest];
          while (rest > 0) {
-            long[] ids = new long[this.maxNumStatements];
+            int nmax = this.maxNumStatements;
+            if (rest < nmax)
+               nmax = rest;
+            long[] ids = new long[nmax];
             for (int i=0; i < ids.length; i++)
-               ids[i] = uniqueIds[i];
+               ids[i] = uniqueIds[i+offset];
             boolean[] tmpRet = deleteEntriesNoSplit(queueName, ids);
             for (int i=0; i < tmpRet.length; i++) {
                ret[offset + i] = tmpRet[i];
