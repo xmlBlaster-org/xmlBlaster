@@ -658,6 +658,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#addDispatchManager(org.xmlBlaster.util.dispatch.DispatchManager)
     */
    public void addDispatchManager(DispatchManager dispatchManager) {
+      /*
       try {
          SessionName sessionName = dispatchManager.getSessionName();
          if (sessionName == null) {
@@ -676,6 +677,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
       }
+      */
    }
 
    public String getInstanceName() {
@@ -946,8 +948,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       // code for the DbWatchers here
       String replId = connQos.getData().getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
       if (replId == null || replId.length() < 1)
-         log.severe("the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
-      else {
+         log.fine("the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
+      else { // then it is a DbWatcher which is used for replication
          I_Info info = new ClientPropertiesInfo(connQos.getData().getClientProperties());
          String relativeName = e.getSessionInfo().getSessionName().getRelativeName();
          register(relativeName, replId, info);
@@ -978,8 +980,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       // code for the DbWatcher
       String replId = connQos.getData().getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
       if (replId == null || replId.length() < 1)
-         log.severe("the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
-      else {
+         log.fine("the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
+      else { // then it is a DbWatcher used for replication
          String relativeName = e.getSessionInfo().getSessionName().getRelativeName();
          unregister(relativeName, replId);
       }

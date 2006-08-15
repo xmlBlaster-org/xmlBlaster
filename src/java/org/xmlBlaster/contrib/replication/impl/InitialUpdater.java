@@ -200,6 +200,16 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       log.info("going to initialize the resources");
       this.info = info;
       this.replPrefix = SpecificDefault.getReplPrefix(this.info);
+
+      this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
+      this.initialCmd = this.info.get("replication.initialCmd", null);
+      this.initialCmdPre = info.get("replication.initialCmdPre", null);
+      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
+      // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
+      this.stringToCheck = info.get("replication.initial.stringToCheck", null);
+      this.initialDataTopic = info.get("replication.initialDataTopic", null);
+      String currentVersion = this.info.get("replication.version", "0.0");
+      this.info.put(ReplicationConstants.SUPPORTED_VERSIONS, getSupportedVersions(currentVersion));
       
       boolean needsPublisher = this.info.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
       if (needsPublisher) {
@@ -212,13 +222,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       subscriptionMap.put("ptp", "true");
       if (this.publisher != null)
          this.publisher.registerAlertListener(this, subscriptionMap);
-      this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
-      this.initialCmd = this.info.get("replication.initialCmd", null);
-      this.initialCmdPre = info.get("replication.initialCmdPre", null);
-      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
-      // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
-      this.stringToCheck = info.get("replication.initial.stringToCheck", null);
-      this.initialDataTopic = info.get("replication.initialDataTopic", null);
       // rewrite the default behaviour of the timestamp detector to detect even UPDATES (deletes are also updates)
       /*
       boolean detectUpdates = this.info.getBoolean("detector.detectUpdates", false);
@@ -227,6 +230,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       log.info("overwriting the default for 'detector.detectUpdates' from 'true' to 'false' since we are in replication");
       this.info.put("detector.detectUpdates", "" + false);
       */
+
+      // used for versioning (shall be passed to the ConnectQos when connecting (make sure this is
+      // invoked before the mom connects
    }
 
    /**
@@ -567,6 +573,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
                this.runningExecutes.remove(slaveName);
          }
       }
+   }
+   
+   private synchronized void sendRegistrationMessage() throws Exception {
    }
    
    
