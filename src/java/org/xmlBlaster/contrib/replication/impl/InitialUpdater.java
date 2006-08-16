@@ -575,10 +575,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       }
    }
    
-   private synchronized void sendRegistrationMessage() throws Exception {
-   }
-   
-   
    public String getSupportedVersions(String currentReplVersion) throws Exception {
       if (this.initialCmdPath == null)
          throw new Exception("InitialUpdater.getSupportedVersions invoked with no initialCmdPath specified");

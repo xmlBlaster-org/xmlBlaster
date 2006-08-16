@@ -26,5 +26,16 @@ public interface DbWatcherConstants {
    public final static String MOM_ALERT_SUBSCRIBE_KEY = "mom.alertSubscribeKey";
    public final static String MOM_ALERT_SUBSCRIBE_QOS = "mom.alertSubscribeQos";
    public final static String MOM_MAX_SESSIONS = "mom.maxSessions";
+   public final static String MOM_COMPRESS_SIZE = "mom.compressSize";
+   
+   // these are used and passed in the client properties 
+   /** a long telling the uncompressed size. */
+   public final static String _UNCOMPRESSED_SIZE = "_uncompressedSize";
+   /** either 'ZIP' or 'GZIP'. If not set, the content is not compressed */
+   public final static String _COMPRESSION_TYPE = "_compressionType";
+   
+   // these are specific values for the property keys defined above.
+   public final static String COMPRESSION_TYPE_ZIP = "ZIP";
+   public final static String COMPRESSION_TYPE_GZIP = "GZIP";
    
 }

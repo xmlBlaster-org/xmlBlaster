@@ -36,6 +36,7 @@ import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.InfoHelper;
+import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.db.DbPool;
@@ -553,6 +554,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       try {
+         content = MomEventEngine.decompress(content, updateQos.getClientProperties());
          SessionName senderSession = updateQos.getSender();
          String request = updateQos.getClientProperty("_command", "");
          log.info("The master Replicator with session '" + senderSession.getRelativeName() + "' is sending '" + request + "'");

@@ -16,6 +16,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -167,6 +168,7 @@ public class Receiver implements I_Plugin, I_Callback {
 
    public synchronized String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       try {
+         content = MomEventEngine.decompress(content, updateQos.getClientProperties());
          String timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
          updateQos.getData().addClientProperty("_timestamp", timestamp);
          this.callback.update(updateKey.getOid(), content, updateQos.getClientProperties());

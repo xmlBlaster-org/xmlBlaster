@@ -168,6 +168,10 @@ public class DbWriter implements I_Update {
       }
       else {
          SqlInfo updateInfo = this.parser.parse(new String(content));
+         if (updateInfo == null) {
+            log.warning("The entry with content '" + new String(content) + "' was not for us");
+            return;
+         }
          this.writer.store(updateInfo);
       }
    }

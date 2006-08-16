@@ -37,6 +37,7 @@ import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
+import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_AlertProducer;
@@ -103,6 +104,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    private int initCount = 0; 
    private I_Update defaultUpdate;
    private String adminKey = "<key oid='mom.publisher.adminMsg'/>";
+   private int compressSize;
    
    /** 
     * Can be null, taken out of the info object if the owner of this object has set the
@@ -269,6 +271,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
             this.connectQos.getData().getSubjectQueueProperty().setVersion("1.0");
          }
          */
+         this.compressSize = info.getInt(MOM_COMPRESS_SIZE, 0);
       }
 
       String propKeysToAdd = info.get(MOM_PROPS_TO_ADD_TO_CONNECT, "").trim();
@@ -339,6 +342,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    public String publish(String changeKey, byte[] out, Map attrMap) throws Exception {
       
       if (out == null) out = "".getBytes();
+      out = MomEventEngine.compress(out, attrMap, this.compressSize, null);
+
       String pk = (changeKey.indexOf("${") == -1) ? DbWatcher.replaceVariable(this.publishKey, changeKey) : this.publishKey;
       String command = null;
       if (attrMap != null) 
@@ -530,6 +535,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see I_Callback#update
     */
    public String update(String s, UpdateKey k, byte[] c, UpdateQos q) throws XmlBlasterException {
+      c = MomEventEngine.decompress(c, q.getClientProperties());
       if (this.defaultUpdate == null) { 
          log.warning("No update message expected, ignoring received " + k.toXml());
          return Constants.RET_OK;

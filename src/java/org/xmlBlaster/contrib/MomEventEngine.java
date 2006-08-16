@@ -6,6 +6,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,7 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
@@ -22,12 +30,14 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.jms.XBSession;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 public class MomEventEngine implements I_Callback, I_ChangePublisher {
@@ -42,7 +52,8 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
    protected ConnectQos connectQos;
    protected I_Update eventHandler;
    protected boolean shutdownMom;
-
+   private int compressSize;
+   
    public MomEventEngine() {
       this.subscribeKeyList = new ArrayList();
       this.subscribeQosList = new ArrayList();
@@ -89,6 +100,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          this.glob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, globOrig.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope)); // "ServerNodeScope"
       }
 
+      this.compressSize = info.getInt(DbWatcherConstants.MOM_COMPRESS_SIZE, 0);
       this.shutdownMom = info.getBoolean("dbWriter.shutdownMom", false); // avoid to disconnect (otherwise it looses persistent subscriptions)
       this.loginName = info.get("mom.loginName", "dbWriter/1");
       this.password  = info.get("mom.password", "secret");
@@ -165,6 +177,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       try {
+         content = decompress(content, updateQos.getClientProperties());
          String timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
          updateQos.getData().addClientProperty("_timestamp", timestamp);
          
@@ -193,6 +206,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
     * @return the PublishQos as a string.
     */
    public String publish(String oid, byte[] message, Map attrMap) throws Exception {
+      message = compress(message, attrMap, this.compressSize, null);
       String qos = null;
       if (attrMap != null)
          qos = (String)attrMap.get("qos");
@@ -235,6 +249,105 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
    public XBSession getJmsSession() {
       return new XBSession(this.glob, XBSession.AUTO_ACKNOWLEDGE, false);
    }
-   
 
+   /**
+    * Compresses the message if needed. 
+    * @param buffer The buffer to compress
+    * @param props The properties to update with the compressed flag (uncompressed size)
+    * @param compressSizeLimit The limit for compression. If less than one no compression
+    * is done. If the size of the buffer is less than this limit it is not compressed either.
+    * @return the compressed buffer or the input buffer if no compression was needed.
+    */
+   public static byte[] compress(byte[] buffer, Map props, int compressSizeLimit, String zipType) {
+      if (compressSizeLimit <  1L)
+         return buffer;
+      if (buffer.length < compressSizeLimit)
+         return buffer;
+      int uncompressedLength = buffer.length;
+
+      // check if not already compressed
+      if (props != null && props.containsKey(DbWatcherConstants._COMPRESSION_TYPE)) {
+         log.fine("The message is already compressed, will not compress it");
+         return buffer;
+      }
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      byte[] ret = null;
+      try {
+          GZIPOutputStream zippedStream = new GZIPOutputStream(baos);
+          ObjectOutputStream objectOutputStream = new ObjectOutputStream(zippedStream);
+          objectOutputStream.writeObject(buffer);
+          objectOutputStream.flush();
+          zippedStream.finish();
+          ret = baos.toByteArray();
+          objectOutputStream.close();
+          if (ret.length >= uncompressedLength) {
+             log.fine("The compressed size is bigger than the original. Will not compress since it does not make sense");
+             return buffer;
+          }
+          if (props != null) {
+             props.put(DbWatcherConstants._UNCOMPRESSED_SIZE, "" + uncompressedLength);
+             props.put(DbWatcherConstants._COMPRESSION_TYPE, DbWatcherConstants.COMPRESSION_TYPE_GZIP);
+          }
+          return ret;
+      }
+      catch(IOException ex) {
+         log.severe("An exception occured when compressing: '" + ex.getMessage() + "' will not compress");
+         return buffer;
+      }
+   }
+
+   public static byte[] decompress(byte[] buffer, Map clientProperties) {
+      if (clientProperties == null)
+         return buffer;
+      Object obj = clientProperties.get(DbWatcherConstants._COMPRESSION_TYPE);
+      if (obj == null) {
+         log.fine("The client property '" + DbWatcherConstants._COMPRESSION_TYPE + "' was not found. Will not expand");
+         return buffer;
+      }
+      if (obj instanceof String)
+         obj = new ClientProperty(DbWatcherConstants._COMPRESSION_TYPE, null, null, (String)obj);
+      ClientProperty prop = (ClientProperty)obj;
+      String compressionType = prop.getStringValue().trim();
+      if (DbWatcherConstants.COMPRESSION_TYPE_GZIP.equals(compressionType)) {
+         obj = clientProperties.get(DbWatcherConstants._UNCOMPRESSED_SIZE);
+         if (obj == null) {
+            log.severe("Can not expand message since no uncompressed size defined (will return it unexpanded)");
+            return buffer;
+         }
+         if (obj instanceof String)
+            obj = new ClientProperty(DbWatcherConstants._UNCOMPRESSED_SIZE, null, null, (String)obj);
+         prop = (ClientProperty)obj;
+         
+         ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
+         byte[] ret = null;
+         try {
+             GZIPInputStream zippedStream = new GZIPInputStream(bais);
+             ObjectInputStream objectInputStream = new ObjectInputStream(zippedStream);
+             ret = (byte[])objectInputStream.readObject();
+             objectInputStream.close();
+             // in case we cascade it still works fine
+             clientProperties.remove(DbWatcherConstants._COMPRESSION_TYPE);
+             clientProperties.remove(DbWatcherConstants._UNCOMPRESSED_SIZE);
+             return ret;
+         }
+         catch(IOException ex) {
+            log.severe("An IOException occured when uncompressing. Will not expand: " + ex.getMessage());
+            if (log.isLoggable(Level.FINE))
+               ex.printStackTrace();
+            return buffer;
+         }
+         catch(ClassNotFoundException ex) {
+            log.severe("A ClassCastException occured when uncompressing. Will not expand: " + ex.getMessage());
+            if (log.isLoggable(Level.FINE))
+               ex.printStackTrace();
+            return buffer;
+         }
+         
+      }
+      else {
+         log.warning("The compression type '" + compressionType + "' is unknown: will not decompress");
+         return buffer;
+      }
+   }
+   
 }
