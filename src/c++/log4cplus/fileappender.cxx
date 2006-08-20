@@ -199,7 +199,10 @@ void
 log4cplus::FileAppender::close()
 {
     LOG4CPLUS_BEGIN_SYNCHRONIZE_ON_MUTEX( access_mutex )
+        // delete log file if size 0  (Bjoern Ruff 8/20/2006)
+        int tellp = out.tellp();
         out.close();
+        if (tellp == 0) remove(filename.c_str());
         closed = true;
     LOG4CPLUS_END_SYNCHRONIZE_ON_MUTEX
 }
@@ -328,6 +331,7 @@ log4cplus::RollingFileAppender::rollover()
         out.clear(); // reset flags since the C++ standard specified that all the
                      // flags should remain unchanged on a close
 
+# ifdef OLDCODE_BEFORE_PATCH
         // Rename fileName to fileName.1
         log4cplus::tstring target = filename + LOG4CPLUS_TEXT(".1");
         getLogLog().debug(  LOG4CPLUS_TEXT("Renaming file ") 
@@ -336,6 +340,35 @@ log4cplus::RollingFileAppender::rollover()
                           + target);
         rename(LOG4CPLUS_TSTRING_TO_STRING(filename).c_str(), 
                LOG4CPLUS_TSTRING_TO_STRING(target).c_str());
+# else
+        // Patch from Dave Findlay 3/21/2005 applied (Bjoern Ruff) 8/20/2006 :
+        // Removing the target file before renaming to it makes
+        // the code work on Windows. In fileappender.cxx in method
+        // log4cplus::RollingFileAppender::rollover() I changed
+        // the rename part to do a remove and to also loglog the
+        // return code from the remove and rename steps. Not sure
+        // what it should do if they fail (it's correct for remove
+        // to fail this first time but not thereafter and it's
+        // never correct for the rename to fail).
+
+        // Rename fileName to fileName.1
+        log4cplus::tstring target = filename + LOG4CPLUS_TEXT(".1");
+        getLogLog().debug( LOG4CPLUS_TEXT("Renamingfile ") + filename + LOG4CPLUS_TEXT(" to ") + target);
+
+        // Dave Findlay 3/21/2005
+        // Windows won't rename over an existing file so delete it first
+        const int remOk = remove(LOG4CPLUS_TSTRING_TO_STRING(target).c_str());
+        if (remOk != 0)
+        {
+           getLogLog().debug( LOG4CPLUS_TEXT("Unable to remove existing file ") + target);
+        }
+
+        const int renOk = rename(LOG4CPLUS_TSTRING_TO_STRING(filename).c_str(), LOG4CPLUS_TSTRING_TO_STRING(target).c_str());
+        if (renOk != 0)
+        {
+           getLogLog().debug( LOG4CPLUS_TEXT("Unable to rename file ") + filename + LOG4CPLUS_TEXT(" to ") + target);
+        }
+# endif
 
         // Open a new file
         out.open(LOG4CPLUS_TSTRING_TO_STRING(filename).c_str(), 
