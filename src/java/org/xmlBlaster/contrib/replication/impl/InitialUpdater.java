@@ -202,6 +202,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.replPrefix = SpecificDefault.getReplPrefix(this.info);
 
       this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
+      log.fine("replication.path='" + this.initialCmdPath + "'");
       this.initialCmd = this.info.get("replication.initialCmd", null);
       this.initialCmdPre = info.get("replication.initialCmdPre", null);
       this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
@@ -209,6 +210,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.stringToCheck = info.get("replication.initial.stringToCheck", null);
       this.initialDataTopic = info.get("replication.initialDataTopic", null);
       String currentVersion = this.info.get("replication.version", "0.0");
+      // this is only needed on the master side
       this.info.put(ReplicationConstants.SUPPORTED_VERSIONS, getSupportedVersions(currentVersion));
       
       boolean needsPublisher = this.info.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
@@ -575,7 +577,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       }
    }
    
-   public String getSupportedVersions(String currentReplVersion) throws Exception {
+   private String getSupportedVersions(String currentReplVersion) throws Exception {
       if (this.initialCmdPath == null)
          throw new Exception("InitialUpdater.getSupportedVersions invoked with no initialCmdPath specified");
       File dir = new File(this.initialCmdPath);
