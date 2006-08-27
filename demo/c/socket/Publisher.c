@@ -14,7 +14,7 @@ See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.ht
 #include <string.h>
 #include <XmlBlasterAccessUnparsed.h>
 
-char* readFile(const char *fn);
+static char* readFile(const char *fn);
 
 /**
  * Demo client to publish messages. 
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
             msgUnit.contentLen = contentSize;
          }
          else if (contentFile != 0) {
-                        char* p = readFile(contentFile);
+            char* p = readFile(contentFile);
             msgUnit.content = p;
             msgUnit.contentLen = strlen(msgUnit.content);
          }
