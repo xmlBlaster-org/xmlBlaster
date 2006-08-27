@@ -1,10 +1,11 @@
 // NativeC.cs
 // Simple layer to delegate C# calls to xmlBlaster client C library (using P/Invoke).
-// libxmlBlasterClientC.so (Mono/Linux) or dll (Windows) is accessed and must be available
+// libxmlBlasterClientC.so on Mono/Linux is accessed and must be available
+// xmlBlasterClientC.dll on Windows is needed and must be available
 //
-// This code is functional but still pre-alpha (2006-07)
+// This code is functional but still beta (2006-08)
 //
-// Currently only tested on Linux with Mono, the port to Windows is still missing
+// Currently only tested on Linux with Mono and on Windows XP
 //
 // Features: All features of the client C library (compression, tunnel callbacks), see
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
@@ -16,7 +17,7 @@
 //           publishOneway crashes
 //           OnUpdate() throwing exception seems not to be passed to C
 //           logging with log4net
-//           port to Windows
+//           port C to WindowsCE
 //           write a testsuite
 //           write a requirement
 //           create an assembly with ant or nant
