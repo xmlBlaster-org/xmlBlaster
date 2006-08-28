@@ -688,6 +688,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          ret = true;
       }
       catch (Throwable ex) {
+         String originalExceptionStack = Global.getStackTraceAsString(ex);
+         String originalExceptionReason = ex.getMessage();
          if (log.isLoggable(Level.FINE)) {
             if (ex instanceof SQLException) {
                log.fine("addEntry: sql exception, the sql state: '" + ((SQLException)ex).getSQLState() );
@@ -722,6 +724,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (size < 1) throw ex;
          }
          catch (Throwable ex1) {
+            String secondException = Global.getStackTraceAsString(ex1);
+            log.warning("The exception '" + ex1.getMessage() + "' occured at " + secondException + "'. The original exception was '" + originalExceptionReason + "' at '" + originalExceptionStack);
+            
+            
             if (log.isLoggable(Level.FINE)) log.fine("addEntry: checking if entry already in db: exception in select: '" + ex.toString() + "'");
             if (checkIfDBLoss(conn, getLogId(queueName, "addEntry"), ex1))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex1); 
