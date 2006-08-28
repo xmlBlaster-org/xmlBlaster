@@ -19,7 +19,7 @@ import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 
 /**
- * This scheduler waiks up in intervals and triggers a database check. 
+ * This scheduler wakes up in intervals and triggers a database check. 
  * <p> 
  * Supported configuration:
  * </p>
@@ -87,6 +87,8 @@ public class OracleByEventsScheduler implements I_AlertProducer {
                      count = 0L;
                }
                catch (Throwable ex) {
+                  log.severe("An exception occured when waiting for oracle scheduler: " + ex.getMessage());
+                  ex.printStackTrace();
                   conn = SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_NO, pool);
                   Thread.sleep(500L); // to avoid looping
                }

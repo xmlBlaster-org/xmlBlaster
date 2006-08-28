@@ -36,6 +36,8 @@ import org.xmlBlaster.util.ReplaceVariable;
 
 /**
  * Creates a standardized XML dump from the given ResultSets.
+ * Note this class is not thread safe, in other words you must make sure the same instance of
+ * this class can not be invoked concurently from more than one thread.
  * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter
  * @see org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter
  * @author Michele Laghi
@@ -60,6 +62,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private long transSeq;
    private long newReplKey;
    private boolean sendUnchangedUpdates = true;
+   private String currentThreadId; // TODO REMOVE THIS AFTER TESTING
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -257,7 +260,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             throw new Exception(txt);
          }
       }
-      log.fine("sequence number '" + this.newReplKey + "' processing now for table '" + tableName + "'");
+      log.fine("sequence number '" + this.newReplKey + "' processing now for table '" + tableName + "' and transId='" + transKey + "'");
       if (this.transactionId == null)
          this.transactionId = transKey;
       else {
@@ -367,7 +370,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
                row.addAttributes(completeAttrs);
             }
             else
-               log.warning("an update with unchanged content was detected on table '" + tableName + "' : will not send it");
+               log.fine("an update with unchanged content was detected on table '" + tableName + "' and transId='" + this.transactionId + "': will not send it");
          }
          else if (action.equalsIgnoreCase(DELETE_ACTION)) {
             SqlRow row = this.sqlInfo.fillOneRow(rs, oldContent, this.transformer);
@@ -388,6 +391,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             this.sqlInfo.getDescription().setAttribute(SQL_TOPIC_ATTR, sqlTopic);
          }
       }
+      else
+         log.warning("The entry has not been sent since what='" + what + "'");
    }
 
    public void addInfo(Map attributeMap) throws Exception {
@@ -398,6 +403,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
     * This method is invoked before sending the message over the mom.
     */
    public int done() throws Exception {
+      checkThread("setOutputStream", false);
       int ret = this.sqlInfo.getRowCount();
       boolean doSend = true;
       if (ret < 1) {
@@ -405,7 +411,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          String command = this.sqlInfo.getDescription().getCommand();
          if (command == null || REPLICATION_CMD.equals(command)) {
             // puts this in the metadata attributes of the message to be sent over the mom
-            this.event.getAttributeMap().put("_ignore_this_message", "" + true);
+            log.fine("setting property '" + IGNORE_MESSAGE + "' to inhibit sending of message for trans='" + this.transactionId + "'");
+            this.event.getAttributeMap().put(IGNORE_MESSAGE, "" + true);
             doSend = false;
          }
       }
@@ -422,7 +429,22 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       return ret;
    }
 
+   // TODO REMOVE THIS AFTER TESTING
+   private final void checkThread(String location, boolean doStack) {
+      String newThreadId = "" + Thread.currentThread();
+      if (this.currentThreadId != null) {
+         if (!this.currentThreadId.equals(newThreadId)) {
+            log.severe("The current thread has changed from '" + this.currentThreadId + "' to '" + newThreadId + "'");
+            if (doStack)
+               Thread.dumpStack();
+         }
+      }
+      this.currentThreadId = newThreadId;
+   }
+
+
    public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
+      checkThread("setOutputStream", false);
       this.out = out;
       this.transactionId = null;
       this.sqlInfo = new SqlInfo(this.info);
@@ -435,6 +457,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    }
 
    public String getPostStatement() {
+      checkThread("setOutputStream", false);
       if (this.transactionId == null) {
          if (this.sqlInfo != null)
             log.severe("No transaction id has been found for " + this.sqlInfo.toXml(""));

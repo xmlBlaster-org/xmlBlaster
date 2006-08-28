@@ -60,6 +60,12 @@ public interface I_DataConverter
    public static String BASE64 = "base64";
    
    /**
+    * Used to pass the information from the converter to the publisher that this message
+    * shall not be sent (i.e. published).
+    */
+   public static String IGNORE_MESSAGE = "_ignore_this_message";
+   
+   /**
     * Needs to be called after construction. 
     * @param info The configuration environment
     * @throws Exception

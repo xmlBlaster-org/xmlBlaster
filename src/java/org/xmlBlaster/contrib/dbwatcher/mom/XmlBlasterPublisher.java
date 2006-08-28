@@ -403,7 +403,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          log.info("Topic '" + pk + "' is erased:" + out);
          return "0";
       }
-      if (log.isLoggable(Level.FINER)) log.finer("Topic '" + pk + "' is published: " + out);
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("Topic '" + pk + "' is published: " + out);
       try {
          if (destination != null)
             pk = this.adminKey;
@@ -423,7 +424,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
 
          PublishReturnQos prq = this.con.publish(msgUnit);
          String id = (prq.getRcvTimestamp()!=null)?prq.getRcvTimestamp().toString():"queued";
-         if (log.isLoggable(Level.FINE)) log.fine("Published '" + prq.getKeyOid() + "' '" + id + "'");
+         if (log.isLoggable(Level.FINE)) 
+            log.fine("Published '" + prq.getKeyOid() + "' '" + id + "'");
          return id;
       }
       catch (XmlBlasterException e) {

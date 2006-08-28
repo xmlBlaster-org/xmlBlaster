@@ -252,10 +252,19 @@ public class DbWatcher implements I_ChangeListener {
     */
    private boolean hasChanged(final ChangeEvent changeEvent, boolean recursion) {
       try {
-         if (changeEvent.getAttributeMap() == null || changeEvent.getAttributeMap().get("_ignore_this_message") == null) {
-            if (log.isLoggable(Level.FINE)) log.fine("hasChanged() invoked for groupColValue=" + changeEvent.getGroupColValue());
+         if (log.isLoggable(Level.FINEST))
+            log.fine("invoked with '" + changeEvent.getXml());
+         if (changeEvent.getAttributeMap() == null || changeEvent.getAttributeMap().get(I_DataConverter.IGNORE_MESSAGE) == null) {
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("hasChanged() invoked for groupColValue=" + changeEvent.getGroupColValue());
             this.publisher.publish(changeEvent.getGroupColValue(),
                   changeEvent.getXml().getBytes(), changeEvent.getAttributeMap());
+         }
+         else {
+            // we need to remove this since if several transactions are detected in the same 
+            // detector sweep the same Event is used, so we would not send subsequent messages
+            changeEvent.getAttributeMap().remove(I_DataConverter.IGNORE_MESSAGE);
+            log.fine("Message not sent (published) because the attribute '" + I_DataConverter.IGNORE_MESSAGE + "' was set");
          }
          return true;
       }
