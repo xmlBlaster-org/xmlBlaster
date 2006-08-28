@@ -28,14 +28,16 @@
             <td>1. Call external C library</td>
             <td>The C xmlBlaster client library can be imported to C# with [DllImport("xmlBlasterClientC")],
             this uses the System.Runtime.InteropService.DllImport attribute for each external function being wrapped.<br />
-            See our wrapper <a href="http://www.xmlBlaster.org/xmlBlaster/src/csharp/NativeC.cs" target="others">xmlBlaster/src/csharp/NativeC.cs</a>.<br />
+            See our wrapper <a href="http://www.xmlBlaster.org/xmlBlaster/src/csharp/NativeC.cs.html" target="others">xmlBlaster/src/csharp/NativeC.cs</a><br />
+            and a demo client <a href="http://www.xmlBlaster.org/xmlBlaster/src/csharp/Hello.cs.html" target="others">xmlBlaster/src/csharp/Hello.cs</a>.<br />
             You need to compile the C client library (.dll or .so) with a call '<code>build c-lib</code>' first
             (see <a href="client.c.socket.html" target="others">requirement client.c.socket</a>)<br />
             Todo: Make the same wrapper for our C++ client library</td>
             <td>Good performance, all functionality of the C library (like compression and tunneling callbacks) is available, a tested code base</td>
-            <td>NativeC.cs was developed under Mono/Linux, cleanup the code as an assembly and porting to Windows is an open task.
+            <td>NativeC.cs was developed under Mono/Linux and Windows XP, using the code as an assembly is an open task.
                 The C library '.dll' or '.so' must be available, e.g. compiled and installed for a Linux/Windows/Windows-CE environment.
-                No client side queuing (our C sqlite based persistent queue is currently integrated into C++ only)</td>
+                No client side queuing (our C sqlite based persistent queue is currently integrated into C++ only).
+                For compilation and usage details see NativeC.cs</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
