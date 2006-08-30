@@ -752,29 +752,49 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          return;
       if (!this.initialized)
          throw new Exception("cancelInitialUpdate: '" + this.name + "' has not been initialized properly or is already shutdown, check your logs");
-      I_AdminSession session = getSession();
-      long clearedMsg = session.clearCallbackQueue();
-      log.info("clearing of callback queue: '" + clearedMsg + "' where removed since a cancel request was done");
-
-      // sending the cancel op to the DbWatcher
       if (this.dbWatcherSessionName == null)
          throw new Exception("The DbWatcher Session Id is null, can not cancel");
-      log.info(this.name + " sends now a cancel request to the Master '" + this.dbWatcherSessionName + "'");
-      I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
-      // no oid for this ptp message 
-      PublishKey pubKey = new PublishKey(this.global);
-      Destination destination = new Destination(new SessionName(this.global, this.dbWatcherSessionName));
-      destination.forceQueuing(true);
-      PublishQos pubQos = new PublishQos(this.global, destination);
-      pubQos.addClientProperty(ReplicationConstants.SLAVE_NAME, this.slaveSessionId);
-      pubQos.setPersistent(false);
-      MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.getBytes(), pubQos);
-      conn.publish(msg);
-      // TODO Check this since it could mess up the current status if one is exaclty finished now
-      //setStatus(STATUS_NORMAL);
-      setStatus(STATUS_INCONSISTENT);
+
+      (new Thread() {
+         public void run() {
+            cancelUpdateAsyncPart();
+         }
+      }).start();
    }
 
+   /**
+    * The cancelUpdate is invoked asynchronously to avoid log blocking of the monitor 
+    * when the cancel operation is going on.
+    */
+   private void cancelUpdateAsyncPart() {
+      try {
+         I_AdminSession session = getSession();
+         long clearedMsg = session.clearCallbackQueue();
+         log.info("clearing of callback queue: '" + clearedMsg + "' where removed since a cancel request was done");
+
+         // sending the cancel op to the DbWatcher
+         log.info(this.name + " sends now a cancel request to the Master '" + this.dbWatcherSessionName + "'");
+         I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
+         // no oid for this ptp message 
+         PublishKey pubKey = new PublishKey(this.global);
+         Destination destination = new Destination(new SessionName(this.global, this.dbWatcherSessionName));
+         destination.forceQueuing(true);
+         PublishQos pubQos = new PublishQos(this.global, destination);
+         pubQos.addClientProperty(ReplicationConstants.SLAVE_NAME, this.slaveSessionId);
+         pubQos.setPersistent(false);
+         MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.getBytes(), pubQos);
+         conn.publish(msg);
+         // TODO Check this since it could mess up the current status if one is exaclty finished now
+         //setStatus(STATUS_NORMAL);
+         setStatus(STATUS_INCONSISTENT);
+      }
+      catch (Exception ex) {
+         log.severe("An exception occured when trying to cancel the initial update for '" + this.replPrefix + "'");
+         ex.printStackTrace();
+      }
+   }
+   
+   
    public void clearQueue() throws Exception {
       (new Thread() {
          public void run() {
