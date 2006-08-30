@@ -160,9 +160,9 @@ public class SpecificOracle extends SpecificDefault {
                buf.append("             dbms_lob.writeappend(blobCont,").append("length(");
                buf.append(varName).append("),").append(varName).append(");\n");
             }
+            buf.append("             ").append(contName).append(" := ").append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont,").append(contName).append(");\n");
             buf.append("             dbms_lob.close(blobCont);\n");
-            buf.append("             dbms_lob.append(").append(contName).append(", ");
-            buf.append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont));\n");
+            buf.append("             dbms_lob.freetemporary(blobCont);\n");
          }
          else if (type == Types.DATE || type == Types.TIMESTAMP || typeName.equals("TIMESTAMP")) {
             buf.append("             tmpCont := EMPTY_CLOB;\n");
@@ -174,19 +174,23 @@ public class SpecificOracle extends SpecificDefault {
             else // then timestamp
                buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
             buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
+            buf.append("             ").append(contName).append(" := ").append(this.replPrefix).append("col2xml('");
+            buf.append(colName).append("', tmpCont,").append(contName).append(");\n");
             buf.append("             dbms_lob.close(tmpCont);\n");
-            buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
-                  "col2xml('").append(colName).append("', tmpCont));\n");
+            buf.append("             dbms_lob.freetemporary(tmpCont);\n");
          }
          else {
             if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                   || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
                buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
-               buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("fill_blob_char(tmpNum, '").append(colName).append("'));\n");
+               buf.append("             ").append(contName).append(" := ").append(this.replPrefix);
+               buf.append("fill_blob_char(tmpNum, '").append(colName).append("',").append(contName).append(");\n");
             }
             else {
                // buf.append("             tmpNum := ").append(varName).append(";\n");
-               buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append("fill_blob_char(").append(varName).append(", '").append(colName).append("'));\n");
+               buf.append("             ").append(contName).append(" := ").append(this.replPrefix);
+               buf.append("fill_blob_char(").append(varName).append(", '").append(colName).append("',");
+               buf.append(contName).append(");\n");
             }
             
             // buf.append("             tmpCont := EMPTY_CLOB;\n");
@@ -274,7 +278,6 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("   op      VARCHAR(15);\n");
       buf.append("   longKey INTEGER;\n");
       buf.append("   debug   INTEGER;\n");
-      
       buf.append("BEGIN\n");
       buf.append("\n");
       if (this.debug) {
@@ -332,16 +335,21 @@ public class SpecificOracle extends SpecificDefault {
       if (containsLongs) {
          buf.append("    IF NOT INSERTING THEN\n");
          buf.append("       dbms_lob.close(oldCont);\n");
+         buf.append("       dbms_lob.freetemporary(oldCont);\n");
          buf.append("    END IF;\n");
       }
       else {
          buf.append("    IF INSERTING THEN\n");
          buf.append("       dbms_lob.close(newCont);\n");
+         buf.append("       dbms_lob.freetemporary(newCont);\n");
          buf.append("    ELSIF DELETING THEN\n");
          buf.append("       dbms_lob.close(oldCont);\n");
+         buf.append("       dbms_lob.freetemporary(oldCont);\n");
          buf.append("    ELSE\n");
          buf.append("       dbms_lob.close(oldCont);\n");
          buf.append("       dbms_lob.close(newCont);\n");
+         buf.append("       dbms_lob.freetemporary(oldCont);\n");
+         buf.append("       dbms_lob.freetemporary(newCont);\n");
          buf.append("    END IF;\n");
       }
       buf.append("END ").append(triggerName).append(";\n");
