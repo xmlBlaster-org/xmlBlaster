@@ -417,7 +417,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          }
       }
       if (doSend) { // we put it in the attribute map not in the message itself
-         this.event.getAttributeMap().put(TRANSACTION_SEQ, "" + this.transSeq++);
+         this.event.getAttributeMap().put(TRANSACTION_SEQ, "" + (++this.transSeq));
          this.persistentInfo.put(this.transSeqPropertyName, "" + this.transSeq);
          this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
       }
