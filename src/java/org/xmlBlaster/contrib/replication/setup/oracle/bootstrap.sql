@@ -129,19 +129,20 @@ END ${replPrefix}scheduler_trigger;
 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}fill_blob_char(
-                           val VARCHAR, nameOfParam VARCHAR, res IN OUT CLOB) 
-   RETURN CLOB AS
+                           val VARCHAR, nameOfParam VARCHAR, res IN OUT NOCOPY CLOB) 
+   RETURN INTEGER AS
    tmpCont CLOB;
+   fake    INTEGER;
 BEGIN
    tmpCont := EMPTY_CLOB;
    dbms_lob.createtemporary(tmpCont, TRUE);
    dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);
    dbms_lob.writeappend(tmpCont, LENGTH(val), val);
    -- dbms_lob.append(completeCont, ${replPrefix}col2xml(nameOfParam, tmpCont));
-   res := ${replPrefix}col2xml(nameOfParam, tmpCont, res);
+   fake := ${replPrefix}col2xml(nameOfParam, tmpCont, res);
    dbms_lob.close(tmpCont);
    dbms_lob.freetemporary(tmpCont);
-   RETURN res;
+   RETURN 0;
 END ${replPrefix}fill_blob_char;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -155,8 +156,9 @@ END ${replPrefix}fill_blob_char;
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_cdata(name VARCHAR, 
-                           content CLOB, tmp IN OUT CLOB) RETURN CLOB AS
-  ch  VARCHAR(${charWidth});
+                           content CLOB, tmp IN OUT NOCOPY CLOB) RETURN INTEGER AS
+  ch   VARCHAR(${charWidth});
+  fake INTEGER;
 BEGIN
    ch := '<col name="';
    dbms_lob.writeappend(tmp, length(ch), ch);
@@ -166,7 +168,7 @@ BEGIN
    dbms_lob.append(tmp, content);
    ch := ']]></col>';
    dbms_lob.writeappend(tmp, length(ch), ch);
-   RETURN tmp;
+   RETURN 0;
 END ${replPrefix}col2xml_cdata;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -346,8 +348,8 @@ END ${replPrefix}base64_helper;
 --   name: the name of content to be encoded.                                   
 -- ---------------------------------------------------------------------------- 
 
-CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw(msg RAW, res IN OUT CLOB)
-   RETURN CLOB AS
+CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw(msg RAW, res IN OUT NOCOPY CLOB)
+   RETURN INTEGER AS
      numBuilder INTEGER;
      char1      SMALLINT;
      char2      SMALLINT;
@@ -359,7 +361,7 @@ CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw(msg RAW, res IN OUT CLOB)
      source     RAW(32766); 
      zeros      SMALLINT;
      ch         CHAR(10);
-     tmp        VARCHAR(${charWidthSmall});
+     str        VARCHAR(${charWidthSmall});
 BEGIN
    source := msg;
    WHILE utl_raw.length(source) > 0 LOOP
@@ -381,22 +383,24 @@ BEGIN
       ELSE
         source := '';
       END IF;
-      tmp := ${replPrefix}base64_helper(zeros, numBuilder);
-      len := LENGTH(tmp);
-      dbms_lob.writeappend(res, len, tmp);
+      str := ${replPrefix}base64_helper(zeros, numBuilder);
+      len := LENGTH(str);
+      dbms_lob.writeappend(res, len, str);
    END LOOP;
-   RETURN res;
+   RETURN 0;
 END ${replPrefix}base64_enc_raw;
 -- EOC (end of command: needed as a separator for our script parser)            
+
 
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw_t(msg RAW)
    RETURN CLOB AS
      tmp   CLOB;
+     fake  INTEGER;
 BEGIN
    tmp := EMPTY_CLOB;
    dbms_lob.createtemporary(tmp, TRUE);
    dbms_lob.open(tmp, dbms_lob.lob_readwrite);
-   tmp := ${replPrefix}base64_enc_raw(msg, tmp);
+   fake := ${replPrefix}base64_enc_raw(msg, tmp);
    dbms_lob.close(tmp);
    RETURN tmp;
 END ${replPrefix}base64_enc_raw_t;
@@ -419,6 +423,7 @@ CREATE OR REPLACE FUNCTION ${replPrefix}test_blob(method VARCHAR2,
    len  INTEGER;
    tmp  BLOB;
    res  CLOB;
+   fake INTEGER;
 BEGIN
    ${replPrefix}debug('TEST BLOB INVOKED');
 
@@ -429,21 +434,24 @@ BEGIN
    FOR i IN  1 .. nmax LOOP
       dbms_lob.writeappend(tmp, len, msg);
    END LOOP;
-   dbms_lob.close(tmp);
+   -- dbms_lob.close(tmp);
 
    res := EMPTY_CLOB;
    dbms_lob.createtemporary(res, TRUE);
    dbms_lob.open(res, dbms_lob.lob_readwrite);
 
    IF method = 'BASE64_ENC_BLOB' THEN
-      res := ${replPrefix}base64_enc_blob(tmp, res);
+      fake := ${replPrefix}base64_enc_blob(tmp, res);
+      dbms_lob.close(tmp);
       RETURN res;
    END IF;
    IF method = 'COL2XML_BASE64' THEN
-      res := ${replPrefix}col2xml_base64(other, tmp, res);
+      fake := ${replPrefix}col2xml_base64(other, tmp, res);
+      dbms_lob.close(tmp);
       RETURN res;
    END IF;
 
+   dbms_lob.close(tmp);
    -- on other just return 'TEST' as a blob
    len := LENGTH('TEST');
    dbms_lob.writeappend(res, len, 'TEST');
@@ -471,6 +479,7 @@ CREATE OR REPLACE FUNCTION ${replPrefix}test_clob(method VARCHAR2,
    res CLOB;
    needsProt INTEGER;
    answer VARCHAR(${charWidth});
+   fake INTEGER;
 BEGIN
    ${replPrefix}debug('TEST CLOB INVOKED');
    tmp := EMPTY_CLOB;
@@ -488,15 +497,15 @@ BEGIN
    END LOOP;
    dbms_lob.close(tmp);
    IF method = 'BASE64_ENC_CLOB' THEN
-      res := ${replPrefix}base64_enc_clob(tmp, res);
+      fake := ${replPrefix}base64_enc_clob(tmp, res);
       RETURN res;
    END IF;
    IF method = 'COL2XML_CDATA' THEN
-      res := ${replPrefix}col2xml_cdata(other, tmp, res);
+      fake := ${replPrefix}col2xml_cdata(other, tmp, res);
       RETURN res;
    END IF;
    IF method = 'COL2XML' THEN
-      res := ${replPrefix}col2xml(other, tmp, res);
+      fake := ${replPrefix}col2xml(other, tmp, res);
       RETURN res;
    END IF;
    IF method = 'NEEDS_PROT' THEN
@@ -504,12 +513,12 @@ BEGIN
       answer := TO_CHAR(needsProt); -- overwrites 'TEST'
    END IF;
    IF method = 'FILL_BLOB_CHAR' THEN
-      res := ${replPrefix}fill_blob_char(msg, other, res);
+      fake := ${replPrefix}fill_blob_char(msg, other, res);
       RETURN res;
    END IF;
    IF method = 'FILL_BLOB_CHAR2' THEN
-      res := ${replPrefix}fill_blob_char(msg, other, res);
-      res := ${replPrefix}fill_blob_char(msg, other, res);
+      fake := ${replPrefix}fill_blob_char(msg, other, res);
+      fake := ${replPrefix}fill_blob_char(msg, other, res);
       RETURN res;
    END IF;
    -- on other just return 'TEST' as a blob
@@ -529,8 +538,8 @@ END ${replPrefix}test_clob;
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_vch(msg VARCHAR2, 
-                                        res IN OUT CLOB)
-   RETURN CLOB AS
+                                        res IN OUT NOCOPY CLOB)
+   RETURN INTEGER AS
      numBuilder INTEGER;
      char1 SMALLINT;
      char2 SMALLINT;
@@ -541,7 +550,8 @@ CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_vch(msg VARCHAR2,
      source VARCHAR2(32766); 
      zeros SMALLINT;
      ch    CHAR(2);
-     tmp   VARCHAR(${charWidthSmall});
+     str   VARCHAR(${charWidthSmall});
+     fake  INTEGER;
 BEGIN
    source := msg;
    WHILE LENGTHB(source) > 0 LOOP
@@ -563,10 +573,10 @@ BEGIN
       ELSE
         source := '';
       END IF;
-      tmp := ${replPrefix}base64_helper(zeros, numBuilder);
-      dbms_lob.writeappend(res, length(tmp), tmp);
+      str := ${replPrefix}base64_helper(zeros, numBuilder);
+      dbms_lob.writeappend(res, length(str), str);
    END LOOP;
-   RETURN res;
+   RETURN 0;
 END ${replPrefix}base64_enc_vch;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -574,11 +584,12 @@ END ${replPrefix}base64_enc_vch;
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_vch_t(msg VARCHAR2)
    RETURN CLOB AS
      tmp   CLOB;
+     fake  INTEGER;
 BEGIN
    tmp := EMPTY_CLOB;
    dbms_lob.createtemporary(tmp, TRUE);
    dbms_lob.open(tmp, dbms_lob.lob_readwrite);
-   tmp := ${replPrefix}base64_enc_vch(msg, tmp);
+   fake := ${replPrefix}base64_enc_vch(msg, tmp);
    dbms_lob.close(tmp);
    RETURN tmp;
 END ${replPrefix}base64_enc_vch_t;
@@ -593,25 +604,26 @@ END ${replPrefix}base64_enc_vch_t;
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_blob(msg BLOB, 
-                           res IN OUT CLOB)
-   RETURN CLOB AS
+                           res IN OUT NOCOPY CLOB)
+   RETURN INTEGER AS
      len       INTEGER;
      offset    INTEGER;
-     tmp       RAW(32766);
+     outRaw    RAW(32766);
      increment INTEGER;
+     fake      INTEGER;
 BEGIN
    offset := 1;
    increment := 32766;
    len := dbms_lob.getlength(msg);
 
    WHILE offset < len LOOP
-      dbms_lob.read(msg, increment, offset, tmp);
+      dbms_lob.read(msg, increment, offset, outRaw);
       offset := offset + increment;
       -- the next line would be used for oracle from version 9 up.              
       -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
-      res := ${replPrefix}base64_enc_raw(tmp, res);
+      fake := ${replPrefix}base64_enc_raw(outRaw, res);
    END LOOP;
-   RETURN res;
+   RETURN 0;
 END ${replPrefix}base64_enc_blob;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -624,12 +636,13 @@ END ${replPrefix}base64_enc_blob;
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_clob(msg CLOB, 
-                           res IN OUT CLOB)
-   RETURN CLOB AS
+                           res IN OUT NOCOPY CLOB)
+   RETURN INTEGER AS
      len        INTEGER;
      offset     INTEGER;
      tmp        VARCHAR2(32766);
-     increment INTEGER;
+     increment  INTEGER;
+     fake       INTEGER;
 BEGIN
    offset := 1;
    increment := 32766;
@@ -639,9 +652,9 @@ BEGIN
       offset := offset + increment;
       -- the next line would be used for oracle from version 9 up.              
       -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
-      res := ${replPrefix}base64_enc_vch(tmp, res);
+      fake := ${replPrefix}base64_enc_vch(tmp, res);
    END LOOP;
-   RETURN res;
+   RETURN 0;
 END ${replPrefix}base64_enc_clob;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -654,18 +667,19 @@ END ${replPrefix}base64_enc_clob;
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_base64(name VARCHAR, 
-                           content BLOB, tmp IN OUT CLOB) RETURN CLOB AS
+                           content BLOB, tmp IN OUT NOCOPY CLOB) RETURN INTEGER AS
    ch   VARCHAR(40);
+   fake INTEGER;
 BEGIN
    ch := '<col name="';
    dbms_lob.writeappend(tmp, length(ch), ch);
    dbms_lob.writeappend(tmp, length(name), name);
    ch := '" encoding="base64">';
    dbms_lob.writeappend(tmp, length(ch), ch);
-   tmp := ${replPrefix}base64_enc_blob(content, tmp);
+   fake := ${replPrefix}base64_enc_blob(content, tmp);
    ch := '</col>';
    dbms_lob.writeappend(tmp, length(ch), ch);
-   RETURN tmp;
+   RETURN 0;
 END ${replPrefix}col2xml_base64;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -681,9 +695,10 @@ END ${replPrefix}col2xml_base64;
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE FUNCTION ${replPrefix}col2xml(name VARCHAR, content CLOB, 
-                           tmp IN OUT CLOB) RETURN CLOB AS
-   pos INTEGER;
-   ch  VARCHAR(40);
+                           tmp IN OUT NOCOPY CLOB) RETURN INTEGER AS
+   pos  INTEGER;
+   ch   VARCHAR(40);
+   fake INTEGER;
 BEGIN
    pos := ${replPrefix}needs_prot(content);
    IF pos = 0 THEN
@@ -695,21 +710,21 @@ BEGIN
       dbms_lob.append(tmp, content);
       ch := '</col>';
       dbms_lob.writeappend(tmp, length(ch), ch);
-      RETURN tmp;
+      RETURN 0;
    END IF;
    IF pos = 1 THEN 
-      tmp := ${replPrefix}col2xml_cdata(name, content, tmp); 
-      RETURN tmp;
+      fake := ${replPrefix}col2xml_cdata(name, content, tmp); 
+      RETURN 0;
    END IF; 
    ch := '<col name="';
    dbms_lob.writeappend(tmp, length(ch), ch);
    dbms_lob.writeappend(tmp, length(name), name);
    ch := '" encoding="base64">';
    dbms_lob.writeappend(tmp, length(ch), ch);
-   tmp := ${replPrefix}base64_enc_clob(content, tmp);
+   fake := ${replPrefix}base64_enc_clob(content, tmp);
    ch := '</col>';
    dbms_lob.writeappend(tmp, length(ch), ch);
-   RETURN tmp;
+   RETURN 0;
 END ${replPrefix}col2xml;
 -- EOC (end of command: needed as a separator for our script parser)            
 

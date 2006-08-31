@@ -160,7 +160,7 @@ public class SpecificOracle extends SpecificDefault {
                buf.append("             dbms_lob.writeappend(blobCont,").append("length(");
                buf.append(varName).append("),").append(varName).append(");\n");
             }
-            buf.append("             ").append(contName).append(" := ").append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont,").append(contName).append(");\n");
+            buf.append("             fake := ").append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont,").append(contName).append(");\n");
             buf.append("             dbms_lob.close(blobCont);\n");
             buf.append("             dbms_lob.freetemporary(blobCont);\n");
          }
@@ -174,7 +174,7 @@ public class SpecificOracle extends SpecificDefault {
             else // then timestamp
                buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
             buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
-            buf.append("             ").append(contName).append(" := ").append(this.replPrefix).append("col2xml('");
+            buf.append("             fake := ").append(this.replPrefix).append("col2xml('");
             buf.append(colName).append("', tmpCont,").append(contName).append(");\n");
             buf.append("             dbms_lob.close(tmpCont);\n");
             buf.append("             dbms_lob.freetemporary(tmpCont);\n");
@@ -183,12 +183,12 @@ public class SpecificOracle extends SpecificDefault {
             if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
                   || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
                buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
-               buf.append("             ").append(contName).append(" := ").append(this.replPrefix);
+               buf.append("             fake := ").append(this.replPrefix);
                buf.append("fill_blob_char(tmpNum, '").append(colName).append("',").append(contName).append(");\n");
             }
             else {
                // buf.append("             tmpNum := ").append(varName).append(";\n");
-               buf.append("             ").append(contName).append(" := ").append(this.replPrefix);
+               buf.append("             fake := ").append(this.replPrefix);
                buf.append("fill_blob_char(").append(varName).append(", '").append(colName).append("',");
                buf.append(contName).append(");\n");
             }
@@ -278,6 +278,7 @@ public class SpecificOracle extends SpecificDefault {
       buf.append("   op      VARCHAR(15);\n");
       buf.append("   longKey INTEGER;\n");
       buf.append("   debug   INTEGER;\n");
+      buf.append("   fake    INTEGER;\n");
       buf.append("BEGIN\n");
       buf.append("\n");
       if (this.debug) {
