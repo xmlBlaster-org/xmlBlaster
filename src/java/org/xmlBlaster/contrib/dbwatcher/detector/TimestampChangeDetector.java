@@ -10,10 +10,12 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.sql.Connection;
+import java.text.SimpleDateFormat;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.I_DbPool;
@@ -116,6 +118,40 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
    String MINSTR = " ";
    protected String queryMeatStatement;
 
+
+   /**
+    * Modifies a string if it contains the special token '${currentDate}'.
+    * The correct syntax would be :
+    * ${currentDate}=yyyy-MM-dd HH:mm:ss.0
+    * Note that spaces after the equality sign count.
+    * If you only specify ${currentDate} without equality Sign, then 
+    * the current time returned as System.getCurrentTime() is returned.
+    * This method is made public for testing. 
+    * @param in
+    * @return
+    */
+   public static String modifyMinStrIfDate(String in, long time) {
+      // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
+      // detect if it has to be processed:
+      if (in == null)
+         return null;
+      if (in.length() < 1)
+         return in;
+      if (time < 1)
+         time = System.currentTimeMillis();
+      int pos0 = in.indexOf("${currentDate}"); 
+      if (pos0 > -1) { // then it is for us
+         int pos = in.indexOf("=");
+         if (pos < pos0 + "${currentDate}".length())
+            return "" + time;
+         String formatString = in.substring(pos+1);
+         SimpleDateFormat format = new SimpleDateFormat(formatString);
+         in = format.format(new Date(time));
+      }
+      return in;
+   }
+   
+   // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
    /**
     * @param info
     * @param changeListener
@@ -127,9 +163,11 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
       this.changeListener = changeListener;
       this.info = info;
       this.dataConverter = dataConverter;
-
-      this.MINSTR = this.info.get("changeDetector.MINSTR", this.MINSTR);
       
+      this.MINSTR = this.info.get("changeDetector.MINSTR", this.MINSTR);
+
+      // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
+      this.MINSTR = modifyMinStrIfDate(this.MINSTR, 0);
       this.queryMeatStatement = this.info.get("db.queryMeatStatement", (String)null);
       if (this.queryMeatStatement != null && this.queryMeatStatement.length() < 1)
          this.queryMeatStatement = null;
