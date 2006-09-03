@@ -460,7 +460,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * The changed() invocation is guaranteed to NOT be in any Queue specific synchronize
     * <p />
     * You can use this for example to add a threshold warning system.
-    * @param listener the listener to be added.
+    * @param listener the listener to be added, adding the same listener multiple times will only remember one and fire once
     * @exception IllegalArgumentException if you pass null
     */
    public void addQueueSizeListener(I_QueueSizeListener listener);
