@@ -38,7 +38,7 @@ public class HelloWorld9 implements I_Callback
       final I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       this.timeout = this.glob.getProperty().get("timeout", timeout);
       this.consuming = this.glob.getProperty().get("consuming", consuming);
-      this.queueOid = this.glob.getProperty().get("queueOid", "topic/hello");
+      this.queueOid = this.glob.getProperty().get("queueOid", "topic/Hello");
       
       try {
          ConnectQos qos = new ConnectQos(glob);
