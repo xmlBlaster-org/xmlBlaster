@@ -1394,9 +1394,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       synchronized(this.queueSizeListenersSync) {
          if (listener == null) this.queueSizeListeners = null;
          else {
-            if (!this.queueSizeListeners.remove(listener))
-               log.warning(ME+"removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
-            if (this.queueSizeListeners.size() == 0) this.queueSizeListeners = null;
+            ArrayList list = this.queueSizeListeners;
+            if (list != null) {
+               if (!list.remove(listener))
+                  log.warning(ME+"removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
+               if (list.size() == 0) this.queueSizeListeners = null;
+            }
          }
       }
    }

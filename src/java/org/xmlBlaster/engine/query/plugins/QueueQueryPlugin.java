@@ -180,7 +180,8 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
                   if (log.isLoggable(Level.FINE)) log.fine("query: removed myself as a QueueSizeListener");
                }
                catch (Throwable ex) {
-                  log.severe("query: exception occurred when removing the QueueSizeListener from the queue");
+                  ex.printStackTrace();
+                  log.severe("query: exception occurred when removing the QueueSizeListener from the queue:" + ex.toString());
                }
             }
          }
