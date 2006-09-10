@@ -7,7 +7,6 @@ Comment:   Testing some topic state transitions
 package org.xmlBlaster.test.topic;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -17,16 +16,12 @@ import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
@@ -56,11 +51,9 @@ import junit.framework.*;
  * @see org.xmlBlaster.engine.TopicHandler
  */
 public class TestTopicHistory extends TestCase implements I_Callback {
-   private String ME = "TestTopicHistory";
    private final Global glob;
    private static Logger log = Logger.getLogger(TestTopicHistory.class.getName());
 
-   private final String senderName = "Gesa";
    private I_XmlBlasterAccess con = null;
    private String senderContent = "Some message content";
    private String publishOid = "TestTopicHistoryMsg";
@@ -102,7 +95,6 @@ public class TestTopicHistory extends TestCase implements I_Callback {
       }
 
       try {
-         String passwd = "secret";
          con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          con.connect(qos, this);
@@ -239,31 +231,8 @@ public class TestTopicHistory extends TestCase implements I_Callback {
    }
 
    /**
-    * Retrieve a dump of xmlBlaster to analyse
-    */
-   private String getDump() {
-      try {
-         GetKey gk = new GetKey(glob, "__cmd:?dump");
-         GetQos gq = new GetQos(glob);
-         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
-         assertEquals("Did not expect returned msg for get()", 1, msgs.length);
-         return msgs[0].getContentStr();
-      }
-      catch (XmlBlasterException e) {
-         fail("Didn't expect an exception in get(): " + e.getMessage());
-      }
-      return "";
-   }
-
-   /**
-    * THIS IS THE TEST
-    * <p>
-    * <pre>
-    * <pre>
-    * </p>
     */
    public void testHistory() {
-      this.ME = "TestTopicHistory-testHistory";
       log.info("Entering testHistory ...");
       numReceived = 0;
 
@@ -335,31 +304,6 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          log.info("Block released, reset blockTimer");
       }
       return "";
-   }
-
-   /**
-    * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs.
-    * <p />
-    * @param timeout in milliseconds
-    * @param numWait how many messages to wait
-    */
-   private void waitOnUpdate(final long timeout, final int numWait) {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      while (numReceived < numWait) {
-         try {
-            Thread.sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
-         sum += pollingInterval;
-         if (sum > timeout) {
-            log.warning("Timeout of " + timeout + " occurred");
-            break;
-         }
-      }
    }
 
    /**
