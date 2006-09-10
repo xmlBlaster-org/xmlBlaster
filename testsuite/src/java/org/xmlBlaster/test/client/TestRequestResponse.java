@@ -100,7 +100,8 @@ public class TestRequestResponse extends TestCase {
          pq.addDestination(new Destination(new SessionName(sender.getGlobal(), receiverName)));
          MsgUnit msgUnit = new MsgUnit(pk, "Tell me the truth!", pq);
          MsgUnit[] replies = sender.request(msgUnit, 3000, 1);
-         assertEquals(senderName+": Missing reply message.", 1, replies.length);
+         assertEquals("Missing reply message.", 1, replies.length);
+         assertEquals("On doubt no ultimate truth, my dear.", replies[0].getContentStr());
          log.info(senderName+": Got " + replies.length + " reply :\n" + replies[0].toXml());
       }
       catch (XmlBlasterException e) {
