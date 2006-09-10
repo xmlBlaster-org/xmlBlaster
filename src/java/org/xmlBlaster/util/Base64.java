@@ -25,6 +25,11 @@
 package org.xmlBlaster.util;
 import java.io.*;
 
+/*
+ * You can now use also javax.mail.internet.MimeUtility
+ * and sun.misc.BASE64Encoder.encode.
+ * There is a non-public class in Java 1.4+ called java.util.prefs.Base64
+ */
 public class Base64 {
 
     static final char[] charTab = 
