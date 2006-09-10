@@ -120,6 +120,10 @@ public class HelloWorld3 implements I_Callback
       }
    }
 
+   /**
+    * Implements I_Callback interface to receive asynchronously callback
+    * messages from xmlBlaster. 
+    */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos)
    {
