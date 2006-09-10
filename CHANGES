@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for 1.4 (not yet released)
+==================================
+
+ o #15506 Fixed C client library cast for Solaris
+
+
 Changes for 1.3 [2006-09-10] #15505
 ===================================
 
