@@ -266,7 +266,7 @@ public class Constants {
 
    public final static String JMS_PREFIX = "__jms:";
    
-   public final static String JMS_REPLY_TO = "JMSReplyTo";  
+   public final static String JMS_REPLY_TO = "__jms:JMSReplyTo";  
 
    
    /** Mimetypes */
@@ -317,8 +317,8 @@ public class Constants {
     * @return
     */
    public static String addJmsPrefix(String key, Logger log) {
-      if (key.indexOf(JMS_PREFIX) == 0) {
-         log.warning("JMS Property '" + key + "' is already starting with '" + JMS_PREFIX + "'");
+      if (key.startsWith(JMS_PREFIX)) {
+         log.fine("JMS Property '" + key + "' is already starting with '" + JMS_PREFIX + "'");
          return key;
       }
       if (XBConnectionMetaData.getReservedProps().contains(key) || XBConnectionMetaData.getStandardProps().contains(key))
