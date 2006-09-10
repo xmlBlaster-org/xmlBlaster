@@ -1,8 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for 1.3 [not yet released]
-==================================
+Changes for 1.3 [2006-09-10] #15505
+===================================
+
+ o #15504 Fixed NPE in CacheQueueInterceptorPlugin.removeQueueSizeListener() if queue is shutdown
 
  o #15490 Fixed JMS_REPLY_TO = "__jms:JMSReplyTo" to contain new introduced "__jms:" prefix
 
@@ -196,7 +198,7 @@ Changes for 1.3 [not yet released]
  o #14981 Extended MIME XPath filter:
    - Depending on the configuration the XPath can now query the QoS OR the message content
      The default is as before the message content
-   - Optionally you can supply a XSL file name which is used to transform the message content
+   - Optionally you can supply a XSL file name which is used to transform the message content (deprecated again)
    - The plugin type name is now dynamically determined to support multiple plugins
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html
 

@@ -1,4 +1,4 @@
-This is xmlBlaster version 1.2 2006-03-13
+This is xmlBlaster version 1.3 2006-09-10
 
 
 XmlBlaster  is  under development or productive in a huge range
@@ -6,11 +6,9 @@ of  industries  like  satellite  control,  air  traffic control
 telecommunication, radar, car industry, process monitoring etc.
 
 This  release  is backward compatible to the previous regarding
-the client server communication protocols.
-It now uses  the java.util.logging  framework instead of jutils
-so be prepared  to port your code depending on jutils features.
-The engine.Global  class is renamed  to engine.ServerScope, you
-need to port your native plugins with respect to this rename.
+the client server communication protocols. It contains heaps of
+extensions  and  fixes,  the  details  are noted in the CHANGES
+file.
 
 It  is  tested under Linux/Solaris-SPARC/FreeBSD/WinXP with JDK
 1.4-1.6 and g++ 2.9x/3.x/4.x, icc 8.x and 9.x, MSVisualC++ from
@@ -37,27 +35,57 @@ See:
 http://www.xmlblaster.org/xmlBlaster/CHANGES
 
 
-Note:
------
-If you use the cluster feature please take the new
-xmlBlaster/config/xmlBlasterPlugins.xml.template
-as the ClusterManager is now configured as a plugin.
 
+Notes for V1.3:
+---------------
 
 ===========================
 Getting login/logout events
 ===========================
-Since version 1.3, #15211, 2006-06-30
-the login/logout events are deprecated and switched off as default.
-Please activate them yourself if you need them in xmlBlaster.properties with
+Since  version  1.3, #15211, 2006-06-30 the login/logout events
+are deprecated and switched off as default. If you need the old
+implementation,  please  activate  it  in xmlBlaster.properties
+with
   loginEvent=true
   logoutEvent=true
   userListEvent=true
-The new framework to use is
+The new and preferred framework to use is
   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html
 The porting is described in
   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.LoginLogoutEvent.html#workaround
 
+=============================
+Incompatible interface change
+=============================
+ Note  that  the  security plugin interface has changed, if you
+ have  coded your own security plugins please adapt them to the
+ exended  interface.  The  change is easy and the compiler will
+ tell you the place.
+
+Important other extensions:
+ -  The  java client library now supports convenience functions
+    receive()  and  request().
+ -  There  is a C# client using the xmlBlaster  C library
+ -  The htpasswd plugin supports now authorization
+ -  Race conditions in TopicHandler.java are fixed
+ -  Clustering   xmlBlaster   over   email  protocol
+ -  Fixed encoding/charset issues
+
+
+
+Notes since V1.2:
+-----------------
+It uses the java.util.logging framework instead of jutils so be
+prepared  to  port  your code depending on jutils features. The
+engine.Global  class is renamed to engine.ServerScope, you need
+to port your native plugins with respect to this rename.
+
+
+Note:
+-----
+If   you   use   the   cluster  feature  please  take  the  new
+xmlBlaster/config/xmlBlasterPlugins.xml.template     as     the
+ClusterManager is now configured as a plugin.
 
 
 ==========
