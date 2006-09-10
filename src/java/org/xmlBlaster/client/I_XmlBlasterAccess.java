@@ -481,10 +481,17 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * Implements the blocking request/reply pattern.
     * <p>
     * The msgUnit should contain a PublishQos which routes the request
-    * to the desired client, for example:
+    * to the desired client, for example sending it to client <code>joe</code>
+    * and its login session <code>1</code>:
     * <pre>
+    * import org.xmlBlaster.util.qos.address.Destination;
+    * import org.xmlBlaster.client.qos.PublishQos;
+    *  ...
+    *  Global glob = ...;
+    *  ...
+    *  PublishQos pq = new PublishQos(glob);
     *  Destination dest = new Destination(glob, new SessionName(glob, "joe/1"));
-    *  dest.forceQueuing(forceQueuing);
+    *  dest.forceQueuing(true);
     *  pq.addDestination(dest);
     *  </pre>
     *  <p>
@@ -493,7 +500,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  <pre>
     *  String tempTopicOid = updateQos.getClientProperty(Constants.JMS_REPLY_TO, "");
     *  // Send reply back ...
-    *  PublishKey pk = new PublishKey(receiver.getGlobal(), tempTopicOid);
+    *  PublishKey pk = new PublishKey(glob, tempTopicOid);
     *  ...
     *  </pre>
     *  
