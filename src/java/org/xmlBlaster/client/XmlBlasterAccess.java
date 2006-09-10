@@ -171,7 +171,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener(I_ConnectionStateListener)
     */
    public synchronized void registerConnectionListener(I_ConnectionStateListener connectionListener) {
-      if (log.isLoggable(Level.FINER)) log.finer("Initializing registering connectionListener");
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Initializing registering connectionListener");
       this.connectionListener = connectionListener;
    }
 
@@ -192,9 +192,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public SynchronousCache createSynchronousCache(int size) {
       if (this.synchronousCache != null)
          return this.synchronousCache; // Is initialized already
-      if (log.isLoggable(Level.FINER)) log.finer("Initializing synchronous cache: size=" + size);
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Initializing synchronous cache: size=" + size);
       this.synchronousCache = new SynchronousCache(glob, size);
-      log.info("SynchronousCache has been initialized with size="+size);
+      log.info(getLogId()+"SynchronousCache has been initialized with size="+size);
       return this.synchronousCache;
    }
 
@@ -294,7 +294,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                
                this.dispatchManager.getDispatchConnectionsHandler().registerPostSendListener(this);
                
-               if (log.isLoggable(Level.FINE)) log.fine("Switching to synchronous delivery mode ...");
+               if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Switching to synchronous delivery mode ...");
                this.dispatchManager.trySyncMode(true);
 
                if (this.updateListener != null) { // Start a default callback server using same protocol
@@ -306,7 +306,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   sendConnectQos();
                }
                else {
-                  log.info("Initialized client library, but no connect() is send to xmlBlaster, a delegate should do any subscribe if required");
+                  log.info(getLogId()+"Initialized client library, but no connect() is send to xmlBlaster, a delegate should do any subscribe if required");
                }
             }
             catch (XmlBlasterException e) {
@@ -335,7 +335,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
          if (this.clientQueue.getNumOfEntries() > 0) {
             long num = this.clientQueue.getNumOfEntries();
-            log.info("We have " + num + " client side queued tail back messages");
+            log.info(getLogId()+"We have " + num + " client side queued tail back messages");
             this.dispatchManager.switchToASyncMode();
             while (this.clientQueue.getNumOfEntries() > 0) {
                try { Thread.sleep(20L); } catch( InterruptedException i) {}
@@ -384,29 +384,29 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          this.sessionRefreshTimeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   if (isAlive()) {
-                     if (log.isLoggable(Level.FINE)) log.fine("Refreshing session to not expire");
+                     if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Refreshing session to not expire");
                      try {
                         refreshSession();
                      }
                      catch (XmlBlasterException e) {
-                        log.warning("Can't refresh the login session '" + getId() + "': " + e.toString());
+                        log.warning(getLogId()+"Can't refresh the login session '" + getId() + "': " + e.toString());
                      }
                   }
                   else {
-                     if (log.isLoggable(Level.FINE)) log.fine("Can't refresh session as we have no connection");
+                     if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Can't refresh session as we have no connection");
                   }
                   try {
                      sessionRefreshTimeoutHandle = timeout.addOrRefreshTimeoutListener(this, refreshTimeout, null, sessionRefreshTimeoutHandle) ;
                   }
                   catch (XmlBlasterException e) {
-                     log.warning("Can't refresh the login session '" + getId() + "': " + e.toString());
+                     log.warning(getLogId()+"Can't refresh the login session '" + getId() + "': " + e.toString());
                   }
                }
             },
             refreshTimeout, null);
       }
       else {
-         log.warning("Auto-refreshing session is not supported for session timeouts smaller " + MIN + " seconds");
+         log.warning(getLogId()+"Auto-refreshing session is not supported for session timeouts smaller " + MIN + " seconds");
       
       }
    }
@@ -439,7 +439,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       //addr.setSecretSessionId(cbSessionId);
       prop.setCallbackAddress(addr);
 
-      log.info("Callback settings: " + prop.getSettings());
+      log.info(getLogId()+"Callback settings: " + prop.getSettings());
    }
 
    /**
@@ -449,7 +449,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (callbackAddress == null)
          callbackAddress = new CallbackAddress(glob);
       callbackAddress.setSessionName(this.getSessionName());
-      if (log.isLoggable(Level.FINE)) log.fine("Using 'client.cbProtocol=" + callbackAddress.getType() + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
+      if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Using 'client.cbProtocol=" + callbackAddress.getType() + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
       I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(callbackAddress.getType(), callbackAddress.getVersion());
       server.initialize(this.glob, loginName, callbackAddress, this);
       return server;
@@ -474,10 +474,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       try {
          this.secPlgn = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
          if (secMechanism != null)  // to avoid double logging for login()
-            log.info("Loaded security plugin=" + secMechanism + " version=" + secVersion);
+            log.info(getLogId()+"Loaded security plugin=" + secMechanism + " version=" + secVersion);
       }
       catch (XmlBlasterException e) {
-         log.severe("Security plugin '" + secMechanism + "/" + secVersion +
+         log.severe(getLogId()+"Security plugin '" + secMechanism + "/" + secVersion +
                        "' initialization failed. Reason: "+e.getMessage());
          this.secPlgn = null;
       }
@@ -495,7 +495,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!this.isValid) return false;
       // Relaxed check to allow shutdown of database without successful connection
       if (this.connectQos == null /*!isConnected()*/) {
-         log.warning("You called disconnect() but you are are not logged in, we ignore it.");
+         log.warning(getLogId()+"You called disconnect() but you are are not logged in, we ignore it.");
          return false;
       }
 
@@ -516,7 +516,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    private synchronized boolean shutdown(DisconnectQos disconnectQos) {
       if (this.disconnectInProgress) {
-         log.warning("Calling disconnect again is ignored, you are in shutdown progress already");
+         log.warning(getLogId()+"Calling disconnect again is ignored, you are in shutdown progress already");
          return false;
       }
 
@@ -533,10 +533,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             long remainingEntries = this.clientQueue.getNumOfEntries();
             if (remainingEntries > 0) {
                if (disconnectQos.clearClientQueue())
-                  log.warning("You called disconnect(). Please note that there are " + remainingEntries +
+                  log.warning(getLogId()+"You called disconnect(). Please note that there are " + remainingEntries +
                                " unsent invocations/messages in the queue which are discarded now.");
                else
-                  log.info("You called disconnect(). Please note that there are " + remainingEntries +
+                  log.info(getLogId()+"You called disconnect(). Please note that there are " + remainingEntries +
                                " unsent invocations/messages in the queue which are sent on next connect of the same client with the same public session ID.");
             }
          }
@@ -552,7 +552,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                if (e.isCommunication()) {
                   break;
                }
-               log.warning("Couldn't unsubscribe '" + subscriptionId + "' : " + e.getMessage());
+               log.warning(getLogId()+"Couldn't unsubscribe '" + subscriptionId + "' : " + e.getMessage());
             }
          }
          this.updateDispatcher.clear();
@@ -563,7 +563,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             try {
                MsgQueueDisconnectEntry entry = new MsgQueueDisconnectEntry(this.glob, this.clientQueue.getStorageId(), disconnectQos);
                queueMessage(entry);  // disconnects are always transient
-               log.info("Successful disconnect from " + getServerNodeId());
+               log.info(getLogId()+"Successful disconnect from " + getServerNodeId());
             } catch(Throwable e) {
                e.printStackTrace();
                log.warning(e.toString());
@@ -629,6 +629,15 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public String getId() {
       SessionName sessionName = getSessionName();
       return (sessionName == null) ? "UNKNOWN_SESSION" : sessionName.getAbsoluteName();
+   }
+
+   /**
+    * Useful as a logging prefix. 
+    * @return For example "client/TheDesperate/-6: "
+    */
+   public String getLogId() {
+      SessionName sessionName = getSessionName();
+      return (sessionName == null) ? "" : sessionName.getRelativeName() + ": ";
    }
 
    /**
@@ -702,14 +711,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          }
       }
       catch (XmlBlasterException e) {
-         log.warning("Ignoring problem during JMX session registration: " + e.toString());
+         log.warning(getLogId()+"Ignoring problem during JMX session registration: " + e.toString());
       }
       
       // parse new cluster node name ...
       ContextNode tmp = ContextNode.valueOf(nodeId);
       ContextNode tmpClusterContext = (tmp==null)?null:tmp.getParent(ContextNode.CLUSTER_MARKER_TAG);
       if (tmpClusterContext == null) {
-         log.severe("Ignoring unknown serverNodeId '" + nodeId + "'");
+         log.severe(getLogId()+"Ignoring unknown serverNodeId '" + nodeId + "'");
          return;
       }
       String newServerNodeInstanceName = tmpClusterContext.getInstanceName(); // e.g. "heron"
@@ -738,7 +747,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          // For example our connectionQueue or our plugins like Pop3Driver
          if (oldClusterObjectName.length() > 0) {
             int num = this.glob.getJmxWrapper().renameMBean(oldClusterObjectName, ContextNode.CLUSTER_MARKER_TAG, this.contextNode);
-            if (log.isLoggable(Level.FINE)) log.fine("Renamed " + num + " jmx nodes to new '" + nodeId + "'");
+            if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Renamed " + num + " jmx nodes to new '" + nodeId + "'");
          }
 
          if (this.mbeanHandle == null && this.contextNode != null) {   // "org.xmlBlaster:nodeClass=node,node=heron"
@@ -746,7 +755,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          }         
       }
       catch (XmlBlasterException e) {
-          log.warning("Ignoring problem during JMX registration: " + e.toString());
+          log.warning(getLogId()+"Ignoring problem during JMX registration: " + e.toString());
        }
    }
 
@@ -756,7 +765,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private Object queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
       try {
          this.clientQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
-         if (log.isLoggable(Level.FINE)) log.fine("Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
+         if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Forwarded one '" + entry.getEmbeddedType() + "' message, current state is " + getState().toString());
          return entry.getReturnObj();
       }
       catch (XmlBlasterException e) {
@@ -847,7 +856,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       MsgUnit[] msgUnitArr = null;
       msgUnitArr = this.synchronousCache.get(getKey, getQos);
-      if (log.isLoggable(Level.FINE)) log.fine("CacheDump: msgUnitArr=" + msgUnitArr + ": '" + getKey.toXml().trim() + "' \n" + getQos.toXml() + this.synchronousCache.toXml(""));
+      if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"CacheDump: msgUnitArr=" + msgUnitArr + ": '" + getKey.toXml().trim() + "' \n" + getQos.toXml() + this.synchronousCache.toXml(""));
       //not found in this.synchronousCache
       if(msgUnitArr == null) {
          msgUnitArr = get(getKey, getQos);  //get messages from xmlBlaster (synchronous)
@@ -858,7 +867,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             subscribeReturnQos = subscribe(subscribeKey, subscribeQos); //subscribe to this messages (asynchronous)
             this.synchronousCache.newEntry(subscribeReturnQos.getSubscriptionId(), getKey, msgUnitArr);     //fill messages to this.synchronousCache
          }
-         log.info("New entry in this.synchronousCache created (subscriptionId="+subscribeReturnQos.getSubscriptionId()+")");
+         log.info(getLogId()+"New entry in this.synchronousCache created (subscriptionId="+subscribeReturnQos.getSubscriptionId()+")");
       }
       return msgUnitArr;
    }
@@ -930,7 +939,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "publishArr");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       if (this.firstWarn) {
-         log.warning("Publishing arrays is not atomic implemented - TODO");
+         log.warning(getLogId()+"Publishing arrays is not atomic implemented - TODO");
          this.firstWarn = false;
       }
       PublishReturnQos[] retQos = new PublishReturnQos[msgUnitArr.length];
@@ -969,7 +978,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering update(updateKey=" + updateKey.getOid() +
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Entering update(updateKey=" + updateKey.getOid() +
                     ", subscriptionId=" + updateQos.getSubscriptionId() + ", " + ((this.synchronousCache != null) ? "using synchronousCache" : "no synchronousCache") + ") ...");
 
       if (this.synchronousCache != null) {
@@ -978,10 +987,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             retVal = this.synchronousCache.update(updateQos.getSubscriptionId(), updateKey, content, updateQos);
          }
          if (retVal) {
-            if (log.isLoggable(Level.FINE)) log.fine("Putting update message " + updateQos.getSubscriptionId() + " into cache");
+            if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Putting update message " + updateQos.getSubscriptionId() + " into cache");
             return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
          }
-         if (log.isLoggable(Level.FINE)) log.fine("Update message " + updateQos.getSubscriptionId() + " is not for cache");
+         if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Update message " + updateQos.getSubscriptionId() + " is not for cache");
       }
 
       Object obj = null;
@@ -1000,7 +1009,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          return this.updateListener.update(cbSessionId, updateKey, content, updateQos); // deliver the update to our client
       }
       else {
-         log.severe("Ignoring unexpected update message as client has not registered a callback: " + updateKey.toXml() + "" + updateQos.toXml());
+         log.severe(getLogId()+"Ignoring unexpected update message as client has not registered a callback: " + updateKey.toXml() + "" + updateQos.toXml());
       }
 
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
@@ -1012,9 +1021,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * Enforced by interface I_ConnectionStatusListener
     */
    public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-      if (log.isLoggable(Level.FINER)) log.finer("Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " connectInProgress=" + this.connectInProgress);
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE + " connectInProgress=" + this.connectInProgress);
       if (this.clientQueue != null && this.clientQueue.getNumOfEntries() > 0) {
-         log.info("Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE +
+         log.info(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.ALIVE +
                       " connectInProgress=" + this.connectInProgress +
                       " with " + this.clientQueue.getNumOfEntries() + " client side queued messages");
       }
@@ -1025,11 +1034,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                MsgQueueEntry entry = (MsgQueueEntry)this.clientQueue.peek();
                if (entry.getMethodName() == MethodName.CONNECT) {
                   this.clientQueue.remove();
-                  log.info("Removed queued connect message, our new connect has precedence");
+                  log.info(getLogId()+"Removed queued connect message, our new connect has precedence");
                }
             }
             catch (XmlBlasterException e) {
-               log.severe("Removing connect entry in client tail back queue failed: " + e.getMessage() + "\n" + toXml());
+               log.severe(getLogId()+"Removing connect entry in client tail back queue failed: " + e.getMessage() + "\n" + toXml());
             }
          }
          return;
@@ -1057,7 +1066,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (this.updateDispatcher.size() > 0) {
          int num = this.updateDispatcher.clearAckNonPersistentSubscriptions(); // to avoid memory leaks, subscribes pending in the queue are not cleared
          if (num > 0) {
-            log.info("Removed " + num + " subscribe specific callback registrations");
+            log.info(getLogId()+"Removed " + num + " subscribe specific callback registrations");
          }
          // TODO: On switch to sync delivery and the client has
          // cleared subscribes from the queue manually we have still a memory leak here:
@@ -1074,7 +1083,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * Enforced by interface I_ConnectionStatusListener
     */
    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-      if (log.isLoggable(Level.FINER)) log.finer("Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING + " connectInProgress=" + this.connectInProgress);
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING + " connectInProgress=" + this.connectInProgress);
       if (this.connectInProgress) return;
       if (this.connectionListener != null) {
          this.connectionListener.reachedPolling(oldState, this);
@@ -1086,7 +1095,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * <p>Enforced by interface I_ConnectionStatusListener</p>
     */
    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
-      if (log.isLoggable(Level.FINER)) log.finer("Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD + " connectInProgress=" + this.connectInProgress);
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD + " connectInProgress=" + this.connectInProgress);
       if (this.connectionListener != null) {
          this.connectionListener.reachedDead(oldState, this);
       }
@@ -1185,7 +1194,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             }
             catch (XmlBlasterException ex) {
                ex.printStackTrace();
-               log.severe("could not leave the server properly: " + ex.getMessage());
+               log.severe(getLogId()+"could not leave the server properly: " + ex.getMessage());
             }
             this.cbServer = null;
          }
@@ -1322,7 +1331,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    private String checkQueryKeyQos(String url, String qos) {
-      if (log.isLoggable(Level.FINE)) log.fine("url=" + url + " qos=" + qos);
+      if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"url=" + url + " qos=" + qos);
       if (url == null || url.length()==0 || url.equalsIgnoreCase("String"))
          throw new IllegalArgumentException("Please pass a valid URL like 'xpath://key' or a simple oid like 'Hello'");
       if (qos == null || qos.length()==0 || qos.equalsIgnoreCase("String")) qos = "<qos/>";
@@ -1449,11 +1458,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          MsgUnit msgUnit = new MsgUnit(key, "", qos);
          try {
             PublishReturnQos ret = publish(msgUnit);
-            if (log.isLoggable(Level.FINE)) log.fine("Send '" + cmd + " '");
+            if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Send '" + cmd + " '");
             return ret.getState();
          }
          catch (XmlBlasterException e) {
-            if (log.isLoggable(Level.FINE)) log.fine("Sending of '" + cmd + " ' failed: " + e.getMessage());
+            if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Sending of '" + cmd + " ' failed: " + e.getMessage());
             throw e;
          }
       }
@@ -1463,13 +1472,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          GetQos getQos = new GetQos(glob);
          try {
             MsgUnit[] msgs = get(getKey, getQos);
-            if (log.isLoggable(Level.FINE)) log.fine("Send '" + cmd + " ', got array of size " + msgs.length);
+            if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Send '" + cmd + " ', got array of size " + msgs.length);
             if (msgs.length == 0)
                return "";
             return msgs[0].getContentStr();
          }
          catch (XmlBlasterException e) {
-            if (log.isLoggable(Level.FINE)) log.fine("Sending of '" + cmd + " ' failed: " + e.getMessage());
+            if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Sending of '" + cmd + " ' failed: " + e.getMessage());
             throw e;
          }
       }
@@ -1796,7 +1805,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       pq.setTopicProperty(topicProperty);
       MsgUnit msgUnit = new MsgUnit(pk, new byte[0], pq);
       PublishReturnQos prq = publish(msgUnit);
-      if (log.isLoggable(Level.FINER)) log.finer("Created temporary topic " + prq.getKeyOid());
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Created temporary topic " + prq.getKeyOid());
       return prq;
    }
    
@@ -1816,14 +1825,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       pq.setTopicProperty(topicProperty);
       MsgUnit msgUnit = new MsgUnit(pk, new byte[0], pq);
       PublishReturnQos prq = publish(msgUnit);
-      if (log.isLoggable(Level.FINER)) log.finer("Created temporary topic " + prq.getKeyOid());
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Created temporary topic " + prq.getKeyOid());
       return prq;
    }
    
    // TODO: add other properties and testsuite, add documentation requirement
    //       Add own class to support multiple request/reply over same temporary topic
    public MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries) throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering request with timeout=" + timeout);
+      if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Entering request with timeout=" + timeout);
       if (msgUnit == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please supply a valid msgUnit to request()");
 
@@ -1833,6 +1842,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       
       try {
          // Send the request ...
+         // "__jms:JMSReplyTo"
          msgUnit.getQosData().addClientProperty(Constants.addJmsPrefix(Constants.JMS_REPLY_TO, log), tempTopic.getKeyOid()); // "__jms:JMSReplyTo"
          publish(msgUnit);
          
@@ -1870,7 +1880,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                    "</qos>";
       GetQos getQos = new GetQos(glob, glob.getQueryQosFactory().readObject(qos));
       MsgUnit[] msgs = get(getKey, getQos);
-      if (log.isLoggable(Level.FINEST)) log.finest("Got " + msgs.length + " reply :\n" + ((msgs.length>0)?msgs[0].toXml():""));
+      if (log.isLoggable(Level.FINEST)) log.finest(getLogId()+"Got " + msgs.length + " reply :\n" + ((msgs.length>0)?msgs[0].toXml():""));
       return msgs;
    }
 
