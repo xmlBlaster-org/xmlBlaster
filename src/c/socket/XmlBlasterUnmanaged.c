@@ -77,7 +77,7 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanaged(int ar
    /** argv seems to be freed by C#, so we clone it here */
    int i=0;
    const char ** ptr;
-   ptr = malloc(argc*sizeof(char *));
+   ptr = (const char **)malloc(argc*sizeof(char *));
    for (i=0; i<argc; ++i) {
       ptr[i] = strcpyAlloc(argv[i]);
    }
@@ -245,7 +245,7 @@ Dll_Export bool xmlBlasterUnmanagedIsConnected(struct XmlBlasterAccessUnparsed *
 }
 
 Dll_Export const char *xmlBlasterUnmanagedUsage() {
-   char *usage = malloc(XMLBLASTER_MAX_USAGE_LEN*sizeof(char));
+   char *usage = (char *)malloc(XMLBLASTER_MAX_USAGE_LEN*sizeof(char));
    return xmlBlasterAccessUnparsedUsage(usage);
 }
 
