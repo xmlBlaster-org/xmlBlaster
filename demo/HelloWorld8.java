@@ -62,13 +62,14 @@ public class HelloWorld8
             ConnectQos qos = new ConnectQos(receiver.getGlobal(), receiverName, "secret");
             ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info("receiver: Receiving asynchronous message '" + updateKey.getOid() + "' in receiver default handler");
-                  log.info("receiver: Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
+                  log.info(receiverName+": Receiving asynchronous message '" + updateKey.getOid() + "' in receiver default handler");
+                  log.info(receiverName+": Received: " + updateKey.toXml() + "\n <content>" + new String(content) + "</content>" + updateQos.toXml());
 
                   if (updateKey.isInternal()) return "";
                   if (updateQos.isErased()) return "";
                   try {
                      String tempTopicOid = updateQos.getClientProperty(Constants.JMS_REPLY_TO, ""); // __jms:JMSReplyTo
+                     log.info(receiverName+": Got request, using topic '" + tempTopicOid + "' for response");
 
                      // Send reply back ...
                      PublishKey pk = new PublishKey(receiver.getGlobal(), tempTopicOid, "text/plain", "1.0");
@@ -76,10 +77,10 @@ public class HelloWorld8
                      MsgUnit msgUnit = new MsgUnit(pk, "On doubt no ultimate truth, my dear.", pq);
                      //try { Thread.sleep(8000); } catch (InterruptedException e) { e.printStackTrace(); }
                      PublishReturnQos retQos = receiver.publish(msgUnit);
-                     log.info("Published reply message using temporary topic " + retQos.getKeyOid());
+                     log.info(receiverName+": Published reply message using temporary topic " + retQos.getKeyOid());
                   }
                   catch (XmlBlasterException e) {
-                     log.severe("Sending reply to " + updateQos.getSender() + " failed: " + e.getMessage());
+                     log.severe(receiverName+": Sending reply to " + updateQos.getSender() + " failed: " + e.getMessage());
                   }
                   return "";
                }
@@ -94,7 +95,10 @@ public class HelloWorld8
          pq.addDestination(new Destination(new SessionName(sender.getGlobal(), receiverName)));
          MsgUnit msgUnit = new MsgUnit(pk, "Tell me the truth!", pq);
          MsgUnit[] replies = sender.request(msgUnit, 6000, 1);
-         log.info("sender: Got " + replies.length + " reply :\n" + ((replies.length>0)?replies[0].toXml():""));
+         if (replies.length > 0)
+            log.info(senderName+": Got " + replies.length + " reply :\n" + replies[0].toXml());
+         else
+            log.severe(senderName+": Missing reply message.");
       }
       catch (XmlBlasterException e) {
          log.severe("We have a problem: " + e.getMessage());
