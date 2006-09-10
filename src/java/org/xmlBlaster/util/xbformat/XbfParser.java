@@ -409,9 +409,10 @@ public class XbfParser implements I_MsgInfoParser
             out.write(NULL_BYTE);
             out.write(unit.getKey().getBytes());
             out.write(NULL_BYTE);
-            out.write((""+unit.getContent().length).getBytes());
+            byte[] tmp = unit.getContent();
+            out.write((""+tmp.length).getBytes());
             out.write(NULL_BYTE);
-            out.write(unit.getContent());
+            out.write(tmp);
          }
 
          if (msgInfo.isChecksum() == true) {
