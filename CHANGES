@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.3 [not yet released]
 ==================================
 
+ o #15490 Fixed JMS_REPLY_TO = "__jms:JMSReplyTo" to contain new introduced "__jms:" prefix
+
  o #15488 Fixed QueueQueryPlugin / receive() to support multiple blocking clients on same queue instance
 
  o #15485 added to MINSTR token for currentTime to the DbWatcher TimestampDetector
