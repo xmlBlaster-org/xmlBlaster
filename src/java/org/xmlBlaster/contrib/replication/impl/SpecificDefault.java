@@ -1127,7 +1127,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
          conn.commit();
-         this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, requestedVersion, this.replVersion, initialFilesLocation);
+         if (!isCancelled(slaveName))
+            this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, requestedVersion, this.replVersion, initialFilesLocation);
       }
       catch (Exception ex) {
          conn = removeFromPool(conn, ROLLBACK_YES);
@@ -1325,6 +1326,12 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    public void clearCancelUpdate(String replSlave) {
       synchronized(this.cancelledUpdates) {
          this.cancelledUpdates.remove(replSlave);
+      }
+   }
+   
+   private boolean isCancelled(String replSlave) {
+      synchronized(this.cancelledUpdates) {
+         return this.cancelledUpdates.contains(replSlave);
       }
    }
    
