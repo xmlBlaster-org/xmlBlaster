@@ -73,6 +73,9 @@ public class XbUri
    
    
    private void parse(String uriStr) throws URISyntaxException {
+      if (uriStr == null) throw new IllegalArgumentException("uriStr may not be null in parse()");
+      uriStr = uriStr.trim();
+      
       //http://j@@oe:my@p@assword@server.xmlBlaster.org:3412/myPath?key.oid=MyMessage#myFragment
       //
       // The normal URI can't handle a '@' in the username or password:
