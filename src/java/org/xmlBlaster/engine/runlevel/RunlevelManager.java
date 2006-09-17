@@ -306,6 +306,42 @@ public final class RunlevelManager implements RunlevelManagerMBean
          }
       }
    }
+   
+   /**
+    * Called by JMX, throws IllegalArgumentExcetion instead of XmlBlasterException. 
+    * @param pluginConfig
+    * @param create
+    */
+   void changedPluginCreate(PluginConfig pluginConfig, boolean create) {
+      if (pluginConfig.isCreate() != create) {
+         if (create) {
+            try {
+               this.glob.getPluginManager().getPluginObject(pluginConfig.getPluginInfo());
+            }
+            catch (XmlBlasterException e) {
+               log.warning("Failed to create plugin: " + e.toString());
+               throw new IllegalArgumentException("Failed to create plugin: " + e.toString());
+            }
+            catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+         else {
+            try {
+               I_Plugin plugin = this.glob.getPluginManager().getPluginObject(pluginConfig.getPluginInfo());
+               plugin.shutdown();
+               this.glob.getPluginManager().removeFromPluginCache(pluginConfig.getPluginInfo().getId());
+            }
+            catch (XmlBlasterException e) {
+               log.warning("Failed to remove plugin: " + e.toString());
+               throw new IllegalArgumentException("Failed to create plugin: " + e.toString());
+            }
+            catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+      }
+   }
 
 
    /**

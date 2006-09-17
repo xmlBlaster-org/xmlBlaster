@@ -135,7 +135,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
                   continue;
                }
                if ("create".equalsIgnoreCase(key)) {
-                  this.pluginConfig.setCreate(Boolean.valueOf(value).booleanValue());
+                  this.pluginConfig.setCreateInternal(Boolean.valueOf(value).booleanValue());
                   continue;
                }
                if ("className".equalsIgnoreCase(key)) {
@@ -178,7 +178,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
    }
 
    public void startCDATA() {
-      if (log.isLoggable(Level.FINER)) this.log.finer("startCDATA");
+      if (log.isLoggable(Level.FINER)) log.finer("startCDATA");
       this.wrappedInCDATA = true;
       if (this.subTagCounter > 0) {
          this.attributeValue.append("<![CDATA[");

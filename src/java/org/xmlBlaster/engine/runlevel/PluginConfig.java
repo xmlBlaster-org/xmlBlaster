@@ -6,9 +6,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.runlevel;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
+
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 
 import java.util.Vector;
@@ -32,9 +36,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *
  * </pre>
  */
-public class PluginConfig
+public class PluginConfig implements PluginConfigMBean
 {
-   private String ME = "PluginConfig";
    private final Global glob;
    private static Logger log = Logger.getLogger(PluginConfig.class.getName());
 
@@ -68,6 +71,10 @@ public class PluginConfig
 
    /** timestamp used to get uniquity (since runlevel + sequeuence is not unique) */
    Timestamp uniqueTimestamp;
+
+   /** My JMX registration */
+   private JmxMBeanHandle mbeanHandle;
+   private ContextNode contextNode;
 
    /**
     * This constructor takes all parameters needed
@@ -126,10 +133,25 @@ public class PluginConfig
    }
 
    /**
-    * Shall the plugin be created?
+    * Shall the plugin be created? 
+    * <br />
+    * Called from JMX (jconsole)
     * @param create true/false
     */
    public void setCreate(boolean create) {
+      if (this.glob instanceof ServerScope) {
+         ((ServerScope)this.glob).getRunlevelManager().changedPluginCreate(this, create);
+      }
+      this.create = create;
+   }
+
+   /**
+    * Shall the plugin be created?
+    * <br />
+    * Called from SAX parser
+    * @param create true/false
+    */
+   public void setCreateInternal(boolean create) {
       this.create = create;
    }
 
@@ -165,9 +187,35 @@ public class PluginConfig
    }
 
    public void setId(String id) {
-      if (id != null) this.id = id;
+      if (id != null) {
+         this.id = id;
+         
+         if (this.mbeanHandle != null) {
+            this.glob.unregisterMBean(this.mbeanHandle);
+            this.mbeanHandle = null;
+         }
+         
+         if (this.glob instanceof ServerScope) {
+            ContextNode parent = ((ServerScope)this.glob).getRunlevelManager().getContextNode();
+            this.contextNode = new ContextNode(ContextNode.RUNLEVEL_PLUGIN_MARKER_TAG,
+                  this.id, parent);
+            try {
+               this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+            }
+            catch(XmlBlasterException e) {
+               log.warning(e.getMessage());
+            }
+         }
+      }
    }
 
+   public void shutdown() {
+      JmxMBeanHandle handle = this.mbeanHandle;
+      this.mbeanHandle = null;
+      if (handle != null)
+         this.glob.unregisterMBean(handle);
+   }
+   
    public void setClassName(String className) {
       if (className != null) this.className = className;
    }
@@ -242,4 +290,22 @@ public class PluginConfig
    public String toXml() {
       return toXml("");
    }
+   
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.admin.I_AdminUsage#usage()
+    */
+   public java.lang.String usage() {
+      return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
+   }
+   /* (non-Javadoc)
+    * @see org.xmlBlaster.util.admin.I_AdminUsage#getUsageUrl()
+    */
+   public java.lang.String getUsageUrl() {
+      return ServerScope.getJavadocUrl(this.getClass().getName(), null);
+   }
+   /* (non-Javadoc)
+    * JMX dummy to have a copy/paste functionality in jconsole
+    * @see org.xmlBlaster.util.admin.I_AdminUsage#setUsageUrl(java.lang.String)
+    */
+   public void setUsageUrl(java.lang.String url) {}
 }

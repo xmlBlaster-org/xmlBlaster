@@ -30,7 +30,6 @@ public class RunLevelAction
    public final static String LOAD = "LOAD";
    public final static String STOP = "STOP";
 
-   private String ME = "RunLevelAction";
    private final Global glob;
    private static Logger log = Logger.getLogger(RunLevelAction.class.getName());
 
@@ -56,7 +55,7 @@ public class RunLevelAction
    public RunLevelAction(Global glob, String action, int upLevel, int downLevel,
       ErrorCode errorCode, int sequence) {
 
-      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
+      if (log.isLoggable(Level.FINER)) log.finer("constructor");
       this.glob = glob;
       this.action = action;
       this.upLevel  = upLevel;
