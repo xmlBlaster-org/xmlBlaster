@@ -3,7 +3,6 @@ package org.xmlBlaster.test.classtest;
 import java.util.Properties;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -178,7 +177,6 @@ public class RunLevelTest extends TestCase {
    }
 
    public void testPluginConfigParser() {
-      String me = ME + "-testPluginConfigParser";
       log.info("start");
       String xml = "<![CDATA[<qos><expiration lifeTime='4000'/></qos>]]>";
       try {

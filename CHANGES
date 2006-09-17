@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 (not yet released)
 ==================================
 
+ o #15511 Added support for runlevel plugin activation/deactivation from JMX / jconsole
+ 
  o #15506 Fixed C client library cast for Solaris
 
 
