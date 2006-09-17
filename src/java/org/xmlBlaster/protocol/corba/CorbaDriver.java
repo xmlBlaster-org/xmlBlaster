@@ -400,7 +400,7 @@ public class CorbaDriver implements I_Driver, CorbaDriverMBean
          log.warning("Problems during ORB cleanup: " + e.toString());
       }
 
-      this.authRef._release();
+      if (this.authRef != null) this.authRef._release();
    }
 
    /**
