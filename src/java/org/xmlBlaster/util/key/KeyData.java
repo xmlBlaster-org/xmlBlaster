@@ -129,6 +129,14 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
    public final boolean isRemoteProperties() {
       return Constants.INTERNAL_OID_REMOTE_PROPERTIES.equals(this.oid);
    }
+   
+   /**
+    * __sys__remoteProperties
+    * @return
+    */
+   public final boolean isRunlevelManager() {
+      return Constants.INTERNAL_OID_RUNLEVEL_MANAGER.equals(this.oid);
+   }
 
    /**
     * Messages starting with "_" are reserved for usage in plugins

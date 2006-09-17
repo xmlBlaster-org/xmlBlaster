@@ -1399,6 +1399,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             return Constants.RET_OK;
          }
          
+         if (msgKeyData.isRunlevelManager()) { // __sys__RunlevelManager
+            return this.glob.getRunlevelManager().publish(sessionInfo, msgUnit, publishQos);
+         }
+         
          // Check if a publish filter is installed and if so invoke it ...
          if (getPublishPluginManager().hasPlugins() && !publishQos.isClusterUpdate()) {
             Map mimePlugins = getPublishPluginManager().findMimePlugins(msgKeyData.getContentMime(),msgKeyData.getContentMimeExtended());

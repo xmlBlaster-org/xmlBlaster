@@ -8,13 +8,18 @@ package org.xmlBlaster.engine.runlevel;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -110,6 +115,29 @@ public final class RunlevelManager implements RunlevelManagerMBean
       new Authenticate(glob);
       // glob.getProtocolManager(); // force incarnation
       if (log.isLoggable(Level.FINER)) log.finer("Initialized run level manager");
+   }
+   
+   /**
+    * Called from RequestBroker when a new plugin XML is arriving.
+    * <br />
+    * Allows to send dynamically new plugins 
+    * @param sessionInfo
+    * @param msgUnit
+    * @param publishQos
+    * @return
+    * @throws XmlBlasterException
+    */
+   public final String publish(SessionInfo sessionInfo, MsgUnit msgUnit, PublishQosServer publishQos) throws XmlBlasterException {
+      PluginConfigSaxFactory factory = new PluginConfigSaxFactory(this.glob);
+      // TODO: Send the jar in the content, and the XML in clientProperty
+      String xml = msgUnit.getContentStr();
+      PluginConfig pluginConfig = factory.readObject(xml);
+      PluginHolder pluginHolder = this.glob.getPluginHolder();
+      String node = "";
+      pluginHolder.addPluginConfig(node, pluginConfig);
+      if (pluginConfig.isCreate())
+         addPlugin(pluginConfig);
+      return Constants.RET_OK;
    }
 
    /**
@@ -308,11 +336,11 @@ public final class RunlevelManager implements RunlevelManagerMBean
    }
    
    /**
-    * Called by JMX, throws IllegalArgumentExcetion instead of XmlBlasterException. 
+    * Called by JMX, throws IllegalArgumentExcetion instead of XmlBlasterException.
     * @param pluginConfig
     * @param create
     */
-   void changedPluginCreate(PluginConfig pluginConfig, boolean create) {
+   void toggleCreate(PluginConfig pluginConfig, boolean create) {
       if (pluginConfig.isCreate() != create) {
          if (create) {
             try {
@@ -341,6 +369,17 @@ public final class RunlevelManager implements RunlevelManagerMBean
             }
          }
       }
+   }
+
+   /**
+    * Add a new plugin, if it exists remove the old first. 
+    * @param pluginConfig
+    */
+   private void addPlugin(PluginConfig pluginConfig) throws XmlBlasterException {
+      log.info("New runlevel plugin configuration arrived: " + pluginConfig.getPluginInfo().getId());
+      I_Plugin old = this.glob.getPluginManager().removeFromPluginCache(pluginConfig.getPluginInfo().getId());
+      if (old != null) log.info("Removed old plugin " + pluginConfig.getPluginInfo().getId());
+      this.glob.getPluginManager().getPluginObject(pluginConfig.getPluginInfo());
    }
 
 

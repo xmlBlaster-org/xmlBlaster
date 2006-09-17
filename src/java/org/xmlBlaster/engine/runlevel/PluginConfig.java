@@ -140,7 +140,7 @@ public class PluginConfig implements PluginConfigMBean
     */
    public void setCreate(boolean create) {
       if (this.glob instanceof ServerScope) {
-         ((ServerScope)this.glob).getRunlevelManager().changedPluginCreate(this, create);
+         ((ServerScope)this.glob).getRunlevelManager().toggleCreate(this, create);
       }
       this.create = create;
    }

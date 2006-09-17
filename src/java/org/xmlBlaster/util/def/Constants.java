@@ -196,6 +196,7 @@ public class Constants {
    public final static String INTERNAL_OID_PREFIX = "__sys__";  // Should be replaced by INTERNAL_OID_PREFIX_FOR_CORE in future
    public final static String INTERNAL_OID_CLUSTER_PREFIX = INTERNAL_OID_PREFIX + "cluster";  // "__sys__cluster"
    public final static String INTERNAL_OID_REMOTE_PROPERTIES = INTERNAL_OID_PREFIX + "remoteProperties"; // __sys__remoteProperties
+   public final static String INTERNAL_OID_RUNLEVEL_MANAGER = INTERNAL_OID_PREFIX + "RunlevelManager"; // __sys__RunlevelManager
 
    public final static String EVENT_OID_LOGIN = "__sys__Login";
    public final static String EVENT_OID_LOGOUT = "__sys__Logout";
