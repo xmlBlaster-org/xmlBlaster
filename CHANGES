@@ -4,6 +4,13 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 (not yet released)
 ==================================
 
+ o #15513 You can now send messages containing one plugin as in
+          xmlBlasterPlugins.xml and this is dynamically added without
+          xmlBlaster restart. Further configuration can be done over jconsole.
+          Sending a jar file with plugin specific code is not yet implemented.
+          Example:
+            java javaclients.HelloWorldPublish -oid __sys__RunlevelManager -contentFile plugin.xml
+
  o #15511 Added support for runlevel plugin activation/deactivation from JMX / jconsole
  
  o #15506 Fixed C client library cast for Solaris
