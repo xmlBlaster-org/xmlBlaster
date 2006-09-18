@@ -6,10 +6,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,7 +24,6 @@ import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 
 
@@ -152,18 +152,18 @@ public class VersionTransformerCache {
       return newTransformer(systemId, xslt, uriResolver, map);
    }
 
-   private String doXSLTransformation(String filename, String secondChoice, String thirdChoice, String xmlLiteral, ClassLoader cl) throws Exception {
+   private byte[] doXSLTransformation(String filename, String secondChoice, String thirdChoice, byte[] in, ClassLoader cl) throws Exception {
       Transformer transformer = getTransformerAlsoFromCache(filename, secondChoice, thirdChoice, cl);
       if (transformer == null) {
-         log.severe("Transformer for file '" + filename + "' not found (where second choice was '" + secondChoice + "' and third choice was '" + thirdChoice +  "'");
-         return xmlLiteral;
+         log.warning("Transformer for file '" + filename + "' not found (where second choice was '" + secondChoice + "' and third choice was '" + thirdChoice +  "', will return it without modification");
+         return in;
       }
       else {
-         StreamSource xmlStreamSource = new StreamSource(new StringReader(xmlLiteral));
-         StringWriter stringWriter = new StringWriter();
-         StreamResult resultStream = new StreamResult(stringWriter);
+         StreamSource xmlStreamSource = new StreamSource(new ByteArrayInputStream(in));
+         ByteArrayOutputStream baos = new ByteArrayOutputStream(in.length);
+         StreamResult resultStream = new StreamResult(baos);
          transformer.transform(xmlStreamSource, resultStream);
-         return stringWriter.toString();
+         return baos.toByteArray();
       }
    }
    
@@ -205,7 +205,7 @@ public class VersionTransformerCache {
     * @return
     * @throws Exception
     */
-   public String transform(String replPrefix, String srcVersion, String destVersion, String destination, String srcData, ClassLoader cl) throws Exception {
+   public byte[] transform(String replPrefix, String srcVersion, String destVersion, String destination, byte[] srcData, ClassLoader cl) throws Exception {
       String thirdChoice = replPrefix + "_" + srcVersion + "_" + destVersion;
       int pos = destination.lastIndexOf("/");
       String secondChoice = null;
