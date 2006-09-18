@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.BufferedOutputStream;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.sql.Connection;
 
@@ -243,6 +244,14 @@ public class DbWatcher implements I_ChangeListener {
    public void hasChanged(final ChangeEvent changeEvent) {
       hasChanged(changeEvent, false);
    }
+   
+   private final void clearMessageAttributesAfterPublish(Map attributeMap) {
+      // we need to remove this since if several transactions are detected in the same 
+      // detector sweep the same Event is used, so we would not send subsequent messages
+      attributeMap.remove(I_DataConverter.IGNORE_MESSAGE);
+      attributeMap.remove(DbWatcherConstants._UNCOMPRESSED_SIZE);
+      attributeMap.remove(DbWatcherConstants._COMPRESSION_TYPE);
+   }
     
    /**
     * Publishes a message if it has changed and if it has not to be ignored.
@@ -260,12 +269,9 @@ public class DbWatcher implements I_ChangeListener {
             this.publisher.publish(changeEvent.getGroupColValue(),
                   changeEvent.getXml().getBytes(), changeEvent.getAttributeMap());
          }
-         else {
-            // we need to remove this since if several transactions are detected in the same 
-            // detector sweep the same Event is used, so we would not send subsequent messages
-            changeEvent.getAttributeMap().remove(I_DataConverter.IGNORE_MESSAGE);
+         else
             log.fine("Message not sent (published) because the attribute '" + I_DataConverter.IGNORE_MESSAGE + "' was set");
-         }
+         clearMessageAttributesAfterPublish(changeEvent.getAttributeMap());
          return true;
       }
       catch(Exception e) {
