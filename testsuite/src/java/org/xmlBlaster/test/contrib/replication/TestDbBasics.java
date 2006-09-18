@@ -65,7 +65,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
     */
    public static void main(String[] args) {
       // junit.swingui.TestRunner.run(TestDbBasics.class);
-      
       TestDbBasics test = new TestDbBasics();
       try {
          test.setUp();
@@ -176,7 +175,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       }
    }
 
-   
+
    /**
     * This method makes some calls to system functions which are specific to oracle.
     * 
@@ -275,11 +274,12 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             }
          }
          {
-            sql = "{? = call " + this.replPrefix + "base64_enc_raw(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "base64_enc_raw_t(?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
                
-               int nmax = 256;
+               // int nmax = 256;
+               int nmax = 2000;
                byte[] in = new byte[nmax];
                for (int i=0; i < nmax; i++) {
                   in[i] = (byte)i;
@@ -308,7 +308,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             }
          }
          {
-            sql = "{? = call " + this.replPrefix + "base64_enc_varchar2(?)}"; // name text, content text)
+            sql = "{? = call " + this.replPrefix + "base64_enc_vch_t(?)}"; // name text, content text)
             try {
                CallableStatement st = conn.prepareCall(sql);
 
@@ -332,12 +332,13 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                assertTrue("an exception should not occur when testing '" + sql + "'", false);
             }
          }
+         
          {
         	 // base64_enc_blob(?)
              sql = "{? = call " + this.replPrefix + "test_blob(?,?,?,?)}"; // name text, content text)
              try {
                 CallableStatement st = conn.prepareCall(sql);
-                int nmax = 32000;
+                int nmax = 2000;
                 byte[] in = new byte[nmax];
                 for (int i=0; i < nmax; i++) {
                    in[i] = (byte)i;
@@ -367,6 +368,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                 assertTrue("an exception should not occur when testing '" + sql + "'", false);
              }
           }
+         
 /*
          {
             sql = "{? = call " + this.replPrefix + "base64_enc_blob(?)}"; // name text, content text)
@@ -461,6 +463,34 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                assertTrue("an exception should not occur when testing '" + sql + "'", false);
             }
          }
+         {
+            // fill_blob_char(?)
+            sql = "{? = call " + this.replPrefix + "test_clob(?,?,?,?)}"; // name text, content text)
+            try {
+               CallableStatement st = conn.prepareCall(sql);
+               String result = "<col name=\"fill\">this is a simple test string for the fill_blob_char</col>";
+               String test = "this is a simple test string for the fill_blob_char";
+               st.setString(2, "FILL_BLOB_CHAR2");
+               st.setString(3, test);
+               st.setString(4, "fill");
+               st.setLong(5, 1L); // loop only once
+               st.registerOutParameter(1, Types.CLOB);
+               ResultSet rs = st.executeQuery();
+               Clob clob = st.getClob(1);
+               long len = clob.length();
+               byte[] buf = new byte[(int)len];
+               clob.getAsciiStream().read(buf);
+               rs.close();
+               st.close();
+               log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
+               String out = new String(buf);
+               assertEquals("invocation '" + sql + "' gave the wrong result ", result+result, out);
+            }
+            catch (SQLException sqlEx) {
+               sqlEx.printStackTrace();
+               assertTrue("an exception should not occur ocalhostwhen testing '" + sql + "'", false);
+            }
+         }
 
          {
             sql = "{? = call " + this.replPrefix + "check_tables(?,?,?,?,NULL)}"; // name text, content text)
@@ -514,7 +544,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
                }
                catch (Exception e) {
                }
-               
+
                CallableStatement st = conn.prepareCall(sql);
                st.setString(2, null);
                st.setString(3, this.specificHelper.getOwnSchema(this.pool));
