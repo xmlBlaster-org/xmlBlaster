@@ -19,6 +19,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
@@ -425,8 +426,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          // ClientProperty prop = msgUnit.getQosData().getClientProperty(ReplicationConstants.DUMP_ACTION);
          // if (prop == null) {
          if (msgUnit.getContentMime() != null && msgUnit.getContentMime().equals("text/xml")) {
-            String newContent = this.manager.transformVersion(this.replPrefix, this.ownVersion, this.slaveSessionId, msgUnit.getContentStr());
-            msgUnit.setContent(newContent.getBytes());
+            byte[] content = msgUnit.getContent();
+            content = MomEventEngine.decompress(content, msgUnit.getQosData().getClientProperties());
+            byte[] newContent = this.manager.transformVersion(this.replPrefix, this.ownVersion, this.slaveSessionId, content);
+            msgUnit.setContent(newContent);
          }
       }
    }

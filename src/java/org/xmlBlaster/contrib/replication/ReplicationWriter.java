@@ -69,8 +69,14 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    private boolean hasInitialCmd;
    private I_Parser parserForOldInUpdates;
    private boolean nirvanaClient; // if true it does not store on the db (just consumes them
+   private Map sqlInfoCache;
+   
+   private final static int SQL_INFO_CACHE_MAX_SIZE_DEFAULT = 5000;
+   private int sqlInfoCacheMaxSize;
    
    public ReplicationWriter() {
+      this.sqlInfoCache = new HashMap();
+      this.sqlInfoCacheMaxSize = SQL_INFO_CACHE_MAX_SIZE_DEFAULT;
    }
    
    /**
@@ -339,7 +345,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   if (count != 0)
                      log.fine("modified '" + count  + "' entries");
                   log.fine("store: " + row.toXml(""));
-                  SqlDescription desc = getTableDescription(schema, table, conn);
+                  SqlDescription desc = getTableDescription(catalog, schema, table, conn);
                   boolean process = true;
                   if (this.prePostStatement != null)
                      process = this.prePostStatement.preStatement(action, conn, dbInfo, desc, row);
@@ -445,6 +451,8 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   // the name of the file is stored in DUMP_FILENAME (it will be used to store the file)
                }
                else if (action.equalsIgnoreCase(STATEMENT_ACTION)) {
+                  // since it could alter some table
+                  clearSqlInfoCache();
                   if (this.doStatement) {
                      String sql = getStringAttribute(STATEMENT_ATTR, null, description);
                      String tmp = getStringAttribute(MAX_ENTRIES_ATTR, null, description);
@@ -556,9 +564,44 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       }
    }
 
-   private synchronized SqlDescription getTableDescription(String schema, String tableName, Connection conn) throws Exception {
-      SqlInfo sqlInfo = new SqlInfo(this.info);
-      sqlInfo.fillMetadata(conn, null, schema, tableName, null, null);
+   private final String getKey(String catalog, String schema, String tableName) {
+      StringBuffer buf = new StringBuffer(256);
+      buf.append(catalog).append(".").append(schema).append(".").append(tableName);
+      return buf.toString();
+   }
+
+   private final synchronized SqlInfo getTableDescriptionFromCache(String catalog, String schema, String tableName) {
+      return (SqlInfo)this.sqlInfoCache.get(getKey(catalog, schema, tableName));
+   }
+   
+   private final synchronized void addToSqlInfoCache(SqlInfo sqlInfo) {
+      if (this.sqlInfoCache.size() > this.sqlInfoCacheMaxSize) {
+         log.warning("The maximum cache size for the sqlInfo objects of " + this.sqlInfoCacheMaxSize + " entries has already been reached");
+         return;
+      }
+   }
+   
+   private final synchronized void clearSqlInfoCache() {
+      this.sqlInfoCache.clear();
+   }
+   
+   /**
+    * Returns the structure information of the table in question. This could be cached to get
+    * better performance. 
+    * 
+    * @param schema
+    * @param tableName
+    * @param conn
+    * @return
+    * @throws Exception
+    */
+   private synchronized SqlDescription getTableDescription(String catalog, String schema, String tableName, Connection conn) throws Exception {
+      SqlInfo sqlInfo = getTableDescriptionFromCache(catalog, schema, tableName);
+      if (sqlInfo == null) {
+         sqlInfo = new SqlInfo(this.info);
+         sqlInfo.fillMetadata(conn, catalog, schema, tableName, null, null);
+         addToSqlInfoCache(sqlInfo);
+      }
       return sqlInfo.getDescription();
    }
 
@@ -566,6 +609,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
     * This is invoked for dump files
     */
    private void updateDump(String topic, byte[] content, Map attrMap) throws Exception {
+      clearSqlInfoCache();
       ClientProperty prop = (ClientProperty)attrMap.get("_filename");
       String filename = null;
       if (prop == null) {

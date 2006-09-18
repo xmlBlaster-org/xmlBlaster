@@ -148,6 +148,23 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       // this.persistentMap = new Info(CONTRIB_PERSISTENT_MAP);
       this.dbPool = DbWatcher.getDbPool(this.info);
       this.persistentInfo = new DbInfo(this.dbPool, "replication");
+
+      // we now recreate the triggers if the version has changed
+      String oldVersionName = this.dbSpecific.getName() + ".previousVersion";
+      String oldVersion = this.persistentInfo.get(oldVersionName, null);
+      String currentVersion = this.info.get("replication.version", "0.0");
+      if (oldVersion == null || !currentVersion.equals(oldVersion))
+         this.persistentInfo.put(oldVersionName, currentVersion);
+      boolean versionHasChanged = false;
+      if (oldVersion != null && !currentVersion.equals(oldVersion))
+         versionHasChanged = true;
+      if (versionHasChanged) {
+         final boolean force = true;
+         final boolean forceSend = false;
+         this.dbSpecific.addTriggersIfNeeded(force, null, forceSend);
+      }
+      // end of recreating the triggers (if neeed)
+      
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
       this.transSeqPropertyName = this.dbSpecific.getName() + ".transactionSequence";
       this.transSeq = this.persistentInfo.getLong(this.transSeqPropertyName, 0L);

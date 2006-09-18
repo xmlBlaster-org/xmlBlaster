@@ -136,7 +136,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       this.transformerCache = new VersionTransformerCache();
    }
 
-   public String transformVersion(String replPrefix, String srcVersion, String destVersion, String destination, String srcData) throws Exception {
+   public byte[] transformVersion(String replPrefix, String srcVersion, String destVersion, String destination, byte[] srcData) throws Exception {
       if (destVersion == null)
          return srcData;
       if (destVersion.equalsIgnoreCase(srcVersion))
@@ -145,7 +145,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    }
    
    
-   public String transformVersion(String replPrefix, String destVersion, String destination, String srcData) throws Exception {
+   public byte[] transformVersion(String replPrefix, String destVersion, String destination, byte[] srcData) throws Exception {
       I_Info tmpInfo = (I_Info)this.replications.get(replPrefix);
       if (tmpInfo == null)
          throw new Exception("The replication with replication.prefix='" + replPrefix + "' was not found");
@@ -153,6 +153,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       if (srcVersion.length() < 1)
          throw new Exception("The replication '" + replPrefix + "' has no version defined");
       return transformVersion(replPrefix, srcVersion, destVersion, destination, srcData);
+   }
+   
+   public String transformVersion(String replPrefix, String destVersion, String destination, String srcData) throws Exception {
+      return new String(transformVersion(replPrefix, destVersion, destination, srcData.getBytes()));
    }
    
    public void clearVersionCache() {
