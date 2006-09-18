@@ -296,6 +296,18 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       }
    }
 
+   private final static String dumpProps(Map clientProperties) {
+      if (clientProperties == null)
+         return "";
+      Iterator iter = clientProperties.values().iterator();
+      StringBuffer buf = new StringBuffer(512);
+      while (iter.hasNext()) {
+         ClientProperty prop = (ClientProperty)iter.next();
+         buf.append(prop.toXml()).append("\n");
+      }
+      return buf.toString();
+   }
+   
    public static byte[] decompress(byte[] buffer, Map clientProperties) {
       if (clientProperties == null)
          return buffer;
@@ -331,7 +343,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
              return ret;
          }
          catch(IOException ex) {
-            log.severe("An IOException occured when uncompressing. Will not expand: " + ex.getMessage());
+            log.severe("An IOException occured when uncompressing. Will not expand: " + ex.getMessage() + ": props='" + dumpProps(clientProperties) + "' and content '" + new String(buffer) + "'");
             if (log.isLoggable(Level.FINE))
                ex.printStackTrace();
             return buffer;
