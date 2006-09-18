@@ -138,8 +138,8 @@ public class TestHelperClasses extends XMLTestCase {
       VersionTransformerCache cache = new VersionTransformerCache();
       
       try {
-         String ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, null);
-         log.info(ret);
+         byte[] ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData.getBytes(), null);
+         log.info(new String(ret));
       }
       catch (Exception ex) {
          ex.printStackTrace();
@@ -249,13 +249,13 @@ public class TestHelperClasses extends XMLTestCase {
          VersionTransformerCache cache = new VersionTransformerCache();
 
          try {
-            String ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, subLoader);
-            log.info(ret);
-            ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, subLoader);
-            log.info(ret);
+            byte[] ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData.getBytes(), subLoader);
+            log.info(new String(ret));
+            ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData.getBytes(), subLoader);
+            log.info(new String(ret));
             destVersion = "03";
-            ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData, subLoader);
-            log.info(ret);
+            ret = cache.transform(replPrefix, srcVersion, destVersion, destination, srcData.getBytes(), subLoader);
+            log.info(new String(ret));
             
             {
                String in = "repl_Ver_0.5.dump";
