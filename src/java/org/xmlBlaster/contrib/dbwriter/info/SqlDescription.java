@@ -7,7 +7,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.dbwriter.info;
 
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,9 +24,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
@@ -351,6 +357,20 @@ public class SqlDescription {
       }
       return buf.toString();
    }
+
+   private final byte[] cutEndIfTooLong(SqlColumn col, String colName, byte[] val) {
+      // if too log cut the end
+      int colSize = col.getColSize();
+      if (colSize < 1 || val.length <= colSize)
+         return val;
+      log.warning("The entry on column='" + colName + "' is too long: " + val.length + " but should be max " + colSize + ". Will cut the end");
+      byte[] tmpBuf = val;
+      val = new byte[colSize];
+      for (int i=0; i < colSize; i++)
+         val[i] = tmpBuf[i];
+      return val;
+   }
+   
    
    private final void insertIntoStatement(PreparedStatement st, int pos, ClientProperty prop) throws SQLException, IOException, ParseException  {
       String colName = prop.getName();
@@ -413,6 +433,7 @@ public class SqlDescription {
             return;
          }
          byte[] val = prop.getBlobValue();
+         val = cutEndIfTooLong(col, colName, val);
          log.fine("Handling insert column=" + colName + " as VARBINARY (type=" + sqlType + ", count=" + pos + ")");
          st.setBytes(pos, val);
       }
@@ -423,6 +444,11 @@ public class SqlDescription {
          }
          String val = prop.getStringValue();
          log.fine("Handling insert column=" + colName + " as VARCHAR (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+         // if too log cut the end
+         if (col.getCharLength() > 0 && col.getCharLength() < val.length()) {
+            log.warning("The entry on column='" + colName + "' is too long: " + val.length() + " but should be max " + col.getCharLength() + ". Will cut the end");
+            val = val.substring(0, col.getCharLength());
+         }
          st.setString(pos, val);
       }
       else if (sqlType == Types.BLOB) {
@@ -432,6 +458,7 @@ public class SqlDescription {
          }
          byte[] val = prop.getBlobValue();
          log.fine("Handling insert column=" + colName + " as BLOB (type=" + sqlType + ", count=" + pos + ")");
+         val = cutEndIfTooLong(col, colName, val);
          ByteArrayInputStream bais = new ByteArrayInputStream(val);
          st.setBinaryStream(pos, bais, val.length);
       }
@@ -442,6 +469,7 @@ public class SqlDescription {
          }
          log.fine("Handling insert column=" + colName + " as CLOB (type=" + sqlType + ", count=" + pos + ")");
          byte[] val = prop.getBlobValue();
+         val = cutEndIfTooLong(col, colName, val);
          ByteArrayInputStream bais = new ByteArrayInputStream(val);
          st.setAsciiStream(pos, bais, val.length);
       }
@@ -451,8 +479,10 @@ public class SqlDescription {
             return;
          }
          log.fine("Handling insert column=" + colName + " as binary (type=" + sqlType + ", count=" + pos + ")");
-         ByteArrayInputStream blob_stream = new ByteArrayInputStream(prop.getBlobValue());
-         st.setBinaryStream(pos, blob_stream, prop.getBlobValue().length); //(int)sizeInBytes);
+         byte[] val = prop.getBlobValue();
+         val = cutEndIfTooLong(col, colName, val);
+         ByteArrayInputStream blob_stream = new ByteArrayInputStream(val);
+         st.setBinaryStream(pos, blob_stream, val.length); //(int)sizeInBytes);
       }
       else if (sqlType == Types.DATE || sqlType == Types.TIMESTAMP) {
          if (tmp == null || tmp.length() < 1) {
@@ -794,5 +824,122 @@ public class SqlDescription {
       return sb.toString();
    }
    
+   public static String getDifferences(SqlDescription description1, SqlDescription description2) {
+      if (description1 == null || description2 == null)
+         return "";
+      
+      Map map1 = new HashMap();
+      Map map2 = new HashMap();
+      SqlColumn[] cols = description1.getColumns();
+      for (int i=0; i < cols.length; i++) {
+         String name = /*cols[i].getCatalog() + "." +*/ cols[i].getSchema() + "." + cols[i].getTable() + "." + cols[i].getColName();
+         map1.put(name, cols[i]);
+      }
+      cols = description2.getColumns();
+      for (int i=0; i < cols.length; i++) {
+         String name = /*cols[i].getCatalog() + "." +*/ cols[i].getSchema() + "." + cols[i].getTable() + "." + cols[i].getColName();
+         map2.put(name, cols[i]);
+      }
+      
+      // scan map1
+      Map ret = new TreeMap();
+      String[] keys = (String[])map1.keySet().toArray(new String[map1.size()]);
+      for (int i=0; i < keys.length; i++) {
+         SqlColumn[] val = new SqlColumn[2];
+         SqlColumn val1 = (SqlColumn)map1.get(keys[i]);
+         SqlColumn val2 = (SqlColumn)map2.remove(keys[i]);
+         if (val2 == null) { // then the column has been deleted
+            val[0] = val1;
+            val[1] = null;
+            ret.put(keys[i], val);
+         }
+         else { // check if it has changed
+            if(!val1.isSame(val2)) {
+               ret.put(keys[i], new SqlColumn[] { val1, val2 });
+            }
+         }
+      }
+      // and now scam map2 for still remaining (new) columns
+      keys = (String[])map2.keySet().toArray(new String[map2.size()]);
+      for (int i=0; i < keys.length; i++) {
+         SqlColumn[] val = new SqlColumn[2];
+         val[0] = null;
+         val[1] = (SqlColumn)map2.get(keys[i]);
+         ret.put(keys[i], val);
+      }
+      // and now build the output string ...
+      StringBuffer buf = new StringBuffer(1024);
+      buf.append("<descDiff>\n");
+      Iterator iter = ret.keySet().iterator();
+      while (iter.hasNext()) {
+         String name = (String)iter.next();
+         buf.append("\n\n\n  <!-- column ").append(name);   
+         SqlColumn[] val = (SqlColumn[])ret.get(name);
+         if (val[0] == null) { // new column
+            buf.append("  NEW -->\n");
+            buf.append(val[1].toXml("  "));
+         }
+         else if (val[1] == null) { // deleted column
+            buf.append("  DELETED -->\n");
+            buf.append(val[0].toXml("  "));
+         }
+         else { // modified column
+            buf.append("  MODIFIED -->\n");
+            buf.append(val[0].toXml("  "));
+            buf.append("\n");
+            buf.append(val[1].toXml("  "));
+         }
+      }
+      buf.append("</descDiff>\n");
+      return buf.toString();
+   }
+   
+   public static void main(String[] args) {
+      try {
+         String propFile = System.getProperty("properties", null);
+         Properties props = null;
+         if (propFile == null) {
+            props = System.getProperties();
+            System.err.println("not using any properties file");
+         }
+         else {
+            System.err.println("Using properties file '" + propFile + "'");
+            props = new Properties(System.getProperties());
+            props.load(new FileInputStream(propFile));
+         }
+         I_Info info = new PropertiesInfo(props);
+         
+         if (args.length < 2) {
+            System.err.println("Usage: " + SqlDescription.class.getName() + " oldFile.xml newFile.xml");
+            System.exit(-1);
+         }
+         
+         String oldFile = args[0];
+         String newFile = args[1];
+         BufferedReader reader = new BufferedReader(new FileReader(oldFile));
+         String line = null;
+         StringBuffer buf = new StringBuffer(1024);
+         while ( (line = reader.readLine()) != null) {
+            buf.append(line).append("\n");
+         }
+         String oldData = buf.toString();
+         reader.close();
+         reader = new BufferedReader(new FileReader(newFile));
+         buf = new StringBuffer(1024);
+         while ( (line = reader.readLine()) != null) {
+            buf.append(line).append("\n");
+         }
+         String newData = buf.toString();
+         reader.close();
+         SqlInfoParser parser = new SqlInfoParser(info);
+         SqlInfo oldInfo = parser.parse(oldData);
+         SqlInfo newInfo = parser.parse(newData);
+         String ret = SqlDescription.getDifferences(oldInfo.getDescription(), newInfo.getDescription());
+         System.out.println(ret);
+      } 
+      catch (Throwable ex) {
+         ex.printStackTrace();
+      }
+   }
 }
 

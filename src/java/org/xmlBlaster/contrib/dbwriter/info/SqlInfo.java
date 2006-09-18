@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.dbwriter.info;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -25,11 +26,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.contrib.replication.ReplicationConverter;
+import org.xmlBlaster.contrib.replication.TableToWatchInfo;
+import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -590,8 +597,83 @@ public class SqlInfo implements ReplicationConstants {
       return sb.toString();
    }
    
+   public static SqlInfo getStructure(I_Info info) throws Exception {
+      I_DbPool pool = (I_DbPool) info.getObject("db.pool");
+      Connection conn = null;
+      try {
+         SqlInfo sqlInfo = new SqlInfo(info);
+         SqlDescription description = new SqlDescription(info);
+         conn = pool.reserve();
+         conn.setAutoCommit(true);
+         ArrayList list = new ArrayList();
+         TableToWatchInfo.getSortedTablesToWatch(conn, info, list);
+         for (int i=0; i < list.size(); i++) {
+            SqlDescription descr = (SqlDescription)list.get(i);
+            SqlColumn[] cols = descr.getColumns();
+            for (int j=0; j < cols.length; j++) {
+               description.addColumn(cols[j]);
+            }
+         }
+         sqlInfo.setDescription(description);
+         return sqlInfo;
+      }
+      finally {
+         if (conn != null)
+            pool.release(conn);
+      }
+   }
    
    public static void main(String[] args) {
+      I_DbPool pool = null;
+      Connection conn = null;
+      try {
+         // ---- Database settings -----
+         if (System.getProperty("jdbc.drivers", null) == null) {
+            System.setProperty(
+                        "jdbc.drivers",
+                        "org.hsqldb.jdbcDriver:oracle.jdbc.driver.OracleDriver:com.microsoft.jdbc.sqlserver.SQLServerDriver:org.postgresql.Driver");
+         }
+         if (System.getProperty("db.url", null) == null) {
+            System.setProperty("db.url", "jdbc:postgresql:test//localhost/test");
+         }
+         if (System.getProperty("db.user", null) == null) {
+            System.setProperty("db.user", "postgres");
+         }
+         if (System.getProperty("db.password", null) == null) {
+            System.setProperty("db.password", "");
+         }
+
+         String propFile = System.getProperty("properties", null);
+         Properties props = null;
+         if (propFile == null) {
+            props = System.getProperties();
+            System.err.println("not using any properties file");
+         }
+         else {
+            System.err.println("Using properties file '" + propFile + "'");
+            props = new Properties(System.getProperties());
+            props.load(new FileInputStream(propFile));
+         }
+         I_Info info = new PropertiesInfo(props);
+         
+         boolean forceCreationAndInit = true;
+         ReplicationConverter.getDbSpecific(info, forceCreationAndInit);
+         
+         SqlInfo sqlInfo = SqlInfo.getStructure(info);
+         System.out.println(sqlInfo.toXml(""));
+      } 
+      catch (Throwable e) {
+         System.err.println("SEVERE: " + e.toString());
+         e.printStackTrace();
+         final boolean ROLLBACK_NO = false;
+         conn = SpecificDefault.removeFromPool(conn, ROLLBACK_NO, pool);
+      }
+      finally {
+         if (pool != null) {
+            final boolean COMMIT_NO = false;
+            conn = SpecificDefault.releaseIntoPool(conn, COMMIT_NO, pool);
+         }
+      }
    }
    
 }

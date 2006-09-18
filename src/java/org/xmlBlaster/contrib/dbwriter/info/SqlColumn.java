@@ -671,8 +671,80 @@ public class SqlColumn {
       System.out.println("VARCHAR\t" + Types.VARCHAR);
       System.out.println("=====================================");
    }
-   
-   
-   
+
+   private static boolean isSameString(String str1, String str2) {
+      if (str1 == null) {
+         if (str2 == null)
+            return true;
+         return false;
+      }
+      if (str2 == null)
+         return false;
+      return str1.equals(str2);
+   }
+
+   public boolean isSame(SqlColumn col) {
+      if (!isSameString(getType(), col.getType()))
+         return false;
+      if (getPrecision() != col.getPrecision())
+         return false;
+      if (getScale() != col.getScale())
+         return false;
+      if (getNullable() != col.getNullable())
+         return false;
+      if (isSearchable() != col.isSearchable())
+         return false;
+      if (isSigned() != col.isSigned())
+         return false;
+      if (isReadOnly() != col.isReadOnly())
+         return false;
+      if (getSqlType() != col.getSqlType())
+         return false;
+      if (getColSize() != col.getColSize())
+         return false;
+      if (getRadix() != col.getRadix())
+         return false;
+      if (getCharLength() != col.getCharLength())
+         return false;
+      // if (getPos() != col.getPos())
+      //    return false;
+      if (getRemarks() != col.getRemarks())
+         return false;
+      if (getColDefault() != col.getColDefault())
+         return false;
+      if (!isSameString(getLabel(), col.getLabel()))
+         return false;
+      if (!isSameString(getTypeName(), col.getTypeName()))
+         return false;
+      if (isAutoInc() != col.isAutoInc())
+         return false;
+      if (isCaseSens() != col.isCaseSens())
+         return false;
+      if (isPrimaryKey() != col.isPrimaryKey())
+         return false;
+      if (!isSameString(getPkName(), col.getPkName()))
+         return false;
+      if (isFk() != col.isFk())
+         return false;
+      if (isFk()) {
+         if (!isSameString(getFkCatalog(), col.getFkCatalog()))
+            return false;
+         if (!isSameString(getFkSchema(), col.getFkSchema()))
+            return false;
+         if (!isSameString(getFkTable(), col.getFkTable()))
+            return false;
+         if (!isSameString(getFkCol(), col.getFkCol()))
+            return false;
+         if (!isSameString(getFkSeq(), col.getFkSeq()))
+            return false;
+         if (!isSameString(getFkUpdRule(), col.getFkUpdRule()))
+            return false;
+         if (!isSameString(getFkDelRule(), col.getFkDelRule()))
+            return false;
+         if (!isSameString(getFkDef(), col.getFkDef()))
+            return false;
+      }
+      return true;
+   }
    
 }
