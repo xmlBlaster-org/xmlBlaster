@@ -465,6 +465,11 @@ XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] serverSideExce
 # For JDK 1.5 the default delivered parser is used, you can overwrite this here:
 #javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
 #javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
+
+# For IBM JDK 1.4 or IBM JDK 1.5 uncomment the following lines (or use a jaxp.properties):
+#javax.xml.transform.TransformerFactory=org.apache.xalan.processor.TransformerFactoryImpl
+#javax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl
+#javax.xml.parsers.DocumentBuilderFactory=org.apache.xerces.jaxp.DocumentBuilderFactoryImpl
 #------------------------------------------------------------------------------
 
 

@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 (not yet released)
 ==================================
 
+ o #15522 Added default XML parser / XSL settings for IBM JDK 1.4 and IBM JDK 1.5
+
  o #15513 You can now send messages containing one plugin as in
           xmlBlasterPlugins.xml and this is dynamically added without
           xmlBlaster restart. Further configuration can be done over jconsole.
