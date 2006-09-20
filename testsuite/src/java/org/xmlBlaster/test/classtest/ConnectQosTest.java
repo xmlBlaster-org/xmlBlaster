@@ -10,7 +10,6 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
 import org.xmlBlaster.util.def.Constants;
 
-import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -120,7 +119,7 @@ public class ConnectQosTest extends TestCase {
 
          SessionQos sessionQos = qos.getSessionQos();
          assertEquals("sessionTimeout failed", sessionTimeout, sessionQos.getSessionTimeout());
-         assertEquals("", "/node/avalon/client/joe/2", sessionQos.getSessionName().getAbsoluteName());
+         assertEquals("", "/node/avalon/client/joe/session/2", sessionQos.getSessionName().getAbsoluteName());
          assertEquals("", true, sessionQos.hasPublicSessionId());
          assertEquals("", 2L, sessionQos.getPublicSessionId());
          assertEquals("", sessionTimeout, sessionQos.getSessionTimeout());
@@ -212,7 +211,7 @@ public class ConnectQosTest extends TestCase {
          */
          AddressBase[] addrArr = qos.getAddresses();
          assertEquals("Address array", 1, addrArr.length);
-         Address addr = qos.getAddress();
+         //Address addr = qos.getAddress();
          //assertEquals("", "http:...", addr.getAddress().trim()); // from client queue property
          assertEquals("", false, qos.isPtpAllowed());
          assertEquals("", "joe", qos.getUserId());
@@ -228,7 +227,6 @@ public class ConnectQosTest extends TestCase {
       System.out.println("***ConnectQosTest: testParse2 ...");
       
       try {
-         long sessionTimeout = 3600001L;
          String xml =
          "<qos>\n" +
          "  <securityService type='htpasswd' version='1.0'><![CDATA[\n" +

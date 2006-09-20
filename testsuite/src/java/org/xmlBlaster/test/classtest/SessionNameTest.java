@@ -1,9 +1,6 @@
 package org.xmlBlaster.test.classtest;
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.cluster.NodeId;
 
@@ -57,10 +54,10 @@ public class SessionNameTest extends TestCase {
       try {
          SessionName sessionName = new SessionName(glob, "client/jack/99");
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "client/jack/99", sessionName.getAbsoluteName());
+         assertEquals("", "client/jack/session/99", sessionName.getAbsoluteName());
          //assertEquals("", "/node/unknown/client/jack/99", sessionName.getAbsoluteName());
          assertEquals("", (String)null, sessionName.getNodeIdStr());
-         assertEquals("", "client/jack/99", sessionName.getRelativeName());
+         assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", 99L, sessionName.getPublicSessionId());
       }
@@ -69,11 +66,11 @@ public class SessionNameTest extends TestCase {
       }
          
       try {
-         SessionName sessionName = new SessionName(glob, "/node/heron/client/jack/99");
+         SessionName sessionName = new SessionName(glob, "/node/heron/client/jack/session/99");
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "/node/heron/client/jack/99", sessionName.getAbsoluteName());
+         assertEquals("", "/node/heron/client/jack/session/99", sessionName.getAbsoluteName());
          assertEquals("", "heron", sessionName.getNodeId().getId());
-         assertEquals("", "client/jack/99", sessionName.getRelativeName());
+         assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", 99L, sessionName.getPublicSessionId());
       }
@@ -85,10 +82,10 @@ public class SessionNameTest extends TestCase {
          SessionName tmp = new SessionName(glob, "client/jack");
          SessionName sessionName = new SessionName(glob, tmp, -4L);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "client/jack/-4", sessionName.getAbsoluteName());
+         assertEquals("", "client/jack/session/-4", sessionName.getAbsoluteName());
          //assertEquals("", "/node/unknown/client/jack/-4", sessionName.getAbsoluteName());
          assertEquals("", (String)null, sessionName.getNodeIdStr());
-         assertEquals("", "client/jack/-4", sessionName.getRelativeName());
+         assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", -4L, sessionName.getPublicSessionId());
       }
@@ -100,9 +97,9 @@ public class SessionNameTest extends TestCase {
          SessionName tmp = new SessionName(glob, new NodeId("avalon"), "client/jack");
          SessionName sessionName = new SessionName(glob, tmp, -4);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("Expected /node/avalon/client/jack/-4 but was:" + sessionName.getAbsoluteName(), "/node/avalon/client/jack/-4", sessionName.getAbsoluteName());
+         assertEquals("Expected /node/avalon/client/jack/session/-4 but was:" + sessionName.getAbsoluteName(), "/node/avalon/client/jack/session/-4", sessionName.getAbsoluteName());
          assertEquals("", "avalon", sessionName.getNodeId().getId());
-         assertEquals("", "client/jack/-4", sessionName.getRelativeName());
+         assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", -4L, sessionName.getPublicSessionId());
       }
@@ -114,9 +111,9 @@ public class SessionNameTest extends TestCase {
          SessionName tmp = new SessionName(glob, new NodeId("/node/avalon"), "client/jack");
          SessionName sessionName = new SessionName(glob, tmp, -4);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "/node/avalon/client/jack/-4", sessionName.getAbsoluteName());
+         assertEquals("", "/node/avalon/client/jack/session/-4", sessionName.getAbsoluteName());
          assertEquals("", "avalon", sessionName.getNodeId().getId());
-         assertEquals("", "client/jack/-4", sessionName.getRelativeName());
+         assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", -4L, sessionName.getPublicSessionId());
       }
@@ -127,9 +124,9 @@ public class SessionNameTest extends TestCase {
       try { // Test given node ID ...
          SessionName sessionName = new SessionName(glob, new NodeId("/node/sauron/client/jack/99"), "/node/heron/client/jack/99");
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "/node/sauron/client/jack/99", sessionName.getAbsoluteName());
+         assertEquals("", "/node/sauron/client/jack/session/99", sessionName.getAbsoluteName());
          assertEquals("", "sauron", sessionName.getNodeId().getId());
-         assertEquals("", "client/jack/99", sessionName.getRelativeName());
+         assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", 99L, sessionName.getPublicSessionId());
       }
@@ -138,7 +135,7 @@ public class SessionNameTest extends TestCase {
       }
          
       try { // Test given node ID ...
-         SessionName tmp = new SessionName(glob, new NodeId("/avalon"), "client/jack");
+         new SessionName(glob, new NodeId("/avalon"), "client/jack");
          fail("testParse failed, nodeId is invalid.");
       }
       catch (IllegalArgumentException e) {
@@ -146,7 +143,7 @@ public class SessionNameTest extends TestCase {
       }
 
       try {
-         SessionName sessionName = new SessionName(glob, null);
+         new SessionName(glob, null);
          fail("testParse failed, null should throw an exception.");
       }
       catch (IllegalArgumentException e) {
@@ -154,7 +151,7 @@ public class SessionNameTest extends TestCase {
       }
          
       try {
-         SessionName sessionName = new SessionName(glob, "");
+         new SessionName(glob, "");
          fail("testParse failed, \"\" should throw an exception.");
       }
       catch (IllegalArgumentException e) {
@@ -162,7 +159,7 @@ public class SessionNameTest extends TestCase {
       }
          
       try {
-         SessionName sessionName = new SessionName(glob, "/");
+         new SessionName(glob, "/");
          fail("testParse failed, \"/\" should throw an exception.");
       }
       catch (IllegalArgumentException e) {
@@ -170,7 +167,7 @@ public class SessionNameTest extends TestCase {
       }
          
       try {
-         SessionName sessionName = new SessionName(glob, "//////");
+         new SessionName(glob, "//////");
          fail("testParse failed, \"//////\" should throw an exception.");
       }
       catch (IllegalArgumentException e) {
@@ -178,7 +175,7 @@ public class SessionNameTest extends TestCase {
       }
 
       try {
-         SessionName sessionName = new SessionName(glob, "/node//joe/2");
+         new SessionName(glob, "/node//joe/2");
          fail("testParse failed, \"/node//joe/2\" should throw an exception.");
       }
       catch (IllegalArgumentException e) {
@@ -186,7 +183,7 @@ public class SessionNameTest extends TestCase {
       }
          
       try {
-         SessionName sessionName = new SessionName(glob, "/node//client/joe/2");
+         new SessionName(glob, "/node//client/joe/2");
          fail("testParse failed, \"/node//client/joe/2\" should throw an exception.");
       }
       catch (IllegalArgumentException e) {

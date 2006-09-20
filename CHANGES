@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 (not yet released)
 ==================================
 
+ o #15523 Changed default syntax from 'client/joe/1' to 'client/joe/session/1
+          Passing old notation is still supported
+
  o #15522 Added default XML parser / XSL settings for IBM JDK 1.4 and IBM JDK 1.5
 
  o #15513 You can now send messages containing one plugin as in

@@ -199,8 +199,9 @@ public final class SessionName implements java.io.Serializable
    public String getRelativeName() {
       if (this.relativeName == null) {
          StringBuffer buf = new StringBuffer(126);
-         buf.append("client/").append(subjectId);
-         if (isSession()) buf.append("/").append(""+this.pubSessionId);
+         // For example "client/joe/session/-1"
+         buf.append(ContextNode.SUBJECT_MARKER_TAG).append("/").append(subjectId);
+         if (isSession()) buf.append("/").append(ContextNode.SESSION_MARKER_TAG).append("/").append(""+this.pubSessionId);
          this.relativeName = buf.toString();
       }
       return this.relativeName;
