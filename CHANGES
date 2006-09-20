@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for 1.4 (not yet released)
 ==================================
+ o #15524 Using now default XML parser of the virtual machine (usually no configuration
+          is needed in xmlBlaster.properties anymore)
 
  o #15523 Changed default syntax from 'client/joe/1' to 'client/joe/session/1
           Passing old notation is still supported

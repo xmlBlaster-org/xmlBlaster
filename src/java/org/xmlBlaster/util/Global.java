@@ -1424,6 +1424,15 @@ public class Global implements Cloneable
          try {
             if (log.isLoggable(Level.FINEST)) log.finest(getProperty().toXml());
 
+            String fac = getProperty().get(
+                "javax.xml.parsers.SAXParserFactory", (String)null);
+            if (fac == null)  {
+               saxFactory = JAXPFactory.newSAXParserFactory();
+            }
+            else {
+               saxFactory = JAXPFactory.newSAXParserFactory(fac);
+            }
+/*
             String defaultFac = (XmlNotPortable.JVM_VERSION<=14) ? 
                   "org.apache.crimson.jaxp.SAXParserFactoryImpl" :
                   "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl";
@@ -1434,8 +1443,9 @@ public class Global implements Cloneable
             saxFactory = JAXPFactory.newSAXParserFactory(
                getProperty().get(
                   "javax.xml.parsers.SAXParserFactory", defaultFac));
+*/
          } catch (FactoryConfigurationError e) {
-            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "SAXParserFactoryError", e);
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_XML, ME, "SAXParserFactoryError", e);
          } // end of try-catch
 
       } // end of if ()
@@ -1486,6 +1496,15 @@ public class Global implements Cloneable
          try {
             if (log.isLoggable(Level.FINEST)) log.finest(getProperty().toXml());
 
+            String fac = getProperty().get(
+               "javax.xml.parsers.DocumentBuilderFactory", (String)null);
+            if (fac == null) {
+               docBuilderFactory =JAXPFactory.newDocumentBuilderFactory();
+            }
+            else {
+               docBuilderFactory =JAXPFactory.newDocumentBuilderFactory(fac);
+            }
+/*
             String defaultFac = (XmlNotPortable.JVM_VERSION<=14) ?
                   "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl" :
                   "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl";
@@ -1497,11 +1516,12 @@ public class Global implements Cloneable
             docBuilderFactory =JAXPFactory.newDocumentBuilderFactory(
                getProperty().get(
                   "javax.xml.parsers.DocumentBuilderFactory", defaultFac));
+*/
                // We need to force "com.sun..." for JDK 1.5 as otherwise
                // the xmlBlaster/lib/parser.jar#/META-INF/services settings would choose crimson
                // As soon as we drop parser.jar we can leave this property==null
          } catch (FactoryConfigurationError e) {
-            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "DocumentBuilderFactoryError", e);
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_XML, ME, "DocumentBuilderFactoryError", e);
          } // end of try-catch
       } // end of if ()
       return docBuilderFactory;
@@ -1522,7 +1542,15 @@ public class Global implements Cloneable
    public TransformerFactory getTransformerFactory() throws XmlBlasterException {
       if ( transformerFactory == null) {
          try {
-
+            String fac = getProperty().get(
+                  "javax.xml.transform.TransformerFactory", (String)null);
+            if (fac == null) {
+               transformerFactory =JAXPFactory.newTransformerFactory();
+            }
+            else {
+               transformerFactory =JAXPFactory.newTransformerFactory(fac);
+            }
+/*
             String defaultFac = (XmlNotPortable.JVM_VERSION<=14) ?
                "org.apache.xalan.processor.TransformerFactoryImpl" :
                "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
@@ -1534,8 +1562,9 @@ public class Global implements Cloneable
             transformerFactory =JAXPFactory.newTransformerFactory(
                getProperty().get(
                   "javax.xml.transform.TransformerFactory", defaultFac));
+*/
          } catch (TransformerFactoryConfigurationError e) {
-            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "TransformerFactoryError", e);
+            throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION_XML, ME, "TransformerFactoryError", e);
          } // end of try-catch
       } // end of if ()
       return transformerFactory;

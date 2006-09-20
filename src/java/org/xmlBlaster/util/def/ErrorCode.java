@@ -265,6 +265,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_CONFIGURATION_XML = new ErrorCode("resource.configuration.xml",
+         "Your XML / XSL configuration needs to be adjusted, please check your configuration.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.URL, "Changing XML/XSL implementation", "http://www.xmlblaster.org/FAQ.html#xml-parser")
+         }
+      );
+
    public static final ErrorCode RESOURCE_CONFIGURATION_SSLSOCKET = new ErrorCode("resource.configuration.sslSocket",
          "A SOCKET plugin required couldn't be loaded, please check your (ssl) configuration.",
          new ResourceInfo[] {
