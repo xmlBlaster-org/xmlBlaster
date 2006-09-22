@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for 1.4 (not yet released)
 ==================================
+ o #15525 added cleanup of reads in dispatch statistics when an exception occurs when writing to the socket (normally by pings).
+          Without it clients would not reconnect if the exception occured when receiving messages.
+
  o #15524 Using now default XML parser of the virtual machine (usually no configuration
           is needed in xmlBlaster.properties anymore)
 
