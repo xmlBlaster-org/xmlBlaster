@@ -267,7 +267,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    }
 
    public boolean run(I_Info info, String dbWatcherSessionId, String cascadeReplPrefix, String cascadeSlaveSessionName) throws Exception {
-      if (this.status != STATUS_NORMAL && this.status != STATUS_INCONSISTENT) {
+      if (this.status != STATUS_NORMAL && this.status != STATUS_INCONSISTENT && this.status != STATUS_UNCONFIGURED) {
          log.warning("will not start initial update request since one already ongoing for '" + this.name + "'");
          return false;
       }
