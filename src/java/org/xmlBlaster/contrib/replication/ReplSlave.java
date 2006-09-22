@@ -117,7 +117,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       this.slaveSessionId = slaveSessionId;
       // this.status = STATUS_UNUSED;
       // setStatus(STATUS_NORMAL);
-      this.status = STATUS_INCONSISTENT;
+      this.status = STATUS_UNCONFIGURED;
       this.lastMessage = "";
       //final boolean doPersist = false;
       //final boolean dispatcherActive = false;
@@ -153,7 +153,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          case STATUS_INITIAL : return "INITIAL";
          case STATUS_TRANSITION : return "TRANSITION";
          case STATUS_INCONSISTENT : return "INCONSISTENT";
-         // case STATUS_UNUSED : return "UNUSED";
+         case STATUS_UNCONFIGURED : return "UNCONFIGURED";
          default : return "NORMAL";
       }
    }
@@ -223,7 +223,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       boolean doStore = status != this.status;
       this.status = status;
       if (this.persistentInfo != null && doStore) { // can also be called before init is called.
-         this.persistentInfo.put(this.slaveSessionId + ".status", "" + status);
+         if (this.status != STATUS_UNCONFIGURED)
+            this.persistentInfo.put(this.slaveSessionId + ".status", "" + status);
       }
       // this is a temporary solution for the monitoring
       String client = "client/";
@@ -618,7 +619,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          // TODO find a clean solution for this: currently we have the case where several masters send data to one single
          // slave, this can result in a conflict where min- and maxReplKey are overwritten everytime. A quick and dirty solution
          // is to let everything pass for now.
-         if (this.status == STATUS_NORMAL || this.status == STATUS_INCONSISTENT)
+         if (this.status == STATUS_NORMAL || this.status == STATUS_INCONSISTENT || this.status == STATUS_UNCONFIGURED)
             return entries;
          
          ArrayList ret = new ArrayList();
