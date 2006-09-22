@@ -371,6 +371,21 @@ public class SqlDescription {
       return val;
    }
    
+   private final double getDouble(ClientProperty prop) {
+      double val = prop.getDoubleValue();
+      return val;
+   }
+   
+   private final long getLong(ClientProperty prop) {
+      try {
+         long val = prop.getLongValue();
+         return val;
+      }
+      catch (NumberFormatException ex) {
+         double val = getDouble(prop);
+         return (long)val;
+      }
+   }
    
    private final void insertIntoStatement(PreparedStatement st, int pos, ClientProperty prop) throws SQLException, IOException, ParseException  {
       String colName = prop.getName();
@@ -387,7 +402,7 @@ public class SqlDescription {
             st.setObject(pos, null);
             return;
          }
-         long val = prop.getLongValue();
+         long val = getLong(prop);
          log.fine("Handling insert column=" + colName + " as INTEGER (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
          st.setLong(pos, val);
       }
@@ -396,7 +411,7 @@ public class SqlDescription {
             st.setObject(pos, null);
             return;
          }
-         double val = prop.getDoubleValue();
+         double val = getDouble(prop);
          log.fine("Handling insert column=" + colName + " as DECIMAL (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
          st.setDouble(pos, val);
       }
@@ -405,7 +420,8 @@ public class SqlDescription {
             st.setObject(pos, null);
             return;
          }
-         int val = prop.getIntValue();
+         // int val = prop.getIntValue();
+         int val = (int)getLong(prop);
          log.fine("Handling insert column=" + colName + " as SMALLINT (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
          st.setInt(pos, val);
       }
@@ -414,7 +430,8 @@ public class SqlDescription {
             st.setObject(pos, null);
             return;
          }
-         double val = prop.getDoubleValue();
+         // double val = prop.getDoubleValue();
+         double val = getDouble(prop);
          log.fine("Handling insert column=" + colName + " as DOUBLE (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
          st.setDouble(pos, val);
       }
@@ -423,7 +440,8 @@ public class SqlDescription {
             st.setObject(pos, null);
             return;
          }
-         float val = prop.getFloatValue();
+         // float val = prop.getFloatValue();
+         float val = (float)getDouble(prop);
          log.fine("Handling insert column=" + colName + " as FLOAT (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
          st.setFloat(pos, val);
       }
