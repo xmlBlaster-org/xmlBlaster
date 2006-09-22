@@ -345,8 +345,10 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
       }
       catch (IOException ex) {
-         if (listener != null)
+         if (listener != null) {
             listener.clearCurrentWrites();
+            listener.clearCurrentReads();
+         }
          throw ex;
       }
    }

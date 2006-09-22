@@ -225,13 +225,17 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
          
       }
       catch (IOException ex) {
-         if (listener != null)
+         if (listener != null) {
             listener.clearCurrentWrites();
+            listener.clearCurrentReads();
+         }
          throw ex;
       }
       catch (XmlBlasterException ex) {
-         if (listener != null)
+         if (listener != null) {
             listener.clearCurrentWrites();
+            listener.clearCurrentReads();
+         }
          throw ex;
       }
    }

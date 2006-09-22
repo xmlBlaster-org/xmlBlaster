@@ -39,5 +39,11 @@ public interface I_ProgressListener
        */
       public void clearCurrentWrites();
       
+      /**
+       * Used to clear current (ongoing) read operations. This is invoked if an exception occurs
+       * when writing.
+       */
+      public void clearCurrentReads();
+      
 }
 
