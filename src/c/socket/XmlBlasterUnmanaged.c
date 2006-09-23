@@ -76,8 +76,7 @@ static bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterEx
 Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanaged(int argc, const char* const* argv){
    /** argv seems to be freed by C#, so we clone it here */
    int i=0;
-   const char ** ptr;
-   ptr = (const char **)malloc(argc*sizeof(char *));
+   const char ** ptr = (const char **)malloc(argc*sizeof(char *));
    for (i=0; i<argc; ++i) {
       ptr[i] = strcpyAlloc(argv[i]);
    }
