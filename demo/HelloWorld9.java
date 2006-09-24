@@ -5,10 +5,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
@@ -17,8 +13,9 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * <p />
  * Please invoke a publisher first to test it.
  * <pre>
- * Invoke: 
- *   java javaclients.HelloWorldPublish -oid hello -numPublish 10
+ * Invoke:
+ *   java org.xmlBlaster.Main 
+ *   java javaclients.HelloWorldPublish -numPublish 10
  *   java HelloWorld9
  * </pre>
  * 
