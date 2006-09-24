@@ -23,6 +23,7 @@
    </description>
 
    <example lang="Java" type="HTML">
+      <p class="celltitel">Write your first plugin</p>
    <h3>Step 1: Write a client plugin</h3>
 
 <pre bgcolor="#ffffff" text="#000000" class="embed" style="CODE.Java" title="javaclients.ClientPlugin">
@@ -119,6 +120,72 @@ cp xmlBlaster/config/xmlBlasterPlugins.xml.template  $HOME/xmlBlasterPlugins.xml
      </p>                                                              
    </example>
 
+
+   <example type="HTML">
+      <p class="celltitel">Deploying to a running server</p>
+      <a name="dynamic"/>
+      <h3>This example shows how to deploy a plugin without restarting xmlBlaster</h3>
+      <p>
+      You can send a xmlBlaster message containing the plugin jar file (with your coded plugin)
+      and the xml markup to register the plugin. XmlBlaster than automatically
+      extends its classpath with your jar file and loads the plugin according to your
+      xml configuration.
+      </p>
+      <p>
+      Here is an example using our HelloWorldPublish demo client to send such a plugin.
+      First create a jar file with
+      </p>
+<pre class="BORDER">
+jar cvf dynamic.jar javaclients/ClientPlugin.class
+</pre>
+      <p>and we will use this xml configuration for registration</p>
+
+<pre class="BORDER">
+   &lt;plugin id='ClientPlugin' className='javaclients.ClientPlugin'>
+      &lt;action do='LOAD' onStartupRunlevel='9'/>
+      &lt;action do='STOP' onShutdownRunlevel='6'/>
+   &lt;/plugin>
+</pre>
+      <p>
+      Now we are ready to send the plugin to a already running xmlBlaster server (all in one line):
+      </p>
+
+<pre class="BORDER">
+  java javaclients.HelloWorldPublish 
+     -oid __sys__RunlevelManager
+     -contentFile dynamic.jar
+     -clientProperty[__plugin.jarName] dynamic.jar
+     -clientProperty[__plugin.xml]
+         "&lt;plugin id='ClientPlugin' className='javaclients.ClientPlugin'>
+            &lt;action do='LOAD' onStartupRunlevel='9'/>
+            &lt;action do='STOP' onShutdownRunlevel='6'/>
+          &lt;/plugin>"
+</pre>
+      <p>To register a plugin you need to send it to the topic <code>__sys__RunlevelManager</code>,
+      the message content contains the jar file.<br />
+      We use a client property <code>__plugin.jarName</code> to pass a nice name for the jar file, this is optional.
+      The jar file will be dumped by the xmlBlaster server to the root directory of its CLASSPATH.
+      </p>
+      <p>
+      Finally, the client property <code>__plugin.jarName</code> contains the configuration for registering
+      the plugin. 
+      </p>
+      <p>
+      After sending the above message, you should see some server output telling you about the successful registration.
+      </p>
+      <p>
+      Note that the registration is not persistent, on server restart
+      the plugin is lost. If you wish to use the plugin permanently
+      you need to register it in <code>xmlBlasterPlugins.xml</code> as well.
+      </p>
+      <p>
+      Please use JMX (for example the jconsole GUI, see the admin.jmx requirement) to control the plugin
+      when running in xmlBlaster.
+      </p>
+   </example>
+
+
+
    <configuration where="server">
       <table border="1">
          <tr>
@@ -133,6 +200,7 @@ cp xmlBlaster/config/xmlBlasterPlugins.xml.template  $HOME/xmlBlasterPlugins.xml
 
    <see type="REQ">engine.runlevel</see>
    <see type="REQ">protocol.local</see>
+   <see type="REQ">admin.jmx</see>
    <see type="API">javaclients.HelloWorldNative</see>
    <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/demo/javaclients/HelloWorldNative.java.html</see>
    <see type="API">javaclients.HelloWorldNative2</see>
