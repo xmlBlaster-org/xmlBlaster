@@ -131,8 +131,8 @@ public final class RunlevelManager implements RunlevelManagerMBean
     *     -contentFile dynamic.jar
     *     -clientProperty[__plugin.jarName] dynamic.jar
     *     -clientProperty[__plugin.xml] "<plugin id='DynamicPlugin' className='javaclients.DynamicPlugin'><action do='LOAD' onStartupRunlevel='3' sequence='0' onFail='resource.configuration.pluginFailed'/><action do='STOP' onShutdownRunlevel='6' sequence='4'/></plugin>" 
-    * @param sessionInfo
-    * @param msgUnit
+    * @param sessionInfo The publisher
+    * @param msgUnit The content contains the jar file, and some client properties the configuration
     * @param publishQos
     * @return
     * @throws XmlBlasterException

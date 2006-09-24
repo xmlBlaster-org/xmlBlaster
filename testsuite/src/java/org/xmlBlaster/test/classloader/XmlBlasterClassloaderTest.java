@@ -1,12 +1,10 @@
 package org.xmlBlaster.test.classloader;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.*;
 import java.net.URL;
 import java.net.URLClassLoader;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
 

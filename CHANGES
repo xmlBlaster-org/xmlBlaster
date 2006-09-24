@@ -4,10 +4,7 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 (not yet released)
 ==================================
  o #15534 Added support for dynamically loaded plugins, the jar file is send in the message content
-          Topic name to send the plugin to:  __sys__RunlevelManager
-          The clientProperty "__plugin.jarName" contains the jar name to use like "dynamic.jar"
-          The clientProperty "__plugin.xml" contains the plugin configuration like
-            <plugin id='DynamicPlugin' className='javaclients.DynamicPlugin'>...</plugin>
+          See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html#dynamic
 
  o #15525 added cleanup of reads in dispatch statistics when an exception occurs when writing to the socket (normally by pings).
           Without it clients would not reconnect if the exception occured when receiving messages.
