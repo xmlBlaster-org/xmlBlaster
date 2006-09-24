@@ -11,11 +11,9 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.XmlBlasterException;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.MalformedURLException;
 
 /**
  * This class loader changes the loading precedence of the JVM
@@ -24,7 +22,6 @@ import java.net.MalformedURLException;
  */
 public class PluginClassLoader extends URLClassLoader {
 
-   private String ME = "PluginClassLoader";
    private final String pluginName;
    private String pluginPackage;
    private static Logger log = Logger.getLogger(PluginClassLoader.class.getName());
@@ -39,7 +36,6 @@ public class PluginClassLoader extends URLClassLoader {
       }
       else
          this.pluginPackage = "";
-      this.ME = "PluginClassLoader-" + pluginName.substring(pluginName.lastIndexOf('.') + 1);
    }
 
    public Class loadClass(String name) throws ClassNotFoundException {

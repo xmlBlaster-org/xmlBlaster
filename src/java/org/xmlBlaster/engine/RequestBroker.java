@@ -2362,7 +2362,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                      try {
                         if (ent instanceof ReferenceEntry) {
                            ReferenceEntry callbackEntry = (ReferenceEntry)ent;
-                           final long refId = callbackEntry.getMsgUnitWrapperUniqueId();
+                           //final long refId = callbackEntry.getMsgUnitWrapperUniqueId();
                            // TODO: extract if negative sessionId
                            SessionName sessionName = callbackEntry.getReceiver();
                            long publicSessionId = sessionName.getPublicSessionId();

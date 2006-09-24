@@ -219,6 +219,10 @@ public class Constants {
    public final static String CLIENTPROPERTY_OID = INTERNAL_OID_PREFIX_FOR_CORE + "oid";
    /** Dead messages transport in their QoS clientProperty the error reason in '__deadMessageReason' */
    public final static String CLIENTPROPERTY_DEADMSGREASON = INTERNAL_OID_PREFIX_FOR_CORE + "deadMessageReason";
+   /** The plugin xml markup send to RunlevelManager '__plugin.xml' */
+   public final static String CLIENTPROPERTY_PLUGIN_XML = INTERNAL_OID_PREFIX_FOR_CORE + "plugin.xml";
+   /** The plugin xml markup send to RunlevelManager '__plugin.jarName' */
+   public final static String CLIENTPROPERTY_PLUGIN_JARNAME = INTERNAL_OID_PREFIX_FOR_CORE + "plugin.jarName";
 
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";

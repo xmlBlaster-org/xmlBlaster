@@ -15,8 +15,9 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.ReplaceVariable;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.StringTokenizer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.MalformedURLException;
@@ -25,7 +26,6 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
    public String ME;
    private Global glob;
    private static Logger log = Logger.getLogger(StandaloneClassLoaderFactory.class.getName());
-   private ArrayList classPath = null; // array containig all URL for the new classpath
    private int instanceCounter = 0;
 
    public StandaloneClassLoaderFactory() {
@@ -54,12 +54,12 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
       if (log.isLoggable(Level.FINER)) log.finer("Entering getPluginClassLoader for plugin=" + pluginInfo.getClassName());
 
       java.util.Properties pluginParams = pluginInfo.getParameters();
-      LoaderInfo loaderInfo = getLoaderInfo(this, pluginInfo.getClassName());
+      LoaderInfo loaderInfo = getLoaderInfo(this, pluginInfo.getClassName(), false);
       if (log.isLoggable(Level.FINE)) log.fine(loaderInfo.toString());
 
       // In xmlBlaster.properties e.g.
       // ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.soap.SoapDriver,classpath=soap.jar:xerces.jar
-      String classPathStr = (String)pluginParams.get("classpath");
+      String classPathStr = (String)pluginParams.get(PluginInfo.KEY_CLASSPATH);
       ArrayList classPath = new ArrayList();
       if (classPathStr != null) {
          log.info("Analyzing classpath=" + classPathStr + " for plugin " + pluginInfo.getClassName());
@@ -127,7 +127,7 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
    public URLClassLoader getXmlBlasterClassLoader() throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering getXmlBlasterClassLoader ...");
 
-      LoaderInfo loaderInfo = getLoaderInfo(this, "org.xmlBlaster.Main");
+      LoaderInfo loaderInfo = getLoaderInfo(this, "org.xmlBlaster.Main", true);
       if (log.isLoggable(Level.FINE)) log.fine(loaderInfo.toString());
 
       ArrayList classPath = new ArrayList();
@@ -168,22 +168,26 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
     * @param caller Type of the calling class
     * @param plugin The plugin name e.g. "org.xmlBlaster.protocol.corba.CorbaDriver"
     *               or null
+    * @param exceptionOnFailure TODO
     * @return The base path for the caller specific additional classes, is never null
     * @exception On failure
     */
-   public static LoaderInfo getLoaderInfo(Object caller, String plugin) throws XmlBlasterException {
+   public static LoaderInfo getLoaderInfo(Object caller, String plugin, boolean exceptionOnFailure) throws XmlBlasterException {
       String ME = "ClassLoaderFactory";
       //if (log.isLoggable(Level.FINER)) log.call(ME, "Entering getLoaderInfo");
       if (plugin == null || plugin.length() < 1) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "getLoaderInfo() with plugin=null");
       }
 
       String classResource = which(caller, plugin); // e.g. "/home/xmlblast/xmlBlaster/classes/org/xmlBlaster/protocol/corba/CorbaDriver.class"
       if (classResource == null) {
-         String text = "Can't find class " + plugin + ", please check your plugin name and your CLASSPATH";
-         //if (log.isLoggable(Level.FINE)) log.trace(ME, text);
-         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, text);
+         if (exceptionOnFailure) {
+            String text = "Can't find class " + plugin + ", please check your plugin name and your CLASSPATH";
+            // if (log.isLoggable(Level.FINE)) log.trace(ME, text);
+            throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, text);
+         }
+         return new LoaderInfo(plugin, "", "", "", "");
       }
       //if (log.isLoggable(Level.FINE)) log.trace(ME, "plugin '" + plugin + "' has resource path " + classResource );
 
@@ -197,7 +201,11 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
       if(classResource.indexOf('!') == -1) {
          // Determine the BasePath from classes
          // log.warn(ME, "Class not loaded from jar, don't know how to determine rootPath");
-         rootPath = classResource.substring(0, classResource.lastIndexOf(pluginSlashed));
+         int index = classResource.lastIndexOf(pluginSlashed);
+         if (index == -1)
+            rootPath = classResource;
+         else
+            rootPath = classResource.substring(0, classResource.lastIndexOf(pluginSlashed));
       }
       else {
          // Determine the BasePath from jar
@@ -272,8 +280,49 @@ public class StandaloneClassLoaderFactory implements ClassLoaderFactory {
       }
       else {
          //if (log.isLoggable(Level.FINE)) log.trace(ME, "Class '" + className + "' not found in '" + System.getProperty("java.class.path") + "'");
+         return getDirectoryForWrite();
+      }
+   }
+   
+   /**
+    * Navigate up the absolute file system path (where this class came from) until we find a writeable directory. 
+    * @return for example "/home/project/lib"
+    */
+   public static String getDirectoryForWrite() {
+      java.net.URL classUrl = StandaloneClassLoaderFactory.class.getResource("StandaloneClassLoaderFactory.class");
+      // classUrl.toString():
+      // jar:file:/home/xmlblast/xmlBlaster/lib/xmlBlaster.jar!/org/xmlBlaster/util/classloader/StandaloneClassLoaderFactory.class
+      
+      String str = classUrl.getFile(); // strips "jar:", of if starting with "file:" the "file:" which we don't want
+      if (!str.startsWith("file:")) str = classUrl.toString();
+      log.fine("Looking up CLASSPATH directory with write access for '" + str + "'");
+      try {
+         File f = new File(new URI(str));
+         // org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory
+         if (f.getAbsolutePath().endsWith("org/xmlBlaster/util/classloader/StandaloneClassLoaderFactory.class"))
+            f = f.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+         return directoryForWrite(f.getAbsolutePath());
+      } catch (Throwable e) { // IllegalArgumentException or URISyntaxException
+         log.warning("Problems finding a CLASSPATH root for '" + classUrl.toString() + "': " + e.toString());
          return null;
       }
+   }
+   
+   /**
+    * Recursiv go up the given path until we find a writeable directory
+    * @param path
+    * @return null if not found
+    */
+   public static String directoryForWrite(String path) {
+      if (path == null) return null;
+      File file = new File(path);
+      if (file.isDirectory() && file.canWrite()) {
+         return path;
+      }
+      if (file.getParentFile() == null) return null;
+      String parent = file.getParentFile().getAbsolutePath();
+      if (parent == null) return null;
+      return directoryForWrite(parent);
    }
 }
 

@@ -34,6 +34,9 @@ public class PluginInfo implements I_PluginConfig {
    private String version;
    /** e.g. "org.xmlBlaster.protocol.soap.SoapDriver" */
    private String className;
+   
+   /** The key into params for the classpath */
+   public static String KEY_CLASSPATH = "classpath";
 
    /** key/values from "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100" */
    private Properties params;
@@ -212,7 +215,10 @@ public class PluginInfo implements I_PluginConfig {
          return true;
       return false;
    }
-
+   
+   /**
+    * @return For example "org.xmlBlaster.protocol.soap.SoapDriver"
+    */
    public String getClassName() {
       return className;
    }

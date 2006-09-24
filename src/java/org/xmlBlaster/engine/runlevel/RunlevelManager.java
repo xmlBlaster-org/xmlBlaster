@@ -5,22 +5,26 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.runlevel;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.SessionInfo;
 
+import java.util.Properties;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.TreeSet;
@@ -120,7 +124,9 @@ public final class RunlevelManager implements RunlevelManagerMBean
    /**
     * Called from RequestBroker when a new plugin XML is arriving.
     * <br />
-    * Allows to send dynamically new plugins 
+    * Allows to send dynamically new plugins
+    * <br />
+    * java javaclients.HelloWorldPublish -oid __sys__RunlevelManager -contentFile dynamic.jar -clientProperty[__plugin.jarName] Dynamic.jar -clientProperty[__plugin.xml] "<plugin id='DynamicPlugin' className='javaclients.DynamicPlugin'><action do='LOAD' onStartupRunlevel='3' sequence='0' onFail='resource.configuration.pluginFailed'/><action do='STOP' onShutdownRunlevel='6' sequence='4'/></plugin>"
     * @param sessionInfo
     * @param msgUnit
     * @param publishQos
@@ -130,8 +136,40 @@ public final class RunlevelManager implements RunlevelManagerMBean
    public final String publish(SessionInfo sessionInfo, MsgUnit msgUnit, PublishQosServer publishQos) throws XmlBlasterException {
       PluginConfigSaxFactory factory = new PluginConfigSaxFactory(this.glob);
       // TODO: Send the jar in the content, and the XML in clientProperty
-      String xml = msgUnit.getContentStr();
+      String xml = msgUnit.getQosData().getClientProperty(Constants.CLIENTPROPERTY_PLUGIN_XML, "");
+      if (xml == null) {
+         String text = "Missing '" + Constants.CLIENTPROPERTY_PLUGIN_XML + "' with plugin registration markup as in xmlBlasterPlugins.xml";
+         log.warning(text);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, text);
+      }
+      
+      String jarName = msgUnit.getQosData().getClientProperty(Constants.CLIENTPROPERTY_PLUGIN_JARNAME, "dynamicPlugin.jar");
+
       PluginConfig pluginConfig = factory.readObject(xml);
+      
+      byte[] jarFile = msgUnit.getContent();
+      if (jarFile.length > 0) {
+         try {
+            String dir = StandaloneClassLoaderFactory.getDirectoryForWrite();
+            File file = (dir == null) ? File.createTempFile("dynamicPlugin", ".jar") : new File(dir, jarName);
+            FileLocator.writeFile(file.getAbsolutePath(), jarFile);
+            log.info("Writing new arrived jar file '" + file.getAbsolutePath() + "' for plugin id=" + pluginConfig.getId() + " with className=" + pluginConfig.getPluginInfo().getClassName());
+            //URLClassLoader loader = clFactory.getPluginClassLoader(pluginConfig.getPluginInfo());
+            // See StandaloneClassLoader.java:62
+            Properties params = pluginConfig.getPluginInfo().getParameters();
+            String classpath = params.getProperty(PluginInfo.KEY_CLASSPATH);
+            if (classpath == null || classpath.length() < 1)
+               classpath = file.getAbsolutePath();
+            else
+               classpath += ":"+file.getAbsolutePath();
+            params.put(PluginInfo.KEY_CLASSPATH, classpath);
+            //loader.newInstance(urls);
+         }
+         catch (IOException e) {
+            log.warning("Problems creating plugin " + pluginConfig.getId() +" with jar '" + jarName + "': " + e.toString());
+         }
+      }
+
       PluginHolder pluginHolder = this.glob.getPluginHolder();
       String node = "";
       pluginHolder.addPluginConfig(node, pluginConfig);
