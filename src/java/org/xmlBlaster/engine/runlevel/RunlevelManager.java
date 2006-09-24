@@ -126,7 +126,11 @@ public final class RunlevelManager implements RunlevelManagerMBean
     * <br />
     * Allows to send dynamically new plugins
     * <br />
-    * java javaclients.HelloWorldPublish -oid __sys__RunlevelManager -contentFile dynamic.jar -clientProperty[__plugin.jarName] Dynamic.jar -clientProperty[__plugin.xml] "<plugin id='DynamicPlugin' className='javaclients.DynamicPlugin'><action do='LOAD' onStartupRunlevel='3' sequence='0' onFail='resource.configuration.pluginFailed'/><action do='STOP' onShutdownRunlevel='6' sequence='4'/></plugin>"
+    * java javaclients.HelloWorldPublish 
+    *     -oid __sys__RunlevelManager
+    *     -contentFile dynamic.jar
+    *     -clientProperty[__plugin.jarName] dynamic.jar
+    *     -clientProperty[__plugin.xml] "<plugin id='DynamicPlugin' className='javaclients.DynamicPlugin'><action do='LOAD' onStartupRunlevel='3' sequence='0' onFail='resource.configuration.pluginFailed'/><action do='STOP' onShutdownRunlevel='6' sequence='4'/></plugin>" 
     * @param sessionInfo
     * @param msgUnit
     * @param publishQos
