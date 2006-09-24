@@ -24,7 +24,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  * 
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
-public class HelloWorld9 implements I_Callback
+public class HelloWorld9
 {
    private final Global glob;
    private static Logger log = Logger.getLogger(HelloWorld9.class.getName());
@@ -42,7 +42,7 @@ public class HelloWorld9 implements I_Callback
       
       try {
          ConnectQos qos = new ConnectQos(glob);
-         con.connect(qos, this);  // Login to xmlBlaster, register for updates
+         con.connect(qos, null);  // Login to xmlBlaster
          
          Thread thread = new Thread(new Runnable() {
             public void run() {
@@ -72,23 +72,12 @@ public class HelloWorld9 implements I_Callback
          while (!stopThis)
             try { Thread.sleep(100); } catch (InterruptedException e) {}
 
-         DisconnectQos dq = new DisconnectQos(glob);
-         con.disconnect(dq);
+         con.disconnect(new DisconnectQos(glob));
          glob.shutdown(); // free resources
       }
       catch (XmlBlasterException e) {
          log.severe(e.getMessage());
       }
-   }
-
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
-                        UpdateQos updateQos)
-   {
-      log.info("Received asynchronous message '" + updateKey.getOid() +
-                   "' state=" + updateQos.getState() +
-                   " content=" + new String(content) + " from xmlBlaster");
-      UpdateReturnQos uq = new UpdateReturnQos(glob);
-      return uq.toXml();
    }
 
    /**
