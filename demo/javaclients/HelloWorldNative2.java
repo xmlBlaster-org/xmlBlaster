@@ -49,7 +49,6 @@ public class HelloWorldNative2 implements I_Plugin
 {
    private Global glob;
    private static Logger log = Logger.getLogger(HelloWorldNative2.class.getName());
-   private final String ME = HelloWorldNative2.class.getName();
    private String loginName;
    private String topicName;
 
@@ -90,12 +89,13 @@ public class HelloWorldNative2 implements I_Plugin
          SubscribeQos sq = new SubscribeQos(glob);
          sq.setWantInitialUpdate(false);
          SubscribeReturnQos sr1 = con.subscribe(sk, sq);
+         log.info("Subscribed '" + sr1.getState() + "'");
 
          PublishKey pk = new PublishKey(glob, this.topicName, "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          PublishReturnQos retQos = con.publish(msgUnit);
-         log.info("Published message '" + pk.getOid() + "'");
+         log.info("Published message '" + retQos.getKeyOid() + "'");
 
          //con.disconnect(null);
       }
