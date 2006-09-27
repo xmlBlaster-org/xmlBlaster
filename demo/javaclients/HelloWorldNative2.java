@@ -51,11 +51,12 @@ public class HelloWorldNative2 implements I_Plugin
    private static Logger log = Logger.getLogger(HelloWorldNative2.class.getName());
    private String loginName;
    private String topicName;
+   private I_XmlBlasterAccess con;
 
    private final void pubsub() {
       try {
          log.info("Connecting with protocol 'LOCAL' to xmlBlaster");
-         I_XmlBlasterAccess con = new XmlBlasterAccess(glob);
+         con = new XmlBlasterAccess(glob);
 
          ConnectQos qos = new ConnectQos(this.glob); /* Client side object */
          qos.setUserId(this.loginName);
@@ -97,7 +98,6 @@ public class HelloWorldNative2 implements I_Plugin
          PublishReturnQos retQos = con.publish(msgUnit);
          log.info("Published message '" + retQos.getKeyOid() + "'");
 
-         //con.disconnect(null);
       }
       catch (Exception e) {
          log.severe("We have a problem: " + e.toString());
@@ -123,8 +123,14 @@ public class HelloWorldNative2 implements I_Plugin
       return "1.0";
    }
 
-   public void shutdown() throws XmlBlasterException {
-      log.info("shutdown()\n\n");
+   public void shutdown() {
+      // cleans up our subscribe as well
+      if (con != null) con.disconnect(null);
+      log.info("shutdown()\n");
+   }
+
+   public void finalize() {
+      log.info("Garbage collected");
    }
 
    /** To start as a plugin */
@@ -137,6 +143,8 @@ public class HelloWorldNative2 implements I_Plugin
       this.loginName = "A-native-client";
       this.topicName = "A-native-message";
       pubsub();
+
+      shutdown();
    }
 
    public static void main(String args[]) {
