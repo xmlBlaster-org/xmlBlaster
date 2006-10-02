@@ -10,7 +10,7 @@
      <p>
      We use the relational database SQLite for our queue implementation.
      </p>
-     <h2>Persistent Queue Features</h2>
+     <p class="celltitel">Persistent Queue Features</p>
      <ul>
         <li> Support on many OS like Windows, Windows-CE / Pocket PC,
              UNIX, Linux and the code is easy portable to embedded devices</li>
@@ -27,11 +27,67 @@
           <li> Can be used standalone outside of xmlBlaster</li>
     </ul>
 
-     <h2>Memory footprint</h2>
+    <p class="celltitel">C-API</p>
+    <p>
+    The programming interface from C is <a href="http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c/html/structI__QueueStruct.html"
+     target="others">struct I_QueueStruct</a> declared in the file 
+     <a href="http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c/html/QueueInterface_8h-source.html" target="others">
+     <code>QueueInterface.h</code></a>.</p>
      <p>
+     Here is a usage code sample:
+     </p>
+     <pre>
+ExceptionStruct exception;
+QueueEntryArr *entries = 0;
+QueueProperties queueProperties;
+I_Queue *queueP = 0;
+const char *dbName = "xmlBlasterClient-C.db"
+const *dummy = "something";
+
+...
+  /* Configure the queue */
+  memset(&amp;queueProperties, sizeof QueueProperties
+  strncpy(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
+  strncpy(queueProperties.queueName = "connection_clientJoe", QUEUE_ID_MAX);
+  strncpy(queueProperties.tablePrefix="XB_", QUEUE_PREFIX_MAX);
+  queueProperties.maxNumOfEntries = 10000000L;
+  queueProperties.maxNumOfBytes = 1000000000LL;
+  queueProperties.logFp = loggingFp;
+  queueProperties.logLevel = XMLBLASTER_LOG_TRACE;
+  queueProperties.userObject = (void *)dummy;
+
+  /* Create the queue */
+  queueP = createQueue(&amp;queueProperties, &amp;exception);
+
+   
+  /* Create an entry */
+  QueueEntry queueEntry;
+  memset(&amp;queueEntry, 0, sizeof (QueueEntry));
+
+  queueEntry.priority = 5;
+  queueEntry.isPersistent = true;
+  queueEntry.uniqueId = 1081492136826000000ll;
+  strncpy(queueEntry.embeddedType = "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+
+  queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
+  queueEntry.embeddedBlob.data = (char *)"some blob";
+  queueEntry.embeddedBlob.dataLen = strlen(queueEntry.embeddedBlob.data);
+
+  /* Fill the queue */
+  queueP-&gt;put(queueP, &amp;queueEntry, &amp;exception);
+
+  /* Access the entry */
+  entries = queueP-&gt;peekWithSamePriority(queueP, -1, -1, &amp;exception);
+
+  /* close the queue */
+  queueP-&gt;shutdown(&amp;queueP, &amp;exception);
+     </pre>
+     <p>
+     For a more complete usage example please see the test cases in
+     <a href="http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c/html/TestQueue_8c-source.html" target="others"><code>TestQueue.c</code></a>
      </p>
 
-     <h2>Setup</h2>
+     <p class="celltitel">Setup</p>
      <p>
      To use the persistent queue you need to download SQLite and compile it for
      your platform, our C compilation needs <code>sqlite.h</code> for compilation
@@ -40,7 +96,7 @@
      <b>Note that it will not work with version 3.x.x</b>
      </p>
 
-     <h2>Compilation with ant</h2>
+     <p class="celltitel">Compilation with ant</p>
      <p>
      First add those lines to your <code>xmlBlaster/build.properties</code> (or
      add it to <code>HOME/build.properties</code> which has precedence or add it
@@ -83,7 +139,7 @@ build c-delete c
 build -verbose -DXMLBLASTER_PERSISTENT_QUEUE=1 -Dsqlite.include.dir= ... c
      </pre>
 
-     <h2>Compilation manually</h2>
+     <p class="celltitel">Compilation manually</p>
      <p>
      Here are some complete examples how to compile a simple C client 'manually':
      </p>
@@ -104,15 +160,16 @@ Solaris:
    </description>
    <example lang="C" type="HTML">
       <p><a NAME="example"></a></p>
-      <h2>C usage examples</h2>
+      <p class="celltitel">C usage examples</p>
       <p>
-      See the test file <code>xmlBlaster/testsuite/src/c/TestQueue.c</code>
+      See the test file <a href="http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c/html/TestQueue_8c-source.html" target="others">
+      <code>xmlBlaster/testsuite/src/c/TestQueue.c</code></a>.
       </p>
    </example>
 
    <example lang="any" type="HTML">
       <p><a NAME="sqliteExample"></a></p>
-      <h2>sqlite command line example</h2>
+      <p class="celltitel">sqlite command line example</p>
       <p>From time to time you may want to look into the C client queue,
       here are some command line examples:
       </p>
