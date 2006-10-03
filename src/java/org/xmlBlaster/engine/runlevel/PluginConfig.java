@@ -189,11 +189,15 @@ public class PluginConfig implements PluginConfigMBean
    public void setId(String id) {
       if (id != null) {
          this.id = id;
-         
-         if (this.mbeanHandle != null) {
-            this.glob.unregisterMBean(this.mbeanHandle);
-            this.mbeanHandle = null;
-         }
+      }
+   }
+   
+   public void registerMBean() {
+      if (this.id != null) {
+         JmxMBeanHandle handle = this.mbeanHandle;
+         this.mbeanHandle = null;
+         if (handle != null)
+            this.glob.unregisterMBean(handle);
          
          if (this.glob instanceof ServerScope) {
             ContextNode parent = ((ServerScope)this.glob).getRunlevelManager().getContextNode();

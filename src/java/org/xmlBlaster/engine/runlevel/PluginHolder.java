@@ -65,16 +65,25 @@ public class PluginHolder {
       this(glob, (Hashtable)null, (Hashtable)null);
    }
 
-   public void addDefaultPluginConfig(PluginConfig pluginConfig) {
-      this.pluginConfigsDefault.put(pluginConfig.getId(), pluginConfig);
+   /**
+    * @return The previous one or null
+    */
+   public PluginConfig addDefaultPluginConfig(PluginConfig pluginConfig) {
+      return (PluginConfig)this.pluginConfigsDefault.put(pluginConfig.getId(), pluginConfig);
    }
 
    /**
-    *  Adds a pluginConfig object to the specified node.
+    *  Adds a pluginConfig object to the specified node. 
+    *  <p>
+    *  If node is null it is put to default scope.
     * @param node the node to which to add the pluginConfig object
     * @param pluginConfig the object to add to the holder.
+    * @return The previous one or null
     */
-   public void addPluginConfig(String node, PluginConfig pluginConfig) {
+   public PluginConfig addPluginConfig(String node, PluginConfig pluginConfig) {
+      if (node == null) {
+         return addDefaultPluginConfig(pluginConfig);
+      }
       // check first if the node already exists ...
       if (log.isLoggable(Level.FINER)) log.finer("addPluginConfig for node '" + node + "'");
       Hashtable tmp = (Hashtable)this.pluginConfigsNodes.get(node);
@@ -82,8 +91,7 @@ public class PluginHolder {
          tmp = new Hashtable();
          this.pluginConfigsNodes.put(node, tmp);
       }
-      tmp.put(pluginConfig.getId(), pluginConfig);
-
+      return (PluginConfig)tmp.put(pluginConfig.getId(), pluginConfig);
    }
 
    /**
@@ -91,12 +99,12 @@ public class PluginHolder {
     * plugin configuration is not found in the specified node, then it is
     * searched in the defaults. If none is found there either, then a null is
     * returned.
-    * @param node the nodeId scope on which to do the request
+    * @param node the nodeId scope on which to do the request or null
     * @param id the unique string identifying the plugin
     */
    public PluginConfig getPluginConfig(String node, String id) {
-      if (log.isLoggable(Level.FINER)) log.finer("getPluginConfig for node '" + node + "'");
-      Hashtable nodeTable = (Hashtable)this.pluginConfigsNodes.get(node);
+      if (log.isLoggable(Level.FINER)) log.finer("id '" + id + "', node '" + node + "'");
+      Hashtable nodeTable = (node==null) ? null : (Hashtable)this.pluginConfigsNodes.get(node);
       if (nodeTable != null) {
          Object tmp = nodeTable.get(id);
          if (tmp != null) return (PluginConfig)tmp;
@@ -104,6 +112,30 @@ public class PluginHolder {
       return (PluginConfig)this.pluginConfigsDefault.get(id);
    }
 
+
+   /**
+    * Remove the given pluginConfig instance. 
+    * @param node
+    * @param id
+    * @return Can be null if not found
+    */
+   public PluginConfig removePluginConfig(String node, String id) {
+      if (log.isLoggable(Level.FINER)) log.finer("id '" + id + "', node '" + node + "'");
+      Hashtable nodeTable = (node==null) ? null : (Hashtable)this.pluginConfigsNodes.get(node);
+      if (nodeTable != null) {
+         PluginConfig oldConfig = (PluginConfig)nodeTable.remove(id);
+         if (oldConfig != null) {
+            if (nodeTable.size() == 0)
+               this.pluginConfigsDefault.remove(node);
+            oldConfig.shutdown();
+            return oldConfig;
+         }
+      }
+      PluginConfig oldConfig = (PluginConfig)this.pluginConfigsDefault.remove(id);
+      if (oldConfig != null)
+         oldConfig.shutdown();
+      return oldConfig;
+   }
 
    /**
     * returns all PluginConfig found for the specified node (and the default)

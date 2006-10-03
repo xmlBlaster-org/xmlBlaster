@@ -77,8 +77,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
    }
 
    /**
-    * Parses the given xml Qos and returns a PluginHolderData holding the data. 
-    * Parsing of update() and publish() QoS is supported here.
+    * Parses the given xmlBlasterPlugins.xml returns a PluginHolderData holding the data. 
     * @param the XML based ASCII string
     */
    public synchronized PluginHolder readObject(String xmlTxt) throws XmlBlasterException {
@@ -197,7 +196,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
 
 
    /**
-    * Reads the configuration file. It first searches the file according to the 
+    * Reads the configuration file <code>xmlBlasterPlugins.xml</code>. It first searches the file according to the 
     * xmlBlaster search strategy specified in the engine.runlevel requirement.
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
     */
@@ -219,6 +218,9 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
          reset();
          init(url.toString(), inSource);
          PluginHolder ret = getObject();
+         PluginConfig[] arr = ret.getAllPluginConfig(null);
+         for (int i=0; i<arr.length; i++)
+            arr[i].registerMBean();
          if (log.isLoggable(Level.FINEST)) log.finest(".readConfigFile. The content: \n" + ret.toXml());
          return ret;
       }

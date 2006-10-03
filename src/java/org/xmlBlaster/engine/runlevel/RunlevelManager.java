@@ -174,11 +174,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
          }
       }
 
-      PluginHolder pluginHolder = this.glob.getPluginHolder();
-      String node = "";
-      pluginHolder.addPluginConfig(node, pluginConfig);
-      if (pluginConfig.isCreate())
-         addPlugin(pluginConfig);
+      addPlugin(pluginConfig);
       return Constants.RET_OK;
    }
 
@@ -383,6 +379,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
     * @param create
     */
    void toggleCreate(PluginConfig pluginConfig, boolean create) {
+      log.info("Changing plugin '" + pluginConfig.getId() + "' create=" + pluginConfig.isCreate() + " to " + create);
       if (pluginConfig.isCreate() != create) {
          if (create) {
             try {
@@ -419,9 +416,21 @@ public final class RunlevelManager implements RunlevelManagerMBean
     */
    private void addPlugin(PluginConfig pluginConfig) throws XmlBlasterException {
       log.info("New runlevel plugin configuration arrived: " + pluginConfig.getPluginInfo().getId());
-      I_Plugin old = this.glob.getPluginManager().removeFromPluginCache(pluginConfig.getPluginInfo().getId());
-      if (old != null) log.info("Removed old plugin " + pluginConfig.getPluginInfo().getId());
-      this.glob.getPluginManager().getPluginObject(pluginConfig.getPluginInfo());
+      I_Plugin oldPlugin = this.glob.getPluginManager().removeFromPluginCache(pluginConfig.getPluginInfo().getId());
+      
+      PluginHolder holder = this.glob.getPluginHolder();
+      PluginConfig oldConfig = holder.removePluginConfig(null, pluginConfig.getId());
+      if (oldConfig != null)
+         log.info("Removed old plugin " + oldConfig.getId());
+
+      if (oldPlugin != null && oldConfig == null)
+         log.severe("Unexpected plugin cache entry:" + oldPlugin.getType());
+
+      holder.addDefaultPluginConfig(pluginConfig);
+      
+      pluginConfig.registerMBean();
+      if (pluginConfig.isCreate())
+         this.glob.getPluginManager().getPluginObject(pluginConfig.getPluginInfo());
    }
 
 
