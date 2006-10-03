@@ -2,8 +2,9 @@
 # Name:      xmlBlasterPlugins.xml
 # Project:   xmlBlaster.org
 # Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-# Comment:   Plugins to load/unload on xmlBlaster startup/shutdown
+# Comment:   Plugins to load/unload on xmlBlaster startup/shutdown or with JMX (jconsole)
 # See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+#            http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html
 # Configure: Attributes added to plugins are used as default settings, see
 #            http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.env.html
 #            You can activate/disactivate plugins with comments
@@ -26,8 +27,7 @@
    </plugin>
 
    <!-- Example to start a second SOCKET plugin with different listener port -->
-<!--
-   <plugin create='true' id='SOCKET_UDP' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+   <plugin create='false' id='SOCKET_UDP' className='org.xmlBlaster.protocol.socket.SocketDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
@@ -37,23 +37,19 @@
       <attribute id='threadPrio'>3</attribute>
       <attribute id='compress/type'>zlib:stream</attribute>
    </plugin>
--->
 
    <!-- Example to start a SOCKET plugin with compression support on different listener port -->
-<!--
-   <plugin create='true' id='socket_z' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+   <plugin create='false' id='socket_z' className='org.xmlBlaster.protocol.socket.SocketDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
       <attribute id='port'>7606</attribute>
       <attribute id='compress/type'>zlib:stream</attribute>
    </plugin>
--->
 
    <!-- Example to start a second SOCKET plugin with SSL and compression support on different listener port -->
    <!-- Read: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL -->
-<!--
-   <plugin create='true' id='socket_ssl' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+   <plugin create='false' id='socket_ssl' className='org.xmlBlaster.protocol.socket.SocketDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
@@ -68,7 +64,6 @@
       <attribute id='compress/type'>zlib:stream</attribute>
       <attribute id='startUdpListener'>false</attribute>
    </plugin>
--->
 
    <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
    <plugin create='true' id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
@@ -93,31 +88,26 @@
 
    <!-- General EMAIL SMTP client service, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
    <!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
-<!--
-   <plugin create='true' id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
+   <plugin create='false' id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
       <action do='LOAD' onStartupRunlevel='4' sequence='7' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
       <attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost:25</attribute>
    </plugin>
--->
 
    <!-- General EMAIL POP3 polling service, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
    <!-- needed by 'email' plugin and 'CbProtocolPlugin[email][1.0]' plugin -->
-<!--
-   <plugin create='true' id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
+   <plugin create='false' id='pop3' className='org.xmlBlaster.util.protocol.email.Pop3Driver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='9' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='4' sequence='7'/>   
       <attribute id='mail.pop3.url'>pop3://xmlBlaster:xmlBlaster@localhost:110/INBOX</attribute>
       <attribute id='pop3PollingInterval'>500</attribute>
    </plugin>
--->
 
    <!-- EMAIL protocol driver (please activate 'pop3' and 'smtp' service at an earlier runlevel) -->
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html -->
-<!--
-   <plugin create='true' id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
+   <plugin create='false' id='email' className='org.xmlBlaster.protocol.email.EmailDriver'>
       <action do='LOAD' onStartupRunlevel='7' sequence='10' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='10'/>
@@ -127,7 +117,6 @@
       <attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser</attribute>
       <attribute id='mail.subject'>XmlBlaster generated mail</attribute>
    </plugin>
--->
 
    <!-- The cluster manager must be started after the protocol plugins it wants to use for communication -->
    <plugin create='true' id='cluster' className='org.xmlBlaster.engine.cluster.ClusterManager'>
@@ -136,22 +125,18 @@
    </plugin>
 
    <!-- See demo plugin xmlBlaster/demo/javaclients/HelloWorldNative.java -->
-<!--
-   <plugin create='true' id='HelloWorldNative' className='javaclients.HelloWorldNative'>
+   <plugin create='false' id='HelloWorldNative' className='javaclients.HelloWorldNative'>
       <action do='LOAD' onStartupRunlevel='9' sequence='5' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='6' sequence='4'/>
    </plugin>
--->
 
    <!-- See demo plugin xmlBlaster/demo/javaclients/HelloWorldNative2.java -->
-<!--
-   <plugin create='true' id='HelloWorldNative2' className='javaclients.HelloWorldNative2'>
+   <plugin create='false' id='HelloWorldNative2' className='javaclients.HelloWorldNative2'>
       <attribute id='loginName'>nativeClient2</attribute>
       <attribute id='topicName'>aNativeTopic2</attribute>
       <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
    </plugin>
--->
 
 <!--
    <plugin create='true' id='SOAP' className='org.xmlBlaster.protocol.soap.SoapDriver'>
@@ -168,8 +153,7 @@
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#mx4j -->
    <!-- Comment out the xsltProcessor attribute to receive the raw xml for debugging -->
-   <!--
-   <plugin create='true' id='MX4JAdaptorPlugin' className='org.xmlBlaster.contrib.jmx.MX4JAdaptor'>
+   <plugin create='false' id='MX4JAdaptorPlugin' className='org.xmlBlaster.contrib.jmx.MX4JAdaptor'>
       <attribute id="xsltProcessor">XSLTProcessor</attribute>
       <attribute id="host">localhost</attribute>
       <attribute id="port">9999</attribute>
@@ -179,17 +163,14 @@
       <action do='LOAD' onStartupRunlevel='4' sequence='4' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='66'/>
    </plugin>
-   -->
       <!-- <attribute id="xsltPathInJar"></attribute>  -->
       <!-- <attribute id="xsltLocale"></attribute> -->
 
    <!-- REPLICATION MANAGER PLUGIN http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.replication.html -->
-   <!--
-   <plugin create='true' id='ReplManagerPlugin' className='org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin'>
+   <plugin create='false' id='ReplManagerPlugin' className='org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin'>
       <action do='LOAD' onStartupRunlevel='4' sequence='5' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='65'/>
    </plugin>
-   -->
 
    <!-- ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver -->
    <plugin create='true' id='JDBC' className='org.xmlBlaster.protocol.jdbc.JdbcDriver'>
@@ -198,8 +179,7 @@
    </plugin>
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html -->
-   <!--
-   <plugin create='true' id='DeadMessageDumper' className='org.xmlBlaster.engine.DeadMessageDumper'>
+   <plugin create='false' id='DeadMessageDumper' className='org.xmlBlaster.engine.DeadMessageDumper'>
       <action do='LOAD' onStartupRunlevel='5' sequence='4' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='4' sequence='4'/>
       <attribute id='loginName'>_DeadMessageDumper</attribute>
@@ -207,11 +187,9 @@
       <attribute id='password'>secret</attribute>
       <attribute id='forceBase64'>false</attribute>
    </plugin>
-   -->
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
-   <!--
-   <plugin create='true' id='coreEvents' className='org.xmlBlaster.engine.EventPlugin'>
+   <plugin create='false' id='coreEvents' className='org.xmlBlaster.engine.EventPlugin'>
       <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
       <attribute id='eventTypes'>
@@ -226,13 +204,11 @@
          mail.collectMillis=360000
       </attribute>
    </plugin>
-   -->
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
    <!-- Small and only the most important. Useful if email is forwarded as SMS -->
    <!-- Configure the SmtpClient plugin on an earlier run level as well -->
-   <!--
-   <plugin create='true' id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
+   <plugin create='false' id='smallEmergencyEvents' className='org.xmlBlaster.engine.EventPlugin'>
       <action do='LOAD' onStartupRunlevel='8' sequence='9'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='9'/>
       <attribute id='eventTypes'>logging/severe/*,service/RunlevelManager/event/shutdownRunlevel8</attribute>
@@ -246,18 +222,16 @@
          mail.collectMillis=360000
       </attribute>
    </plugin>
-   -->
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
    <!-- Send an XML formatted heartbeat email, one per day -->
-   <!--
-   <plugin create='true' id='heartbeatEvents' className='org.xmlBlaster.engine.EventPlugin'>
+   <plugin create='false' id='heartbeatEvents' className='org.xmlBlaster.engine.EventPlugin'>
       <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
       <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
       <attribute id='eventTypes'>
          heartbeat.72000000,
-	 logging/severe/*,
-	 service/RunlevelManager/event/shutdownRunlevel8
+         logging/severe/*,
+         service/RunlevelManager/event/shutdownRunlevel8
       </attribute>
       <attribute id='destination.smtp'>
          mail.smtp.from=xmlBlaster@localhost,
@@ -266,7 +240,6 @@
          mail.collectMillis=0
       </attribute>
    </plugin>
-   -->
 
    <!-- Get event when a client logs in, send to topic '__sys__Login' -->
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
@@ -306,8 +279,7 @@
    </plugin>
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html -->
-   <!--
-   <plugin create='true' id='StartupTasks' className='org.xmlBlaster.engine.StartupTasks'>
+   <plugin create='false' id='StartupTasks' className='org.xmlBlaster.engine.StartupTasks'>
       <action do='LOAD' onStartupRunlevel='6' sequence='5'
                            onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='5' sequence='5'/>
@@ -319,11 +291,9 @@
       <attribute id='scriptFileName'>xmlBlasterStartup.xml</attribute>
       <attribute id='outFileName'>${java.io.tmpdir}${file.separator}xmlBlasterStartupOut.txt</attribute>
    </plugin>
-   -->
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html -->
-   <!--
-   <plugin create='true' id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
+   <plugin create='false' id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
      <attribute id='directoryName'>/tmp/filePoller</attribute>
      <attribute id='topicName'>poller.test</attribute> 
      <attribute id='sent'>Sent</attribute>
@@ -335,11 +305,9 @@
      <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
    </plugin>
-   -->
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwatcher.html -->
-   <!-- 
-   <plugin create='true' id='DbWatcherPlugin.testPollMD5' 
+   <plugin create='false' id='DbWatcherPlugin.testPollMD5' 
            className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
       <attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver</attribute>
       <attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl</attribute>
@@ -364,7 +332,6 @@
                  onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='5' sequence='6'/>
    </plugin>
-   -->
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.http.html -->
    <plugin create='true' id='HtmlMonitorPlugin.default' className='org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin'>
