@@ -48,6 +48,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class HelloWorldNative2 implements I_Plugin
 {
    private Global glob;
+   private PluginInfo pluginInfo;
    private static Logger log = Logger.getLogger(HelloWorldNative2.class.getName());
    private String loginName;
    private String topicName;
@@ -105,6 +106,7 @@ public class HelloWorldNative2 implements I_Plugin
    }
 
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
+      this.pluginInfo = pluginInfo;
       this.glob = glob.getClone(glob.getNativeConnectArgs()); // Sets  "-protocol LOCAL" etc.
 
       this.glob.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
@@ -116,11 +118,11 @@ public class HelloWorldNative2 implements I_Plugin
    }
 
    public String getType() {
-      return "HelloWorldNative2";
+      return (this.pluginInfo==null)?"HelloWorldNative2":this.pluginInfo.getType();
    }
 
    public String getVersion() {
-      return "1.0";
+      return (this.pluginInfo==null)?"1.0":this.pluginInfo.getVersion();
    }
 
    public void shutdown() {
