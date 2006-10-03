@@ -146,19 +146,21 @@ jar cvf dynamic.jar javaclients/ClientPlugin.class
       &lt;action do='STOP' onShutdownRunlevel='6'/>
    &lt;/plugin>
 </pre>
+     <p>The LOAD directive is not important in this case as xmlBlaster is already
+     up and running, there for we leave it away in the following command line example.
+     </p>
       <p>
       Now we are ready to send the plugin to a already running xmlBlaster server (all in one line):
       </p>
 
 <pre class="BORDER">
-  java javaclients.HelloWorldPublish 
-     -oid __sys__RunlevelManager
-     -contentFile dynamic.jar
-     -clientProperty[__plugin.jarName] dynamic.jar
-     -clientProperty[__plugin.xml]
-         "&lt;plugin id='ClientPlugin' className='javaclients.ClientPlugin'>
-            &lt;action do='LOAD' onStartupRunlevel='9'/>
-            &lt;action do='STOP' onShutdownRunlevel='6'/>
+  java javaclients.HelloWorldPublish \
+     -oid __sys__RunlevelManager \
+     -contentFile dynamic.jar \
+     -clientProperty[__plugin.jarName] dynamic.jar \
+     -clientProperty[__plugin.xml] \
+         "&lt;plugin create='true' id='ClientPlugin' className='javaclients.ClientPlugin'> \
+            &lt;action do='STOP' onShutdownRunlevel='6'/> \
           &lt;/plugin>"
 </pre>
       <p>To register a plugin you need to send it to the topic <code>__sys__RunlevelManager</code>,
@@ -167,7 +169,7 @@ jar cvf dynamic.jar javaclients/ClientPlugin.class
       The jar file will be dumped by the xmlBlaster server to the root directory of its CLASSPATH.
       </p>
       <p>
-      Finally, the client property <code>__plugin.jarName</code> contains the configuration for registering
+      Finally, the client property <code>__plugin.xml</code> contains the configuration for registering
       the plugin. 
       </p>
       <p>
