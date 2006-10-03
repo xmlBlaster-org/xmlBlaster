@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for 1.4 (not yet released)
 ==================================
+ o #15541 Fixed plugin load/unload/reload lifecycle, fixed plugin JMX re-registration
+
  o #15534 Added support for dynamically loaded plugins, the jar file is send in the message content
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html#dynamic
 
