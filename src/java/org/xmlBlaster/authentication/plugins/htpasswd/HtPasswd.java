@@ -238,6 +238,7 @@ public class HtPasswd {
          log.warning("loginName for '" + sessionName.toXml() + "' is null, will not authorize");
          return false;
       }
+      log.info("loginName='" + loginName + "' and sessionInfo: " + sessionInfo.toXml());
       Container container = (Container)this.htpasswdMap.get(loginName);
       if (container.allowedMethodNames == null) return true;
       if (dataHolder.getMsgUnit() == null || dataHolder.getMsgUnit().getKeyData() == null)
