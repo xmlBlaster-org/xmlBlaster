@@ -6,9 +6,11 @@
 */
 package org.xmlBlaster.authentication.plugins.htpasswd;
 
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.plugins.DataHolder;
 import org.xmlBlaster.authentication.plugins.SessionHolder;
 import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
@@ -221,7 +223,22 @@ public class HtPasswd {
     */
    public boolean isAuthorized(SessionHolder sessionHolder, DataHolder dataHolder) {
       if (this.htpasswdMap == null) return true;
-      Container container = (Container)this.htpasswdMap.get(sessionHolder.getSessionInfo().getSessionName().getLoginName());
+      SessionInfo sessionInfo = sessionHolder.getSessionInfo();
+      if (sessionInfo == null) {
+         log.warning("sessionInfo is null, will not authorize");
+         return false;
+      }
+      SessionName sessionName = sessionInfo.getSessionName();
+      if (sessionName == null) {
+         log.warning("sessionName for '" + sessionInfo.toXml() + "' is null, will not authorize");
+         return false;
+      }
+      String loginName = sessionName.getLoginName();
+      if (loginName == null) {
+         log.warning("loginName for '" + sessionName.toXml() + "' is null, will not authorize");
+         return false;
+      }
+      Container container = (Container)this.htpasswdMap.get(loginName);
       if (container.allowedMethodNames == null) return true;
       if (dataHolder.getMsgUnit() == null || dataHolder.getMsgUnit().getKeyData() == null)
          return false;
