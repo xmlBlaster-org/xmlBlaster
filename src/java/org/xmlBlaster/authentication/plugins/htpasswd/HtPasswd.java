@@ -238,8 +238,15 @@ public class HtPasswd {
          log.warning("loginName for '" + sessionName.toXml() + "' is null, will not authorize");
          return false;
       }
-      log.info("loginName='" + loginName + "' and sessionInfo: " + sessionInfo.toXml());
       Container container = (Container)this.htpasswdMap.get(loginName);
+      if (container == null) {
+         StringBuffer buf = new StringBuffer(1024);
+         Object[] keys = this.htpasswdMap.keySet().toArray();
+         for (int i=0; i < keys.length; i++)
+            buf.append("'").append(keys[i]).append("' ");
+         log.severe("the entry '" + loginName + "' has not been found in the map. Found entries are : " + buf.toString());
+         return false;
+      }
       if (container.allowedMethodNames == null) return true;
       if (dataHolder.getMsgUnit() == null || dataHolder.getMsgUnit().getKeyData() == null)
          return false;
