@@ -4,7 +4,7 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 (not yet released)
 ==================================
  o #15549 Fixed the possible NPE in SocketConnection in case a client wants to use it directly. It can now read the cfg out of
-          the Global properties too. 
+          the Global properties too, thanks to Oliver Fels. 
  
  o #15541 Fixed plugin load/unload/reload lifecycle, fixed plugin JMX re-registration
 
