@@ -120,9 +120,12 @@ public class SocketConnection implements I_XmlBlasterConnection
       this.glob = (glob == null) ? Global.instance() : glob;
 
       this.pluginInfo = pluginInfo;
-      String tmp = pluginInfo.getParameters().getProperty("useUdpForOneway", ""+this.useUdpForOneway);
-      this.useUdpForOneway = Boolean.valueOf(tmp).booleanValue();
-      if (log.isLoggable(Level.FINER)) log.finer("Entering init(useUdpForOneway="+this.useUdpForOneway+")");
+      
+      // String tmp = pluginInfo.getParameters().getProperty("useUdpForOneway", ""+this.useUdpForOneway);
+      // this.useUdpForOneway = Boolean.valueOf(tmp).booleanValue();
+      this.useUdpForOneway = this.glob.get("useUdpForOneWay", this.useUdpForOneway, null, pluginInfo);
+      if (log.isLoggable(Level.FINER)) 
+         log.finer("Entering init(useUdpForOneway=" + this.useUdpForOneway + ")");
       // Put this instance in the NameService, will be looked up by SocketCallbackImpl
       this.glob.addObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection", this);
    }
