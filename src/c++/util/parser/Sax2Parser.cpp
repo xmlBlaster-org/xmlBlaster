@@ -148,7 +148,7 @@ void Sax2Parser::parse(const string &xmlData)
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("SAXException: ") + msg);
    }
    catch (const std::exception& err) { // catches all of bad_alloc, bad_cast, runtime_error, ...
-      string msg = err.what();
+      string msg = err.what() + string(": ") + xmlData;
       delete parser;
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::parse", string("std:exception: ") + msg);
    }
