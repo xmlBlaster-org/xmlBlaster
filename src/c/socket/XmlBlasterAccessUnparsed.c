@@ -63,7 +63,7 @@ static ssize_t readnPlain(void * userP, const int fd, char *ptr, const size_t nb
 static ssize_t readnCompressed(void *userP, const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void * userP2);
 
 Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const char* const* argv) {
-   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)calloc(1, sizeof(XmlBlasterAccessUnparsed));
+   XmlBlasterAccessUnparsed * const xa = (XmlBlasterAccessUnparsed *)calloc(1, sizeof(XmlBlasterAccessUnparsed));
    if (xa == 0) return xa;
    xa->argc = argc;
    xa->argv = argv;
@@ -381,7 +381,7 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa)
 static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception)
 {
    bool retVal;
-   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
+   XmlBlasterAccessUnparsed * const xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
 
    if (!strcmp(XMLBLASTER_PUBLISH_ONEWAY, msgRequestInfoP->methodName))
       return msgRequestInfoP;
