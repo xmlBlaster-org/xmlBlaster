@@ -54,10 +54,15 @@ public class SessionNameTest extends TestCase {
       try {
          SessionName sessionName = new SessionName(glob, "client/jack/99");
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "client/jack/session/99", sessionName.getAbsoluteName());
-         //assertEquals("", "/node/unknown/client/jack/99", sessionName.getAbsoluteName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "client/jack/session/99", sessionName.getAbsoluteName());
+         else
+            assertEquals("", "client/jack/99", sessionName.getAbsoluteName());
          assertEquals("", (String)null, sessionName.getNodeIdStr());
-         assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
+         else
+            assertEquals("", "client/jack/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", 99L, sessionName.getPublicSessionId());
       }
@@ -68,9 +73,15 @@ public class SessionNameTest extends TestCase {
       try {
          SessionName sessionName = new SessionName(glob, "/node/heron/client/jack/session/99");
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "/node/heron/client/jack/session/99", sessionName.getAbsoluteName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "/node/heron/client/jack/session/99", sessionName.getAbsoluteName());
+         else
+            assertEquals("", "/node/heron/client/jack/99", sessionName.getAbsoluteName());
          assertEquals("", "heron", sessionName.getNodeId().getId());
-         assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
+         else
+            assertEquals("", "client/jack/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", 99L, sessionName.getPublicSessionId());
       }
@@ -82,10 +93,15 @@ public class SessionNameTest extends TestCase {
          SessionName tmp = new SessionName(glob, "client/jack");
          SessionName sessionName = new SessionName(glob, tmp, -4L);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "client/jack/session/-4", sessionName.getAbsoluteName());
-         //assertEquals("", "/node/unknown/client/jack/-4", sessionName.getAbsoluteName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "client/jack/session/-4", sessionName.getAbsoluteName());
+         else
+            assertEquals("", "client/jack/-4", sessionName.getAbsoluteName());
          assertEquals("", (String)null, sessionName.getNodeIdStr());
-         assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
+         else
+            assertEquals("", "client/jack/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", -4L, sessionName.getPublicSessionId());
       }
@@ -97,9 +113,15 @@ public class SessionNameTest extends TestCase {
          SessionName tmp = new SessionName(glob, new NodeId("avalon"), "client/jack");
          SessionName sessionName = new SessionName(glob, tmp, -4);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("Expected /node/avalon/client/jack/session/-4 but was:" + sessionName.getAbsoluteName(), "/node/avalon/client/jack/session/-4", sessionName.getAbsoluteName());
+         if (SessionName.useSessionMarker())
+            assertEquals("Expected /node/avalon/client/jack/session/-4 but was:" + sessionName.getAbsoluteName(), "/node/avalon/client/jack/session/-4", sessionName.getAbsoluteName());
+         else
+            assertEquals("Expected /node/avalon/client/jack/-4 but was:" + sessionName.getAbsoluteName(), "/node/avalon/client/jack/-4", sessionName.getAbsoluteName());
          assertEquals("", "avalon", sessionName.getNodeId().getId());
-         assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
+         else
+            assertEquals("", "client/jack/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", -4L, sessionName.getPublicSessionId());
       }
@@ -111,9 +133,15 @@ public class SessionNameTest extends TestCase {
          SessionName tmp = new SessionName(glob, new NodeId("/node/avalon"), "client/jack");
          SessionName sessionName = new SessionName(glob, tmp, -4);
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "/node/avalon/client/jack/session/-4", sessionName.getAbsoluteName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "/node/avalon/client/jack/session/-4", sessionName.getAbsoluteName());
+         else
+            assertEquals("", "/node/avalon/client/jack/-4", sessionName.getAbsoluteName());
          assertEquals("", "avalon", sessionName.getNodeId().getId());
-         assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "client/jack/session/-4", sessionName.getRelativeName());
+         else
+            assertEquals("", "client/jack/-4", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", -4L, sessionName.getPublicSessionId());
       }
@@ -124,9 +152,15 @@ public class SessionNameTest extends TestCase {
       try { // Test given node ID ...
          SessionName sessionName = new SessionName(glob, new NodeId("/node/sauron/client/jack/99"), "/node/heron/client/jack/99");
          System.out.println("AbsoluteName=" + sessionName.getAbsoluteName() + " RelativeName=" + sessionName.getRelativeName());
-         assertEquals("", "/node/sauron/client/jack/session/99", sessionName.getAbsoluteName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "/node/sauron/client/jack/session/99", sessionName.getAbsoluteName());
+         else
+            assertEquals("", "/node/sauron/client/jack/99", sessionName.getAbsoluteName());
          assertEquals("", "sauron", sessionName.getNodeId().getId());
-         assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "client/jack/session/99", sessionName.getRelativeName());
+         else
+            assertEquals("", "client/jack/99", sessionName.getRelativeName());
          assertEquals("", "jack", sessionName.getLoginName());
          assertEquals("", 99L, sessionName.getPublicSessionId());
       }

@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -119,7 +120,10 @@ public class ConnectQosTest extends TestCase {
 
          SessionQos sessionQos = qos.getSessionQos();
          assertEquals("sessionTimeout failed", sessionTimeout, sessionQos.getSessionTimeout());
-         assertEquals("", "/node/avalon/client/joe/session/2", sessionQos.getSessionName().getAbsoluteName());
+         if (SessionName.useSessionMarker())
+            assertEquals("", "/node/avalon/client/joe/session/2", sessionQos.getSessionName().getAbsoluteName());
+         else
+            assertEquals("", "/node/avalon/client/joe/2", sessionQos.getSessionName().getAbsoluteName());
          assertEquals("", true, sessionQos.hasPublicSessionId());
          assertEquals("", 2L, sessionQos.getPublicSessionId());
          assertEquals("", sessionTimeout, sessionQos.getSessionTimeout());
@@ -290,7 +294,10 @@ public class ConnectQosTest extends TestCase {
             assertEquals("Address array", 1, addrArr.length);
             AddressBase addr = addrArr[0];
             assertEquals("", "golan@localhost", addr.getRawAddress());
-            assertEquals("", "/xmlBlaster/node/heron/client/golan/session/1", addr.getEnv("__ContextNode", "").getValue());
+            if (SessionName.useSessionMarker())
+               assertEquals("", "/xmlBlaster/node/heron/client/golan/session/1", addr.getEnv("__ContextNode", "").getValue());
+            else
+               assertEquals("", "/xmlBlaster/node/heron/client/golan/1", addr.getEnv("__ContextNode", "").getValue());
             
             assertEquals("", "email", addr.getType());
             assertEquals("", 56, addr.getBootstrapPort());
