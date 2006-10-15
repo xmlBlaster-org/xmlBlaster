@@ -131,6 +131,58 @@ public final class CbDispatchConnection extends DispatchConnection
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Connected low level to callback '" + this.address.getType() + "'");
    }
 
+   class Holder {
+      public MsgQueueUpdateEntry msgQueueUpdateEntry;
+      public MsgUnitRaw msgUnitRaw;
+      public String subscriptionId;
+      
+      public Holder(MsgQueueUpdateEntry msgQueueUpdateEntry, MsgUnitRaw msgUnitRaw, String subscriptionId) {
+         this.msgQueueUpdateEntry = msgQueueUpdateEntry;
+         this.msgUnitRaw = msgUnitRaw;
+         this.subscriptionId = subscriptionId;
+      }
+   }
+
+   /**
+    * We export/encrypt the message (call the interceptor)
+    * 
+    * @param holderList list of Holder instances
+    * @param methodName UPDATE or UPDATE_ONEWAY
+    * @throws XmlBlasterException
+    */
+   private void exportCrypt(ArrayList holderList, MethodName methodName) throws XmlBlasterException {
+      if (holderList == null || methodName == null) return;
+      
+      I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
+      if (securityInterceptor == null) {
+         log.warning(ME+": No session security context, sending " + holderList.size() + " messages without encryption");
+         return;
+      }
+      ServerScope scope = (ServerScope)this.glob;
+            
+      for (int i=0; i<holderList.size(); i++) {
+         Holder holder = (Holder)holderList.get(i);
+         
+         // Pass subscribeQos or connectQos - clientProperties to exportMessage() in case there are
+         // some interesting settings provided, for example a desired XSL transformation
+         SubscriptionInfo subscriptionInfo = null;
+         Map map = null;
+         if (holder.subscriptionId != null) {
+            subscriptionInfo = scope.getRequestBroker().getClientSubscriptions().getSubscription(holder.subscriptionId);
+            if (subscriptionInfo != null)
+               map = subscriptionInfo.getQueryQosDataClientProperties();
+            //String xslFileName = subscriptionInfo.getQueryQosData().getClientProperty("__xslTransformerFileName", (String)null);
+         }
+         else {
+            // todo: use map=ConnectQos.getClientProperties() as a map to pass to dataHolder
+         }
+         
+         CryptDataHolder dataHolder = new CryptDataHolder(methodName, holder.msgUnitRaw, map);
+         holder.msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
+      }
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted " + holderList.size() + " " + methodName + " messages.");
+   }
+
    /**
     * Send the messages back to the client. 
     * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content
@@ -143,18 +195,6 @@ public final class CbDispatchConnection extends DispatchConnection
       ArrayList oneways = null;
       ArrayList responders = null;
       
-      class Holder {
-         public MsgQueueUpdateEntry msgQueueUpdateEntry;
-         public MsgUnitRaw msgUnitRaw;
-         public String subscriptionId;
-         
-         public Holder(MsgQueueUpdateEntry msgQueueUpdateEntry, MsgUnitRaw msgUnitRaw, String subscriptionId) {
-            this.msgQueueUpdateEntry = msgQueueUpdateEntry;
-            this.msgUnitRaw = msgUnitRaw;
-            this.subscriptionId = subscriptionId;
-         }
-      }
-
       {
          for (int i=0; i<msgArr_.length; i++) {
             MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
@@ -211,7 +251,7 @@ public final class CbDispatchConnection extends DispatchConnection
             MsgUnitRaw raw = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
             if (address.oneway() || entry.updateOneway()) {
                if (oneways == null) oneways = new ArrayList();
-               oneways.add(raw);
+               oneways.add(new Holder(entry, raw, entry.getSubscriptionId()));
             }
             else {
                if (responders == null) responders = new ArrayList();
@@ -220,62 +260,15 @@ public final class CbDispatchConnection extends DispatchConnection
          }
       }
       
-      ServerScope scope = (ServerScope)this.glob;
-
-      // We export/encrypt the message (call the interceptor)
-      I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
-      if (securityInterceptor != null) {
-         if (responders != null) {
-            for (int i=0; i<responders.size(); i++) {
-               Holder holder = (Holder)responders.get(i);
-               
-               // Pass subscribeQos or connectQos - clientProperties to exportMessage() in case there are
-               // some interesting settings provided, for example a desired XSL transformation
-               SubscriptionInfo subscriptionInfo = null;
-               Map map = null;
-               if (holder.subscriptionId != null) {
-                  subscriptionInfo = scope.getRequestBroker().getClientSubscriptions().getSubscription(holder.subscriptionId);
-                  if (subscriptionInfo != null)
-                     map = subscriptionInfo.getQueryQosDataClientProperties();
-                  //String xslFileName = subscriptionInfo.getQueryQosData().getClientProperty("__xslTransformerFileName", (String)null);
-               }
-               else {
-                  // todo: use map=ConnectQos.getClientProperties() as a map to pass to dataHolder
-               }
-               
-               CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UPDATE, holder.msgUnitRaw, map);
-               holder.msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
-            }
-            if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted " + responders.size() + " messages.");
-         }
-         if (oneways != null) {
-            for (int i=0; i<oneways.size(); i++) {
-               Holder holder = (Holder)responders.get(i);
-               
-               SubscriptionInfo subscriptionInfo = null;
-               Map map = null;
-               if (holder.subscriptionId != null) {
-                  subscriptionInfo = scope.getRequestBroker().getClientSubscriptions().getSubscription(holder.subscriptionId);
-                  if (subscriptionInfo != null)
-                     map = subscriptionInfo.getQueryQosDataClientProperties();
-               }
-               else {
-                  // todo: use map=ConnectQos.getClientProperties() as a map to pass to dataHolder
-               }
-
-               CryptDataHolder dataHolder = new CryptDataHolder(MethodName.UPDATE_ONEWAY,
-                     holder.msgUnitRaw, map);
-               oneways.set(i, securityInterceptor.exportMessage(dataHolder));
-            }
-            if (log.isLoggable(Level.FINE)) log.fine(ME+": Exported/encrypted " + oneways.size() + " oneway messages.");
-         }
-      }
-      else {
-         log.warning(ME+": No session security context, sending " + msgArr_.length + " messages without encryption");
-      }
+      exportCrypt(responders, MethodName.UPDATE);
+      exportCrypt(oneways, MethodName.UPDATE_ONEWAY);
 
       if (oneways != null) {
-         cbDriver.sendUpdateOneway((MsgUnitRaw[])oneways.toArray(new MsgUnitRaw[oneways.size()]));
+         MsgUnitRaw[] raws = new MsgUnitRaw[oneways.size()];
+         for (int i=0; i<oneways.size(); i++) {
+            raws[i] = ((Holder)oneways.get(i)).msgUnitRaw;
+         }
+         cbDriver.sendUpdateOneway(raws);
          connectionsHandler.getDispatchStatistic().incrNumUpdate(oneways.size());
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + oneways.size() + " oneway messages.");
       }
@@ -291,6 +284,7 @@ public final class CbDispatchConnection extends DispatchConnection
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
 
          if (rawReturnVal != null && rawReturnVal.length == raws.length) {
+            I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
             for (int i=0; i<rawReturnVal.length; i++) {
                MsgQueueUpdateEntry entry = ((Holder)responders.get(i)).msgQueueUpdateEntry;
                if (!entry.wantReturnObj())
