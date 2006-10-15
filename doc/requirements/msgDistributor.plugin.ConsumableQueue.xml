@@ -108,6 +108,25 @@ java javaclients.script.XmlScript -requestFile consumableQueue.xml
    </example>
 
 
+   <example lang="Java" type="HTML">
+		<p>
+		This example shows how to try the feature with command line clients.
+Start all processes in a different console window, hit enter to publish another message
+and try killing arbitrary subscribers:
+      </p>
+      <pre>
+java org.xmlBlaster.Main
+
+java javaclients.HelloWorldSubscribe
+
+java javaclients.HelloWorldSubscribe
+
+java javaclients.HelloWorldSubscribe
+
+java javaclients.HelloWorldPublish -numPublish 50  -consumableQueue true
+      </pre>     
+   </example>
+
    <see type="API">org.xmlBlaster.engine.distributor.I_MsgDistributor</see>
    <see type="API">org.xmlBlaster.engine.distributor.plugins.ConsumableQueuePlugin</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
