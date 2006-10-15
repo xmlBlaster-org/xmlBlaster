@@ -34,6 +34,13 @@ public final class SessionName implements java.io.Serializable
    private final String subjectId; // == loginName
    private long pubSessionId;
    private boolean nodeIdExplicitlyGiven = false;
+   
+   private static boolean useSessionMarker=true;
+   
+   static {
+      // To switch back to old "client/joe/1" markup, default is now "client/joe/session/1"
+      useSessionMarker = Global.instance().getProperty().get("xmlBlaster/useSessionMarker", useSessionMarker);
+   }
 
    /**
     * Create and parse a unified name. 
@@ -201,7 +208,12 @@ public final class SessionName implements java.io.Serializable
          StringBuffer buf = new StringBuffer(126);
          // For example "client/joe/session/-1"
          buf.append(ContextNode.SUBJECT_MARKER_TAG).append("/").append(subjectId);
-         if (isSession()) buf.append("/").append(ContextNode.SESSION_MARKER_TAG).append("/").append(""+this.pubSessionId);
+         if (isSession()) {
+            buf.append("/");
+            if (useSessionMarker)
+               buf.append(ContextNode.SESSION_MARKER_TAG).append("/");
+            buf.append(""+this.pubSessionId);
+         }
          this.relativeName = buf.toString();
       }
       return this.relativeName;
