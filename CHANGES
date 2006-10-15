@@ -3,6 +3,12 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for 1.4 (not yet released)
 ==================================
+
+ o #15557 Added switch -xmlBlaster/useSessionMarker (defaults to true)
+          To switch back to old "client/joe/1" notation, default is since V1.3 "client/joe/session/1"
+
+ o #15556 Fixed C++ client to handle 'joe/2' or 'joe/session/2' or 'client/joe/session/2' syntax
+
  o #15549 Fixed the possible NPE in SocketConnection in case a client wants to use it directly. It can now read the cfg out of
           the Global properties too, thanks to Oliver Fels. 
  
