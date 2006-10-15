@@ -84,10 +84,10 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
       }
 
-      super.initialize(glob, driver.getAddressServer(), sock.getInputStream(), sock.getOutputStream());
+      super.initialize(glob, driver.getAddressServer(), this.sock.getInputStream(), this.sock.getOutputStream());
       super.setXmlBlasterCore(driver.getXmlBlaster());
 
-      this.remoteSocketStr = sock.getInetAddress().toString() + ":" + sock.getPort();
+      this.remoteSocketStr = this.sock.getInetAddress().toString() + ":" + this.sock.getPort();
       
       // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
       // But we always block on input read() to receive update() messages.
@@ -171,7 +171,7 @@ public class HandleClient extends SocketExecutor implements Runnable
    private void closeSocket() {
       try { if (iStream != null) { iStream.close(); /*iStream=null;*/ } } catch (IOException e) { log.warning(e.toString()); }
       try { if (oStream != null) { oStream.close(); /*oStream=null;*/ } } catch (IOException e) { log.warning(e.toString()); }
-      try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warning(e.toString()); }
+      try { if (this.sock != null) { this.sock.close(); this.sock=null; } } catch (IOException e) { log.warning(e.toString()); }
       if (log.isLoggable(Level.FINE)) log.fine("Closed socket for '" + loginName + "'.");
    }
 
@@ -231,15 +231,18 @@ public class HandleClient extends SocketExecutor implements Runnable
                setLoginName(conQos.getUserId());
                Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
+               
+               Socket socket = this.sock;
+               if (socket == null) return;
 
                // getInetAddress().toString() does no reverse DNS lookup (no blocking danger) ...
-               log.info("Client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+               log.info("Client connected, coming from host=" + socket.getInetAddress().toString() + " port=" + socket.getPort());
 
                CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
                   cbKey = cbArr[ii].getType() + cbArr[ii].getRawAddress();
                   SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
-                  SocketUrl remoteUrl = new SocketUrl(glob, this.sock.getInetAddress().getHostAddress(), this.sock.getPort());
+                  SocketUrl remoteUrl = new SocketUrl(glob, socket.getInetAddress().getHostAddress(), socket.getPort());
                   if (driver.getAddressServer() != null) {
                      driver.getAddressServer().setRemoteAddress(remoteUrl);
                   }
@@ -287,6 +290,11 @@ public class HandleClient extends SocketExecutor implements Runnable
                executeException(receiver, e, false);
             else
                log.warning("Can't handle publishOneway message, ignoring exception: " + e.toString());
+
+            if (e.getErrorCode().equals(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED) ||
+                  e.getErrorCode().equals(ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT)) {
+               shutdown(); // cleanup to avoid thread/memory leak for a client trying again an again
+            }
          }
          catch (Throwable e2) {
             log.severe("Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
@@ -319,8 +327,8 @@ public class HandleClient extends SocketExecutor implements Runnable
          else
             log.fine("The progress listener is null");
          
-         if (udp && this.sockUDP!=null) {
-            DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
+         if (udp && this.sockUDP!=null && this.sock!=null) {
+            DatagramPacket dp = new DatagramPacket(msg, msg.length, this.sock.getInetAddress(), this.sock.getPort());
             //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
             this.sockUDP.send(dp);
             if (log.isLoggable(Level.FINE)) log.fine("UDP datagram is send");
@@ -359,8 +367,11 @@ public class HandleClient extends SocketExecutor implements Runnable
    public void run() {
       if (log.isLoggable(Level.FINER)) log.finer("Handling client request ...");
       try {
-         if (log.isLoggable(Level.FINE))
-            log.fine("Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+         if (log.isLoggable(Level.FINE)) {
+            Socket socket = this.sock;
+            if (socket != null)
+               log.fine("Client accepted, coming from host=" + socket.getInetAddress().toString() + " port=" + socket.getPort());
+         }
          while (running) {
             try {
                // blocks until a message arrives
