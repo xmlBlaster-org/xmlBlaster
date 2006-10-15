@@ -1379,6 +1379,7 @@ TODO
                <include name="**/*.c.html"/>
                <include name="**/*.hpp.html"/>
                <include name="**/*.h.html"/>
+               <include name="**/*.cs.html"/>
                <include name="**/*.pl.html"/>
                <include name="**/*.pm.html"/>
                <include name="**/*.perl.html"/>
