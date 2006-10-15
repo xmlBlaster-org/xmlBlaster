@@ -35,11 +35,19 @@ public final class SessionName implements java.io.Serializable
    private long pubSessionId;
    private boolean nodeIdExplicitlyGiven = false;
    
-   private static boolean useSessionMarker=true;
+   // TODO:
+   // On release 2.0 we should change the default to the new "client/joe/session/1" notation.
+   // Note that C++ clients compiled before V1.4 and java clients before V1.3 can't handle
+   // the new notation
+   private static boolean useSessionMarker=false;
    
    static {
       // To switch back to old "client/joe/1" markup, default is now "client/joe/session/1"
       useSessionMarker = Global.instance().getProperty().get("xmlBlaster/useSessionMarker", useSessionMarker);
+   }
+
+   public static boolean useSessionMarker() {
+      return useSessionMarker;
    }
 
    /**
