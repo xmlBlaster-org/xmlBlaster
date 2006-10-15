@@ -43,9 +43,11 @@ wrapper.java.classpath.5=%XMLBLASTER_HOME%/lib/xmlBlaster.jar
 wrapper.java.library.path.1=%XMLBLASTER_HOME%/lib
 
 # Java Additional Parameters, can be used by xmlBlaster like ${XMLBLASTER_HOME}
-# Currently these settings are not used:
+# These are passed as system properties to the JVM:
 wrapper.java.additional.1=-DXMLBLASTER_HOME=%XMLBLASTER_HOME%
-#wrapper.java.additional.2=-Dprop=TRUE
+wrapper.java.additional.2=-Dcom.sun.management.jmxremote
+#wrapper.java.additional.3=-Dcom.sun.management.jmxremote.port=1099
+#wrapper.java.additional.4=-Dprop=TRUE
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=6
