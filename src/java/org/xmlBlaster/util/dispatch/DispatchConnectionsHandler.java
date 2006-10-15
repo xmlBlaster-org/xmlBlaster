@@ -431,7 +431,7 @@ abstract public class DispatchConnectionsHandler
                return;
             } catch(Throwable e) {
                ex = e;
-               if (ii<(cons.length-1)) log.warning(ME+": Callback failed, trying other addresses");
+               if (ii<(cons.length-1)) log.warning(ME+": Callback failed, trying other addresses: " + e.toString());
             }
          }
       }
