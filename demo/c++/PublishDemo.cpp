@@ -34,7 +34,7 @@ static unsigned long filesize(ifstream &ins)
    return e-s;
 }
 
-int fileRead(string &fn, string &content)
+static int fileRead(string &fn, string &content)
 {
    unsigned char *buf;
    ifstream ins(fn.c_str(), ios_base::binary);
