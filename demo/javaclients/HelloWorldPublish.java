@@ -92,7 +92,8 @@ public class HelloWorldPublish
          int numPublish = glob.getProperty().get("numPublish", 1);
          String oid = glob.getProperty().get("oid", "Hello");  // "HelloTopic_#%counter"
          String domain = glob.getProperty().get("domain", (String)null);
-         String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
+         String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo/></org.xmlBlaster>");
+         //String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
          String contentStr = glob.getProperty().get("content", "Hi-%counter");
          String contentFile = glob.getProperty().get("contentFile", (String)null);
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
@@ -103,6 +104,7 @@ public class HelloWorldPublish
          boolean readonly = glob.getProperty().get("readonly", false);
          long destroyDelay = glob.getProperty().get("destroyDelay", 60000L);
          boolean createDomEntry = glob.getProperty().get("createDomEntry", true);
+         boolean consumableQueue = glob.getProperty().get("consumableQueue", false);
          long historyMaxMsg = glob.getProperty().get("queue/history/maxEntries", -1L);
          boolean forceQueuing = glob.getProperty().get("forceQueuing", true);
          boolean subscribable = glob.getProperty().get("subscribable", true);
@@ -163,6 +165,7 @@ public class HelloWorldPublish
          log.info("   -destroyDelay   " + Timestamp.millisToNice(destroyDelay));
          log.info("   -createDomEntry " + createDomEntry);
          log.info("   -queue/history/maxEntries " + historyMaxMsg);
+         log.info("   -consumableQueue " + consumableQueue);
          log.info(" PtP settings");
          log.info("   -subscribable   " + subscribable);
          log.info("   -forceQueuing   " + forceQueuing);
@@ -291,6 +294,8 @@ public class HelloWorldPublish
                   prop.setMaxEntries(historyMaxMsg);
                   topicProperty.setHistoryQueueProperty(prop);
                }
+               if (consumableQueue)
+                  topicProperty.setMsgDistributor("ConsumableQueue,1.0");
                pq.setTopicProperty(topicProperty);
                log.info("Added TopicProperty on first publish: " + topicProperty.toXml());
             }
