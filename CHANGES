@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 (not yet released)
 ==================================
 
+ o #15571 Changed I_SecurityQos interface to have exchangable SecurityQos for ldap,htpasswd,simple
+          This allows changing the server side security plugin (from for example htpasswd to ldap)
+          even if the client is not touched.
+
  o #15563 Bugfix: Thread/memory leak on clients with failed authentication
           and not closing the socket
 
