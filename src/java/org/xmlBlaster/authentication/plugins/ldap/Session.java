@@ -54,7 +54,7 @@ public class Session implements I_Session, I_Subject {
       authenticated = false;
 
       this.loginName = securityQos.getUserId();
-      String passwd = ((SecurityQos)securityQos).getCredential();
+      String passwd = securityQos.getCredential();
 
       if (log.isLoggable(Level.FINE)) log.fine("Checking password ...");
       authenticated = ldap.checkPassword(this.loginName, passwd);
@@ -75,7 +75,7 @@ public class Session implements I_Session, I_Subject {
          return false;
 
       try {
-         return ldap.checkPassword(securityQos.getUserId(), ((SecurityQos)securityQos).getCredential());
+         return ldap.checkPassword(securityQos.getUserId(), securityQos.getCredential());
       }
       catch (XmlBlasterException e) {
          return false;

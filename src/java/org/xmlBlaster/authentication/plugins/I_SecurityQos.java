@@ -45,6 +45,11 @@ public interface I_SecurityQos {
     * @param String credential
     */
    public void setCredential(String cred);
+   
+   /**
+    * Access the credential (e.g. password)
+    */
+   public String getCredential();
 
    /**
     * Serialize the information.

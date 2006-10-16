@@ -90,7 +90,7 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    /**
     * @return null (no password is delivered)
     */
-   String getCredential()
+   public String getCredential()
    {
       return this.passwd;
    }

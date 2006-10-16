@@ -50,13 +50,13 @@ public class Session implements I_Session {
    /**
     * Initialize the Session for a login or connect call. 
     * <p/>
-    * @param String The SecurityQos object containing the credentials, e.g. loginName/passwd
+    * @param securityQos Containing the credentials, e.g. loginName/passwd
     * @exception XmlBlasterException Thrown (in this case) if the user doesn't
     *                                exist or the passwd is incorrect.
     */
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       authenticated = false;
-      subject = determineSubject(securityQos.getUserId(), ((SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
+      subject = determineSubject(securityQos.getUserId(), securityQos.getCredential()); // throws XmlBlasterException if authentication fails
       authenticated = true;
 
       return null; // no extra information
@@ -71,7 +71,7 @@ public class Session implements I_Session {
 
       try {
          // throws XmlBlasterException if authentication fails
-         determineSubject(securityQos.getUserId(), ((SecurityQos)securityQos).getCredential());
+         determineSubject(securityQos.getUserId(), securityQos.getCredential());
          return true;
       }
       catch (XmlBlasterException e) {

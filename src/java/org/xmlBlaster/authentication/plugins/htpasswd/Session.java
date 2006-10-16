@@ -90,7 +90,7 @@ public class Session implements I_Session, I_Subject {
       }
       this.authenticated = false;
       this.loginName = securityQos.getUserId();
-      this.passwd = ((SecurityQos)securityQos).getCredential();
+      this.passwd = securityQos.getCredential();
 
       if (this.loginName == null || this.passwd == null) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Authentication of user " + getName() + " failed, you've passed an illegal login name or password");
@@ -114,7 +114,7 @@ public class Session implements I_Session, I_Subject {
          return false;
 
       if (this.loginName.equals(securityQos.getUserId()) &&
-          this.passwd.equals(((SecurityQos)securityQos).getCredential()) )
+          this.passwd.equals(securityQos.getCredential()) )
          return true;
       
       return false;
