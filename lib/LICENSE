@@ -299,6 +299,8 @@ only the SNMP subagent module jax.jar is GPL only!
 38) java_cup.jar
 ================
   Used to generate java parser for queries to ClientProperties in org.xmlBlaster.util.lexical
+  CUP 11a beta 20060608
+  http://www2.cs.tum.edu/projects/cup/
   http://www.cs.princeton.edu/~appel/modern/java/CUP/
 
 39) jzlib.jar
