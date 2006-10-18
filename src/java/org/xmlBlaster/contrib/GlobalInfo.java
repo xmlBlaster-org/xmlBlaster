@@ -210,6 +210,11 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
          log.finer("init: plugin paramenters: '" + this.pluginInfo.dumpPluginParameters() + "'");
          log.finer("init: plugin user data  : '" + this.pluginInfo.getUserData() + "'");
       }
+
+      // add the property 'id' if not set explicitly already ...
+      String id = get(ID, null);
+      if (id == null)
+         put(ID, this.pluginInfo.getType());
       
       // To allow NATIVE access to xmlBlaster (there we need to take a clone!)
       putObject("org.xmlBlaster.engine.Global", this.global);

@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.text.SimpleDateFormat;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
@@ -118,6 +119,20 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
    String MINSTR = " ";
    protected String queryMeatStatement;
 
+   private final static String LAST_TIMESTAMP_KEY = "lastTimestamp";
+
+   private final static String PERSIST_KEY = "changeDetector.persist";
+   
+   
+   private I_Info persistentInfo;
+   
+   final private void persistTimestampIfNecessary() {
+      if (this.persistentInfo == null)
+         return;
+      log.fine("storing the timestamp '" + this.oldTimestamp + "' on persistence");
+      this.persistentInfo.put(LAST_TIMESTAMP_KEY, this.oldTimestamp);
+   }
+
 
    /**
     * Modifies a string if it contains the special token '${currentDate}'.
@@ -130,13 +145,38 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
     * @param in
     * @return
     */
-   public static String modifyMinStrIfDate(String in, long time) {
+   public String modifyMinStrIfDateWithPersistence(String in, long time) throws Exception {
+      // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
+      // detect if it has to be processed:
+      boolean persist = this.info.getBoolean(PERSIST_KEY, false);
+      if (persist) {
+         String id = this.info.get(I_Info.ID, null);
+         if (id == null)
+            log.severe("No 'id' has been defined for this detector. Can not use persistent data");
+         this.persistentInfo = new DbInfo(this.dbPool, id);
+         String timestamp = this.persistentInfo.get(LAST_TIMESTAMP_KEY, null);
+         log.warning("The time id='" + id + "' name='" + LAST_TIMESTAMP_KEY + "' has not been found. Will take current system time");
+         if (timestamp != null)
+            in = timestamp;
+      }
+
+      try {
+         return modifyMinStrIfDate(in, time);
+      }
+      finally {
+         if (this.persistentInfo != null && in != null && in.length() > 0)
+            persistentInfo.put(LAST_TIMESTAMP_KEY, in);
+      }
+   }
+   
+   public static String modifyMinStrIfDate(String in, long time) throws Exception {
       // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
       // detect if it has to be processed:
       if (in == null)
          return null;
       if (in.length() < 1)
          return in;
+
       if (time < 1)
          time = System.currentTimeMillis();
       int pos0 = in.indexOf("${currentDate}"); 
@@ -144,13 +184,13 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
          int pos = in.indexOf("=");
          if (pos < pos0 + "${currentDate}".length())
             return "" + time;
+
          String formatString = in.substring(pos+1);
          SimpleDateFormat format = new SimpleDateFormat(formatString);
          in = format.format(new Date(time));
       }
       return in;
    }
-   
    // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
    /**
     * @param info
@@ -164,10 +204,6 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
       this.info = info;
       this.dataConverter = dataConverter;
       
-      this.MINSTR = this.info.get("changeDetector.MINSTR", this.MINSTR);
-
-      // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
-      this.MINSTR = modifyMinStrIfDate(this.MINSTR, 0);
       this.queryMeatStatement = this.info.get("db.queryMeatStatement", (String)null);
       if (this.queryMeatStatement != null && this.queryMeatStatement.length() < 1)
          this.queryMeatStatement = null;
@@ -191,12 +227,14 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
       this.ignoreExistingDataOnStartup = this.info.getBoolean("changeDetector.ignoreExistingDataOnStartup", this.ignoreExistingDataOnStartup);
 
       this.dbPool = DbWatcher.getDbPool(this.info);
+      this.MINSTR = this.info.get("changeDetector.MINSTR", this.MINSTR);
+
+      // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
+      this.MINSTR = modifyMinStrIfDateWithPersistence(this.MINSTR, 0);
       
-      // TODO: Persist oldTimestamp to support plugin/xmlBlaster restart
       //String colGroupingName = xmlBlasterPlugin.getType(); // or something else if not inside xmlBlaster 
       //this.persistentInfo = new DbInfo(this.dbPool, colGroupingName);
       //this.oldTimestamp = this.persistentInfo.get("I_ChangeDetector.oldTimestamp");
-      // TODO: Set on each oldTimstamp change
       
       // if null: check the complete table
       // if != null: check for each groupColName change separately
@@ -316,23 +354,23 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
                   reported = true;
                   throw e;
                }
-           }
-           else { // send message without meat ...
-              String resultXml = "";
-              ChangeEvent changeEvent = new ChangeEvent(groupColName, null, resultXml, this.changeCommand, null);
-              if (dataConverter != null) { // add some basic meta info ...
-                 ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                 BufferedOutputStream out = new BufferedOutputStream(bout);
-                 dataConverter.setOutputStream(out, this.changeCommand, groupColName, changeEvent);
-                 dataConverter.done();
-                 resultXml = bout.toString();
-                 changeEvent.setXml(resultXml);
-              }
-              changeListener.hasChanged(changeEvent);
-              changeCount++;
-           }
-           oldTimestamp = newTimestamp;
-            
+            }
+            else { // send message without meat ...
+               String resultXml = "";
+               ChangeEvent changeEvent = new ChangeEvent(groupColName, null, resultXml, this.changeCommand, null);
+               if (dataConverter != null) { // add some basic meta info ...
+                  ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                  BufferedOutputStream out = new BufferedOutputStream(bout);
+                  dataConverter.setOutputStream(out, this.changeCommand, groupColName, changeEvent);
+                  dataConverter.done();
+                  resultXml = bout.toString();
+                  changeEvent.setXml(resultXml);
+               }
+               changeListener.hasChanged(changeEvent);
+               changeCount++;
+            }
+            oldTimestamp = newTimestamp;
+            persistTimestampIfNecessary();
             // TODO rollback in case of an exception and distributed transactions ...
          }
       }

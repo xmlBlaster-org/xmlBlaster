@@ -18,6 +18,14 @@ import java.util.Set;
  */
 public interface I_Info {
    public final static String JMX_PREFIX = "__JMX__";
+   /** 
+    * This is the key used to identify this instance of the info object. It can be set
+    * explicitly or it can be set by the application. For example Implementations such as
+    * the GlobalInfo set it per default to be the id of the Plugin (which is the one
+    * returned by the PluginInfo.getType()
+    */
+   public final static String ID = "id";
+   
    /**
     * Returns the value associated to this key.
     * @param key
