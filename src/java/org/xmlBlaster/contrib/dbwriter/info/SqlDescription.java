@@ -21,10 +21,12 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -34,6 +36,7 @@ import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.contrib.replication.impl.SearchableConfig;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ClientProperty;
 
@@ -85,6 +88,14 @@ public class SqlDescription {
    
    private static Logger log = Logger.getLogger(SqlDescription.class.getName());
 
+   private I_Info info;
+   
+   /** 
+    * if set, it means the configuration has specified which columns have to be used for searches
+    * in this table. It is used for delete and update to find the entry on which to perform the
+    * operation
+    */
+   private Set configuredSearchableColumns;
    
    /**
     * Gets the name of the schema. Since this information is not contained in the object iself but in the
@@ -154,6 +165,7 @@ public class SqlDescription {
       this.attributes = new HashMap();
       this.attributeKeys = new ArrayList();
       this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
+      this.info = info;
       try {
          this.parser = new SqlInfoParser();
          this.parser.init(info);
@@ -228,6 +240,12 @@ public class SqlDescription {
       SqlRow.addProps(map, this.attributes, this.attributeKeys);
    }
 
+   /**
+    * Note this method has only sense when used in such cases where all columns belonging to this
+    * description are in the same table.
+    * 
+    * @return
+    */
    private final boolean hasPk() {
       if (this.pkKnown)
          return this.pk;
@@ -245,6 +263,12 @@ public class SqlDescription {
          }
          return this.pk;
       }
+   }
+   
+   final private boolean canAddColToSearch(SqlColumn sqlCol) {
+      if (isColumnSearchConfigured(null))
+         return isColumnSearchConfigured(sqlCol.getColName());
+      return (sqlCol.isPrimaryKey() || !hasPk()) && sqlCol.isSearchable();
    }
    
    /**
@@ -268,7 +292,8 @@ public class SqlDescription {
                log.info("column '" + colNames[i] + "' not found, will ignore it");
                continue;
             }
-            if ((sqlCol.isPrimaryKey() || !hasPk()) && sqlCol.isSearchable()) {
+            // if ((sqlCol.isPrimaryKey() || !hasPk()) && sqlCol.isSearchable()) {
+            if (canAddColToSearch(sqlCol)) {
                searchEntries.add(colContent);
                if (firstHit)
                   firstHit = false;
@@ -959,5 +984,48 @@ public class SqlDescription {
          ex.printStackTrace();
       }
    }
+
+   /**
+    * @param column the name of the column to check or null if a global check for the table.
+    * 
+    * @return true if the specified column is configured as searchable false otherwise. If you 
+    * passed null as the column name, then true is returned if at least one column is searchable,
+    * false otherwise.
+    * 
+    */
+   public boolean isColumnSearchConfigured(String column) {
+      if (this.configuredSearchableColumns == null) {
+         synchronized (this) {
+            if (this.configuredSearchableColumns == null) {
+               SearchableConfig searchableConfig = (SearchableConfig)this.info.getObject(SearchableConfig.NAME);
+               String catalog = getCatalog();
+               String table = this.identity;
+               this.configuredSearchableColumns = searchableConfig.getSearchableColumnNames(catalog, getSchema(), table);
+               if (this.configuredSearchableColumns == null)
+                  this.configuredSearchableColumns = new HashSet();
+               else { // do the complete check here
+                  if (this.hasPk())
+                     log.warning("The table '" + getCompleteTableName() + "' has primary keys defined. You configured explicitly searchable columns which overwrite the PK defaults. I hope you know what you are doing");
+                  String[] columns = (String[])this.configuredSearchableColumns.toArray(new String[this.configuredSearchableColumns.size()]);
+                  for (int i=0; i < columns.length; i++) {
+                     SqlColumn col = getColumn(columns[i]);
+                     if (col == null)
+                        log.warning("The column '" + columns[i] + "' was not found on table '" + getCompleteTableName() + "' but you have configured it to be searchable: is this really correct ? Are you maybe adding the table later ?");
+                     else {
+                        if (!col.isSearchable()) {
+                           log.warning("The column '" + columns[i] + "' is not searchable. Can not be used to search: will remove it from the searchable list of columns: please update your configuration file");
+                           this.configuredSearchableColumns.remove(columns[i]);
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+      if (column == null) // we have forced an initialization even with null.
+         return this.configuredSearchableColumns.size() > 0; 
+      return this.configuredSearchableColumns.contains(column);
+   }
+
 }
 

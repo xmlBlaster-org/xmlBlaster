@@ -50,7 +50,7 @@ public class SqlInfo implements ReplicationConstants {
    private List rows;
    
    private I_Info info;
-   
+
    public SqlInfo(I_Info info) {
       this.info = info;
       this.rows = new ArrayList();
@@ -259,8 +259,9 @@ public class SqlInfo implements ReplicationConstants {
          }
       }
       finally {
+         if (this.description != null)
+            this.description.isColumnSearchConfigured(null); // just to force initialization
       }
-      
    }
    
    /**

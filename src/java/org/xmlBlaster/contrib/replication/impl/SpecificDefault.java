@@ -1037,9 +1037,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       String completeTableName = null;
       if (mapper != null) {
          String schema = null;
-         String tableName = mapper.getMappedTable(originalCatalog, originalSchema, originalTableName, null);
+         String tableName = mapper.getMappedTable(originalCatalog, originalSchema, originalTableName, null, originalTableName);
          if (originalSchema != null)
-            schema = mapper.getMappedSchema(originalCatalog, originalSchema, originalTableName, null);
+            schema = mapper.getMappedSchema(originalCatalog, originalSchema, originalTableName, null, originalSchema);
          if (schema != null)
             completeTableName = schema + "." + tableName;
          else

@@ -31,9 +31,9 @@ import org.xmlBlaster.contrib.replication.I_Mapper;
 public class DefaultMapper implements I_Mapper {
 
    private static Logger log = Logger.getLogger(DefaultMapper.class.getName());
-   private Map columnMap;
-   private Map tableMap;
-   private Map schemaMap;
+   protected Map columnMap;
+   protected Map tableMap;
+   protected Map schemaMap;
    
    public DefaultMapper() {
       this.schemaMap = new HashMap();
@@ -41,15 +41,15 @@ public class DefaultMapper implements I_Mapper {
       this.columnMap = new HashMap();
    }
    
-   public String getMappedCatalog(String catalog, String schema, String table, String column) {
-      return catalog;
+   public String getMappedCatalog(String catalog, String schema, String table, String column, String def) {
+      return def;
    }
 
    /**
     * Table and column are ignored here. Schema must be specified. If no schema, 
     * then null is returned.
     */
-   public String getMappedSchema(String catalog, String schema, String table, String column) {
+   public String getMappedSchema(String catalog, String schema, String table, String column, String def) {
       if (schema == null)
          return null;
       String ret = null;
@@ -60,14 +60,14 @@ public class DefaultMapper implements I_Mapper {
       }
       ret = (String)this.schemaMap.get(schema);
       if (ret == null)
-         return schema;
+         return def;
       return ret;
    }
 
    /**
     * Columns are ignored here.
     */
-   public String getMappedTable(String catalog, String schema, String table, String column) {
+   public String getMappedTable(String catalog, String schema, String table, String column, String def) {
       if (table == null)
          return null;
       // catalog.schema.table
@@ -88,11 +88,11 @@ public class DefaultMapper implements I_Mapper {
       }
       ret = (String)this.tableMap.get(table);
       if (ret == null)
-         return table;
+         return def;
       return ret;
    }
 
-   public String getMappedColumn(String catalog, String schema, String table, String column) {
+   public String getMappedColumn(String catalog, String schema, String table, String column, String def) {
       if (table == null)
          return null;
       // catalog.schema.table.column
@@ -124,12 +124,12 @@ public class DefaultMapper implements I_Mapper {
       
       ret = (String)this.columnMap.get(column);
       if (ret == null)
-         return column;
+         return def;
       return ret;
    }
 
-   public String getMappedType(String catalog, String Schema, String table, String column, String type) {
-      return type;
+   public String getMappedType(String catalog, String Schema, String table, String column, String type, String def) {
+      return def;
    }
 
    /**
@@ -151,7 +151,11 @@ public class DefaultMapper implements I_Mapper {
          log.warning("DefaultMapper.init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
       }
       else
-         dbHelper = new DbMetaHelper(pool);  
+         dbHelper = new DbMetaHelper(pool);
+      doInit(info, dbHelper);
+   }
+   
+   protected void doInit(I_Info info, DbMetaHelper dbHelper) throws Exception {
       this.schemaMap = InfoHelper.getPropertiesStartingWith("replication.mapper.schema.", info, dbHelper);
       this.tableMap = InfoHelper.getPropertiesStartingWith("replication.mapper.table.", info, dbHelper);
       this.columnMap = InfoHelper.getPropertiesStartingWith("replication.mapper.column.", info, dbHelper);

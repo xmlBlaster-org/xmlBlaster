@@ -36,6 +36,7 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
 import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
+import org.xmlBlaster.contrib.replication.impl.SearchableConfig;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.jms.XBMessage;
@@ -103,6 +104,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       if (this.pool == null)
          throw new Exception(ME + ".init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
 
+      SearchableConfig searchableConfig = new SearchableConfig();
+      searchableConfig.init(this.info);
+      this.info.putObject(SearchableConfig.NAME, searchableConfig);
+      
       // this avoids the publisher to be instantiated (since we are on the slave side)
       this.info.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "false");
       boolean forceCreationAndInit = true;
@@ -246,7 +251,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       String[] cols = row.getColumnNames();
       Map colsToChange = new HashMap();
       for (int i=0; i < cols.length; i++) {
-         String newCol = this.mapper.getMappedColumn(originalCatalog, originalSchema, originalTable, cols[i]);
+         String newCol = this.mapper.getMappedColumn(originalCatalog, originalSchema, originalTable, cols[i], cols[i]);
          if (newCol == null)
             continue;
          if (cols[i].equalsIgnoreCase(newCol))
@@ -302,9 +307,9 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       String originalSchema = getStringAttribute(SCHEMA_ATTR, null, description);
       String originalTable = getStringAttribute(TABLE_NAME_ATTR, null, description);
       // these are still without consideration of the column
-      String catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null);
-      String schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null);
-      String table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null);
+      String catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null, originalCatalog);
+      String schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null, originalSchema);
+      String table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null, originalTable);
 
       String completeTableName = table;
       if (schema != null && schema.length() > 1)
@@ -335,9 +340,9 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   originalSchema = getStringAttribute(SCHEMA_ATTR, row, description);
                   originalTable = getStringAttribute(TABLE_NAME_ATTR, row, description);
                   // row specific but still without considering colums
-                  catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null);
-                  schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null);
-                  table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null);
+                  catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null, originalCatalog);
+                  schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null, originalSchema);
+                  table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null, originalTable);
 
                   if (action == null)
                      throw new Exception(ME + ".store: row with no action invoked '" + row.toXml(""));
