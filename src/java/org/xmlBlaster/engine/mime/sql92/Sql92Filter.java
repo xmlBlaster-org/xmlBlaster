@@ -7,7 +7,6 @@ Comment:   Support check of message content with regular expressions.
 package org.xmlBlaster.engine.mime.sql92;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.lexical.Sql92Selector;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
