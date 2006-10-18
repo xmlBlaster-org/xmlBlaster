@@ -993,8 +993,19 @@ which would result in a string like:
          a new xmlBlaster restart.
          </td>
        </tr>
-
-
+       <tr>
+         <td>changeDetector. persist</td>
+         <td>boolean</td>
+         <td>false</td>
+         <td>false</td>
+         <td>
+         This setting defaults to <tt>false</tt>. If set to true, a DbInfo instance will persist the
+         timestamp to the database. The configuration of the database is taken from the configuration
+         of the queues. It is currently not possible to choose another persitent location.
+         If this flag is set, the <tt>changeDetector.MINSTR</tt> value specified in the configuration
+         is overwritten.
+         </td>
+       </tr>
        <tr>
          <td>converter.rootName</td>
          <td>String</td>
