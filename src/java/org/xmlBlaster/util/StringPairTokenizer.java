@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -315,6 +316,29 @@ public class StringPairTokenizer {
        }
        return arr;
     }
+
+    /**
+     * Dumps the given map to a human readable string. 
+     * @param map
+     * @return e.g. "key1=15,name=joe"
+     */
+    public static String dumpMap(Map map) {
+       StringBuffer buf = new StringBuffer();
+       if (map != null) {
+          boolean first = true;
+          Iterator it = map.entrySet().iterator();
+          while (it.hasNext()) {
+             Map.Entry entry = (Map.Entry)it.next();
+             buf.append(entry.getKey()).append("=").append(entry.getValue());
+             if (!first) buf.append(",");
+             first = false;
+          }
+       }
+       else
+          buf.append("null");
+       return buf.toString();
+    }
+
 
    /**
     * If a value is missing then a null object will be put into the map as value.

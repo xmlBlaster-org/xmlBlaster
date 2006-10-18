@@ -9,6 +9,7 @@ package org.xmlBlaster.util.lexical;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
@@ -30,14 +31,14 @@ public class Sql92Selector implements I_Selector {
    public Sql92Selector(Global global) {
       this.global = global;
 
-      if (log.isLoggable(Level.FINER)) this.log.finer("constructor");
+      if (log.isLoggable(Level.FINER)) log.finer("constructor");
       this.scanner = new Sql92Scanner(global);
       this.parser = new Sql92Parser(this.global, this.scanner);
    }
    
    public boolean select(String query, Map clientProperties) throws XmlBlasterException {
       try {
-         if (log.isLoggable(Level.FINER)) this.log.finer("select \"" + query + "\"");
+         if (log.isLoggable(Level.FINER)) log.finer("select \"" + query + "\"");
          this.scanner.yyreset(new StringReader(query));
          this.scanner.setClientPropertyMap(clientProperties);
          
@@ -50,8 +51,10 @@ public class Sql92Selector implements I_Selector {
          if (log.isLoggable(Level.FINE)) {
             ex.printStackTrace();
          }
+         int size = (clientProperties == null) ? -1 : clientProperties.size();
+         log.warning("Selector.select: could not interpret the query '" + query + "' clientProperties=" + StringPairTokenizer.dumpMap(clientProperties));
          throw new XmlBlasterException(this.global,ErrorCode.USER_ILLEGALARGUMENT,
-                   "Sql92Selector", "Selector.select: could not interpret the query '" + query + "'", ex);
+                   "Sql92Selector", "Selector.select: could not interpret the query '" + query + "' properties size is " + size, ex);
       }
    }
    
