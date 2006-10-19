@@ -105,7 +105,7 @@ public class DirectoryManager {
             catch (IOException ex) {
                absDirName = dir.getAbsolutePath();
             }
-            log.info("Constructor: directory '" + absDirName + "' does not yet exist. I will create it");
+            log.info(ME+": Constructor: directory '" + absDirName + "' does not yet exist. I will create it");
             boolean ret = dir.mkdir();
             if (!ret)
                throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME, "could not create directory '" + absDirName + "'");
@@ -119,7 +119,7 @@ public class DirectoryManager {
             throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".constructor", "no rights to write to the directory '" + dir.getAbsolutePath() + "'");
       }
       else {
-         log.info("Constructor: the '" + propNameForLogging + "' property is not set. Instead of moving concerned entries they will be deleted");
+         log.info(ME+": Constructor: the '" + propNameForLogging + "' property is not set. Instead of moving concerned entries they will be deleted");
       }
       return dir;
    }
@@ -184,6 +184,49 @@ public class DirectoryManager {
       return map;
    }
    
+   /**
+    * On Windows sometimes the file is not deleted (even if the stream.close() were called before)
+    * We try as long until the file is away
+    * See http://forum.java.sun.com/thread.jspa?forumID=4&threadID=158689
+    * @param tempFile
+    * @return true if successfully deleted
+    */
+   private boolean deleteFile(File tempFile) {
+      if (!tempFile.exists())
+         return true;
+      final int MAX = 100;
+      int i=0;
+      for (i=0; i<MAX; i++) {
+         if (!tempFile.delete()) {
+            if (!tempFile.exists()) // calling double delete fails, so check here
+               break;
+            if (i == 0)
+               log.fine(ME+": Deleting file " + tempFile.getAbsolutePath() + " failed");
+            System.gc();
+            if (!tempFile.delete()) {
+               if (i == 0)
+                  log.warning(ME+": Deleting file " + tempFile.getAbsolutePath() + " failed even after GC");
+               try {
+                  Thread.sleep(100);
+               } catch (InterruptedException e) {
+               }
+            }
+            else
+               break;
+         }
+         else
+            break;
+      }
+      if (i >= MAX) {
+         log.severe(ME+": Deleting file " + tempFile.getAbsolutePath() + " failed, giving up");
+         return false;
+      }
+      else {
+         log.info(ME+": Deleting file " + tempFile.getAbsolutePath() + " finally succeeded after " + (i+1) + " tries");
+         return true;
+      }
+   }
+   
    public static boolean isFileNameCasesensitive() {
       String osName = System.getProperty("os.name");
       if (osName == null)
@@ -211,19 +254,19 @@ public class DirectoryManager {
       }
       long delta = currentTime - info.getLastChange();
       if (log.isLoggable(Level.FINEST)) {
-         log.finest("isReady '" + info.getName() + "' delta='" + delta + "' constant='" + this.delaySinceLastFileChange + "'");
+         log.finest(ME+": isReady '" + info.getName() + "' delta='" + delta + "' constant='" + this.delaySinceLastFileChange + "'");
       }
       return delta > this.delaySinceLastFileChange;
    }
    
    private TreeSet prepareEntries(File directory, Map existingFiles) {
       if (log.isLoggable(Level.FINER))
-         log.finer("prepareEntries");
+         log.finer(ME+": prepareEntries");
       
       TreeSet chronologicalSet = new TreeSet(new FileComparator());
       if (existingFiles == null || existingFiles.size() < 1) {
          if (log.isLoggable(Level.FINEST)) {
-            log.finest("prepareEntries: nothing to do");
+            log.finest(ME+": prepareEntries: nothing to do");
          }
       }
       Iterator iter = existingFiles.values().iterator();
@@ -272,7 +315,7 @@ public class DirectoryManager {
       if (toRemove != null && toRemove.size() > 0) {
          String[] keys = (String[])toRemove.toArray(new String[toRemove.size()]);
          for (int i=0; i < keys.length; i++) {
-            log.warning("the file '" + keys[i] + "' has apparently been removed from the outside: will not send it. No further action required");
+            log.warning(ME+": the file '" + keys[i] + "' has apparently been removed from the outside: will not send it. No further action required");
             existingFiles.remove(keys[i]);
          }
       }
@@ -296,7 +339,7 @@ public class DirectoryManager {
     */
    Set getEntries() throws XmlBlasterException {
       if (log.isLoggable(Level.FINER))
-         log.finer("getEntries");
+         log.finer(ME+": getEntries");
       Map newFiles = getNewFiles(this.directory);
       updateExistingFiles(this.directoryEntries, newFiles);
       return prepareEntries(this.directory, this.directoryEntries);
@@ -315,10 +358,10 @@ public class DirectoryManager {
    void deleteOrMoveEntry(final String entryName, boolean success) throws XmlBlasterException {
       try {
          if (log.isLoggable(Level.FINER))
-            log.finer("removeEntry '" + entryName + "'");
+            log.finer(ME+": removeEntry '" + entryName + "'");
          File file = new File(entryName);
          if (!file.exists()) {
-            log.warning("removeEntry: '" + entryName + "' does not exist on the file system: I will only remove it from my list");
+            log.warning(ME+": removeEntry: '" + entryName + "' does not exist on the file system: I will only remove it from my list");
             this.directoryEntries.remove(entryName);
             return;
          }
@@ -329,7 +372,7 @@ public class DirectoryManager {
             throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".removeEntry", "no rights to write to '" + entryName + "'");
 
          if (success && this.sentDirectory == null || !success && this.discardedDirectory == null) {
-            if  (file.delete()) {
+            if  (deleteFile(file)) {
                this.directoryEntries.remove(entryName);
                return;
             }
@@ -364,29 +407,45 @@ public class DirectoryManager {
       if (!destinationDirectory.canWrite())
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".removeEntry", "no rights to write to '" + destinationDirectory.getName() + "'");
       
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": File " + file.getAbsolutePath() + " moving to " + destinationDirectory.getAbsolutePath() + ", copyOnMove=" + copyOnMove);
       String relativeName = FileInfo.getRelativeName(file.getName());
       try {
          File destinationFile = new File(destinationDirectory, relativeName);
          if (destinationFile.exists()) {
-            boolean ret = destinationFile.delete();
+            boolean ret = deleteFile(destinationFile);
             if (!ret)
                throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not delete the existing file '" + destinationFile.getCanonicalPath() + "' to '" + destinationDirectory.getName() + "' before moving avay '" + relativeName + "' after processing");
          }
          if (copyOnMove) {
             BufferedInputStream bis = new BufferedInputStream(file.toURL().openStream());
-            FileOutputStream os = new FileOutputStream(destinationFile);
-            long length = file.length();
-            long remaining = length;
-            final int BYTE_LENGTH = 100000; // For the moment it is hardcoded
-            byte[] buf = new byte[BYTE_LENGTH];
-            while (remaining > 0) {
-               int tot = bis.read(buf);
-               remaining -= tot;
-               os.write(buf, 0, tot);
+            try {
+               FileOutputStream os = new FileOutputStream(destinationFile);
+               try {
+                  long length = file.length();
+                  long remaining = length;
+                  final int BYTE_LENGTH = 100000; // For the moment it is hardcoded
+                  byte[] buf = new byte[BYTE_LENGTH];
+                  while (remaining > 0) {
+                     int tot = bis.read(buf);
+                     remaining -= tot;
+                     os.write(buf, 0, tot);
+                  }
+               }
+               finally {
+                  try { os.close(); } catch (Throwable e) {}
+               }
             }
-            bis.close();
-            os.close();
-            file.delete();
+            finally {
+               try { bis.close(); } catch (Throwable e) {}
+            }
+            String name = file.getAbsolutePath();
+            boolean deleted = deleteFile(file);
+            if (deleted) {
+               if (log.isLoggable(Level.FINE)) log.fine(ME+": File " + name + " is successfully deleted, copyOnMove=" + copyOnMove);
+            }
+            else {
+               log.warning(ME+": File " + name + " delete call failed: deleted=" + deleted + ", copyOnMove=" + copyOnMove + " exists=" + file.exists());
+            }
          }
          else {
             boolean ret = file.renameTo(destinationFile);
@@ -398,16 +457,20 @@ public class DirectoryManager {
                else {
                   File dest = new File(destinationDirectory, relativeName);
                   if (!dest.exists()) {
-                     log.warning("Removed published file '" + origName + "' but couldn't create backup '" + destinationDirectory.getName() + "' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
+                     log.warning(ME+": Removed published file '" + origName + "' but couldn't create backup '" + destinationDirectory.getName() + "' (see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html");
                   }
                   else {
-                     log.warning("Published file '" + origName + "' is already moved to backup '" + destinationDirectory.getName() + "' but java tells us it couldn't be moved, this is strange.");
+                     log.warning(ME+": Published file '" + origName + "' is already moved to backup '" + destinationDirectory.getName() + "' but java tells us it couldn't be moved, this is strange.");
                   }
                }
             }
          }
       }
+      catch (XmlBlasterException e) {
+         throw e;
+      }
       catch (Throwable ex) {
+         log.warning(ME + ": Could not move the file '" + relativeName + "' to '" + destinationDirectory.getName() + "' reason: " + ex.toString());
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not move the file '" + relativeName + "' to '" + destinationDirectory.getName() + "' reason: ", ex); 
       }
    }
@@ -424,10 +487,10 @@ public class DirectoryManager {
    public byte[] getContent(FileInfo info) throws XmlBlasterException {
       String entryName = info.getName();
       if (log.isLoggable(Level.FINER))
-         log.finer("getContent '" + entryName + "'");
+         log.finer(ME+": getContent '" + entryName + "'");
       File file = new File(entryName);
       if (!file.exists()) {
-         log.warning("getContent: '" + entryName + "' does not exist on the file system: not sending anything");
+         log.warning(ME+": getContent: '" + entryName + "' does not exist on the file system: not sending anything");
          this.directoryEntries.remove(entryName);
          return null;
       }

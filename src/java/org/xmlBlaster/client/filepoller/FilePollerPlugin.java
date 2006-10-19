@@ -26,7 +26,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  */
 public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
    private static Logger log = Logger.getLogger(FilePollerPlugin.class.getName());
-   private final static String ME = "FilePollerPlugin";
+   private String ME = "FilePollerPlugin";
    //private PluginInfo info;
    private Publisher publisherClient;
    /** My JMX registration */
@@ -44,15 +44,16 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     */
    public void init(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
 
-      if (log.isLoggable(Level.FINER))
-         log.finer("init");
       this.glob = global;
       this.pluginConfig = pluginInfo;
+      this.ME += "-" + getType();
+      if (log.isLoggable(Level.FINER))
+         log.finer(ME+"init");
       this.publisherClient = new Publisher(global, this.getType(), this.pluginConfig);
       this.publisherClient.init();
       if (log.isLoggable(Level.FINEST)) {
-         log.finest("init: plugin paramenters: '" + this.pluginConfig.dumpPluginParameters() + "'");
-         log.finest("init: plugin user data  : '" + this.pluginConfig.getUserData() + "'");
+         log.finest(ME+": plugin paramenters: '" + this.pluginConfig.dumpPluginParameters() + "'");
+         log.finest(ME+": plugin user data  : '" + this.pluginConfig.getUserData() + "'");
       }
       // For JMX instanceName may not contain ","
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
@@ -88,12 +89,14 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
 
       this.publisherClient.shutdown();
       this.isShutdown = true;
+      log.fine(ME+": shutdown done");
    }
 
    /* (non-Javadoc)
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#triggerScan()
     */
    public String triggerScan() {
+      log.info(ME+": invoking a scan of harddisk");
       return this.publisherClient.triggerScan();
    }
 
@@ -108,6 +111,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setDirectoryName(java.lang.String)
     */
    public void setDirectoryName(String directoryName) {
+      log.info(ME+": changing directory name to " + directoryName);
       this.publisherClient.setDirectoryName(directoryName);
    }
 
@@ -122,6 +126,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setFileFilter(java.lang.String)
     */
    public void setFileFilter(String fileFilter) {
+      log.info(ME+": changing file filter to " + fileFilter);
       this.publisherClient.setFileFilter(fileFilter);
    }
 
@@ -136,6 +141,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setFilterType(java.lang.String)
     */
    public void setFilterType(String filterType) {
+      log.info(ME+": changing filter type to " + filterType);
       this.publisherClient.setFilterType(filterType);
    }
 
@@ -150,6 +156,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setMaximumFileSize(long)
     */
    public void setMaximumFileSize(long maximumFileSize) {
+      log.info(ME+": changing max file size in bytes to " + maximumFileSize);
       this.publisherClient.setMaximumFileSize(maximumFileSize);
    }
 
@@ -164,6 +171,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setPollInterval(long)
     */
    public void setPollInterval(long pollInterval) {
+      log.info(ME+": changing pollInterval to " + pollInterval);
       this.publisherClient.setPollInterval(pollInterval);
    }
 
@@ -171,6 +179,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.util.admin.I_AdminService#activate()
     */
    public void activate() throws Exception {
+      log.info(ME+": calling activate()");
       this.publisherClient.activate();
    }
 
@@ -178,6 +187,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.util.admin.I_AdminService#deActivate()
     */
    public void deActivate() {
+      log.info(ME+": calling deActivate()");
       this.publisherClient.deActivate();
    }
 
@@ -199,6 +209,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setCopyOnMove(boolean)
     */
    public void setCopyOnMove(boolean copyOnMove) {
+      log.info(ME+": changing copyOnMove to " + copyOnMove);
       this.publisherClient.setCopyOnMove(copyOnMove);      
    }
 
@@ -213,6 +224,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setDelaySinceLastFileChange(long)
     */
    public void setDelaySinceLastFileChange(long delaySinceLastFileChange) {
+      log.info(ME+": changing delaySinceLastFileChange to " + delaySinceLastFileChange);
       this.publisherClient.setDelaySinceLastFileChange(delaySinceLastFileChange);      
    }
 
@@ -227,6 +239,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setDiscarded(java.lang.String)
     */
    public void setDiscarded(String discarded) {
+      log.info(ME+": changing discarded to " + discarded);
       this.publisherClient.setDiscarded(discarded);      
    }
 
@@ -241,6 +254,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setLockExtention(java.lang.String)
     */
    public void setLockExtention(String lockExtention) {
+      log.info(ME+": changing lockExtention to " + lockExtention);
       this.publisherClient.setLockExtention(lockExtention);      
    }
 
@@ -255,6 +269,7 @@ public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
     * @see org.xmlBlaster.client.filepoller.FilePollerPluginMBean#setSent(java.lang.String)
     */
    public void setSent(String sent) {
+      log.info(ME+": changing sent to " + sent);
       this.publisherClient.setSent(sent);
    }
 

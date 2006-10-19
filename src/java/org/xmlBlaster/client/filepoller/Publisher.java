@@ -78,7 +78,7 @@ public class Publisher implements I_Timeout {
       // this.pluginConfig = pluginConfig;
 
       if (log.isLoggable(Level.FINER)) 
-         log.finer("constructor");
+         log.finer(ME+": constructor");
       // retrieve all necessary properties:
       String tmp = null;
       tmp = this.global.get("publishKey", (String)null, null, pluginConfig);
@@ -87,7 +87,7 @@ public class Publisher implements I_Timeout {
          // this.publishKey = new PublishKey(this.global, new MsgKeyData(this.global, tmp));
          this.publishKey = tmp;
          if (topicName != null)
-            log.warning("constructor: since 'publishKey' is defined, 'topicName' will be ignored");
+            log.warning(ME+": constructor: since 'publishKey' is defined, 'topicName' will be ignored");
       }
       else {
          if (topicName == null)
@@ -164,7 +164,7 @@ public class Publisher implements I_Timeout {
     */
    public synchronized void init() throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) 
-         log.finer("init");
+         log.finer(ME+": init");
       if (this.isShutdown) { // on a second init
          this.global = this.global.getClone(null);
       }
@@ -184,7 +184,7 @@ public class Publisher implements I_Timeout {
     */
    public void shutdown() throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) 
-         log.finer("shutdown");
+         log.finer(ME+": shutdown");
       timeout.removeTimeoutListener(this.timeoutHandle);
       this.isActive = false;
       this.forceShutdown = true; // in case doPublish is looping due to an exception
@@ -206,7 +206,7 @@ public class Publisher implements I_Timeout {
             break;
          }
          catch (XmlBlasterException ex) {
-            log.severe("publish: exception " + ex.getMessage());
+            log.severe(ME+": publish: exception " + ex.getMessage());
             try {
                Thread.sleep(this.pollInterval);
             }
@@ -241,7 +241,7 @@ public class Publisher implements I_Timeout {
     */
    private FileInfo[] doPublish() throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) 
-         log.finer("doPublish");
+         log.finer(ME+": doPublish");
       Set entries = this.directoryManager.getEntries();
       if (entries == null || entries.size() < 1)
          return new FileInfo[0];
@@ -249,7 +249,7 @@ public class Publisher implements I_Timeout {
       for (int i=0; i < infos.length; i++) {
          if (this.maximumFileSize <= 0L || infos[i].getSize() <= this.maximumFileSize) {
             if (infos[i].getSize() > Integer.MAX_VALUE) {
-               log.severe("doPublish: sizes bigger than '" + Integer.MAX_VALUE + "' are currently not implemented");
+               log.severe(ME+": doPublish: sizes bigger than '" + Integer.MAX_VALUE + "' are currently not implemented");
             }
             else {
                byte[] content = this.directoryManager.getContent(infos[i]);
@@ -266,7 +266,7 @@ public class Publisher implements I_Timeout {
                   break;
                }
                catch (XmlBlasterException ex) {
-                  log.severe("Moving " + infos[i].getName() + " failed, we try again without further publishing (please fix manually): " + ex.getMessage());
+                  log.severe(ME+": Moving " + infos[i].getName() + " failed, we try again without further publishing (please fix manually): " + ex.getMessage());
                   try {
                      Thread.sleep(this.pollInterval);
                   }
@@ -277,13 +277,13 @@ public class Publisher implements I_Timeout {
             }
          }
          else { // delete or move to 'discarded'
-            log.warning("doPublish: the file '" + infos[i].getName() + "' is too long (" + infos[i].getSize() + "'): I will remove it without publishing");
+            log.warning(ME+": doPublish: the file '" + infos[i].getName() + "' is too long (" + infos[i].getSize() + "'): I will remove it without publishing");
             boolean success = false;
             try {
                this.directoryManager.deleteOrMoveEntry(infos[i].getName(), success);
             }
             catch (XmlBlasterException ex) {
-               log.warning("doPublish: could not handle file '" + infos[i].getName() + "' which was too big: check file and directories permissions and fix it manually: I will continue working anyway. " + ex.getMessage());
+               log.warning(ME+": doPublish: could not handle file '" + infos[i].getName() + "' which was too big: check file and directories permissions and fix it manually: I will continue working anyway. " + ex.getMessage());
             }
          }
       }
@@ -296,12 +296,12 @@ public class Publisher implements I_Timeout {
    public void timeout(Object userData) {
       try {
          if (log.isLoggable(Level.FINER)) 
-            log.finer("timeout");
+            log.finer(ME+": timeout");
          publish();
       }
       catch (Throwable ex) {
          ex.printStackTrace();
-         log.severe("timeout: " + ex.getMessage());
+         log.severe(ME+": timeout: " + ex.getMessage());
       }
       finally {
          if (this.pollInterval >= 0)
