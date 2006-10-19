@@ -300,7 +300,7 @@ SubscribeDemo -filter.type Sql92Filter -filter.query "phone LIKE '12%3'"
             <th>Property</th>
             <th>Default</th>
             <th>Description</th>
-            <th>Implemented</th>
+            <th>Impl</th>
          </tr>
 
          <tr>
@@ -309,7 +309,23 @@ SubscribeDemo -filter.type Sql92Filter -filter.query "phone LIKE '12%3'"
             <td>Loads the sql92 plugin on demand.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
+         <tr>
+            <td>cacheQuery</td>
+            <td>false</td>
+            <td>if set to true: The query statement is parsed the first time and
+            then the prepared query is reused on further queries. This improves 
+            performance. Note that it is not clear if it is 100% supported by our cups implementation
+            our test show however that it works fine.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
       </table>
+      <p>
+      Example entry in <code>xmlBlaster.properties</code>:
+      </p>
+      <pre class="BORDER">
+MimeAccessPlugin[Sql92Filter][1.0]=org.xmlBlaster.engine.mime.sql92.Sql92Filter,cacheQuery=false
+      </pre>
    </configuration>
 
    <see type="INTERNET">http://www.cacas.org/java/gnu/regexp/</see>

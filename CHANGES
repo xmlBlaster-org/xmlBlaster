@@ -4,6 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 (not yet released)
 ==================================
 
+ o #15587 SQL92Filter plugin has as default now switched caching of prepared query off
+          See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.sql92.html
+
+ o #15582 Updated cup parser from 'CUP v0.10k Parser' to 'CUP v0.11a beta 20060608 Parser'
+
  o #15571 Changed I_SecurityQos interface to have exchangable SecurityQos for ldap,htpasswd,simple
           This allows changing the server side security plugin (from for example htpasswd to ldap)
           even if the client is not touched.
