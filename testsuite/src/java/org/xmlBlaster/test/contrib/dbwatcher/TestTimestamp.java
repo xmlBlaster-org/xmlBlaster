@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.dbwatcher;
 
+import java.text.SimpleDateFormat;
 import java.util.prefs.Preferences;
 
 
@@ -15,6 +16,7 @@ import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
+import org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector;
 
 import java.util.logging.Logger;
 
@@ -45,9 +47,6 @@ public class TestTimestamp extends XMLTestCase {
     private I_Info info;
     private I_DbPool dbPool;
     private Map updateMap = new HashMap(); // collects received update messages
-    private String dbUrl;
-    private String dbUser;
-    private String dbPassword;
     private DbWatcher processor;
 
     /**
@@ -58,7 +57,19 @@ public class TestTimestamp extends XMLTestCase {
      * @param args Command line settings
      */
     public static void main(String[] args) {
-        junit.swingui.TestRunner.run(TestResultSetToXmlConverter.class);
+        // junit.swingui.TestRunner.run(TestResultSetToXmlConverter.class);
+        
+       TestTimestamp test = new TestTimestamp();
+       try {
+          // test.setUp();
+          test.testReplaceDate();
+          // test.tearDown();
+          
+       }
+       catch (Exception ex) {
+          ex.printStackTrace();
+          fail("An exception occured: '" + ex.getMessage() + "-");
+       }
     }
 
     /**
@@ -238,6 +249,51 @@ public class TestTimestamp extends XMLTestCase {
       log.info("SUCCESS");
    }
 
+
+   /**
+    * Checks if the conversion of the special token ${currentDate} is correct
+    */
+   public final void testReplaceDate() throws Exception {
+      // time='1157049798000' gives '2006-08-31 20:43:18.0'
+      // String       // '2005-11-25 12:48:00.0' "yyyy-MM-dd HH:mm:ss.0"
+
+      long refTime = 1157049798000L;
+      String format = "yyyy-MM-dd HH:mm:ss.0";
+      
+      String txt = "${currentDate}=" + format;
+      SimpleDateFormat dateFormatter = new SimpleDateFormat(format);
+      txt = "${currentDate}=yyyy-MM-dd HH:mm:ss.0";
+      String res = TimestampChangeDetector.modifyMinStrIfDate(txt, refTime);
+      assertEquals("date conversion is wrong", "2006-08-31 20:43:18.0", res);
+
+      txt = "${currentDate}= " + format;
+      res = TimestampChangeDetector.modifyMinStrIfDate(txt, refTime);
+      assertEquals("date conversion is wrong", " 2006-08-31 20:43:18.0", res);
+      
+      txt = "${currentDate}";
+      res = TimestampChangeDetector.modifyMinStrIfDate(txt, refTime);
+      assertEquals("date conversion is wrong", "1157049798000", res);
+      
+      txt = "${currentDate}=";
+      res = TimestampChangeDetector.modifyMinStrIfDate(txt, refTime);
+      assertEquals("date conversion is wrong", "", res);
+      
+      txt = "currentDate";
+      res = TimestampChangeDetector.modifyMinStrIfDate(txt, refTime);
+      assertEquals("date conversion is wrong", "currentDate", res);
+      
+      txt = null;
+      res = TimestampChangeDetector.modifyMinStrIfDate(txt, refTime);
+      assertNull("must be null", res);
+
+      txt = "${currentDate}=" + format;
+      res = TimestampChangeDetector.modifyMinStrIfDate(txt, 0L);
+      long currentTime = dateFormatter.parse(res).getTime();
+      String res2 = TimestampChangeDetector.modifyMinStrIfDate(txt, currentTime);
+      assertEquals("Wrong data conversion", res, res2);
+      log.info("SUCCESS");
+   }
+   
    /**
     * Check detection of changes on a table and deliver the change as XML. 
     * @throws Exception Any type is possible

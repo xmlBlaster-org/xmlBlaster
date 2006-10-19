@@ -9,10 +9,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.custommonkey.xmlunit.XMLTestCase;
@@ -21,12 +25,18 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.VersionTransformerCache;
+import org.xmlBlaster.contrib.db.DbPool;
+import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
+import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
+import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.contrib.replication.ReplicationWriter;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.contrib.replication.impl.DefaultMapper;
+import org.xmlBlaster.contrib.replication.impl.SearchableConfig;
 import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -53,6 +63,10 @@ public class TestHelperClasses extends XMLTestCase {
       TestHelperClasses test = new TestHelperClasses();
       try {
          
+         test.setUp();
+         test.testSearchableConfig();
+         test.tearDown();
+
          test.setUp();
          test.testFileWriterCallback();
          test.tearDown();
@@ -459,11 +473,11 @@ public class TestHelperClasses extends XMLTestCase {
          String schema = "AIS";
          String table = "C_OUTS";
          String column = "COM_MESSAGEID";
-         String res = mapper.getMappedSchema(catalog, schema, table, column);
+         String res = mapper.getMappedSchema(catalog, schema, table, column, schema);
          assertEquals("checking schema", "AIS1", res);
-         res = mapper.getMappedTable(catalog, schema, table, column);
+         res = mapper.getMappedTable(catalog, schema, table, column, table);
          assertEquals("checking table", "C_INS", res);
-         res = mapper.getMappedColumn(catalog, schema, table, column);
+         res = mapper.getMappedColumn(catalog, schema, table, column, column);
          assertEquals("checking column", "COM_RECORDID", res);
       }
       {
@@ -471,11 +485,11 @@ public class TestHelperClasses extends XMLTestCase {
          String schema = "AIS";
          String table = "C_OUTS";
          String column = "COM_RECORDID";
-         String res = mapper.getMappedSchema(catalog, schema, table, column);
+         String res = mapper.getMappedSchema(catalog, schema, table, column, schema);
          assertEquals("checking schema", "AIS1", res);
-         res = mapper.getMappedTable(catalog, schema, table, column);
+         res = mapper.getMappedTable(catalog, schema, table, column, table);
          assertEquals("checking table", "C_INS", res);
-         res = mapper.getMappedColumn(catalog, schema, table, column);
+         res = mapper.getMappedColumn(catalog, schema, table, column, column);
          assertEquals("checking column", "COM_RECORDID", res);
          String xmlTxt = 
             "<?xml version='1.0' encoding='UTF-8' ?>\n" + 
@@ -526,11 +540,11 @@ public class TestHelperClasses extends XMLTestCase {
          String schema = "AIS";
          String table = "OTHER";
          String column = "COM_MESSAGEID";
-         String res = mapper.getMappedSchema(catalog, schema, table, column);
+         String res = mapper.getMappedSchema(catalog, schema, table, column, schema);
          assertEquals("checking schema", "AIS1", res);
-         res = mapper.getMappedTable(catalog, schema, table, column);
+         res = mapper.getMappedTable(catalog, schema, table, column, table);
          assertEquals("checking table", "OTHER", res);
-         res = mapper.getMappedColumn(catalog, schema, table, column);
+         res = mapper.getMappedColumn(catalog, schema, table, column, column);
          assertEquals("checking column", "COM_MESSAGEID", res);
       }
       log.info("SUCCESS");
@@ -754,6 +768,133 @@ public class TestHelperClasses extends XMLTestCase {
    }
 
    
+   private SqlInfo createMsg(I_Info info, String oldFirst, String oldSecond, String first, String second, String fifth, int replKey) {
+      SqlInfo ret = new SqlInfo(info);
+      SqlDescription description = new SqlDescription(info);
+      // description.setCommand("UPDATE");
+      description.setCommand(ReplicationConstants.REPLICATION_CMD);
+      description.setIdentity("TABLE1");
+      ret.setDescription(description);
+      SqlRow row = new SqlRow(info, 0);
+      row.setColumn(new ClientProperty("FIRST", null, null, first));
+      row.setColumn(new ClientProperty("SECOND", null, null, second));
+      row.setColumn(new ClientProperty("FIFTH", null, null, fifth));
+
+      row.setAttribute(new ClientProperty("transaction", null, null, "" + replKey));
+      row.setAttribute(new ClientProperty("guid", null, null, "" + replKey));
+      row.setAttribute(new ClientProperty("dbId", null, null, "NULL"));
+      row.setAttribute(new ClientProperty("tableName", null, null, "TABLE1"));
+      row.setAttribute(new ClientProperty("version", null, null, "0.5"));
+      row.setAttribute(new ClientProperty("action", null, null, "UPDATE"));
+      StringBuffer buf = new StringBuffer(1024);
+      buf.append("<col name='FIRST'>").append(oldFirst).append("</col>\n");
+      buf.append("<col name='SECOND'>").append(oldSecond).append("</col>\n");
+
+      row.setAttribute(new ClientProperty("oldContent", null, "forcePlain", buf.toString()));
+      row.setAttribute(new ClientProperty("schema", null, null, "XMLBLASTER"));
+      row.setAttribute(new ClientProperty("replKey", null, null, "" + replKey));
+      ret.getRows().add(row);
+      return ret;
+      
+   }
    
-   
+   /**
+    * 
+    */
+   public final void testSearchableConfig() {
+      log.info("Start testSearchableConfig");
+
+      try {
+         SpecificHelper specificHelper = new SpecificHelper(System.getProperties());
+         I_Info info = new PropertiesInfo((Properties)specificHelper.getProperties().clone());
+         info.put("replication.searchable.xmlBlaster.table1", "first, second, third, fourth");
+         info.put("replication.searchable.XMLBLASTER.TABLE2", "FIRST,SECOND");
+         
+         DbPool pool = new DbPool();
+         pool.init(info);
+         info.putObject(DbWriter.DB_POOL_KEY, pool);
+         
+         SearchableConfig searchableConfig = new SearchableConfig();
+         searchableConfig.init(info);
+         info.putObject(SearchableConfig.NAME, searchableConfig);
+         
+         pool.update("drop table table1");
+         String txt = "create table table1 (first VARCHAR(100), second VARCHAR(100), third blob, fifth VARCHAR(29), primary key(first))";
+         pool.update(txt);
+         
+         pool.update("INSERT INTO table1 (first, second, fifth) values ('oldOne', 'oldTwo', 'oldFive')");
+         
+         Set vals = searchableConfig.getSearchableColumnNames(null, "XMLBLASTER", "TABLE1");
+         String[] ret = (String[])vals.toArray(new String[vals.size()]);
+         assertEquals("Wrong number of colums found", 4, ret.length);
+         
+         SqlInfo sqlInfo = new SqlInfo(info);
+         Connection conn = pool.reserve();
+         sqlInfo.fillMetadata(conn, null, "XMLBLASTER", "TABLE1", null, null);
+         pool.release(conn);
+         
+         SqlDescription description = sqlInfo.getDescription();
+         boolean isConfigured = description.isColumnSearchConfigured(null);
+         assertTrue("shall be configured", isConfigured);
+         
+         isConfigured = description.isColumnSearchConfigured("FIRST");
+         assertTrue("shall be configured", isConfigured);
+         isConfigured = description.isColumnSearchConfigured("SECOND");
+         assertTrue("shall be configured", isConfigured);
+         isConfigured = description.isColumnSearchConfigured("THIRD");
+         assertFalse("shall not be configured", isConfigured);
+         isConfigured = description.isColumnSearchConfigured("FOURTH");
+         assertTrue("shall be configured (since it could be added later)", isConfigured);
+         
+         String oldFirst = "oldOne";
+         String oldSecond = "oldTwo";
+         String first = "one";
+         String second = "two";
+         String fifth = "five";
+         int replKey = 1;
+         SqlInfo sql = createMsg(info, oldFirst, oldSecond, first, second, fifth, replKey);
+         
+         String xml = sql.toXml(""); 
+         log.info(xml);
+         
+         SqlInfoParser parser = new SqlInfoParser(info);
+         
+         sql = parser.readObject(xml);
+         
+         ReplicationWriter writer = new ReplicationWriter();
+         writer.init(info);
+         writer.store(sql);
+         
+         // verify now,
+
+         conn = pool.reserve();
+         Statement st = conn.createStatement();
+         ResultSet rs = st.executeQuery("SELECT count(*) FROM TABLE1");
+         rs.next();
+         int count = rs.getInt(1);
+         assertEquals("there must be only one entry in the table TABLE1", 1, count);
+         st.close();
+         st = conn.createStatement();
+         rs = st.executeQuery("SELECT FIRST,SECOND,FIFTH FROM TABLE1");
+         rs.next();
+         first = rs.getString(1);
+         second = rs.getString(2);
+         fifth = rs.getString(3);
+         st.close();
+         pool.release(conn);
+         
+         assertEquals("first", "one", first);
+         assertEquals("second", "two", second);
+         assertEquals("fifth", "five", fifth);
+         
+         pool.update("drop table table1");
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("An exception should not occur here" + ex.getMessage(), false);
+      }
+      
+      log.info("SUCCESS");
+   }
+
 }
