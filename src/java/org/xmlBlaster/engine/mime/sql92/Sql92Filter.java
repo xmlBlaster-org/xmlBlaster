@@ -1,14 +1,15 @@
 /*------------------------------------------------------------------------------
-Name:      Sql92Filter.java
-Project:   xmlBlaster.org
-Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Support check of message content with regular expressions.
-------------------------------------------------------------------------------*/
+ Name:      Sql92Filter.java
+ Project:   xmlBlaster.org
+ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+ Comment:   Support check of message content with regular expressions.
+ ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.sql92;
 
 import java.util.logging.Logger;
 import org.xmlBlaster.util.lexical.Sql92Selector;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -19,29 +20,41 @@ import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.ServerScope;
 
 /**
- * This sql92 plugin allows to filter the client properties of the qos expressions of the
- * kind specified in SQL92 for the 'WHERE' selections. It is also conform to the 
- * specification of JMS Message Selectors (version 1.1).  
+ * This sql92 plugin allows to filter the client properties of the qos
+ * expressions of the kind specified in SQL92 for the 'WHERE' selections. It is
+ * also conform to the specification of JMS Message Selectors (version 1.1).
  * <p />
  * Please register this plugin in xmlBlaster.properties:
+ * 
  * <pre>
- * MimeAccessPlugin[Sql92Filter][1.0]=org.xmlBlaster.engine.mime.sql92.Sql92Filter
+ * MimeAccessPlugin[Sql92Filter][1.0] = org.xmlBlaster.engine.mime.sql92.Sql92Filter
  * </pre>
- * Plugins must implement the I_Plugin interface to be loadable by the PluginManager
- * and must implement the I_AccessFilter interface to be usable as a filter.
+ * 
+ * Plugins must implement the I_Plugin interface to be loadable by the
+ * PluginManager and must implement the I_AccessFilter interface to be usable as
+ * a filter.
  * <p />
+ * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
- * @see <a href="http://java.sun.com/products/jms/docs.html" target="others">The JMS specification</a>
+ * @see <a href="http://java.sun.com/products/jms/docs.html" target="others">The
+ *      JMS specification</a>
  */
-public class Sql92Filter implements I_Plugin, I_AccessFilter
-{
+public class Sql92Filter implements I_Plugin, I_AccessFilter {
    private final String ME = "Sql92Filter";
+
    private ServerScope glob;
+
    private static Logger log = Logger.getLogger(Sql92Filter.class.getName());
 
+   private PluginInfo pluginInfo;
+
+   private boolean cacheQuery = false;
+
    /**
-    * This is called after instantiation of the plugin 
-    * @param glob The Global handle of this xmlBlaster server instance.
+    * This is called after instantiation of the plugin
+    * 
+    * @param glob
+    *           The Global handle of this xmlBlaster server instance.
     */
    public void initialize(ServerScope glob) {
       this.glob = glob;
@@ -50,38 +63,53 @@ public class Sql92Filter implements I_Plugin, I_AccessFilter
    }
 
    /**
-    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * This method is called by the PluginManager (enforced by I_Plugin).
+    * 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   public void init(org.xmlBlaster.util.Global glob,
+         org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+      this.pluginInfo = pluginInfo;
+      try {
+         this.cacheQuery = glob.get("cacheQuery", this.cacheQuery, null, this.pluginInfo);
+      }
+      catch (XmlBlasterException e) {
+         log.warning(e.getMessage());
+      }
+      log.info("Initialized plugin " + getType() + " with cacheQuery=" + this.cacheQuery);
    }
 
    /**
     * Return plugin type for Plugin loader
+    * 
     * @return "Sql92Filter"
     */
    public String getType() {
-      return "Sql92Filter";
+      return (this.pluginInfo == null) ? "Sql92Filter" : this.pluginInfo
+            .getType();
    }
 
    /**
     * Return plugin version for Plugin loader
+    * 
     * @return "1.0"
     */
    public String getVersion() {
-      return "1.0";
+      return (this.pluginInfo == null) ? "1.0" : this.pluginInfo.getVersion();
    }
 
    /**
     * Get a human readable name of this filter implementation
+    * 
     * @return "Sql92Filter"
     */
    public String getName() {
-      return "Sql92Filter";
+      return getType(); // "Sql92Filter";
    }
 
    /**
     * Get the content MIME type for which this plugin applies
+    * 
     * @return "*" This plugin handles all mime types
     */
    public String[] getMimeTypes() {
@@ -91,6 +119,7 @@ public class Sql92Filter implements I_Plugin, I_AccessFilter
 
    /**
     * Get the content MIME version number for which this plugin applies
+    * 
     * @return "1.0" (this is the default version number)
     */
    public String[] getMimeExtended() {
@@ -99,32 +128,47 @@ public class Sql92Filter implements I_Plugin, I_AccessFilter
    }
 
    /**
-    * Check if the filter rule matches for this message. 
-    * @param publisher The subject object describing the publisher
-    * @param receiver The subject object describing the receiver
-    * @param msgUnit The message to check
-    * @param query   The Query instance holding the regular expression from your filter.<br />
-    * @return true   The filter regex expression matches the message content.
-    * @exception see I_AccessFilter#match()
+    * Check if the filter rule matches for this message.
+    * 
+    * @param publisher
+    *           The subject object describing the publisher
+    * @param receiver
+    *           The subject object describing the receiver
+    * @param msgUnit
+    *           The message to check
+    * @param query
+    *           The Query instance holding the regular expression from your
+    *           filter.<br />
+    * @return true The filter regex expression matches the message content.
+    * @exception see
+    *               I_AccessFilter#match()
     */
-   public boolean match(SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
+   public boolean match(SessionInfo receiver, MsgUnit msgUnit, Query query)
+         throws XmlBlasterException {
       if (msgUnit == null) {
          Thread.dumpStack();
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in regex match() call");
+         throw new XmlBlasterException(glob,
+               ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+               "Illegal argument in regex match() call");
       }
 
       Sql92Selector selector;
-      if (query.getPreparedQuery() == null) {
+      if (this.cacheQuery) {
+         if (query.getPreparedQuery() == null) {
+            selector = new Sql92Selector(this.glob);
+            query.setPreparedQuery(selector); // for better performance we
+                                                // remember the regex expression
+         } else
+            selector = (Sql92Selector) query.getPreparedQuery();
+      } else {
          selector = new Sql92Selector(this.glob);
-         query.setPreparedQuery(selector); // for better performance we remember the regex expression
       }
-      else
-         selector = (Sql92Selector)query.getPreparedQuery();
-      return selector.select(query.getQuery(), msgUnit.getQosData().getClientProperties());
+
+      return selector.select(query.getQuery(), msgUnit.getQosData()
+            .getClientProperties());
    }
 
    public void shutdown() {
    }
 
 }
-
