@@ -12,6 +12,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -195,9 +196,11 @@ public class DirectoryManager {
       if (!tempFile.exists())
          return true;
       final int MAX = 100;
+      boolean warn = false;
       int i=0;
       for (i=0; i<MAX; i++) {
          if (!tempFile.delete()) {
+            warn = true;
             if (!tempFile.exists()) // calling double delete fails, so check here
                break;
             if (i == 0)
@@ -222,7 +225,8 @@ public class DirectoryManager {
          return false;
       }
       else {
-         log.info(ME+": Deleting file " + tempFile.getAbsolutePath() + " finally succeeded after " + (i+1) + " tries");
+         if (warn)
+            log.info(ME+": Deleting file " + tempFile.getAbsolutePath() + " finally succeeded after " + (i+1) + " tries");
          return true;
       }
    }
@@ -417,7 +421,8 @@ public class DirectoryManager {
                throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not delete the existing file '" + destinationFile.getCanonicalPath() + "' to '" + destinationDirectory.getName() + "' before moving avay '" + relativeName + "' after processing");
          }
          if (copyOnMove) {
-            BufferedInputStream bis = new BufferedInputStream(file.toURL().openStream());
+            InputStream inputStream = file.toURL().openStream();
+            BufferedInputStream bis = new BufferedInputStream(inputStream);
             try {
                FileOutputStream os = new FileOutputStream(destinationFile);
                try {
@@ -437,6 +442,7 @@ public class DirectoryManager {
             }
             finally {
                try { bis.close(); } catch (Throwable e) {}
+               try { inputStream.close(); } catch (Throwable e) {}
             }
             String name = file.getAbsolutePath();
             boolean deleted = deleteFile(file);
