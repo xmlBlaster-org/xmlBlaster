@@ -196,6 +196,9 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                if (topicHandler != null) this.glob.getTopicAccessor().release(topicHandler);
             }
          }
+         
+         // TODO: If filter has a prepared query cache switched on,
+         // we should go over the TopicHandlerAccessor to force single threaded match() access
          if (xmlKey.match(keyMappings[ii])) {
             if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeDomainInfo.getNodeId().getId() +
                            "' stratum=" + nodeDomainInfo.getStratum() + " for message '" + msgUnit.getLogId() +
