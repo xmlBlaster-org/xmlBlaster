@@ -42,6 +42,8 @@ public class Sql92Selector implements I_Selector {
          this.scanner.yyreset(new StringReader(query));
          this.scanner.setClientPropertyMap(clientProperties);
          
+         // TODO: Do we need to reset the parser as well?
+         
          if (log.isLoggable(Level.FINEST)) {
             return ((Boolean)this.parser.debug_parse().value).booleanValue();      
          }
