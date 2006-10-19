@@ -860,6 +860,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                         continue NEXT_HISTORY;
                      }
    
+                     //topicHandler.checkFilter(SessionInfo publisherSessionInfo, SubscriptionInfo sub, MsgUnitWrapper msgUnitWrapper, boolean handleException)                     
                      AccessFilterQos[] filterQos = getQos.getAccessFilterArr();
                      if (filterQos != null) {
                         if (log.isLoggable(Level.FINE)) log.fine("Checking " + filterQos.length + " filters");
