@@ -245,9 +245,23 @@ JdbcStorage[MicrosoftSQLServer]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTa
                   dbAdmin=true
 
 # Settings for the persistence plugins (StoragePlugin and QueuePlugin)
-# for Microsoft SQL Server 2005 JDBC (sqljdbc.jar):
+# for Microsoft SQL Server 2005 JDBC (sqljdbc.jar Version 1.0 and earlier):
+#JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+#                  url=jdbc:sqlserver://localhost:1433/database=xmlBlaster,\
+#                  user=sa,\
+#                  password=xxx,\
+#                  configurationIdentifier=MicrosoftSQLServer2005,\
+#                  connectionPoolSize=5,\
+#                  connectionBusyTimeout=90000,\
+#                  maxWaitingThreads=300,\
+#                  tableNamePrefix=XB_,\
+#                  entriesTableName=ENTRIES,\
+#                  colNamePrefix=XB_,\
+#                  dbAdmin=true
+
+# for Microsoft SQL Server 2005 JDBC (sqljdbc.jar Version 1.1):
 JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                  url=jdbc:sqlserver://localhost:1433/database=xmlBlaster,\
+                  url=jdbc:sqlserver://localhost:1433;databaseName=xmlBlaster,\
                   user=sa,\
                   password=xxx,\
                   configurationIdentifier=MicrosoftSQLServer2005,\
