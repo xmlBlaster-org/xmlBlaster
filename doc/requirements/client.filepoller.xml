@@ -80,6 +80,14 @@
            plugins. When doing so assign to each plugin a different id (this is actually a general requirement for the
            plugins).
          </li>
+         <li>
+           The files to be published are sorted in the first place chronologically. Files having the same <i>last change</i>
+           timestamp are sorted alphabetically. The best precision for the timestamp is one millisecond. If the operating 
+           system does not offer such a precision, the precision of the operating system will be determinant. Also,
+           the timestamp is the <i>last change</i> timestamp. Depending on the operating system this time could be the time
+           when the writing operation is started, when it is ended or in between. This would have to be considered when the 
+           applications writing to the directory on which the filepoller is listening are working multithreaded.
+         </li>
        </ul>
    </description>
 
