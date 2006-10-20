@@ -257,6 +257,8 @@ public class Publisher implements I_Timeout {
                msgUnit.getQosData().addClientProperty("_fileName", infos[i].getRelativeName());
                msgUnit.getQosData().addClientProperty("_fileDate", infos[i].getTimestamp());
                this.access.publish(msgUnit);
+               if (log.isLoggable(Level.FINE)) 
+                  log.fine(ME+": Successfully published file " + infos[i].getRelativeName() + " with size=" +infos[i].getSize());
             }
 
             while (true) { // must repeat until it works or until shut down
