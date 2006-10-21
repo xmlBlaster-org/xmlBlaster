@@ -294,11 +294,7 @@ public class ConnectQosTest extends TestCase {
             assertEquals("Address array", 1, addrArr.length);
             AddressBase addr = addrArr[0];
             assertEquals("", "golan@localhost", addr.getRawAddress());
-            if (SessionName.useSessionMarker())
-               assertEquals("", "/xmlBlaster/node/heron/client/golan/session/1", addr.getEnv("__ContextNode", "").getValue());
-            else
-               assertEquals("", "/xmlBlaster/node/heron/client/golan/1", addr.getEnv("__ContextNode", "").getValue());
-            
+            assertEquals("", "/xmlBlaster/node/heron/client/golan/session/1", addr.getEnv("__ContextNode", "").getValue());
             assertEquals("", "email", addr.getType());
             assertEquals("", 56, addr.getBootstrapPort());
             assertEquals("", "99i8Z", addr.getSecretSessionId());
