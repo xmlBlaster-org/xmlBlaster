@@ -96,8 +96,6 @@ public class HelloWorld6
 
          connectQos.addCallbackAddress(cbAddress);
 
-         connectQos.addClientQueueProperty(prop);
-
          // We want to be notified about connection states:
          con.registerConnectionListener(new I_ConnectionStateListener() {
 
