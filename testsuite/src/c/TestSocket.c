@@ -27,6 +27,8 @@ static const char * test_exceptionEncode()
 
       convertToXmlBlasterException(&blob, &exceptionAfter, true);
 
+      freeBlobHolderContent(&blob);
+
       mu_assertEqualsString("Exception encoding failed", exception.errorCode, exceptionAfter.errorCode);
       mu_assertEqualsString("Exception encoding failed", exception.message, exceptionAfter.message);
       mu_assertEqualsBool("Exception encoding failed", true, exceptionAfter.remote);
@@ -40,6 +42,8 @@ static const char * test_exceptionEncode()
       encodeXmlBlasterException(&blob, &exception, true);
 
       convertToXmlBlasterException(&blob, &exceptionAfter, true);
+
+      freeBlobHolderContent(&blob);
 
       mu_assertEqualsString("Exception encoding failed", exception.errorCode, exceptionAfter.errorCode);
       mu_assertEqualsString("Exception encoding failed", exception.message, exceptionAfter.message);
