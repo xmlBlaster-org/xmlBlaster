@@ -389,7 +389,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                }
             }
             catch (Throwable e) {
-               if (e.toString().indexOf("closed") != -1) {
+               if (e.toString().indexOf("closed") != -1 || (e instanceof java.net.SocketException && e.toString().indexOf("Connection reset") != -1)) {
                   if (log.isLoggable(Level.FINE)) log.fine("TCP socket '" + remoteSocketStr + "' is shutdown: " + e.toString());
                }
                else if (e.toString().indexOf("EOF") != -1) {
