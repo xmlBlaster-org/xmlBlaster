@@ -25,6 +25,7 @@ private:
    std::string  subjectId_;
    long         pubSessionId_;
    org::xmlBlaster::util::Global& global_;
+   long         useSessionMarker_; // In future default to true, remove after Version 2.0
 
    void copy(const SessionName& data);
 
@@ -75,6 +76,9 @@ public:
    void setSubjectId(const std::string& subjectId);
    long getPubSessionId() const;
    void setPubSessionId(const long pubSessionId);
+   
+   // remove with version 2.0
+   bool useSessionMarker() const { return useSessionMarker_; }
 
    std::string getSecretSessionId() const;
    void setSecretSessionId(const std::string& sessionId);

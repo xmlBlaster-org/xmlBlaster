@@ -41,12 +41,16 @@ void SessionName::copy(const SessionName& data)
    clusterNodeId_ = data.clusterNodeId_;
    subjectId_     = data.subjectId_;
    pubSessionId_  = data.pubSessionId_;
+   useSessionMarker_  = data.useSessionMarker_;
 }
 
 
 void SessionName::initialize(const string& absoluteName, const string& defaultUserName, long publicSessionId)
 {
    pubSessionId_ = publicSessionId;
+
+   // Change default to true on version 2.0!
+   useSessionMarker_ = global_.getProperty().getBoolProperty("xmlBlaster/useSessionMarker", false);
 
    if (!absoluteName.empty()) {
       setAbsoluteName(absoluteName);
@@ -143,7 +147,12 @@ void SessionName::setAbsoluteName(const string& name)
 string SessionName::getRelativeName() const
 {
    string ret = string("client/") + subjectId_;
-   if (pubSessionId_ != 0) ret += string("/session/") + lexical_cast<std::string>(pubSessionId_);
+   if (pubSessionId_ != 0) {
+      if (useSessionMarker_)
+         ret += string("/session/") + lexical_cast<std::string>(pubSessionId_);
+      else
+         ret += string("/") + lexical_cast<std::string>(pubSessionId_);
+   }
    return ret;
 }
 
