@@ -25,6 +25,7 @@ private:
    string  ME;
    Global& global_;
    I_Log&  log_;
+   bool useSessionMarker_;  // Remove again at version 2.0
 
 public:
    TestConnectQos(Global& glob) 
@@ -32,6 +33,9 @@ public:
         global_(glob), 
         log_(glob.getLog("test"))
    {
+      SessionName sn(global_, "client/dummy");
+      useSessionMarker_ = sn.useSessionMarker();
+      //useSessionMarker_ = global_.getProperty().getBoolProperty("xmlBlaster/useSessionMarker", true);
    }
 
 
@@ -53,6 +57,7 @@ public:
 
       string me = ME + ".testSessionQos";
       log_.info(me, "testing creation, parsing and output of SessionQos: start");
+      log_.info(me, "useSessionMarker=" + lexical_cast<std::string>(useSessionMarker_));
 
        string qos = string("<session name='/node/http:/client/ticheta/-3' timeout='86400000' maxSessions='10' \n") +
                     "         clearSessions='false' sessionId='IIOP:01110728321B0222011028'/>\n";
@@ -61,7 +66,10 @@ public:
 
       for (int i=0; i<2; i++) {
          SessionQosData data = factory.readObject(qos);
-         assertEquals(log_, me, string("/node/http:/client/ticheta/-3"), data.getAbsoluteName(), "absolute name check");
+         if (useSessionMarker_)
+            assertEquals(log_, me, string("/node/http:/client/ticheta/session/-3"), data.getAbsoluteName(), "absolute name check");
+         else
+            assertEquals(log_, me, string("/node/http:/client/ticheta/-3"), data.getAbsoluteName(), "absolute name check");
          assertEquals(log_, me, (long)86400000l, data.getTimeout(), "timeout check");
          assertEquals(log_, me, 10, data.getMaxSessions(), "maxSessions check");
          assertEquals(log_, me, false, data.getClearSessions(), "clearSessions check");
@@ -87,14 +95,20 @@ public:
       SessionQosData data1(global_, "Fritz", 0);
       assertEquals(log_, me, string("client/Fritz"), data1.getAbsoluteName(), "checking constructor with 'user' and 'pubSessionId=0'");
       data1 = SessionQosData(global_, "Franz", -3);
-      assertEquals(log_, me, string("client/Franz/-3"), data1.getAbsoluteName(), "checking constructor with relative name");
+      if (useSessionMarker_)
+         assertEquals(log_, me, string("client/Franz/session/-3"), data1.getAbsoluteName(), "checking constructor with relative name");
+      else
+         assertEquals(log_, me, string("client/Franz/-3"), data1.getAbsoluteName(), "checking constructor with relative name");
 
       global_.getProperty().setProperty("user.name", "PincoPallino");
       name = global_.getProperty().getStringProperty("user.name", "");
       assertEquals(log_, me, string("PincoPallino"), name, "checking if property 'user' has been set correctly");
 
       data1 = SessionQosData(global_, "", 6);
-      assertEquals(log_, me, string("client/PincoPallino/6"), data1.getAbsoluteName(), "checking constructor with empty defaultUserName when 'user' set");
+      if (useSessionMarker_)
+         assertEquals(log_, me, string("client/PincoPallino/session/6"), data1.getAbsoluteName(), "checking constructor with empty defaultUserName when 'user' set");
+      else
+         assertEquals(log_, me, string("client/PincoPallino/6"), data1.getAbsoluteName(), "checking constructor with empty defaultUserName when 'user' set");
 
       data1 = SessionQosData(global_, "Nisse", 0);
       assertEquals(log_, me, string("client/Nisse"), data1.getAbsoluteName(), "checking constructor with set defaultUserName when 'user' set");
@@ -109,7 +123,10 @@ public:
 
       data1 = SessionQosData(global_);
       data1.setAbsoluteName("/node/frodo/client/whoMore/3");
-      assertEquals(log_, me, string("/node/frodo/client/whoMore/3"), data1.getAbsoluteName(), "checking when 'session.name' is weaker");
+      if (useSessionMarker_)
+         assertEquals(log_, me, string("/node/frodo/client/whoMore/session/3"), data1.getAbsoluteName(), "checking when 'session.name' is weaker");
+      else
+         assertEquals(log_, me, string("/node/frodo/client/whoMore/3"), data1.getAbsoluteName(), "checking when 'session.name' is weaker");
       log_.info(me, "testing creation, parsing and output of SessionQos: end");
    }
 
@@ -169,7 +186,7 @@ public:
              string("  ]]></securityService>\n") +
              string("  <ptp>")+defaultBoolStr[jj]+string("</ptp>\n") +
              string("  <clusterNode>")+defaultBoolStr[jj]+string("</clusterNode>\n") +
-             string("  <instanceId>/xmlBlaster/node/heron/client/Tim/-3/instanceId/123445</instanceId>\n") +
+             string("  <instanceId>/xmlBlaster/node/heron/client/Tim/session/-3/instanceId/123445</instanceId>\n") +
              string("  <reconnected>")+defaultBoolStr[jj]+string("</reconnected>\n") +
              string("  <refreshSession>")+defaultBoolStr[jj]+string("</refreshSession>\n") +
              string("  <duplicateUpdates>")+defaultBoolStr[jj]+string("</duplicateUpdates>\n") +
@@ -202,7 +219,7 @@ public:
             ConnectQosRef connQos = factory.readObject(qos);
             string qos2 = connQos->toXml();
             connQos = factory.readObject(qos2); // round trip: parse -> dump -> parse again -> check
-            assertEquals(log_, me, "/xmlBlaster/node/heron/client/Tim/-3/instanceId/123445", connQos->getInstanceId(), "check 'instanceId' flag");
+            assertEquals(log_, me, "/xmlBlaster/node/heron/client/Tim/session/-3/instanceId/123445", connQos->getInstanceId(), "check 'instanceId' flag");
             assertEquals(log_, me, defaultBool, connQos->getPtp(), "check 'ptp' flag");
             assertEquals(log_, me, defaultBool, connQos->isClusterNode(), "check 'clusterNode' flag");
             assertEquals(log_, me, defaultBool, connQos->isRefreshSession(), "check 'refreshSession' flag");

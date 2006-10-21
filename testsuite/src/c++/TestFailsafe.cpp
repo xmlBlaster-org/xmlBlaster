@@ -31,6 +31,7 @@ private:
    Mutex            updateMutex_;
    bool             isConnected_;
    int              numOfUpdates_;
+   bool useSessionMarker_;  // Remove again at version 2.0
 
 public:
    TestFailsafe(int args, char ** argv) 
@@ -45,6 +46,9 @@ public:
       pubKey_         = 0;
       isConnected_    = false;
       numOfUpdates_   = 0;
+
+      SessionName sn(global_, "client/dummy");
+      useSessionMarker_ = sn.useSessionMarker();
    }
 
 
@@ -172,7 +176,10 @@ public:
       try {
          ConnectReturnQos retQos = connection_.connect(connQos, this);
          string name = retQos.getSessionQos().getRelativeName();
-         assertEquals(log_, ME, string("client/Fritz/7"), name, "checking that return qos has the correct sessionId");
+         if (useSessionMarker_)
+            assertEquals(log_, ME, string("client/Fritz/session/7"), name, "checking that return qos has the correct sessionId");
+         else
+            assertEquals(log_, ME, string("client/Fritz/7"), name, "checking that return qos has the correct sessionId");
       }
       catch (XmlBlasterException &ex) {
          log_.error(ME, ex.toXml());

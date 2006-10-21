@@ -26,6 +26,7 @@ private:
    Global& global_;
    I_Log&  log_;
    Global  *global2_;
+   bool useSessionMarker_;  // Remove again at version 2.0
 
 public:
    TestDoubleGlobal(Global& glob) 
@@ -33,6 +34,8 @@ public:
         global_(glob), 
         log_(glob.getLog("test"))
    {
+      SessionName sn(global_, "client/dummy");
+      useSessionMarker_ = sn.useSessionMarker();
    }
 
 
@@ -68,7 +71,10 @@ public:
 
       for (int i=0; i<2; i++) {
          SessionQosData data = factory.readObject(qos);
-         assertEquals(log_, me, string("/node/http:/client/ticheta/-3"), data.getAbsoluteName(), "absolute name check");
+         if (useSessionMarker_)
+            assertEquals(log_, me, string("/node/http:/client/ticheta/session/-3"), data.getAbsoluteName(), "absolute name check");
+         else
+            assertEquals(log_, me, string("/node/http:/client/ticheta/-3"), data.getAbsoluteName(), "absolute name check");
          assertEquals(log_, me, (long)86400000l, data.getTimeout(), "timeout check");
          assertEquals(log_, me, 10, data.getMaxSessions(), "maxSessions check");
          assertEquals(log_, me, false, data.getClearSessions(), "clearSessions check");
@@ -107,7 +113,10 @@ public:
 
       data1 = SessionQosData(glob);
       data1.setAbsoluteName("/node/frodo/client/whoMore/3");
-      assertEquals(log_, me, string("/node/frodo/client/whoMore/3"), data1.getAbsoluteName(), "checking when 'session.name' is weaker");
+      if (useSessionMarker_)
+         assertEquals(log_, me, string("/node/frodo/client/whoMore/session/3"), data1.getAbsoluteName(), "checking when 'session.name' is weaker");
+      else
+         assertEquals(log_, me, string("/node/frodo/client/whoMore/3"), data1.getAbsoluteName(), "checking when 'session.name' is weaker");
       log_.info(me, "testing creation, parsing and output of SessionQos: end");
    }
 
