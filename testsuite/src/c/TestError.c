@@ -166,7 +166,7 @@ static const char * test_illegalConnect()
    }
 
    if (xa->initialize(xa, 0, &xmlBlasterException) == false) {
-      mu_assert("initialize false was not expected, we provided a NULL callback", false);
+      mu_assert("initialize false was not expected (check if a server is running), we provided a NULL callback", false);
    }
    else {
       printf("[client] Initialize with updateP is NULL is OK, the default handler is used.");
