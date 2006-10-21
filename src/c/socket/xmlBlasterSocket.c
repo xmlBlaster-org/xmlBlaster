@@ -484,7 +484,8 @@ void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterExceptio
 
 /**
  * The given exception is dumped into the blob data. 
- * @param blob The encoded exception, you need to free the blob struct yourself after usage.
+ * @param blob The encoded exception, you need to free the blob struct yourself after usage with
+ *             freeBlobHolderContent(&blob);
  * @param exception The given exception struct
  * @param debug Print output to stdout
  */
