@@ -218,7 +218,7 @@ public class PluginHolderSaxFactory extends SaxHandlerBase
          reset();
          init(url.toString(), inSource);
          PluginHolder ret = getObject();
-         PluginConfig[] arr = ret.getAllPluginConfig(null);
+         PluginConfig[] arr = ret.getAllPluginConfig(this.glob.getNodeId().getId());
          for (int i=0; i<arr.length; i++)
             arr[i].registerMBean();
          if (log.isLoggable(Level.FINEST)) log.finest(".readConfigFile. The content: \n" + ret.toXml());
