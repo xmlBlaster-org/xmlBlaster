@@ -1,14 +1,12 @@
-This is xmlBlaster version 1.3 2006-09-10
+This is xmlBlaster version 1.4 2006-10-22
 
 
 XmlBlaster  is  under development or productive in a huge range
 of  industries  like  satellite  control,  air  traffic control
 telecommunication, radar, car industry, process monitoring etc.
 
-This  release  is backward compatible to the previous regarding
-the client server communication protocols. It contains heaps of
-extensions  and  fixes,  the  details  are noted in the CHANGES
-file.
+This  release  is backward compatible to the previous, it is a
+bug fix maintenance release. See CHANGES for more details.
 
 It  is  tested under Linux/Solaris-SPARC/FreeBSD/WinXP with JDK
 1.4-1.6 and g++ 2.9x/3.x/4.x, icc 8.x and 9.x, MSVisualC++ from
