@@ -246,6 +246,48 @@ cd xmlBlaster
    </p>
    </example>
 
+   <example lang="CPP" type="HTML">
+      <h2><a NAME="exampleSunOS"></a>Example on SunOS 5.11 with CC compiler</h2>
+      <p>Installing xmlBlaster C++ client library on a SunOS 5.11 system
+      is very simple: First install xerces 2.7, SQLLite 2.8.16, zlib 1.2.3</p>
+      <p>Now configure a <code>$HOME/build.properties</code></p>
+      <pre>
+# CC: Sun C++ 5.8 2005/10/13
+# build -Duse-CC=true c
+
+use-CC=true
+
+CFLAGS=-R /home/xmlblast/xmlBlaster/lib
+CFLAGS3=-D__sunos__=1
+#c.debug       = false
+#cpp.debug     = false
+
+XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
+
+XMLBLASTER_ZLIB=1
+zlib.include.dir=/opt/csw/include
+zlib.lib.dir=/opt/csw/lib
+
+xerces.include.dir=/opt/xerces-c-src_2_7_0-bin/include
+xerces.lib.dir=/opt/xerces-c-src_2_7_0-bin/lib
+xerces.lib.name=xerces-c
+
+XMLBLASTER_PERSISTENT_QUEUE=1
+sqlite.include.dir=/opt/csw/include
+sqlite.lib.dir=/opt/csw/lib
+
+COMPILE_SOCKET_PLUGIN = 1
+COMPILE_CORBA_PLUGIN  = 0
+corba.product         = NONE
+   </pre>
+   <p>And compile the xmlBlaster C++ client library:</p>
+   <pre>
+cd xmlBlaster
+./build c cpp
+   </pre>
+   </example>
+
+
    <configuration where="client">
    <p>
    Take a copy from xmlBlaster/build.properties to ${user.home}/build.properties and
