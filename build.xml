@@ -2935,6 +2935,7 @@ TODO
             <linkerarg value="-R ${CORBACPP_HOME}/shlib:${CORBACPP_HOME}/shlib/posix:${lib.dir.absolute}:${xerces.lib.dir}" if="ORBIX" />
 
             <syslibset dir="/lib" libs="dl" />
+            <syslibset dir="/lib" libs="rt" />
          </linker>
 
       </cc>
