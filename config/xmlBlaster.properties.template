@@ -425,7 +425,7 @@ JdbcDriver.mapping[ldbc]=string=varchar(128),"longint=decimal(19,0)",int=int,boo
 MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
 MimeAccessPlugin[GnuRegexFilter][1.0]=org.xmlBlaster.engine.mime.regex.GnuRegexFilter
 MimeAccessPlugin[XPathFilter][1.0]=org.xmlBlaster.engine.mime.xpath.XPathFilter
-MimeAccessPlugin[Sql92Filter][1.0]=org.xmlBlaster.engine.mime.sql92.Sql92Filter
+MimeAccessPlugin[Sql92Filter][1.0]=org.xmlBlaster.engine.mime.sql92.Sql92Filter,cacheQuery=false
 #------------------------------------------------------------------------------
 
 
