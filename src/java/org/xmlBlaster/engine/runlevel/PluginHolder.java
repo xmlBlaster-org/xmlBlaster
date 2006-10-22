@@ -15,7 +15,7 @@ import java.util.Enumeration;
 import java.util.TreeSet;
 
 /**
- * This class contains the information on how to configure a certain pluginand when a certain plugin is invoked by the run level manager
+ * This class contains the information on how to configure a certain plugin and when a certain plugin is invoked by the run level manager
  * <p>
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
