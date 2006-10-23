@@ -112,6 +112,8 @@ public class Constants {
    // return uq.toXml(); should be somehow similar to RET_OK?
    public final static String RET_OK = "<qos><state id='" + Constants.STATE_OK + "'/></qos>";
    public final static String INFO_INITIAL = "INITIAL";
+   /** ConnectQos transports in its QoS clientProperty an optional flag to suppress cb ping */
+   public final static String CLIENTPROPERTY_INITIAL_CALLBACK_PING = "__initialCallbackPing";
 
    /* C-client if queued on client side: "<qos><state id='OK' info='QUEUED'/></qos>" */
       

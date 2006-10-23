@@ -125,7 +125,10 @@ public final class CbDispatchConnection extends DispatchConnection
 
       // Check if it is available
       if (super.address.getPingInterval() > 0) {
-         doPing("<qos><state info='"+Constants.INFO_INITIAL+"'/></qos>");
+         // Send clientProperty "__initialCallbackPing"=false to supress initial ping
+         boolean initialCallbackPing = super.address.getEnv(Constants.CLIENTPROPERTY_INITIAL_CALLBACK_PING , true).getValue();
+         if (initialCallbackPing)
+            doPing("<qos><state info='"+Constants.INFO_INITIAL+"'/></qos>");
       }
 
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Connected low level to callback '" + this.address.getType() + "'");
