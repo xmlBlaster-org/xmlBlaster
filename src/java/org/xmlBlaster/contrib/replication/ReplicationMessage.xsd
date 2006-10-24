@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns=""
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="">
+            
+  <xsd:simpleType name="commandType">
+     <xsd:restriction base="xsd:token">
+        <!-- For a normal insert/update/delete operation -->
+        <xsd:enumeration value="REPLICATION"/>
+        <!-- For a drop table operation  -->
+        <xsd:enumeration value="DROP"/>
+        <!-- For a create table operation  -->
+        <xsd:enumeration value="CREATE"/>
+        <!-- For an alter table operation  -->
+        <xsd:enumeration value="ALTER"/>
+        <!-- A dump, i.e. an initial set of data in a format proprietary of the source -->
+        <xsd:enumeration value="DUMP"/>
+        <!-- Am sql statement which has to be executed on this slave -->
+        <xsd:enumeration value="STATEMENT"/>
+     </xsd:restriction>
+  </xsd:simpleType>
+
+            
+  <xsd:complexType name="desc">
+    <xsd:annotation>
+       <xsd:documentation>
+          The command 
+       </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="command" type="commandType"/>
+      <xsd:element name="ident" type="xsd:token"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="colname" type="colname"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="attr" type="attr"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="row">
+    <xsd:sequence>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="col" type="col"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="attr" type="attr"/>
+    </xsd:sequence>
+    <xsd:attribute name="num" type="xsd:int" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="colname">
+    <xsd:simpleContent>
+      <xsd:annotation>
+        <xsd:documentation>
+         Mapped as described in java.sql.ResultSetMetaData:
+          http://java.sun.com/j2se/1.4.2/docs/api/java/sql/ResultSetMetaData.html        
+        </xsd:documentation>
+      </xsd:annotation>
+      <xsd:extension base="xsd:token">
+        <xsd:attribute name="nullable" type="xsd:int" use="required"/>
+        <xsd:attribute name="type" type="xsd:token" use="required"/>
+        <xsd:attribute name="precision" type="xsd:int" default="0"/>
+        <xsd:attribute name="scale" type="xsd:int" default="0"/>
+        <xsd:attribute name="signed" type="xsd:boolean" default="true" />
+        <xsd:attribute name="readOnly" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="catalog" type="xsd:token" use="optional"/>
+        <xsd:attribute name="fkCatalog" type="xsd:token" use="optional"/>
+        <xsd:attribute name="fkCol" type="xsd:token" use="optional"/>
+        <xsd:attribute name="fkDef" type="xsd:token" use="optional"/>
+        <xsd:attribute name="fkDelRule" type="xsd:token" use="optional"/>
+        <xsd:attribute name="fkSchema" type="xsd:token" use="optional"/>
+        <xsd:attribute name="fkSeq" type="xsd:int" use="optional"/>
+        <xsd:attribute name="fkTable" type="xsd:token" use="optional"/>
+        <xsd:attribute name="fkUpdRule" type="xsd:token" use="optional"/>
+        <xsd:attribute name="pk" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="schema" type="xsd:token" use="required"/>
+        <xsd:attribute name="table" type="xsd:token" use="required"/>
+        <xsd:attribute name="searchable" type="xsd:boolean" default="true"/>
+        <xsd:attribute name=" pkName" type="xsd:token" use="optional"/>
+        <xsd:attribute name="sqlType" type="xsd:int" default="0"/>
+        <xsd:attribute name="colSize" type="xsd:int" default="0"/>
+        <xsd:attribute name="radix" type="xsd:int" default="0"/>
+        <xsd:attribute name="remarks" type="xsd:token" use="optional"/>
+        <xsd:attribute name="colDefault" type="xsd:token" use="optional"/>
+        <xsd:attribute name="charLength" type="xsd:int" default="0"/>
+        <xsd:attribute name="pos" type="xsd:int" default="0"/>
+        <xsd:attribute name="label" type="xsd:token" use="optional"/>
+        <xsd:attribute name="autoInc" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="caseSens" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="typeName" type="xsd:token" use="optional"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <!-- the following declarations are for the client properties (here attr and col) -->
+  <xsd:simpleType name="dataEncoding">
+     <xsd:restriction base="xsd:token">
+        <xsd:enumeration value="base64"/>
+        <xsd:enumeration value="forcePlain"/>
+        <xsd:enumeration value="quoted-printable"/>
+     </xsd:restriction>
+  </xsd:simpleType>
+  
+  <xsd:simpleType name="dataType">
+     <xsd:restriction base="xsd:token">
+        <xsd:enumeration value="String"/>
+        <xsd:enumeration value="byte[]"/>
+        <xsd:enumeration value="boolean"/>
+        <xsd:enumeration value="byte"/>
+        <xsd:enumeration value="double"/>
+        <xsd:enumeration value="float"/>
+        <xsd:enumeration value="int"/>
+        <xsd:enumeration value="short"/>
+        <xsd:enumeration value="long"/>
+     </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="replicationAttrName">
+     <xsd:restriction base="xsd:token">
+        <xsd:enumeration value="transaction"/>
+        <xsd:enumeration value="guid"/>
+        <xsd:enumeration value="dbId"/>
+        <xsd:enumeration value="tableName"/>
+        <xsd:enumeration value="version"/>
+        <!-- content is one of 'UPDATE', 'INSERT', 'DELETE', 'CREATE', 'DROP', 'ALTER' -->
+        <xsd:enumeration value="action"/>
+        <xsd:enumeration value="schema"/>
+        <xsd:enumeration value="replKey"/>
+     </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="attr">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:token">
+        <xsd:attribute name="name" type="replicationAttrName"/>
+        <xsd:attribute name="type" type="dataType" default="String"/>
+        <xsd:attribute name="encoding" type="dataEncoding" use="optional"/>
+        <xsd:attribute name="charset" type="xsd:token"/>
+        <xsd:attribute name="size" type="xsd:int" default="0"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="col">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:token">
+        <xsd:attribute name="name" type="xsd:token"/>
+        <xsd:attribute name="type" type="dataType" default="String"/>
+        <xsd:attribute name="encoding" type="dataEncoding" use="optional"/>
+        <xsd:attribute name="charset" type="xsd:token"/>
+        <xsd:attribute name="size" type="xsd:int" default="0"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="sqlType">
+    <xsd:sequence>
+      <xsd:element name="desc" type="desc"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- here come the definition of the elements -->
+  <xsd:element name="sql" type="sqlType"/>
+
+</xsd:schema>
