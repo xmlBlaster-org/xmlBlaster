@@ -2,6 +2,7 @@
 <xsd:schema xmlns=""
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="">
+
   <xsd:complexType name="desc">
     <xsd:sequence>
       <xsd:element name="command" type="xsd:token"/>
@@ -10,6 +11,7 @@
       <xsd:element maxOccurs="unbounded" minOccurs="0" name="attr" type="attr"/>
     </xsd:sequence>
   </xsd:complexType>
+
   <xsd:complexType name="row">
     <xsd:sequence>
       <xsd:element maxOccurs="unbounded" minOccurs="0" name="col" type="col"/>
@@ -17,13 +19,7 @@
     </xsd:sequence>
     <xsd:attribute name="num" type="xsd:int" use="required"/>
   </xsd:complexType>
-  <xsd:complexType name="sqlType">
-    <xsd:sequence>
-      <xsd:element name="desc" type="desc"/>
-      <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
-    </xsd:sequence>
-  </xsd:complexType>
-  <xsd:element name="sql" type="sqlType"/>
+
   <xsd:complexType name="colname">
     <xsd:simpleContent>
       <xsd:extension base="xsd:token">
@@ -62,6 +58,7 @@
     </xsd:simpleContent>
   </xsd:complexType>
 
+  <!-- the following declarations are for the client properties (here attr and col) -->
   <xsd:simpleType name="dataEncoding">
      <xsd:restriction base="xsd:token">
         <xsd:enumeration value="base64"/>
@@ -95,6 +92,7 @@
       </xsd:extension>
     </xsd:simpleContent>
   </xsd:complexType>
+
   <xsd:complexType name="col">
     <xsd:simpleContent>
       <xsd:extension base="xsd:token">
@@ -106,4 +104,15 @@
       </xsd:extension>
     </xsd:simpleContent>
   </xsd:complexType>
+
+  <xsd:complexType name="sqlType">
+    <xsd:sequence>
+      <xsd:element name="desc" type="desc"/>
+      <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  
+  <!-- here come the definition of the elements -->
+  <xsd:element name="sql" type="sqlType"/>
+
 </xsd:schema>
