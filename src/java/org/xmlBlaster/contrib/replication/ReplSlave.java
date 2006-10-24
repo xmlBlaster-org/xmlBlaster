@@ -1013,9 +1013,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       String prefix = this.initialFilesLocation;
       if (prefix == null)
          prefix = System.getProperty("user.home");
-      if (prefix != null)
-         prefix = prefix.replace('/', '-');
-      String filename =  prefix + "/" + this.name + ".qdmp";
+      String name = this.name.replace('/', '-');
+      String filename =  prefix + "/" + name + ".qdmp";
       return dumpEntries(1, -1L, filename);
    }
    
