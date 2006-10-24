@@ -8,9 +8,13 @@ package org.xmlBlaster.contrib.replication;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
@@ -108,6 +112,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    
    /** we don't want to sync the check method because the jmx will synchronize on the object too */
    private Object initSync = new Object();
+   
+   /** The queue associated to this slave. It is associated on first invocation of check */
+   private I_Queue queue;
    
    public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.forcedCounter = 0L;
@@ -514,6 +521,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     * FIXME TODO HERE
     */
    public ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
+      this.queue = queue;
       synchronized (this.initSync) {
          this.tmpStatus = -1;
          this.forcedCounter++;
@@ -537,6 +545,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          if (entries.size() > 0) {
             for (int i=entries.size()-1; i > -1; i--) {
                ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+               if (log.isLoggable(Level.FINEST)) {
+                  String txt = new String(decompressQueueEntryContent(entry));
+                  log.finest("Processing entry '" + txt + "' for client '"  + this.name + "'");
+               }
                MsgUnit msgUnit = entry.getMsgUnit();
                this.tmpTransSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, 0L);
                this.tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
@@ -949,5 +961,62 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    public long getTransactionSeq() {
       return this.transactionSeq;
    }
-
+   
+   public static byte[] decompressQueueEntryContent(ReferenceEntry entry) {
+      try {
+         MsgUnit msgUnit = entry.getMsgUnit();
+         if (msgUnit.getContent() == null)
+            return new byte[0];
+         byte[] content = (byte[])msgUnit.getContent().clone();
+         Map cp = new HashMap(msgUnit.getQosData().getClientProperties());
+         return MomEventEngine.decompress(content, cp);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         return new byte[0];
+      }
+   }
+   
+   public String dumpEntries(int maxNum, long maxSize, String fileName) {
+      if (this.queue == null)
+         return "The queue is null, the replication must first try to deliver one entry before you can invoke this method";
+      if (this.queue.getNumOfEntries() == 0)
+         return "The queue for the slave '" + this.name + "' is empty: not dumping anything";
+      try {
+         ArrayList list = this.queue.peek(maxNum, maxSize);
+         FileOutputStream out = new FileOutputStream(fileName);
+         for (int i=0; i < list.size(); i++) {
+            ReferenceEntry entry = (ReferenceEntry)list.get(i);
+            byte[] ret = decompressQueueEntryContent(entry);
+            out.write(ret);
+         }
+         out.close();
+         String txt = "successfully dumped " + list.size() + " entries on file '" + fileName + "'"; 
+         log.info(txt);
+         return txt;
+      }
+      catch (IOException ex) {
+         String txt = "Could not dump entries because of exception: " + ex.getMessage();
+         log.severe(txt);
+         ex.printStackTrace();
+         return txt;
+      }
+      catch (Exception ex) {
+         String txt = "Could not dump entries because of exception: " + ex.getMessage();
+         log.severe(txt);
+         ex.printStackTrace();
+         return txt;
+      }
+   }
+   
+   public String dumpFirstEntry() {
+      String prefix = this.initialFilesLocation;
+      if (prefix == null)
+         prefix = System.getProperty("user.home");
+      if (prefix != null)
+         prefix = prefix.replace('/', '-');
+      String filename =  prefix + "/" + this.name + ".qdmp";
+      return dumpEntries(1, -1L, filename);
+   }
+   
 }

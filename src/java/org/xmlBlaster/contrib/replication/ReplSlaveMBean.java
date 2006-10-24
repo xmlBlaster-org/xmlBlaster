@@ -28,4 +28,7 @@ public interface ReplSlaveMBean {
    boolean isConnected();
    String getSessionName();
    String getLastMessage();
+   
+   String dumpEntries(int maxNum, long maxSize, String fileName);
+   String dumpFirstEntry();
 }

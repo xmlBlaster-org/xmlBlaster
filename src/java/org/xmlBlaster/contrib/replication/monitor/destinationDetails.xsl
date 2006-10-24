@@ -74,6 +74,12 @@ function toggleDispatcher() {
    self.location.href= url;
 }
 
+function dumpEntry() {
+   var objName = '<xsl:value-of select="$request.objectname"/>';
+   var url = 'invoke?objectname=' + objName + '&amp;operation=dumpFirstEntry&amp;destination=destinationDetails&amp;template=result';
+   self.location.href= url;
+}
+
 </script>
 
 </head>
@@ -94,7 +100,8 @@ function toggleDispatcher() {
                 <td align="center" colspan="1" class="normal"><button class="danger" onClick="killSession()" title="Click to delete definitively this replication">Remove</button></td>
                 <td align="center" colspan="1" class="normal"><button class="small" onClick="gotoDestinationList()" title="Click to go back to replication list">Back</button></td>
                 <td align="center" colspan="1" class="normal"><button class="small" onClick="refresh()" title="Click to refresh this page manually">Refresh</button></td>
-                <td align="center" colspan="1" class="normal"><!-- <button class="small" onClick="reInitiateReplication()" title="Click if you want to restart this replication (initial update)">Restart Repl</button> --></td>
+                <!-- <td align="center" colspan="1" class="normal"><button class="small" onClick="reInitiateReplication()" title="Click if you want to restart this replication (initial update)">Restart Repl</button></td> -->
+                <td align="center" colspan="1" class="normal"><button class="small" onClick="dumpEntry()" title="You will dump the first entry of the queue on file">Dump</button></td>
               </tr>
             </table>
          </td>
