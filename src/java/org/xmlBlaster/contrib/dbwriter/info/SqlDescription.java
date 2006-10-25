@@ -1000,7 +1000,8 @@ public class SqlDescription {
                SearchableConfig searchableConfig = (SearchableConfig)this.info.getObject(SearchableConfig.NAME);
                String catalog = getCatalog();
                String table = this.identity;
-               this.configuredSearchableColumns = searchableConfig.getSearchableColumnNames(catalog, getSchema(), table);
+               if (searchableConfig != null)
+                  this.configuredSearchableColumns = searchableConfig.getSearchableColumnNames(catalog, getSchema(), table);
                if (this.configuredSearchableColumns == null)
                   this.configuredSearchableColumns = new HashSet();
                else { // do the complete check here
