@@ -16,12 +16,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
@@ -64,9 +66,13 @@ public class TableToWatchInfo {
    private String actions = "";
    
    public final static String TABLE_PREFIX = "table";
+   public final static String SCHEMA_PREFIX = "schema";
    public final static String KEY_SEP = ".";
    public final static String VAL_SEP = ",";
    public final static String EMPTY = " ";
+   public final static String ALL_TOKEN = "*";
+   
+   /** this is used as the prefix for all tables to replicate */
    public final static String TABLE_PREFIX_WITH_SEP = TABLE_PREFIX + KEY_SEP;
 
    /**
@@ -91,10 +97,61 @@ public class TableToWatchInfo {
       }
       return true;
    }
+
+   /**
+    * Returns all table names for the given catalog and schema. It only returns tables (not views),
+    * and it uses the MetaData of the connection.
+    * 
+    * @param prefixToAdd the prefix to be added to the table names, if null nothing is added.
+    * @param conn the connection to be used. 
+    * @param tableToWatch The tableToWatch object containing the name of the catalog and schema
+    * @return a String[] containing the names of the tables. The name of the tables is the absolute name.
+    * @throws Exception if an exception on the backend occurs.
+    */
+   private final static String[] getTablesForSchema(String prefixToAdd, Connection conn, TableToWatchInfo tableToWatch) throws SQLException {
+      if (tableToWatch == null)
+         throw new SQLException("TableToWatchInfo.getTablesForSchema: table to watch is null");
+      String table = tableToWatch.getTable(); 
+      if (table != null) {
+         table = table.trim();
+         if (table.length() > 0 && !table.equals(ALL_TOKEN))
+            log.warning("The table '" + table + "' should either be empty or '" + ALL_TOKEN + "' (we ignore it here but may be mis-configuration)");
+      }
+      
+      String catalog = tableToWatch.getCatalog(); 
+      if (catalog != null && catalog.trim().length() < 1)
+         catalog = null;
+      String schema = tableToWatch.getSchema(); 
+      if (schema != null && schema.trim().length() < 1)
+         schema = null;
+      
+      ResultSet rs = null;
+      ArrayList list = new ArrayList();
+      try {
+         rs = conn.getMetaData().getTables(catalog, schema, null, new String[] {"TABLE"});
+         while (rs.next()) {
+            String tableName = rs.getString("TABLE_NAME");
+            String completeTableName = "";
+            if (prefixToAdd != null)
+               completeTableName += prefixToAdd;
+            if (catalog != null)
+               completeTableName += catalog + KEY_SEP;
+            if (schema != null)
+               completeTableName += schema + KEY_SEP;
+            completeTableName += tableName;
+            list.add(completeTableName);
+         }
+      }
+      finally {
+         if (rs != null)
+            rs.close();
+      }
+      return (String[])list.toArray(new String[list.size()]);
+   }
    
    public static String getSortedTablesToWatch(Connection conn, I_Info info, List outputSequence) throws Exception {
 
-      TableToWatchInfo[] tables = getTablesToWatch(info);
+      TableToWatchInfo[] tables = getTablesToWatch(conn, info);
       List nonExisting = new ArrayList();
       List toProcess = new ArrayList();
       Map tableMap = new HashMap();
@@ -173,20 +230,39 @@ public class TableToWatchInfo {
     * @return
     * @throws Exception
     */
-   public static TableToWatchInfo[] getTablesToWatch(I_Info info) throws Exception {
-      synchronized (info) {
-         Iterator iter = info.getKeys().iterator();
+   public static TableToWatchInfo[] getTablesToWatch(Connection conn, I_Info originalInfo) throws Exception {
+      synchronized (originalInfo) {
+         Iterator iter = originalInfo.getKeys().iterator();
+
+         // prepare defaults defined with a '*' token
+         I_Info ownInfo = new PropertiesInfo(new Properties());
+         while (iter.hasNext()) {
+            String key = ((String)iter.next()).trim();
+            if (!key.startsWith(TABLE_PREFIX_WITH_SEP))
+               continue;
+            String val = originalInfo.get(key, null);
+            if (key.indexOf(ALL_TOKEN) < 0L) {
+               ownInfo.put(key, val);
+               continue;
+            }
+            TableToWatchInfo tableToWatch = new TableToWatchInfo();
+            tableToWatch.assignFromInfoPair(key, val);
+            String[] tableNames = getTablesForSchema(TABLE_PREFIX_WITH_SEP, conn, tableToWatch);
+            for (int i=0; i < tableNames.length; i++)
+               ownInfo.put(tableNames[i], "");
+         }
+
          TreeMap map = new TreeMap();
          int count = 0;
+         iter = ownInfo.getKeys().iterator();
          while (iter.hasNext()) {
             String key = ((String)iter.next()).trim();
             if (!key.startsWith(TABLE_PREFIX_WITH_SEP))
                continue;
             count++;
-            String val = info.get(key, null);
+            String val = ownInfo.get(key, null);
             TableToWatchInfo tableToWatch = new TableToWatchInfo();
             tableToWatch.assignFromInfoPair(key, val);
-
             Long mapKey = new Long(tableToWatch.getReplKey());
             ArrayList list = (ArrayList)map.get(mapKey);
             if (list == null) {
@@ -196,6 +272,9 @@ public class TableToWatchInfo {
             list.add(tableToWatch);
          }
 
+         // handle here allt tables which have been assigned as default: for example
+         // <attribute id='table.XMLBLASTER.*'></attribute>
+         
          TableToWatchInfo[] tables = new TableToWatchInfo[count];
          count = 0;
          iter = map.keySet().iterator();
@@ -573,20 +652,22 @@ public class TableToWatchInfo {
    }
    
    /**
+    * Gets the entire configuration information of the configuration table specified in the
+    * argument list.
     * Never throws exception nor returns null.
     * @param conn
     * @param tableName
     * @return
     */
-   public static TableToWatchInfo[] getAll(Connection conn, String tableName) {
-      if (conn == null || tableName == null || tableName.length() < 1)
+   public static TableToWatchInfo[] getAll(Connection conn, String confTableName) {
+      if (conn == null || confTableName == null || confTableName.length() < 1)
          return new TableToWatchInfo[0];
       Statement st = null;
       ResultSet rs = null;
       try {
          ArrayList list = new ArrayList();
          st = conn.createStatement();
-         rs = st.executeQuery("SELECT * from " + tableName);
+         rs = st.executeQuery("SELECT * from " + confTableName);
          
          TableToWatchInfo tmp = null;
          while ( (tmp=get(rs, null)) != null)

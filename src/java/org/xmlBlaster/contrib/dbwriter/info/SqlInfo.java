@@ -567,6 +567,35 @@ public class SqlInfo implements ReplicationConstants {
       return row;
    }
    
+   /**
+    * This method is used for testing other applications, it generates a new row and adds it
+    * if possible. Note that this is only added if it is possible, otherwise it returns null.
+    * It is currently not possible to add something if the table in question has a foreign key.
+    * No check is made against primary keys. 
+    * 
+    * @throws SQLException
+    */
+   public SqlRow fillOneRowWithRandomData() throws Exception {
+      int count = getRowCount();
+      SqlColumn[] cols = getDescription().getColumns();
+      SqlRow row = new SqlRow(this.info, count);
+      for (int i=0; i < cols.length; i++) {
+         if (cols[i].getFkCol() != null) {
+            log.warning("The column '" + cols[i].getTable() + "." + cols[i].getColName() + " has a fK '" + cols[i].getFkTable() + "." + cols[i].getFkCol() + "'");
+            return null;
+         }
+         ClientProperty prop = cols[i].generateRandomObject();
+         if (prop == null) {
+            log.warning("The column '" + cols[i].getTable() + "." + cols[i].getColName() + " has an unprocessable type '" + SqlColumn.getSqlTypeAsText(cols[i].getSqlType()) + "'");
+            return null;
+         }
+         row.setColumn(prop);
+      }
+      getRows().add(row);
+      return row;
+   }
+   
+   
    public SqlDescription getDescription() {
       return this.description;
    }

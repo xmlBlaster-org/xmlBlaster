@@ -6,12 +6,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.dbwriter.info;
 
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Properties;
+import java.util.Random;
 
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 public class SqlColumn {
 
@@ -746,5 +749,102 @@ public class SqlColumn {
       }
       return true;
    }
+
+   private final ClientProperty nextChar(Random random, int numOfChars) {
+      if (this.colSize < numOfChars)
+         numOfChars = this.colSize;
+      StringBuffer buf = new StringBuffer(numOfChars);
+      for (int i=0; i < numOfChars; i++) {
+         int val = 32 + random.nextInt(96);
+         buf.append((char)val);
+      }
+      return new ClientProperty(this.colName, null, null, buf.toString());
+   }
+   
+   private final ClientProperty nextNumber(Random random, int max) {
+      int val = random.nextInt(max);
+      return new ClientProperty(this.colName, null, null, "" + val);
+   }
+   
+   private final ClientProperty nextDate(Random random) {
+      int val = random.nextInt(87600);
+      long time = System.currentTimeMillis() - (5L*365*24*3600*1000L);
+      time += (60000L * val);
+      Timestamp ts = new Timestamp(time);
+      return new ClientProperty(this.colName, null, null, ts.toString());
+   }
+   
+   public ClientProperty generateRandomObject() {
+      if (sqlType == Types.ARRAY)
+         return null;
+      if (sqlType == Types.BIT)
+         return null;
+      if (sqlType == Types.DATALINK)
+         return null;
+      if (sqlType == Types.DISTINCT)
+         return null;
+      if (sqlType == Types.REF)
+         return null;
+      if (sqlType == Types.STRUCT)
+         return null;
+      if (sqlType == Types.JAVA_OBJECT)
+         return null;
+      if (sqlType == Types.NULL)
+         return null;
+      if (sqlType == Types.OTHER)
+         return null;
+
+      Random random = new Random(System.currentTimeMillis());
+      ClientProperty ret = new ClientProperty(this.colName, null, null);
+      if (sqlType == Types.BOOLEAN) {
+         ret.setValue("" + random.nextBoolean());
+         return ret;
+      }
+      if (sqlType == Types.CHAR)
+         return nextChar(random, 1);
+      if (sqlType == Types.BINARY)
+         return nextChar(random, 24);
+      if (sqlType == Types.BLOB)
+         return nextChar(random, 24);
+      if (sqlType == Types.CLOB)
+         return nextChar(random, 24);
+      if (sqlType == Types.LONGVARBINARY)
+         return nextChar(random, 24);
+      if (sqlType == Types.LONGVARCHAR)
+         return nextChar(random, 24);
+      if (sqlType == Types.VARBINARY)
+         return nextChar(random, 24);
+      if (sqlType == Types.VARCHAR)
+         return nextChar(random, 24);
+
+      if (sqlType == Types.DATE)
+         return nextDate(random);
+      if (sqlType == Types.TIME)
+         return nextDate(random);
+      if (sqlType == Types.TIMESTAMP)
+         return nextDate(random);
+
+      if (sqlType == Types.BIGINT)
+         return nextNumber(random, 60000);
+      if (sqlType == Types.DECIMAL)
+         return nextNumber(random, 60000);
+      if (sqlType == Types.DOUBLE)
+         return nextNumber(random, 60000);
+      if (sqlType == Types.FLOAT)
+         return nextNumber(random, 60000);
+      if (sqlType == Types.INTEGER)
+         return nextNumber(random, 60000);
+      if (sqlType == Types.NUMERIC)
+         return nextNumber(random, 60000);
+      if (sqlType == Types.REAL)
+         return nextNumber(random, 60000);
+      if (sqlType == Types.SMALLINT)
+         return nextNumber(random, 256);
+      if (sqlType == Types.TINYINT)
+         return nextNumber(random, 256);
+
+      return null;
+   }
+   
    
 }

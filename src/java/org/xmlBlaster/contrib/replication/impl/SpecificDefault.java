@@ -561,12 +561,17 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       this.dbPool = DbWatcher.getDbPool(this.info);
       this.dbMetaHelper = new DbMetaHelper(this.dbPool);
       this.rowsPerMessage = this.info.getInt("replication.maxRowsOnCreate", 250);
+      Connection conn = this.dbPool.reserve();
       try { // just to check that the configuration  is OK (better soon than later)
-         TableToWatchInfo.getTablesToWatch(this.info);
+         TableToWatchInfo.getTablesToWatch(conn, this.info);
       }
       catch (Exception ex) {
          log.severe("The syntax of one of the 'tables' attributes in the configuration is wrong. " + ex.getMessage());
          throw ex;
+      }
+      finally {
+         if (conn != null)
+            this.dbPool.release(conn);
       }
       
       // do a bootstrapping if needed !!!!!
@@ -1084,10 +1089,17 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
       final boolean doFix = true;
       checkTriggerConsistency(doFix);
-      TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(this.info);
-      log.info("there are '" + tablesToWatch.length + "' tables to watch (invoked with forceSend='" + forceSend + "'");
-      for (int i=0; i < tablesToWatch.length; i++)
-         addTableToWatch(tablesToWatch[i], force, destination, forceSend);
+      Connection conn = this.dbPool.reserve();
+      try {
+         TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(conn, this.info);
+         log.info("there are '" + tablesToWatch.length + "' tables to watch (invoked with forceSend='" + forceSend + "'");
+         for (int i=0; i < tablesToWatch.length; i++)
+            addTableToWatch(tablesToWatch[i], force, destination, forceSend);
+      }
+      finally {
+         if (conn != null)
+            this.dbPool.release(conn);
+      }
    }
 
    /**
