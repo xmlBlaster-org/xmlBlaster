@@ -26,6 +26,7 @@ import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.db.DbPool;
+import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
@@ -63,6 +64,10 @@ public class TestHelperClasses extends XMLTestCase {
       TestHelperClasses test = new TestHelperClasses();
       try {
          
+         test.setUp();
+         test.testTableToWatchInfoForAllToken();
+         test.tearDown();
+
          test.setUp();
          test.testSearchableConfig();
          test.tearDown();
@@ -752,7 +757,8 @@ public class TestHelperClasses extends XMLTestCase {
       info.put("tablesomethingother", "should be ignored");
       info.put("somethingother", "should be ignored");
       try {
-         TableToWatchInfo[] tables = TableToWatchInfo.getTablesToWatch(info);
+         Connection conn = null;
+         TableToWatchInfo[] tables = TableToWatchInfo.getTablesToWatch(conn, info);
          assertEquals("number of tables", 5, tables.length);
          assertEquals("table sequence #1", "table1", tables[0].getTable());
          assertEquals("table sequence #2", "table4", tables[1].getTable());
@@ -764,6 +770,45 @@ public class TestHelperClasses extends XMLTestCase {
          ex.printStackTrace();
          assertTrue("An exception should not occur here" + ex.getMessage(), false);
       }
+      log.info("SUCCESS");
+   }
+      
+   /**
+    * Creates a database pooling instance and puts it to info. 
+    * @param info The configuration
+    * @return The created pool
+    */
+   private DbPool setUpDbPool(I_Info info) {
+      DbPool dbPool = new DbPool();
+      dbPool.init(info);
+      info.putObject("db.pool", dbPool);
+      return dbPool;
+   }
+
+   /**
+    * 
+    */
+   public final void testTableToWatchInfoForAllToken() {
+      String txt = "testTableToWatchInfoForAllToken";
+      log.info("Start " + txt);
+      try {
+         SpecificHelper specificHelper = new SpecificHelper(System.getProperties());
+         I_Info info = new PropertiesInfo(specificHelper.getProperties());
+         I_DbPool dbPool = setUpDbPool(info);
+         Connection conn = dbPool.reserve();
+         info.put("table.XMLBLASTER.*", "");
+         TableToWatchInfo[] tables = TableToWatchInfo.getTablesToWatch(conn, info);
+         assertTrue("wrong number of tables", tables.length > 0);
+         for (int i=0; i < tables.length; i++) {
+            log.info(tables[i].toXml());
+         }
+         dbPool.release(conn);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         fail("An exception should not occur in " + txt);
+      }
+      
       log.info("SUCCESS");
    }
 

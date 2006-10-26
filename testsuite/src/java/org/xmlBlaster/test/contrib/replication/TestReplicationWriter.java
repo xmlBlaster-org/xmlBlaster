@@ -732,7 +732,8 @@ public class TestReplicationWriter extends XMLTestCase {
          }
          rs.close();
          */
-         TableToWatchInfo[] tables = TableToWatchInfo.getTablesToWatch(info); 
+         
+         TableToWatchInfo[] tables = TableToWatchInfo.getTablesToWatch(conn, info); 
          for (int i=0; i < tables.length; i++) {
             try {
                String name = tables[i].getTable();
