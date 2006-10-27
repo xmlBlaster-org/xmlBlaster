@@ -89,6 +89,11 @@ public class ServerEntryFactory implements I_EntryFactory
                               boolean persistent, long sizeInBytes, InputStream is, StorageId storageId)
       throws XmlBlasterException {
 
+      if (is == null) {
+         String txt = "Entry with data prio='" + priority + "' timestamp='" + timestamp + "' type='" + type + "' persitent='" + persistent + "' size='" + sizeInBytes + "' storageId='" + storageId + "' has a null stream";
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry: " + txt);
+      }
+         
       if (ENTRY_TYPE_UPDATE_REF.equals(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
