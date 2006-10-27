@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.4 [2006-10-22] #15612
 ===================================
 
+ o #15629 Added I_StreamingCallback which can be passed to an XmlBlasterAccess.connect. You can 
+          thereby read messages in streaming mode. A client side update queue having the same
+          cfg as the client queue can be optionally used.
+ 
  o #15591 FilePoller: Fixed file.delete() with a hack, it failed sometimes on Windows platforms
 
  o #15587 SQL92Filter plugin has as default now switched caching of prepared query off
