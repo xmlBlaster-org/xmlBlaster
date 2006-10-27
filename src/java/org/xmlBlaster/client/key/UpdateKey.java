@@ -37,8 +37,12 @@ import org.xmlBlaster.util.XmlBlasterException;
 public class UpdateKey
 {
    private final Global glob;
-   private final static String ME = "UpdateKey";
    private final MsgKeyData msgKeyData;
+
+   public UpdateKey(MsgKeyData keyData) {
+      this.glob = keyData.getGlobal();
+      this.msgKeyData = keyData;
+   }
 
    /**
     * Parse the given xml data. 
