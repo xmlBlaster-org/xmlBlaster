@@ -293,7 +293,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    }
 
    public void endPrefixMapping(java.lang.String prefix) {
-      log.warning("Entering endPrefixMapping(prefix="+prefix+") ...");
+      log.finest("Entering endPrefixMapping(prefix="+prefix+") ...");
    }
 
    /** Ignorable whitespace. */
@@ -355,7 +355,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHand
    }
 
    public void startPrefixMapping(java.lang.String prefix, java.lang.String uri) {
-      log.warning("Entering startPrefixMapping() ...");
+      log.finest("Entering startPrefixMapping() ...");
    }
 
 
