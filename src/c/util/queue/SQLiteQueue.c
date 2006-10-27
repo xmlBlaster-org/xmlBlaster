@@ -20,6 +20,13 @@ Compile:   Compiles at least on Windows, Linux, Solaris. Further porting should 
             build -DXMLBLASTER_PERSISTENT_QUEUE=true c-delete c
            expects xmlBlaster/src/c/util/queue/sqlite.h and xmlBlaster/lib/libsqlite.so
 
+
+           Compile Test main()
+            Replace /I\c\sqlite for your needs ( says where sqlite.h resides ):
+				and \pialibs\sqlite.lib as well ( sqlite.lib is created from sqlite.def via lib /DEF:sqlite.def)
+           cl /MD /DQUEUE_MAIN /DDLL_IGNORE /DXB_NO_PTHREADS /D_WINDOWS /I\c\sqlite /I..\.. SqliteQueue.c ..\helper.c /link \pialibs\sqlite.lib
+
+
 Table layout XB_ENTRIES:
            dataId bigint
            queueName text
