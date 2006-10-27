@@ -127,6 +127,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    /** First call to connect() in millis */
    private long startupTime;
 
+   StreamingCallback streamingCb;
+   
    /**
     * Create an xmlBlaster accessor. 
     * Please don't create directly but use the factory instead:
@@ -217,6 +219,17 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return this.contextNode;
    }
 
+
+
+   public ConnectReturnQos connect(ConnectQos qos, I_StreamingCallback streamingUpdateListener, boolean withQueue) throws XmlBlasterException {
+      if (streamingUpdateListener == null)
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, "connect", "the streamingUpdateListener is null, you must provide one");
+      this.streamingCb = new StreamingCallback(this.glob, streamingUpdateListener, 0, 0, withQueue);
+      if (withQueue)
+         registerConnectionListener(this.streamingCb);
+      return connect(qos, this.streamingCb);
+   }
+   
    /**
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
@@ -610,6 +623,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       this.msgErrorHandler = null;
       this.updateListener = null;
 
+      this.streamingCb = null;
+      
       super.glob.shutdown();
       return true;
    }
@@ -1438,9 +1453,20 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    public void setCallbackDispatcherActive(boolean activate) throws XmlBlasterException {
+      if (this.streamingCb != null && !isCallbackDispatcherActive() && activate) {
+         int ret = this.streamingCb.sendInitialQueueEntries();
+         log.info("locally retrieved '" + ret + "' chunks");
+      }
+      
       String command = getSessionName() + "/?dispatcherActive=" + activate;
       sendAdministrativeCommand(command);
       this.connectQos.getSessionCbQueueProperty().getCurrentCallbackAddress().setDispatcherActive(activate);
+   }
+
+   public boolean isCallbackDispatcherActive() throws XmlBlasterException {
+      String command = getSessionName() + "/?dispatcherActive";
+      boolean ret = "true".equalsIgnoreCase(sendAdministrativeCommand(command));
+      return ret;
    }
 
    public String sendAdministrativeCommand(String command) throws XmlBlasterException {
