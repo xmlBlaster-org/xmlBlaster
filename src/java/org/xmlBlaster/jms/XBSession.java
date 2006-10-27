@@ -74,6 +74,10 @@ public class XBSession extends Thread implements Session, I_Callback {
    protected int syncMode = MODE_UNSET;
    protected long updateTimeout = 60000L;
    protected Map consumerMap;
+
+   // TODO REMOVE THIS LATER (we bypass a check to be allowed to publish from several threads
+   // but this is not permitted by the JMS specification since a session must be single-threaded.
+   private boolean tmpBypassCheckSet;
    
    /**
     * Set in the constructor it can be changed in the update methods 
@@ -205,7 +209,10 @@ public class XBSession extends Thread implements Session, I_Callback {
    }
 
    final void checkControlThread() throws JMSException {
-      log.warning("Temporarly bypassing the control thread check");
+      if (!this.tmpBypassCheckSet) {
+         log.warning("Publishes will be done by temporarly bypassing the control thread check");
+         this.tmpBypassCheckSet = true;
+      }
       if (true)
          return;
       if (this.controlThread == null || this.controlThread == Thread.currentThread()) 
