@@ -153,6 +153,8 @@ public class Constants {
    public final static String RELATING_SUBJECT = "subject";
    /** Type of a message queue  on client side */
    public final static String RELATING_CLIENT = "connection";
+   /** Type of a message queue on client side for updates (not really a type but used for id) */
+   public final static String RELATING_CLIENT_UPDATE = "clientUpdate";
    /** Type of a history message queue containing references on messages */
    public final static String RELATING_HISTORY = "history";
    /** Type of a subscription message queue containing subscriptions */
