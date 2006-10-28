@@ -952,7 +952,7 @@ SEARCH_INCLUDES        = YES
 # contain include files that are not input files but should be processed by 
 # the preprocessor.
 
-INCLUDE_PATH           = 
+INCLUDE_PATH           = $(XMLBLASTER_HOME)/src/c $(XMLBLASTER_HOME)/src/c++ /usr/include
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard 
 # patterns (like *.h and *.hpp) to filter out the header-files in the 
@@ -967,7 +967,7 @@ INCLUDE_FILE_PATTERNS  =
 # or name=definition (no spaces). If the definition and the = are 
 # omitted =1 is assumed.
 
-PREDEFINED             = 
+PREDEFINED             = XMLBLASTER_PERSISTENT_QUEUE=1 XMLBLASTER_ZLIB=1 COMPILE_SOCKET_PLUGIN=1 OMNITHREAD=1 _REENTRANT
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
