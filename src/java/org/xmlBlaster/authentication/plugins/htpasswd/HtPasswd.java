@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.Vector;
 //import org.xmlBlaster.authentication.plugins.htpasswd.jcrypt;
 
-/*
+/**
  * In xmlBlaster.properties add :<br>
  * Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}xmlBlaster.htpasswd
  * <p />
@@ -75,6 +75,9 @@ public class HtPasswd {
    protected String htpasswdFilename = null ;
    /* Key is user name, values is the Container with encrypted password */
    protected Hashtable htpasswdMap = null ;
+   
+   protected Hashtable containerCache = new Hashtable();
+   protected long lastModified = -1L;
 
    private static boolean first = true;
    private static boolean firstWild = true;
@@ -148,7 +151,9 @@ public class HtPasswd {
      if (log.isLoggable(Level.FINE)) log.fine("Comparing '" + userPassword + "' in " + fileEncodedPass.size() + " possibilities");
      String encoded = null,salt,userEncoded;
      for (Enumeration e = fileEncodedPass.elements();e.hasMoreElements();)
-     { encoded = (String)e.nextElement();
+     { 
+       Container container = (Container)e.nextElement();
+       encoded = container.password;
        if (encoded != null && encoded.length() == 0) return true; // empty password "joe::"
        if (encoded != null && encoded.length() > 2) 
        {  salt = encoded.substring(0,2);
@@ -175,45 +180,56 @@ public class HtPasswd {
         return true;
       }
       if( this.htpasswdMap != null && userName!=null && userPassword!=null ){
-         Vector pws = new Vector();
-
          //find user in Hashtable htpasswd
-         String key;
-         boolean found = false;
-         if ( useFullUsername == FULL_USERNAME ) {
-            Container container = (Container)this.htpasswdMap.get(userName);
-            if (container != null) {
-               pws.addElement(container.password);
-               found = true;
-            }
-         }
-         else { // ALLOW_PARTIAL_USERNAME
-            for (Enumeration e = this.htpasswdMap.keys();e.hasMoreElements() ; ) {
-               key = (String)e.nextElement();
-               if (log.isLoggable(Level.FINE)) log.fine("Checking userName=" + userName + " with key='" + key + "'");
-               if (userName.startsWith(key) || userName.endsWith(key)) {
-                  Container container = (Container)this.htpasswdMap.get(key);
-                  pws.addElement(container.password);
-                  found = true;
-               }
-            }
-         }
-
-         if (!found) { // allow wildcard entry, for example "*:ad9dfjhf0"
-            for (Enumeration e = this.htpasswdMap.keys();e.hasMoreElements() ; ) {
-               key = (String)e.nextElement();
-               if (key.equals("*")) {
-                  Container container = (Container)this.htpasswdMap.get(key);
-                  pws.addElement(container.password);
-               }
-            }
-         }
-         
+         Vector pws = lookup(userName);
          return checkDetailed(userPassword,pws);
       }
       return false;
    }//checkPassword
 
+
+   /**
+    * Lookup userName in password file
+    * @param userName
+    * @return A list containing Container instances (matching the userName)
+    */
+   private Vector lookup(String userName) {
+      Vector pws = new Vector();
+      if (userName == null) return pws;
+      //find user in Hashtable htpasswd
+      String key;
+      boolean found = false;
+	  if ( useFullUsername == FULL_USERNAME ) {
+	     Container container = (Container)this.htpasswdMap.get(userName);
+	     if (container != null) {
+	        pws.addElement(container);
+	        found = true;
+	     }
+	  }
+	  else { // ALLOW_PARTIAL_USERNAME
+         for (Enumeration e = this.htpasswdMap.keys();e.hasMoreElements() ; ) {
+		   key = (String)e.nextElement();
+		   if (log.isLoggable(Level.FINE)) log.fine("Checking userName=" + userName + " with key='" + key + "'");
+		      if (userName.startsWith(key) || userName.endsWith(key)) {
+		         Container container = (Container)this.htpasswdMap.get(key);
+		         pws.addElement(container);
+		         found = true;
+		    }
+		 }
+	  }
+	
+      if (!found) { // allow wildcard entry, for example "*:ad9dfjhf0"
+	    for (Enumeration e = this.htpasswdMap.keys();e.hasMoreElements() ; ) {
+	      key = (String)e.nextElement();
+	      if (key.equals("*")) {
+	         Container container = (Container)this.htpasswdMap.get(key);
+	         pws.addElement(container);
+	      }
+	    }
+	  }
+      return pws;
+   }
+   
    /**
     * Check of MethodName is allowed to be invoked by user. 
     * 
@@ -238,13 +254,22 @@ public class HtPasswd {
          log.warning("loginName for '" + sessionName.toXml() + "' is null, will not authorize");
          return false;
       }
-      Container container = (Container)this.htpasswdMap.get(loginName);
+      
+      Container container = (Container)this.containerCache.get(loginName);
+      if (container == null) {
+    	  Vector pws = lookup(loginName);
+    	  if (pws.size() > 0) {
+    		  container = (Container)pws.elementAt(0);
+    		  this.containerCache.put(loginName, container);
+    	  }
+      }
+
       if (container == null) {
          StringBuffer buf = new StringBuffer(1024);
          Object[] keys = this.htpasswdMap.keySet().toArray();
          for (int i=0; i < keys.length; i++)
             buf.append("'").append(keys[i]).append("' ");
-         log.severe("the entry '" + loginName + "' has not been found in the map. Found entries are : " + buf.toString());
+         log.severe("The login entry '" + loginName + "' has not been found in '" + this.htpasswdFilename + "'. Found entries are : " + buf.toString());
          return false;
       }
       if (container.allowedMethodNames == null) return true;
@@ -279,6 +304,13 @@ public class HtPasswd {
          log.severe( "Secret file '"+htpasswdFilename + "' has no read permission");
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "no read access on file : "+htpasswdFilename );
       }
+      
+      long curr = htpasswdFile.lastModified();
+      if (this.lastModified == curr)
+    	  return true;
+      this.lastModified = curr;
+      
+      this.containerCache.clear();
 
       try {
          String rawString = FileLocator.readAsciiFile(htpasswdFilename);
@@ -392,4 +424,9 @@ public class HtPasswd {
       return htpasswdFilename; 
    }
 
+   public void reset() {
+	   this.containerCache.clear();
+	   this.htpasswdMap.clear();
+	   this.lastModified = -1L;
+   }
 }//class HtAccess
