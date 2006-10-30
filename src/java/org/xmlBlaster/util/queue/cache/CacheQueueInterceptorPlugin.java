@@ -72,6 +72,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
    /** My JMX registration */
    private Object mbeanHandle;
+   
+   private long maxFetchSize = Long.MAX_VALUE;
 
    public boolean isTransient() {
       return this.transientQueue.isTransient() && this.persistentQueue.isTransient();
@@ -264,6 +266,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
          QueuePluginManager pluginManager = glob.getQueuePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
+
+         try {
+        	 this.maxFetchSize = Long.valueOf(pluginProperties.getProperty("maxFetchSize", ""+maxFetchSize)).longValue();
+         }
+         catch (Throwable e) {
+             log.warning(ME+"Setting maxFetchSize failed: " + e.toString());
+         }
 
          //instantiate and initialize the underlying queues
          String defaultTransient = pluginProperties.getProperty("transientQueue", "RAM,1.0").trim();
@@ -1012,6 +1021,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       if(hasUncachedEntries()) {
          //or should it only fill a certain amount (percent) of the queue size ?
          long freeEntries = this.transientQueue.getMaxNumOfEntries() - this.transientQueue.getNumOfEntries();
+         if (freeEntries > maxFetchSize) freeEntries = maxFetchSize;
          long freeBytes = this.transientQueue.getMaxNumOfBytes() - this.transientQueue.getNumOfBytes();
 
          if (freeEntries <= 0L || freeBytes <= 0L) {
