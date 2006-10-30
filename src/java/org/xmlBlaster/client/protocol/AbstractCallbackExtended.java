@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
@@ -35,7 +36,8 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    private String ME = "AbstractCallbackExtended";
    protected final Global glob;
    private static Logger log = Logger.getLogger(AbstractCallbackExtended.class.getName());
-
+   protected boolean updateBulkAck;
+   
    /**
     * @param glob If null we use Global.instance()
     */
@@ -196,6 +198,13 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MsgUnitRaw msgUnit = msgUnitArr[ii];
          retArr[ii] = update(cbSessionId, msgUnit.getKey(), msgUnit.getContent(), msgUnit.getQos());
+      }
+      if (this.updateBulkAck && retArr.length > 1) {
+         for (int i=0; i < retArr.length; i++) {
+            if (!Constants.RET_OK.equals(retArr[i]) && !"OK".equals(retArr[i]))
+               return new String[] { retArr[i] };
+            return new String[] { retArr[0]};
+         }
       }
       return retArr;
    }

@@ -40,6 +40,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
@@ -237,6 +238,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "connect");
           
+      ClientProperty tmp = qos.getClientProperty(Constants.UPDATE_BULK_ACK);
+      if (tmp != null) {
+         if ("true".equalsIgnoreCase(tmp.getStringValue().trim())) {
+            log.info("Setting the flag '" + Constants.UPDATE_BULK_ACK + "' to 'true' since specified in ConnectQos");
+            this.updateBulkAck = true;
+         }
+      }
+      
       synchronized (this) {
 
          if (this.startupTime == 0) {
