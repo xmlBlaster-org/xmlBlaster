@@ -8,6 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -493,6 +494,7 @@ public final class ConnectQos
    public static void main( String[] args ) throws XmlBlasterException {
       {
          ConnectQos qos =new ConnectQos(new Global(args), "joe/2", "secret");//new SessionName(glob, "joe"));
+         qos.addClientProperty(Constants.UPDATE_BULK_ACK, "true");
          System.out.println(qos.toXml());
       }
       {
