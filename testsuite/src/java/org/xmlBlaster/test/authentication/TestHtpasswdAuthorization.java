@@ -44,7 +44,10 @@ public class TestHtpasswdAuthorization extends TestCase implements I_Callback {
       this.passwdFileName = this.userhome + "testAuthorize.htpasswd";
 
       try {
+    	  // [some1] => [yZ6mkNGKZEgDc]
+    	  // [secret] => [yZ24stvIel1j6]
          FileLocator.writeFile(this.passwdFileName,
+        	   "*:yZ6mkNGKZEgDc\n" +
                "guest:yZ24stvIel1j6:connect,disconnect,publish(tennis;sailing;jogging),subscribe(surfing),unSubscribe(surfing),erase(tennis)\n" +
                "snoopy:yZ24stvIel1j6:subscribe(\"exact:tennis\";\"domain:sport\";\"xpath:/xmlBlaster/key[starts-with(@oid,'sport.')]\")\n" +
                "admin:yZ24stvIel1j6:!erase\n" +
@@ -84,6 +87,34 @@ public class TestHtpasswdAuthorization extends TestCase implements I_Callback {
       this.glob = null;
       this.con = null;
       Global.instance().shutdown();
+   }
+
+   public void testWildcardAuthenticationOK() {
+      log.info("testWildcardAuthentication()");
+      try {
+         con = glob.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(glob, "unknown", "some1");
+         con.connect(qos, this);
+         con.publish(new MsgUnit("<key oid='Hello'/>", "hi".getBytes(), "<qos/>"));
+         con.subscribe("<key oid='Hello'/>", "<qos/>");
+         con.unSubscribe("<key oid='Hello'/>", "<qos/>");
+         con.erase("<key oid='Hello'/>", "<qos/>");
+         con.disconnect(null);
+      } catch (XmlBlasterException ex) {
+         fail("Could not connect: " + ex.toString());
+      }
+   }
+
+   public void testWildcardAuthenticationFailed() {
+      log.info("testWildcardAuthentication()");
+      try {
+         con = glob.getXmlBlasterAccess();
+         ConnectQos qos = new ConnectQos(glob, "unknown2", "some1Wrong");
+         con.connect(qos, this);
+         fail("Should not connect");
+      } catch (XmlBlasterException ex) {
+         log.info("Success, expected an exception: " + ex.toString());
+      }
    }
 
    public void testMethodNameAuthorization() {
