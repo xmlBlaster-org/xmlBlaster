@@ -277,6 +277,7 @@ public class Constants {
    
    public final static String JMS_REPLY_TO = "__jms:JMSReplyTo";  
 
+   public final static String UPDATE_BULK_ACK = "__updateBulkAck";
    
    /** Mimetypes */
    // see @apache/mime.conf or so
