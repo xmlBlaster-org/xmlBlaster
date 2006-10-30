@@ -286,6 +286,15 @@ public final class CbDispatchConnection extends DispatchConnection
          connectionsHandler.getDispatchStatistic().incrNumUpdate(raws.length);
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
 
+         // this is done since the client could send one single bulk acknowledge
+         if (rawReturnVal != null && rawReturnVal.length == 1 && raws.length > 1) {
+            String bulkReturnValue = rawReturnVal[0];
+            log.fine("Reconstructing return values of a bulk acknowledge '" + bulkReturnValue + "'");
+            rawReturnVal = new String[raws.length];
+            for (int i=0; i < rawReturnVal.length; i++)
+               rawReturnVal[i] = bulkReturnValue;
+         }
+         
          if (rawReturnVal != null && rawReturnVal.length == raws.length) {
             I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
             for (int i=0; i<rawReturnVal.length; i++) {
