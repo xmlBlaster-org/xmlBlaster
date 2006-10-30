@@ -544,8 +544,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          }
 
          changeLastMessage(null, false); // clean last message
-         if (entries != null && entries.size() > 1)
-            log.severe("the entries are '" + entries.size() + "' but we currently only can process one single entry at a time");
+         // if (entries != null && entries.size() > 1)
+         //    log.severe("the entries are '" + entries.size() + "' but we currently only can process one single entry at a time");
          
          if (entries.size() > 0) {
             for (int i=entries.size()-1; i > -1; i--) {
