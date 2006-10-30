@@ -513,7 +513,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
       if (msgQosData.isAdministrative()) {
          if (!isUnconfigured() && !isSoftErased())
-            log.warning(ME+": Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the request");
+            log.warning(ME+": Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the reconfiguration request");
          else
             administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
          if (this.handlerIsNewCreated) {
