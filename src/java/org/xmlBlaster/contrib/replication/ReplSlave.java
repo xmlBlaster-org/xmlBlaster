@@ -109,6 +109,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private long tmpReplKey;
    private int tmpStatus;
    private String lastMessageKey;
+   private long maxChunkSize = 1024L*1024; // TODO make this configurable
    
    /** we don't want to sync the check method because the jmx will synchronize on the object too */
    private Object initSync = new Object();
@@ -155,6 +156,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       return this.maxReplKey;
    }
 
+   public int getStatusAsInt() {
+      return this.status;
+   }
+   
    public String getStatus() {
       switch (this.status) {
          case STATUS_INITIAL : return "INITIAL";
@@ -518,7 +523,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    }
    
    /**
-    * FIXME TODO HERE
+    * 
     */
    public ArrayList check(ArrayList entries, I_Queue queue) throws Exception {
       this.queue = queue;
@@ -572,14 +577,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                doTransform(msgUnit);
          }
          
-         // check if one of the messages is the transition end tag            
+         // check if one of the messages is the transition end tag, also check if the total size is exceeded
+         ArrayList remoteEntries = new ArrayList();
+         long totalSize = 0L;
          for (int i=0; i < entries.size(); i++) {
             ReferenceEntry entry = (ReferenceEntry)entries.get(i);
             MsgUnit msgUnit = entry.getMsgUnit();
             ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
             
-            // check if the message is the end of the data (only sent in case the initial data has to be stored on file in which
-            // case the dispatcher shall return in its waiting state.
+            // check if the message is the end of the data (only sent in case the initial data has to be stored on 
+            // file in which case the dispatcher shall return in its waiting state.
             ClientProperty endOfData = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END);
             ClientProperty initialFilesLocation = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_FILES_LOCATION);
             ClientProperty subDirName = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_ID);
@@ -587,7 +594,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                final boolean doPersist = true;
                doPause(doPersist);
                queue.removeRandom(entry);
-               entries.remove(i);
+               // entries.remove(i); // endOfData will be kept locally, not sent to slave
                String dirName = "unknown";
                if (subDirName != null) {
                   if (initialFilesLocation != null) {
@@ -597,7 +604,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                   }
                }
                changeLastMessage("Manual Data transfer: WAITING (stored on '" + dirName + "')", false);
-               continue;
+               break; // we need to interrupt here: all subsequent entries will be processed later.
             }
 
             // check if the message has to be stored locally
@@ -605,16 +612,15 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             if (initialFilesLocation != null && (endToRemote == null || !endToRemote.getBooleanValue())) {
                storeChunkLocally(entry, initialFilesLocation, subDirName);
                queue.removeRandom(entry);
-               entries.remove(i); // TODO INVERT SEQUENCE SINCE THEORETICALLY IT COULD BE MORE THAN ONE MSG IN THE LIST
+               // entries.remove(i);
                continue;
             }
             
             if (endMsg != null) {
                log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
-               // this.tmpStatus = STATUS_NORMAL;
                setStatus(STATUS_NORMAL);
                queue.removeRandom(entry);
-               entries.remove(i);
+               // entries.remove(i);
                // initiate a cascaded replication (if configured that way)
                if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
                   log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'. Was entry '" + i + "' of a set of '" + entries.size() + "'");
@@ -623,20 +629,28 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                else {
                   log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
                }
-               break; // there should only be one such message 
+               continue; 
             }
+            byte[] content = msgUnit.getContent();
+            if (content != null)
+               totalSize += content.length;
+            if (totalSize <= this.maxChunkSize || i == 0)
+               remoteEntries.add(entry);
+            else
+               break;
          }
-
+         entries = null; // we can free it here since not needed anymore
+         
          // if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
          // TODO find a clean solution for this: currently we have the case where several masters send data to one single
          // slave, this can result in a conflict where min- and maxReplKey are overwritten everytime. A quick and dirty solution
          // is to let everything pass for now.
          if (this.status == STATUS_NORMAL || this.status == STATUS_INCONSISTENT || this.status == STATUS_UNCONFIGURED)
-            return entries;
+            return remoteEntries;
          
          ArrayList ret = new ArrayList();
-         for (int i=0; i < entries.size(); i++) {
-            ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+         for (int i=0; i < remoteEntries.size(); i++) {
+            ReferenceEntry entry = (ReferenceEntry)remoteEntries.get(i);
             MsgUnit msgUnit = entry.getMsgUnit();
             long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
             if (replKey > -1L) {
@@ -671,6 +685,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                log.info("removing entry with replKey='" + replKey + "' since older than minEntry='" + this.minReplKey + "' for client '" + this.slaveSessionId + "' ");
                queue.removeRandom(entry);
             }
+         }
+         
+         // check if there are more than one entry the keep-transaction-flag has to be set:
+         if (ret.size() > 1) {
+            for (int i=0; i < ret.size()-1; i++) {
+               ReferenceEntry entry = (ReferenceEntry)entries.get(i);
+               MsgUnit msgUnit = entry.getMsgUnit();
+               msgUnit.getQosData().addClientProperty(KEEP_TRANSACTION_OPEN, true);
+            }
+            log.info("Sending '" + ret.size() + "' entries in one single message");
          }
          return ret;
       }

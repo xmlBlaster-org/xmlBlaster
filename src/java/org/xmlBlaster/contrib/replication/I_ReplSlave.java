@@ -89,4 +89,6 @@ public interface I_ReplSlave extends I_ContribPlugin {
     */
    void checkStatus();
    
+   int getStatusAsInt();
+   
 }

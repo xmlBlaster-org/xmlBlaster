@@ -172,6 +172,16 @@ public class DbWriter implements I_Update {
             log.warning("The entry with content '" + new String(content) + "' was not for us");
             return;
          }
+         ClientProperty keepTransactionOpenProp = (ClientProperty)attrMap.get(ReplicationConstants.KEEP_TRANSACTION_OPEN);
+         if (keepTransactionOpenProp != null && keepTransactionOpenProp.getBooleanValue()) {
+            // is the property already set ? No, then pass it to the info object
+            if (updateInfo.getDescription().getAttribute(ReplicationConstants.KEEP_TRANSACTION_OPEN) == null) {
+               log.fine("Setting the property '" + ReplicationConstants.KEEP_TRANSACTION_OPEN + "' to true");
+               updateInfo.getDescription().setAttribute(keepTransactionOpenProp);
+            }
+            else
+               log.warning("The property '" + ReplicationConstants.KEEP_TRANSACTION_OPEN + "' was already set as a description attribute (will not overwrite it)");
+         }
          this.writer.store(updateInfo);
       }
    }

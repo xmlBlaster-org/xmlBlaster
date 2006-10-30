@@ -95,7 +95,14 @@ import java.util.logging.Logger;
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMBean, I_Callback, I_MsgDispatchInterceptor, I_ClientListener, I_SubscriptionListener, I_Timeout {
+public class ReplManagerPlugin extends GlobalInfo 
+   implements ReplManagerPluginMBean, 
+              I_Callback, 
+              I_MsgDispatchInterceptor, 
+              I_ClientListener, 
+              I_SubscriptionListener, 
+              I_Timeout, 
+              ReplicationConstants {
    
    public final static String SESSION_ID = "replManager/1";
    private final static String SENDER_SESSION = "_senderSession";
@@ -124,6 +131,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
    private long statusPollerInterval = STATUS_POLLER_INTERVAL_DEFAULT;
    private long statusProcessingTime;
    private long numRefresh;
+   private int maxNumOfEntries = REPLICATION_MAX_ENTRIES_DEFAULT;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -187,7 +195,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       StringBuffer buf = new StringBuffer();
       while (iter.hasNext()) {
          I_Info tmpInfo = (I_Info)iter.next();
-         String tmp = tmpInfo.get(ReplicationConstants.SUPPORTED_VERSIONS, null);
+         String tmp = tmpInfo.get(SUPPORTED_VERSIONS, null);
          log.info("replications : '" + tmp + "'");
          if (tmp != null) {
             if (!isFirst)
@@ -197,7 +205,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          }
          else {
             String replPrefix = SpecificDefault.getReplPrefix(tmpInfo);
-            log.warning("Property '" + ReplicationConstants.SUPPORTED_VERSIONS + "' not found for '" + replPrefix + "'");
+            log.warning("Property '" + SUPPORTED_VERSIONS + "' not found for '" + replPrefix + "'");
             if (!isFirst)
                buf.append(",");
             isFirst = false;
@@ -310,10 +318,10 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             if (realInitialFilesLocation != null && realInitialFilesLocation.trim().length() > 0) {
                checkExistance(realInitialFilesLocation.trim());
                this.initialFilesLocation = realInitialFilesLocation.trim();
-               individualInfo.put(ReplicationConstants.INITIAL_FILES_LOCATION, this.initialFilesLocation);
+               individualInfo.put(INITIAL_FILES_LOCATION, this.initialFilesLocation);
             }
             
-            individualInfo.put(ReplicationConstants.REPL_VERSION, requestedVersion);
+            individualInfo.put(REPL_VERSION, requestedVersion);
             individualInfo.putObject("org.xmlBlaster.engine.Global", this.global);
             I_ReplSlave slave = null;
             synchronized (this.replSlaveMap) {
@@ -380,7 +388,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          connectQos.setMaxSessions(1);
          connectQos.setPtpAllowed(true);
          connectQos.setSessionTimeout(0L);
-         String sessionName = ReplicationConstants.REPL_MANAGER_SESSION;
+         String sessionName = REPL_MANAGER_SESSION;
          connectQos.setSessionName(new SessionName(this.global, sessionName));
          conn.connect(connectQos, this);
          
@@ -423,6 +431,8 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
             this.timeoutHandle = timeout.addTimeoutListener(this, this.statusPollerInterval, null);
          else
             log.warning("The 'replication.monitor.statusPollerInterval' is set to '" + this.statusPollerInterval + "' which is lower than 1 ms, I will not activate it");
+         
+         this.maxNumOfEntries = this.getInt(REPLICATION_MAX_ENTRIES_KEY, REPLICATION_MAX_ENTRIES_DEFAULT);
          
          this.initialized = true;
       }
@@ -569,7 +579,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                String requestId = updateQos.getClientProperty("requestId", (String)null);
                if (requestId == null)
                   throw new Exception("The requestId has not been defined");
-               String repl =  updateQos.getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
+               String repl =  updateQos.getClientProperty(REPL_PREFIX_KEY, REPL_PREFIX_DEFAULT);
                String sql =  new String(content);
                sendBroadcastRequest(repl, sql, highPrio, requestId);
                return "OK";
@@ -591,7 +601,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          }
          // 1. This is a response from an sql statement which has been previously sent to the slaves.
          else if (this.sqlTopic != null && updateKey.getOid().equals(this.sqlTopic)) {
-            ClientProperty prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.STATEMENT_ID_ATTR);
+            ClientProperty prop = (ClientProperty)updateQos.getClientProperties().get(STATEMENT_ID_ATTR);
             if (prop == null) {
                log.severe("The statement id is not specified, can not process it");
                return "NOK";
@@ -603,14 +613,14 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
                return "NOK";
             }
 
-            prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.EXCEPTION_ATTR);
+            prop = (ClientProperty)updateQos.getClientProperties().get(EXCEPTION_ATTR);
             String response = null;
             boolean isException = false;
             if (prop != null) {
                response = prop.getStringValue();
                isException = true;
             }
-            prop = (ClientProperty)updateQos.getClientProperties().get(ReplicationConstants.MASTER_ATTR);
+            prop = (ClientProperty)updateQos.getClientProperties().get(MASTER_ATTR);
             if (prop != null) { // then it is the response from the master
                String replPrefix = prop.getStringValue();
                if (response == null)
@@ -727,23 +737,27 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          return null;
       }
 
+      I_ReplSlave slave = null;
+      String relativeName = dispatchManager.getSessionName().getRelativeName();
+      int maxEntriesToRetrieve = this.maxNumOfEntries;
+      synchronized (this.replSlaveMap) {
+         slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);
+         if (slave.getStatusAsInt() != I_ReplSlave.STATUS_NORMAL) {
+            log.info("Setting the number of entries to retreive to '1' since status is '" + slave.getStatus() + "' (otherwise it would be '" + this.maxNumOfEntries + "'");
+            maxEntriesToRetrieve = 1;
+         }
+      }
       // take messages from queue (none blocking) ...
       I_Queue cbQueue = dispatchManager.getQueue();
       // ArrayList entryList = cbQueue.peekSamePriority(-1, this.maxSize);
-      // TODO: FIXME: Is 1 stable?
-      ArrayList entryList = cbQueue.peekSamePriority(1, this.maxSize);
-      log.info("handleNextMessages invoked with '" + entryList.size() + " entries");
+      ArrayList entryList = cbQueue.peekSamePriority(maxEntriesToRetrieve, this.maxSize);
+      log.info("handleNextMessages invoked with '" + entryList.size() + "' entries");
 
       // filter expired entries etc. ...
       // you should always call this method after taking messages from queue
       entryList = dispatchManager.prepareMsgsFromQueue(entryList);
-      log.info("handleNextMessages after cleaning up with '" + entryList.size() + " entries");
+      log.info("handleNextMessages after cleaning up with '" + entryList.size() + "' entries");
 
-      I_ReplSlave slave = null;
-      String relativeName = dispatchManager.getSessionName().getRelativeName();
-      synchronized (this.replSlaveMap) {
-         slave = (I_ReplSlave)this.replSlaveMap.get(relativeName);
-      }
       if (slave == null) {
          log.warning("could not find a slave for replication client '" + relativeName + "'");
          return entryList;
@@ -889,16 +903,16 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       pubQos.setPersistent(true);
       if (isHighPrio)
          pubQos.setPriority(PriorityEnum.HIGH8_PRIORITY);
-      // pubQos.addClientProperty(ReplicationConstants.ACTION_ATTR, ReplicationConstants.STATEMENT_ACTION);
-      pubQos.addClientProperty(ReplicationConstants.STATEMENT_ATTR, sql);
-      pubQos.addClientProperty(ReplicationConstants.STATEMENT_PRIO_ATTR, isHighPrio);
-      pubQos.addClientProperty(ReplicationConstants.STATEMENT_ID_ATTR, requestId);
-      pubQos.addClientProperty(ReplicationConstants.SQL_TOPIC_ATTR, this.sqlTopic);
+      // pubQos.addClientProperty(ACTION_ATTR, STATEMENT_ACTION);
+      pubQos.addClientProperty(STATEMENT_ATTR, sql);
+      pubQos.addClientProperty(STATEMENT_PRIO_ATTR, isHighPrio);
+      pubQos.addClientProperty(STATEMENT_ID_ATTR, requestId);
+      pubQos.addClientProperty(SQL_TOPIC_ATTR, this.sqlTopic);
       if (this.maxResponseEntries > -1L) {
-         pubQos.addClientProperty(ReplicationConstants.MAX_ENTRIES_ATTR, this.maxResponseEntries);
+         pubQos.addClientProperty(MAX_ENTRIES_ATTR, this.maxResponseEntries);
          log.info("Be aware that the number of entries in the result set will be limited to '" + this.maxResponseEntries + "'. To change this use 'replication.sqlMaxEntries'");
       }
-      MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.STATEMENT_ACTION.getBytes(), pubQos);
+      MsgUnit msg = new MsgUnit(pubKey, STATEMENT_ACTION.getBytes(), pubQos);
       conn.publish(msg);
       
    }
@@ -952,9 +966,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       ConnectQosServer connQos = e.getConnectQos();
       
       // code for the DbWatchers here
-      String replId = connQos.getData().getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
+      String replId = connQos.getData().getClientProperty(REPL_PREFIX_KEY, (String)null);
       if (replId == null || replId.length() < 1)
-         log.fine("the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
+         log.fine("the client property '" + REPL_PREFIX_KEY + "' must be defined but is empty");
       else { // then it is a DbWatcher which is used for replication
          I_Info info = new ClientPropertiesInfo(connQos.getData().getClientProperties());
          String relativeName = e.getSessionInfo().getSessionName().getRelativeName();
@@ -984,9 +998,9 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
       ConnectQosServer connQos = e.getConnectQos();
       
       // code for the DbWatcher
-      String replId = connQos.getData().getClientProperty(ReplicationConstants.REPL_PREFIX_KEY, (String)null);
+      String replId = connQos.getData().getClientProperty(REPL_PREFIX_KEY, (String)null);
       if (replId == null || replId.length() < 1)
-         log.fine("the client property '" + ReplicationConstants.REPL_PREFIX_KEY + "' must be defined but is empty");
+         log.fine("the client property '" + REPL_PREFIX_KEY + "' must be defined but is empty");
       else { // then it is a DbWatcher used for replication
          String relativeName = e.getSessionInfo().getSessionName().getRelativeName();
          unregister(relativeName, replId);
@@ -1122,7 +1136,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          destination.forceQueuing(true);
          PublishQos pubQos = new PublishQos(this.global, destination);
          pubQos.setPersistent(false);
-         MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_RECREATE_TRIGGERS.getBytes(), pubQos);
+         MsgUnit msg = new MsgUnit(pubKey, REPL_REQUEST_RECREATE_TRIGGERS.getBytes(), pubQos);
          conn.publish(msg);
          return "Recreate Triggers for '" + replPrefix + "' is ongoing now";
       }
@@ -1166,7 +1180,7 @@ public class ReplManagerPlugin extends GlobalInfo implements ReplManagerPluginMB
          
          int count = Integer.parseInt(requestId.trim());
          
-         String repl = global.getProperty().get(ReplicationConstants.REPL_PREFIX_KEY, ReplicationConstants.REPL_PREFIX_DEFAULT);
+         String repl = global.getProperty().get(REPL_PREFIX_KEY, REPL_PREFIX_DEFAULT);
          if (repl == null)
             mainUsage();
          

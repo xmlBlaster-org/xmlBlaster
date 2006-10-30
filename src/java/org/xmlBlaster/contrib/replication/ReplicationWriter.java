@@ -74,6 +74,8 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    
    private final static int SQL_INFO_CACHE_MAX_SIZE_DEFAULT = 5000;
    private int sqlInfoCacheMaxSize;
+   private boolean exceptionInTransaction;
+   private Connection keptConnection; // we need to use the same connection within a transaction
    
    public ReplicationWriter() {
       this.sqlInfoCache = new HashMap();
@@ -299,10 +301,15 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          log.warning("store: The message was a dbInfo but lacked description. " + dbInfo.toXml(""));
          return;
       }
-      String command = description.getCommand();
+      boolean keepTransactionOpen = false;
+      ClientProperty keepOpenProp = dbInfo.getDescription().getAttribute(ReplicationConstants.KEEP_TRANSACTION_OPEN);
+      if (keepOpenProp != null) {
+         keepTransactionOpen = keepOpenProp.getBooleanValue();
+         log.fine("Keep transaction open is '" + keepTransactionOpen + "'");
+      }
 
+      String command = description.getCommand();
       String action = getStringAttribute(ACTION_ATTR, null, description);
-      
       String originalCatalog = getStringAttribute(CATALOG_ATTR, null, description); 
       String originalSchema = getStringAttribute(SCHEMA_ATTR, null, description);
       String originalTable = getStringAttribute(TABLE_NAME_ATTR, null, description);
@@ -320,211 +327,220 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       if (this.nirvanaClient)
          return;
       if (isAllowedCommand(command)) {
-         Connection conn = this.pool.reserve();
+         Connection conn = this.keptConnection; // in case in the middle of a transaction !!
+         if (conn == null)
+            conn = this.pool.reserve();
+         else
+            log.info("Reusing stored connection since in an open transaction");
          boolean oldAutoCommitKnown = false;
          boolean oldAutoCommit = false;
-         boolean isCommitted = false;
+         boolean needRollback = true;
          try {
-            List rows = dbInfo.getRows();
-            oldAutoCommit = conn.getAutoCommit();
-            oldAutoCommitKnown = true;
-            conn.setAutoCommit(false); // everything will be handled within the same transaction 
+            if (!this.exceptionInTransaction) {
+               List rows = dbInfo.getRows();
+               oldAutoCommit = conn.getAutoCommit();
+               oldAutoCommitKnown = true;
+               conn.setAutoCommit(false); // everything will be handled within the same transaction 
 
-            if (command.equalsIgnoreCase(REPLICATION_CMD)) {
-               for (int i=0; i < rows.size(); i++) {
-                  SqlRow row = (SqlRow)rows.get(i);
-                  // TODO consistency check
-                  action = getStringAttribute(ACTION_ATTR, row, description);
+               if (command.equalsIgnoreCase(REPLICATION_CMD)) {
+                  for (int i=0; i < rows.size(); i++) {
+                     SqlRow row = (SqlRow)rows.get(i);
+                     // TODO consistency check
+                     action = getStringAttribute(ACTION_ATTR, row, description);
 
-                  originalCatalog = getStringAttribute(CATALOG_ATTR, row, description);
-                  originalSchema = getStringAttribute(SCHEMA_ATTR, row, description);
-                  originalTable = getStringAttribute(TABLE_NAME_ATTR, row, description);
-                  // row specific but still without considering colums
-                  catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null, originalCatalog);
-                  schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null, originalSchema);
-                  table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null, originalTable);
+                     originalCatalog = getStringAttribute(CATALOG_ATTR, row, description);
+                     originalSchema = getStringAttribute(SCHEMA_ATTR, row, description);
+                     originalTable = getStringAttribute(TABLE_NAME_ATTR, row, description);
+                     // row specific but still without considering colums
+                     catalog = this.mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null, originalCatalog);
+                     schema = this.mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null, originalSchema);
+                     table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null, originalTable);
 
-                  if (action == null)
-                     throw new Exception(ME + ".store: row with no action invoked '" + row.toXml(""));
-                  int count = modifyColumnsIfNecessary(originalCatalog, originalSchema, originalTable, row);
-                  if (count != 0)
-                     log.fine("modified '" + count  + "' entries");
-                  log.fine("store: " + row.toXml(""));
-                  SqlDescription desc = getTableDescription(catalog, schema, table, conn);
-                  boolean process = true;
-                  if (this.prePostStatement != null)
-                     process = this.prePostStatement.preStatement(action, conn, dbInfo, desc, row);
-                  if (process) {
-                     if (action.equalsIgnoreCase(INSERT_ACTION)) {
-                        desc.insert(conn, row);
-                     }
-                     else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
-                        desc.update(conn, row, this.parserForOldInUpdates);
-                     }
-                     else if (action.equalsIgnoreCase(DELETE_ACTION)) {
-                        desc.delete(conn, row);
-                     }
+                     if (action == null)
+                        throw new Exception(ME + ".store: row with no action invoked '" + row.toXml(""));
+                     int count = modifyColumnsIfNecessary(originalCatalog, originalSchema, originalTable, row);
+                     if (count != 0)
+                        log.fine("modified '" + count  + "' entries");
+                     log.fine("store: " + row.toXml(""));
+                     SqlDescription desc = getTableDescription(catalog, schema, table, conn);
+                     boolean process = true;
                      if (this.prePostStatement != null)
-                        this.prePostStatement.postStatement(action, conn, dbInfo, desc, row);
+                        process = this.prePostStatement.preStatement(action, conn, dbInfo, desc, row);
+                     if (process) {
+                        if (action.equalsIgnoreCase(INSERT_ACTION)) {
+                           desc.insert(conn, row);
+                        }
+                        else if (action.equalsIgnoreCase(UPDATE_ACTION)) {
+                           desc.update(conn, row, this.parserForOldInUpdates);
+                        }
+                        else if (action.equalsIgnoreCase(DELETE_ACTION)) {
+                           desc.delete(conn, row);
+                        }
+                        if (this.prePostStatement != null)
+                           this.prePostStatement.postStatement(action, conn, dbInfo, desc, row);
+                     }
                   }
                }
-            }
-            else { // then it is a CREATE / DROP / ALTER or DUMP command (does not have any rows associated)
-               if (action.equalsIgnoreCase(CREATE_ACTION)) {
-                  if (this.doCreate) {
-                     // check if the table already exists ...
-                     ResultSet rs = conn.getMetaData().getTables(catalog, schema, table, null);
-                     boolean tableExistsAlready = rs.next();
-                     rs.close();
+               else { // then it is a CREATE / DROP / ALTER or DUMP command (does not have any rows associated)
+                  if (action.equalsIgnoreCase(CREATE_ACTION)) {
+                     if (this.doCreate) {
+                        // check if the table already exists ...
+                        ResultSet rs = conn.getMetaData().getTables(catalog, schema, table, null);
+                        boolean tableExistsAlready = rs.next();
+                        rs.close();
 
-                     boolean invokeCreate = true;
-                     completeTableName = table;
-                     if (schema != null && schema.length() > 1)
-                        completeTableName = schema + "." + table;
+                        boolean invokeCreate = true;
+                        completeTableName = table;
+                        if (schema != null && schema.length() > 1)
+                           completeTableName = schema + "." + table;
 
-                     if (tableExistsAlready) {
-                        if (!this.overwriteTables) {
-                           throw new Exception("ReplicationStorer.store: the table '" + completeTableName + "' exists already and 'replication.overwriteTables' is set to 'false'");
-                        }
-                        else {
-                           if (this.recreateTables) {
-                              log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
-                              Statement st = conn.createStatement();
-                              st.executeUpdate("DROP TABLE " + completeTableName);
-                              st.close();
+                        if (tableExistsAlready) {
+                           if (!this.overwriteTables) {
+                              throw new Exception("ReplicationStorer.store: the table '" + completeTableName + "' exists already and 'replication.overwriteTables' is set to 'false'");
                            }
                            else {
-                              log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true' and 'replication.recreateTables' is set to false. Will only delete contents of table but keep the old structure");
-                              invokeCreate = false;
+                              if (this.recreateTables) {
+                                 log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
+                                 Statement st = conn.createStatement();
+                                 st.executeUpdate("DROP TABLE " + completeTableName);
+                                 st.close();
+                              }
+                              else {
+                                 log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true' and 'replication.recreateTables' is set to false. Will only delete contents of table but keep the old structure");
+                                 invokeCreate = false;
+                              }
                            }
                         }
-                     }
-                     String sql = null;
-                     if (invokeCreate) {
-                        sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
-                        log.info("CREATE STATEMENT: '" + sql + "'");
-                     }
-                     else {
-                        sql = "DELETE FROM " + completeTableName;
-                        log.info("CLEANING UP TABLE '" + completeTableName + "'");
-                     }
-                     Statement st = conn.createStatement();
-                     try {
-                        st.executeUpdate(sql);
-                     }
-                     finally {
-                        st.close();
-                     }
-                  }
-                  else
-                     log.fine("CREATE is disabled for this writer");
-               }
-               else if (action.equalsIgnoreCase(DROP_ACTION)) {
-                  if (this.doDrop) {
-                     completeTableName = table;
-                     if (schema != null && schema.length() > 1)
-                        completeTableName = schema + "." + table;
-                     String sql = "DROP TABLE " + completeTableName;
-                     Statement st = conn.createStatement();
-                     try {
-                        st.executeUpdate(sql);
-                     }
-                     catch (SQLException e) {
-                        // this is currently only working on oracle: TODO make it work for other DB too.
-                        if (e.getMessage().indexOf("does not exist") > -1)
-                           log.warning("table '" + completeTableName + "' was not found and could therefore not be dropped. Continuing anyway");
-                        else
-                           throw e;
-                     }
-                     finally {
-                        st.close();
-                     }
-                  }
-                  else
-                     log.fine("DROP is disabled for this writer");
-               }
-               else if (action.equalsIgnoreCase(ALTER_ACTION)) {
-                  if (this.doAlter) {
-                     log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
-                  }
-                  else
-                     log.fine("ALTER is disabled for this writer");
-               }
-               else if (action.equalsIgnoreCase(DUMP_ACTION)) {
-                  log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
-                  // store entry on the file system at a location specified by the 'replication.importLocation' property
-                  // the name of the file is stored in DUMP_FILENAME (it will be used to store the file)
-               }
-               else if (action.equalsIgnoreCase(STATEMENT_ACTION)) {
-                  // since it could alter some table
-                  clearSqlInfoCache();
-                  if (this.doStatement) {
-                     String sql = getStringAttribute(STATEMENT_ATTR, null, description);
-                     String tmp = getStringAttribute(MAX_ENTRIES_ATTR, null, description);
-                     
-                     long maxResponseEntries = 0L;
-                     if (tmp != null)
-                        maxResponseEntries = Long.parseLong(tmp.trim());
-                     // tmp = getStringAttribute(STATEMENT_PRIO, null, description);
-                     final boolean isHighPrio = false; // does not really matter here    
-                     final boolean isMaster = false;
-                     final String noId = null; // no statement id necessary here
-                     final String noTopic = null; // no need for a topic in the slave
-                     byte[] response = null;
-                     Exception ex = null;
-                     try {
-                        response = this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, noTopic, noId);
-                     }
-                     catch (Exception e) {
-                        ex = e;
-                        response = "".getBytes();
-                     }
-
-                     if (true) { // TODO add here the possibility to block sending of messages
-                        I_ChangePublisher momEngine = (I_ChangePublisher)this.info.getObject("org.xmlBlaster.contrib.dbwriter.mom.MomEventEngine");
-                        if (momEngine == null)
-                           throw new Exception("ReplicationWriter: the momEngine used can not handle publishes");
-                        String statementId = getStringAttribute(STATEMENT_ID_ATTR, null, description);
-                        String sqlTopic = getStringAttribute(SQL_TOPIC_ATTR, null, description);
-                        HashMap map = new HashMap();
-                        map.put(STATEMENT_ID_ATTR, statementId);
-                        if (ex != null)
-                           map.put(ReplicationConstants.EXCEPTION_ATTR, ex.getMessage());
-                        momEngine.publish(sqlTopic, response, map);
+                        String sql = null;
+                        if (invokeCreate) {
+                           sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
+                           log.info("CREATE STATEMENT: '" + sql + "'");
+                        }
+                        else {
+                           sql = "DELETE FROM " + completeTableName;
+                           log.info("CLEANING UP TABLE '" + completeTableName + "'");
+                        }
+                        Statement st = conn.createStatement();
+                        try {
+                           st.executeUpdate(sql);
+                        }
+                        finally {
+                           st.close();
+                        }
                      }
                      else
-                        log.info("statement '" + sql + "' resulted in response '" + new String(response));
-                     if (ex != null) // now that we notified the server we can throw the exception
-                        throw ex;
+                        log.fine("CREATE is disabled for this writer");
                   }
-                  else
-                     log.fine("STATEMENT is disabled for this writer");
+                  else if (action.equalsIgnoreCase(DROP_ACTION)) {
+                     if (this.doDrop) {
+                        completeTableName = table;
+                        if (schema != null && schema.length() > 1)
+                           completeTableName = schema + "." + table;
+                        String sql = "DROP TABLE " + completeTableName;
+                        Statement st = conn.createStatement();
+                        try {
+                           st.executeUpdate(sql);
+                        }
+                        catch (SQLException e) {
+                           // this is currently only working on oracle: TODO make it work for other DB too.
+                           if (e.getMessage().indexOf("does not exist") > -1)
+                              log.warning("table '" + completeTableName + "' was not found and could therefore not be dropped. Continuing anyway");
+                           else
+                              throw e;
+                        }
+                        finally {
+                           st.close();
+                        }
+                     }
+                     else
+                        log.fine("DROP is disabled for this writer");
+                  }
+                  else if (action.equalsIgnoreCase(ALTER_ACTION)) {
+                     if (this.doAlter) {
+                        log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+                     }
+                     else
+                        log.fine("ALTER is disabled for this writer");
+                  }
+                  else if (action.equalsIgnoreCase(DUMP_ACTION)) {
+                     log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+                     // store entry on the file system at a location specified by the 'replication.importLocation' property
+                     // the name of the file is stored in DUMP_FILENAME (it will be used to store the file)
+                  }
+                  else if (action.equalsIgnoreCase(STATEMENT_ACTION)) {
+                     // since it could alter some table
+                     clearSqlInfoCache();
+                     if (this.doStatement) {
+                        String sql = getStringAttribute(STATEMENT_ATTR, null, description);
+                        String tmp = getStringAttribute(MAX_ENTRIES_ATTR, null, description);
+                        
+                        long maxResponseEntries = 0L;
+                        if (tmp != null)
+                           maxResponseEntries = Long.parseLong(tmp.trim());
+                        // tmp = getStringAttribute(STATEMENT_PRIO, null, description);
+                        final boolean isHighPrio = false; // does not really matter here    
+                        final boolean isMaster = false;
+                        final String noId = null; // no statement id necessary here
+                        final String noTopic = null; // no need for a topic in the slave
+                        byte[] response = null;
+                        Exception ex = null;
+                        try {
+                           response = this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, noTopic, noId);
+                        }
+                        catch (Exception e) {
+                           ex = e;
+                           response = "".getBytes();
+                        }
+
+                        if (true) { // TODO add here the possibility to block sending of messages
+                           I_ChangePublisher momEngine = (I_ChangePublisher)this.info.getObject("org.xmlBlaster.contrib.dbwriter.mom.MomEventEngine");
+                           if (momEngine == null)
+                              throw new Exception("ReplicationWriter: the momEngine used can not handle publishes");
+                           String statementId = getStringAttribute(STATEMENT_ID_ATTR, null, description);
+                           String sqlTopic = getStringAttribute(SQL_TOPIC_ATTR, null, description);
+                           HashMap map = new HashMap();
+                           map.put(STATEMENT_ID_ATTR, statementId);
+                           if (ex != null)
+                              map.put(ReplicationConstants.EXCEPTION_ATTR, ex.getMessage());
+                           momEngine.publish(sqlTopic, response, map);
+                        }
+                        else
+                           log.info("statement '" + sql + "' resulted in response '" + new String(response));
+                        if (ex != null) // now that we notified the server we can throw the exception
+                           throw ex;
+                     }
+                     else
+                        log.fine("STATEMENT is disabled for this writer");
+                  }
+                  else {
+                     log.severe("store: description with unknown action '" + action + "' invoked '" + description.toXml(""));
+                  }
                }
-               else {
-                  log.severe("store: description with unknown action '" + action + "' invoked '" + description.toXml(""));
+               try {
+                  if (!keepTransactionOpen) {
+                     conn.commit();
+                     needRollback = false;
+                  }
                }
-            }
-            try {
-               conn.commit();
-               isCommitted = true;
-            }
-            catch (SQLException ex) {
-               log.severe("store: an sql exception occured when trying to commit: " + ex.getMessage());
-               String txt = "Error code:'" + ex.getErrorCode() + "' state='" + ex.getSQLState() + "' localizedMsg='" + ex.getLocalizedMessage() + "'";
-               log.severe(txt);
-               log.severe(Global.getStackTraceAsString(ex));
-               throw (Exception)ex;
-            }
-            catch (Throwable ex) {
-               log.severe("store: an exception occured when trying to commit: " + ex.getMessage());
-               log.severe(Global.getStackTraceAsString(ex));
-               if (ex instanceof Exception)
+               catch (SQLException ex) {
+                  log.severe("store: an sql exception occured when trying to commit: " + ex.getMessage());
+                  String txt = "Error code:'" + ex.getErrorCode() + "' state='" + ex.getSQLState() + "' localizedMsg='" + ex.getLocalizedMessage() + "'";
+                  log.severe(txt);
+                  log.severe(Global.getStackTraceAsString(ex));
                   throw (Exception)ex;
-               else
-                  throw new Exception(ex);
+               }
+               catch (Throwable ex) {
+                  log.severe("store: an exception occured when trying to commit: " + ex.getMessage());
+                  log.severe(Global.getStackTraceAsString(ex));
+                  if (ex instanceof Exception)
+                     throw (Exception)ex;
+                  else
+                     throw new Exception(ex);
+               }
             }
          }
          catch (SQLException ex) {
+            this.exceptionInTransaction = true;
             log.severe("An exception occured when trying storing the entry." + ex.getMessage());
             String txt = "Error code:'" + ex.getErrorCode() + "' state='" + ex.getSQLState() + "' localizedMsg='" + ex.getLocalizedMessage() + "'";
             log.severe(txt);
@@ -532,13 +548,20 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
             throw ex;
          }
          catch (Exception ex) {
+            this.exceptionInTransaction = true;
             log.severe("An exception occured when trying storing the entry." + ex.getMessage());
             log.severe(Global.getStackTraceAsString(ex));
             throw ex;
          }
+         catch (Throwable ex) {
+            this.exceptionInTransaction = true;
+            log.severe("A Throwable exception occured when trying storing the entry." + ex.getMessage());
+            log.severe(Global.getStackTraceAsString(ex));
+            throw new Exception(ex);
+         }
          finally {
             if (conn != null) {
-               if (!isCommitted) {
+               if (needRollback && !keepTransactionOpen) {
                   try {
                      conn.rollback();
                   }
@@ -560,7 +583,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                      log.severe(Global.getStackTraceAsString(ex));
                   }
                }
-               conn = SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_NO, this.pool);
+               if (keepTransactionOpen) // we need to keep the connection
+                  this.keptConnection = conn;
+               else
+                  conn = SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_NO, this.pool);
             }
          }
       }
