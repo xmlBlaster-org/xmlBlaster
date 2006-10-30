@@ -1,16 +1,11 @@
 package org.xmlBlaster.test.authentication;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 import org.xmlBlaster.test.Util;
