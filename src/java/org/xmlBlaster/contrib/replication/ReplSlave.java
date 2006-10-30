@@ -506,7 +506,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     * @param doAdd if true, the message is added to the current message, if false it is replaced.
     */
    private void changeLastMessage(String newMsg, boolean doAdd) {
-      log.warning("'" + newMsg + "' invoked with add='" + doAdd + "'");
+      log.fine("'" + newMsg + "' invoked with add='" + doAdd + "'");
       if (newMsg == null) {
          if (this.lastMessage != null && this.lastMessage.length() > 0) {
             this.lastMessage = "";
