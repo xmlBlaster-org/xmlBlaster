@@ -149,6 +149,8 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          this.connectQos.setMaxSessions(maxSessions);
          this.connectQos.getAddress().setRetries(-1);
          this.connectQos.setSessionTimeout(0L);
+         if (info.getBoolean("mom.updateBulkAck", false))
+            this.connectQos.addClientProperty(Constants.UPDATE_BULK_ACK, "true");
          CallbackAddress cbAddr = new CallbackAddress(this.glob);
          cbAddr.setRetries(-1);
          String dispatcherPlugin = info.get("mom.dispatcherPlugin", null);
