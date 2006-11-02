@@ -1042,4 +1042,71 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       return dumpEntries(1, -1L, filename);
    }
    
+   // The following methods are used for JMX to represent the associated / cascaded MBean
+   
+   /**
+    * Returns null if the manager is null or if the cascaded object does not exist.
+    */
+   private ReplSlave getCascaded() {
+      if (this.manager == null)
+         return null;
+      return (ReplSlave)this.manager.getSlave(this.cascadedReplSlave);
+   }
+   
+   public boolean isCascading() {
+      return getCascaded() != null;
+   }
+   
+   /**
+    * 
+    */
+   public String getCascadedSessionName() {
+      ReplSlave cascaded = getCascaded();
+      if (cascaded != null)
+         return cascaded.getSessionName();
+      return "";
+   }
+   
+   public long getCascadedQueueEntries() {
+      ReplSlave cascaded = getCascaded();
+      if (cascaded != null)
+         return cascaded.getQueueEntries();
+      return 0L;
+   }
+   
+   public long getCascadedTransactionSeq() {
+      ReplSlave cascaded = getCascaded();
+      if (cascaded != null)
+         return cascaded.getTransactionSeq();
+      return -1L;
+   }
+   
+   public String getCascadedStatus() {
+      ReplSlave cascaded = getCascaded();
+      if (cascaded != null)
+         return cascaded.getStatus();
+      return "empty";
+   }
+   
+   public boolean isCascadedActive() {
+      ReplSlave cascaded = getCascaded();
+      if (cascaded != null)
+         return cascaded.isActive();
+      return false;
+   }
+   
+   public boolean isCascadedConnected() {
+      ReplSlave cascaded = getCascaded();
+      if (cascaded != null)
+         return cascaded.isConnected();
+      return false;
+   }
+   
+   public String getCascadedVersion() {
+      ReplSlave cascaded = getCascaded();
+      if (cascaded != null)
+         return cascaded.getVersion();
+      return "";
+   }
+   
 }

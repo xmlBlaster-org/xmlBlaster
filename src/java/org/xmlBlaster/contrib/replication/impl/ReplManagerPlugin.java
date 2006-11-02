@@ -172,6 +172,18 @@ public class ReplManagerPlugin extends GlobalInfo
       this.cachedListOfReplications = null;
    }
 
+   /**
+    * 
+    * @param name the slave associated with this name or null if none found.
+    * @return
+    */
+   public I_ReplSlave getSlave(String name) {
+      if (name == null || name.length() < 1)
+         return null;
+      synchronized(this.replSlaveMap) {
+         return (I_ReplSlave)this.replSlaveMap.get(name);
+      }
+   }
    
    /**
     * Never returns null. It returns a list of keys identifying the slaves using the replication 

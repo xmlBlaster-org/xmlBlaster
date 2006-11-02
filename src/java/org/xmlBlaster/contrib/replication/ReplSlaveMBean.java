@@ -31,4 +31,15 @@ public interface ReplSlaveMBean {
    
    String dumpEntries(int maxNum, long maxSize, String fileName);
    String dumpFirstEntry();
+   
+   // these are for the associated replication (if any)
+   boolean isCascading();
+   String getCascadedSessionName();
+   long getCascadedQueueEntries();
+   long getCascadedTransactionSeq();
+   String getCascadedStatus();
+   boolean isCascadedActive();
+   boolean isCascadedConnected();
+   String getCascadedVersion();
+   
 }
