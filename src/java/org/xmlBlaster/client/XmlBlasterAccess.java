@@ -240,7 +240,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
           
       ClientProperty tmp = qos.getClientProperty(Constants.UPDATE_BULK_ACK);
       if (tmp != null) {
-         if ("true".equalsIgnoreCase(tmp.getStringValue().trim())) {
+         if (tmp.getBooleanValue()) {
             log.info("Setting the flag '" + Constants.UPDATE_BULK_ACK + "' to 'true' since specified in ConnectQos");
             this.updateBulkAck = true;
          }
