@@ -56,7 +56,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    /** My JMX registration */
    private Set jmxHandleSet = new HashSet();
    private ContextNode contextNode;
-
+   private boolean onServer = true;
 
    public static String getStrippedString(String pureVal) {
       String corrected = Global.getStrippedString(pureVal);
@@ -179,6 +179,31 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    }
 
    /**
+    * Additional infos are added on top of the initial Global configuration.
+    * 
+    * @param otherGlobal can not be null.
+    * @param additionalInfo can be null. If not null, these properties will be added on
+    * top of the already set in global.
+    */
+   public GlobalInfo(Global otherGlobal, I_Info additionalInfo, boolean onServer) throws XmlBlasterException {
+      this.onServer = onServer;
+      this.propsOfOwnInterest = new HashSet();
+      this.helper = new InfoHelper(this);
+      init(otherGlobal, null);
+      InfoHelper.fillInfoWithEntriesFromInfo(this, additionalInfo);
+   }
+   
+   /**
+    * @param otherInfo
+    * @param additionalInfo can be null. If not null, these properties will be added on
+    * top of the already set in global.
+    * @throws XmlBlasterException
+    */
+   public GlobalInfo(GlobalInfo baseInfo, I_Info additionalInfo, boolean onServer) throws XmlBlasterException {
+      this(baseInfo.global, additionalInfo, onServer);
+   }
+   
+   /**
     * 
     * @param global The global passed by the RunLevelManager, this is not the object owned by the plugin. It is the original global.
     * @param pluginInfo
@@ -190,34 +215,36 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    public final void init(Global global_, PluginInfo pluginInfo) throws XmlBlasterException {
-      this.global = global_.getClone(global_.getNativeConnectArgs());
+      String[] additionalAttributes = null;
+      if (this.onServer)
+         additionalAttributes = global_.getNativeConnectArgs();
+      this.global = global_.getClone(additionalAttributes);
       this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
       if (global_ instanceof ServerScope) {
-         //this.global = global_.getClone(global_.getNativeConnectArgs());
-         // this.global.addObjectEntry("ServerNodeScope", global_.getObjectEntry("ServerNodeScope"));
-         
-         // add the original Global in case the extending classes need it
          this.global.addObjectEntry(ORIGINAL_ENGINE_GLOBAL, global_);
       }
-      // else
-      //    this.global = global_;
-      // this.global = global_; // .getClone(null); -> is done in XmlBlasterPublisher
 
       setStrippedHostname(this, UPPER_CASE);
       log.entering(this.getClass().getName(), "init");
       this.pluginInfo = pluginInfo;
-      if (log.isLoggable(Level.FINER)) {
-         log.finer("init: plugin paramenters: '" + this.pluginInfo.dumpPluginParameters() + "'");
-         log.finer("init: plugin user data  : '" + this.pluginInfo.getUserData() + "'");
+      if (this.pluginInfo != null) {
+         if (log.isLoggable(Level.FINER)) {
+            log.finer("init: plugin paramenters: '" + this.pluginInfo.dumpPluginParameters() + "'");
+            log.finer("init: plugin user data  : '" + this.pluginInfo.getUserData() + "'");
+         }
       }
 
       // add the property 'id' if not set explicitly already ...
       String id = get(ID, null);
-      if (id == null)
-         put(ID, this.pluginInfo.getType());
-      
+      if (id == null) {
+         if (this.pluginInfo != null)
+            put(ID, this.pluginInfo.getType());
+         else
+            log.warning("No id has been defined for this info, please add one since this could be used to find your instance: example '" + ID + "=someId'");
+      }
       // To allow NATIVE access to xmlBlaster (there we need to take a clone!)
-      putObject("org.xmlBlaster.engine.Global", this.global);
+      if (this.onServer)
+         putObject("org.xmlBlaster.engine.Global", this.global);
       
       // For JMX instanceName may not contain ","
       if (pluginInfo != null) {
@@ -255,7 +282,9 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * @see org.xmlBlaster.util.plugin.I_Plugin#getType()
     */
    public String getType() {
-      return this.pluginInfo.getType();
+      if (this.pluginInfo != null)
+         return this.pluginInfo.getType();
+      return null;
    }
 
    /**
@@ -263,7 +292,9 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
     * @see org.xmlBlaster.util.plugin.I_Plugin#getVersion()
     */
    public String getVersion() {
-      return this.pluginInfo.getVersion();
+      if (this.pluginInfo != null)
+         return this.pluginInfo.getVersion();
+      return null;
    }
 
    /**
@@ -439,15 +470,17 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    public Set getKeys() {
       Iterator iter = this.global.getProperty().getProperties().keySet().iterator();
       HashSet out = new HashSet();
-      String prefix = this.pluginInfo.getPrefix();
-
+      String prefix = "";
+      if (this.pluginInfo != null)
+         prefix = this.pluginInfo.getPrefix();
       while (iter.hasNext()) {
          String key = (String)iter.next();
          if (key.startsWith(prefix))
             key = key.substring(prefix.length());
             out.add(key);
       }
-      PropertiesInfo.addSet(out, this.pluginInfo.getParameters().keySet());
+      if (this.pluginInfo != null)
+         PropertiesInfo.addSet(out, this.pluginInfo.getParameters().keySet());
       return out;
    }
 
@@ -467,6 +500,10 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
          buf.append(key).append("=").append(val).append("\n");
       }
       return buf.toString();
+   }
+   
+   public Global getGlobal() {
+      return this.global;
    }
    
 }

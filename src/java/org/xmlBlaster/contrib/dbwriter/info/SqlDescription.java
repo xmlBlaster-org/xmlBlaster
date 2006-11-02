@@ -736,6 +736,7 @@ public class SqlDescription {
 
          for (int i=0; i < entries.size(); i++)
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
+         
          ret = st.executeUpdate();
          
          return ret;

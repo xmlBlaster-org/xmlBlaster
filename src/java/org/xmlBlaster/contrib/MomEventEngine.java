@@ -83,17 +83,22 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       
       Global globOrig = (Global)info.getObject("org.xmlBlaster.engine.Global");
       if (globOrig == null) {
-         Iterator iter = info.getKeys().iterator();
-         ArrayList argsList = new ArrayList();
-         while (iter.hasNext()) {
-            String key = (String)iter.next();
-            String value = info.get(key, null);
-            if (value != null) {
-               argsList.add("-" + key);
-               argsList.add(value);
+         
+         if (info instanceof GlobalInfo)
+            this.glob = ((GlobalInfo)info).global;
+         else {
+            Iterator iter = info.getKeys().iterator();
+            ArrayList argsList = new ArrayList();
+            while (iter.hasNext()) {
+               String key = (String)iter.next();
+               String value = info.get(key, null);
+               if (value != null) {
+                  argsList.add("-" + key);
+                  argsList.add(value);
+               }
             }
+            this.glob = new Global((String[])argsList.toArray(new String[argsList.size()]));
          }
-         this.glob = new Global((String[])argsList.toArray(new String[argsList.size()]));
       }
       else {
          this.glob = globOrig.getClone(globOrig.getNativeConnectArgs());

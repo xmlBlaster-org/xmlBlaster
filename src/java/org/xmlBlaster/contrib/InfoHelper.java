@@ -181,6 +181,33 @@ public class InfoHelper {
    }
 
    /**
+    * Fills the I_Info with the entries of the map. If the values of the map are strings they are added
+    * if they are ClientProperties they are added too, otherwise they are added as objects.
+    */
+   public static void fillInfoWithEntriesFromInfo(I_Info dest, I_Info source) {
+      if (source == null || dest == null)
+         return;
+      synchronized (dest) {
+         synchronized (source) {
+            Iterator iter = source.getKeys().iterator();
+            while (iter.hasNext()) {
+               String key = ((String)iter.next()).trim();
+               Object obj = source.get(key, null);
+               if (obj instanceof String) {
+                  dest.put(key, (String)obj);
+               }
+               else if (obj instanceof ClientProperty) {
+                  dest.put(key, ((ClientProperty)obj).getStringValue());
+               }
+               else {
+                  dest.putObject(key, obj);
+               }
+            }
+         }
+      }
+   }
+
+   /**
     * Returns a string containing all entries found. They are separated by what's specified as the separator,
     * @param iter
     * @return

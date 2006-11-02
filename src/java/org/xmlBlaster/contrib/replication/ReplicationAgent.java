@@ -30,6 +30,9 @@ import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * Test basic functionality.
@@ -54,23 +57,48 @@ public class ReplicationAgent {
    private DbWriter dbWriter;
    private static String replPrefix = "repl_";
    
+   public class OwnGlobalInfo extends GlobalInfo {
+      
+      private final static boolean ON_SERVER = false;
+      
+      public OwnGlobalInfo(Global global, I_Info additionalInfo) throws Exception {
+         super(global, additionalInfo, ON_SERVER);
+      }
+
+      public OwnGlobalInfo(GlobalInfo globalInfo, I_Info additionalInfo) throws Exception {
+         super(globalInfo, additionalInfo, ON_SERVER);
+      }
+
+      protected void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
+      }
+      
+   }
+   
+   private GlobalInfo createOwnGlobalInfo(Global global, I_Info additionalInfo) throws Exception {
+      return new OwnGlobalInfo(global, additionalInfo);
+   }
+   
+   
    /**
     * Keys are the info objects and values are maps containing the used properties as key/value pairs.
     */
    public static void main(String[] args) {
       try {
-         I_Info cfgInfo = new PropertiesInfo(new Properties());
-         cfgInfo.putObject("usedPropsMap", new HashMap());
-         if (displayHelpAndCheck(args, cfgInfo)) {
-            System.exit(-1);
-         }
-         cfgSetup(cfgInfo);
-         I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
-         I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
-         
-         boolean isInteractive = cfgInfo.getBoolean("interactive", false);
+         // I_Info cfgInfo = new PropertiesInfo(new Properties());
          
          ReplicationAgent agent = new ReplicationAgent();
+         Global global = new Global(args);
+         GlobalInfo cfgInfo = agent.createOwnGlobalInfo(global, null);
+         
+         cfgInfo.putObject("usedPropsMap", new HashMap());
+         if (agent.displayHelpAndCheck(args, cfgInfo)) {
+            System.exit(-1);
+         }
+         agent.cfgSetup(cfgInfo);
+         I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
+         I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
+
+         boolean isInteractive = cfgInfo.getBoolean("interactive", false);
          agent.init(readerInfo, writerInfo);
 
          log.info("REPLICATION AGENT IS NOW READY");
@@ -180,10 +208,10 @@ public class ReplicationAgent {
       }
    }
 
-   private static void initProperties(String[] args, I_Info cfgInfo) {
+   private void initProperties(GlobalInfo cfgInfo) throws Exception {
       Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
-      I_Info readerInfo = new PropertiesInfo(new Properties(System.getProperties()));
-      I_Info writerInfo = new PropertiesInfo(new Properties(System.getProperties()));
+      I_Info readerInfo = new OwnGlobalInfo(cfgInfo, null);
+      I_Info writerInfo = new OwnGlobalInfo(cfgInfo, null);
       usedPropsMap.put(readerInfo, new TreeMap());
       usedPropsMap.put(writerInfo, new TreeMap());
       cfgInfo.putObject("readerInfo", readerInfo);
@@ -221,30 +249,30 @@ public class ReplicationAgent {
    /**
     * Configure database access.
     */
-   public static void cfgSetup(I_Info cfgInfo) throws Exception {
+   public void cfgSetup(GlobalInfo cfgInfo) throws Exception {
       String masterFilename = cfgInfo.get("masterFilename", null);
       String slaveFilename = cfgInfo.get("slaveFilename", null);
       Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
       I_Info readerInfo = null;
       I_Info writerInfo = null;
       if (masterFilename != null) {
-         Properties props = new Properties(System.getProperties());
+         Properties props = new Properties();
          if (!masterFilename.equalsIgnoreCase("default")) {
             InputStream is = getFileFromClasspath(masterFilename);
             props.load(is);
             is.close();
          }
-         readerInfo = new PropertiesInfo(props);
+         readerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props));
       }
       if (slaveFilename != null) {
-         Properties props = new Properties(System.getProperties());
+         Properties props = new Properties();
          if (!slaveFilename.equalsIgnoreCase("default")) {
             System.out.println("slave is initializing");
             InputStream is = getFileFromClasspath(slaveFilename);
             props.load(is);
             is.close();
          }
-         writerInfo = new PropertiesInfo(props);
+         writerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props));
       }
       setupProperties(usedPropsMap, readerInfo, writerInfo);
       cfgInfo.putObject("readerInfo", readerInfo);
@@ -272,26 +300,27 @@ public class ReplicationAgent {
          this.dbWriter = new DbWriter();
          this.dbWriter.init(this.writerInfo);
       }
-      initializeDbWatcher();
+      this.dbWatcher = initializeDbWatcher(this.readerInfo, this.dbWriter);
    }
    
 
-   private final void initializeDbWatcher() throws Exception {
-      if (this.readerInfo != null) {
+   private static DbWatcher initializeDbWatcher(I_Info readerInfo, DbWriter dbWriter) throws Exception {
+      DbWatcher dbWatcher = null;
+      if (readerInfo != null) {
          try {
             log.info("setUp: Instantiating DbWatcher");
-            GlobalInfo.setStrippedHostname(this.readerInfo, GlobalInfo.UPPER_CASE);
-            this.dbWatcher = new DbWatcher();
-            this.dbWatcher.init(this.readerInfo);
+            GlobalInfo.setStrippedHostname(readerInfo, GlobalInfo.UPPER_CASE);
+            dbWatcher = new DbWatcher();
+            dbWatcher.init(readerInfo);
             
             I_DbSpecific dbSpecific = null;
-            if (this.readerInfo != null) {
-               if (this.readerInfo.getBoolean("replication.doBootstrap", false)) {
+            if (readerInfo != null) {
+               if (readerInfo.getBoolean("replication.doBootstrap", false)) {
                   boolean needsPublisher = readerInfo.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
                   boolean forceCreationAndInitNo = false;
-                  dbSpecific = ReplicationConverter.getDbSpecific(this.readerInfo, forceCreationAndInitNo); // done only on master !!!
+                  dbSpecific = ReplicationConverter.getDbSpecific(readerInfo, forceCreationAndInitNo); // done only on master !!!
                   readerInfo.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "" + needsPublisher); // back to original
-                  I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
+                  I_DbPool pool = (I_DbPool)readerInfo.getObject("db.pool");
                   if (pool == null)
                      throw new Exception("ReplicationAgent.init: the db pool is null");
                   Connection conn = pool.reserve();
@@ -308,12 +337,12 @@ public class ReplicationAgent {
                   }
                }
             }
-            this.dbWatcher.startAlertProducers();
+            dbWatcher.startAlertProducers();
          }
          catch (Exception ex) {
-            if (this.dbWriter != null) {
+            if (dbWriter != null) {
                try {
-                  this.dbWriter.shutdown();
+                  dbWriter.shutdown();
                }
                catch (Exception e) {
                   ex.printStackTrace();
@@ -322,6 +351,7 @@ public class ReplicationAgent {
             throw ex;
          }
       }
+      return dbWatcher;
    }
 
    private final void shutdownDbWatcher() throws Exception {
@@ -336,9 +366,13 @@ public class ReplicationAgent {
       }      
    }
 
-   public void shutdown() throws Exception {
+   public void shutdown() {
       try {
          shutdownDbWatcher();
+      }
+      catch (Exception ex) {
+         log.severe("An exception occured when shutting down the agent");
+         ex.printStackTrace();
       }
       finally {
          this.dbWriter.shutdown();
@@ -363,7 +397,7 @@ public class ReplicationAgent {
    }
    
    
-   private static boolean displayHelpAndCheck(String[] args, I_Info cfgInfo) {
+   private boolean displayHelpAndCheck(String[] args, GlobalInfo cfgInfo) throws Exception {
       String masterFilename = null;
       String slaveFilename = null;
       String isInteractiveTxt = "false";
@@ -403,7 +437,7 @@ public class ReplicationAgent {
       }
       boolean ret = false;
       if (needsHelp) {
-         initProperties(args, cfgInfo);
+         initProperties(cfgInfo);
          I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
          I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
          Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
