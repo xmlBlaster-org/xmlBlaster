@@ -147,7 +147,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
          boolean forceSend = false;
          TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName));
          tableToWatch.setActions("IDU");
-         this.dbSpecific.addTableToWatch(tableToWatch, false, destination, forceSend);
+         this.dbSpecific.addTableToWatch(tableToWatch, false, new String[] { destination }, forceSend);
       }
       catch (Exception ex) {
          log.warning(ex.getMessage());

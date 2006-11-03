@@ -5,9 +5,11 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.io.ByteArrayInputStream;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -67,6 +69,10 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       // junit.swingui.TestRunner.run(TestDbBasics.class);
       TestDbBasics test = new TestDbBasics();
       try {
+         test.setUp();
+         test.testBasicPerformance();
+         test.tearDown();
+
          test.setUp();
          test.testInternalFunctions();
          test.tearDown();
@@ -175,6 +181,87 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       }
    }
 
+   
+   
+
+   /**
+    */
+   public final void testBasicPerformance() throws Exception {
+      String txt = "testBasicPerformance";
+      log.info("Start " + txt);
+      
+      I_DbPool pool = (I_DbPool)info.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+
+      pool.update("DROP TABLE PERFORM"); 
+      
+      pool.update("CREATE TABLE PERFORM (name1 VARCHAR(20), name2 VARCHAR(128), name3 BLOB, primary key (name1))"); 
+
+      Connection conn = pool.reserve();
+      conn.setAutoCommit(false);
+      String sql = "INSERT INTO PERFORM VALUES (?, ?, ?)";
+      byte[] blob = new byte[1024];
+      for (int i=0; i < blob.length; i++)
+         blob[i] = (byte)i;
+      
+      int nmax = 50;
+      {
+         long t0 = System.currentTimeMillis();
+         PreparedStatement st = conn.prepareStatement(sql);
+         ByteArrayInputStream bais = new ByteArrayInputStream(blob);
+         for (int i=0; i < nmax; i++) {
+            st.setString(1, "name01_" + i);
+            st.setString(2, "name02_" + i);
+            st.setBinaryStream(3, bais, blob.length);
+            st.addBatch();
+         }
+         st.executeBatch();
+         conn.commit();
+         long t1 = System.currentTimeMillis();
+         long dt = t1-t0;
+         log.info("batch statements='" + nmax + "' took '" + dt + "' ms (per statement: " + dt/nmax + ")");
+         pool.update("delete from PERFORM");
+         conn.commit();
+      }
+      {
+         long t0 = System.currentTimeMillis();
+         for (int i=0; i < nmax; i++) {
+            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setString(1, "name01_" + i);
+            st.setString(2, "name02_" + i + "_hhjdhsdsdjsdkljsdjsdljljsdljsdkljsljsdsdsdsd");
+            st.setBinaryStream(3, bais, blob.length);
+            st.execute();
+         }
+         conn.commit();
+         long t1 = System.currentTimeMillis();
+         long dt = t1-t0;
+         log.info("non-batch (single commit) statements='" + nmax + "' took '" + dt + "' ms (per statement: " + dt/nmax + ")");
+         pool.update("delete from PERFORM");
+         conn.commit();
+      }
+      {
+         long t0 = System.currentTimeMillis();
+         for (int i=0; i < nmax; i++) {
+            ByteArrayInputStream bais = new ByteArrayInputStream(blob);
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setString(1, "name01_" + i);
+            st.setString(2, "name02_" + i + "_hhjdhsdsdjsdkljsdjsdljljsdljsdkljsljsdsdsdsd");
+            st.setBinaryStream(3, bais, blob.length);
+            st.execute();
+            conn.commit();
+         }
+         long t1 = System.currentTimeMillis();
+         long dt = t1-t0;
+         log.info("non-batch (all commit) statements='" + nmax + "' took '" + dt + "' ms (per statement: " + dt/nmax + ")");
+         pool.update("delete from PERFORM");
+         conn.commit();
+      }
+
+      pool.update("DROP TABLE PERFORM");
+      pool.release(conn);
+      log.info("SUCCESS");
+   }
 
    /**
     * This method makes some calls to system functions which are specific to oracle.
@@ -956,7 +1043,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       TableToWatchInfo tableToWatch = new TableToWatchInfo(catalog, schema, tableName);
       tableToWatch.setActions(flags);
       tableToWatch.setTrigger(null);
-      this.dbSpecific.addTableToWatch(tableToWatch, force, destination, forceSend);
+      this.dbSpecific.addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
       Statement st = conn.createStatement();
       ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "tables WHERE tablename='" + this.dbHelper.getIdentifier(tableName) + "'");
       assertTrue("testing '" + tableName + "' went wrong since no entries found", rs.next());
@@ -1059,7 +1146,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
          tableToWatch.setActions("IDU");
          tableToWatch.setTrigger(null);
-         this.dbSpecific.addTableToWatch(tableToWatch, force, destination, forceSend);
+         this.dbSpecific.addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
          
          // force a call to the function which detects CREATE / DROP / ALTER operations: writes on repl_items
          this.dbSpecific.forceTableChangeCheck();
@@ -1153,7 +1240,7 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
          tableToWatch.setActions("IDU");
          tableToWatch.setTrigger(null);
-         this.dbSpecific.addTableToWatch(tableToWatch, force, destination, forceSend);
+         this.dbSpecific.addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
 
          // check that nothing has been written in repl_items
          Statement st = conn.createStatement();

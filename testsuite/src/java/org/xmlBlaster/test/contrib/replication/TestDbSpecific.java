@@ -181,7 +181,7 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          TableToWatchInfo tableToWatch = new TableToWatchInfo(" ", specificHelper.getOwnSchema(dbPool), this.tableName);
          tableToWatch.setActions("");
          tableToWatch.setTrigger("DUMMY");
-         dbSpecific.addTableToWatch(tableToWatch, false, destination, forceSend);
+         dbSpecific.addTableToWatch(tableToWatch, false, new String[] { destination }, forceSend);
       }
       catch (Exception ex) {
          if (conn != null)

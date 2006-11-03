@@ -268,7 +268,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
             boolean forceSend = false;
             TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
             tableToWatch.setActions("IDU");
-            getDbSpecific().addTableToWatch(tableToWatch, force, destination, forceSend);
+            getDbSpecific().addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
          }
          catch (Exception ex) {
             ex.printStackTrace();
@@ -416,7 +416,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
             boolean forceSend = false;
             TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
             tableToWatch.setActions("IDU");
-            getDbSpecific().addTableToWatch(tableToWatch, force, destination, forceSend);
+            getDbSpecific().addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
          }
          catch (Exception ex) {
             ex.printStackTrace();
