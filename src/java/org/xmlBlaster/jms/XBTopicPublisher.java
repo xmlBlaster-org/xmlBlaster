@@ -20,8 +20,6 @@ import javax.jms.TopicPublisher;
  */
 public class XBTopicPublisher extends XBMessageProducer implements TopicPublisher {
 
-   private final static String ME = "XBTopicPublisher";
-
    XBTopicPublisher(XBSession session, Topic topic) {
       super(session, topic);
    }

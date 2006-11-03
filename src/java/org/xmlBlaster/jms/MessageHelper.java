@@ -26,6 +26,7 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.key.MsgKeyData;
@@ -127,18 +128,24 @@ public class MessageHelper {
       PublishKey key = null;
       if (dest != null) {
          XBDestination xbDest = (XBDestination)dest;
-         String ptpName = xbDest.getQueueName(); 
-         if (ptpName != null) {
-            org.xmlBlaster.util.qos.address.Destination ptpDest = new org.xmlBlaster.util.qos.address.Destination(global, new SessionName(global, ptpName));
+         String ptpCompleteName = xbDest.getQueueName();
+         if (ptpCompleteName != null) {
+            String[] ptpNames = StringPairTokenizer.parseLine(ptpCompleteName, ',');
+            org.xmlBlaster.util.qos.address.Destination ptpDest = new org.xmlBlaster.util.qos.address.Destination(global, new SessionName(global, ptpNames[0]));
+
             if (xbDest.getForceQueuing())
                ptpDest.forceQueuing(true);
             qos = new PublishQos(global, ptpDest);
+            for (int i=1; i < ptpNames.length; i++) {
+               org.xmlBlaster.util.qos.address.Destination additionalDest = new org.xmlBlaster.util.qos.address.Destination(global, new SessionName(global, ptpNames[i]));
+               qos.addDestination(additionalDest);
+            }
          }
          else {
             qos = new PublishQos(global);
          }
          String tmp = xbDest.getTopicName();
-         if (tmp == null && ptpName == null)
+         if (tmp == null && ptpCompleteName == null)
             throw new XBException("client.configuration", "A Topic must be specified in the message to be sent");
 
          // determine if it is a complete key 

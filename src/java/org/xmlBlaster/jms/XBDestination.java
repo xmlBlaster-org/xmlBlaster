@@ -37,6 +37,12 @@ public class XBDestination implements Topic, Queue, Destination, Referenceable, 
    public XBDestination() {
    }
 
+   /**
+    * We can pass multiple queues by specifying as the queue name a comma separated list of queues.
+    * This is an extention to jms.
+    * @param topicName
+    * @param queueName
+    */
    public XBDestination(String topicName, String queueName) {
       this(topicName, queueName, false);
    }
