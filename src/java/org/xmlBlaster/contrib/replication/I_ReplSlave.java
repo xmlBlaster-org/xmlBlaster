@@ -24,9 +24,9 @@ public interface I_ReplSlave extends I_ContribPlugin {
    public final static int STATUS_NORMAL = 3;
    public final static int STATUS_INCONSISTENT = 4;
    
-   public final static String DBWATCHER_SESSION_NAME = "_dbWatcherSessionName";
-   public final static String CASCADED_REPL_SLAVE = "_cascadedReplSlave";
-   public final static String CASCADED_REPL_PREFIX = "_cascadedReplPrefix";
+   public final static String DBWATCHER_SESSION_NAME = ".dbWatcherSessionName";
+   public final static String CASCADED_REPL_SLAVE = ".cascadedReplSlave";
+   public final static String CASCADED_REPL_PREFIX = ".cascadedReplPrefix";
    
    /**
     * Starts a replication
@@ -35,10 +35,11 @@ public interface I_ReplSlave extends I_ContribPlugin {
     * @param dbWatcherSessionId
     * @param cascadeReplPrefix can be null
     * @param cascadeSlaveSessionName can be null
+    * @param onlyRegister true, then it only registers the initial update (it will wait until an start comes)
     * @return
     * @throws Exception
     */
-   boolean run(I_Info individualInfo, String dbWatcherSessionId, String cascadeReplPrefix, String cascadeSlaveSessionName) throws Exception;
+   boolean run(I_Info individualInfo, String dbWatcherSessionId, String cascadeReplPrefix, String cascadeSlaveSessionName, boolean onlyRegister) throws Exception;
    /**
     * 3
     *
@@ -47,11 +48,15 @@ public interface I_ReplSlave extends I_ContribPlugin {
    
    String getStatus();
    
+   String getReplPrefix();
+
+   boolean reInitiate(I_Info info) throws Exception;
+   
    /**
-    * 4
+    *
     *
     */
-   void requestInitialData(String dbWatcherSessionId) throws Exception;
+   void requestInitialData(String dbWatcherSessionId, boolean onlyRegister) throws Exception;
    
    
    /**
@@ -90,5 +95,5 @@ public interface I_ReplSlave extends I_ContribPlugin {
    void checkStatus();
    
    int getStatusAsInt();
-   
+
 }

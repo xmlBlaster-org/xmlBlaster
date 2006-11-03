@@ -398,6 +398,24 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          conn = releaseIntoPool(conn, COMMIT_NO);
       }
    }
+
+   /**
+    * Convenience method for nice output, also used to set the _destination property in the 
+    * Client properties of a message.
+    * @param str
+    * @return
+    */
+   public static String toString(String[] str) {
+      if (str == null)
+         return "";
+      StringBuffer buf = new StringBuffer();
+      for (int i=0; i < str.length; i++) {
+         if (i != 0)
+            buf.append(",");
+         buf.append(str[i]);
+      }
+      return buf.toString();
+   }
    
    /**
     * Reads the content to be executed from a file.
@@ -584,6 +602,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       this.initCount++;
    }
 
+   /**
+    * Checks the consistency of the triggers. If an entry is found in the TABLES table, and the 
+    * table does not exist, nothing is done.
+    */
    public void checkTriggerConsistency(boolean doFix) throws Exception {
       Connection conn = this.dbPool.reserve();
       try {
@@ -598,7 +620,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                   try {
                      if (!rs.next()) {
                         log.info(txt + " and the table does not exist either. Will not do anything");
-                        return;
+                        continue;
                      }
                   }
                   finally {
@@ -894,7 +916,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    /**
     * @see I_DbSpecific#addTableToWatch(String, String, String, String, String, boolean, String, boolean)
     */
-   public final boolean addTableToWatch(TableToWatchInfo firstTableToWatch, boolean force, String destination, boolean forceSend) throws Exception {
+   public final boolean addTableToWatch(TableToWatchInfo firstTableToWatch, boolean force, String[] destinations, boolean forceSend) throws Exception {
       String catalog = firstTableToWatch.getCatalog();
       String schema = firstTableToWatch.getSchema();
       String tableName = firstTableToWatch.getTable();
@@ -926,22 +948,22 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          tableToWatch = TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, tableToWatch);
          if (!conn.getAutoCommit())
             conn.commit(); // to be sure it is a new transaction
-         if (!force && tableToWatch != null && tableToWatch.isStatusOk(this, conn)) { 
+         if (!force && tableToWatch != null && tableToWatch.isStatusOk(this, conn)) {
             // send it manually since table exits already and trigger is OK.
             log.info("table '" + tableName + "' is already registered, will add directly an entry in the ENTRIES Table");
             String destAttrName = "?";
-            if (destination == null)
+            if (destinations == null || destinations.length == 0)
                destAttrName = "NULL";
             String sql = "{? = call " + this.replPrefix + "check_tables(NULL,?,?,?," + destAttrName + ")}"; // name text, content text)
             CallableStatement st = conn.prepareCall(sql);
             st.setString(2, schema);
             st.setString(3, tableName);
             st.setString(4, ReplicationConstants.CREATE_ACTION);
-            if (destination != null) {
+            if (destinations != null && destinations.length != 0) {
                String post = "</desc>";
                if (forceSend)
                   post = "<attr id='_forceSend'>true</attr>" + post;
-               String destinationTxt = "<desc><attr id='_destination'>" + destination + "</attr>" + post;
+               String destinationTxt = "<desc><attr id='_destination'>" + toString(destinations) + "</attr>" + post;
                st.setString(5, destinationTxt);
             }
             st.registerOutParameter(1, Types.VARCHAR);
@@ -1077,7 +1099,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       return buf.toString();
    }
 
-   public final void addTriggersIfNeeded(boolean force, String destination, boolean forceSend) throws Exception {
+   /**
+    * If force is true, it deletes first all entries from the Tables table (kind of reset).
+    */
+   public final void addTriggersIfNeeded(boolean force, String[] destinations, boolean forceSend) throws Exception {
       if (force) {
          try {
             this.dbPool.update("DELETE FROM " + this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES"));
@@ -1094,7 +1119,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          TableToWatchInfo[] tablesToWatch = TableToWatchInfo.getTablesToWatch(conn, this.info);
          log.info("there are '" + tablesToWatch.length + "' tables to watch (invoked with forceSend='" + forceSend + "'");
          for (int i=0; i < tablesToWatch.length; i++)
-            addTableToWatch(tablesToWatch[i], force, destination, forceSend);
+            addTableToWatch(tablesToWatch[i], force, destinations, forceSend);
       }
       finally {
          if (conn != null)
@@ -1106,9 +1131,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * 
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
     */
-   public final void initiateUpdate(String topic, String destination, String slaveName, String requestedVersion, String initialFilesLocation) throws Exception {
+   public final void initiateUpdate(String topic, String replManagerAddress, String[] slaveNames, String requestedVersion, String initialFilesLocation) throws Exception {
       
-      log.info("initial replication for destination='" + destination + "' and slave='" + slaveName + "' and location '" + initialFilesLocation + "'");
+      log.info("initial replication for destinations='" + replManagerAddress + "' and slaves='" + toString(slaveNames) + "' and location '" + initialFilesLocation + "'");
       Connection conn = null;
       // int oldTransactionIsolation = Connection.TRANSACTION_SERIALIZABLE;
       // int oldTransactionIsolation = Connection.TRANSACTION_REPEATABLE_READ;
@@ -1127,20 +1152,26 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          if (this.replVersion.equalsIgnoreCase(requestedVersion))
             isRequestingCurrentVersion = true;
          boolean forceSend = !isRequestingCurrentVersion;
-         addTriggersIfNeeded(forceFlag, slaveName, forceSend);
+         addTriggersIfNeeded(forceFlag, slaveNames, forceSend);
          InitialUpdater.ConnectionInfo connInfo = this.initialUpdater.getConnectionInfo(conn);
          long minKey = this.incrementReplKey(conn);
          String filename = null;
+         String completeFilename = null;
          if (isRequestingCurrentVersion)
-            filename = this.initialUpdater.initialCommand(slaveName, null, connInfo, requestedVersion);
+            filename = this.initialUpdater.initialCommand(slaveNames, completeFilename, connInfo, requestedVersion);
          else
             filename = VersionTransformerCache.buildFilename(this.replPrefix, requestedVersion);
          
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
          conn.commit();
-         if (!isCancelled(slaveName))
-            this.initialUpdater.sendInitialDataResponse(slaveName, filename, destination, slaveName, minKey, maxKey, requestedVersion, this.replVersion, initialFilesLocation);
+         List slavesList = new ArrayList();
+         for (int i=0; i < slaveNames.length; i++) {
+            if (!isCancelled(slaveNames[i]))
+               slavesList.add(slaveNames[i]);
+         }
+         slaveNames = (String[])slavesList.toArray(new String[slavesList.size()]);
+         this.initialUpdater.sendInitialDataResponse(slaveNames, filename, replManagerAddress, minKey, maxKey, requestedVersion, this.replVersion, initialFilesLocation);
       }
       catch (Exception ex) {
          conn = removeFromPool(conn, ROLLBACK_YES);
@@ -1166,8 +1197,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initialCommand(java.lang.String, java.lang.String)
     */
-   public void initialCommand(String slaveName, String completeFilename, String version) throws Exception {
-      this.initialUpdater.initialCommand(slaveName, completeFilename, null, version);
+   public void initialCommand(String[] slaveNames, String completeFilename, String version) throws Exception {
+      this.initialUpdater.initialCommand(slaveNames, completeFilename, null, version);
    }
 
    /**

@@ -113,4 +113,36 @@ public interface ReplManagerPluginMBean {
     */
    long getNumOfRefreshes();
    
+   /**
+    * This will start an initial update for all slaves replicating from the specified replPrefix.
+    * Note that this operation only can be used if the slaves have already been initiated before.
+    * The registration for initial updates will be done automatically but you still have to manually
+    * start the batch update for all these slaves manually with the startBatchUpdate command to the
+    * same replPrefix.
+    * 
+    * @param replPrefix
+    * @return
+    */
+   String reInitiate(String replPrefix);
+   
+   /**
+    * Sends a message to the initial updater for the replPrefix that it can start the initial update
+    * for all collected (registered) slaves. It will only use one single source per version, so if
+    * you have 10 Slaves interested in version 1.0 and 5 interested in version 2.0 only two sources
+    * (two exports) will be done.
+    * 
+    * @param replPrefix
+    * @return
+    */
+   String startBatchUpdate(String replPrefix);
+   
+   /**
+    * Sends a message to the initial updates to collect all requests of initial updates for this
+    * replPrefix.
+    * 
+    * @param replicationPrefix
+    * @return
+    */
+   String collectInitialUpdates(String replicationPrefix);
+   
 }

@@ -5,7 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwatcher.mom;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -353,19 +355,36 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       
       String destLiteral = null;
       Destination destination = null;
+      List additionalDestinations = null;
       if (attrMap != null)
          destLiteral = (String)attrMap.get("_destination");
+      
       if (destLiteral != null) {
-         destination = new Destination(new SessionName(this.glob, destLiteral));
-         destination.forceQueuing(true); // to ensure it works even if this comes before manager
+         if (destLiteral.indexOf(',') < 0) {
+            destination = new Destination(new SessionName(this.glob, destLiteral));
+            destination.forceQueuing(true); // to ensure it works even if this comes before manager
+         }
+         else {
+            StringTokenizer tokenizer = new StringTokenizer(destLiteral, ","); // comma separated list
+            destination = new Destination(new SessionName(this.glob, tokenizer.nextToken().trim()));
+            destination.forceQueuing(true);
+            additionalDestinations = new ArrayList();
+            while (tokenizer.hasMoreTokens()) {
+               Destination tmp = new Destination(new SessionName(this.glob, tokenizer.nextToken().trim()));
+               tmp.forceQueuing(true);
+            }
+         }
       }
       
       // this is used to register the owner of this object (typically the DbWatcher)
       if ("INITIAL_DATA_RESPONSE".equals(command) || "STATEMENT".equals(command)) {
-         
          PublishQos qos = null;
          if (destination != null) {
             qos = new PublishQos(this.glob, destination);
+            if (additionalDestinations != null) {
+               for (int i=0; i < additionalDestinations.size(); i++)
+                  qos.addDestination((Destination)additionalDestinations.get(i));
+            }
          }
          else
             qos = new PublishQos(this.glob);

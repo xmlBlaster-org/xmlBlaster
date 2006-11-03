@@ -193,9 +193,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                this.global.getContextNode());
          this.mbeanHandle = this.global.registerMBean(contextNode, this);
          
-         this.dbWatcherSessionName = info.get(DBWATCHER_SESSION_NAME, null);
-         this.cascadedReplPrefix = this.persistentInfo.get(CASCADED_REPL_PREFIX, null);
-         this.cascadedReplSlave = this.persistentInfo.get(CASCADED_REPL_SLAVE, null);
+         this.dbWatcherSessionName = info.get(this.slaveSessionId + DBWATCHER_SESSION_NAME, null);
+         this.cascadedReplPrefix = this.persistentInfo.get(this.slaveSessionId + CASCADED_REPL_PREFIX, null);
+         this.cascadedReplSlave = this.persistentInfo.get(this.slaveSessionId + CASCADED_REPL_SLAVE, null);
          log.info(this.name + ": associated DbWatcher='" + this.dbWatcherSessionName + "' cascaded replication prefix='" + this.cascadedReplPrefix + "' and cascaded repl. slave='" + this.cascadedReplSlave + "'");
          int tmpStatus = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
          if (tmpStatus > -1)
@@ -278,18 +278,34 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
 
-   public boolean run(I_Info info, String dbWatcherSessionId, String cascadeReplPrefix, String cascadeSlaveSessionName) throws Exception {
+   public boolean reInitiate(I_Info info) throws Exception {
+      final boolean onlyRegister = true;
+      return run(info, this.dbWatcherSessionName, this.cascadedReplPrefix, this.cascadedReplSlave, onlyRegister);
+   }
+   
+   /**
+    * 
+    * @param info
+    * @param dbWatcherSessionId
+    * @param cascadeReplPrefix
+    * @param cascadeSlaveSessionName
+    * @param onlyRegister if true it only registers for initial update but does not execute it yet.
+    * It will wait for a further (common) start message.
+    * @return
+    * @throws Exception
+    */
+   public boolean run(I_Info info, String dbWatcherSessionId, String cascadeReplPrefix, String cascadeSlaveSessionName, boolean onlyRegister) throws Exception {
       if (this.status != STATUS_NORMAL && this.status != STATUS_INCONSISTENT && this.status != STATUS_UNCONFIGURED) {
          log.warning("will not start initial update request since one already ongoing for '" + this.name + "'");
          return false;
       }
-      this.persistentInfo.put(CASCADED_REPL_PREFIX, cascadeReplPrefix);
-      this.persistentInfo.put(CASCADED_REPL_SLAVE, cascadeSlaveSessionName);
+      this.persistentInfo.put(this.slaveSessionId + CASCADED_REPL_PREFIX, cascadeReplPrefix);
+      this.persistentInfo.put(this.slaveSessionId + CASCADED_REPL_SLAVE, cascadeSlaveSessionName);
       
-      info.put(DBWATCHER_SESSION_NAME, dbWatcherSessionId);
+      info.put(this.slaveSessionId + DBWATCHER_SESSION_NAME, dbWatcherSessionId);
       init(info);
       prepareForRequest(info);
-      requestInitialData(dbWatcherSessionId);
+      requestInitialData(dbWatcherSessionId, onlyRegister);
       return true;
    }
    
@@ -364,7 +380,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     * 
     * @see org.xmlBlaster.contrib.replication.I_ReplSlave#requestInitialData()
     */
-   public void requestInitialData(String dbWatcherSessionId) throws Exception {
+   public void requestInitialData(String dbWatcherSessionId, boolean onlyRegister) throws Exception {
       log.info(this.name + " sends now an initial update request to the Master '" + dbWatcherSessionId + "'");
       I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
       // no oid for this ptp message 
@@ -377,6 +393,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       if (this.initialFilesLocation != null)
          pubQos.addClientProperty(ReplicationConstants.INITIAL_FILES_LOCATION, this.initialFilesLocation);
       pubQos.setPersistent(true);
+      if (onlyRegister)
+         pubQos.addClientProperty(ReplicationConstants.INITIAL_UPDATE_ONLY_REGISTER, onlyRegister);
       MsgUnit msg = new MsgUnit(pubKey, ReplicationConstants.REPL_REQUEST_UPDATE.getBytes(), pubQos);
       conn.publish(msg);
    }
@@ -1107,6 +1125,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       if (cascaded != null)
          return cascaded.getVersion();
       return "";
+   }
+   
+   public String toString() {
+      return this.sessionName;
    }
    
 }

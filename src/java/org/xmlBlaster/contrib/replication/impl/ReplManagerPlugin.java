@@ -59,6 +59,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -183,6 +184,28 @@ public class ReplManagerPlugin extends GlobalInfo
       synchronized(this.replSlaveMap) {
          return (I_ReplSlave)this.replSlaveMap.get(name);
       }
+   }
+   
+   public String reInitiate(String replPrefix) {
+      I_Info info = (I_Info)this.replications.get(replPrefix);
+      I_ReplSlave[] slaves = (I_ReplSlave[])this.replSlaveMap.values().toArray(new I_ReplSlave[this.replSlaveMap.size()]);
+      StringBuffer buf = new StringBuffer();
+      for (int i=0; i < slaves.length; i++) {
+         String thisReplPrefix = slaves[i].getReplPrefix();
+         if (thisReplPrefix != null && thisReplPrefix.equals(replPrefix)) {
+            try {
+               slaves[i].reInitiate(info);
+            }
+            catch (Exception ex) {
+               buf.append(slaves[i].toString());
+               ex.printStackTrace();
+            }
+         }
+      }
+      String ret = buf.toString();
+      if (buf.length() > 0)
+         return "FAILED: the slaves " + ret + " did fail";
+      return "Success: " + slaves.length + " slaves re-initiated";
    }
    
    /**
@@ -353,7 +376,7 @@ public class ReplManagerPlugin extends GlobalInfo
                      // return "error: " + ret + " did fail since having the same slave '" + slaveSessionName + "' for both replications would result in a loop";
                }
                
-               boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId, cascadeReplicationPrefix, cascadeSlaveSessionName);
+               boolean isOkToStart = slave.run(individualInfo, dbWatcherSessionId, cascadeReplicationPrefix, cascadeSlaveSessionName, false);
                if (isOkToStart == false) {
                   ret += " did fail since your status is '" + slave.getStatus() + "'. Please invoke first 'Cancel Update'";
                   throw new Exception(ret);
@@ -650,18 +673,21 @@ public class ReplManagerPlugin extends GlobalInfo
             long minReplKey = updateQos.getClientProperty("_minReplKey", 0L);
             long maxReplKey = updateQos.getClientProperty("_maxReplKey", 0L);
             try {
-               String slaveName = updateQos.getClientProperty("_slaveName", (String)null);
-               if (slaveName == null)
+               String completeSlaveName = updateQos.getClientProperty("_slaveName", (String)null);
+               if (completeSlaveName == null)
                   log.severe("on initial data response the slave name was not specified. Can not perform operation");
                else {
-                  I_ReplSlave slave = null;
-                  synchronized (this.replSlaveMap) {
-                     slave = (I_ReplSlave)this.replSlaveMap.get(slaveName);
+                  String[] slaveNames = StringPairTokenizer.parseLine(completeSlaveName, ',');
+                  for (int i=0; i < slaveNames.length; i++) {
+                     I_ReplSlave slave = null;
+                     synchronized (this.replSlaveMap) {
+                        slave = (I_ReplSlave)this.replSlaveMap.get(slaveNames[i]);
+                     }
+                     if (slave == null)
+                        log.severe("on initial data response the slave name '" + slaveNames[i] + "' was not registered (could have already logged out)");
+                     else
+                        slave.reactivateDestination(minReplKey, maxReplKey);
                   }
-                  if (slave == null)
-                     log.severe("on initial data response the slave name '" + slaveName + "' was not registered (could have already logged out)");
-                  else
-                     slave.reactivateDestination(minReplKey, maxReplKey);
                }
             }
             catch (Exception ex) {
@@ -1326,6 +1352,41 @@ public class ReplManagerPlugin extends GlobalInfo
       }
       else
          slave.handleException(ex);
+   }
+
+   private String publishSimpleMessage(String replicationPrefix, String msgTxt) {
+      if (replicationPrefix == null)
+         return "the replication id is null. Can not perform it.";
+
+      I_Info individualInfo = (I_Info)this.replications.get(replicationPrefix);
+      if (individualInfo == null)
+         return "the replication with Id='" + replicationPrefix + "' was not found (has not been registered). Allowed ones are : " + getReplications();
+
+      try {
+         String dbWatcherSessionId = individualInfo.get(SENDER_SESSION, null);
+         I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
+         // no oid for this ptp message 
+         PublishKey pubKey = new PublishKey(this.global);
+         Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
+         destination.forceQueuing(true);
+         PublishQos pubQos = new PublishQos(this.global, destination);
+         // pubQos.addClientProperty(ACTION_ATTR, STATEMENT_ACTION);
+         MsgUnit msg = new MsgUnit(pubKey, msgTxt.getBytes(), pubQos);
+         conn.publish(msg);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         return "Could not publish the message";
+      }
+      return "Successfully published message to replication '" + replicationPrefix + "'";
+   }
+   
+   public String startBatchUpdate(String replicationPrefix) {
+      return publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_START_BATCH);
+   }
+   
+   public String collectInitialUpdates(String replicationPrefix) {
+      return publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_COLLECT);
    }
    
    

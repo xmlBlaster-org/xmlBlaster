@@ -14,8 +14,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -126,27 +128,68 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    class ExecutionThread extends Thread {
       
       private String replTopic;
-      private String destination;
-      private String slaveName;
-      private String version;
       private I_DbSpecific dbSpecific;
       private String initialFilesLocation;
+
+      private List slaveNamesList;
+      private String replManagerAddress;
+      private String version;
       
-      public ExecutionThread(String replTopic, String destination, String slaveName, String version, I_DbSpecific dbSpecific, String initialFilesLocation) {
+      /**
+       * 
+       * @param replTopic The topic to use to publish the initial data
+       * @param replManagerAddress The address to which to send the end-of-data message
+       * @param dbSpecific
+       * @param initialFilesLocation
+       */
+      public ExecutionThread(String replTopic, String replManagerAddress, I_DbSpecific dbSpecific, String initialFilesLocation) {
+         this.slaveNamesList = new ArrayList();
+         this.replManagerAddress = replManagerAddress;
          this.replTopic = replTopic;
-         this.destination = destination;
-         this.slaveName = slaveName;
-         this.version = version;
          this.dbSpecific = dbSpecific;
          this.initialFilesLocation = initialFilesLocation;
       }
       
+      /**
+       * Adds a destination to this initial update (so that it is possible to perform several I.U.
+       * with the same data.
+       * 
+       * @param destination The destination (PtP) of this initial Update
+       * @param slaveName The name of the slave
+       * @param version The version for this update.
+       * @return true if the entry has the correct version, false otherwise (in which case it
+       * will not be added).
+       */
+      public boolean add(String slaveName, String replManagerAddress, String version) {
+         if (this.version == null)
+            this.version = version;
+         else {
+            if (!this.version.equals(version)) {
+               return false;
+            }
+         }
+         if (this.replManagerAddress == null)
+            this.replManagerAddress = replManagerAddress;
+         else {
+            if (!this.replManagerAddress.equals(replManagerAddress)) {
+               return false;
+            }
+         }
+         this.slaveNamesList.add(slaveName);
+         return true;
+      }
+      
+      public void process() {
+         start();
+      }
+      
       public void run() {
+         String[] slaveNames = (String[])this.slaveNamesList.toArray(new String[this.slaveNamesList.size()]); 
          try {
-            this.dbSpecific.initiateUpdate(replTopic, destination, slaveName, version, initialFilesLocation);
+            this.dbSpecific.initiateUpdate(replTopic, this.replManagerAddress, slaveNames, this.version, this.initialFilesLocation);
          }
          catch (Exception ex) {
-            log.severe("An Exception occured when running intial update for '" + replTopic + "' for '" + destination + "' as slave '" + slaveName);
+            log.severe("An Exception occured when running intial update for '" + replTopic + "' for '" + this.replManagerAddress + "' as slave '" + SpecificDefault.toString(slaveNames) + "'");
             ex.printStackTrace();
          }
       }
@@ -168,6 +211,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private String stringToCheck;
    private Map runningExecutes = new HashMap();
    private String initialDataTopic;
+   /** Contains updates to be executed where the key is the version */
+   private Map preparedUpdates = new HashMap();
+   private boolean collectInitialUpdates;
    
    /**
     * Not doing anything.
@@ -303,6 +349,20 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          return this.publisher.publish("createTableMsg", updateInfo.toXml("").getBytes(), map);
    }
 
+   private void fireInitialUpdates() {
+      synchronized (this.preparedUpdates) {
+         this.collectInitialUpdates = false; // reset the flag
+         try {
+            ExecutionThread[] threads = (ExecutionThread[])this.preparedUpdates.values().toArray(new ExecutionThread[this.preparedUpdates.size()]);
+            for (int i=0; i < threads.length; i++)
+               threads[i].process();
+         }
+         finally {
+            this.preparedUpdates.clear();
+         }
+      }
+   }
+   
    /**
     * @see org.xmlBlaster.contrib.I_Update#update(java.lang.String, byte[], java.util.Map)
     */
@@ -318,7 +378,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             ClientProperty prop = (ClientProperty)attrMap.get("_sender");
             if (prop == null)
                throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
-            String destination = prop.getStringValue();
+            String replManagerAddress = prop.getStringValue();
 
             String replTopic = this.info.get("mom.topicName", null);
             if (replTopic == null)
@@ -339,9 +399,31 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             String initialFilesLocation = null;
             if (prop != null)
                initialFilesLocation = prop.getStringValue();
-            ExecutionThread executionThread = new ExecutionThread(replTopic, destination, slaveName, requestedVersion, this.dbSpecific, initialFilesLocation);
-            executionThread.start();
             
+            prop = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_UPDATE_ONLY_REGISTER);
+            boolean onlyRegister = false;
+            if (prop != null)
+               onlyRegister = prop.getBooleanValue();
+            
+            if (onlyRegister || this.collectInitialUpdates) {
+               log.info("The update for slave='" + slaveName + "' and version='" + requestedVersion + "' will be queued since onlyRegister='" + onlyRegister + "' and collectInitialUpdates='" + this.collectInitialUpdates + "'");
+               String key = "__default";
+               if (requestedVersion != null)
+                  key = requestedVersion;
+               synchronized(this.preparedUpdates) {
+                  ExecutionThread executionThread = (ExecutionThread)this.preparedUpdates.get(key);
+                  if (executionThread == null) {
+                     executionThread = new ExecutionThread(replTopic, replManagerAddress, this.dbSpecific, initialFilesLocation);
+                     this.preparedUpdates.put(key, executionThread);
+                  }
+                  executionThread.add(slaveName, replManagerAddress, requestedVersion);
+               }
+            }
+            else {
+               ExecutionThread executionThread = new ExecutionThread(replTopic, replManagerAddress, this.dbSpecific, initialFilesLocation);
+               executionThread.add(slaveName, replManagerAddress, requestedVersion);
+               executionThread.process();
+            }
          }
          else if (ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.equals(msg)) {
             // do cancel
@@ -391,6 +473,15 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             if (ex != null)
                throw ex;
          }
+         else if (ReplicationConstants.INITIAL_UPDATE_START_BATCH.equals(msg)) {
+            fireInitialUpdates();
+         }
+         else if (ReplicationConstants.INITIAL_UPDATE_COLLECT.equals(msg)) {
+            synchronized(this.preparedUpdates) {
+               this.collectInitialUpdates = true;
+               log.info("Will collect initial updates until message '" + ReplicationConstants.INITIAL_UPDATE_START_BATCH + "' comes");
+            }
+         }
          else {
             log.warning("update from '" + topic + "' with request '" + msg + "'");
          }
@@ -405,20 +496,20 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * 
     * @param topic
     * @param filename
-    * @param destination
+    * @param replManagerAddress
     * @param slaveName
     * @param minKey
     * @param maxKey
     * @throws Exception
     */
-   public final void sendInitialDataResponse(String slaveSessionName, String filename, String destination, String slaveName, long minKey, long maxKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws Exception {
-      sendInitialFile(slaveSessionName, filename, minKey, requestedVersion, currentVersion, initialFilesLocation);
+   public final void sendInitialDataResponse(String[] slaveSessionNames, String filename, String replManagerAddress, long minKey, long maxKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws Exception {
+      sendInitialFile(slaveSessionNames, filename, minKey, requestedVersion, currentVersion, initialFilesLocation);
       HashMap attrs = new HashMap();
-      attrs.put("_destination", destination);
+      attrs.put("_destination", replManagerAddress);
       attrs.put("_command", "INITIAL_DATA_RESPONSE");
       attrs.put("_minReplKey", "" + minKey);
       attrs.put("_maxReplKey", "" + maxKey);
-      attrs.put(ReplicationConstants.SLAVE_NAME, slaveName);
+      attrs.put(ReplicationConstants.SLAVE_NAME, SpecificDefault.toString(slaveSessionNames));
       if (this.publisher != null)
          this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
       else
@@ -432,7 +523,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws FileNotFoundException
     * @throws IOException
     */
-   private void sendInitialFile(String slaveSessionName, String shortFilename, long minKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws FileNotFoundException, IOException, JMSException  {
+   private void sendInitialFile(String[] slaveSessionNames, String shortFilename, long minKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws FileNotFoundException, IOException, JMSException  {
       // in this case they are just decorators around I_ChangePublisher
       if (this.publisher == null) {
          if (shortFilename == null)
@@ -443,7 +534,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       XBSession session = this.publisher.getJmsSession();
       // XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(topic, null));
       
-      XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(this.initialDataTopic, slaveSessionName));
+      XBDestination dest = new XBDestination(this.initialDataTopic, SpecificDefault.toString(slaveSessionNames));
+      
+      XBMessageProducer producer = new XBMessageProducer(session, dest);
       producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
       
@@ -451,7 +544,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       // now read the file which has been generated
       String filename = null;
       if (shortFilename != null) {
-         log.info("sending initial file '" + shortFilename + "' for user '" + slaveSessionName  + "'");
+         log.info("sending initial file '" + shortFilename + "' for user '" + SpecificDefault.toString(slaveSessionNames)  + "'");
          if (this.initialCmdPath != null)
             filename = this.initialCmdPath + File.separator + shortFilename;
          else
@@ -515,7 +608,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          fis.close();
       }
       else
-         log.info("initial update requested with no real initial data for '" + slaveSessionName + "' and for replication '" + this.replPrefix + "'");
+         log.info("initial update requested with no real initial data for '" + SpecificDefault.toString(slaveSessionNames) + "' and for replication '" + this.replPrefix + "'");
 
       // send the message for the status change
       if (initialFilesLocation != null) {
@@ -545,20 +638,25 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @param cmd
     * @throws Exception
     */
-   private void osExecute(String slaveName, String cmd, ConnectionInfo connInfo) throws Exception {
+   private void osExecute(String[] slaveNames, String cmd, ConnectionInfo connInfo) throws Exception {
       try {
          // if (Execute.isWindows()) cmd = "cmd " + cmd;
          String[] args = ReplaceVariable.toArray(cmd, " ");
-         log.info("running for '" + slaveName + "' for cmd '" + cmd + "'");
+         log.info("running for '" + SpecificDefault.toString(slaveNames) + "' for cmd '" + cmd + "'");
          Execute execute = new Execute(args, null);
          synchronized (this) {
-            if (slaveName != null) {
-               Execute oldExecute = (Execute)this.runningExecutes.remove(slaveName);
-               if (oldExecute != null) {
-                  log.warning("A new request for an initial update has come for '" + slaveName + "' but there is one already running. Will shut down the running one first");
-                  oldExecute.stop();
-                  log.info("old initial request for '" + slaveName + "' has been shut down");
-                  this.runningExecutes.put(slaveName, execute);
+            if (slaveNames != null) {
+               for (int i=0; i < slaveNames.length; i++) {
+                  String slaveName = slaveNames[i];
+                  if (slaveName != null) {
+                     Execute oldExecute = (Execute)this.runningExecutes.remove(slaveName);
+                     if (oldExecute != null) {
+                        log.warning("A new request for an initial update has come for '" + slaveName + "' but there is one already running. Will shut down the running one first");
+                        oldExecute.stop();
+                        log.info("old initial request for '" + slaveName + "' has been shut down");
+                        this.runningExecutes.put(slaveName, execute);
+                     }
+                  }
                }
             }
          }
@@ -571,8 +669,13 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       }
       finally {
          synchronized (this) {
-            if (slaveName != null)
-               this.runningExecutes.remove(slaveName);
+            if (slaveNames != null) {
+               for (int i=0; i < slaveNames.length; i++) {
+                  String slaveName = slaveNames[i];
+                  if (slaveName != null)
+                     this.runningExecutes.remove(slaveName);
+               }
+            }
          }
       }
    }
@@ -622,7 +725,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * 
     * @throws Exception
     */
-   public final String initialCommand(String invoker, String completeFilename, ConnectionInfo connInfo, String version) throws Exception {
+   public final String initialCommand(String[] slaveNames, String completeFilename, ConnectionInfo connInfo, String version) throws Exception {
       if (this.initialCmd == null)
          return null;
       String filename = null;
@@ -634,7 +737,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       String cmd = this.initialCmd + " " + completeFilename;
       if (version != null)
          cmd += " " + version;
-      osExecute(invoker, cmd, connInfo);
+      osExecute(slaveNames, cmd, connInfo);
       return filename;
    }
 

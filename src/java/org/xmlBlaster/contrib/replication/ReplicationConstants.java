@@ -64,6 +64,13 @@ public interface ReplicationConstants {
     final static String DUMP_POSTFIX = ".dump";
     final static String SUPPORTED_VERSIONS = "_supportedVersions";
     final static String INITIAL_FILES_LOCATION = "_initialFilesLocation";
+    final static String INITIAL_UPDATE_ONLY_REGISTER = "_initialUpdateOnlyRegister";
+    final static String INITIAL_UPDATE_START_BATCH = "_initialUpdateStartBatch";
+    /** 
+     * Signal sent to the initialUpdater to tell him to collect initialUpdate requests until
+     * an INITIAL_UPDATE_START_BATCH has come.
+     */
+    final static String INITIAL_UPDATE_COLLECT = "_initialUpdateCollect";
     final static String INITIAL_DATA_ID = "_initialDataId"; // used for the directory name where to store the initial dump by manual transfer
     final static String KEEP_TRANSACTION_OPEN = "_keepTransactionOpen";
     
