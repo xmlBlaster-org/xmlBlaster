@@ -22,6 +22,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -85,7 +86,13 @@ import org.xmlBlaster.util.MsgUnit;
  *
  * @author Marcel Ruff
  */
-public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, I_Callback, I_ConnectionStateListener, DbWatcherConstants {
+public class XmlBlasterPublisher implements 
+      I_ChangePublisher, 
+      I_AlertProducer, 
+      I_Callback, 
+      I_ConnectionStateListener, 
+      DbWatcherConstants,
+      XmlBlasterPublisherMBean {
    
    private static Logger log = Logger.getLogger(XmlBlasterPublisher.class.getName());
 
@@ -107,6 +114,8 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
    private I_Update defaultUpdate;
    private String adminKey = "<key oid='mom.publisher.adminMsg'/>";
    private int compressSize;
+   private boolean throwAwayMessages;
+   private long lastPublishTime;
    
    /** 
     * Can be null, taken out of the info object if the owner of this object has set the
@@ -308,6 +317,13 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
       // Make myself available
       info.putObject("org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher", this);
       info.putObject("org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher", this);
+
+      // Add JMX Registration 
+      String jmxName = I_Info.JMX_PREFIX + "xmlBlasterPublisher";
+      info.putObject(jmxName, this);
+      log.info("Added object '" + jmxName + "' to I_Info to be added as an MBean");
+      
+      
    }
    
    /**
@@ -342,7 +358,12 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
     * @see org.xmlBlaster.contrib.dbwatcher.mom.I_ChangePublisher#publish(String, String, Map)
     */
    public String publish(String changeKey, byte[] out, Map attrMap) throws Exception {
-      
+      // this is only for testing purposes
+      if (this.throwAwayMessages) {
+         log.fine("The message '" + changeKey + "' has been thrown away (not published)");
+         return (new Timestamp()).toString() + "thrownAway";
+      }
+      long t0 = System.currentTimeMillis();
       if (out == null) out = "".getBytes();
       out = MomEventEngine.compress(out, attrMap, this.compressSize, null);
 
@@ -445,6 +466,7 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          String id = (prq.getRcvTimestamp()!=null)?prq.getRcvTimestamp().toString():"queued";
          if (log.isLoggable(Level.FINE)) 
             log.fine("Published '" + prq.getKeyOid() + "' '" + id + "'");
+         this.lastPublishTime = System.currentTimeMillis() - t0;
          return id;
       }
       catch (XmlBlasterException e) {
@@ -634,4 +656,112 @@ public class XmlBlasterPublisher implements I_ChangePublisher, I_AlertProducer, 
          this.connectionStateListener.reachedPolling(oldState, connection);
       }
    }
+
+   
+   // for jmx
+   
+   public String getAdminKey() {
+      return adminKey;
+   }
+
+   public void setAdminKey(String adminKey) {
+      this.adminKey = adminKey;
+   }
+
+   public String getAlertSubscribeKey() {
+      return alertSubscribeKey;
+   }
+
+   public void setAlertSubscribeKey(String alertSubscribeKey) {
+      this.alertSubscribeKey = alertSubscribeKey;
+   }
+
+   public String getAlertSubscribeQos() {
+      return alertSubscribeQos;
+   }
+
+   public void setAlertSubscribeQos(String alertSubscribeQos) {
+      this.alertSubscribeQos = alertSubscribeQos;
+   }
+
+   public String getAlertSubscriptionId() {
+      return alertSubscriptionId;
+   }
+
+   public void setAlertSubscriptionId(String alertSubscriptionId) {
+      this.alertSubscriptionId = alertSubscriptionId;
+   }
+
+   public int getCompressSize() {
+      return compressSize;
+   }
+
+   public void setCompressSize(int compressSize) {
+      this.compressSize = compressSize;
+   }
+
+   public String getConnectQos() {
+      return connectQos.toXml();
+   }
+
+   public boolean isEraseOnDelete() {
+      return eraseOnDelete;
+   }
+
+   public void setEraseOnDelete(boolean eraseOnDelete) {
+      this.eraseOnDelete = eraseOnDelete;
+   }
+
+   public boolean isEraseOnDrop() {
+      return eraseOnDrop;
+   }
+
+   public void setEraseOnDrop(boolean eraseOnDrop) {
+      this.eraseOnDrop = eraseOnDrop;
+   }
+
+   public String getPublishKey() {
+      return publishKey;
+   }
+
+   public void setPublishKey(String publishKey) {
+      this.publishKey = publishKey;
+   }
+
+   public String getPublishQos() {
+      return publishQos;
+   }
+
+   public void setPublishQos(String publishQos) {
+      this.publishQos = publishQos;
+   }
+
+   public boolean isThrowAwayMessages() {
+      return throwAwayMessages;
+   }
+
+   public void setThrowAwayMessages(boolean throwAwayMessages) {
+      this.throwAwayMessages = throwAwayMessages;
+   }
+
+   public String getTopicNameTemplate() {
+      return topicNameTemplate;
+   }
+
+   public void setTopicNameTemplate(String topicNameTemplate) {
+      this.topicNameTemplate = topicNameTemplate;
+   }
+
+   public String getLoginName() {
+      return loginName;
+   }
+   
+   /**
+    * Returns the time in ms it took for the last real publish. Real publish is meant
+    * the last publish of messages which are not drop or delete
+    */
+   public long getLastPublishTime() {
+      return this.lastPublishTime;
+   }
+   
 }
