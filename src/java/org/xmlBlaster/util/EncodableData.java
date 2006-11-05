@@ -90,7 +90,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
    }
 
    public boolean isStringType() {
-      return this.type == null || "String".equalsIgnoreCase(this.type) || this.type.length() < 1; // Constants.TYPE_STRING
+      return this.type == null || Constants.TYPE_STRING.equalsIgnoreCase(this.type) || this.type.length() < 1; // Constants.TYPE_STRING
    }
 
    /**

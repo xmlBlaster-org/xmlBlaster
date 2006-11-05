@@ -46,6 +46,8 @@ public class Constants {
    public final static String TYPE_INT = "int";
    public final static String TYPE_SHORT = "short";
    public final static String TYPE_LONG = "long";
+   /** used to tell that the entry is really null (not just empty) */
+   public final static String TYPE_NULL = "null";
 
    // Used to lookup in global.getObjectEntry(OBJECT_ENTRY_ServerScope)
    public final static String  OBJECT_ENTRY_ServerScope = "ServerNodeScope";
