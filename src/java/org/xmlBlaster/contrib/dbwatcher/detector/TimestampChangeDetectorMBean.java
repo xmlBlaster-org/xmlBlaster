@@ -30,4 +30,8 @@ public interface TimestampChangeDetectorMBean {
    void setTimestampColNum(int timestampColNum);
    boolean isUseGroupCol();
    void setUseGroupCol(boolean useGroupCol);
+   void stopDetection();
+   void activateDetection();
+   boolean  isIgnoreDetection();
+   
 }

@@ -126,6 +126,8 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
    
    private I_Info persistentInfo;
    
+   private boolean ignoreDetection;
+   
    final private void persistTimestampIfNecessary() {
       if (this.persistentInfo == null)
          return;
@@ -275,6 +277,10 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
     */
    public synchronized int checkAgain(Map attrMap) throws Exception {
       if (log.isLoggable(Level.FINE)) log.fine("Checking for Timestamp changes '" + this.changeDetectStatement + "' ...");
+      if (this.ignoreDetection) {
+         log.fine("The detection is deactivated");
+         return 0;
+      }
       int changeCount = 0;
       this.changeCommand = null;
       // We need the connection for detection and in the same transaction to the queryMeat
@@ -503,4 +509,16 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
       this.useGroupCol = useGroupCol;
    }
 
+   public void stopDetection() {
+      this.ignoreDetection = true;
+   }
+
+   public void activateDetection() {
+      this.ignoreDetection = false;
+   }
+
+   public boolean  isIgnoreDetection() {
+      return this.ignoreDetection;
+   }
+   
 }
