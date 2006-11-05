@@ -1389,5 +1389,38 @@ public class ReplManagerPlugin extends GlobalInfo
       return publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_COLLECT);
    }
    
+   private final I_ReplSlave[] getAllSlaves() {
+      I_ReplSlave[] ret = null;
+      synchronized(this.replSlaveMap) {
+         ret = (I_ReplSlave[])this.replSlaveMap.values().toArray(new I_ReplSlave[this.replSlaveMap.size()]);
+         return ret;
+      }
+   }
+   
+   private String setDispatcher(boolean alive, String replPrefix) {
+      I_ReplSlave[] slaves = getAllSlaves();
+      StringBuffer ret = new StringBuffer();
+      for (int i=0; i < slaves.length; i++) {
+         String slaveReplPrefix = slaves[i].getReplPrefix(); 
+         if (slaveReplPrefix != null && slaveReplPrefix.equals(replPrefix)) {
+            if (!slaves[i].setDispatcher(alive)) {
+               ret.append(slaves[i].getSessionName()).append(" ");
+            }
+         }
+      }
+      String prefix = "setDispatcher to '" + alive + "' for replication prefix '" + replPrefix + "'"; 
+      if (ret.length() > 0)
+         return prefix + " failed for following slaves : " + ret.toString();
+      return prefix + " succeeded for all slaves";
+   }
+   
+   public String activateSlaveDispatchers(String replPrefix) {
+      return setDispatcher(true, replPrefix);
+   }
+   
+   public String stopSlaveDispatchers(String replPrefix) {
+      return setDispatcher(false, replPrefix);
+   }
    
 }
+

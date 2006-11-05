@@ -740,6 +740,18 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       return new HashSet();
    }
 
+   public boolean setDispatcher(boolean status) {
+      try {
+         setDispatcher(status, true);
+         return true;
+      }
+      catch (Exception ex) {
+         log.severe("Exception occured when trying to set the dispatcher to '" + status + "': " + ex.getMessage());
+         ex.printStackTrace();
+         return false;
+      }
+   }
+   
    private final boolean setDispatcher(boolean status, boolean doPersist) throws Exception {
       I_AdminSession session = getSession(); 
       session.setDispatcherActive(status);

@@ -145,4 +145,7 @@ public interface ReplManagerPluginMBean {
     */
    String collectInitialUpdates(String replicationPrefix);
    
+   String activateSlaveDispatchers(String replPrefix);
+   String stopSlaveDispatchers(String replPrefix);
+   
 }

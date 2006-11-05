@@ -96,4 +96,8 @@ public interface I_ReplSlave extends I_ContribPlugin {
    
    int getStatusAsInt();
 
+   String getSessionName();
+
+   boolean setDispatcher(boolean status);
+   
 }
