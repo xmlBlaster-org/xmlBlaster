@@ -24,8 +24,6 @@ import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.MomEventEngine;
-import org.xmlBlaster.contrib.db.DbInfo;
-import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
 import org.xmlBlaster.util.Global;
@@ -82,7 +80,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private Object mbeanHandle;
    private String sqlResponse;
    private boolean forceSending; // temporary Hack to be removed TODO
-   private I_DbPool pool;
    private I_Info persistentInfo;
    private String oldReplKeyPropertyName;
    private String dbWatcherSessionName;
@@ -117,10 +114,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    /** The queue associated to this slave. It is associated on first invocation of check */
    private I_Queue queue;
    
-   public ReplSlave(Global global, I_DbPool pool, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
+   public ReplSlave(Global global, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.forcedCounter = 0L;
       this.global = global;
-      this.pool = pool;
       this.manager = manager;
       this.slaveSessionId = slaveSessionId;
       // this.status = STATUS_UNUSED;
@@ -132,7 +128,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       this.lastMessageKey = this.slaveSessionId + ".lastMessage";
       try {
          //setDispatcher(dispatcherActive, doPersist);
-         this.persistentInfo = new DbInfo(this.pool, "replication");
+         this.persistentInfo = this.manager.getPersistentInfo();
          this.lastMessage = this.persistentInfo.get(this.lastMessageKey, "");
       }
       catch (Exception ex) {
@@ -636,8 +632,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             
             if (endMsg != null) {
                log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
-               setStatus(STATUS_NORMAL);
-               queue.removeRandom(entry);
                // entries.remove(i);
                // initiate a cascaded replication (if configured that way)
                if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
@@ -647,6 +641,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                else {
                   log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
                }
+               setStatus(STATUS_NORMAL);
+               queue.removeRandom(entry);
                continue; 
             }
             byte[] content = msgUnit.getContent();

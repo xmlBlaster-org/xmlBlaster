@@ -39,6 +39,7 @@ import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.VersionTransformerCache;
+import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.replication.I_ReplSlave;
@@ -133,6 +134,7 @@ public class ReplManagerPlugin extends GlobalInfo
    private long statusProcessingTime;
    private long numRefresh;
    private int maxNumOfEntries = REPLICATION_MAX_ENTRIES_DEFAULT;
+   private I_Info persistentInfo;
    
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
@@ -414,6 +416,7 @@ public class ReplManagerPlugin extends GlobalInfo
          this.mbeanHandle = this.global.registerMBean(contextNode, this);
          
          this.pool = getDbPool();
+         this.persistentInfo = new DbInfo(this.pool, "replication");
          
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          ConnectQos connectQos = new ConnectQos(this.global, this.user, this.password);
@@ -1021,7 +1024,7 @@ public class ReplManagerPlugin extends GlobalInfo
       log.info("addition of session for '" + sessionName +"' occured");
       synchronized (this.replSlaveMap) {
          if (!this.replSlaveMap.containsKey(sessionName)) {
-            I_ReplSlave slave = new ReplSlave(this.global, this.pool, this, sessionName);
+            I_ReplSlave slave = new ReplSlave(this.global, this, sessionName);
             this.replSlaveMap.put(sessionName, slave);
          }
       }
@@ -1420,6 +1423,10 @@ public class ReplManagerPlugin extends GlobalInfo
    
    public String stopSlaveDispatchers(String replPrefix) {
       return setDispatcher(false, replPrefix);
+   }
+   
+   public I_Info getPersistentInfo() {
+      return this.persistentInfo;
    }
    
 }
