@@ -61,13 +61,17 @@ public class TestReplication extends XMLTestCase {
       TestReplication test = new TestReplication();
       try {
          test.setUp();
+         test.testNullEntriesOnTable();
+         test.tearDown();
+
+         test.setUp();
          test.testCreateAndInsert();
          test.tearDown();
 
          test.setUp();
          test.testPerformAllOperationsOnTable();
          test.tearDown();
-
+         
          // test.setUp();
          // test.testMultiTransaction();
          // test.tearDown();
@@ -540,6 +544,202 @@ public class TestReplication extends XMLTestCase {
             catch (Exception e) {
                e.printStackTrace();
                assertTrue("Exception when testing operation 'ALTER' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+         {
+            try {
+               sql = "DROP TABLE " + this.tableName;
+               pool.update(sql);
+               Thread.sleep(this.sleepDelay);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  assertTrue("Testing '" + sql + "'. It must have resulted in an exception but did not.", false);
+               }
+               catch (Exception e) {
+               }
+               finally {
+                  if (rs != null)
+                     rs.close();
+                  rs = null;
+               }
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DROP' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
+   
+   
+   /**
+    * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
+    * 
+    */
+   public final void testNullEntriesOnTable() {
+      log.info("Start testNullEntriesOnTable");
+      I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String sql = null;
+         try {
+            boolean force = false;
+            String destination = null;
+            boolean forceSend = false;
+            TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+            tableToWatch.setActions("IDU");
+            getDbSpecific().addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
+         }
+         
+         {
+            try { // we explicitly choose a table witout pk (to test searches)
+               sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), age INTEGER, address VARCHAR(30))";
+               pool.update(sql);
+               Thread.sleep(this.sleepDelay);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 3, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must be empty", false, rs.next());
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'CREATE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+
+         {
+            try {
+               sql = "INSERT INTO " + this.tableName + " (name, address) VALUES ('first', 'SOMEWHERE')";
+               pool.update(sql);
+               Thread.sleep(this.sleepDelay);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 3, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must not be empty", true, rs.next());
+               String name = rs.getString(1);
+               Object age = rs.getObject(2);
+               String addr = rs.getString(3);
+               assertEquals("Testing '" + sql + "' for the name of the entry", "first", name);
+               assertNull("Testing '" + sql + "' for the age of the entry", age);
+               assertEquals("Testing '" + sql + "' for the address of the entry", "SOMEWHERE", addr);
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'INSERT' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+      
+         {
+            try {
+               sql = "UPDATE " + this.tableName + " SET age=33,address=NULL WHERE name='first'";
+               pool.update(sql);
+               Thread.sleep(this.sleepDelay);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 3, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must not be empty", true, rs.next());
+               String name = rs.getString(1);
+               int age = rs.getInt(2);
+               String address = rs.getString(3);
+               assertEquals("Testing '" + sql + "' for the name of the entry", "first", name);
+               assertEquals("Testing '" + sql + "' for the age of the entry", 33, age);
+               assertNull("Testing '" + sql + "' for the address of the entry", address);
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'UPDATE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+
+         {
+            try {
+               sql = "DELETE FROM " + this.tableName;
+               pool.update(sql);
+               Thread.sleep(this.sleepDelay);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 3, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must be empty", false, rs.next());
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DELETE' should not have happened: " + e.getMessage(), false);
             }
             finally {
                if (conn != null)
