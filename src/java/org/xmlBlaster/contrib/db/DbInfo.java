@@ -29,14 +29,14 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class DbInfo implements I_Info {
+public class DbInfo implements I_Info, DbInfoMBean {
 
    private static Logger log = Logger.getLogger(DbInfo.class.getName());
    private final static String TABLE_NAME = "DBINFO";
    Map objects;
    private InfoHelper helper;
    private DbStorage storage;
-   
+
    /**
     * @param clientPropertyMap Can be null
     */
@@ -46,6 +46,13 @@ public class DbInfo implements I_Info {
       this.objects = new HashMap();
       // performance impact. It should anyway be clean what is in the Db.
       // this.helper.replaceAllEntries(this, null);
+      // to add this to JMX
+      if (pool instanceof DbPool) {
+         String jmxName = I_Info.JMX_PREFIX + "dbInfo";
+         I_Info cfgInfo = ((DbPool)pool).getInfo();
+         cfgInfo.putObject(jmxName, this);
+         log.info("Added object '" + jmxName + "' to I_Info to be added as an MBean");
+      }
    }   
    
    /**
@@ -235,4 +242,20 @@ public class DbInfo implements I_Info {
       return this.objects.keySet();
    }
 
+   private static String getAsString(Set set) {
+      String[] ret = (String[])set.toArray(new String[set.size()]);
+      StringBuffer buf = new StringBuffer();
+      for (int i=0; i < ret.length; i++)
+         buf.append(ret[i]).append(" ");
+      return buf.toString();
+   }
+
+   public String getKeysAsString() {
+      return getAsString(getKeys());
+   }
+   
+   public String getObjectKeysAsString() {
+      return getAsString(getObjectKeys());
+   }
+   
 }
