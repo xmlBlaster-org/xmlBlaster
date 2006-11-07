@@ -415,6 +415,10 @@ public class DbPool implements I_DbPool, I_PoolManager {
          return;
       destroy();
    }
+
+   public I_Info getInfo() {
+      return this.info;
+   }
    
    public static void main(String[] args) {
       try {
