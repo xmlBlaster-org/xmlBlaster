@@ -109,7 +109,7 @@ public class SpecificOracle extends SpecificDefault {
     *           can be 'old' or 'new'
     * @return
     */
-   protected String createVariableSqlPart(SqlDescription description, String prefix, boolean containsLongs) {
+   protected String createVariableSqlPart(SqlDescription description, String prefix, boolean containsLongs, boolean isInsert) {
       String newOldPrefix = ":"; // ":" on ora10 ?
       SqlColumn[] cols = description.getColumns();
       String contName = prefix + "Cont"; // will be newCont or oldCont
@@ -202,9 +202,14 @@ public class SpecificOracle extends SpecificDefault {
             //       "col2xml('").append(colName).append("', tmpCont));\n");
          }
          
-         if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY)
+         if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY) {
+            if (!isInsert) { // on inserts we want to avoid writing unnecessary null entries
+               buf.append("          ELSE\n");
+               buf.append("             fake := ").append(this.replPrefix).append("col2xml_null('");
+               buf.append(colName).append("', ").append(contName).append(");\n");
+            }
             buf.append("          END IF;\n");
-         
+         }
       }
       return buf.toString();
    }
@@ -293,17 +298,18 @@ public class SpecificOracle extends SpecificDefault {
       }
       
       boolean containsLongs = checkIfContainsLongs(infoDescription);
-      
+      boolean isInsert = true; // optimizes: does not write NULL when insert
       buf.append("    IF INSERTING THEN\n");
       buf.append("       op := 'INSERT';\n");
-      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs));
+      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs, isInsert));
+      isInsert = false; // now for update and delete
       buf.append("    ELSIF DELETING THEN\n");
       buf.append("       op := 'DELETE';\n");
-      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs));
+      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs, isInsert));
       buf.append("    ELSE\n");
       buf.append("       op := 'UPDATE';\n");
-      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs));
-      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs));
+      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs, isInsert));
+      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs, isInsert));
       buf.append("    END IF;\n");
 
       String dbNameTmp = null;

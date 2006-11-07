@@ -274,7 +274,7 @@ public class SqlDescription {
    /**
     * 
     * @param searchEntries an empty list. This will be filled with the values of the
-    * entries (ClientProperties) found in the row object and which are not null.
+    * entries (ClientProperties) found in the row object: also NULL objects are considered.
     * and which can be used as search path (either pk or all).
     * @return a string containing the search statement. As an example:
     * " WHERE one=? AND two=? AND three=? " 
@@ -286,19 +286,23 @@ public class SqlDescription {
       boolean firstHit = true;
       for (int i=0; i < colNames.length; i++) {
          ClientProperty colContent = row.getColumn(colNames[i]);
-         if (colContent != null && colContent.getStringValue() != null) {
-            SqlColumn sqlCol = getColumn(colNames[i]);
-            if (sqlCol == null) {
-               log.info("column '" + colNames[i] + "' not found, will ignore it");
-               continue;
+         SqlColumn sqlCol = getColumn(colNames[i]);
+         if (sqlCol == null) {
+            log.info("column '" + colNames[i] + "' not found, will ignore it");
+            continue;
+         }
+         // if ((sqlCol.isPrimaryKey() || !hasPk()) && sqlCol.isSearchable()) {
+         boolean isNull = colContent.getType() != null && Constants.TYPE_NULL.equals(colContent.getType());
+         if (canAddColToSearch(sqlCol)) {
+            if (firstHit)
+               firstHit = false;
+            else
+               buf.append("AND ");
+            if (isNull) {
+               buf.append(colNames[i]).append(" is NULL ");
             }
-            // if ((sqlCol.isPrimaryKey() || !hasPk()) && sqlCol.isSearchable()) {
-            if (canAddColToSearch(sqlCol)) {
+            else {
                searchEntries.add(colContent);
-               if (firstHit)
-                  firstHit = false;
-               else
-                  buf.append("AND ");
                buf.append(colNames[i]).append("=? ");
             }
          }
@@ -321,8 +325,8 @@ public class SqlDescription {
    /**
     * 
     * @param searchEntries an empty list. This will be filled with the values of the
-    * entries (ClientProperties) found in the row object and which are not null.
-    * and which can be used as search path (either pk or all).
+    * entries (ClientProperties) found in the row object. Also NULL objects are now
+    * added and which can be used as search path (either pk or all).
     * @return a string containing the search statement. As an example:
     * " (first, second, third) VALUES ( ? , ? , ? ) " 
     */
@@ -334,8 +338,7 @@ public class SqlDescription {
       boolean firstHit = true;
       for (int i=0; i < colNames.length; i++) {
          ClientProperty colContent = row.getColumn(colNames[i]);
-
-         if (colContent != null && colContent.getStringValue() != null && getColumn(colNames[i]) != null) {
+         if (getColumn(colNames[i]) != null) {
             searchEntries.add(colContent);
             if (firstHit) {
                firstHit = false;
@@ -355,7 +358,7 @@ public class SqlDescription {
    /**
     * 
     * @param searchEntries an empty list. This will be filled with the values of the
-    * entries (ClientProperties) found in the row object and which are not null.
+    * entries (ClientProperties) found in the row object. Also null objects are added.
     * and which can be used as search path (either pk or all).
     * @return a string containing the search statement. As an example:
     * " SET one=? , two=? , three=? " 
@@ -367,17 +370,13 @@ public class SqlDescription {
       boolean firstHit = true;
       for (int i=0; i < colNames.length; i++) {
          ClientProperty colContent = row.getColumn(colNames[i]);
-         if (colContent != null && colContent.getStringValue() != null) {
-            // SqlColumn sqlCol = getColumn(colNames[i]);
-            // if (!sqlCol.isPrimaryKey() || !hasPk()) {
-            if (true) { // we need all entries
-               searchEntries.add(colContent);
-               if (firstHit)
-                  firstHit = false;
-               else
-                  buf.append(", ");
-               buf.append(colNames[i]).append("=? ");
-            }
+         if (true) { // we need all entries
+            searchEntries.add(colContent);
+            if (firstHit)
+               firstHit = false;
+            else
+               buf.append(", ");
+            buf.append(colNames[i]).append("=? ");
          }
       }
       return buf.toString();
@@ -416,15 +415,16 @@ public class SqlDescription {
       String colName = prop.getName();
       SqlColumn col = getColumn(colName);
       int sqlType = col.getSqlType();
-      
+
+      boolean isNull = prop != null && Constants.TYPE_NULL.equals(prop.getType());
       if (prop == null) {
          st.setObject(pos, null);
          return;
       }
       String tmp = prop.getStringValue();
       if (sqlType == Types.INTEGER) {
-         if (tmp == null || tmp.trim().length() < 1) {
-            st.setObject(pos, null);
+         if (isNull || tmp == null || tmp.trim().length() < 1) {
+            st.setNull(pos, Types.INTEGER);
             return;
          }
          long val = getLong(prop);
@@ -432,8 +432,8 @@ public class SqlDescription {
          st.setLong(pos, val);
       }
       if (sqlType == Types.DECIMAL) {
-         if (tmp == null || tmp.trim().length() < 1) {
-            st.setObject(pos, null);
+         if (isNull || tmp == null || tmp.trim().length() < 1) {
+            st.setNull(pos, Types.DECIMAL);
             return;
          }
          double val = getDouble(prop);
@@ -441,8 +441,8 @@ public class SqlDescription {
          st.setDouble(pos, val);
       }
       else if (sqlType == Types.SMALLINT) {
-         if (tmp == null || tmp.trim().length() < 1) {
-            st.setObject(pos, null);
+         if (isNull || tmp == null || tmp.trim().length() < 1) {
+            st.setNull(pos, Types.SMALLINT);
             return;
          }
          // int val = prop.getIntValue();
@@ -451,8 +451,8 @@ public class SqlDescription {
          st.setInt(pos, val);
       }
       else if (sqlType == Types.DOUBLE) {
-         if (tmp == null || tmp.trim().length() < 1) {
-            st.setObject(pos, null);
+         if (isNull || tmp == null || tmp.trim().length() < 1) {
+            st.setNull(pos, Types.DOUBLE);
             return;
          }
          // double val = prop.getDoubleValue();
@@ -461,8 +461,8 @@ public class SqlDescription {
          st.setDouble(pos, val);
       }
       else if (sqlType == Types.FLOAT) {
-         if (tmp == null || tmp.trim().length() < 1) {
-            st.setObject(pos, null);
+         if (isNull || tmp == null || tmp.trim().length() < 1) {
+            st.setNull(pos, Types.FLOAT);
             return;
          }
          // float val = prop.getFloatValue();
@@ -471,8 +471,8 @@ public class SqlDescription {
          st.setFloat(pos, val);
       }
       else if (sqlType == Types.VARBINARY) {
-         if (tmp == null) {
-            st.setObject(pos, null);
+         if (isNull) {
+            st.setNull(pos, Types.VARBINARY);
             return;
          }
          byte[] val = prop.getBlobValue();
@@ -481,8 +481,8 @@ public class SqlDescription {
          st.setBytes(pos, val);
       }
       else if (sqlType == Types.VARCHAR) {
-         if (tmp == null) {
-            st.setObject(pos, null);
+         if (isNull) {
+            st.setNull(pos, Types.VARCHAR);
             return;
          }
          String val = prop.getStringValue();
@@ -495,8 +495,8 @@ public class SqlDescription {
          st.setString(pos, val);
       }
       else if (sqlType == Types.BLOB) {
-         if (tmp == null) {
-            st.setObject(pos, null);
+         if (isNull) {
+            st.setNull(pos, Types.BLOB);
             return;
          }
          byte[] val = prop.getBlobValue();
@@ -506,8 +506,8 @@ public class SqlDescription {
          st.setBinaryStream(pos, bais, val.length);
       }
       else if (sqlType == Types.CLOB) {
-         if (tmp == null) {
-            st.setObject(pos, null);
+         if (isNull) {
+            st.setNull(pos, Types.CLOB);
             return;
          }
          log.fine("Handling insert column=" + colName + " as CLOB (type=" + sqlType + ", count=" + pos + ")");
@@ -517,8 +517,8 @@ public class SqlDescription {
          st.setAsciiStream(pos, bais, val.length);
       }
       else if (isBinaryType(sqlType)) {
-         if (tmp == null) {
-            st.setObject(pos, null);
+         if (isNull) {
+            st.setNull(pos, sqlType);
             return;
          }
          log.fine("Handling insert column=" + colName + " as binary (type=" + sqlType + ", count=" + pos + ")");
@@ -528,8 +528,8 @@ public class SqlDescription {
          st.setBinaryStream(pos, blob_stream, val.length); //(int)sizeInBytes);
       }
       else if (sqlType == Types.DATE || sqlType == Types.TIMESTAMP) {
-         if (tmp == null || tmp.length() < 1) {
-            st.setObject(pos, null);
+         if (isNull || tmp == null || tmp.length() < 1) {
+            st.setNull(pos, sqlType);
             return;
          }
          log.fine("Handling insert column=" + colName + " as Date (type=" + sqlType + ", count=" + pos + ")");
@@ -540,8 +540,8 @@ public class SqlDescription {
          st.setTimestamp(pos, ts);
       }
       else {
-         if (tmp == null) {
-            st.setObject(pos, null);
+         if (isNull || tmp == null) {
+            st.setNull(pos, sqlType);
             return;
          }
          log.fine("Handling insert column=" + colName + " (type=" + sqlType + ", count=" + pos + ")");
