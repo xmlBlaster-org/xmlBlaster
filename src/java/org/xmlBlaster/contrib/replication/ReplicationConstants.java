@@ -76,7 +76,7 @@ public interface ReplicationConstants {
     
     final static String REPL_PREFIX_DEFAULT = "REPL_";
     final static String TRANSACTION_SEQ = "_TRANS_SEQ";
-   
+    final static String MESSAGE_SEQ = "_MESSAGE_SEQ";
    
    // properties
     final static String REPL_PREFIX_KEY = "replication.prefix";

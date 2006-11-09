@@ -18,6 +18,7 @@ package org.xmlBlaster.contrib.replication.impl;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.EraseKey;
@@ -47,8 +48,10 @@ import org.xmlBlaster.contrib.replication.ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.SqlStatement;
 import org.xmlBlaster.engine.I_SubscriptionListener;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.SubscriptionEvent;
 import org.xmlBlaster.engine.SubscriptionInfo;
+import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -64,8 +67,10 @@ import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -76,9 +81,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -104,7 +111,19 @@ public class ReplManagerPlugin extends GlobalInfo
               I_ClientListener, 
               I_SubscriptionListener, 
               I_Timeout, 
-              ReplicationConstants {
+              ReplicationConstants, 
+              I_Plugin,
+              I_PublishFilter {
+
+   private class Counter {
+      long msg;
+      long trans;
+      
+      public Counter(long msg, long trans) {
+         this.msg = msg;
+         this.trans = trans;
+      }
+   }
    
    public final static String SESSION_ID = "replManager/1";
    private final static String SENDER_SESSION = "_senderSession";
@@ -114,6 +133,7 @@ public class ReplManagerPlugin extends GlobalInfo
    private String password = "secret";
    private Map replications;
    private Map replSlaveMap;
+  
    /** Keys are requestId Strings, and values are SqlStatement objects */
    private Map sqlStatementMap;
    private boolean shutdown;
@@ -135,13 +155,18 @@ public class ReplManagerPlugin extends GlobalInfo
    private long numRefresh;
    private int maxNumOfEntries = REPLICATION_MAX_ENTRIES_DEFAULT;
    private I_Info persistentInfo;
-   
+
+   private Map topicToPrefixMap;
+   private Map counterMap;
+
    /**
     * Default constructor, you need to call <tt>init()<tt> thereafter.
     */
    public ReplManagerPlugin() {
       super(new String[] {});
       this.replications = new TreeMap();
+      this.topicToPrefixMap = new HashMap();
+      this.counterMap = new HashMap();
       this.replSlaveMap = new TreeMap();
       this.sqlStatementMap = new TreeMap();
       this.transformerCache = new VersionTransformerCache();
@@ -488,11 +513,11 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#shutdown()
     */
-   public synchronized void shutdown() throws XmlBlasterException {
+   public synchronized void shutdown() {
       if (this.shutdown)
          return;
-      super.shutdown();
       try {
+         super.shutdown();
          if (this.timeoutHandle != null) {
             this.timeout.removeTimeoutListener(this.timeoutHandle);
             this.timeoutHandle = null;
@@ -509,6 +534,8 @@ public class ReplManagerPlugin extends GlobalInfo
          conn.disconnect(new DisconnectQos(this.global));
          this.replications.clear();
          this.replSlaveMap.clear();
+         this.topicToPrefixMap.clear();
+         this.counterMap.clear();
          
          synchronized(this.sqlStatementMap) {
             String[] keys = (String[])this.sqlStatementMap.keySet().toArray(new String[this.sqlStatementMap.size()]);
@@ -559,6 +586,17 @@ public class ReplManagerPlugin extends GlobalInfo
    public synchronized void register(String senderSession, String replicationPrefix, I_Info info) {
       I_Info oldInfo = (I_Info)this.replications.get(replicationPrefix);
       info.put(SENDER_SESSION, senderSession);
+      String topicName = info.get("mom.topicName", null);
+      if (topicName == null)
+         log.severe("Topic name not found for '" + replicationPrefix + "' can not map the topic to the replication prefix");
+      else {
+         this.topicToPrefixMap.put(topicName, replicationPrefix);
+
+         String name = "replication." + replicationPrefix + ".replData";
+         long[] replData = readOldReplData(this.persistentInfo, name);
+         this.counterMap.put(replicationPrefix, new Counter(replData[2],replData[1]));
+      }
+      
       if (oldInfo != null) {
          log.info("register '" + replicationPrefix + "' by senderSession='" + senderSession + "'");
          String oldSenderSession = oldInfo.get(SENDER_SESSION, senderSession);
@@ -593,6 +631,11 @@ public class ReplManagerPlugin extends GlobalInfo
          }
          else {
             log.warning("unregister '" + replicationPrefix + "' by senderSession='" + senderSession + "' was not done since there is a registration done by '" + oldSenderSession + "'. Please do it with the correct Session");
+         }
+         String topicName = oldInfo.get("mom.topicName", null);
+         if (topicName != null) {
+            this.topicToPrefixMap.remove(topicName);
+            this.counterMap.remove(replicationPrefix);
          }
       }
       this.cachedListOfReplications = null; // clear the cache
@@ -1428,6 +1471,99 @@ public class ReplManagerPlugin extends GlobalInfo
    public I_Info getPersistentInfo() {
       return this.persistentInfo;
    }
+
+   // enforced by I_PublishFilter
+   
+   public String[] getMimeExtended() {
+      return new String[] { "*" };
+   }
+
+   public String[] getMimeTypes() {
+      return new String[] { "*" };
+   }
+
+   public String getName() {
+      return "ReplManagerPlugin";
+   }
+
+   public void initialize(ServerScope glob) {
+      log.fine("invoked");
+   }
+
+   public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException {
+      String topicName = msgUnit.getKeyOid();
+      log.fine("topic='" + topicName + "'");
+      String replPrefix = (String)this.topicToPrefixMap.get(topicName);
+      if (replPrefix == null)
+         return null;
+      QosData qosData = msgUnit.getQosData();
+      long transactionSeq = qosData.getClientProperty(TRANSACTION_SEQ, 0L);
+      long messageSeq = qosData.getClientProperty(MESSAGE_SEQ, 0L);
+      Counter counter = (Counter)this.counterMap.get(replPrefix);
+      if (counter != null) {
+         if (messageSeq > 0L)
+            counter.msg = messageSeq;
+         if (transactionSeq > 0L)
+            counter.trans = transactionSeq;
+         if (messageSeq != 0L && transactionSeq != 0L) {
+            String name = "replication." + replPrefix + ".replData";
+            this.persistentInfo.put(name, "0 " + transactionSeq + " " + messageSeq);
+         }
+      }
+      return null;
+   }
+
+   public long calculateQueueEntries(String replPrefix, long transSeq, long msgSeq, long queueEntries) {
+      if (queueEntries == 0L)
+         return 0L;
+      Counter counter = (Counter)this.counterMap.get(replPrefix);
+      if (counter == null)
+         return queueEntries;
+      if (counter.msg == 0L || counter.trans == 0L)
+         return queueEntries;
+      long delta = counter.msg - msgSeq - queueEntries; // these are ptp messages
+      long ret = counter.trans - transSeq + delta;
+      if (ret < 0L) // it could be temporarly negative 
+         return 0L;
+      return ret;
+   }
+
+   private static long parseLong(String val, long def) {
+      try {
+         return Long.parseLong(val);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         return def; 
+      }
+   }
+   
+   public static long[] readOldReplData(I_Info persistentInfo, String propName) {
+      String tmp = persistentInfo.get(propName, null);
+      long replKey = 0L;
+      long transKey = 0L;
+      long msgKey = 0L;
+      if (tmp != null) {
+         StringTokenizer tokenizer = new StringTokenizer(tmp, " ");
+         if (tokenizer.hasMoreTokens()) {
+            tmp = tokenizer.nextToken().trim();
+            replKey = parseLong(tmp, 0L);
+            if (tokenizer.hasMoreTokens()) {
+               tmp = tokenizer.nextToken().trim();
+               transKey = parseLong(tmp, 0L);
+               if (tokenizer.hasMoreTokens()) {
+                  tmp = tokenizer.nextToken().trim();
+                  msgKey = parseLong(tmp, 0L);
+               }
+            }
+         }
+      }
+      else {
+         log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + propName + "' found. Starting by 0'");
+      }
+      return new long[] { replKey, transKey, msgKey };
+   }
+   
    
 }
 

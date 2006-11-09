@@ -9,8 +9,10 @@ package org.xmlBlaster.contrib.replication;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -56,10 +58,14 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private String oldReplKeyPropertyName;
    private ChangeEvent event;
    private String transactionId;
+   /** All transactions in this message (needed to delete entries after publishing) */
+   private List allTransactions;
    private String replPrefix;
    private I_DbPool dbPool;
    private String transSeqPropertyName;
    private long transSeq;
+   private String messageSeqPropertyName;
+   private long messageSeq;
    private long newReplKey;
    private boolean sendUnchangedUpdates = true;
    private String currentThreadId; // TODO REMOVE THIS AFTER TESTING
@@ -68,6 +74,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
    public ReplicationConverter() {
+      this.allTransactions = new ArrayList();
    }
 
    /**
@@ -167,8 +174,11 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
       this.transSeqPropertyName = this.dbSpecific.getName() + ".transactionSequence";
+      this.messageSeqPropertyName = this.dbSpecific.getName() + ".messageSequence";
       this.transSeq = this.persistentInfo.getLong(this.transSeqPropertyName, 0L);
       this.info.put(TRANSACTION_SEQ, "" + this.transSeq);
+      this.messageSeq = this.persistentInfo.getLong(this.messageSeqPropertyName, 0L);
+      this.info.put(MESSAGE_SEQ, "" + this.messageSeq);
       this.sendUnchangedUpdates = this.info.getBoolean(REPLICATION_SEND_UNCHANGED_UPDATES, true);
       long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
       if (tmp > -1L) {
@@ -278,11 +288,16 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          }
       }
       log.fine("sequence number '" + this.newReplKey + "' processing now for table '" + tableName + "' and transId='" + transKey + "'");
-      if (this.transactionId == null)
+      if (this.transactionId == null) {
          this.transactionId = transKey;
+         this.allTransactions.add(transKey);
+      }
       else {
          if (!this.transactionId.equals(transKey)) {
-            log.severe("the entry with replKey='" + this.newReplKey + "' tableName='" + tableName + "' with action='" + action + "' had transaction '" + transKey + "' but was expected '" + this.transactionId + "'");
+            // log.severe("the entry with replKey='" + this.newReplKey + "' tableName='" + tableName + "' with action='" + action + "' had transaction '" + transKey + "' but was expected '" + this.transactionId + "'");
+            log.fine("the entry with replKey='" + this.newReplKey + "' tableName='" + tableName + "' with action='" + action + "' had transaction '" + transKey + "' old transaction was '" + this.transactionId + "' (multiple transactions in one message)");
+            this.transactionId = transKey;
+            this.allTransactions.add(transKey);
          }
       }
       
@@ -434,8 +449,13 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          }
       }
       if (doSend) { // we put it in the attribute map not in the message itself
-         this.event.getAttributeMap().put(TRANSACTION_SEQ, "" + (++this.transSeq));
+         this.transSeq += this.allTransactions.size();
+         this.messageSeq++;
+         this.event.getAttributeMap().put(TRANSACTION_SEQ, "" + (this.transSeq));
          this.persistentInfo.put(this.transSeqPropertyName, "" + this.transSeq);
+         this.event.getAttributeMap().put(MESSAGE_SEQ, "" + (this.messageSeq));
+         
+         this.persistentInfo.put(this.messageSeqPropertyName, "" + this.messageSeq);
          this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
       }
          
@@ -464,6 +484,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       checkThread("setOutputStream", false);
       this.out = out;
       this.transactionId = null;
+      this.allTransactions.clear();
       this.sqlInfo = new SqlInfo(this.info);
       SqlDescription description = new SqlDescription(this.info);
       description.setCommand(REPLICATION_CMD);
@@ -480,7 +501,24 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             log.severe("No transaction id has been found for " + this.sqlInfo.toXml(""));
          return null;
       }
-      String statement = "DELETE FROM " + this.replPrefix + "ITEMS WHERE TRANS_KEY='" + this.transactionId + "'";
+      String statement = null;
+      if (this.allTransactions.size() == 1) {
+         statement = "DELETE FROM " + this.replPrefix + "ITEMS WHERE TRANS_KEY='" + this.transactionId + "'";
+      }
+      else if (this.allTransactions.size() > 1) {
+         StringBuffer buf = new StringBuffer(1024);
+         buf.append("DELETE FROM ").append(this.replPrefix).append("ITEMS WHERE TRANS_KEY IN (");
+         for (int i=0; i < this.allTransactions.size(); i++) {
+            if (i > 0)
+               buf.append(",");
+            buf.append("'").append(this.allTransactions.get(i)).append("'");
+         }
+         buf.append(")");
+         statement = buf.toString();
+      }
+      else {
+         log.severe("The transaction for this message was not defined");
+      }
       return statement;
    }
 

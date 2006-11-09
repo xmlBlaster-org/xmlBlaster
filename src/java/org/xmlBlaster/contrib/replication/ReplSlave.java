@@ -107,6 +107,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private int tmpStatus;
    private String lastMessageKey;
    private long maxChunkSize = 1024L*1024; // TODO make this configurable
+   private long tmpMsgSeq;
+   private long tmpMsgSeq2;
+   private long messageSeq;
    
    /** we don't want to sync the check method because the jmx will synchronize on the object too */
    private Object initSync = new Object();
@@ -165,7 +168,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          default : return "NORMAL";
       }
    }
-   
+
    /**
     * The info comes as the client properties of the subscription Qos. Avoids double configuration.
     */
@@ -199,16 +202,15 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          
          final boolean doPersist = false;
          setDispatcher(this.persistentInfo.getBoolean(this.slaveSessionId + ".dispatcher", false), doPersist);
-         this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplKey";
-         long tmp = this.persistentInfo.getLong(this.oldReplKeyPropertyName, -1L);
-         if (tmp > -1L) {
-            this.maxReplKey = tmp;
-            log.info("One entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Will start with '" + this.maxReplKey + "'");
-         }
-         else {
-            log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + this.oldReplKeyPropertyName + "' found. Starting by 0'");
-            this.maxReplKey = 0L;
-         }
+
+         this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplData";
+         long[] replData = ReplManagerPlugin.readOldReplData(this.persistentInfo, this.oldReplKeyPropertyName);
+         this.tmpReplKey = replData[0];
+         this.tmpTransSeq = replData[1];
+         this.tmpMsgSeq = replData[2];
+         this.transactionSeq = tmpTransSeq;
+         this.messageSeq = tmpMsgSeq;
+         
          this.srcVersion = info.get(REPLICATION_VERSION, "0.0");
          this.ownVersion = info.get(REPL_VERSION, null);
          
@@ -251,11 +253,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
-   private final void setMaxReplKey(long replKey) {
+   private final void setMaxReplKey(long replKey, long transKey, long msgKey) {
       boolean doStore = this.maxReplKey != replKey;
       this.maxReplKey = replKey;
       if (doStore)
-         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + replKey);
+         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + replKey + " " + transKey + " " + msgKey);
       String client = "client/";
       if (this.slaveSessionId == null)
          return;
@@ -569,8 +571,13 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                   log.finest("Processing entry '" + txt + "' for client '"  + this.name + "'");
                }
                MsgUnit msgUnit = entry.getMsgUnit();
-               this.tmpTransSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, 0L);
+               long tmpCounter = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, 0L);
+               if (tmpCounter != 0L)
+                  this.tmpTransSeq = tmpCounter;
                this.tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+               tmpCounter = msgUnit.getQosData().getClientProperty(ReplicationConstants.MESSAGE_SEQ, 0L);
+               if (tmpCounter != 0L)
+                  this.tmpMsgSeq =  tmpCounter;
                if (this.tmpReplKey > -1L) {
                   break; // the other messages will have lower numbers (if any) so we break for performance.
                }
@@ -667,9 +674,11 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             ReferenceEntry entry = (ReferenceEntry)remoteEntries.get(i);
             MsgUnit msgUnit = entry.getMsgUnit();
             long replKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+            /* this is done when acknowledge comes
             if (replKey > -1L) {
-               setMaxReplKey(replKey);
+               setMaxReplKey(replKey, this.tmpTransSeq, this.tmpMsgSeq);
             }
+            */
             log.info("check: processing '" + replKey + "' for client '" + this.slaveSessionId + "' ");
             if (replKey < 0L) { // this does not come from the normal replication, so these are other messages which we just deliver
                ClientProperty endMsg = msgUnit.getQosData().getClientProperty(ReplicationConstants.END_OF_TRANSITION);
@@ -931,7 +940,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       return this.lastMessage;
    }
 
-   public void checkStatus() {
+   public synchronized void checkStatus() {
       log.finest("invoked for '" + this.sessionName + "'");
       I_AdminSession session = null;
       try {
@@ -954,11 +963,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       
       // getQueueEntries
       try {
-         this.queueEntries = session.getCbQueueNumMsgs();
          if (this.tmpTransSeq2 != 0) {
             this.transactionSeq = this.tmpTransSeq2;
             this.tmpTransSeq2 = 0;
          }
+         if (this.tmpMsgSeq2 != 0) {
+            this.messageSeq = this.tmpMsgSeq2;
+            this.tmpMsgSeq2 = 0;
+         }
+         this.queueEntries = this.manager.calculateQueueEntries(this.replPrefix, this.transactionSeq, this.messageSeq, session.getCbQueueNumMsgs());
+         // this.queueEntries = this.manager.calculateQueueEntries(this.replPrefix, this.tmpTransSeq, this.tmpMsgSeq, session.getCbQueueNumMsgs());
       }
       catch (Exception ex) {
          log.severe("an exception occured when retieving the number of queue entries for '" + this.sessionName + "':" + ex.getMessage());
@@ -1000,10 +1014,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
-   public void postCheck(MsgQueueEntry[] processedEntries) throws Exception {
+   public synchronized void postCheck(MsgQueueEntry[] processedEntries) throws Exception {
       if (this.tmpTransSeq != 0)
         this.tmpTransSeq2 = this.tmpTransSeq;
-      setMaxReplKey(this.tmpReplKey);
+      if (this.tmpMsgSeq != 0)
+         this.tmpMsgSeq2 = this.tmpMsgSeq;
+      setMaxReplKey(this.tmpReplKey, this.tmpTransSeq, this.tmpMsgSeq);
       if (this.tmpStatus > -1)
          setStatus(this.tmpStatus);
    }

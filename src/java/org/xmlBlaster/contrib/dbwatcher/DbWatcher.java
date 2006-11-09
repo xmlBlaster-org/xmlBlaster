@@ -70,6 +70,8 @@ public class DbWatcher implements I_ChangeListener {
    private I_DbPool dbPool;
    private I_AlertProducer[] alertProducerArr;
    private int changeCount;
+   private int collectedMessages = 1;
+   private int maxCollectedMessages;
    
    /**
     * Default constructor, you need to call {@link #init} thereafter. 
@@ -150,6 +152,7 @@ public class DbWatcher implements I_ChangeListener {
          this.dbPool = getDbPool(this.info);
 
       // Now we load all plugins to do the job
+      this.maxCollectedMessages = this.info.getInt("dbWatcher.maxCollectedStatements", 0);
       
       String converterClass = this.info.get("converter.class", "org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter").trim();
       String changeDetectorClass = this.info.get("changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector").trim();
@@ -200,6 +203,7 @@ public class DbWatcher implements I_ChangeListener {
       if (countPlugins == 0) {
          log.warning("No AlertProducers are registered, set 'alertProducer.class' to point to your plugin class name");
       }
+      
       if (log.isLoggable(Level.FINE)) log.fine("DbWatcher created");
    }
    
@@ -289,6 +293,7 @@ public class DbWatcher implements I_ChangeListener {
    private final void doPostStatement() {
       if (this.dataConverter != null) {
          String postStatement = this.dataConverter.getPostStatement();
+         this.collectedMessages = 1;
          if (postStatement != null) {
             try {
                log.fine("executing the post statement '" + postStatement + "'");
@@ -351,23 +356,28 @@ public class DbWatcher implements I_ChangeListener {
                           newGroupColValue = rs.getString(groupColName);
                           if (rs.wasNull()) newGroupColValue = "__NULL__";
                       }
-                      if (log.isLoggable(Level.FINEST)) log.finest("useGroupCol="+useGroupCol+", groupColName="+groupColName+", groupColValue="+groupColValue+", newGroupColValue="+newGroupColValue);
+                      if (log.isLoggable(Level.FINEST)) 
+                         log.finest("useGroupCol="+useGroupCol+", groupColName="+groupColName+", groupColValue="+groupColValue+", newGroupColValue="+newGroupColValue);
                       
                       if (!first && !groupColValue.equals(newGroupColValue)) {
-                         first = false;
-                         if (log.isLoggable(Level.FINE)) log.fine("Processing " + groupColName + "=" +
-                            groupColValue + " has changed to '" +
-                            newGroupColValue + "'");
-                         String resultXml = "";
-                         if (dataConverter != null) {
-                            dataConverter.done();
-                            resultXml = bout.toString();
+                         if (log.isLoggable(Level.FINE)) 
+                            log.fine("Processing " + groupColName + "=" + groupColValue + " has changed to '" + newGroupColValue + "'");
+
+                         if (maxCollectedMessages < 1 || collectedMessages >= maxCollectedMessages) {
+                            String resultXml = "";
+                            first = false;
+                            if (dataConverter != null) {
+                               dataConverter.done();
+                               resultXml = bout.toString();
+                            }
+                            boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
+                            if (published)
+                               doPostStatement();
+                            changeCount++;
+                            bout = null;
                          }
-                         boolean published = hasChanged(new ChangeEvent(groupColName, groupColValue, resultXml, command, changeEvent.getAttributeMap()), true);
-                         if (published)
-                            doPostStatement();
-                         changeCount++;
-                         bout = null;
+                         else
+                            collectedMessages++;
                       }
     
                       groupColValue = newGroupColValue;
