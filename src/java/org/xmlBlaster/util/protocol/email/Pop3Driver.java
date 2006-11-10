@@ -786,7 +786,7 @@ implements I_Plugin, I_Timeout,
 
          EmailData[] datas = new EmailData[msgs.length];
          for (int i = 0; i < msgs.length; i++) {
-            log.fine("Readig message #" + (i+1) + "/" + msgs.length + " from INBOX");
+            log.fine("Reading message #" + (i+1) + "/" + msgs.length + " from INBOX");
             MimeMessage msg = (MimeMessage) msgs[i];
             if (clear)
                msg.setFlag(Flags.Flag.DELETED, true);
