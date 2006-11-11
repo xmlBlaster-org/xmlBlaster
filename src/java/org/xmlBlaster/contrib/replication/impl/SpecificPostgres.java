@@ -215,6 +215,13 @@ public class SpecificPostgres extends SpecificDefault {
    }
 
    /**
+    * returns true if the trigger exists already.
+    */
+   protected boolean triggerExists(Connection conn, String sequenceName) throws Exception {
+      throw new Exception("The method triggerExist has not been implemented yet. Please implement it");
+   }
+
+   /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#triggerExists(org.xmlBlaster.contrib.replication.TableToWatchInfo)
     */
    public boolean triggerExists(Connection conn, TableToWatchInfo tableToWatch) throws Exception {

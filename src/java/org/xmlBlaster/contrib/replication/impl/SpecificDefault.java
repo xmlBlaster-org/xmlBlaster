@@ -349,6 +349,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
 
    protected abstract boolean sequenceExists(Connection conn, String sequenceName) throws Exception;
    
+   protected abstract boolean triggerExists(Connection conn, String triggerName) throws Exception;
    /**
     * Checks if the sequence has to be created. 
     * If it is a 'CREATE SEQUENCE' operation a non-negative value is returned,
@@ -378,7 +379,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                return 0;
             }
             else {
-               log.info("table '" +  name + "' does not exist, will create it");
+               log.info("sequence '" +  name + "' does not exist, will create it");
                return 1;
             }
             //incrementReplKey(conn);
@@ -387,6 +388,56 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          }
          catch (Exception ex) {
             log.info("table '" +  name + "' does not exist (an exception occured), will create it");
+            return 1;
+         }
+      }
+      catch (Exception ex) {
+         conn = removeFromPool(conn, ROLLBACK_NO);
+         throw ex;
+      }
+      finally {
+         conn = releaseIntoPool(conn, COMMIT_NO);
+      }
+   }
+   
+   /**
+    * Checks if the trigger has to be created.
+    * If it is a 'CREATE TRIGGER' operation a non-negative value is returned,
+    * if it is another kind of operation, -1 is returned.
+    * If the triggger already exists, it returns zero.
+    * If the trigger does not exist, it returns 1.
+    * @param creationRequest the sql request to analyze.
+    * NOTE: only made public for testing purposes.
+    * @return 
+    * @throws Exception
+    */
+   public final int checkTriggerForCreation(String creationRequest) throws Exception {
+      String tmp = getObjectName("CREATE TRIGGER", creationRequest);
+      if (tmp == null)
+         return -1;
+      String name = this.dbMetaHelper.getIdentifier(tmp);
+      if (name == null)
+         return -1;
+      
+      Connection conn = null;
+      try {
+         conn = this.dbPool.reserve();
+         conn.setAutoCommit(true);
+         try {
+            if (triggerExists(conn, name)) {
+               log.info("trigger '" +  name + "' exists, will not create it");
+               return 0;
+            }
+            else {
+               log.info("trigger '" +  name + "' does not exist, will create it");
+               return 1;
+            }
+            //incrementReplKey(conn);
+            //log.info("sequence '" +  name + "' exists, will not create it");
+            //return 0; 
+         }
+         catch (Exception ex) {
+            log.info("trigger '" +  name + "' does not exist (an exception occured), will create it");
             return 1;
          }
       }
@@ -452,6 +503,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
                   if (checkTableForCreation(cmd) == 0)
                      continue;
                   if (checkSequenceForCreation(cmd) == 0)
+                     continue;
+                  if (checkTriggerForCreation(cmd) == 0)
                      continue;
                }
                if (cmd.trim().length() > 0) {

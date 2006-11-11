@@ -52,6 +52,25 @@ END;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 -- ---------------------------------------------------------------------------- 
+-- ${replPrefix}col2xml_null writes a column containing a null object.          
+--   name: the name of the column                                               
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_null(name VARCHAR, 
+                           tmp IN OUT NOCOPY CLOB) RETURN INTEGER AS
+  ch   VARCHAR(${charWidth});
+  fake INTEGER;
+BEGIN
+   ch := '<col name="';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   dbms_lob.writeappend(tmp, length(name), name);
+   ch := '" type="null"/>';
+   dbms_lob.writeappend(tmp, length(ch), ch);
+   RETURN 0;
+END ${replPrefix}col2xml_null;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+-- ---------------------------------------------------------------------------- 
 -- This is only for old LONG datas                                              
 -- ---------------------------------------------------------------------------- 
 
@@ -170,26 +189,6 @@ BEGIN
    dbms_lob.writeappend(tmp, length(ch), ch);
    RETURN 0;
 END ${replPrefix}col2xml_cdata;
--- EOC (end of command: needed as a separator for our script parser)            
-
-
--- ---------------------------------------------------------------------------- 
--- ${replPrefix}col2xml_null writes a column containing a null object.          
---   name: the name of the column                                               
--- ---------------------------------------------------------------------------- 
-
-CREATE OR REPLACE FUNCTION ${replPrefix}col2xml_null(name VARCHAR, 
-                           tmp IN OUT NOCOPY CLOB) RETURN INTEGER AS
-  ch   VARCHAR(${charWidth});
-  fake INTEGER;
-BEGIN
-   ch := '<col name="';
-   dbms_lob.writeappend(tmp, length(ch), ch);
-   dbms_lob.writeappend(tmp, length(name), name);
-   ch := '" type="null"/>';
-   dbms_lob.writeappend(tmp, length(ch), ch);
-   RETURN 0;
-END ${replPrefix}col2xml_null;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 

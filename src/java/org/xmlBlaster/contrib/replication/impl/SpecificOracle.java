@@ -903,6 +903,27 @@ public class SpecificOracle extends SpecificDefault {
       }
    }
 
+   protected boolean triggerExists(Connection conn, String triggerName) throws Exception {
+      Statement st = null;
+      try {
+         st = conn.createStatement();
+         ResultSet rs = st.executeQuery("SELECT * from ALL_TRIGGERS WHERE TRIGGER_NAME='" + triggerName + "'");
+         return rs.next();
+      }
+      finally {
+         if (st != null) {
+            try {
+               st.close();
+            }
+            catch (Exception ex) {
+               log.warning("An exception occured when closing the statement, but the result will be considered: " + ex.getMessage());
+               ex.printStackTrace();
+            }
+         }
+      }
+   }
+   
+   
    /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#triggerExists(java.sql.Connection, org.xmlBlaster.contrib.replication.TableToWatchInfo)
     */
