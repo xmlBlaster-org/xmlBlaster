@@ -13,6 +13,7 @@ import javax.jms.JMSException;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
+import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.Timestamp;
 
 /**
@@ -26,11 +27,19 @@ public class XBStreamingMessage extends XBTextMessage {
    
    private InputStream in;
    private int maxBufSize = 1000000;
+   private I_ReplaceContent contentReplacer;
    
-   public XBStreamingMessage(XBSession session, InputStream in) {
+   /**
+    * @param session
+    * @param in
+    * @param contentReplacer can be null, in which case the content of the chunk is not modified on
+    * publishing.
+    */
+   public XBStreamingMessage(XBSession session, InputStream in, I_ReplaceContent contentReplacer) {
       super(session, null);
       if (in != null)
          setInputStream(in);
+      this.contentReplacer = contentReplacer;
    }
    
    public InputStream getInputStream() {
@@ -66,10 +75,12 @@ public class XBStreamingMessage extends XBTextMessage {
                   break;
             }
             int length = offset;
+            if (this.contentReplacer != null)
+               buf = this.contentReplacer.replace(buf, this.props);
 
             BytesMessage chunk = this.session.createBytesMessage();
             MessageHelper.copyProperties(this, chunk);
-            
+
             chunk.writeBytes(buf, 0, length);
             if (length < bufSize)
                chunk.setBooleanProperty(XBConnectionMetaData.JMSX_GROUP_EOF, true);

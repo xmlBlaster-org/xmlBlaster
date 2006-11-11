@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.jms;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -324,10 +326,11 @@ public class XBSession extends Thread implements Session, I_Callback {
       return new XBStreamMessage(this, null);
    }
 
-   public XBStreamingMessage createStreamingMessage() throws JMSException {
+   public XBStreamingMessage createStreamingMessage(I_ReplaceContent replaceContent) throws JMSException {
       checkIfOpen("createStreamingMessage");
       checkControlThread();
-      return new XBStreamingMessage(this, null);
+      final InputStream inputStream = null;
+      return new XBStreamingMessage(this, inputStream, replaceContent);
       // return new XBTextMessage(this, null, null, null);      
    }
 
