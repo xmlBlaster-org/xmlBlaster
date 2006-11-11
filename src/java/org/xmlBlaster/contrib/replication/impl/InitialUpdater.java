@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
@@ -41,18 +42,21 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
+import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.jms.XBDestination;
+import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.jms.XBMessageProducer;
 import org.xmlBlaster.jms.XBSession;
 import org.xmlBlaster.jms.XBStreamingMessage;
 import org.xmlBlaster.util.Execute;
 import org.xmlBlaster.util.I_ExecuteListener;
+import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
 
-public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionStateListener {
+public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionStateListener, I_ReplaceContent, ReplicationConstants {
 
    public class ConnectionInfo {
       private Connection connection;
@@ -214,6 +218,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    /** Contains updates to be executed where the key is the version */
    private Map preparedUpdates = new HashMap();
    private boolean collectInitialUpdates;
+   private boolean initialDumpAsXml;
+   private int initialDumpMaxSize = 1048576;
    
    /**
     * Not doing anything.
@@ -257,8 +263,12 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.initialDataTopic = info.get("replication.initialDataTopic", null);
       String currentVersion = this.info.get("replication.version", "0.0");
       // this is only needed on the master side
-      this.info.put(ReplicationConstants.SUPPORTED_VERSIONS, getSupportedVersions(currentVersion));
-      
+      this.info.put(SUPPORTED_VERSIONS, getSupportedVersions(currentVersion));
+      this.initialDumpAsXml = this.info.getBoolean("replication.initialDumpAsXml", false);
+      this.initialDumpMaxSize = this.info.getInt("replication.initialDumpMaxSize", 1048576);       
+      if (this.initialDumpAsXml)
+         this.initialDumpMaxSize = (int)(0.666 * this.initialDumpMaxSize);
+         
       boolean needsPublisher = this.info.getBoolean(I_DbSpecific.NEEDS_PUBLISHER_KEY, true);
       if (needsPublisher) {
          this.info.putObject("_connectionStateListener", this);
@@ -323,17 +333,17 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       
       description.setAttribute(new ClientProperty(CREATE_COUNTER_KEY, "int",
             null, "" + counter));
-      description.setAttribute(new ClientProperty(ReplicationConstants.EXTRA_REPL_KEY_ATTR, null, null, "" + newReplKey));
+      description.setAttribute(new ClientProperty(EXTRA_REPL_KEY_ATTR, null, null, "" + newReplKey));
       if (counter == 0) {
-         description.setCommand(ReplicationConstants.CREATE_ACTION);
+         description.setCommand(CREATE_ACTION);
          description.setAttribute(new ClientProperty(
-               ReplicationConstants.ACTION_ATTR, null, null,
-               ReplicationConstants.CREATE_ACTION));
+               ACTION_ATTR, null, null,
+               CREATE_ACTION));
       } else {
-         description.setCommand(ReplicationConstants.REPLICATION_CMD);
+         description.setCommand(REPLICATION_CMD);
          description.setAttribute(new ClientProperty(
-               ReplicationConstants.ACTION_ATTR, null, null,
-               ReplicationConstants.INSERT_ACTION));
+               ACTION_ATTR, null, null,
+               INSERT_ACTION));
       }
 
       Map map = new HashMap();
@@ -374,7 +384,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          String msg = new String(content);
          // this comes from the requesting ReplSlave
          log.info("update for '" + topic + "' and msg='" + msg + "'");
-         if (ReplicationConstants.REPL_REQUEST_UPDATE.equals(msg)) {
+         if (REPL_REQUEST_UPDATE.equals(msg)) {
             ClientProperty prop = (ClientProperty)attrMap.get("_sender");
             if (prop == null)
                throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
@@ -384,23 +394,23 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             if (replTopic == null)
                throw new Exception("update for '" + msg + "' failed since the property 'mom.topicName' has not been defined. Check your DbWatcher Configuration file");
 
-            prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
+            prop = (ClientProperty)attrMap.get(SLAVE_NAME);
             if (prop == null)
                throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
             String slaveName = prop.getStringValue();
             this.dbSpecific.clearCancelUpdate(slaveName);
 
-            prop = (ClientProperty)attrMap.get(ReplicationConstants.REPL_VERSION);
+            prop = (ClientProperty)attrMap.get(REPL_VERSION);
             String requestedVersion = null;
             if (prop != null)
                requestedVersion = prop.getStringValue();
             // this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
-            prop = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_FILES_LOCATION);
+            prop = (ClientProperty)attrMap.get(INITIAL_FILES_LOCATION);
             String initialFilesLocation = null;
             if (prop != null)
                initialFilesLocation = prop.getStringValue();
             
-            prop = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_UPDATE_ONLY_REGISTER);
+            prop = (ClientProperty)attrMap.get(INITIAL_UPDATE_ONLY_REGISTER);
             boolean onlyRegister = false;
             if (prop != null)
                onlyRegister = prop.getBooleanValue();
@@ -425,9 +435,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
                executionThread.process();
             }
          }
-         else if (ReplicationConstants.REPL_REQUEST_CANCEL_UPDATE.equals(msg)) {
+         else if (REPL_REQUEST_CANCEL_UPDATE.equals(msg)) {
             // do cancel
-            ClientProperty prop = (ClientProperty)attrMap.get(ReplicationConstants.SLAVE_NAME);
+            ClientProperty prop = (ClientProperty)attrMap.get(SLAVE_NAME);
             if (prop == null)
                throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
             String slaveName = prop.getStringValue();
@@ -438,17 +448,17 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
                   exec.stop();
             }
          }
-         else if (ReplicationConstants.REPL_REQUEST_RECREATE_TRIGGERS.equals(msg)) {
+         else if (REPL_REQUEST_RECREATE_TRIGGERS.equals(msg)) {
             final boolean force = true;
             final boolean forceSend = false;
             this.dbSpecific.addTriggersIfNeeded(force, null, forceSend);
          }
-         else if (ReplicationConstants.STATEMENT_ACTION.equals(msg)) {
-            String sql = ((ClientProperty)attrMap.get(ReplicationConstants.STATEMENT_ATTR)).getStringValue();
-            boolean isHighPrio = ((ClientProperty)attrMap.get(ReplicationConstants.STATEMENT_PRIO_ATTR)).getBooleanValue();
-            long maxResponseEntries = ((ClientProperty)attrMap.get(ReplicationConstants.MAX_ENTRIES_ATTR)).getLongValue();
-            String statementId = ((ClientProperty)attrMap.get(ReplicationConstants.STATEMENT_ID_ATTR)).getStringValue();
-            String sqlTopic =  ((ClientProperty)attrMap.get(ReplicationConstants.SQL_TOPIC_ATTR)).getStringValue();
+         else if (STATEMENT_ACTION.equals(msg)) {
+            String sql = ((ClientProperty)attrMap.get(STATEMENT_ATTR)).getStringValue();
+            boolean isHighPrio = ((ClientProperty)attrMap.get(STATEMENT_PRIO_ATTR)).getBooleanValue();
+            long maxResponseEntries = ((ClientProperty)attrMap.get(MAX_ENTRIES_ATTR)).getLongValue();
+            String statementId = ((ClientProperty)attrMap.get(STATEMENT_ID_ATTR)).getStringValue();
+            String sqlTopic =  ((ClientProperty)attrMap.get(SQL_TOPIC_ATTR)).getStringValue();
             log.info("Be aware that the number of entries in the result set will be limited to '" + maxResponseEntries + "'. To change this use 'replication.sqlMaxEntries'");
             final boolean isMaster = true;
             byte[] response  = null;
@@ -463,23 +473,23 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
             
             if (this.publisher != null) {
                Map map = new HashMap();
-               map.put(ReplicationConstants.MASTER_ATTR, this.replPrefix);
-               map.put(ReplicationConstants.STATEMENT_ID_ATTR, statementId);
-               map.put("_command", ReplicationConstants.STATEMENT_ACTION);
+               map.put(MASTER_ATTR, this.replPrefix);
+               map.put(STATEMENT_ID_ATTR, statementId);
+               map.put("_command", STATEMENT_ACTION);
                if (ex != null)
-                  map.put(ReplicationConstants.EXCEPTION_ATTR, ex.getMessage());
+                  map.put(EXCEPTION_ATTR, ex.getMessage());
                this.publisher.publish(sqlTopic, response, map);
             }
             if (ex != null)
                throw ex;
          }
-         else if (ReplicationConstants.INITIAL_UPDATE_START_BATCH.equals(msg)) {
+         else if (INITIAL_UPDATE_START_BATCH.equals(msg)) {
             fireInitialUpdates();
          }
-         else if (ReplicationConstants.INITIAL_UPDATE_COLLECT.equals(msg)) {
+         else if (INITIAL_UPDATE_COLLECT.equals(msg)) {
             synchronized(this.preparedUpdates) {
                this.collectInitialUpdates = true;
-               log.info("Will collect initial updates until message '" + ReplicationConstants.INITIAL_UPDATE_START_BATCH + "' comes");
+               log.info("Will collect initial updates until message '" + INITIAL_UPDATE_START_BATCH + "' comes");
             }
          }
          else {
@@ -509,7 +519,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       attrs.put("_command", "INITIAL_DATA_RESPONSE");
       attrs.put("_minReplKey", "" + minKey);
       attrs.put("_maxReplKey", "" + maxKey);
-      attrs.put(ReplicationConstants.SLAVE_NAME, SpecificDefault.toString(slaveSessionNames));
+      attrs.put(SLAVE_NAME, SpecificDefault.toString(slaveSessionNames));
       if (this.publisher != null)
          this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
       else
@@ -553,13 +563,13 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          
          FileInputStream fis = new FileInputStream(file);
          
-         XBStreamingMessage msg = session.createStreamingMessage();
+         XBStreamingMessage msg = session.createStreamingMessage(this);
          msg.setStringProperty("_filename", shortFilename);
-         msg.setLongProperty(ReplicationConstants.REPL_KEY_ATTR, minKey);
-         msg.setStringProperty(ReplicationConstants.DUMP_ACTION, "true");
+         msg.setLongProperty(REPL_KEY_ATTR, minKey);
+         msg.setStringProperty(DUMP_ACTION, "true");
          if (initialFilesLocation != null) {
-            msg.setStringProperty(ReplicationConstants.INITIAL_FILES_LOCATION, initialFilesLocation);
-            msg.setStringProperty(ReplicationConstants.INITIAL_DATA_ID, dumpId);
+            msg.setStringProperty(INITIAL_FILES_LOCATION, initialFilesLocation);
+            msg.setStringProperty(INITIAL_DATA_ID, dumpId);
          }
          msg.setInputStream(fis);
          producer.send(msg);
@@ -575,8 +585,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
                   FileOutputStream os = new FileOutputStream(backupFileName);
                   long length = file.length();
                   long remaining = length;
-                  final int BYTE_LENGTH = 100000; // For the moment it is hardcoded
-                  byte[] buf = new byte[BYTE_LENGTH];
+                  byte[] buf = new byte[this.initialDumpMaxSize];
                   while (remaining > 0) {
                      int tot = bis.read(buf);
                      remaining -= tot;
@@ -615,20 +624,20 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          // then we save it in a file but we must tell it is finished now
          TextMessage  endMsg = session.createTextMessage();
          endMsg.setText("INITIAL UPDATE WILL BE STORED UNDER '" + initialFilesLocation + "'");
-         endMsg.setBooleanProperty(ReplicationConstants.INITIAL_DATA_END, true);
-         endMsg.setStringProperty(ReplicationConstants.INITIAL_DATA_ID, dumpId);
-         endMsg.setStringProperty(ReplicationConstants.INITIAL_FILES_LOCATION, initialFilesLocation);
+         endMsg.setBooleanProperty(INITIAL_DATA_END, true);
+         endMsg.setStringProperty(INITIAL_DATA_ID, dumpId);
+         endMsg.setStringProperty(INITIAL_FILES_LOCATION, initialFilesLocation);
          producer.send(endMsg);
          endMsg = session.createTextMessage();
          endMsg.setText("INITIAL UPDATE WILL BE STORED UNDER '" + initialFilesLocation + "' (going to remote)");
-         endMsg.setBooleanProperty(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE, true);
-         endMsg.setStringProperty(ReplicationConstants.INITIAL_DATA_ID, dumpId);
-         endMsg.setStringProperty(ReplicationConstants.INITIAL_FILES_LOCATION, initialFilesLocation);
+         endMsg.setBooleanProperty(INITIAL_DATA_END_TO_REMOTE, true);
+         endMsg.setStringProperty(INITIAL_DATA_ID, dumpId);
+         endMsg.setStringProperty(INITIAL_FILES_LOCATION, initialFilesLocation);
          producer.send(endMsg);
       }
       TextMessage  endMsg = session.createTextMessage();
       endMsg.setText("INITIAL UPDATE ENDS HERE");
-      endMsg.setBooleanProperty(ReplicationConstants.END_OF_TRANSITION , true);
+      endMsg.setBooleanProperty(END_OF_TRANSITION , true);
       producer.send(endMsg);
    }
    
@@ -700,11 +709,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          String version = VersionTransformerCache.stripReplicationVersion(filename);
          if (version != null && prefix.equals(this.replPrefix)) {
             log.info("added version='" + version + "' for prefix='" + prefix + "' when encountering file='" + filename + "'");
-            set.add(prefix + ReplicationConstants.VERSION_TOKEN + version.trim());
+            set.add(prefix + VERSION_TOKEN + version.trim());
          }
       }
       if (currentReplVersion != null) {
-         String txt = this.replPrefix + ReplicationConstants.VERSION_TOKEN + currentReplVersion; 
+         String txt = this.replPrefix + VERSION_TOKEN + currentReplVersion; 
          set.add(txt);
          log.info("added default version '" + txt + "'");
       }
@@ -775,4 +784,50 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.info.put("_InitialUpdaterRegistered", "false");
    }
 
+   // enforced by I_ReplaceContent
+   /**
+    * 
+    */
+   public byte[] replace(byte[] oldContent, Map clientProperties) {
+      if (!this.initialDumpAsXml)
+      return oldContent;
+      SqlInfo sqlInfo = new SqlInfo(this.info);
+      SqlDescription description = new SqlDescription(this.info);
+      description.setCommand(INITIAL_XML_CMD);
+      ClientProperty prop = (ClientProperty)clientProperties.get(FILENAME_ATTR);
+      
+      if (prop != null)
+         description.setAttribute(prop);
+      prop = (ClientProperty)clientProperties.get(TIMESTAMP_ATTR);
+      
+      if (prop != null)
+         description.setAttribute(prop);
+
+      prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_SEQ, clientProperties);
+      if (prop != null) {
+         prop = new ClientProperty(XBConnectionMetaData.JMSX_GROUP_SEQ, null, null, prop.getStringValue());
+         description.setAttribute(prop);
+      }
+      
+      prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EOF, clientProperties);
+      if (prop != null) {
+         prop = new ClientProperty(XBConnectionMetaData.JMSX_GROUP_EOF, null, null, prop.getStringValue());
+         description.setAttribute(prop);
+      }
+      
+      prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EX, clientProperties);
+      if (prop != null) {
+         prop = new ClientProperty(XBConnectionMetaData.JMSX_GROUP_EX, null, null, prop.getStringValue());
+         description.setAttribute(prop);
+      }
+      
+      prop = new ClientProperty(DUMP_CONTENT_ATTR, oldContent);
+      description.setAttribute(prop);
+      sqlInfo.setDescription(description);
+      String ret = sqlInfo.toXml("");
+      if (log.isLoggable(Level.FINEST))
+         log.finest(ret);
+      return ret.getBytes();
+   }
+   
 }

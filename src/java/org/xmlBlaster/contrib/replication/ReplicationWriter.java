@@ -147,7 +147,6 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       this.doAlter = info.getBoolean("replication.alters", true);
       this.doStatement = info.getBoolean("replication.statements", true);
       this.schemaToWipeout = info.get("replication.writer.schemaToWipeout", null);
-      
       // if (this.doStatement)
       //    this.sqlTopic = this.info.get("replication.sqlTopic", null);
       String prePostStatementClass = this.info.get("dbWriter.prePostStatement.class", "");
@@ -309,6 +308,43 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       }
 
       String command = description.getCommand();
+      
+      if (command.equals(INITIAL_XML_CMD)) {
+         // "_filename"
+         // "_timestamp"
+         // XBMessage.get
+         
+         // "JMSXGroupSeq";
+         // "JMSXGroupEof";
+         // "JMSXGroupEx";
+         
+         // XBConnectionMetaData.JMSX_GROUP_SEQ
+         // XBConnectionMetaData.JMSX_GROUP_EOF
+         // XBConnectionMetaData.JMSX_GROUP_EX
+         ClientProperty filename = description.getAttribute(FILENAME_ATTR);
+         ClientProperty timestamp = description.getAttribute(TIMESTAMP_ATTR);
+         ClientProperty contentProp = description.getAttribute(DUMP_CONTENT_ATTR);
+         ClientProperty groupSeq = description.getAttribute(XBConnectionMetaData.JMSX_GROUP_SEQ);
+         ClientProperty groupEof = description.getAttribute(XBConnectionMetaData.JMSX_GROUP_EOF);
+         ClientProperty groupEx = description.getAttribute(XBConnectionMetaData.JMSX_GROUP_EX);
+
+         byte[] content = contentProp.getBlobValue();
+         Map map = new HashMap();
+         if (filename != null)
+            map.put(FILENAME_ATTR, filename);
+         if (timestamp != null)
+            map.put(TIMESTAMP_ATTR, timestamp);
+         if (groupSeq != null)
+            map.put(XBConnectionMetaData.JMSX_GROUP_SEQ, groupSeq);
+         if (groupEof != null)
+            map.put(XBConnectionMetaData.JMSX_GROUP_EOF, groupEof);
+         if (groupEx != null)
+            map.put(XBConnectionMetaData.JMSX_GROUP_EX, groupEx);
+         String topic = "xmlDump";
+         this.updateDump(topic, content, map);
+         return;
+      }
+      
       String action = getStringAttribute(ACTION_ATTR, null, description);
       String originalCatalog = getStringAttribute(CATALOG_ATTR, null, description); 
       String originalSchema = getStringAttribute(SCHEMA_ATTR, null, description);

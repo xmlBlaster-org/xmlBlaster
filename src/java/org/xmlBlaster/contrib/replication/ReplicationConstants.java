@@ -36,6 +36,9 @@ public interface ReplicationConstants {
     final static String SCHEMA_ATTR = "schema";
     final static String VERSION_ATTR = "version";
     final static String ACTION_ATTR = "action";
+    final static String FILENAME_ATTR = "_filename"; // used for xml initial update dump
+    final static String TIMESTAMP_ATTR = "_timestamp"; // used for xml initial update dump
+    final static String DUMP_CONTENT_ATTR = "_dumpContent"; // used for xml initial update dump
     final static String OLD_CONTENT_ATTR = "oldContent";
     final static String STATEMENT_ATTR = "statement";
     final static String STATEMENT_PRIO_ATTR = "statementPrio";
@@ -48,6 +51,7 @@ public interface ReplicationConstants {
     final static String EXCEPTION_ATTR = "exception"; 
    // commands
     final static String REPLICATION_CMD = "REPLICATION";
+    final static String INITIAL_XML_CMD = "INITIAL_DUMP_AS_XML";
     final static String INSERT_ACTION = "INSERT";
     final static String UPDATE_ACTION = "UPDATE";
     final static String DELETE_ACTION = "DELETE";
@@ -60,6 +64,8 @@ public interface ReplicationConstants {
     final static String END_OF_TRANSITION = "_END_OF_TRANSITION"; // sent to determine that the transition status is finished
     final static String INITIAL_DATA_END = "_INITIAL_DATA_END"; // sent to determine when to re-close the dispatcher (manual transfer)
     final static String INITIAL_DATA_END_TO_REMOTE = "_INITIAL_DATA_END_TO_REMOTE"; // sent to client
+    final static String INITIAL_DUMP_AS_XML = "_INITIAL_DATA_AS_XML"; // sent to client
+
     final static String VERSION_TOKEN = "_Ver_";
     final static String DUMP_POSTFIX = ".dump";
     final static String SUPPORTED_VERSIONS = "_supportedVersions";
