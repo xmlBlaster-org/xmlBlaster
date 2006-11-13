@@ -1952,6 +1952,10 @@ public class Global implements Cloneable
       System.out.println("NO GLOBAL, Hit a key");
       try { System.in.read(); } catch(java.io.IOException e) {}
       Global glob = new Global(args);
+      
+      System.out.println(glob.getAllStackTraces());
+      
+      
       try {
          while (true) {
             System.out.println("NO XmlBlasterAccess, Hit a key");
@@ -2316,5 +2320,25 @@ public class Global implements Cloneable
       statistic.append(byteString(Runtime.getRuntime().freeMemory()));
       statistic.append(".");
       return statistic.toString();
+   }
+   
+   public static String getAllStackTraces() {
+      Map stacks = Thread.getAllStackTraces();
+      Iterator iter = stacks.entrySet().iterator();
+      StringBuffer buf = new StringBuffer(2048);
+      while (iter.hasNext()) {
+         Map.Entry entry = (Map.Entry)iter.next();
+         Thread key = (Thread)entry.getKey();
+         StackTraceElement[] elements = (StackTraceElement[])entry.getValue();
+         buf.append(key.getName()).append("\n");
+         for (int i=0; i < elements.length; i++) {
+            buf.append("  ").append(elements[i].getClassName()).append(".").append(elements[i].getMethodName());
+            if (elements[i].getLineNumber()> 0)
+               buf.append(": ").append(elements[i].getFileName()).append("#").append(elements[i].getLineNumber());
+            buf.append("\n");
+         }
+         buf.append("\n");
+      }
+      return buf.toString();
    }
 }

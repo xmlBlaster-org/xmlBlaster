@@ -496,6 +496,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
          log.severe("PANIC: Doing immediate shutdown caused by exception: " + e.getMessage());
          e.printStackTrace();
          log.severe(Global.getStackTraceAsString(e));
+         log.severe("Complete stack trace (all threads at the time of shutdown: " + Global.getAllStackTraces());
          SignalCatcher sc = this.signalCatcher;
          if (sc != null) {
             sc.removeSignalCatcher();
