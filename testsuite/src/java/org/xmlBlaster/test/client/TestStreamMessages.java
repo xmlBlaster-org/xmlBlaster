@@ -202,7 +202,7 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
       XBSession session = new XBSession(this.connGlobal, XBSession.AUTO_ACKNOWLEDGE, false);
       XBMessageProducer producer = new XBMessageProducer(session, new XBDestination(this.oid, null));
       producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      XBStreamingMessage msg = session.createStreamingMessage();
+      XBStreamingMessage msg = session.createStreamingMessage(null);
       if (doInterrupt)
          msg.setBooleanProperty("interrupted", true);
       msg.setIntProperty(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE, maxChunkSize);
