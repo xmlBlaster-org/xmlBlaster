@@ -16,6 +16,7 @@ import org.xmlBlaster.util.admin.extern.JmxWrapper;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.I_XmlBlasterExceptionHandler;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
@@ -496,7 +497,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
          log.severe("PANIC: Doing immediate shutdown caused by exception: " + e.getMessage());
          e.printStackTrace();
          log.severe(Global.getStackTraceAsString(e));
-         log.severe("Complete stack trace (all threads at the time of shutdown: " + Global.getAllStackTraces());
+         log.severe("Complete stack trace (all threads at the time of shutdown: " + ThreadLister.getAllStackTraces());
          SignalCatcher sc = this.signalCatcher;
          if (sc != null) {
             sc.removeSignalCatcher();

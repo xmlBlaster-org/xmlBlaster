@@ -9,6 +9,8 @@ Version:   $Id: ThreadLister.java 10166 2003-07-10 14:41:02Z ruff $
 
 
 import java.io.*;
+import java.util.Iterator;
+import java.util.Map;
 
 
 /**
@@ -105,6 +107,28 @@ public class ThreadLister
          parent = parent.getParent();
       }
       return root_thread_group;
+   }
+
+   public static String getAllStackTraces() {
+      Map stacks = Thread.getAllStackTraces();
+      Iterator iter = stacks.entrySet().iterator();
+      StringBuffer buf = new StringBuffer(2048);
+      while (iter.hasNext()) {
+         Map.Entry entry = (Map.Entry)iter.next();
+         Thread key = (Thread)entry.getKey();
+         StackTraceElement[] elements = (StackTraceElement[])entry.getValue();
+         buf.append(key.getName()).append("\n"); // append(" state=").append(key.getState()).append("\n");
+         for (int i=0; i < elements.length; i++) {
+            buf.append("  ").append(elements[i].getClassName()).append(".").append(elements[i].getMethodName());
+            if (elements[i].getLineNumber()> 0)
+               buf.append(": ").append(elements[i].getFileName()).append("#").append(elements[i].getLineNumber());
+            buf.append("\n");
+         }
+         buf.append("\n");
+      }
+
+      
+      return buf.toString();
    }
 
 
