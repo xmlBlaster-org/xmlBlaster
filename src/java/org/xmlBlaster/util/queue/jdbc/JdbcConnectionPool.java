@@ -71,6 +71,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private String configurationIdentifier;
    private boolean cascadeDeleteSupported;
    private boolean nestedBracketsSupported;
+   private int forceIsoaltionLevel = -1;
    
    private final int MIN_POOL_SIZE = 1;
 
@@ -105,7 +106,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          try {
             if (log.isLoggable(Level.FINE)) log.fine("timeout:retrying to establish connections");
             // initializing and establishing of connections to DB but first clearing the connections ...
-            connect(false);
+            connect(false, false);
          }
          catch (Throwable ex) {
             // clean up the connections which might have been established
@@ -250,18 +251,67 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          log.warning("Could not close the connection to be discarded");
       }
       try {
-         addConnectionToPool();
+         addConnectionToPool(false);
       }
       catch (SQLException ex) {
          log.warning("Could not close the connection to be discarded");
       }
    }
    
-   
-   private synchronized void addConnectionToPool() throws SQLException {
+
+   public static String isolationToString(int isolation) {
+      if (isolation == Connection.TRANSACTION_READ_COMMITTED)
+         return "TRANSACTION_READ_COMMITTED";
+      if (isolation == Connection.TRANSACTION_READ_UNCOMMITTED)
+         return "TRANSACTION_READ_UNCOMMITTED";
+      if (isolation == Connection.TRANSACTION_REPEATABLE_READ)
+         return "TRANSACTION_REPEATABLE_READ";
+      if (isolation == Connection.TRANSACTION_SERIALIZABLE)
+         return "TRANSACTION_SERIALIZABLE";
+      if (isolation == Connection.TRANSACTION_NONE)
+         return "TRANSACTION_NONE";
+      return "" + isolation;
+   }
+
+   public static String getIsolationLevel(Connection conn) {
       try {
-         this.connections.put(DriverManager.getConnection(url, user, password));
-      //   log.info(ME, "DriverManager:" + buf.toString());
+         int isolation = conn.getTransactionIsolation();
+         return "Supports connection TRANSACTION_READ_COMMITTED-"+Connection.TRANSACTION_READ_COMMITTED+"="
+               + conn.getMetaData().supportsTransactionIsolationLevel(
+                     Connection.TRANSACTION_READ_COMMITTED)
+               + ", TRANSACTION_READ_UNCOMMITTED-"+Connection.TRANSACTION_READ_UNCOMMITTED+"="
+               + conn.getMetaData().supportsTransactionIsolationLevel(
+                     Connection.TRANSACTION_READ_UNCOMMITTED)
+               + ", TRANSACTION_REPEATABLE_READ-"+Connection.TRANSACTION_REPEATABLE_READ+"="
+               + conn.getMetaData().supportsTransactionIsolationLevel(
+                     Connection.TRANSACTION_REPEATABLE_READ)
+               + ", TRANSACTION_SERIALIZABLE-"+Connection.TRANSACTION_SERIALIZABLE+"="
+               + conn.getMetaData().supportsTransactionIsolationLevel(
+                     Connection.TRANSACTION_SERIALIZABLE)
+               + ". Using transaction isolation "
+               + isolationToString(isolation) + "=" + isolation;
+         // conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+      } catch (SQLException e) {
+         log.warning(e.toString());
+         return "";
+      }
+   }
+   
+   private synchronized void addConnectionToPool(boolean doLog) throws SQLException {
+      try {
+         if (this.connections.size() == this.connections.capacity()) {
+            log.severe("Can't add more JDBC connections to pool, capacity="
+                  + this.connections.capacity() + " is reached");
+            return;
+         }
+         Connection conn = DriverManager.getConnection(url, user, password);
+         if (doLog) {
+            log.info(getIsolationLevel(conn));
+         }
+         if (this.forceIsoaltionLevel != -1)
+            conn.setTransactionIsolation(this.forceIsoaltionLevel);
+         this.connections.put(conn);
+         // log.info(ME, "DriverManager:" + buf.toString());
       }
       catch (InterruptedException e) {
          log.severe("connect: an interrupted exception occured " + e.getMessage());
@@ -272,7 +322,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     * Connects to the DB (so many connections as configured)
     * @param disconnectFirst if 'true' then all connections to the db are closed before reconnecting.
     */
-   private void connect(boolean disconnectFirst) throws SQLException {
+   private void connect(boolean disconnectFirst, boolean doLog) throws SQLException {
       int oldStatus;
       I_StorageProblemListener lst = null;
       synchronized(this) {
@@ -283,7 +333,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             //java.io.OutputStream buf = new java.io.ByteArrayOutputStream();
             //java.io.PrintStream pr = new java.io.PrintStream(buf);
             //DriverManager.setLogStream(pr);
-            addConnectionToPool();
+            addConnectionToPool((i==0)&&doLog);
             if (log.isLoggable(Level.FINE)) 
                log.fine("initialized DB connection "+ i + " success");
          }
@@ -439,6 +489,13 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.tableNamePrefix = pluginProp.getProperty("tableNamePrefix", this.tableNamePrefix).trim().toUpperCase();
       this.colNamePrefix = pluginProp.getProperty("colNamePrefix", this.colNamePrefix).trim().toUpperCase();
 
+      try {
+         this.forceIsoaltionLevel = Integer.valueOf(pluginProp.getProperty("forceIsoaltionLevel", "-1")).intValue();
+      }
+      catch(NumberFormatException e) {
+         log.warning("Please check your forceIsoaltionLevel:" + e.toString());
+      }
+
       String tmp = pluginProp.getProperty("dbAdmin", "true").trim();
       this.dbAdmin = true;
       if ("false".equalsIgnoreCase(tmp)) this.dbAdmin = false;
@@ -487,7 +544,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       try {
          // initializing and establishing of connections to DB (but first disconnect if already connected)
          final boolean disconnectFirst = true;
-         connect(disconnectFirst);
+         connect(disconnectFirst, true);
 
          parseMapping(prop);
          if (log.isLoggable(Level.FINEST)) dumpMetaData();
@@ -550,7 +607,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private Hashtable parseMapping(org.xmlBlaster.util.property.Property prop)
          throws XmlBlasterException, SQLException {
       if (log.isLoggable(Level.FINER)) log.finer("parseMapping");
-      if (this.isShutdown) connect(false);
+      if (this.isShutdown) connect(false, false);
 
 
       String mappingKey = null;
@@ -703,7 +760,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       if (log.isLoggable(Level.FINER)) log.finer("getConnection " + this.connections.size() + " waiting calls: " + this.waitingCalls);
       try {
-         if (this.isShutdown) connect(false);
+         if (this.isShutdown) connect(false, false);
          return get(this.connectionBusyTimeout);
       }
       catch (SQLException ex) {
@@ -770,7 +827,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    public void dumpMetaData() {
       Connection conn = null;
       try {
-         if (this.isShutdown) connect(false);
+         if (this.isShutdown) connect(false, false);
          conn = getConnection();
          DatabaseMetaData metaData = conn.getMetaData();
 
@@ -788,6 +845,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          log.info("max tablename length : " + metaData.getMaxTableNameLength());
          log.info("url                  : " + metaData.getURL());
          log.info("support for trans.   : " + metaData.supportsTransactions());
+         log.info("support transactions : " + getIsolationLevel(conn));
          log.info("--------------- DUMP OF METADATA FOR THE DB END  ---------------------");
 
       }
