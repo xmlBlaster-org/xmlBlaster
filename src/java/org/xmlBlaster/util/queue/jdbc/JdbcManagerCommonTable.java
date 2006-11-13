@@ -1740,8 +1740,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       Connection conn = null;
       boolean success = true;
+      String req = "delete from " + this.entriesTableName + " where queueName='"+queueName+"' AND " + this.dataIdColName + "="+uniqueId;
       try {
-         String req = "delete from " + this.entriesTableName + " where queueName='"+queueName+"' AND " + this.dataIdColName + "='"+uniqueId+"'";
          conn =  this.pool.getConnection();
          return update(req, conn);
       }
@@ -1752,8 +1752,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       catch (Throwable ex) {
          success = false;
          if (checkIfDBLoss(conn, getLogId(queueName, "deleteEntry"), ex))
-            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntry", "", ex); 
-         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntry", "", ex); 
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntry", req, ex); 
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteEntry", req, ex); 
       }
       finally {
          if (conn != null) 
