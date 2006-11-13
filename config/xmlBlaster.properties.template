@@ -217,6 +217,20 @@ JdbcStorage[Oracle]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
                     entriesTableName=ENTRIES,\
                     dbAdmin=true
 
+# DB2 express C 9.1, using com.ibm.db2.jcc.DB2Driver
+# db2 create database xmlblast
+# db2 connect to xmlblast user db2inst1
+JdbcStorage[DB2]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                    url=jdbc:db2://linux:50001/xmlblast,\
+                    user=db2inst1,\
+                    password=secret,\
+                    connectionPoolSize=1,\
+                    connectionBusyTimeout=90000,\
+                    maxWaitingThreads=300,\
+                    tableNamePrefix=XB_,\
+                    entriesTableName=ENTRIES,\
+                    dbAdmin=true
+
 # Settings for the persistence plugins (StoragePlugin and QueuePlugin)
 # for FIREBIRD http://www.ibphoenix.com/
 JdbcStorage[Firebird]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
@@ -324,6 +338,7 @@ JdbcStorage[SQLite]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
 StoragePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
+#StoragePlugin[JDBC][1.0]=${JdbcStorage[DB2]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 #StoragePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
@@ -344,6 +359,7 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
 QueuePlugin[JDBC][1.0]=${JdbcStorage[HSQLDatabaseEngine]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[postgres]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[Oracle]}
+#QueuePlugin[JDBC][1.0]=${JdbcStorage[DB2]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[Firebird]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer]}
 #QueuePlugin[JDBC][1.0]=${JdbcStorage[MicrosoftSQLServer2005]}
@@ -389,6 +405,7 @@ queue/connection/maxEntries = 10000000
 #------------------------------------------------------------------------------
 # List of all jdbc drivers to initalize for the XmlDBAdapter and for the jdbc persistence queue
 # Don't forget to add the corresponding jdbc jar file to your CLASSPATH as well.
+# Remove all not needed drivers or set your driver to the beginning to get useful exception texts
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.commontable.html
 JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
@@ -397,6 +414,7 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
                    sun.jdbc.odbc.JdbcOdbcDriver:\
                    ORG.as220.tinySQL.dbfFileDriver:\
                    oracle.jdbc.driver.OracleDriver:\
+		   com.ibm.db2.jcc.DB2Driver:\
                    com.microsoft.jdbc.sqlserver.SQLServerDriver:\
                    com.microsoft.sqlserver.jdbc.SQLServerDriver:\
                    com.mysql.jdbc.Driver:\
@@ -413,6 +431,13 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
 JdbcDriver.mapping[HSQLDatabaseEngine]=string=VARCHAR,longint=BIGINT,int=INTEGER,blob=BINARY,boolean=CHAR
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1)
 JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=BLOB,boolean=CHAR(1)
+
+#DB2 please do manually:
+# CREATE TABLE XB_ENTRIES (dataId bigint not null , queueName varchar(128) not null , prio integer, flag varchar(128), durable char(1), byteSize bigint, blob blob, PRIMARY KEY (dataId, queueName))
+#and change the statement in JdbcManagerCommonTable.java:1544 to
+# String req = "delete from " + this.entriesTableName + " where queueName='"+queueName+"' AND " + this.dataIdColName + "="+uniqueId;
+#JdbcDriver.mapping[DB2]=string=VARCHAR(128),longint=BIGINT,int=INTEGER,blob=BLOB,boolean=CHAR(1),text=VARCHAR(128)
+
 JdbcDriver.mapping[Firebird]=string=VARCHAR(128),"longint=decimal(18,0)",int=integer,boolean=CHAR(1),blob=blob,blobVarName=msg
 JdbcDriver.mapping[MicrosoftSQLServer]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
 JdbcDriver.mapping[MicrosoftSQLServer2005]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
