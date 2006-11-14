@@ -177,7 +177,15 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
 
    private boolean put(Connection conn) {
-      if (log.isLoggable(Level.FINER)) log.finer("put invoked");
+      if (log.isLoggable(Level.FINER)) {
+         String warning = "";
+         try {
+            SQLException warn = conn.getWarnings();
+            warning = warn.getMessage();
+         }
+         catch (Throwable e) {}
+         log.finer("put invoked " + warning);
+      }
       if (conn == null) return false;
 
       try {
