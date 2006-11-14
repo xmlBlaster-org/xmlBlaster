@@ -207,6 +207,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
                log.warning("put: an interruption occured #" + i + " : " + e.getMessage());
             }
          }
+         //if (i >= 3) is logged by calling function
          return ret;
       }
    }
@@ -832,7 +833,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       boolean isOk = put(conn); // if an exception occured it would be better to throw away the connection and make a new one
       if (!isOk) {
-         log.severe("the connection pool is already full");
+         log.severe("the connection pool is already full: " + ThreadLister.listAllThreads());
       }
 
    }
