@@ -327,7 +327,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
                   + this.connections.capacity() + " is reached");
             return;
          }
-         Connection conn = DriverManager.getConnection(url, user, password);
+         // Connection conn = DriverManager.getConnection(url, user, password);
+         Connection conn = new DebugConnection(DriverManager.getConnection(url, user, password));
          if (doLog) {
             log.info(getIsolationLevel(conn));
          }
