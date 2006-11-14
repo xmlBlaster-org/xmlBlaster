@@ -12,6 +12,7 @@ import org.apache.commons.lang.Tokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import java.util.Properties;
@@ -153,6 +154,17 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       if (log.isLoggable(Level.FINE)) log.fine("going to retreive a connection");
       try  {
          ret = (Connection)this.connections.poll(delay);
+         if (ret != null) { // assert code
+            try {
+               if (!ret.getAutoCommit()) {
+                  log.severe("Get error, expected autoCommit=true but was false" + ThreadLister.getAllStackTraces());
+                  ret.setAutoCommit(true);
+               }
+            }
+            catch (Throwable e) {
+               log.severe("Get error, expected autoCommit=true but got exception: " + e.toString() + ThreadLister.getAllStackTraces());
+            }
+         }
       }
       catch (InterruptedException ex) {
          log.warning("the waiting for a connection was interrupted: " + ex.getMessage());
@@ -167,15 +179,17 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private boolean put(Connection conn) {
       if (log.isLoggable(Level.FINER)) log.finer("put invoked");
       if (conn == null) return false;
-      if (log.isLoggable(Level.FINE)) {
-         try {
-            if (!conn.getAutoCommit()) log.severe("put: error: the connection has not properly been reset: autocommit is 'false'");
-         }
-         catch (Throwable ex) {
-            log.severe("put:  checking for autocommit. reason: " + ex.toString());
-            ex.printStackTrace();
+
+      try {
+         if (!conn.getAutoCommit()) { // assert
+            log.severe("Put error, expected autoCommit=true but was false" + ThreadLister.getAllStackTraces());
+            conn.setAutoCommit(true);
          }
       }
+      catch (Throwable e) {
+         log.severe("Put error, expected autoCommit=true but got exception: " + e.toString() + ThreadLister.getAllStackTraces());
+      }
+      
       try {
          return this.connections.offer(conn, 5L);
       }
