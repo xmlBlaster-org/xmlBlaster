@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -61,6 +62,14 @@ public class Execute {
       this.envArr = envArr;
       if (this.commandArr == null || this.commandArr.length < 1) {
          throw new IllegalArgumentException("Please provide the process to start");
+      }
+      
+      if (log.isLoggable(Level.FINER)) {
+         StringBuffer sb = new StringBuffer("commandArr[").append(commandArr.length).append("] =");
+         for (int ii = 0; ii < commandArr.length; ii++) {
+            sb.append('\'').append(commandArr[ii]).append('\'');
+         }
+         log.finer(sb.toString());
       }
    }
 
@@ -136,7 +145,7 @@ public class Execute {
       catch (Exception e) {
          errorText = "Process [" + commandArr[0] + "] could not be started: " + e.toString();
          log.severe(errorText);
-         //e.printStackTrace();
+         e.printStackTrace();
       }
       finally {
          if (stdoutThread != null) { stdoutThread.stopIt(); stdoutThread=null; } // necessary?
@@ -234,13 +243,13 @@ public class Execute {
 
 
    /**
-    *  org.xmlBlaster.util.Execute ls
+    *  org.xmlBlaster.util.Execute ls -l
     */
    public static void main( String[] args )
    {
-      String[] commandArr = { args[0] };
-      String[] envArr = new String[0];
-      Execute execute = new Execute(commandArr, envArr);
+//    String[] commandArr = { args[0] };
+//    String[] envArr = new String[0];
+      Execute execute = new Execute(args, null);
       execute.run();
       System.out.println("Stdout of " + args[0] + " is:\n" + execute.getStdout());
       System.out.println("Stderr of " + args[0] + " is:\n" + execute.getStderr());
