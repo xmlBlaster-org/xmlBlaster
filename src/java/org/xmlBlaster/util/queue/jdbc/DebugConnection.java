@@ -20,7 +20,9 @@ import java.util.logging.Logger;
 import org.xmlBlaster.util.ThreadLister;
 
 /**
- * DebugConnection
+ * DebugConnection wraps a java.sql.Connection to intercept
+ * calls for debugging / assertion purposes.
+ * 
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class DebugConnection implements Connection {
@@ -28,6 +30,9 @@ public class DebugConnection implements Connection {
    private Connection conn;
    private static Logger log = Logger.getLogger(DebugConnection.class.getName());
    private boolean inPool;
+   private boolean wasUsed;
+   private boolean commitOrRollbackCalled;
+   private boolean autoCommitSwitchedOff;
    
    public DebugConnection(Connection conn) {
       if (this.inPool)
@@ -35,21 +40,45 @@ public class DebugConnection implements Connection {
       this.conn = conn;
    }
 
-   private final void checkPool() {
-      log.severe(ThreadLister.getAllStackTraces());
-      throw new IllegalStateException("the connection is in the pool and an invocation occured");
+   private final void checkIfOutsidePool() {
+      if (this.inPool) {
+         log.severe(ThreadLister.getAllStackTraces());
+         throw new IllegalStateException("the connection is in the pool and an invocation occured");
+      }
    }
       
-   public void setInPool(boolean inPool) {
-      checkPool();
-      this.inPool = inPool;
+   public void setInPool(boolean addingToPool) {
+      this.inPool = addingToPool;
+      
+      boolean retrieveFromPool = !addingToPool;
+      
+      if (addingToPool == true) { // pool.put
+         if (this.autoCommitSwitchedOff && this.wasUsed) {
+            if (!this.commitOrRollbackCalled) {
+               log.severe(ThreadLister.getAllStackTraces());
+               throw new IllegalStateException("the connection with autoCommit=false was never committed/rolleback");
+            }
+         }
+      }
+      if (retrieveFromPool) {// pool.get
+         // reset
+         this.wasUsed = false; 
+         this.commitOrRollbackCalled = false;
+         this.autoCommitSwitchedOff = false;
+      }
    }
    
+   /**
+    * @return the inPool
+    */
+   public boolean isInPool() {
+      return this.inPool;
+   }
+
    /**
     * @see java.sql.Connection#clearWarnings()
     */
    public void clearWarnings() throws SQLException {
-      checkPool();
       this.conn.clearWarnings();
    }
 
@@ -57,7 +86,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#close()
     */
    public void close() throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       this.conn.close();
    }
 
@@ -65,7 +94,8 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#commit()
     */
    public void commit() throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      this.commitOrRollbackCalled = true;
       this.conn.commit();
    }
 
@@ -73,7 +103,8 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#createStatement()
     */
    public Statement createStatement() throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      this.wasUsed = true;
       return this.conn.createStatement();
    }
 
@@ -81,7 +112,8 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#createStatement(int, int)
     */
    public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      this.wasUsed = true;
       return this.conn.createStatement(resultSetType, resultSetConcurrency);
    }
 
@@ -90,15 +122,16 @@ public class DebugConnection implements Connection {
     */
    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability)
    throws SQLException {
-      checkPool();
-         return this.conn.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
+      checkIfOutsidePool();
+      this.wasUsed = true;
+      return this.conn.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
    }
 
    /**
     * @see java.sql.Connection#getAutoCommit()
     */
    public boolean getAutoCommit() throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       return this.conn.getAutoCommit();
    }
 
@@ -106,7 +139,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#getCatalog()
     */
    public String getCatalog() throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       return this.conn.getCatalog();
    }
 
@@ -114,23 +147,23 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#getHoldability()
     */
    public int getHoldability() throws SQLException {
-      checkPool();
-      return this.getHoldability();
+      checkIfOutsidePool();
+      return this.conn.getHoldability();
    }
 
    /**
     * @see java.sql.Connection#getMetaData()
     */
    public DatabaseMetaData getMetaData() throws SQLException {
-      checkPool();
-      return this.getMetaData();
+      //checkPool(); can be called from pool itself
+      return this.conn.getMetaData();
    }
 
    /* (non-Javadoc)
     * @see java.sql.Connection#getTransactionIsolation()
     */
    public int getTransactionIsolation() throws SQLException {
-      checkPool();
+      //checkPool(); can be called from pool itself
       return this.conn.getTransactionIsolation();
    }
 
@@ -138,7 +171,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#getTypeMap()
     */
    public Map getTypeMap() throws SQLException {
-      checkPool();
+      //checkPool(); can be called from pool itself
       return this.conn.getTypeMap();
    }
 
@@ -146,7 +179,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#getWarnings()
     */
    public SQLWarning getWarnings() throws SQLException {
-      checkPool();
+      //checkPool(); can be called from pool itself
       return this.conn.getWarnings();
    }
 
@@ -154,7 +187,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#isClosed()
     */
    public boolean isClosed() throws SQLException {
-      checkPool();
+      //checkPool(); can be called from pool itself
       return this.conn.isClosed();
    }
 
@@ -162,7 +195,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#isReadOnly()
     */
    public boolean isReadOnly() throws SQLException {
-      checkPool();
+      //checkPool(); can be called from pool itself
       return this.conn.isReadOnly();
    }
 
@@ -170,15 +203,15 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#nativeSQL(java.lang.String)
     */
    public String nativeSQL(String sql) throws SQLException {
-      checkPool();
-      return this.nativeSQL(sql);
+      checkIfOutsidePool();
+      return this.conn.nativeSQL(sql);
    }
 
    /**
     * @see java.sql.Connection#prepareCall(java.lang.String)
     */
    public CallableStatement prepareCall(String sql) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       return this.conn.prepareCall(sql);
    }
 
@@ -187,7 +220,7 @@ public class DebugConnection implements Connection {
     */
    public CallableStatement prepareCall(String sql, int resultSetType,
          int resultSetConcurrency) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       return this.conn.prepareCall(sql, resultSetType, resultSetConcurrency);
    }
 
@@ -197,7 +230,7 @@ public class DebugConnection implements Connection {
    public CallableStatement prepareCall(String sql, int resultSetType,
          int resultSetConcurrency, int resultSetHoldability)
          throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       return this.conn.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
    }
 
@@ -205,7 +238,8 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#prepareStatement(java.lang.String)
     */
    public PreparedStatement prepareStatement(String sql) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      this.wasUsed = true;
       return this.conn.prepareStatement(sql);
    }
 
@@ -214,7 +248,8 @@ public class DebugConnection implements Connection {
     */
    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
          throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      this.wasUsed = true;
       return this.conn.prepareStatement(sql, autoGeneratedKeys);
    }
 
@@ -223,7 +258,8 @@ public class DebugConnection implements Connection {
     */
    public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
          throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      this.wasUsed = true;
       return this.conn.prepareStatement(sql, columnIndexes);
    }
 
@@ -232,7 +268,8 @@ public class DebugConnection implements Connection {
     */
    public PreparedStatement prepareStatement(String sql, String[] columnNames)
          throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      this.wasUsed = true;
       return this.conn.prepareStatement(sql, columnNames);
    }
 
@@ -241,7 +278,8 @@ public class DebugConnection implements Connection {
     */
    public PreparedStatement prepareStatement(String sql, int resultSetType,
          int resultSetConcurrency) throws SQLException {
-      checkPool();
+      this.wasUsed = true;
+      checkIfOutsidePool();
       return this.conn.prepareStatement(sql, resultSetType, resultSetConcurrency);
    }
 
@@ -251,7 +289,8 @@ public class DebugConnection implements Connection {
    public PreparedStatement prepareStatement(String sql, int resultSetType,
          int resultSetConcurrency, int resultSetHoldability)
          throws SQLException {
-      checkPool();
+      this.wasUsed = true;
+      checkIfOutsidePool();
       return this.conn.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
    }
 
@@ -259,7 +298,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#releaseSavepoint(java.sql.Savepoint)
     */
    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       this.conn.releaseSavepoint(savepoint);
    }
 
@@ -267,7 +306,8 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#rollback()
     */
    public void rollback() throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      this.commitOrRollbackCalled = true;
       this.conn.rollback();
    }
 
@@ -275,7 +315,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#rollback(java.sql.Savepoint)
     */
    public void rollback(Savepoint savepoint) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       this.conn.rollback(savepoint);
    }
 
@@ -283,7 +323,9 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setAutoCommit(boolean)
     */
    public void setAutoCommit(boolean autoCommit) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
+      if (autoCommit == false)
+         this.autoCommitSwitchedOff = true;
       this.conn.setAutoCommit(autoCommit);
    }
 
@@ -291,7 +333,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setCatalog(java.lang.String)
     */
    public void setCatalog(String catalog) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       this.conn.setCatalog(catalog);
    }
 
@@ -299,7 +341,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setHoldability(int)
     */
    public void setHoldability(int holdability) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       this.conn.setHoldability(holdability);
    }
 
@@ -307,7 +349,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setReadOnly(boolean)
     */
    public void setReadOnly(boolean readOnly) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       this.conn.setReadOnly(readOnly);
    }
 
@@ -315,7 +357,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setSavepoint()
     */
    public Savepoint setSavepoint() throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       return this.conn.setSavepoint();
    }
 
@@ -323,7 +365,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setSavepoint(java.lang.String)
     */
    public Savepoint setSavepoint(String name) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       return this.conn.setSavepoint(name);
    }
 
@@ -331,7 +373,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setTransactionIsolation(int)
     */
    public void setTransactionIsolation(int level) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       this.conn.setTransactionIsolation(level);
    }
 
@@ -339,7 +381,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setTypeMap(java.util.Map)
     */
    public void setTypeMap(Map arg0) throws SQLException {
-      checkPool();
+      checkIfOutsidePool();
       this.conn.setTypeMap(arg0);
    }
 

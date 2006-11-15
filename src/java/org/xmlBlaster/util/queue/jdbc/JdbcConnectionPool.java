@@ -147,18 +147,19 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     */
    private Connection get(long delay) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("get invoked");
-      Connection ret = null;
+      Connection conn = null;
       if (this.connections.size() > this.capacity)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, "get: Inconsistency in connection index: a negative one is not possible: '" + this.connections.size() + "'");
    
       if (log.isLoggable(Level.FINE)) log.fine("going to retreive a connection");
       try  {
-         ret = (Connection)this.connections.poll(delay);
-         if (ret != null) { // assert code
+         conn = (Connection)this.connections.poll(delay);
+         if (conn != null) { // assert code
+            ((DebugConnection)conn).setInPool(false);
             try {
-               if (!ret.getAutoCommit()) {
+               if (!conn.getAutoCommit()) {
                   log.severe("Get error, expected autoCommit=true but was false" + ThreadLister.getAllStackTraces());
-                  ret.setAutoCommit(true);
+                  conn.setAutoCommit(true);
                }
             }
             catch (Throwable e) {
@@ -170,13 +171,13 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          log.warning("the waiting for a connection was interrupted: " + ex.getMessage());
       }
       if (log.isLoggable(Level.FINE)) log.fine("retreived the connection");
-      if (ret == null)
+      if (conn == null)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "get: a timeout occured when waiting for a free DB connection. Either the timeout is too short or other connections are blocking");
-      return ret;             
+      return conn;             
    }
 
 
-   private boolean put(Connection conn) {
+   private boolean put(Connection conn) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) {
          String warning = "";
          try {
@@ -188,6 +189,11 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       if (conn == null) return false;
 
+      if (((DebugConnection)conn).isInPool()) { // assert code
+         log.severe("Put error, the returned connection is already in the pool: " + ThreadLister.getAllStackTraces());
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, 
+               "Put error, the returned connection is already in the pool");
+      }
       try {
          if (!conn.getAutoCommit()) { // assert
             log.severe("Put error, expected autoCommit=true but was false" + ThreadLister.getAllStackTraces());
@@ -196,10 +202,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       catch (Throwable e) {
          log.severe("Put error, expected autoCommit=true but got exception: " + e.toString() + ThreadLister.getAllStackTraces());
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, 
+               "Put error, expected autoCommit=true but got exception", e);
       }
       
       try {
-         return this.connections.offer(conn, 5L);
+         boolean tmp = this.connections.offer(conn, 5L);
+         ((DebugConnection)conn).setInPool(true); // assert code
+         return tmp;
       }
       catch (InterruptedException ex) {
          log.warning("put: an interruption occured: " + ex.getMessage());
@@ -209,6 +219,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          for (int i=0; i < 3; i++) {
             try {
                ret = this.connections.offer(conn, 5L);
+               ((DebugConnection)conn).setInPool(true);
                break;
             }
             catch (InterruptedException e) {
@@ -335,6 +346,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          if (this.forceIsoaltionLevel != -1)
             conn.setTransactionIsolation(this.forceIsoaltionLevel);
          this.connections.put(conn);
+         ((DebugConnection)conn).setInPool(true); // assert code
          // log.info(ME, "DriverManager:" + buf.toString());
       }
       catch (InterruptedException e) {
