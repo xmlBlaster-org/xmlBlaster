@@ -1,6 +1,14 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15684 Fixed I_Queue.clear() of cache queue implementation
+          It only removed the entries in the cache but now
+          it correctly removes the swapped out persistent messages as well
+          TODO: Add a testcase
+
+ o #15682 Added java.sql.Connection delegate DebugConnection.java
+          for advanced failure detection (contains assert code only)
+
  o #15644 Fixed htpasswd plugin for '*:<passwd>' entries.
           This feature got lost during adding of authorization code (see #15446).
           Is now assured by testcase
