@@ -326,8 +326,8 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
                }
 
                // put the current dispatcher at the end of the list for next invocation (round robin)
-               subInfoList.remove(subInfoArr[ii]);
-               subInfoList.add(subInfoArr[ii]);
+               subInfoList.remove(sub);
+               subInfoList.add(sub);
                
                MsgQueueUpdateEntry updateEntry = TopicHandler.createEntryFromWrapper(msgUnitWrapper,sub);
 
