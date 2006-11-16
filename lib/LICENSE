@@ -280,7 +280,7 @@ only the SNMP subagent module jax.jar is GPL only!
 
 35) log4cplus 
 =============
-  http://log4cplus.sourceforge.net for C++ logging, Version 1.0.2
+  http://sourceforge.net/projects/log4cplus for C++ logging, Version 1.0.2
   2004-02-11 (Apache license)
   See xmlBlaster/src/c++/log4cplus
 
