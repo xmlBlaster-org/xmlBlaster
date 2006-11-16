@@ -2501,6 +2501,7 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO, OMNIORB -->
+         <sysincludepath location="${CORBACPP_HOME}/include/omniORB4" /> <!-- MICO, OMNIORB -->
          <sysincludepath location="${build.src.cpp.dir}/generated" /> <!-- ORBACUS -->
 
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="MICO,windows" /> <!-- MICO necessary for mico on win32 -->
