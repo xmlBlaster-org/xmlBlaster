@@ -274,6 +274,7 @@ JdbcStorage[MicrosoftSQLServer]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTa
 #                  dbAdmin=true
 
 # for Microsoft SQL Server 2005 JDBC (sqljdbc.jar Version 1.1):
+# with driver class com.microsoft.sqlserver.jdbc.SQLServerDriver
 JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
                   url=jdbc:sqlserver://localhost:1433;databaseName=xmlBlaster,\
                   user=sa,\
@@ -431,13 +432,9 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
 JdbcDriver.mapping[HSQLDatabaseEngine]=string=VARCHAR,longint=BIGINT,int=INTEGER,blob=BINARY,boolean=CHAR
 JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1)
 JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=BLOB,boolean=CHAR(1)
-
 #DB2 please do manually:
 # CREATE TABLE XB_ENTRIES (dataId bigint not null , queueName varchar(128) not null , prio integer, flag varchar(128), durable char(1), byteSize bigint, blob blob, PRIMARY KEY (dataId, queueName))
-#and change the statement in JdbcManagerCommonTable.java:1544 to
-# String req = "delete from " + this.entriesTableName + " where queueName='"+queueName+"' AND " + this.dataIdColName + "="+uniqueId;
 #JdbcDriver.mapping[DB2]=string=VARCHAR(128),longint=BIGINT,int=INTEGER,blob=BLOB,boolean=CHAR(1),text=VARCHAR(128)
-
 JdbcDriver.mapping[Firebird]=string=VARCHAR(128),"longint=decimal(18,0)",int=integer,boolean=CHAR(1),blob=blob,blobVarName=msg
 JdbcDriver.mapping[MicrosoftSQLServer]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
 JdbcDriver.mapping[MicrosoftSQLServer2005]=string=VARCHAR(128),longint=numeric (19),boolean=char(1),blob=image
