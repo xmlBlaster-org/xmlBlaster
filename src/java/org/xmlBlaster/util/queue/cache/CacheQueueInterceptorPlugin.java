@@ -1224,14 +1224,21 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    /**
     * Clears everything and removes the queue (i.e. frees the associated table)
     */
-   public long clear() {
+   synchronized public long clear() {
+      long numOfEntries = getNumOfEntries();
       try {
-         return remove(-1, -1);
+         if (this.persistentQueue != null) this.persistentQueue.clear();
       }
-      catch (XmlBlasterException e) {
+      catch (Throwable e) {
          log.severe(ME+"Ignoring exception in clear(): " + e.toString());
-         return 0;
       }
+      try {
+         this.transientQueue.clear();
+      }
+      catch (Throwable e) {
+         log.severe(ME+"Ignoring exception in clear(): " + e.toString());
+      }
+      return numOfEntries;
    }
 
    /**
