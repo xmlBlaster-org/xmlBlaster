@@ -167,6 +167,17 @@ Solaris:
       </p>
    </example>
 
+
+   <example lang="C" type="HTML">
+      <p><a NAME="sqlite3"></a></p>
+      <p class="celltitel">Port to sqlite 3</p>
+<p>The port is not finished, see the prototype <code>xmlBlaster/src/c/util/queue/SQLite3Queue.c.TODO</code></p>
+<pre>
+./configure --prefix /opt/sqlite-3.3.8-bin --enable-debug --enable-cross-thread-connections --enable-threadsafe
+export LD_LIBRARY_PATH=/opt/sqlite-3.3.8-bin/lib
+</pre>
+   </example>
+
    <example lang="any" type="HTML">
       <p><a NAME="sqliteExample"></a></p>
       <p class="celltitel">sqlite command line example</p>
