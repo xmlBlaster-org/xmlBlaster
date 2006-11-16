@@ -104,23 +104,33 @@ public class ThreadLister {
    }
 
    public static String getAllStackTraces() {
-      Map stacks = Thread.getAllStackTraces();
-      Iterator iter = stacks.entrySet().iterator();
-      StringBuffer buf = new StringBuffer(2048);
-      while (iter.hasNext()) {
-         Map.Entry entry = (Map.Entry)iter.next();
-         Thread key = (Thread)entry.getKey();
-         StackTraceElement[] elements = (StackTraceElement[])entry.getValue();
-         buf.append(key.getName()).append("\n"); // append(" state=").append(key.getState()).append("\n");
-         for (int i=0; i < elements.length; i++) {
-            buf.append("  ").append(elements[i].getClassName()).append(".").append(elements[i].getMethodName());
-            if (elements[i].getLineNumber()> 0)
-               buf.append(": ").append(elements[i].getFileName()).append("#").append(elements[i].getLineNumber());
+      try {
+         Class[] paramCls = new Class[0];
+         Object[] params = new Object[0];
+         java.lang.reflect.Method method = Thread.class.getMethod("getAllStackTraces", paramCls);
+         Map stacks = (Map)method.invoke(Thread.class, params);
+         // Since JDK 1.5
+         //Map stacks = Thread.getAllStackTraces();
+         Iterator iter = stacks.entrySet().iterator();
+         StringBuffer buf = new StringBuffer(2048);
+         while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            Thread key = (Thread)entry.getKey();
+            StackTraceElement[] elements = (StackTraceElement[])entry.getValue();
+            buf.append(key.getName()).append("\n"); // append(" state=").append(key.getState()).append("\n");
+            for (int i=0; i < elements.length; i++) {
+               buf.append("  ").append(elements[i].getClassName()).append(".").append(elements[i].getMethodName());
+               if (elements[i].getLineNumber()> 0)
+                  buf.append(": ").append(elements[i].getFileName()).append("#").append(elements[i].getLineNumber());
+               buf.append("\n");
+            }
             buf.append("\n");
          }
-         buf.append("\n");
+         return buf.toString();
       }
-      return buf.toString();
+      catch (Throwable e) {
+         return ThreadLister.listAllThreads(); // JDK 1.4
+      }
    }
 
 
