@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.cpp.omniorb' type='NEW' prio='LOW' status="CLOSED">
+   <topic>C++ clients can access xmlBlaster with the omniORB Corba library</topic>
+
+   <description>
+     <p>
+     There is support for omniORB to access xmlBlaster from CORBA clients.
+     </p>
+     <p>
+     Support was developed against omniORB 4.0.7, other omniORB versions
+     should work as well. Make sure to follow the omniORB installation instructions.
+     </p>
+     <p>omniORB is multi threaded so operations like
+     doing a <code>subscribe()</code> in an <code>update()</code> is supported.
+     </p>
+     <p>
+     The IOR is accessed by the xmlBlaster client library using an internal http download
+     <code> http://localhost:3412/AuthenticationService.ior </code>.
+     </p>
+   </description>
+
+   <!-- Is not yet tested:
+# Start name service, configured to dump the NameService IOR to /tmp/ns.ior.
+# You can check the name service with the itadmin tool
+# See http://omniorb.sourceforge.net/omni41/omniORB/omniORB006.html
+#corbaname:corbaloc location/object key#stringified name
+#  -ORBInitRef NameService=corbaname::myhost.example.com/NameService#project/example/echo.obj
+#  -ORBDefaultInitRef corbaloc::myhost.example.com:2809/MyObjectKey
+omniNames -start 2809
+omniNames -logdir /tmp -start
+With no port argument, the standard default of 2809 is used.
+HelloWorld2 -protocol IOR -ORBInitRef NameService=corbaloc::localhost:2809/NameService
+
+# Start the server
+java -DORBInitRef.NameService=file:///tmp/ns.ior \
+     org.xmlBlaster.Main \
+     -trace[corba] true \
+     -bootstrapPort 0 \
+     -cluster.node.id heron
+
+# Start a C++ client
+cd xmlBlaster/testsuite/src/c++/bin
+TestGet -ORBInitRef NameService=`cat /tmp/ns.ior` inet:myHost.org:7608 -trace true -call true
+-->
+
+   <configuration where="client">
+      <p>
+         To compile you can use the xmlBlaster/build.xml file.
+      </p>
+      <p>
+         Please take a copy from xmlBlaster/build.properties into
+         your home directory (it has precedence there) and adjust
+         the path settings to find CORBA and the XML parser. Example:
+      </p>
+      <pre>
+#------------------------------------------------------------------------------
+# C++ Unix/Linux example with omniORB
+COMPILE_CORBA_PLUGIN  = 1
+CORBACPP_HOME = /opt/omniORB-4.1.0-rc1-bin
+CORBACPP_VER  = 
+corba.product = OMNIORB
+#------------------------------------------------------------------------------
+      </pre>
+      <p>
+         Compile it with ant:
+      </p>
+      <pre>
+cd xmlBlaster
+build cpp
+
+This creates:
+   xmlBlaster/lib/libmlBlasterClient.so
+and some test clients in
+   xmlBlaster/demo/c++/bin
+   xmlBlaster/testsuite/src/c++/bin
+      </pre>
+     <p>
+     On Windows you should add all directories containing dll libraries to your path setting.
+     </p>
+     <p>
+     On Solaris and Linux the shared library path is burned into the executable
+     so you need to set LD_LIBRARY_PATH only when you move libraries to
+     other locations (try <i>ldd TestGet</i>).
+     </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+      </table>
+   </configuration>
+
+   <todo type='HTML'>
+      <h3>Known bugs</h3>
+      <p>
+      On shutdown there seems to be a bug which is not yet located.
+      </p>
+      <p>
+      Testsuite is missing.
+      </p>
+   </todo>
+
+   <see type="INTERNET">http://omniorb.sourceforge.net/</see>
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c++/namespaces.html</see>
+   <see type="REQ">client.cpp</see>
+   <see type="REQ">client.cpp.compile</see>
+
+   <author>xmlBlaster@marcelruff.info</author>
+
+   <date>2006 11 01</date>
+
+   <revision>$Revision: 1.5 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment></comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
