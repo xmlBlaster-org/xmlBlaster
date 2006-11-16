@@ -58,7 +58,10 @@ java -Djacorb.log.default.verbosity=3 -jar lib/xmlBlaster.jar
             <td>localhost</td>
             <td>The host where a client tries to download the CORBA IOR.
             XmlBlaster servers have the feature to pass their CORBA plugin IOR
-            with a builtin http server.</td>
+            with a builtin http server.<br />
+            The access URL is
+            <code>"GET /AuthenticationService.ior HTTP/1.0\r\n \n"</code>
+            or to test from a browser <code>"http://localhost:3412/AuthenticationService.ior"</code>.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
