@@ -167,6 +167,15 @@ org::xmlBlaster::util::Global& XmlBlasterAccess::getGlobal()
    return this->global_;
 }
 
+org::xmlBlaster::util::queue::I_Queue* XmlBlasterAccess::getQueue()
+{
+   if (connection_) {
+      return connection_->getQueue();
+   }
+   return 0;
+}
+
+
 org::xmlBlaster::client::I_Callback* XmlBlasterAccess::getCallback()
 {
    return this->updateClient_;

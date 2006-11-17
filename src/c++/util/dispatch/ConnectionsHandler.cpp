@@ -668,6 +668,12 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
 
 I_Queue* ConnectionsHandler::getQueue()
 {
+   if (!queue_) {
+      if (log_.trace()) log_.trace(ME+".getQueue", "creating the client queue ...");
+      queue_ = &QueueFactory::getFactory().getPlugin(global_, connectQos_->getClientQueueProperty());
+      log_.info(ME, "Created queue [" + queue_->getType() + "][" + queue_->getVersion() + "] which contains " +
+                    lexical_cast<string>(queue_->getNumOfEntries()) + " entries.");
+   }
    return queue_;
 }
 

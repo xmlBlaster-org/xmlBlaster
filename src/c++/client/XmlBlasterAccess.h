@@ -148,6 +148,12 @@ public:
    org::xmlBlaster::util::Global& getGlobal();
 
    /**
+    * Access the client side queue
+    * @return null if not configured
+    */
+   org::xmlBlaster::util::queue::I_Queue* getQueue();
+
+   /**
     * Login to xmlBlaster. 
     * Calling multiple times for changed connections should be possible but is not deeply tested.
     * @param qos Your configuration desire
