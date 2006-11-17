@@ -225,7 +225,7 @@ java org.xmlBlaster.Main -xmlBlaster/jmx/rmi true
                          -xmlBlaster/jmx/rmi/user joe
                          -xmlBlaster/jmx/rmi/password secret
 
-# Start the GUI (and enter user=controlRole, password=secret):
+# Start the GUI (and enter user=joe, password=secret):
 jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
    </pre>
 
