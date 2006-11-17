@@ -525,10 +525,12 @@ static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 }
 
 /**
- * Send a message over the socket to xmlBlaster. 
+ * Send a message over the socket to xmlBlaster.
+ * @param xb The this pointer 
  * @param methodName The name of the remote method to invoke e.g. "connect"
  * @param msgType The type of message: INVOKE, RESPONSE, EXCEPTION
  * @param data The message payload to send, we take a clone so you can do with it what you want
+ * @param dataLen The length of data in bytes
  * @param responseSocketDataHolder The returned data, you need to free it with free(response->data) if we returned true.
  *        Supply NULL for oneway messages.
  * @param exception The exception struct, exception->errorCode is filled on exception.

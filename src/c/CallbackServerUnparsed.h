@@ -99,9 +99,10 @@ typedef void  ( * CallbackServerUnparsedLogging)(void *logUserP, XMLBLASTER_LOG_
  *
  * The function pointers like #isListening() allow you to
  * invoke methods on this structure.
- * <br />
- * The function pointer #update() holds the clients callback function
+ * <p>
+ * The function pointer #updateCb() holds the clients callback function
  * which is invoked when messages arrive. See the description of #UpdateCbFp.
+ * </p>
  */
 struct CallbackServerUnparsedStruct {
    Properties *props;
@@ -161,7 +162,7 @@ typedef struct ListenLoopArgsStruct {
  * @param updateCb The function pointer on your update() function which handles the received messages
  *               Please read the documentation of #UpdateCbFp above.
  * @param userData An optional pointer from the client with client specific data
- *               which is delivered back with the #updateCb function
+ *               which is delivered back with the updateCb() function
  * @return NULL if allocation or bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterConnectionUnparsed().
  */

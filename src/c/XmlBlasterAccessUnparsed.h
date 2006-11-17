@@ -259,7 +259,7 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
    pthread_t callbackThreadId;
    char threadCounter;
    pthread_mutex_t writenMutex;   /**< Protect writing n bytes to the socket */
-   pthread_mutex_t readnMutex;   /**< Protect reading n bytes to the socket */
+   pthread_mutex_t readnMutex;   /**< Protect reading n bytes from the socket */
 } XmlBlasterAccessUnparsed;
 
 /**
