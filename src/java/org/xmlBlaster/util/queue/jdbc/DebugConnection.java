@@ -131,7 +131,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#getAutoCommit()
     */
    public boolean getAutoCommit() throws SQLException {
-      checkIfOutsidePool();
+      // checkIfOutsidePool();
       return this.conn.getAutoCommit();
    }
 
@@ -323,7 +323,7 @@ public class DebugConnection implements Connection {
     * @see java.sql.Connection#setAutoCommit(boolean)
     */
    public void setAutoCommit(boolean autoCommit) throws SQLException {
-      checkIfOutsidePool();
+      // checkIfOutsidePool();
       if (autoCommit == false)
          this.autoCommitSwitchedOff = true;
       this.conn.setAutoCommit(autoCommit);

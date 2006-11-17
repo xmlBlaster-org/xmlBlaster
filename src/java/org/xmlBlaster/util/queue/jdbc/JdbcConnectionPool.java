@@ -73,6 +73,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private boolean cascadeDeleteSupported;
    private boolean nestedBracketsSupported;
    private int forceIsoaltionLevel = -1;
+   private boolean debug;
    
    private final int MIN_POOL_SIZE = 1;
 
@@ -155,7 +156,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       try  {
          conn = (Connection)this.connections.poll(delay);
          if (conn != null) { // assert code
-            ((DebugConnection)conn).setInPool(false);
+            setInPool(conn, false);
             try {
                if (!conn.getAutoCommit()) {
                   log.severe("Get error, expected autoCommit=true but was false" + ThreadLister.getAllStackTraces());
@@ -189,7 +190,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       if (conn == null) return false;
 
-      if (((DebugConnection)conn).isInPool()) { // assert code
+      if (isInPool(conn)) { // assert code
          log.severe("Put error, the returned connection is already in the pool: " + ThreadLister.getAllStackTraces());
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, 
                "Put error, the returned connection is already in the pool");
@@ -208,7 +209,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       
       try {
          boolean tmp = this.connections.offer(conn, 5L);
-         ((DebugConnection)conn).setInPool(true); // assert code
+         setInPool(conn, true);
          return tmp;
       }
       catch (InterruptedException ex) {
@@ -219,7 +220,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          for (int i=0; i < 3; i++) {
             try {
                ret = this.connections.offer(conn, 5L);
-               ((DebugConnection)conn).setInPool(true);
+               setInPool(conn, true);
                break;
             }
             catch (InterruptedException e) {
@@ -331,6 +332,16 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
    }
    
+   private final void setInPool(Connection conn, boolean inPool) {
+      if (conn instanceof DebugConnection)
+         ((DebugConnection)conn).setInPool(inPool); // assert code
+   }
+   private final boolean isInPool(Connection conn) {
+      if (conn instanceof DebugConnection)
+         return ((DebugConnection)conn).isInPool();
+      return false;
+   }
+   
    private synchronized void addConnectionToPool(boolean doLog) throws SQLException {
       try {
          if (this.connections.size() == this.connections.capacity()) {
@@ -339,14 +350,18 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             return;
          }
          // Connection conn = DriverManager.getConnection(url, user, password);
-         Connection conn = new DebugConnection(DriverManager.getConnection(url, user, password));
+         Connection conn = null;
+         if (this.debug)
+            conn = new DebugConnection(DriverManager.getConnection(url, user, password));
+         else
+            conn = DriverManager.getConnection(url, user, password);
          if (doLog) {
             log.info(getIsolationLevel(conn));
          }
          if (this.forceIsoaltionLevel != -1)
             conn.setTransactionIsolation(this.forceIsoaltionLevel);
          this.connections.put(conn);
-         ((DebugConnection)conn).setInPool(true); // assert code
+         setInPool(conn, true);
          // log.info(ME, "DriverManager:" + buf.toString());
       }
       catch (InterruptedException e) {
@@ -476,7 +491,15 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       ME = "JdbcConnectionPool-" + this.url;
       this.user = pluginProp.getProperty("user", this.user);
       this.password = pluginProp.getProperty("password", this.password);
-
+      
+      String txt = pluginProp.getProperty("debug", "" + false);
+      try {
+         this.debug = (new Boolean(txt)).booleanValue();
+      }
+      catch (Exception ex) {
+         log.warning("The property 'debug' was set to '" + txt + "' which can not be parsed as a boolean value, will set it to false");
+      }
+      
       String help = pluginProp.getProperty("connectionPoolSize", "" + this.capacity);
       try {
          this.capacity = Integer.parseInt(help);
@@ -569,6 +592,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          log.finest("initialize -dbAdmin                :" + this.dbAdmin);
          log.finest("initialize -cascadeDeleteSupported :" + this.cascadeDeleteSupported);
          log.finest("initialize -nestedBracketsSupported:" + this.nestedBracketsSupported);
+         log.finest("initialize -debug                  :" + this.debug);
+         
          if (this.configurationIdentifier != null) 
             log.finest("initialize -configurationIdentifier:" + this.configurationIdentifier);
       }
@@ -1012,7 +1037,6 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    public boolean isNestedBracketsSuppported() {
       return this.nestedBracketsSupported;
    }
-
 
 }
 
