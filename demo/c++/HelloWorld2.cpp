@@ -6,6 +6,7 @@ Author:    Michele Laghi
 ------------------------------------------------------------------------------*/
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
+#include <util/queue/I_Queue.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -14,6 +15,7 @@ using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
+using namespace org::xmlBlaster::util::queue;
 
 /**
  * This client connects to xmlBlaster and subscribes to a message.
@@ -55,8 +57,13 @@ public:
    }
 
 
-   bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   bool reachedAlive(StatesEnum /*oldState*/, I_ConnectionsHandler* connectionsHandler)
    {
+      I_Queue* queue = connectionsHandler->getQueue();
+      if (queue && queue->getNumOfEntries() > 0) {
+         log_.info(ME, "Clearing " + lexical_cast<std::string>(queue->getNumOfEntries()) + " entries from queue");
+         queue->clear();
+      }
       log_.info(ME, "reconnected");
       return true;
    }
@@ -66,8 +73,12 @@ public:
       log_.info(ME, "lost connection");
    }
 
-   void reachedPolling(StatesEnum /*oldState*/, I_ConnectionsHandler* /*connectionsHandler*/)
+   void reachedPolling(StatesEnum /*oldState*/, I_ConnectionsHandler* connectionsHandler)
    {
+      I_Queue* queue = connectionsHandler->getQueue();
+      if (queue) {
+         log_.info(ME, "Found " + lexical_cast<std::string>(queue->getNumOfEntries()) + " entries in client side queue");
+      }
       log_.info(ME, "going to poll modus");
    }
 
@@ -80,13 +91,27 @@ public:
 
          // Creates a connect qos with the user 'joe' and the password 'secret'
          ConnectQos qos(global_, "joe", "secret");
+         /*
+         string user = "joe";
+         string pwd = "secret";
 
-         /* To test SOCKET plugin
-         ServerRef ref("SOCKET", "socket://localhost:7604");
-         qos.addServerRef(ref);
+         // Creates a connect qos with the user and password
+         // <session name="client/joe/session/1" ...>
+         ConnectQos qos(global_, user+"/session/1", pwd);
+
+         // Configure htpasswd security plugin
+         //   <securityService type="htpasswd" version="1.0">
+         //     <![CDATA[
+         //         <user>joe</user>
+         //         <passwd>secret</passwd>
+         //     ]]>
+         //   </securityService>
+         org::xmlBlaster::authentication::SecurityQos sec(global_, user, pwd, "htpasswd,1.0");
+         qos.setSecurityQos(sec);
          */
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + qos.toXml());
 
+         
          // connects to xmlBlaster and gives a pointer to this class to tell
          // which update method to invoke when callbacks come from the server.
          ConnectReturnQos retQos = con.connect(qos, this);  // Login and register for updates
@@ -99,6 +124,12 @@ public:
          SubscribeQos subQos(global_);
          log_.info(ME, string("subscribing to xmlBlaster with key: ") + subKey.toXml() +
                        " and qos: " + subQos.toXml());
+                       
+         I_Queue* queue = con.getQueue();
+         if (queue && queue->getNumOfEntries() > 0) {
+             log_.info(ME, "Found " + lexical_cast<std::string>(queue->getNumOfEntries()) + " entries in client side connection queue");
+             //queue->clear();
+         }
 
          SubscribeReturnQos subRetQos = con.subscribe(subKey, subQos);
          log_.info(ME, string("successfully subscribed to xmlBlaster. Return qos: ") +
