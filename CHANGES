@@ -1,6 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15697 C++ client: Added client side queue accessor to xmlBlasterAccess->getQueue()
+
  o #15684 Fixed I_Queue.clear() of cache queue implementation
           It only removed the entries in the cache but now
           it correctly removes the swapped out persistent messages as well
