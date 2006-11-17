@@ -208,8 +208,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       
       try {
-         boolean tmp = this.connections.offer(conn, 5L);
          setInPool(conn, true);
+         boolean tmp = this.connections.offer(conn, 5L);
          return tmp;
       }
       catch (InterruptedException ex) {
