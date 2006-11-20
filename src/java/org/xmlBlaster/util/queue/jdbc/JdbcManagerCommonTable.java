@@ -165,7 +165,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          
          // zero means not limit (to be sure we also check negative Values
          this.maxNumStatements = this.pool.getProp("maxNumStatements", conn.getMetaData().getMaxStatements());
-         log.fine("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
+         log.info("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
       }
       catch (XmlBlasterException ex) {
          success = false;
@@ -1348,14 +1348,15 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       int currentLength = 0;
 
       ArrayList ret = new ArrayList();
-
+      int count = 0;
       for (int i=0; i<uniqueIds.length; i++) {
+         count++;
          String req = null;
          String entryId = Long.toString(uniqueIds[i]);
          currentLength = entryId.length();
          length += currentLength;
-         if ((length>this.maxStatementLength) || (i == (uniqueIds.length-1))) { // then make the update
-
+         if ((length > this.maxStatementLength) || (i == (uniqueIds.length-1)) || count > this.maxNumStatements) { // then make the update
+            count = 0;
             if (i == (uniqueIds.length-1)) {
                if (!isFirst) buf.append(",");
                buf.append(entryId);
@@ -1373,7 +1374,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             buf.append(",");
             length++;
          }
-         else isFirst = false;
+         else 
+            isFirst = false;
          buf.append(entryId);
       }
 
