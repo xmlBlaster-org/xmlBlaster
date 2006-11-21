@@ -116,6 +116,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    
    /** The queue associated to this slave. It is associated on first invocation of check */
    private I_Queue queue;
+   private boolean stalled;
    
    public ReplSlave(Global global, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.forcedCounter = 0L;
@@ -382,7 +383,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       log.info(this.name + " sends now an initial update request to the Master '" + dbWatcherSessionId + "'");
       I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
       // no oid for this ptp message 
-      PublishKey pubKey = new PublishKey(this.global);
+      PublishKey pubKey = new PublishKey(this.global, REQUEST_INITIAL_DATA_TOPIC);
       Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
       destination.forceQueuing(true);
       PublishQos pubQos = new PublishQos(this.global, destination);
@@ -851,7 +852,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          log.info(this.name + " sends now a cancel request to the Master '" + this.dbWatcherSessionName + "'");
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          // no oid for this ptp message 
-         PublishKey pubKey = new PublishKey(this.global);
+         PublishKey pubKey = new PublishKey(this.global, REQUEST_CANCEL_UPDATE_TOPIC);
          Destination destination = new Destination(new SessionName(this.global, this.dbWatcherSessionName));
          destination.forceQueuing(true);
          PublishQos pubQos = new PublishQos(this.global, destination);
@@ -932,6 +933,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       return this.connected;
    }
 
+   /**
+    * Convenience method enforced by the MBean which returns true if the connection to the
+    * real slave is stalled or false otherwise.
+    */
+   public boolean isStalled() {
+      return this.stalled;
+   }
+
    public String getSessionName() {
       return this.sessionName;
    }
@@ -988,6 +997,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          log.severe("an exception occured when checking if connected for '" + this.sessionName + "':" + ex.getMessage());
          ex.printStackTrace();
          this.connected = false;
+      } 
+
+      // isStalled
+      try {
+         this.stalled = session.isStalled();
+      }
+      catch (Exception ex) {
+         log.severe("an exception occured when checking if stalled for '" + this.sessionName + "':" + ex.getMessage());
+         ex.printStackTrace();
+         this.stalled = false;
       } 
       
       // sessionName
@@ -1153,6 +1172,18 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    
    public String toString() {
       return this.sessionName;
+   }
+   
+   /**
+    * Returns a string telling in which state the connection is. It can be stalled, connected or disconnected.
+    * @return
+    */
+   public String getConnection() {
+      if (isStalled())
+         return "stalled";
+      if (isConnected())
+         return "connected";
+      return "disconnected";
    }
    
 }

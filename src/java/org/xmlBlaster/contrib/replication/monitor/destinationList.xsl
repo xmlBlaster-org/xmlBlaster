@@ -118,7 +118,7 @@ function refresh() {
    <xsl:param name="transactionSeq" select="Attribute[@name='TransactionSeq']/@value"/>
    <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
    <xsl:param name="activeStatus" select="Attribute[@name='Active']/@value"/>
-   <xsl:param name="connectedStatus" select="Attribute[@name='Connected']/@value"/>
+   <xsl:param name="connectedStatus" select="Attribute[@name='Connection']/@value"/>
    <xsl:param name="version" select="Attribute[@name='Version']/@value"/>
 
 <!--
@@ -190,17 +190,15 @@ function refresh() {
             <td align="center" colspan="1" class="normal"><img height="18" src="./inactive.png" alt="inactive" title="inactive" /></td>
               </xsl:otherwise>
             </xsl:choose>
-            <xsl:choose>
-              <xsl:when test="$connectedStatus = 'true'">
-            <td align="center" colspan="1" class="normal"><img height="18" src="./connected.png" alt="connected" title="connected" /></td>
-              </xsl:when>
-              <xsl:otherwise>
-            <td align="center" colspan="1" class="normal"><img height="18" src="./disconnected.png" alt="disconnected" title="disconnected" /></td>
-              </xsl:otherwise>
-            </xsl:choose>
-
+            <td align="center" colspan="1" class="normal">
+               <xsl:element name="img">
+                  <xsl:attribute name="height">18</xsl:attribute>
+                  <xsl:attribute name="src">./<xsl:value-of select="$connectedStatus"/>.png</xsl:attribute>
+                  <xsl:attribute name="alt"><xsl:value-of select="$connectedStatus"/></xsl:attribute>
+                  <xsl:attribute name="title"><xsl:value-of select="$connectedStatus"/></xsl:attribute>
+               </xsl:element>
+            </td>
             <td align="center" colspan="1" class="normal"><xsl:value-of select="$version"/></td>
-
           </tr>
 
 </xsl:template>      

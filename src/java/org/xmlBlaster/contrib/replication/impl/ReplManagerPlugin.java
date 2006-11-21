@@ -980,7 +980,7 @@ public class ReplManagerPlugin extends GlobalInfo
       log.info("Broadcasting sql statement '" + sql + "' for master '" + replicationPrefix + "'");
       I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
       // no oid for this ptp message 
-      PublishKey pubKey = new PublishKey(this.global);
+      PublishKey pubKey = new PublishKey(this.global, REQUEST_BROADCAST_SQL_TOPIC);
       Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
       destination.forceQueuing(true);
       PublishQos pubQos = new PublishQos(this.global, destination);
@@ -1214,8 +1214,7 @@ public class ReplManagerPlugin extends GlobalInfo
             throw new Exception("The replication source with replication.prefix='" +  replPrefix + "' had no '_senderSession' attribute set in its configuration");
 
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
-         // no oid for this ptp message 
-         PublishKey pubKey = new PublishKey(this.global);
+         PublishKey pubKey = new PublishKey(this.global, REQUEST_RECREATE_TRIGGERS);
          Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
          destination.forceQueuing(true);
          PublishQos pubQos = new PublishQos(this.global, destination);
@@ -1412,7 +1411,7 @@ public class ReplManagerPlugin extends GlobalInfo
          String dbWatcherSessionId = individualInfo.get(SENDER_SESSION, null);
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          // no oid for this ptp message 
-         PublishKey pubKey = new PublishKey(this.global);
+         PublishKey pubKey = new PublishKey(this.global, SIMPLE_MESSAGE);
          Destination destination = new Destination(new SessionName(this.global, dbWatcherSessionId));
          destination.forceQueuing(true);
          PublishQos pubQos = new PublishQos(this.global, destination);
