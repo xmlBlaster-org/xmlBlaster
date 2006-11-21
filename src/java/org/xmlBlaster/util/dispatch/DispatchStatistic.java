@@ -46,7 +46,9 @@ public class DispatchStatistic implements I_ProgressListener
    
    protected long pingRoundTripDelay;
    protected long roundTripDelay;
-
+   private boolean stalled;
+   
+   
    /* The time-stamp when the last message was fully written */
    /*private long lastWrittenTimestamp; Not yet implemented as we should ignore the ping */
 
@@ -384,5 +386,15 @@ public class DispatchStatistic implements I_ProgressListener
       this.currBytesRead = 0L;
       this.numBytesToRead = 0L;
    }
+
+   public boolean isStalled() {
+      return this.stalled;
+   }
+
+   public void setStalled(boolean stalled) {
+      this.stalled = stalled;
+   }
+   
+   
 }
 

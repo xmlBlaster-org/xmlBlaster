@@ -290,4 +290,8 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public ConnectQosServer getConnectQos() {
       return this.sessionInfo.getConnectQos();
    }
+   
+   public boolean isStalled() {
+      return this.sessionInfo.isStalled();
+   }
 }

@@ -1040,4 +1040,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       this.remoteProperties.put(key, value);
       return old;
    }
+   
+   public boolean isStalled() {
+      return getDispatchStatistic().isStalled();
+   }
 }
