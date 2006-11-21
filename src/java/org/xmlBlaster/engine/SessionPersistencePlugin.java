@@ -94,10 +94,12 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             SessionName sessionName = data.getSessionName();
             String sessionId = data.getSessionQos().getSecretSessionId();
             sessionIds.put(sessionName.getAbsoluteName(), sessionId); 
-            if (log.isLoggable(Level.FINE)) log.fine("recoverSessions: store in map session='" + sessionName.getAbsoluteName() + "' has secret sessionId='" + sessionId + "' and persistenceUniqueId=" + entry.getUniqueId());
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("recoverSessions: store in map session='" + sessionName.getAbsoluteName() + "' has secret sessionId='" + sessionId + "' and persistenceUniqueId=" + entry.getUniqueId());
             // if (log.isLoggable(Level.FINE)) log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
             ConnectReturnQosServer ret = this.global.getAuthenticate().connect(this.addressServer, qos);
-            if (log.isLoggable(Level.FINEST)) log.finest("recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
+            if (log.isLoggable(Level.FINEST)) 
+               log.finest("recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
          }
          else {
             throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSessions: the entry in the storage should be of type 'SessionEntry' but is of type'" + entries[i].getClass().getName() + "'");
@@ -140,7 +142,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
                      }
 
                      String key = qosData.getSubscriptionId();
-                     if (log.isLoggable(Level.FINE)) log.fine("Cleanup of duplicate subscriptions, key=" + key);
+                     if (log.isLoggable(Level.FINE)) 
+                        log.fine("Cleanup of duplicate subscriptions, key=" + key);
                      if (duplicates.containsKey(key)) {
                         if (duplicateCounter == 0)
                            log.warning("Cleanup of duplicate subscriptions, this may take a while, please wait ...");
@@ -240,7 +243,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.info = pluginInfo;
          this.global = (org.xmlBlaster.engine.ServerScope)glob;
 
-         if (log.isLoggable(Level.FINER)) log.finer("init");
+         if (log.isLoggable(Level.FINER)) 
+            log.finer("init");
 
          // init the storages
          QueuePropertyBase sessionProp = new SessionStoreProperty(this.global, this.global.getStrippedId());   
@@ -251,7 +255,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             this.sessionStore = this.global.getStoragePluginManager().getPlugin(type, version, this.sessionStorageId, sessionProp);
          }
          else {
-            if (log.isLoggable(Level.FINE)) log.fine(Constants.RELATING_SUBSCRIBE + " persistence for subscribe is switched of with maxEntries=0");
+            if (log.isLoggable(Level.FINE)) 
+               log.fine(Constants.RELATING_SESSION + " persistence for session is switched off with maxEntries=0");
          }
          QueuePropertyBase subscribeProp = new SubscribeStoreProperty(this.global, this.global.getStrippedId());   
          if (subscribeProp.getMaxEntries() > 0L) {
@@ -260,14 +265,18 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             this.subscribeStorageId = new StorageId(Constants.RELATING_SUBSCRIBE, this.global.getStrippedId() +"/" + this.info.getId());
             this.subscribeStore = this.global.getStoragePluginManager().getPlugin(type, version, this.subscribeStorageId, subscribeProp);
          }
-         else if (log.isLoggable(Level.FINE)) log.fine(Constants.RELATING_SUBSCRIBE + " persistence for subscribe is switched of with maxEntries=0");
+         else if (log.isLoggable(Level.FINE)) 
+            log.fine(Constants.RELATING_SUBSCRIBE + " persistence for subscribe is switched off with maxEntries=0");
          this.isOK = true;
 
          // register before having retreived the data since needed to fill info objects with persistenceId
          this.global.getRequestBroker().getAuthenticate().addClientListener(this);
          this.global.getRequestBroker().addSubscriptionListener(this);
+         log.fine("Recovering Sessions");
          HashMap sessionIds = recoverSessions();
+         log.fine("Recovering Subscriptions");
          recoverSubscriptions(sessionIds);
+         log.fine("Recovering of Subscriptions finished");
       }
       
       //The topics restored from persistence didn't switch on the destroyTimeout to not diappear until we are finished
