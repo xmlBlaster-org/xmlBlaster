@@ -325,6 +325,7 @@ abstract public class DispatchConnection implements I_Timeout
                }
             }
          }
+         stats.setStalled(false);
          this.previousBytesWritten = stats.getOverallBytesWritten() + stats.getCurrBytesWritten();
          this.previousBytesRead = stats.getOverallBytesRead() + stats.getCurrBytesRead();
          
