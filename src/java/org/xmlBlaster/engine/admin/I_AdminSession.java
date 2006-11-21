@@ -246,4 +246,11 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    
    // Used internally
    public ConnectQosServer getConnectQos();
+   
+   /**
+    * Returns true if the connection is currently stalled (detected in the dispatch statistics when pinging).
+    * @return
+    */
+   public boolean isStalled();
+   
 }
