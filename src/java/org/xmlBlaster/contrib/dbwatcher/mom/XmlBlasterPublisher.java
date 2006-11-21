@@ -419,7 +419,7 @@ public class XmlBlasterPublisher implements
          if (changeKey != null && changeKey.length() > 0)
             key = new PublishKey(this.glob, changeKey);
          else 
-            key = new PublishKey(this.glob);
+            key = new PublishKey(this.glob, "dbWatcherUnspecified");
          key.setContentMime("text/xml");
          MsgUnit msg = new MsgUnit(key, out, qos);
          PublishReturnQos prq = this.con.publish(msg);

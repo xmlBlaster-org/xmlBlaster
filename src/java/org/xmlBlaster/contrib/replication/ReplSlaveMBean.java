@@ -32,6 +32,12 @@ public interface ReplSlaveMBean {
    String dumpEntries(int maxNum, long maxSize, String fileName);
    String dumpFirstEntry();
    
+   /**
+    * Returns a string telling in which state the connection is. It can be stalled, connected or disconnected.
+    * @return
+    */
+   public String getConnection();
+   
    // these are for the associated replication (if any)
    boolean isCascading();
    String getCascadedSessionName();

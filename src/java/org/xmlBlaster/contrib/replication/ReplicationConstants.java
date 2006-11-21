@@ -93,4 +93,15 @@ public interface ReplicationConstants {
    
     final static String REPLICATION_MAX_ENTRIES_KEY = "replication.maxEntries";
     final static int REPLICATION_MAX_ENTRIES_DEFAULT = 1;
+    
+    // topics
+    final static String REQUEST_INITIAL_DATA_TOPIC = "replRequestInitialData";
+    final static String REQUEST_CANCEL_UPDATE_TOPIC = "replRequestCancelUpdate";
+    final static String REQUEST_BROADCAST_SQL_TOPIC = "replRequestBroadcastSQL";
+    final static String REQUEST_RECREATE_TRIGGERS = "replRequestRecreateTriggers";
+
+    final static String SIMPLE_MESSAGE = "replSimpleMessage";
+    final static String RESPONSE_INITIAL_DATA_TOPIC = "replResponseInitialData";
+    
+    
 }
