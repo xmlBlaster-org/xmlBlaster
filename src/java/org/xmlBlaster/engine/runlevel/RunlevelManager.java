@@ -350,6 +350,7 @@ public final class RunlevelManager implements RunlevelManagerMBean
          }
          if (log.isLoggable(Level.FINEST)) log.finest("startupPlugins " + pluginConfig.toXml());
          try {
+            long startTime = System.currentTimeMillis();
             PluginInfo pluginInfo = pluginConfig.getPluginInfo();
             if (log.isLoggable(Level.FINER)) {
                if (pluginInfo != null) {
@@ -358,7 +359,8 @@ public final class RunlevelManager implements RunlevelManagerMBean
                else log.finer("startupPlugins: the pluginInfo is null");
             }
             this.glob.getPluginManager().getPluginObject(pluginInfo);
-            log.fine("Run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded");
+            long deltaTime = System.currentTimeMillis() - startTime;
+            log.fine("Run level '" + from + "' to '" + to + "' plugin '" + pluginConfig.getId() + "' successful loaded in '" + deltaTime + "' ms");
          }
          catch (Throwable ex) {
             ErrorCode code = pluginConfig.getUpAction().getOnFail();
