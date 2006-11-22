@@ -147,5 +147,7 @@ public interface ReplManagerPluginMBean {
    
    String activateSlaveDispatchers(String replPrefix);
    String stopSlaveDispatchers(String replPrefix);
-   
+
+   void setMaxNumOfEntries(int maxNumOfEntries);
+   int getMaxNumOfEntries();
 }

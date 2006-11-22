@@ -835,7 +835,7 @@ public class ReplManagerPlugin extends GlobalInfo
       I_Queue cbQueue = dispatchManager.getQueue();
       // ArrayList entryList = cbQueue.peekSamePriority(-1, this.maxSize);
       ArrayList entryList = cbQueue.peekSamePriority(maxEntriesToRetrieve, this.maxSize);
-      log.info("handleNextMessages invoked with '" + entryList.size() + "' entries");
+      log.info("handleNextMessages invoked with '" + entryList.size() + "' entries (max was '" + maxEntriesToRetrieve + "'");
 
       // filter expired entries etc. ...
       // you should always call this method after taking messages from queue
@@ -1563,6 +1563,12 @@ public class ReplManagerPlugin extends GlobalInfo
       return new long[] { replKey, transKey, msgKey };
    }
    
-   
+   public void setMaxNumOfEntries(int maxNumOfEntries) {
+      this.maxNumOfEntries = maxNumOfEntries;
+   }
+
+   public int getMaxNumOfEntries() {
+      return this.maxNumOfEntries;
+   }
 }
 
