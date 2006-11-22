@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15713 Cb ignores ping failure in case an update is blocking (no activity). On the client side
+          however an exception is thrown to allow a reconnect
+
  o #15697 C++ client: Added client side queue accessor to xmlBlasterAccess->getQueue()
 
  o #15684 Fixed I_Queue.clear() of cache queue implementation
