@@ -304,8 +304,7 @@ abstract public class DispatchConnection implements I_Timeout
                return Constants.RET_OK;
             }
             else {
-               boolean forceFailure = false;
-               if (forceFailure) {
+               if (forcePingFailure()) {
                   if (log.isLoggable(Level.FINE)) {
                      String debug = " currentBytesWritten='" + currentBytesWritten + "' currentBytesRead='" + currentBytesRead + "'"; 
                      log.fine(ME + "there was NO activity since last ping, throwing an exception" + debug);
@@ -622,5 +621,15 @@ abstract public class DispatchConnection implements I_Timeout
     * @return internal state as an XML ASCII string
     */
    abstract public String toXml(String extraOffset);
+   
+   /**
+    * 
+    * @return true if the implementation has to throw an exception in case the ping is invoked when
+    * there is an ongoing write or read operation on the same connection.
+    * Normally it shall give false on the callback and true on the client side. The client side shall
+    * give true because otherwise if such a situation arizes it will never go in polling and no 
+    * reconnect will be triggered. 
+    */
+   abstract protected boolean forcePingFailure();
 }
 

@@ -386,5 +386,10 @@ public final class CbDispatchConnection extends DispatchConnection
 
       return sb.toString();
    }
+
+   protected boolean forcePingFailure() {
+      return false;
+   }
+   
 }
 

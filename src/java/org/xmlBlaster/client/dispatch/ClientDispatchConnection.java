@@ -610,7 +610,9 @@ public final class ClientDispatchConnection extends DispatchConnection
       return this.driver.registerProgressListener(listener);
    }
 
-   
+   protected boolean forcePingFailure() {
+      return true;
+   }
    
 }
 
