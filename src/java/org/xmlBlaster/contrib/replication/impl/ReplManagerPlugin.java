@@ -496,7 +496,7 @@ public class ReplManagerPlugin extends GlobalInfo
             log.warning("The 'replication.monitor.statusPollerInterval' is set to '" + this.statusPollerInterval + "' which is lower than 1 ms, I will not activate it");
          
          this.maxNumOfEntries = this.getInt(REPLICATION_MAX_ENTRIES_KEY, REPLICATION_MAX_ENTRIES_DEFAULT);
-         
+         log.info("Will send a maximum of '" + this.maxNumOfEntries + "' on each sweep");
          this.initialized = true;
       }
       catch (Throwable e) {
