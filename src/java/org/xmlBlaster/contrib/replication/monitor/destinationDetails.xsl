@@ -11,6 +11,8 @@
 
 <!-- the variables used in this document: -->
 
+<xsl:param name="request.referer"/>
+
 <xsl:template match ='/'>
 <html>
 <head>                                                                                       
@@ -27,7 +29,13 @@
 <script language="JavaScript" type="text/javascript">
 
 function gotoDestinationList() {
-   var url = '<xsl:value-of select="$destinationListUrl"/>';
+   var referer = '<xsl:value-of select="$request.referer"/>';
+   var url = "";
+   if (referer == "")
+      url = '<xsl:value-of select="$destinationListUrl"/>';
+   else
+      url = '<xsl:value-of select="$destinationPrefix"/>' + '<xsl:value-of select="$request.referer"/>';
+   alert(url);
    self.location.href = url;
 }
 
@@ -86,6 +94,7 @@ function dumpEntry() {
 
 
 <body>
+   <xsl:value-of select="$request.referer"/>
   <center>
     <xsl:call-template name="header"/>
     <div class="middle">Replication Details<br/>

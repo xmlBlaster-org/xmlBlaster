@@ -55,6 +55,7 @@
 
 
 <!-- 'objectName=' is xmlBlaster specific, rest is MX4J search pattern -->
+<xsl:param name="destinationPrefix" select="'mbean?objectname=org.xmlBlaster:contribClass=contrib,*&amp;attributes=true&amp;operations=false&amp;notifications=false&amp;constructors=false&amp;template='"/>
 <xsl:param name="destinationListUrl" select="'mbean?objectname=org.xmlBlaster:contribClass=contrib,*&amp;attributes=true&amp;operations=false&amp;notifications=false&amp;constructors=false&amp;template=destinationList'"/>
 <xsl:param name="sqlStatementsUrl" select="'mbean?objectname=org.xmlBlaster:contribClass=contrib,*&amp;attributes=true&amp;operations=false&amp;notifications=false&amp;constructors=false&amp;template=sqlStatements'"/>
 <xsl:param name="initiateReplicationUrl" select="'mbean?objectname=org.xmlBlaster:contribClass=contrib,contrib=%22replication%22,*&amp;template=initiateReplication'"/>
