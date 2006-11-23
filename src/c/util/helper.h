@@ -114,6 +114,8 @@ Dll_Export extern char *strcpyAlloc(const char *src);
 Dll_Export extern char *strcpyRealloc(char **dest, const char *src);
 Dll_Export extern char *strcatAlloc(char **dest, const char *src);
 Dll_Export extern char *strncpy0(char * const to, const char * const from, const size_t maxLen);
+Dll_Export extern char *strncat0(char * const to, const char * const from, const size_t max);
+Dll_Export extern int snprintf0(char *buffer, size_t sizeOfBuffer, const char *format, ...);
 Dll_Export extern void trim(char *s);
 Dll_Export extern void trimStart(char *s);
 Dll_Export extern void trimEnd(char *s);

@@ -269,10 +269,12 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 Dll_Export char *strcpyAlloc(const char *src)
 {
    char *dest;
+   int len;
    if (src == 0) return (char *)0;
-   dest = (char *)malloc((strlen(src)+1)*sizeof(char));
+   len = strlen(src) + 1;
+   dest = (char *)malloc(len*sizeof(char));
    if (dest == 0) return 0;
-   strcpy(dest, src);
+   strncpy0(dest, src, len);
    return dest;
 }
 
@@ -282,11 +284,13 @@ Dll_Export char *strcpyAlloc(const char *src)
  */
 Dll_Export char *strcatAlloc(char **dest, const char *src)
 {
+   int len;
    assert(dest != 0);
    if (src == 0) return (char *)0;
-   (*dest) = (char *)realloc(*dest, (strlen(src)+strlen(*dest)+1)*sizeof(char));
+   len = strlen(src)+strlen(*dest)+1;
+   (*dest) = (char *)realloc(*dest, len*sizeof(char));
    if ((*dest) == 0) return 0;
-   strcat((*dest), src);
+   strncat0((*dest), src, len);
    return (*dest);
 }
 
@@ -339,8 +343,69 @@ Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
  */
 Dll_Export char *strncpy0(char * const to, const char * const from, const size_t maxLen)
 {
-   char *ret=strncpy(to, from, maxLen-1);
-   *(to+maxLen-1) = '\0';
+#  ifdef _WIN32
+/*	errno_t strncpy_s(
+   char *strDest,
+   size_t sizeInBytes,
+   const char *strSource,
+   size_t count
+); */
+      errno_t ee = strncpy_s(to, maxLen, from, _TRUNCATE); /*maxLen);*/
+      return to;
+#  else /* MAC OSX calls it strlcpy() */
+      char *ret=strncpy(to, from, maxLen-1);
+      *(to+maxLen-1) = '\0';
+      return ret;
+#  endif
+}
+
+
+/**
+ * Guarantees a 0 terminated string
+ * @param to The destination string must be big enough
+ * @param from The source to be appended
+ * @param max Number of characters to append, max-1 will be ended by 0
+ * @return The destination string 'to'
+ */
+Dll_Export char *strncat0(char * const to, const char * const from, const size_t max)
+{
+#  ifdef _WIN32
+      errno_t ee = strncat_s(to, max, from, _TRUNCATE);
+      return to;
+#  else /* MAC OSX calls it strlcat() */
+      int oldLen = strlen(to);
+      char *ret=strncat(to, from, max-1);
+      *(to+oldLen+max-1) = '\0';
+      return ret;
+#  endif
+}
+
+Dll_Export int vsnprintf0(char *s, size_t size, const char *format, va_list ap) {
+#  ifdef _WIN32
+   errno_t err = vsnprintf_s(s, size, _TRUNCATE, format, ap);
+   if ( err == STRUNCATE ) {
+      printf("truncation occurred %s!\n", format);
+      return 0;
+   }
+   return err;
+#else
+   return vsnprintf(s, size, format, ap);
+#endif
+}
+
+/**
+ * Microsoft introduces the vsnprintf_s()
+ */
+Dll_Export int snprintf0(char *buffer, size_t sizeOfBuffer, const char *format, ...) {
+   int ret;
+   va_list ap;
+   va_start (ap, format);
+   ret = vsnprintf0(
+         buffer,
+         sizeOfBuffer,
+         format,
+         ap);
+   va_end (ap);
    return ret;
 }
 
@@ -510,7 +575,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
    for (;;) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
-      n = VSNPRINTF(p, size, fmt, ap);
+      n = vsnprintf0(p, size, fmt, ap);
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {
@@ -518,7 +583,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
          char timeStr[128];
          (void) time(&t1);
 #        if defined(_WINDOWS)
-            strcpy(timeStr, ctime(&t1));
+            strncpy0(timeStr, ctime(&t1), 126);
 #        elif defined(__sun)
             ctime_r(&t1, (char *)timeStr, 126);
 #        else
@@ -571,7 +636,7 @@ Dll_Export XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
          return (XMLBLASTER_LOG_LEVEL)i;
       }
    }
-   if (sscanf(logLevelStr, "%d", &i) == 1)
+   if (SSCANF(logLevelStr, "%d", &i) == 1)
       return (XMLBLASTER_LOG_LEVEL)i;
    return XMLBLASTER_LOG_WARN;
 }
@@ -658,7 +723,7 @@ Dll_Export const char* int64ToStr(char * const buf, int64_t val)
    if (buf == 0) return 0;
    *buf = 0;
    /* SNPRINTF(buf, INT64_STRLEN_MAX, "%lld", val);  The normal sprintf should be safe enough */
-   sprintf(buf, PRINTF_PREFIX_INT64_T, val);  /* Returns number of written chars */
+   snprintf0(buf, INT64_STRLEN_MAX, PRINTF_PREFIX_INT64_T, val);  /* Returns number of written chars */
    return buf;
 }
 
@@ -675,7 +740,7 @@ Dll_Export bool strToInt64(int64_t *val, const char * const str)
    if (str == 0 || val == 0) return false;
    /*str[INT64_STRLEN_MAX-1] = 0; sscanf should be safe enough to handle overflow */
         /* %lld on UNIX, %I64d on Windows */
-   return (sscanf(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
+   return (SSCANF(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
 }
 
 /**
@@ -754,14 +819,14 @@ int main()
    {
       const char *ptr = "     28316";
       char tr[20];
-      strcpy(tr, ptr);
+      strncpy0(tr, ptr, 20);
       trim(tr);
       printf("Before '%s' after '%s'\n", ptr, tr);
    }
    {
       const char *ptr = "     28316  ";
       char tr[20];
-      strcpy(tr, ptr);
+      strncpy0(tr, ptr, 20);
       trim(tr);
       printf("Before '%s' after '%s'\n", ptr, tr);
    }

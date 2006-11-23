@@ -101,7 +101,8 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
 Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
 {
    size_t qosLen=0, keyLen=0, contentLenStrLen=0;
-   char contentLenStr[126];
+   enum { SIZE = 126 };
+   char contentLenStr[SIZE];
    size_t currpos = 0;
    BlobHolder blob;
    memset(&blob, 0, sizeof(BlobHolder));
@@ -112,7 +113,7 @@ Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
    }
    if (msgUnit->content == 0)
       msgUnit->contentLen = 0;
-   sprintf(contentLenStr, "%ld", (long)msgUnit->contentLen);
+   SNPRINTF(contentLenStr, SIZE, "%ld", (long)msgUnit->contentLen);
    contentLenStrLen = strlen(contentLenStr);
 
    if (msgUnit->qos != 0)
@@ -171,11 +172,12 @@ Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
    for (i=0; i<msgUnitArr->len; i++) {
       MsgUnit* msgUnit = &msgUnitArr->msgUnitArr[i];
       size_t qosLen=0, keyLen=0;
-      char contentLenStr[126];
+      enum { SIZE = 126 };
+      char contentLenStr[SIZE];
 
       if (msgUnit->content == 0)
          msgUnit->contentLen = 0;
-      sprintf(contentLenStr, "%ld", (long)msgUnit->contentLen);
+      snprintf0(contentLenStr, SIZE, "%ld", (long)msgUnit->contentLen);
 
       if (msgUnit->qos != 0)
          qosLen = strlen(msgUnit->qos);
@@ -192,11 +194,12 @@ Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
    for (i=0; i<msgUnitArr->len; i++) {
       MsgUnit* msgUnit = &msgUnitArr->msgUnitArr[i];
       size_t qosLen=0, keyLen=0, contentLenStrLen=0;
-      char contentLenStr[126];
+      enum { SIZE = 126 };
+      char contentLenStr[SIZE];
 
       if (msgUnit->content == 0)
          msgUnit->contentLen = 0;
-      sprintf(contentLenStr, "%ld", (long)msgUnit->contentLen);
+      snprintf0(contentLenStr, SIZE, "%ld", (long)msgUnit->contentLen);
       contentLenStrLen = strlen(contentLenStr);
 
       if (msgUnit->qos != 0) {
@@ -238,8 +241,10 @@ char *encodeSocketMessage(
    char *rawMsg = (char *)0;
    char *rawMsgStr;
    size_t currpos = 0;
-   char tmp[256];
+   enum { SIZE = 256 };
+   char tmp[SIZE];
    size_t lenUnzipped = dataLen;
+   enum { SIZEF = 56 };
    char lenFormatStr[56]; /* = "%10.d"; */
    char lenStr[MSG_LEN_FIELD_LEN+1];
 
@@ -267,7 +272,7 @@ char *encodeSocketMessage(
    memcpy(rawMsg+currpos, secretSessionId, strlen(secretSessionId)+1); /* inclusive '\0' */
    currpos += strlen(secretSessionId)+1;
    
-   sprintf(tmp, "%lu", (unsigned long)lenUnzipped);
+   snprintf0(tmp, SIZE, "%lu", (unsigned long)lenUnzipped);
    memcpy(rawMsg+currpos, tmp, strlen(tmp)+1); /* inclusive '\0' */
    currpos += strlen(tmp)+1;
 
@@ -275,8 +280,8 @@ char *encodeSocketMessage(
    memcpy(rawMsg+currpos, data, dataLen);      /* add the msgUnit data */
    *rawMsgLen = currpos+dataLen;
 
-   sprintf(lenFormatStr, "%%%d.d", MSG_LEN_FIELD_LEN);
-   sprintf(lenStr, lenFormatStr, *rawMsgLen);
+   snprintf0(lenFormatStr, SIZEF, "%%%d.d", MSG_LEN_FIELD_LEN);
+   snprintf0(lenStr, MSG_LEN_FIELD_LEN+1, lenFormatStr, *rawMsgLen);
    memcpy(rawMsg, lenStr, MSG_LEN_FIELD_LEN);
    
    if (debug) {
@@ -333,7 +338,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    if ((!udp && numRead != MSG_LEN_FIELD_LEN) ||
        ( udp && numRead < MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes but expected %d", (long)numRead, MSG_LEN_FIELD_LEN);
+      snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes but expected %d", (long)numRead, MSG_LEN_FIELD_LEN);
       if (debug) { printf(exception->message); printf("\n"); }
       return true;
    }
@@ -342,9 +347,9 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    }
    *(msgLenPtr + MSG_LEN_FIELD_LEN) = 0; 
    trim(msgLenPtr);
-   if (sscanf(msgLenPtr, "%lu", &msgLenL) != 1) {
+   if (SSCANF(msgLenPtr, "%lu", &msgLenL) != 1) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message,
+      snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
               "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes with invalid message length='%s'",
               (long)numRead, msgLenPtr);
       if (debug) { printf(exception->message); printf("\n"); }
@@ -355,7 +360,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
 
    if (socketDataHolder->msgLen <= MSG_LEN_FIELD_LEN || socketDataHolder->msgLen > MAX_MSG_LEN) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message,
+      snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
               "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes with invalid message length='%s' parsed to '%ld'",
               (long)numRead, msgLenPtr, (long)socketDataHolder->msgLen);
       if (debug) { printf(exception->message); printf("\n"); }
@@ -378,7 +383,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    }
    if ((size_t)numRead != (socketDataHolder->msgLen-MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[xmlBlasterSocket] ERROR Received numRead=%ld message bytes but expected %lu", (long)numRead, (unsigned long)(socketDataHolder->msgLen-MSG_LEN_FIELD_LEN));
+      snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[xmlBlasterSocket] ERROR Received numRead=%ld message bytes but expected %lu", (long)numRead, (unsigned long)(socketDataHolder->msgLen-MSG_LEN_FIELD_LEN));
       if (debug) { printf(exception->message); printf("\n"); }
       free(rawMsg);
       return true;
@@ -401,7 +406,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
        socketDataHolder->type != MSG_TYPE_RESPONSE &&
        socketDataHolder->type != MSG_TYPE_EXCEPTION) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[xmlBlasterSocket] ERROR Received response message of type=%c", socketDataHolder->type);
+      snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[xmlBlasterSocket] ERROR Received response message of type=%c", socketDataHolder->type);
       if (debug) { printf(exception->message); printf("\n"); }
       free(rawMsg);
       return true;
@@ -410,7 +415,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    socketDataHolder->version = *(rawMsg+MSG_FLAG_POS_VERSION);
    if (socketDataHolder->version != XMLBLASTER_SOCKET_VERSION) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "[xmlBlasterSocket] ERROR Received response message of unsupported version=%c", socketDataHolder->version);
+      snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN, "[xmlBlasterSocket] ERROR Received response message of unsupported version=%c", socketDataHolder->version);
       if (debug) { printf(exception->message); printf("\n"); }
       free(rawMsg);
       return true;
@@ -433,7 +438,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    trim(tmpPtr);
    socketDataHolder->dataLenUncompressed = 0;
    msgLenL = 0;
-   if (strlen(tmpPtr) > 0 && sscanf(tmpPtr, "%lu", &msgLenL) != 1) {
+   if (strlen(tmpPtr) > 0 && SSCANF(tmpPtr, "%lu", &msgLenL) != 1) {
       printf("[xmlBlasterSocket] WARN uncompressed data length '%s' is invalid, we continue nevertheless\n", tmpPtr);
    }
    else {
@@ -532,6 +537,7 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
    MsgUnitArr *msgUnitArr = (MsgUnitArr *)calloc(1, sizeof(MsgUnitArr));
    size_t currpos = 0;
    size_t currIndex = 0;
+   enum { SIZE = 56 };
    msgUnitArr->isOneway = false;
    if (dataLen <= 0) {
       return msgUnitArr; /* Empty messageUnit array, only a first \0 for the qos */
@@ -539,7 +545,7 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
    msgUnitArr->len = 10;
    msgUnitArr->msgUnitArr = (MsgUnit *)calloc(msgUnitArr->len, sizeof(MsgUnit));
    while (currpos < dataLen) {
-      char ptr[56];
+      char ptr[SIZE];
 
       if (currIndex >= msgUnitArr->len) {
          msgUnitArr->len += 10;
@@ -569,11 +575,11 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
          /* read content */
          if (currpos < dataLen) {
             char *tmp;
-            strcpy(ptr, data+currpos);
+            strncpy0(ptr, data+currpos, SIZE);
             currpos += strlen(ptr)+1;
             trim(ptr);
             msgLenL = 0;
-            if (sscanf(ptr, "%lu", &msgLenL) != 1) {
+            if (SSCANF(ptr, "%lu", &msgLenL) != 1) {
                printf("[xmlBlasterSocket] WARN MsgUnit content length '%s' is invalid, we continue nevertheless\n", ptr);
             }
             msgUnit->contentLen = (size_t)msgLenL;

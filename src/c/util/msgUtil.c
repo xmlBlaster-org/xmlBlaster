@@ -179,7 +179,7 @@ Dll_Export char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen)
       if (maxContentDumpLen == 0)
          *contentStr = 0;
       else if (maxContentDumpLen > 0 && msg->contentLen > 5 && (size_t)maxContentDumpLen < (msg->contentLen-5))
-         strcpy(contentStr+maxContentDumpLen, " ...");
+         strncpy0(contentStr+maxContentDumpLen, " ...", 5);
       SNPRINTF(xml, len, "%s\n <content size='%lu'><![CDATA[%s]]></content>%s",
                          msg->key, (unsigned long)msg->contentLen, contentStr, msg->qos);
       free(contentStr);

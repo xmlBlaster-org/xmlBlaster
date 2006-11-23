@@ -128,7 +128,7 @@ static long getLong(Properties *props, const char *key, long defaultValue)
    const char *valP = getString(props, key, 0);
    if (valP != 0) {
       long val;
-      if (sscanf(valP, "%ld", &val) == 1)
+      if (SSCANF(valP, "%ld", &val) == 1)
          return val;
    }
    return defaultValue;
@@ -149,7 +149,7 @@ static int64_t getInt64(Properties *props, const char *key, int64_t defaultValue
 
 Dll_Export bool strToInt64(int64_t *val, const char * const str) {
    if (str == 0 || val == 0) return false;
-   return (sscanf(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
+   return (SSCANF(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
 }
 
 /**

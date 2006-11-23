@@ -218,7 +218,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    servTcpPort = xb->props->getString(xb->props, "plugin/socket/port", "7607");
    servTcpPort = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/port", servTcpPort);
 
-   strcpy(serverHostName, "localhost");
+   strncpy0(serverHostName, "localhost", 250);
    gethostname(serverHostName, 250);
    {
       const char *hn = xb->props->getString(xb->props, "plugin/socket/hostname", serverHostName);
@@ -479,13 +479,13 @@ const char *xmlBlasterConnectionUnparsedUsage()
    /*   "string length `596' is greater than the length `509' ISO C89 compilers are required to support" */
    /* we have a static variable */
    static char usage[1024];
-   strcpy(usage, 
+   strncpy0(usage, 
       "\n   -dispatch/connection/plugin/socket/hostname [localhost]"
       "\n                       Where to find xmlBlaster."
       "\n   -dispatch/connection/plugin/socket/port [7607]"
       "\n                       The port where xmlBlaster listens."
-      "\n   -dispatch/connection/plugin/socket/localHostname [NULL]");
-   strcat(usage,
+      "\n   -dispatch/connection/plugin/socket/localHostname [NULL]", 1024/2);
+   strncat0(usage,
       "\n                       Force the local IP, useful on multi homed computers."
       "\n   -dispatch/connection/plugin/socket/localPort [0]"
       "\n                       Force the local port, useful to tunnel firewalls."
@@ -496,7 +496,7 @@ const char *xmlBlasterConnectionUnparsedUsage()
       "\n                       No compression support. Try recompiling with with '-DXMLBLASTER_ZLIB==1'."
 #endif
       "\n   -dispatch/connection/plugin/socket/useUdpForOneway [false]"
-      "\n                       Use UDP for publishOneway() calls.");
+      "\n                       Use UDP for publishOneway() calls.", 1024/2);
    return usage;
 }
 

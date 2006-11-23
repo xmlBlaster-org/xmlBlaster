@@ -119,7 +119,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="C:\xmlBlaster\src\c"
+				AdditionalIncludeDirectories="E:\xmlBlaster\src\c"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;DLL_IGNORE;DLL_BUILD=1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -141,7 +141,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="pthreadVC2.lib ws2_32.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="C:\xmlBlaster\src\c\socket"
+				AdditionalLibraryDirectories="E:\xmlBlaster\src\c\socket"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

@@ -41,9 +41,48 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #endif
 
 #if defined(_WINDOWS)
-#  define SNPRINTF _snprintf
-#  define VSNPRINTF _vsnprintf
+#  if _MSC_VER > 1200  /* 1200->VC++6.0, 1400->VC++2005 (8.0) */
+#    define SNPRINTF snprintf0
+/*#    define SSCANF sscanf_s */
+/*
+ int sscanf(const char * restrict str, const char * restrict format, ...);
+
+ WIN32: 
+ int sscanf_s(const char *buffer, const char *format [,argument ] ...);
+ sscanf_s( tokenstring, "%s", s, sizeof(s) );   !! two args, the second with size !!
+ sscanf_s( tokenstring, "%c", &c, sizeof(char) );
+ sscanf_s( tokenstring, "%d", &i );
+ sscanf_s( tokenstring, "%f", &fp );
+*/
+
+#    define SSCANF sscanf
+#    define VSNPRINTF _vsnprintf
+      /*#    define SNPRINTF sprintf_s*/
+      /*#    define VSNPRINTF vsnprintf_s*/
+      /*
+         int _snprintf_s(
+            char *buffer,
+            size_t sizeOfBuffer,
+            size_t count,
+            const char *format [,
+               argument] ... 
+         );
+         int _snprintf(
+             char *buffer,
+             size_t count, 
+             const char *format [,
+               argument] ... 
+         );         
+         // Posix:
+         int snprintf(char *s,  size_t  n,  const  char  *format,  ...);
+         */
+#  else
+#    define SSCANF sscanf
+#    define SNPRINTF _snprintf
+#    define VSNPRINTF _vsnprintf
+#  endif
 #else
+#  define SSCANF sscanf
 #  define SNPRINTF snprintf
 #  define VSNPRINTF vsnprintf    /* stdarg.h */
 #endif
