@@ -349,8 +349,10 @@ Dll_Export void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum) {
 #  elif defined(_LINUX)
       strerror_r(errnum, errnoStr, sizeInBytes-1); /* glibc > 2. returns a char*, but should return an int */
 #  else
-      char *p = strerror(errnum);
-      strncpy0(errnoStr, sizeInBytes, p);
+      {
+         char *p = strerror(errnum);
+         strncpy0(errnoStr, p, sizeInBytes);
+      }
 #  endif
 }
 
