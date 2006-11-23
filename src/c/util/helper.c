@@ -212,7 +212,9 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 {
 # ifdef _WINDOWS
    struct _timeb tm;
-   (void) _ftime(&tm);
+   /*(void) _ftime(&tm);*/
+   errno_t err = _ftime_s(&tm);
+   if (err) return false;
 
    abstime->tv_sec = (long)tm.time;
    abstime->tv_nsec = tm.millitm * 1000 * 1000; /* TODO !!! How to get the more precise current time on Win? */
@@ -332,6 +334,26 @@ Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
    dest[len] = '\0';
    return dest;
 }
+
+
+/**
+ * Convert the errnum to a human readable errnoStr. 
+ * @param errnoStr Out parameter holding the string
+ * @param sizeInBytes Size of the buffer
+ * @param errnum The error number (errno)
+ */
+Dll_Export void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum) {
+   snprintf0(errnoStr, sizeInBytes, "%d", errnum); /* default if string lookup fails */
+#  if defined(_WINDOWS)
+      strerror_s(errnoStr, sizeInBytes, errnum);  
+#  elif defined(_LINUX)
+      strerror_r(errnum, errnoStr, sizeInBytes-1); /* glibc > 2. returns a char*, but should return an int */
+#  else
+      char *p = strerror(errnum);
+      strncpy0(errnoStr, sizeInBytes, p);
+#  endif
+}
+
 
 /**
  * Guarantees a 0 terminated string
@@ -583,7 +605,8 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
          char timeStr[128];
          (void) time(&t1);
 #        if defined(_WINDOWS)
-            strncpy0(timeStr, ctime(&t1), 126);
+            ctime_s(timeStr, 126, &t1);
+            /*strncpy0(timeStr, ctime(&t1), 126);*/
 #        elif defined(__sun)
             ctime_r(&t1, (char *)timeStr, 126);
 #        else
@@ -636,7 +659,7 @@ Dll_Export XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
          return (XMLBLASTER_LOG_LEVEL)i;
       }
    }
-   if (SSCANF(logLevelStr, "%d", &i) == 1)
+   if (strToInt(&i, logLevelStr) == 1)
       return (XMLBLASTER_LOG_LEVEL)i;
    return XMLBLASTER_LOG_WARN;
 }
@@ -740,8 +763,47 @@ Dll_Export bool strToInt64(int64_t *val, const char * const str)
    if (str == 0 || val == 0) return false;
    /*str[INT64_STRLEN_MAX-1] = 0; sscanf should be safe enough to handle overflow */
         /* %lld on UNIX, %I64d on Windows */
-   return (SSCANF(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
+#  ifdef _WINDOWS
+   return (sscanf_s(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
+#  else
+   return (sscanf(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
+#  endif
 }
+
+Dll_Export bool strToLong(long *val, const char * const str)
+{
+   if (str == 0 || val == 0) return false;
+   {
+      int64_t tmp;
+      bool ret = strToInt64(&tmp, str);
+      if (ret == false) return false;
+      *val = (long)tmp;
+      return true;
+   }
+}
+
+Dll_Export bool strToInt(int *val, const char * const str)
+{
+   if (str == 0 || val == 0) return false;
+   {
+      int64_t tmp;
+      bool ret = strToInt64(&tmp, str);
+      if (ret == false) return false;
+      *val = (int)tmp;
+      return true;
+   }
+}
+
+Dll_Export bool strToULong(unsigned long *val, const char * const str)
+{
+   if (str == 0 || val == 0) return false;
+#  ifdef _WINDOWS
+   return (sscanf_s(str, "%lu", val) == 1) ? true : false;
+#  else
+   return (sscanf(str, "%lu", val) == 1) ? true : false;
+#  endif
+}
+
 
 /**
  * Allocates the string with malloc for you. 

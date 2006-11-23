@@ -119,9 +119,13 @@ Dll_Export extern int snprintf0(char *buffer, size_t sizeOfBuffer, const char *f
 Dll_Export extern void trim(char *s);
 Dll_Export extern void trimStart(char *s);
 Dll_Export extern void trimEnd(char *s);
+Dll_Export extern void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum);
 Dll_Export extern char *toReadableDump(char *data, size_t len);
 Dll_Export extern const char* int64ToStr(char * const buf, int64_t val);
 Dll_Export extern bool strToInt64(int64_t *val, const char * const str);
+Dll_Export extern bool strToLong(long *val, const char * const str);
+Dll_Export extern bool strToULong(unsigned long *val, const char * const str);
+Dll_Export extern bool strToInt(int *val, const char * const str);
 Dll_Export extern BlobHolder *blobcpyAlloc(BlobHolder *blob, const char *data, size_t dataLen);
 Dll_Export extern BlobHolder *freeBlobHolderContent(BlobHolder *blob);
 Dll_Export extern char *blobDump(BlobHolder *blob);

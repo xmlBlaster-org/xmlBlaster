@@ -347,7 +347,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    }
    *(msgLenPtr + MSG_LEN_FIELD_LEN) = 0; 
    trim(msgLenPtr);
-   if (SSCANF(msgLenPtr, "%lu", &msgLenL) != 1) {
+   if (strToULong(&msgLenL, msgLenPtr) == false) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       snprintf0(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
               "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes with invalid message length='%s'",
@@ -438,7 +438,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    trim(tmpPtr);
    socketDataHolder->dataLenUncompressed = 0;
    msgLenL = 0;
-   if (strlen(tmpPtr) > 0 && SSCANF(tmpPtr, "%lu", &msgLenL) != 1) {
+   if (strlen(tmpPtr) > 0 && strToULong(&msgLenL, tmpPtr) != 1) {
       printf("[xmlBlasterSocket] WARN uncompressed data length '%s' is invalid, we continue nevertheless\n", tmpPtr);
    }
    else {
@@ -579,7 +579,7 @@ Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
             currpos += strlen(ptr)+1;
             trim(ptr);
             msgLenL = 0;
-            if (SSCANF(ptr, "%lu", &msgLenL) != 1) {
+            if (strToULong(&msgLenL, ptr) != 1) {
                printf("[xmlBlasterSocket] WARN MsgUnit content length '%s' is invalid, we continue nevertheless\n", ptr);
             }
             msgUnit->contentLen = (size_t)msgLenL;

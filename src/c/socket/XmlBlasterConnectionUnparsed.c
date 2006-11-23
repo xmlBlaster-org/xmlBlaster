@@ -330,11 +330,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
                   if ((ret=connect(xb->socketToXmlBlasterUdp, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) == -1) {
                      char errnoStr[MAX_ERRNO_LEN];
-                     char *p = strerror(errno);
-                     SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, p); /* default if strerror_r fails */
-#                    ifdef _LINUX
-                     strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
-#                    endif
+                     xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
                      strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
                      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                               "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP), ret=%d, %s",
@@ -356,13 +352,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
          }
          else { /* connect(...) == -1 */
             char errnoStr[MAX_ERRNO_LEN];
-            char *p = strerror(errno);
-            /*char p[256];  No thread safe strerror_r() on Windows
-            strerror_r(errno, p, 255);*/
-            SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, p); /* default if strerror_r fails */
-#           ifdef _LINUX
-            strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
-#           endif
+            xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
             strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
             SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                      "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, ret=%d, %s",

@@ -285,7 +285,7 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
             "Calling client %s() for requestId '%s' ...",
             socketDataHolder->methodName, socketDataHolder->requestId);
          
-         strcpy(msgUnitArrP->secretSessionId, socketDataHolder->secretSessionId);
+         strncpy0(msgUnitArrP->secretSessionId, socketDataHolder->secretSessionId, MAX_SESSIONID_LEN);
          msgUnitArrP->isOneway = (strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE_ONEWAY) == 0);
          cb->updateCb(msgUnitArrP, cb, xmlBlasterException, socketDataHolder);
       }

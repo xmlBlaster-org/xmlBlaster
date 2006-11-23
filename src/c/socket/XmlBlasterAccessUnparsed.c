@@ -638,15 +638,16 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
       /* We add the callback sequence with our tunnel callback host and port
          HACK: This is error prone depending on the given qos */
       const char *pos;
-      char callbackQos[1024];
-      sprintf(callbackQos,
+      enum { SIZE=1024 };
+      char callbackQos[SIZE];
+      snprintf0(callbackQos, SIZE,
                "<queue relating='callback'>" /* maxEntries='100' maxEntriesCache='100'>" */
                "  <callback type='SOCKET' sessionId='%s'>"
                "    socket://%.120s:%d"
                "  </callback>"
                "</queue>",
                "NoCallbackSessionId", xa->callbackP->hostCB, xa->callbackP->portCB);
-      qos_ = (char *)calloc(strlen(qos) + 1024, sizeof(char *));
+      qos_ = (char *)calloc(strlen(qos) + SIZE, sizeof(char *));
       pos = strstr(qos, "</qos>");
       if (pos == 0) {
          strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -655,8 +656,8 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
          return false;
       }
       strncpy0(qos_, qos, pos-qos+1);
-      strcat(qos_, callbackQos);
-      strcat(qos_, "</qos>");
+      strncat0(qos_, callbackQos, SIZE);
+      strncat0(qos_, "</qos>", 8);
    }
    if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Connecting with qos=%s", qos_);
 
@@ -1121,7 +1122,7 @@ int main(int argc, char** argv)
 
    for (ii=0; ii < argc-1; ii++)
       if (strcmp(argv[ii], "-numTests") == 0) {
-         if (sscanf(argv[++ii], "%d", &numTests) != 1)
+         if (strToInt(&numTests, argv[++ii]) == false)
             printf("[XmlBlasterAccessUnparsed] WARN '-numTests %s' is invalid\n", argv[ii]);
       }
 

@@ -149,7 +149,7 @@ static long getLong(Properties *props, const char *key, long defaultValue)
    const char *valP = getString(props, key, 0);
    if (valP != 0) {
       long val;
-      if (SSCANF(valP, "%ld", &val) == 1)
+      if (strToLong(&val, valP) == true)
          return val;
    }
    return defaultValue;
