@@ -75,6 +75,8 @@ static const char *LOG_TEXT_ESCAPE[] = {
         "\033[37;40mPLAIN\033[0m"
         };
 
+Dll_Export static int vsnprintf0(char *s, size_t size, const char *format, va_list ap);
+
 /**
  * Add for GCC compilation: "-rdynamic -export-dynamic -D_ENABLE_STACK_TRACE_"
  * @return The stack trace, you need to free() it.
