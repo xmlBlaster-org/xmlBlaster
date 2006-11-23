@@ -100,6 +100,28 @@ static const char *getString(Properties *props, const char *key, const char *def
          return props->argv[++iarg];
    }
    
+/*
+{  WIN32
+   char *pValue;
+   size_t len;
+   errno_t err = _dupenv_s( &pValue, &len, "pathext" );
+   if ( err ) return -1;
+   printf( "pathext = %s\n", pValue );
+   free( pValue );
+   err = _dupenv_s( &pValue, &len, "nonexistentvariable" );
+   if ( err ) return -1;
+   printf( "nonexistentvariable = %s\n", pValue );
+   free( pValue ); // It's OK to call free with NULL
+
+// not thread save as putenv could change
+   errno_t getenv_s( 
+   size_t *pReturnValue,
+   char* buffer,
+   size_t sizeInBytes,
+   const char *varname 
+);
+}
+*/
    p = getenv(key);
 
    if (p != 0) return p;
