@@ -166,7 +166,7 @@ Dll_Export void xmlBlasterUnmanagedUnSubscribe(struct XmlBlasterAccessUnparsed *
    if (ret) {
       size_t i;
       XmlBlasterUnmanagedStringArr* pCurStruct = 0;
-      const int cArraySize = ret->len;
+      const uint32_t cArraySize = ret->len;
       *pSize = cArraySize;
       *ppStruct = (XmlBlasterUnmanagedStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedStringArr ));
       pCurStruct = *ppStruct;
@@ -191,7 +191,7 @@ Dll_Export void xmlBlasterUnmanagedErase(struct XmlBlasterAccessUnparsed *xa, co
    if (ret) {
       size_t i;
       XmlBlasterUnmanagedStringArr* pCurStruct = 0;
-      const int cArraySize = ret->len;
+      const uint32_t cArraySize = ret->len;
       *pSize = cArraySize;
       *ppStruct = (XmlBlasterUnmanagedStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedStringArr ));
       pCurStruct = *ppStruct;
@@ -206,14 +206,14 @@ Dll_Export void xmlBlasterUnmanagedGet(struct XmlBlasterAccessUnparsed *xa,
         const char * const key, const char * qos, XmlBlasterUnmanagedException *exception,
         uint32_t* pSize, MsgUnit** ppStruct) {
    XmlBlasterException e;
-   int i;
+   uint32_t i;
    MsgUnitArr *msgUnitArr = xa->get(xa, key, qos, &e);
    convert(&e, exception);
    if (*e.errorCode != 0) {
       return;
    }
    if (msgUnitArr != (MsgUnitArr *)0) {
-      const int cArraySize = msgUnitArr->len;
+      const uint32_t cArraySize = msgUnitArr->len;
       MsgUnit* pCurStruct = 0;
       *pSize = cArraySize;
       *ppStruct = (MsgUnit*)malloc( cArraySize * sizeof( MsgUnit ));

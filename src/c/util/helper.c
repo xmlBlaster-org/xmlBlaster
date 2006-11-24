@@ -276,7 +276,7 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 Dll_Export char *strcpyAlloc(const char *src)
 {
    char *dest;
-   int len;
+   size_t len;
    if (src == 0) return (char *)0;
    len = strlen(src) + 1;
    dest = (char *)malloc(len*sizeof(char));
@@ -291,7 +291,7 @@ Dll_Export char *strcpyAlloc(const char *src)
  */
 Dll_Export char *strcatAlloc(char **dest, const char *src)
 {
-   int len;
+   size_t len;
    assert(dest != 0);
    if (src == 0) return (char *)0;
    len = strlen(src)+strlen(*dest)+1;

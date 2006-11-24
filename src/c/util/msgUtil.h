@@ -61,7 +61,7 @@ typedef struct MsgUnitStructArr {
    bool isOneway;
    /** Authenticate callback messages, this sessionId is returned by xmlBlaster and was initially passed from the client on login */
    char secretSessionId[MAX_SESSIONID_LEN];
-   size_t len;
+   uint32_t len;
    MsgUnit *msgUnitArr;
 } MsgUnitArr;
 
@@ -69,7 +69,7 @@ typedef struct MsgUnitStructArr {
  * Holds an array of QoS XML strings returned by unSubscribe() and erase()
  */
 typedef struct QosStructArr {
-   size_t len;  /* Number of XML QoS strings */
+   uint32_t len;  /* Number of XML QoS strings */
    const char **qosArr;
 } QosArr;
 
