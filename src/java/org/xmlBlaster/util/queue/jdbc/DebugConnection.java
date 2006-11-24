@@ -7,18 +7,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.queue.jdbc;
 
 import java.sql.Array;
-import java.sql.BaseQuery;
-import java.sql.Blob;
 import java.sql.CallableStatement;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+/*  JDK 1.6
+import java.sql.BaseQuery;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.NClob;
-import java.sql.PreparedStatement;
 import java.sql.SQLClientInfoException;
+import java.sql.SQLXML;
+*/
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
-import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
@@ -393,80 +395,81 @@ public class DebugConnection implements Connection {
       checkIfOutsidePool();
       this.conn.setTypeMap(arg0);
    }
-
+/*
 // JDK 1.6 dummies   
 public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public Blob createBlob() throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public Clob createClob() throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public NClob createNClob() throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public BaseQuery createQueryObject(Class arg0) throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public BaseQuery createQueryObject(Class arg0, Connection arg1) throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public SQLXML createSQLXML() throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public Properties getClientInfo() throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public String getClientInfo(String name) throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
 
 public boolean isValid(int timeout) throws SQLException {
-	// TODO Auto-generated method stub
-	return false;
+        // TODO Auto-generated method stub
+        return false;
 }
 
 public void setClientInfo(Properties properties) throws SQLClientInfoException {
-	// TODO Auto-generated method stub
-	
+        // TODO Auto-generated method stub
+        
 }
 
 public void setClientInfo(String name, String value) throws SQLClientInfoException {
-	// TODO Auto-generated method stub
-	
+        // TODO Auto-generated method stub
+        
 }
 
 public boolean isWrapperFor(Class arg0) throws SQLException {
-	// TODO Auto-generated method stub
-	return false;
+        // TODO Auto-generated method stub
+        return false;
 }
 
 public Object unwrap(Class arg0) throws SQLException {
-	// TODO Auto-generated method stub
-	return null;
+        // TODO Auto-generated method stub
+        return null;
 }
+*/
 }
