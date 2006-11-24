@@ -75,7 +75,7 @@ static const char *LOG_TEXT_ESCAPE[] = {
         "\033[37;40mPLAIN\033[0m"
         };
 
-Dll_Export static int vsnprintf0(char *s, size_t size, const char *format, va_list ap);
+static int vsnprintf0(char *s, size_t size, const char *format, va_list ap);
 
 /**
  * Add for GCC compilation: "-rdynamic -export-dynamic -D_ENABLE_STACK_TRACE_"
@@ -214,9 +214,12 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 {
 # ifdef _WINDOWS
    struct _timeb tm;
-   /*(void) _ftime(&tm);*/
-   errno_t err = _ftime_s(&tm);
-   if (err) return false;
+#  if _MSC_VER >= 1400  /* _WINDOWS: 1200->VC++6.0, 1310->VC++7.1 (2003), 1400->VC++8.0 (2005) */
+   	errno_t err = _ftime_s(&tm);
+      if (err) return false;
+#  else
+   	(void) _ftime(&tm);
+#  endif
 
    abstime->tv_sec = (long)tm.time;
    abstime->tv_nsec = tm.millitm * 1000 * 1000; /* TODO !!! How to get the more precise current time on Win? */
@@ -346,7 +349,7 @@ Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
  */
 Dll_Export void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum) {
    snprintf0(errnoStr, sizeInBytes, "%d", errnum); /* default if string lookup fails */
-#  if defined(_WINDOWS)
+#  if _MSC_VER >= 1400
       strerror_s(errnoStr, sizeInBytes, errnum);  
 #  elif defined(_LINUX)
       strerror_r(errnum, errnoStr, sizeInBytes-1); /* glibc > 2. returns a char*, but should return an int */
@@ -369,7 +372,7 @@ Dll_Export void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum) {
  */
 Dll_Export char *strncpy0(char * const to, const char * const from, const size_t maxLen)
 {
-#  ifdef _WIN32
+#  if _MSC_VER >= 1400
 /*	errno_t strncpy_s(
    char *strDest,
    size_t sizeInBytes,
@@ -395,7 +398,7 @@ Dll_Export char *strncpy0(char * const to, const char * const from, const size_t
  */
 Dll_Export char *strncat0(char * const to, const char * const from, const size_t max)
 {
-#  ifdef _WIN32
+#  if _MSC_VER >= 1400
       errno_t ee = strncat_s(to, max, from, _TRUNCATE);
       return to;
 #  else /* MAC OSX calls it strlcat() */
@@ -406,17 +409,19 @@ Dll_Export char *strncat0(char * const to, const char * const from, const size_t
 #  endif
 }
 
-Dll_Export int vsnprintf0(char *s, size_t size, const char *format, va_list ap) {
-#  ifdef _WIN32
-   errno_t err = vsnprintf_s(s, size, _TRUNCATE, format, ap);
-   if ( err == STRUNCATE ) {
-      printf("truncation occurred %s!\n", format);
-      return 0;
-   }
-   return err;
-#else
-   return vsnprintf(s, size, format, ap);
-#endif
+int vsnprintf0(char *s, size_t size, const char *format, va_list ap) {
+#  if _MSC_VER >= 1400
+      errno_t err = vsnprintf_s(s, size, _TRUNCATE, format, ap);
+      if ( err == STRUNCATE ) {
+         printf("truncation occurred %s!\n", format);
+         return 0;
+      }
+      return err;
+#  elif defined(_WINDOWS)
+      return _vsnprintf(s, size, format, ap);
+#  else
+      return vsnprintf(s, size, format, ap);
+#  endif
 }
 
 /**
@@ -608,9 +613,10 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
          time_t t1;
          char timeStr[128];
          (void) time(&t1);
-#        if defined(_WINDOWS)
+#        if _MSC_VER >= 1400
             ctime_s(timeStr, 126, &t1);
-            /*strncpy0(timeStr, ctime(&t1), 126);*/
+#        elif defined(_WINDOWS)
+            strncpy0(timeStr, ctime(&t1), 126);
 #        elif defined(__sun)
             ctime_r(&t1, (char *)timeStr, 126);
 #        else
@@ -767,7 +773,7 @@ Dll_Export bool strToInt64(int64_t *val, const char * const str)
    if (str == 0 || val == 0) return false;
    /*str[INT64_STRLEN_MAX-1] = 0; sscanf should be safe enough to handle overflow */
         /* %lld on UNIX, %I64d on Windows */
-#  ifdef _WINDOWS
+#  if _MSC_VER >= 1400
    return (sscanf_s(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
 #  else
    return (sscanf(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
@@ -801,7 +807,7 @@ Dll_Export bool strToInt(int *val, const char * const str)
 Dll_Export bool strToULong(unsigned long *val, const char * const str)
 {
    if (str == 0 || val == 0) return false;
-#  ifdef _WINDOWS
+#  if _MSC_VER >= 1400
    return (sscanf_s(str, "%lu", val) == 1) ? true : false;
 #  else
    return (sscanf(str, "%lu", val) == 1) ? true : false;

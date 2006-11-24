@@ -5,20 +5,28 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Note:      The gcc and icc (>=8) both define __GNUC__
 Note:      cl.exe (Windows) always defines _WIN32
+           __cplusplus 	  Defined for C++ programs only.
            _CHAR_UNSIGNED Defined when /J is specified.
            _CPPRTTI  Defined for code compiled with the /GR (Enable Run-Time Type Information) option.
            _CPPUNWIND  Defined for code compiled with the /GX (Enable Exception Handling) option.
-           _DLL      Defined when /MD is specified.
+			  _DLL      Defined when /MD or /MDd - Multithread DLL is specified.
            _M_IX86   (x86 specific) Defined as 500 for Blend (/GB), 300 for 80386 (/G3), 400 for 80486 (/G4), 500 for Pentium (/G5), and 600 for Pentium Pro (/G6).
            _MSC_VER  Defines the compiler version. Always defined.
-                     1200 for Microsoft Visual C++ version 6.0.
-                     1400 VC++ 2005
+                     1200: VC++ 6.0 Microsoft Visual C++ version 6.0 or later
+							1310: VC++ 7.1 2003 Microsoft (R) 32-bit C/C++ 13.10.3077 for 80x86 1984-2002
+                     1400: VC++ 8.0 2005 14.00.50727.42
            _WIN32    (x86 specific) Defined for applications for WIN32. Always defined.
            _MT       Defined when /MD or /MT is specified.
            http://msdn.microsoft.com/library/default.asp?url=/library/en-us/vccore98/HTML/_core_.2f.u.2c_2f.u.asp
 -----------------------------------------------------------------------------*/
 #ifndef XMLBLASTER_basicDefs_H
 #define XMLBLASTER_basicDefs_H
+
+#if defined(_WIN32)
+#  if !defined(_WINDOWS)
+#		define _WINDOWS /* We work with _WINDOWS and _MSC_VER in our code */
+#	endif
+#endif
 
 #if defined(_WINDOWS)
 # define Blaster_Export_Flag __declspec (dllexport)
@@ -53,7 +61,7 @@ Note:      cl.exe (Windows) always defines _WIN32
 #endif
 
 #if defined(_WINDOWS)
-#  if _MSC_VER > 1200  /* 1200->VC++6.0, 1400->VC++2005 (8.0) */
+#  if _MSC_VER >= 1400  /* _WINDOWS: 1200->VC++6.0, 1310->VC++7.1 (2003), 1400->VC++8.0 (2005) */
 #    define SNPRINTF snprintf0
      /* sscanf_s( tokenstring, "%s", s, sizeof(s) );   !! for %s: two args, the second with size !! */
 #    define VSNPRINTF _vsnprintf
