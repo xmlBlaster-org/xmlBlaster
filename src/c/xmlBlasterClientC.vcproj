@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="xmlBlasterClientC"
 	ProjectGUID="{82B4AF71-D720-4A91-A9DF-4DAF9BBB1CDE}"
 	RootNamespace="xmlBlasterClientC"
@@ -119,8 +119,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="E:\xmlBlaster\src\c"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;DLL_IGNORE;DLL_BUILD=1"
+				AdditionalIncludeDirectories="$(ProjectDir)"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"

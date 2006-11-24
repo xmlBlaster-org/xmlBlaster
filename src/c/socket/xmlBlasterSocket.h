@@ -9,6 +9,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define XMLBLASTER_SOCKET_H
 
 #include <stdlib.h>
+#include <util/basicDefs.h> /* Needed only to define _WINDOWS */
 
 #ifdef _WINDOWS
                              /* #if _MSC_VER > 1300 (which is VC7) but also for 1400 (which is VC8 2005) */

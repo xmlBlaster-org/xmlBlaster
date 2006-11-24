@@ -31,7 +31,7 @@ Note:      cl.exe (Windows) always defines _WIN32
 #if defined(_WINDOWS)
 # define Blaster_Export_Flag __declspec (dllexport)
 # define Blaster_Import_Flag __declspec (dllimport)
-# if defined(DLL_BUILD)
+# if defined(_WINDLL)
 #   define Dll_Export Blaster_Export_Flag
 # elif defined(DLL_IGNORE)
 #   define Dll_Export
