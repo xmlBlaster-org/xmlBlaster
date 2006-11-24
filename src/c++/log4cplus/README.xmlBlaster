@@ -14,6 +14,9 @@ the replacement variable in the property file itself.
 !!! Apply configurator.cxx.patch if you get a new log4cplus version !!!
 
 
+Changed stringhelper.cxx for Microsoft CV++ 8
+!!! Apply stringhelper.cxx.patch
+
 
 Configured for Intel-Linux.
 

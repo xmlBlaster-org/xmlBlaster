@@ -108,40 +108,57 @@ log4cplus::helpers::towstring(const std::string& src)
 log4cplus::tstring
 log4cplus::helpers::toUpper(const log4cplus::tstring& s)
 {
+#if _MSC_VER >= 1400  /* _WINDOWS: 1200->VC++6.0, 1310->VC++7.1 (2003), 1400->VC++8.0 (2005) */
+   tstring ret;
+   for (size_t i=0; i<s.size(); i++) {
+      ret += ::toupper(s[i]);
+   }
+   
+   return ret;
+#else
     tstring ret;
     std::transform(s.begin(), s.end(),
                    string_append_iterator<tstring>(ret),
-#ifdef UNICODE
+# ifdef UNICODE
 #  if (defined(__MWERKS__) && defined(__MACOS__))
                    std::towupper);
 #  else
                    ::towupper);
 #  endif
-#else
+# else
                    ::toupper);
-#endif
-
+# endif
     return ret;
+#endif
 }
 
 
 log4cplus::tstring
 log4cplus::helpers::toLower(const log4cplus::tstring& s)
 {
+#if _MSC_VER >= 1400  /* _WINDOWS: 1200->VC++6.0, 1310->VC++7.1 (2003), 1400->VC++8.0 (2005) */
+    tstring ret;
+    for (size_t i=0; i<s.size(); i++) {
+      ret += ::tolower(s[i]);
+    }
+   
+   return ret;
+#else
     tstring ret;
     std::transform(s.begin(), s.end(),
                    string_append_iterator<tstring>(ret),
-#ifdef UNICODE
+# ifdef UNICODE
 #  if (defined(__MWERKS__) && defined(__MACOS__))
                    std::towlower);
 #  else
                    ::towlower);
 #  endif
-#else
+# else
                    ::tolower);
-#endif
+# endif
 
     return ret;
+#endif
 }
 
 
