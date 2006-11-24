@@ -464,7 +464,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    final SessionInfo getInternalSessionInfo() {
       // Note: We could change to 'public' as the CommandManager transports it to public scope already
       //       with glob.getCommandManager().getSessionInfo()
-      // and   engine.Global.getInternalSessionInfo()
+      // and   serverScope.getInternalSessionInfo()
       return this.unsecureSessionInfo;
    }
 
