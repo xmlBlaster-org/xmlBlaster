@@ -399,7 +399,9 @@ Dll_Export char *strncpy0(char * const to, const char * const from, const size_t
 Dll_Export char *strncat0(char * const to, const char * const from, const size_t max)
 {
 #  if _MSC_VER >= 1400
-      errno_t ee = strncat_s(to, max, from, _TRUNCATE);
+      /* buffersize of 'to' in bytes */ 
+      size_t bufferSizeInBytes = strlen(to) + max;
+      errno_t ee = strncat_s(to, bufferSizeInBytes, from, _TRUNCATE);
       return to;
 #  else /* MAC OSX calls it strlcat() */
       int oldLen = strlen(to);

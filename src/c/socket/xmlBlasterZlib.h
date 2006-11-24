@@ -72,6 +72,7 @@ typedef struct XmlBlasterZlibReadBuffers {
  * @param fd The socket descriptor
  * @param ptr The buffer with raw bytes
  * @param nbytes The number of bytes in 'ptr'
+ * @return Number of bytes written
  */
 extern ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, const int fd, const char * const ptr, size_t const nbytes);
 
