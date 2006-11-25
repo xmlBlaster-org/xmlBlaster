@@ -164,7 +164,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          
          // zero means not limit (to be sure we also check negative Values
-         this.maxNumStatements = this.pool.getProp("maxNumStatements", conn.getMetaData().getMaxStatements());
+         int defaultMaxNumStatements = conn.getMetaData().getMaxStatements();
+         if (defaultMaxNumStatements < 1) {
+            log.warning("The maxStatements returned fromt the database metadata is '" + defaultMaxNumStatements + "', will set the default to 50 unless you explicitly set 'maxNumStatements'");
+            defaultMaxNumStatements = 50;
+         }
+         this.maxNumStatements = this.pool.getProp("maxNumStatements", defaultMaxNumStatements);
          log.info("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
       }
       catch (XmlBlasterException ex) {
@@ -1350,25 +1355,27 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       ArrayList ret = new ArrayList();
       int count = 0;
       for (int i=0; i<uniqueIds.length; i++) {
-         count++;
          String req = null;
          String entryId = Long.toString(uniqueIds[i]);
          currentLength = entryId.length();
          length += currentLength;
-         if ((length > this.maxStatementLength) || (i == (uniqueIds.length-1)) || count > this.maxNumStatements) { // then make the update
-            count = 0;
+         if ((length > this.maxStatementLength) || (i == (uniqueIds.length-1)) || count >= this.maxNumStatements) { // then make the update
             if (i == (uniqueIds.length-1)) {
                if (!isFirst) buf.append(",");
+               count++;
                buf.append(entryId);
             }
             req = reqPrefix + buf.toString() + reqPostfix;
-            ret.add(req);
+            if (count > 0)
+               ret.add(req);
 
             length = initialLength + currentLength;
             buf = new StringBuffer();
-
+            count = 0;
             isFirst = true;
          }
+         else
+            count++;
 
          if (!isFirst) {
             buf.append(",");
@@ -1376,6 +1383,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          else 
             isFirst = false;
+         count++;
          buf.append(entryId);
       }
 
@@ -1587,7 +1595,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
          int count = 0;
          String reqPrefix = "delete from " + this.entriesTableName + " where queueName='" + queueName + "' AND " + this.dataIdColName + " in(";
-         ArrayList reqList = this.whereInStatement(reqPrefix, uniqueIds);
+         ArrayList reqList = whereInStatement(reqPrefix, uniqueIds);
 
          conn = pool.getConnection();
          if (conn.getAutoCommit()) conn.setAutoCommit(false);
