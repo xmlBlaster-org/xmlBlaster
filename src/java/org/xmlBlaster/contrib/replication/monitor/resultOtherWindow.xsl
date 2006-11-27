@@ -20,7 +20,7 @@ function gotoDestination() {
       if (self.opener.sync != null) {
         self.opener.sync.val = "<xsl:value-of select='$request.val'/>";
         self.opener.sync.err = "<xsl:value-of select='/MBeanOperation/Operation/attribute::return'/>";
-        // "<xsl:value-of select='/MBeanOperation/Operation/attribute::result'/>";
+        // + "<xsl:value-of select='/MBeanOperation/Operation/attribute::result'/>";
       }
    }
 }

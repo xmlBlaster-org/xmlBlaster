@@ -38,6 +38,7 @@ Example of an xml output:
 <xsl:include href="customize.xsl"/>
 
 <xsl:param name="request.destination"/>
+<xsl:param name="request.operation"/>
 
 <xsl:template name="setDestination">
    <xsl:choose>
@@ -61,7 +62,7 @@ Example of an xml output:
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 
 <xsl:choose>
-  <xsl:when test="starts-with(/MBeanOperation/Operation/attribute::return,'error:') or /MBeanOperation/Operation/attribute::result='error'">
+  <xsl:when test="starts-with(/MBeanOperation/Operation/attribute::return,'error:') or /MBeanOperation/Operation/attribute::result='error' or $request.operation='dumpFirstEntry'">
   </xsl:when>
   <xsl:otherwise>
 <xsl:element name="meta">
@@ -93,9 +94,7 @@ function gotoDestination() {
     </div>
     <div class="middle">
       <table width="650" align="center" class="external" summary="">
-
     <xsl:apply-templates/>
-
        </table>
      </div>
      <div class="footer">
