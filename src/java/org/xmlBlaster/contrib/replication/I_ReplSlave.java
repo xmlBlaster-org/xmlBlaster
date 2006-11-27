@@ -100,4 +100,6 @@ public interface I_ReplSlave extends I_ContribPlugin {
 
    boolean setDispatcher(boolean status);
    
+   boolean setDispatcher(boolean status, boolean doPersist) throws Exception;
+   
 }

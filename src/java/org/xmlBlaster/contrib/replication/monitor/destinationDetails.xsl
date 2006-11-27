@@ -35,7 +35,7 @@ function gotoDestinationList() {
       url = '<xsl:value-of select="$destinationListUrl"/>';
    else
       url = '<xsl:value-of select="$destinationPrefix"/>' + '<xsl:value-of select="$request.referer"/>';
-   alert(url);
+   // alert(url);
    self.location.href = url;
 }
 

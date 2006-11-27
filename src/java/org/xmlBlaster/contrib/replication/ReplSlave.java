@@ -209,6 +209,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          this.tmpReplKey = replData[0];
          this.tmpTransSeq = replData[1];
          this.tmpMsgSeq = replData[2];
+         this.maxReplKey = this.tmpReplKey;
+         this.minReplKey = replData[3]; 
          this.transactionSeq = tmpTransSeq;
          this.messageSeq = tmpMsgSeq;
          
@@ -254,11 +256,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
-   private final void setMaxReplKey(long replKey, long transKey, long msgKey) {
-      boolean doStore = this.maxReplKey != replKey;
+   private final void setMaxReplKey(long replKey, long transKey, long msgKey, long minReplKey) {
+      boolean doStore = this.maxReplKey != replKey || this.minReplKey != minReplKey || this.transactionSeq != transKey || msgKey != this.messageSeq;
       this.maxReplKey = replKey;
+      this.minReplKey = minReplKey;
       if (doStore)
-         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + replKey + " " + transKey + " " + msgKey);
+         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + replKey + " " + transKey + " " + msgKey + " " + minReplKey);
       String client = "client/";
       if (this.slaveSessionId == null)
          return;
@@ -663,10 +666,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          }
          entries = null; // we can free it here since not needed anymore
          
-         // if (this.status == STATUS_NORMAL || this.status == STATUS_UNUSED)
-         // TODO find a clean solution for this: currently we have the case where several masters send data to one single
-         // slave, this can result in a conflict where min- and maxReplKey are overwritten everytime. A quick and dirty solution
-         // is to let everything pass for now.
          if (this.status == STATUS_NORMAL || this.status == STATUS_INCONSISTENT || this.status == STATUS_UNCONFIGURED)
             return remoteEntries;
          
@@ -758,7 +757,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
-   private final boolean setDispatcher(boolean status, boolean doPersist) throws Exception {
+   public final boolean setDispatcher(boolean status, boolean doPersist) throws Exception {
       I_AdminSession session = getSession(); 
       session.setDispatcherActive(status);
       if (doPersist)
@@ -1038,7 +1037,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
         this.tmpTransSeq2 = this.tmpTransSeq;
       if (this.tmpMsgSeq != 0)
          this.tmpMsgSeq2 = this.tmpMsgSeq;
-      setMaxReplKey(this.tmpReplKey, this.tmpTransSeq, this.tmpMsgSeq);
+      setMaxReplKey(this.tmpReplKey, this.tmpTransSeq, this.tmpMsgSeq, this.minReplKey);
       if (this.tmpStatus > -1)
          setStatus(this.tmpStatus);
    }

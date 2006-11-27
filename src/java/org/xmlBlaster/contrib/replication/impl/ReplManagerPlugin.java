@@ -427,8 +427,8 @@ public class ReplManagerPlugin extends GlobalInfo
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    protected synchronized void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
-      if (this.initialized)
-         return;
+      // if (this.initialized)
+      //   return;
       try {
          // String momClass = get("mom.class", "org.xmlBlaster.contrib.MomEventEngine").trim();
          // String registryName = "mom.publisher";
@@ -1038,10 +1038,9 @@ public class ReplManagerPlugin extends GlobalInfo
    // For I_ClientListener ...
 
    /**
-    * The part of this code inherent to the slave can be removed since it is always invoked in the
-    * addDispatchManager method too. 
-    * TODO Remove this functionality.
-    * 
+    * The part of this code inherent to the slave could be moved to the addDispatchManager since that method would 
+    * always invoked too. This method is only invoked on the first connect, which is when the client connects the
+    * very first time, or when recovering sessions from persistence.
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionAdded(org.xmlBlaster.authentication.ClientEvent)
     */
    public synchronized void sessionAdded(ClientEvent e) throws XmlBlasterException {
@@ -1068,6 +1067,13 @@ public class ReplManagerPlugin extends GlobalInfo
       synchronized (this.replSlaveMap) {
          if (!this.replSlaveMap.containsKey(sessionName)) {
             I_ReplSlave slave = new ReplSlave(this.global, this, sessionName);
+            try {
+               slave.setDispatcher(false, false); // stop dispatcher without persisting the information
+            }
+            catch (Exception ex) {
+               log.warning("Could not set the dispatcher for '" + sessionName + "' to false when adding the session");
+               ex.printStackTrace();
+            }
             this.replSlaveMap.put(sessionName, slave);
          }
       }
@@ -1542,6 +1548,7 @@ public class ReplManagerPlugin extends GlobalInfo
       long replKey = 0L;
       long transKey = 0L;
       long msgKey = 0L;
+      long minReplKey = 0L;
       if (tmp != null) {
          StringTokenizer tokenizer = new StringTokenizer(tmp, " ");
          if (tokenizer.hasMoreTokens()) {
@@ -1553,6 +1560,10 @@ public class ReplManagerPlugin extends GlobalInfo
                if (tokenizer.hasMoreTokens()) {
                   tmp = tokenizer.nextToken().trim();
                   msgKey = parseLong(tmp, 0L);
+                  if (tokenizer.hasMoreTokens()) {
+                     tmp = tokenizer.nextToken().trim();
+                     minReplKey = parseLong(tmp, 0L);
+                  }
                }
             }
          }
@@ -1560,7 +1571,7 @@ public class ReplManagerPlugin extends GlobalInfo
       else {
          log.info("No entry found in persistent map '" + ReplicationConstants.CONTRIB_PERSISTENT_MAP + "' with key '" + propName + "' found. Starting by 0'");
       }
-      return new long[] { replKey, transKey, msgKey };
+      return new long[] { replKey, transKey, msgKey, minReplKey };
    }
    
    public void setMaxNumOfEntries(int maxNumOfEntries) {

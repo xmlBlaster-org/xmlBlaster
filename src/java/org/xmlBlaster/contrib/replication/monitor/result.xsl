@@ -15,9 +15,9 @@ Example of an xml output:
 <MBeanOperation>
    <Operation objectname="org.xmlBlaster:nodeClass=node,node=&quot;replXbl&quot;,contribClass=contrib,contrib=&quot;replication&quot;" 
               operation="invoke" 
-	      result="success" 
-	      return="initiateReplication invoked for slave 'client/ReplWriter-DEE_V_01-AIS/1' and on replication 'ndb' did fail since your status is 'TRANSITION'" 
-	      returnclass="java.lang.String"/>
+              result="success" 
+              return="initiateReplication invoked for slave 'client/ReplWriter-DEE_V_01-AIS/1' and on replication 'ndb' did fail since your status is 'TRANSITION'" 
+              returnclass="java.lang.String"/>
 </MBeanOperation>
 
 
@@ -111,27 +111,27 @@ function gotoDestination() {
         <xsl:choose>
           <xsl:when test="starts-with(@return,'error:')">
         <tr>         
-	   <td class="error"><xsl:value-of select="@return"/></td>
-	</tr>
+           <td class="error"><xsl:value-of select="@return"/></td>
+        </tr>
           </xsl:when>
-	  <xsl:otherwise>
+          <xsl:otherwise>
         <tr>         
-	   <td class="normal"><xsl:value-of select="@return"/></td>
-	</tr>
-	  </xsl:otherwise>
+           <td class="normal"><xsl:value-of select="@return"/></td>
+        </tr>
+          </xsl:otherwise>
         </xsl:choose>
 
 
         <xsl:choose>
           <xsl:when test="@result = 'error'">
         <tr>         
-	   <td class="error"><xsl:value-of select="@errorMsg"/></td>
-	</tr>
+           <td class="error"><xsl:value-of select="@errorMsg"/></td>
+        </tr>
           </xsl:when>
         </xsl:choose>
 
 
-	<tr>
+        <tr>
           <td colspan="1" align="center"><button class="small" title="Click to return to the replication list" onClick="gotoDestination()"><xsl:value-of select="$request.destination"/></button></td>
         </tr>
 </xsl:template>      
