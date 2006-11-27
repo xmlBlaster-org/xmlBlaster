@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15735 dispatch statistics are cleaned up on the client side on reconnect also, this fixes a failing reconnect in case
+          the update had activities, the connection ping detected a stale connection and the update ping did not return.
+
+ o #15733 Fixed introduced error when removing entries from queues where the
+          metadata returned 0 for maxNumSequences.
+
  o #15727 C client: Finished port to VC8 with support for VC7 and VC6.
 
  o #15713 Cb ignores ping failure in case an update is blocking (no activity). On the client side
