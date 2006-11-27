@@ -534,6 +534,9 @@ public final class ClientDispatchConnection extends DispatchConnection
       if (log.isLoggable(Level.FINER)) log.finer("Entering reconnect(" + this.driver.getProtocol() + ")");
 
       if (this.connectReturnQos != null) {
+         // needed to avoid failure
+         this.connectionsHandler.getDispatchStatistic().clearCurrentReads();
+         this.connectionsHandler.getDispatchStatistic().clearCurrentWrites();
          super.ping("", false);
          return;
       }
