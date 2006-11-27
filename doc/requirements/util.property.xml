@@ -17,6 +17,17 @@
         java MyApp -property.verbose 2
         </pre>
      </p>
+     <p>
+       Some plugins can be configured both in the <i>xmlBlaster.properties</i> file and in the <i>xmlBlasterPlugins.xml</i> file. 
+       Normally plugins which are loaded by the runlevel manager are defined in the <i>xmlBlasterPlugins.xml</i> file, while such plugins 
+       which are loaded dynamically are defined and configured in the <i>xmlBlaster.properties</i> file. There are however cases where the
+       plugins can be loaded in either ways, for instance if a plugin fullfils two different purposes and implements different plugin interfaces
+       for example one which is loaded dynamically as the I_PublishFilter and an I_Plugin which is loaded by the runlevel manager.
+       For such cases you can -and in some cases you must- define the plugin in either files. The parameters/properties/attributes of the 
+       plugin however should only be defined in one of the two files. <b>If you define it in both -in the xmlBlaster.properties file by specifying
+       data after the comma (',') and in the <i>xmlBlasterPlugins.xml</i> by having <i>attribute</i> subtags, you will get a warning and the
+       properties in the <i>xmlBlasterPlugins.xml</i> will be ignored.</b>
+     </p>
      <table border="1">
       <tr>
         <th>Location</th>
