@@ -1529,7 +1529,9 @@ public class ReplManagerPlugin extends GlobalInfo
       long delta = counter.msg - msgSeq - queueEntries; // these are ptp messages
       long ret = counter.trans - transSeq + delta;
       if (ret < 0L) // it could be temporarly negative 
-         return 0L;
+         ret = 0L;
+      if (ret < queueEntries)
+         ret = queueEntries;
       return ret;
    }
 
