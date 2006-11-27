@@ -6,7 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication;
 
-public interface ReplicationConstants {
+import org.xmlBlaster.contrib.ContribConstants;
+
+public interface ReplicationConstants extends ContribConstants {
    // special topics and session names
     final static String REPL_MANAGER_SESSION = "replManager/1";
     final static String REPL_MANAGER_TOPIC = "replManagerTopic";
@@ -36,8 +38,6 @@ public interface ReplicationConstants {
     final static String SCHEMA_ATTR = "schema";
     final static String VERSION_ATTR = "version";
     final static String ACTION_ATTR = "action";
-    final static String FILENAME_ATTR = "_filename"; // used for xml initial update dump
-    final static String TIMESTAMP_ATTR = "_timestamp"; // used for xml initial update dump
     final static String DUMP_CONTENT_ATTR = "_dumpContent"; // used for xml initial update dump
     final static String OLD_CONTENT_ATTR = "oldContent";
     final static String STATEMENT_ATTR = "statement";

@@ -564,7 +564,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          FileInputStream fis = new FileInputStream(file);
          
          XBStreamingMessage msg = session.createStreamingMessage(this);
-         msg.setStringProperty("_filename", shortFilename);
+         msg.setStringProperty(FILENAME_ATTR, shortFilename);
          msg.setLongProperty(REPL_KEY_ATTR, minKey);
          msg.setStringProperty(DUMP_ACTION, "true");
          if (initialFilesLocation != null) {
@@ -636,7 +636,22 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          producer.send(endMsg);
       }
       TextMessage  endMsg = session.createTextMessage();
-      endMsg.setText("INITIAL UPDATE ENDS HERE");
+      SqlInfo sqlInfo = new SqlInfo(this.info);
+      SqlDescription description = new SqlDescription(this.info);
+
+      description.setAttribute(END_OF_TRANSITION , "" + true);
+      endMsg.setBooleanProperty(END_OF_TRANSITION , true);
+      description.setAttribute(FILENAME_ATTR, shortFilename);
+      endMsg.setStringProperty(FILENAME_ATTR, shortFilename);
+      if (initialFilesLocation != null) {
+         description.setAttribute(INITIAL_FILES_LOCATION, initialFilesLocation);
+         endMsg.setStringProperty(INITIAL_FILES_LOCATION, initialFilesLocation);
+         description.setAttribute(INITIAL_DATA_ID, dumpId);
+         endMsg.setStringProperty(INITIAL_DATA_ID, dumpId);
+      }
+      sqlInfo.setDescription(description);
+      endMsg.setText(sqlInfo.toXml(""));
+      description.setAttribute(END_OF_TRANSITION , "" + true);
       endMsg.setBooleanProperty(END_OF_TRANSITION , true);
       producer.send(endMsg);
    }

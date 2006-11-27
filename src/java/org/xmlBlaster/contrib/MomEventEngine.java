@@ -186,7 +186,7 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       try {
          content = decompress(content, updateQos.getClientProperties());
          String timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
-         updateQos.getData().addClientProperty("_timestamp", timestamp);
+         updateQos.getData().addClientProperty(ContribConstants.TIMESTAMP_ATTR, timestamp);
          
          if (this.eventHandler != null)
             this.eventHandler.update(updateKey.getOid(), content, updateQos.getClientProperties());

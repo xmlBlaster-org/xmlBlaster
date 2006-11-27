@@ -16,6 +16,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.client.filepoller.FilenameFilter;
+import org.xmlBlaster.contrib.ContribConstants;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.jms.XBMessage;
@@ -26,7 +27,8 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class FileWriterCallback implements I_Update {
+public class FileWriterCallback implements I_Update, ContribConstants {
+   
    private static Logger log = Logger.getLogger(FileWriterCallback.class.getName());
    private String dirName;
    private String lockExtention;
@@ -317,11 +319,11 @@ public class FileWriterCallback implements I_Update {
       long chunkCount = 0L;
      
       if (attrMap != null) {
-         ClientProperty prop = (ClientProperty)attrMap.get("_filename"); 
+         ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR); 
          if (prop != null)
             fileName = prop.getStringValue(); 
          if (fileName == null) {
-            prop = (ClientProperty)attrMap.get("_timestamp"); 
+            prop = (ClientProperty)attrMap.get(TIMESTAMP_ATTR); 
             if (prop != null) {
                String timestamp = prop.getStringValue();
                fileName = "xbl" + timestamp + ".msg";
@@ -372,12 +374,12 @@ public class FileWriterCallback implements I_Update {
    public void updateOLD(String topic, byte[] content, Map attrMap) throws Exception {
       String fileName = null;
       if (attrMap != null) {
-         ClientProperty prop = (ClientProperty)attrMap.get("_filename"); 
+         ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR); 
          if (prop != null)
             fileName = prop.getStringValue(); 
       }
       if (fileName == null) {
-         ClientProperty prop = (ClientProperty)attrMap.get("_timestamp"); 
+         ClientProperty prop = (ClientProperty)attrMap.get(TIMESTAMP_ATTR); 
          if (prop != null) {
             String timestamp = prop.getStringValue();
             fileName = "xbl" + timestamp + ".msg";

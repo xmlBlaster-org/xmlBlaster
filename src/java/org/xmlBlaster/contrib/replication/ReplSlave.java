@@ -653,8 +653,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                   log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
                }
                setStatus(STATUS_NORMAL);
-               queue.removeRandom(entry);
-               continue; 
+               // queue.removeRandom(entry); // we dont remove it anymore since cleanup on client is now done on this message
+               // continue; 
             }
             byte[] content = msgUnit.getContent();
             if (content != null)

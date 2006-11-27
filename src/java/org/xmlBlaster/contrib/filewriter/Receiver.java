@@ -16,6 +16,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.contrib.ContribConstants;
 import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -170,7 +171,7 @@ public class Receiver implements I_Plugin, I_Callback {
       try {
          content = MomEventEngine.decompress(content, updateQos.getClientProperties());
          String timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
-         updateQos.getData().addClientProperty("_timestamp", timestamp);
+         updateQos.getData().addClientProperty(ContribConstants.TIMESTAMP_ATTR, timestamp);
          this.callback.update(updateKey.getOid(), content, updateQos.getClientProperties());
          return "OK";
       }

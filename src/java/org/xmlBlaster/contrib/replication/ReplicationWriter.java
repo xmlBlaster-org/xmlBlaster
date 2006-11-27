@@ -672,15 +672,29 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       return sqlInfo.getDescription();
    }
 
+   private final String getCompleteFileName(String filename) {
+      return this.importLocation + File.separator + filename;
+   }
+   
+   private void deleteFiles(String filename) {
+      String completeFilename = getCompleteFileName(filename);
+      if (!this.keepDumpFiles) {
+         File fileToDelete = new File(completeFilename);
+         boolean del = fileToDelete.delete();
+         if (!del)
+            log.warning("could not delete the file '" + completeFilename + "' please delete it manually");
+      }
+   }
+   
    /**
     * This is invoked for dump files
     */
    private void updateDump(String topic, byte[] content, Map attrMap) throws Exception {
       clearSqlInfoCache();
-      ClientProperty prop = (ClientProperty)attrMap.get("_filename");
+      ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR);
       String filename = null;
       if (prop == null) {
-         log.warning("The property '_filename' has not been found. Will choose an own temporary one");
+         log.warning("The property '" + FILENAME_ATTR + "' has not been found. Will choose an own temporary one");
          filename = "tmpFilename.dmp";
       }
       else 
@@ -713,7 +727,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       if (isEof && !isException) {
          this.dbSpecific.initialCommandPre();
          if (this.hasInitialCmd) {
-            String completeFilename = this.importLocation + File.separator + filename;
+            String completeFilename = getCompleteFileName(filename);
             
             if (this.schemaToWipeout != null) {
                log.info("Going to clean up the schema '" + this.schemaToWipeout);
@@ -728,12 +742,6 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
             }
             String version = null;
             this.dbSpecific.initialCommand(null, completeFilename, version);
-            if (!this.keepDumpFiles) {
-               File fileToDelete = new File(completeFilename);
-               boolean del = fileToDelete.delete();
-               if (!del)
-                  log.warning("could not delete the file '" + completeFilename + "' please delete it manually");
-            }
          }
          else
             log.info("since no 'replication.initialCmd' property defined, the initial command will not be executed (not either the wipeout of the schema)");
@@ -813,8 +821,19 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       
       ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
       ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
+      ClientProperty endOfTransition = (ClientProperty)attrMap.get(ReplicationConstants.END_OF_TRANSITION);
 
-      if (dumpProp != null)
+      if (endOfTransition != null && endOfTransition.getBooleanValue()) {
+         ClientProperty filenameProp =  (ClientProperty)attrMap.get(ReplicationConstants.FILENAME_ATTR);
+         String filename = null;
+         if (filenameProp != null)
+            filename = filenameProp.getStringValue();
+         if (filename != null && filename.length() > 0)
+            deleteFiles(filename);
+         else
+            log.warning("Could not cleanup since the '" + ReplicationConstants.FILENAME_ATTR + "' attribute was not set");
+      }
+      else if (dumpProp != null)
          updateDump(topic, content, attrMap);
       else if (endToRemoteProp != null)
          updateManualTransfer(topic, content, attrMap);

@@ -322,7 +322,7 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * Intiates the replication for the given slave.
     * TODO Specify that the replicationKey (dbmasterid) must be short and DB conform.
-    * Usually called by Human being via JMX Console.
+    * Usually called by Humans via JMX Console.
     * 
     * The cascaded replication is the replication which will be automatically started once the initial update of the first replication is finished. This is 
     * used to concatenate replications. A typical usecase is in two way replication, then the initial update of the back replication can be automatically triggered
@@ -347,8 +347,6 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * Intiates the replication for the given slave.
     * TODO Specify that the replicationKey (dbmasterid) must be short and DB conform.
-    * Usually called by Human being via JMX Console.
-    * 
     * The cascaded replication is the replication which will be automatically started once the initial update of the first replication is finished. This is 
     * used to concatenate replications. A typical usecase is in two way replication, then the initial update of the back replication can be automatically triggered
     * once the initial update of the main replication is finished.
@@ -1433,10 +1431,12 @@ public class ReplManagerPlugin extends GlobalInfo
    }
    
    public String startBatchUpdate(String replicationPrefix) {
+      log.info("for replication='" + replicationPrefix + "'");
       return publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_START_BATCH);
    }
    
    public String collectInitialUpdates(String replicationPrefix) {
+      log.info("for replication='" + replicationPrefix + "'");
       return publishSimpleMessage(replicationPrefix, INITIAL_UPDATE_COLLECT);
    }
    
