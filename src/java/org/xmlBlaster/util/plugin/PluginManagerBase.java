@@ -8,12 +8,17 @@ package org.xmlBlaster.util.plugin;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.runlevel.PluginConfig;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 
 import java.util.Hashtable;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.net.URLClassLoader;
 /**
  * Base class to load plugins.
@@ -251,10 +256,39 @@ public class PluginManagerBase implements I_PluginManager {
       }
    }
 
+   /**
+    * TODO Clean this method since it uses knowledge of the server side
+    * @param pluginInfo
+    * @return
+    */
+   private PluginInfo checkPluginInfoInRunLevelInfos(PluginInfo pluginInfo) throws XmlBlasterException {
+      if (this.glob.isServerSide() && this.glob instanceof ServerScope) {
+         PluginConfig config = ((ServerScope)this.glob).getPluginHolder().getPluginConfig(this.glob.getStrippedId(), pluginInfo.getId());
+         if (config == null) // normally it is stored as Type without the version information.
+            config = ((ServerScope)this.glob).getPluginHolder().getPluginConfig(this.glob.getStrippedId(), pluginInfo.getType());
+         if (config == null)
+            return pluginInfo;
+         PluginInfo runLevelPluginInfo = config.getPluginInfo();
+         if (runLevelPluginInfo == null || runLevelPluginInfo == pluginInfo)
+            return pluginInfo;
+         if (pluginInfo.getParameters() == null || pluginInfo.getParameters().size() < 1)
+            return runLevelPluginInfo;
+         if (pluginInfo.getParameters() == runLevelPluginInfo.getParameters())
+            return pluginInfo;
+         if (runLevelPluginInfo.getParameters().size() < 1)
+            return pluginInfo;
+         ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
+         PrintStream ps = new PrintStream(baos);
+         pluginInfo.getParameters().list(ps);
+         log.warning("The plugin '" + pluginInfo.getId() + "' is configured in the properties and in the xmlBlasterPlugins.xml file. I will take the plugin attributes/parameters defined in the properties which are: " + new String(baos.toByteArray()));
+      }
+      return pluginInfo;
+   }
 
    private I_Plugin instantiatePluginSecondPhase(I_Plugin plugin, PluginInfo pluginInfo) throws XmlBlasterException {
       // Initialize the plugin
       try {
+         pluginInfo = checkPluginInfoInRunLevelInfos(pluginInfo);
          plugin.init(glob, pluginInfo);
          postInstantiate(plugin, pluginInfo);
          if (log.isLoggable(Level.FINE)) log.fine("Plugin '" + pluginInfo.getId() + " successfully initialized.");
