@@ -301,14 +301,27 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          return;
       }
       boolean keepTransactionOpen = false;
-      ClientProperty keepOpenProp = dbInfo.getDescription().getAttribute(ReplicationConstants.KEEP_TRANSACTION_OPEN);
+      ClientProperty keepOpenProp = description.getAttribute(ReplicationConstants.KEEP_TRANSACTION_OPEN);
       if (keepOpenProp != null) {
          keepTransactionOpen = keepOpenProp.getBooleanValue();
          log.fine("Keep transaction open is '" + keepTransactionOpen + "'");
       }
 
-      String command = description.getCommand();
+      ClientProperty endOfTransition = description.getAttribute(ReplicationConstants.END_OF_TRANSITION);
+      if (endOfTransition != null && endOfTransition.getBooleanValue()) {
+         ClientProperty filenameProp =  description.getAttribute(ReplicationConstants.FILENAME_ATTR);
+         String filename = null;
+         if (filenameProp != null)
+            filename = filenameProp.getStringValue();
+         if (filename != null && filename.length() > 0) {
+            deleteFiles(filename);
+         }
+         else
+            log.warning("Could not cleanup since the '" + ReplicationConstants.FILENAME_ATTR + "' attribute was not set");
+         return;
+      }
       
+      String command = description.getCommand();
       if (command.equals(INITIAL_XML_CMD)) {
          // "_filename"
          // "_timestamp"
@@ -686,6 +699,18 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       }
    }
    
+   private void deleteFiles(Map attrMap) {
+      ClientProperty filenameProp =  (ClientProperty)attrMap.get(ReplicationConstants.FILENAME_ATTR);
+      String filename = null;
+      if (filenameProp != null)
+         filename = filenameProp.getStringValue();
+      if (filename != null && filename.length() > 0) {
+         deleteFiles(filename);
+      }
+      else
+         log.warning("Could not cleanup since the '" + ReplicationConstants.FILENAME_ATTR + "' attribute was not set");
+   }
+   
    /**
     * This is invoked for dump files
     */
@@ -824,14 +849,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       ClientProperty endOfTransition = (ClientProperty)attrMap.get(ReplicationConstants.END_OF_TRANSITION);
 
       if (endOfTransition != null && endOfTransition.getBooleanValue()) {
-         ClientProperty filenameProp =  (ClientProperty)attrMap.get(ReplicationConstants.FILENAME_ATTR);
-         String filename = null;
-         if (filenameProp != null)
-            filename = filenameProp.getStringValue();
-         if (filename != null && filename.length() > 0)
-            deleteFiles(filename);
-         else
-            log.warning("Could not cleanup since the '" + ReplicationConstants.FILENAME_ATTR + "' attribute was not set");
+         deleteFiles(attrMap);
       }
       else if (dumpProp != null)
          updateDump(topic, content, attrMap);

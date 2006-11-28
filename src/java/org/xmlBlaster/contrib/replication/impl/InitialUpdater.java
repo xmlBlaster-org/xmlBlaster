@@ -651,8 +651,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       }
       sqlInfo.setDescription(description);
       endMsg.setText(sqlInfo.toXml(""));
-      description.setAttribute(END_OF_TRANSITION , "" + true);
-      endMsg.setBooleanProperty(END_OF_TRANSITION , true);
       producer.send(endMsg);
    }
    
