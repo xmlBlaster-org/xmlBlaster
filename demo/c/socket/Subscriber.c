@@ -142,6 +142,8 @@ int main(int argc, char** argv)
       char connectQos[4096];
       char callbackQos[1024];
       const char * const sessionName = xa->props->getString(xa->props, "session.name", "Subscriber");
+      long sessionTimeout = xa->props->getLong(xa->props, "session.timeout", 86400000L);
+      int maxSessions = xa->props->getInt(xa->props, "session.maxSessions", 10);
       const bool persistent = xa->props->getBool(xa->props, "dispatch/connection/persistent", false);
       const long pingInterval = xa->props->getLong(xa->props, "dispatch/callback/pingInterval", 10000L);
       const long delay = xa->props->getLong(xa->props, "dispatch/callback/delay", 60000L);
@@ -162,10 +164,10 @@ int main(int argc, char** argv)
                "   <passwd>subscriber</passwd>"
                "  ]]>"
                " </securityService>"
-               " <session name='%.80s' timeout='3600000' maxSessions='10' clearSessions='false' reconnectSameClientOnly='false'/>"
+               " <session name='%.80s' timeout='%ld' maxSessions='%d' clearSessions='false' reconnectSameClientOnly='false'/>"
                " %.20s"
                "%.1024s"
-               "</qos>", sessionName, sessionName, persistent?"<persistent/>":"", callbackQos);
+               "</qos>", sessionName, sessionName, sessionTimeout, maxSessions, persistent?"<persistent/>":"", callbackQos);
 
       response = xa->connect(xa, connectQos, myUpdate, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
