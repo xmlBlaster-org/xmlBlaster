@@ -12,7 +12,12 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <stdlib.h>
 #include <string.h>
 #if defined(WINCE)
-   static int errno=0; /*TODO: is not possible*/
+#  if defined(XB_USE_PTHREADS)
+#     include <pthreads/pthread.h>
+#  else
+      /*#include <pthreads/need_errno.h> */
+      static int errno=0; /* single threaded workaround*/
+#  endif
 #else
 #  include <errno.h>
 #  include <sys/types.h>

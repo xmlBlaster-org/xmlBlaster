@@ -230,10 +230,11 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
 
          if (zlibReadBufP->currCompBytes == 0 && readBytes != nbytes) {
             const int flag = 0;
-            size_t nCompRead;
+            ssize_t nCompRead;
             if (zlibReadBufP->debug) printf("[%s:%d] recv() readBytes=%u, nbytes=%u, currCompBytes=%u\n", __FILE__, __LINE__, readBytes, (unsigned int)nbytes, zlibReadBufP->currCompBytes);
             zlibReadBufP->currCompBufferP = zlibReadBufP->compBuffer;
-            nCompRead = recv(fd, zlibReadBufP->currCompBufferP, (int)XMLBLASTER_ZLIB_READ_COMPBUFFER_LEN, flag); /* TODO: do we need at least two bytes?? */
+			/* currCompBufferP is of type "Bytef *" which is a "unsigned char *" */
+            nCompRead = recv(fd, (char*)zlibReadBufP->currCompBufferP, (int)XMLBLASTER_ZLIB_READ_COMPBUFFER_LEN, flag); /* TODO: do we need at least two bytes?? */
             if (nCompRead == -1 || nCompRead == 0) { /* 0 is not possible as we are blocking */
                if (zlibReadBufP->debug) printf("[%s:%d] EOF during reading of %u bytes\n", __FILE__, __LINE__, (unsigned int)(nbytes-readBytes));
                return -1;

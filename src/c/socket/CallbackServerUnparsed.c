@@ -11,7 +11,16 @@ Compile:
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
+#if defined(WINCE)
+#  if defined(XB_USE_PTHREADS)
+#     include <pthreads/pthread.h>
+#  else
+      /*#include <pthreads/need_errno.h> */
+      static int errno=0; /* single threaded workaround*/
+#  endif
+#else
+#  include <errno.h>
+#endif
 #include <socket/xmlBlasterSocket.h> /* gethostname() */
 #include <CallbackServerUnparsed.h>
 
@@ -498,7 +507,8 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
       */
    cli_len = (socklen_t)sizeof(cli_addr);
    if ((cb->acceptSocket = (int)accept(cb->listenSocket, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
-         perror("[CallbackServerUnparsed] accept");
+      if (cb->logLevel>=XMLBLASTER_LOG_ERROR) cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__,
+         "[CallbackServerUnparsed] accept failed");
          cb->isShutdown = true;
          return false;
    }

@@ -22,8 +22,17 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <sys/types.h>
+#if defined(WINCE)
+#  if defined(XB_USE_PTHREADS)
+#     include <pthreads/pthread.h>
+#  else
+      /*#include <pthreads/need_errno.h> */
+      static int errno=0; /* single threaded workaround*/
+#  endif
+#else
+#  include <errno.h>
+#  include <sys/types.h>
+#endif
 #include <socket/xmlBlasterSocket.h>
 #include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterAccessUnparsed.h>

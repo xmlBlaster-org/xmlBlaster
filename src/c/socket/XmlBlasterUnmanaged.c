@@ -27,7 +27,7 @@ static void convert(XmlBlasterException *in, XmlBlasterUnmanagedException *out) 
  * We intercept the callbacks here and convert it to a more simple form to
  * be easy transferable to C# (Csharp). 
  */
-static bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception) {
+static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception) {
    size_t i;
    XmlBlasterUnmanagedException unmanagedException;
    
