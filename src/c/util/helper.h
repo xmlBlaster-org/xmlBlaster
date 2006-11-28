@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-Name:      xmlBlaster/src/c/util/msgUtil.h
+Name:      xmlBlaster/src/c/util/helper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generic helper code, used by Queue implementation and xmlBlaster client code
@@ -12,7 +12,14 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <util/basicDefs.h> /* for int64_t (C99), Dll_Export, inline, bool etc. */
 
 #if defined(_WINDOWS)
-#  include <pthreads/pthread.h> /* Our pthreads.h: For timespec, for logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
+#  if defined(XB_USE_PTHREADS)
+#     include <pthreads/pthread.h> /* Our pthreads.h: For timespec, for logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
+#  else
+struct timespec {
+        long tv_sec;
+        long tv_nsec;
+};
+#  endif
 #else
 # include <pthread.h>
 # define XB_USE_PTHREADS 1
@@ -109,6 +116,9 @@ Dll_Export extern char *getStackTrace(int maxNumOfLines);
 Dll_Export extern void sleepMillis(long millis);
 Dll_Export extern int64_t getTimestamp(void);   /* if no 'int64_t=long long' support we need a workaround */
 Dll_Export extern bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime); /* timespec forces pthread */
+Dll_Export extern void getCurrentTimeStr(char *timeStr, int bufSize);
+Dll_Export extern char **convertWcsArgv(wchar_t **argv_wcs, int argc);
+Dll_Export extern void freeArgv(char **argv, int argc);
 Dll_Export extern char *strFromBlobAlloc(const char *blob, const size_t len);
 Dll_Export extern char *strcpyAlloc(const char *src);
 Dll_Export extern char *strcpyRealloc(char **dest, const char *src);
@@ -130,7 +140,9 @@ Dll_Export extern BlobHolder *blobcpyAlloc(BlobHolder *blob, const char *data, s
 Dll_Export extern BlobHolder *freeBlobHolderContent(BlobHolder *blob);
 Dll_Export extern char *blobDump(BlobHolder *blob);
 Dll_Export extern void freeBlobDump(char *blobDump); /* deprecated: use xmlBlasterFree() */
+#if defined(XB_USE_PTHREADS)
 Dll_Export extern long get_pthread_id(pthread_t t);
+#endif
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP

@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15742 C client: First runnable Windows CE port (without pthreads)
+          Added: -DWINCE compiler define
+          Open: Is there any getenv() for Windows CE?, how to handle errno.h?
+          Changed: -DDLL_BUILD to -D_WINDLL
+          __FreeBSD__ code in helper.c is probably broken (needs testing)
+
  o #15735 dispatch statistics are cleaned up on the client side on reconnect also, this fixes a failing reconnect in case
           the update had activities, the connection ping detected a stale connection and the update ping did not return.
 

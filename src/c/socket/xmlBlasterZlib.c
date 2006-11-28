@@ -294,13 +294,20 @@ int xmlBlaster_endZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) {
 int xmlBlaster_initZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) { 
    fprintf(stderr, "No support for zlib is compiled, try with -DXMLBLASTER_ZLIB=1\n");
    assert(0);
+   zlibWriteBufP = 0;/* to supress compiler warning */
    return 0;
 }
-ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, const int fd, const char * const ptr, const size_t nbytes) { return 0; }
-int xmlBlaster_endZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) { return -1; }
-int xmlBlaster_initZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) { return -1; }
-ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int fd, char *ptr, size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) { return 0; }
-int xmlBlaster_endZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) { return -1; }
+ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, const int fd, const char * const ptr, const size_t nbytes) { 
+   if (fd && ptr && nbytes) zlibWriteBufP = 0;/* to supress compiler warning */
+   return 0;
+}
+int xmlBlaster_endZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) { zlibWriteBufP = 0;/* to supress compiler warning */ return -1; }
+int xmlBlaster_initZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) { zlibReadBufP = 0;/* to supress compiler warning */ return -1; }
+ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int fd, char *ptr, size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP2) {
+	if (fd && ptr && nbytes && fpNumRead && userP2) zlibReadBufP = 0;/* to supress compiler warning */
+	return 0;
+}
+int xmlBlaster_endZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) { zlibReadBufP = 0;/* to supress compiler warning */ return -1; }
 
 # endif /* XMLBLASTER_ZLIB */
 

@@ -7,6 +7,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   gcc -DPropertiesMain -D_ENABLE_STACK_TRACE_ -rdynamic -export-dynamic -Wall -pedantic -g -D_REENTRANT -I.. -o PropertiesMain Properties.c
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 -----------------------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -91,7 +92,6 @@ void dumpProperties(Properties *props)
 static const char *getString(Properties *props, const char *key, const char *defaultValue)
 {
    int iarg;
-   const char *p;
 
    if (key == 0) return defaultValue;
 
@@ -121,9 +121,13 @@ WIN32
 UNIX: int getenv_r(const char *name, char *buf, size_t len);
    returns -1 if not found
 */
-   p = getenv(key);
+#if !defined(WINCE) /* Where is the getenv() for Windows CE? */
+   {
+      const char *p = getenv(key);
+      if (p != 0) return p;
+   }
+#endif
 
-   if (p != 0) return p;
    return defaultValue;
 }
 

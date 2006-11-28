@@ -11,8 +11,12 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <sys/types.h>
+#if defined(WINCE)
+   static int errno=0; /*TODO: is not possible*/
+#else
+#  include <errno.h>
+#  include <sys/types.h>
+#endif
 #include <socket/xmlBlasterSocket.h>
 #include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterConnectionUnparsed.h>
@@ -484,7 +488,7 @@ const char *xmlBlasterConnectionUnparsedUsage()
 #if XMLBLASTER_ZLIB==1
       "\n                       Switch on compression with 'zlib:stream'."
 #else
-      "\n                       No compression support. Try recompiling with with '-DXMLBLASTER_ZLIB==1'."
+      "\n                       No compression support. Try recompiling with with '-DXMLBLASTER_ZLIB=1'."
 #endif
       "\n   -dispatch/connection/plugin/socket/useUdpForOneway [false]"
       "\n                       Use UDP for publishOneway() calls.", SIZE/2);

@@ -255,7 +255,7 @@ TODO
       <compilerarg value="/wd4996"/> <!-- 'sprintf' etc. was declared deprecated -->
       <!-- option 'GX' is deprecated, use 'EHsc' -->
       <!-- 'GZ' is deprecated, use 'RTC1' -->
-      <compilerarg value="-D${thread.impl}" />  <!-- -DBOOST or  -DOMNITHREAD -->
+      <!-- Not for C code: compilerarg value="-D${thread.impl}" /-->  <!-- -DBOOST or  -DOMNITHREAD -->
    </compiler>
 
    <compiler id="msvc-with-extensions" extends="base-msvc">
@@ -2438,7 +2438,7 @@ TODO
       -->
       <!--
          cl /W3 -DOMNITHREAD /c /nologo /GX /Zi /Od /GZ /D_DEBUG /MDd /DXMLBLASTER_TAO=1 /D__WIN32__ /D_WIN32_WINNT=0x0400 /D__x86__ /D__NT__ /D__O
-         SVERSION__=4 /D_OMNITHREAD_DLL=1 /DWIN32=1 /DDLL_BUILD=1 /D_MBCS=1 /D_WINDOWS=1 /IC:\Marcel\xmlBlaster\src\c++ /IC:\Marcel\ACE_wrappers\TAO /IC:\Marce
+         SVERSION__=4 /D_OMNITHREAD_DLL=1 /DWIN32=1 /D_WINDLL=1 /D_MBCS=1 /D_WINDOWS=1 /IC:\Marcel\xmlBlaster\src\c++ /IC:\Marcel\ACE_wrappers\TAO /IC:\Marce
          l\ACE_wrappers /IC:\Marcel\ACE_wrappers\TAO\orbsvcs /IC:\Marcel\ACE_wrappers\TAO\include /IC:\Marcel\xmlBlaster\src\c++\generated /IC:\Marcel\ACE_wrap
          pers\TAO\include\windows /IC:\Marcel\xerces-c2_2_0-win32\src /IC:\Marcel\xerces-c2_2_0-win32\src\xercesc /IC:\Marcel\xerces-c2_2_0-win32\include /IC:\
          Marcel\xerces-c2_2_0-win32\include\xercesc C:\Marcel\xmlBlaster\src\c++\util\qos\ConnectQosFactory.cpp C:\Marcel\xmlBlaster\src\c++\util\qos\AccessFil
@@ -2536,7 +2536,7 @@ TODO
            <define name="_WIN32" value="1" if="windows" />        <!-- log4cplus only -->
            <define name="WIN32" value="1" if="windows" />
            <define name="_WINDOWS" value="1" if="windows" />
-           <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in XmlBCfg.h, sets DLL_Export -->
+           <define name="_WINDLL" value="1" if="windows" />     <!-- Needed in XmlBCfg.h, sets DLL_Export -->
            <define name="_MBCS" value="1" if="windows" />         <!-- TCHAR == char -->
            <!--define name="_USRDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
            <!--define name="_WINDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
@@ -2980,7 +2980,7 @@ TODO
            <!-- define name="TC" value="1" if="windows" /--> <!-- Force C compiling: TC, to force C++: TP -->
            <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
            <define name="RTCu" value="1" if="windows" /> <!-- show uninitialized vars -->
-           <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in basicDefs.h, sets DLL_Export -->
+           <define name="_WINDLL" value="1" if="windows" />     <!-- Needed in basicDefs.h, sets DLL_Export -->
            <define name="__linux" value="1" if="linux" />
            <define name="__sunos__" value="1" if="sun" />
            <define name="__sparc__" value="1" if="sun" />

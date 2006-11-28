@@ -7,6 +7,7 @@ Compile:   gcc -Wall -g -o msgUtil msgUtil.c -DMSG_UTIL_MAIN -I..
 Testsuite: xmlBlaster/testsuite/src/c/TestUtil.c
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 -----------------------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -208,29 +209,12 @@ Dll_Export _INLINE_FUNC void initializeXmlBlasterException(XmlBlasterException *
 }
 
 
-#ifndef _WINDOWS   /* Windows does not support the reentrant ..._r() functions */
-#  if defined(__sun)
-#    define HAVE_FUNC_GETHOSTBYNAME_R_5 /* SUN */
-#  elif defined(__alpha)
-#    define HAVE_FUNC_GETHOSTBYNAME_R_3 /* OSF1 V5.1 1885 alpha */
-#  elif defined(__FreeBSD__)
-#    define LOCAL_GETHOSTBYNAME_R /* FreeBSD */
-/* this should actually work for other platforms... so long as they support pthreads */
-#  elif defined(__MacOSX__)
-#    define LOCAL_GETHOSTBYNAME_R /* Mac OSX */ 
-#  elif defined(__hpux) /* with gcc 2.8 - 3.4.3 */
-#  else
-#    define HAVE_FUNC_GETHOSTBYNAME_R_6 /* Linux */
-#  endif
-#endif
-
 /* a local version of the 6 argument call to gethostbyname_r 
    this is copied from http://www.cygwin.com/ml/cygwin/2004-04/msg00532.html
    thanks to Enzo Michelangeli for this
 */
-
-#if defined(LOCAL_GETHOSTBYNAME_R)
-
+#if defined(__FreeBSD__) || defined(__MacOSX__)
+   /* this should actually work for other platforms... so long as they support pthreads */
 /* since this is a 6 arg format... just define that here */
 #define HAVE_FUNC_GETHOSTBYNAME_R_6
 /* duh? ERANGE value copied from web... */
@@ -337,7 +321,7 @@ int gethostbyname_r (const char *name,
 
 }
 
-#endif /* LOCAL_GETHOSTBYNAME_R */
+#endif /* defined(__FreeBSD__) || defined(__MacOSX__) */
 
 /**
  * Thread safe host lookup. 
@@ -346,7 +330,7 @@ int gethostbyname_r (const char *name,
  */
 Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen)
 {
-#ifdef _WINDOWS_FUTURE
+#if defined(_WINDOWS_FUTURE)
   /* See  http://www.hmug.org/man/3/getaddrinfo.html for an example */
   /* #include Ws2tcpip.h
    typedef struct addrinfo {
@@ -450,9 +434,61 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
       }
       freeaddrinfo(res0);
 #   endif /* SOME_SERVER_EXAMPLE */
+#elif defined(__sun)
+      struct hostent *hp;
+      int herr;
 
-#else /* !_WINDOWS */
-#if defined(HAVE_FUNC_GETHOSTBYNAME_R_6)
+      if (*hstbuflen == 0)
+      {
+         *hstbuflen = 1024;
+         *tmphstbuf = (char *)malloc (*hstbuflen);
+         if (*tmphstbuf == 0) return 0;
+      }
+
+      while ((NULL == ( hp = 
+         gethostbyname_r(host,hostbuf,*tmphstbuf,*hstbuflen,&herr)))
+         && (errno == ERANGE))
+      {
+         /* Enlarge the buffer. */
+         *hstbuflen *= 2;
+         *tmphstbuf = (char *)realloc (*tmphstbuf,*hstbuflen);
+         if (*tmphstbuf == 0) return 0;
+      }
+      return hp;
+#elif defined(__alpha) /* OSF1 V5.1 1885 alpha */
+         if (*hstbuflen == 0)
+         {
+            *hstbuflen = sizeof(struct hostent_data);
+            *tmphstbuf = (char *)malloc (*hstbuflen);
+            if (*tmphstbuf == 0) return 0;
+         }
+         else if (*hstbuflen < sizeof(struct hostent_data))
+         {
+            *hstbuflen = sizeof(struct hostent_data);
+            *tmphstbuf = (char *)realloc(*tmphstbuf, *hstbuflen);
+            if (*tmphstbuf == 0) return 0;
+         }
+         memset((void *)(*tmphstbuf),0,*hstbuflen);
+
+         if (0 != gethostbyname_r(host,hostbuf,(struct hostent_data *)*tmphstbuf)) {
+            free(*tmphstbuf);
+            *tmphstbuf = 0;
+            return 0;
+         }
+         return hostbuf;
+#elif defined(WINCE)
+         /* Header: Winsock2.h. */
+         /* Link Library: Ws2.lib. */
+         hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
+         tmphstbuf = 0;
+         hstbuflen = 0;
+         return gethostbyname(host); /* Not thread safe */
+#elif defined(_WINDOWS)
+         hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
+         tmphstbuf = 0;
+         hstbuflen = 0;
+         return gethostbyname(host); /* Not thread safe */
+#else /* HAVE_FUNC_GETHOSTBYNAME_R_6 Linux */ /* defined(__hpux) with gcc 2.8 - 3.4.3 */
    struct hostent *hp=0;
    int herr=0,res=0;
 
@@ -480,55 +516,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
       return 0;
    }
    return hp;
-#elif defined(HAVE_FUNC_GETHOSTBYNAME_R_5)
-      struct hostent *hp;
-      int herr;
-
-      if (*hstbuflen == 0)
-      {
-         *hstbuflen = 1024;
-         *tmphstbuf = (char *)malloc (*hstbuflen);
-         if (*tmphstbuf == 0) return 0;
-      }
-
-      while ((NULL == ( hp = 
-         gethostbyname_r(host,hostbuf,*tmphstbuf,*hstbuflen,&herr)))
-         && (errno == ERANGE))
-      {
-         /* Enlarge the buffer. */
-         *hstbuflen *= 2;
-         *tmphstbuf = (char *)realloc (*tmphstbuf,*hstbuflen);
-         if (*tmphstbuf == 0) return 0;
-      }
-      return hp;
-#elif defined(HAVE_FUNC_GETHOSTBYNAME_R_3)
-         if (*hstbuflen == 0)
-         {
-            *hstbuflen = sizeof(struct hostent_data);
-            *tmphstbuf = (char *)malloc (*hstbuflen);
-            if (*tmphstbuf == 0) return 0;
-         }
-         else if (*hstbuflen < sizeof(struct hostent_data))
-         {
-            *hstbuflen = sizeof(struct hostent_data);
-            *tmphstbuf = (char *)realloc(*tmphstbuf, *hstbuflen);
-            if (*tmphstbuf == 0) return 0;
-         }
-         memset((void *)(*tmphstbuf),0,*hstbuflen);
-
-         if (0 != gethostbyname_r(host,hostbuf,(struct hostent_data *)*tmphstbuf)) {
-            free(*tmphstbuf);
-            *tmphstbuf = 0;
-            return 0;
-         }
-         return hostbuf;
-#else
-         hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
-         tmphstbuf = 0;
-         hstbuflen = 0;
-         return gethostbyname(host); /* Not thread safe */
-#endif /* !_WINDOWS */
-#endif /* _WINDOWS */
+#endif
 }
 
 # ifdef MSG_UTIL_MAIN

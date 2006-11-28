@@ -9,6 +9,7 @@ Compile:   gcc -Wall -g -o helper helper.c -DHELPER_UTIL_MAIN -I..
 Testsuite: xmlBlaster/testsuite/src/c/TestUtil.c
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 -----------------------------------------------------------------------------*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -23,7 +24,15 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #endif
 
 #ifdef _WINDOWS
-#  include <sys/timeb.h>
+#  if defined(WINCE)
+     /* time between jan 1, 1601 and jan 1, 1970 in units of 100 nanoseconds */
+#    if !defined(PTW32_TIMESPEC_TO_FILETIME_OFFSET)
+#       define PTW32_TIMESPEC_TO_FILETIME_OFFSET \
+          ( ((LONGLONG) 27111902 << 32) + (LONGLONG) 3577643008 )
+#    endif
+#  else
+#    include <sys/timeb.h>
+#  endif
 #  include <Winsock2.h>       /* Sleep() */
 #  if XB_USE_PTHREADS
 #    include <pthreads/pthread.h> /* Our pthreads.h: For logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
@@ -122,7 +131,8 @@ Dll_Export char *getStackTrace(int maxNumOfLines)
       return ret;
    }
 #else
-   if (maxNumOfLines > 0) ;      /* to make the compiler happy */
+   if (maxNumOfLines > 0)      /* to make the compiler happy */
+	   return strcpyAlloc("");
    return strcpyAlloc(""); /* No stack trace provided in this system */
 #endif
 }
@@ -202,6 +212,49 @@ Dll_Export int64_t getTimestamp() {
    return timestamp;
 }
 
+
+#include <wchar.h>
+/**
+ * Converts the given wide char pwcs to multibyte argv. 
+ * <p>Call freeWcsArgv() to free the memory again.</p>
+ * @param pwcs In parameter: Wide char command line arguments
+ * @param argc The number of strings in pwcs
+ * @return argv Is allocated with malloc and holds all given pwcs strings
+ */
+Dll_Export char **convertWcsArgv(wchar_t **argv_wcs, int argc) {
+   int i;
+   char **argv = (char **)malloc(argc*sizeof(char*));
+   for (i=0; i<argc; i++) {
+      int sizeInBytes = 4*(int)wcslen(argv_wcs[i]);
+      argv[i] = (char *)malloc(sizeInBytes*sizeof(char));
+#     if _MSC_VER >= 1400 && !defined(WINCE)
+       {
+         size_t pReturnValue;
+         /*errno_t err = */
+         wcstombs_s(&pReturnValue, argv[i], sizeInBytes, argv_wcs[i], _TRUNCATE);
+       }
+#     else
+         wcstombs(argv[i], argv_wcs[i], sizeInBytes);
+#     endif
+	  /*printf("%s ", argv[i]);*/
+   }
+   return argv;
+}
+
+/**
+ * Frees the allocated argv from convertWcsArgv(). 
+ * @param argv The main(argv)
+ * @param argc The number of strings in argv
+ */
+Dll_Export void freeArgv(char **argv, int argc) {
+   int i;
+   if (argv == 0) return;
+   for (i=0; i<argc; i++) {
+      free(argv[i]);
+   }
+   free(argv);
+}
+
 /**
  * Fills the given abstime with absolute time, using the given timeout relativeTimeFromNow in milliseconds
  * On Linux < 2.5.64 does not support high resolution timers clock_gettime(),
@@ -212,7 +265,41 @@ Dll_Export int64_t getTimestamp() {
  */
 Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime)
 {
-# ifdef _WINDOWS
+# if defined(WINCE)
+   /* Copied from pthreads_win32: thank you! */
+   FILETIME ft;
+   SYSTEMTIME st;
+   GetSystemTime(&st);
+   SystemTimeToFileTime(&st, &ft);
+   /*
+    * GetSystemTimeAsFileTime(&ft); would be faster,
+    * but it does not exist on WinCE
+    */
+     /*
+      * -------------------------------------------------------------------
+      * converts FILETIME (as set by GetSystemTimeAsFileTime), where the time is
+      * expressed in 100 nanoseconds from Jan 1, 1601,
+      * into struct timespec
+      * where the time is expressed in seconds and nanoseconds from Jan 1, 1970.
+      * -------------------------------------------------------------------
+      */
+   abstime->tv_sec =
+    (int) ((*(LONGLONG *) &ft - PTW32_TIMESPEC_TO_FILETIME_OFFSET) / 10000000);
+   abstime->tv_nsec =
+    (int) ((*(LONGLONG *) &ft - PTW32_TIMESPEC_TO_FILETIME_OFFSET -
+            ((LONGLONG) abstime->tv_sec * (LONGLONG) 10000000)) * 100);
+
+   if (relativeTimeFromNow > 0) {
+      abstime->tv_sec += relativeTimeFromNow / 1000;
+      abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   }
+   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
+      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
+      abstime->tv_sec += 1;
+   }
+   return true;
+
+# elif defined(_WINDOWS)
    struct _timeb tm;
 #  if _MSC_VER >= 1400  /* _WINDOWS: 1200->VC++6.0, 1310->VC++7.1 (2003), 1400->VC++8.0 (2005) */
    	errno_t err = _ftime_s(&tm);
@@ -349,7 +436,8 @@ Dll_Export char *strFromBlobAlloc(const char *blob, const size_t len)
  */
 Dll_Export void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum) {
    snprintf0(errnoStr, sizeInBytes, "%d", errnum); /* default if string lookup fails */
-#  if _MSC_VER >= 1400
+#  if defined(WINCE)
+#  elif _MSC_VER >= 1400
       strerror_s(errnoStr, sizeInBytes, errnum);  
 #  elif defined(_LINUX)
       strerror_r(errnum, errnoStr, sizeInBytes-1); /* glibc > 2. returns a char*, but should return an int */
@@ -372,7 +460,11 @@ Dll_Export void xb_strerror(char *errnoStr, size_t sizeInBytes, int errnum) {
  */
 Dll_Export char *strncpy0(char * const to, const char * const from, const size_t maxLen)
 {
-#  if _MSC_VER >= 1400
+#  if defined(WINCE)
+      char *ret=strncpy(to, from, maxLen-1);
+      *(to+maxLen-1) = '\0';
+      return ret;
+#  elif _MSC_VER >= 1400
 /*	errno_t strncpy_s(
    char *strDest,
    size_t sizeInBytes,
@@ -398,7 +490,7 @@ Dll_Export char *strncpy0(char * const to, const char * const from, const size_t
  */
 Dll_Export char *strncat0(char * const to, const char * const from, const size_t max)
 {
-#  if _MSC_VER >= 1400
+#  if _MSC_VER >= 1400 && !defined(WINCE)
       /* buffersize of 'to' in bytes */ 
       size_t bufferSizeInBytes = strlen(to) + max;
       errno_t ee = strncat_s(to, bufferSizeInBytes, from, _TRUNCATE);
@@ -412,7 +504,7 @@ Dll_Export char *strncat0(char * const to, const char * const from, const size_t
 }
 
 int vsnprintf0(char *s, size_t size, const char *format, va_list ap) {
-#  if _MSC_VER >= 1400
+#  if _MSC_VER >= 1400 && !defined(WINCE)
       errno_t err = vsnprintf_s(s, size, _TRUNCATE, format, ap);
       if ( err == STRUNCATE ) {
          printf("truncation occurred %s!\n", format);
@@ -547,6 +639,7 @@ Dll_Export char *toReadableDump(char *data, size_t len)
    return readable;
 }
 
+#if defined(XB_USE_PTHREADS)
 /**
  * Cast the thread identifier to an long value. 
  * @param t The pthread_t type
@@ -555,10 +648,45 @@ Dll_Export char *toReadableDump(char *data, size_t len)
 long get_pthread_id(pthread_t t)
 {
 #  ifdef _WINDOWS
-   return (int)t.p; /* typedef ptw32_handle_t pthread_t; with struct {void*p; unsigned int x;} */
+   return (long)t.p; /* typedef ptw32_handle_t pthread_t; with struct {void*p; unsigned int x;} */
 #  else
-   return (int)t;
+   return (long)t;
 #  endif
+}
+#endif
+
+/**
+ * Get a human readable time string for logging. 
+ * @param timeStr out parameter, e.g. "2006-11-14 12:34:46"
+ * @param bufSize The size of timeStr
+ */
+Dll_Export void getCurrentTimeStr(char *timeStr, int bufSize) {
+#  if defined(WINCE)
+      /*http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wcekernl/html/_wcesdk_win32_systemtime_str.asp*/
+      SYSTEMTIME st;
+      GetSystemTime(&st);
+      snprintf0(timeStr, bufSize, "%hd:%hd:%hd\n", st.wHour, st.wMinute, st.wSecond);
+      /*wDay, wMilliseconds etc. */
+#  elif _MSC_VER >= 1400
+      /*__time64_t timer;
+      _time64(&timer);*/
+      time_t t1; /* unsigned long */
+      (void) time(&t1); /* in seconds since the Epoch. 1970 */
+      ctime_s(timeStr, bufSize-1, &t1);
+#  elif defined(_WINDOWS)
+      time_t t1; /* unsigned long */
+      (void) time(&t1);
+      strncpy0(timeStr, ctime(&t1), bufSize);
+#  elif defined(__sun)
+      time_t t1; /* unsigned long */
+      (void) time(&t1);
+      ctime_r(&t1, (char *)timeStr, bufSize-1);
+#  else
+      time_t t1; /* unsigned long */
+      (void) time(&t1);
+      ctime_r(&t1, (char *)timeStr);
+#  endif
+   *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
 }
 
 /**
@@ -583,7 +711,7 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
                               XMLBLASTER_LOG_LEVEL level,
                               const char *location, const char *fmt, ...)
 {
-   /* Guess we need no more than 200 bytes. */
+   /* Guess, we need no more than 200 bytes. */
    int n, size = 200;
    char *p = 0;
    va_list ap;
@@ -612,19 +740,9 @@ Dll_Export void xmlBlasterDefaultLogging(void *logUserP, XMLBLASTER_LOG_LEVEL cu
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {
-         time_t t1;
-         char timeStr[128];
-         (void) time(&t1);
-#        if _MSC_VER >= 1400
-            ctime_s(timeStr, 126, &t1);
-#        elif defined(_WINDOWS)
-            strncpy0(timeStr, ctime(&t1), 126);
-#        elif defined(__sun)
-            ctime_r(&t1, (char *)timeStr, 126);
-#        else
-            ctime_r(&t1, (char *)timeStr);
-#        endif
-         *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
+		 enum { SIZE=128 };
+         char timeStr[SIZE];
+         getCurrentTimeStr(timeStr, SIZE);
 #        if XB_USE_PTHREADS
             printf("[%s %s %s thread0x%lx] %s %s\n", timeStr, logText[level], location,
                                     get_pthread_id(pthread_self()), p,
@@ -775,7 +893,7 @@ Dll_Export bool strToInt64(int64_t *val, const char * const str)
    if (str == 0 || val == 0) return false;
    /*str[INT64_STRLEN_MAX-1] = 0; sscanf should be safe enough to handle overflow */
         /* %lld on UNIX, %I64d on Windows */
-#  if _MSC_VER >= 1400
+#  if _MSC_VER >= 1400 && !defined(WINCE)
    return (sscanf_s(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
 #  else
    return (sscanf(str, PRINTF_PREFIX_INT64_T, val) == 1) ? true : false;
@@ -809,7 +927,7 @@ Dll_Export bool strToInt(int *val, const char * const str)
 Dll_Export bool strToULong(unsigned long *val, const char * const str)
 {
    if (str == 0 || val == 0) return false;
-#  if _MSC_VER >= 1400
+#  if _MSC_VER >= 1400 && !defined(WINCE)
    return (sscanf_s(str, "%lu", val) == 1) ? true : false;
 #  else
    return (sscanf(str, "%lu", val) == 1) ? true : false;

@@ -24,8 +24,11 @@ Compile:
         icc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
    util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c socket/XmlBlasterConnectionUnparsed.c
   
-  Win:  cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c util\*.c socket\*.c ws2_32.lib
+  Win:  cl /MT /W3 /Wp64 -D_WINDOWS -DDLL_IGNORE -DXB_NO_PTHREADS -I. HelloWorld.c util\helper.c util\msgUtil.c
+        util\Properties.c socket\xmlBlasterSocket.c socket\xmlBlasterZlib.c socket\XmlBlasterConnectionUnparsed.c ws2_32.lib
   
+  WinCE: -DWINCE ...
+
   Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c
         util/Properties.c socket/xmlBlasterSocket.c socket/xmlBlasterZlib.c
         socket/XmlBlasterConnectionUnparsed.c -lsocket -lnsl
@@ -44,11 +47,19 @@ Date:      05/2003
 #include <string.h>
 #include <XmlBlasterConnectionUnparsed.h>
 
+#if defined(WINCE)
+#include "HelloWorldCE/stdafx.h"
+#endif
+
 /**
  * Access the free memory in the server. 
  */
-int main(int argc, const char* const* argv)
-{
+#if defined(WINCE)
+int _tmain(int argc, _TCHAR** argv_wcs) { /* wchar_t==_TCHAR */
+   char **argv = convertWcsArgv(argv_wcs, argc);
+#else
+int main(int argc, const char* const* argv) {
+#endif
    MsgUnitArr *msgUnitArr;
    XmlBlasterException exception;
    char *connectQos, *response;
@@ -91,5 +102,8 @@ int main(int argc, const char* const* argv)
 
    freeXmlBlasterConnectionUnparsed(xb);
    printf("[HelloWorld] Good bye.\n");
+#  if defined(WINCE)
+      freeArgv(argv, argc);
+#  endif
    return 0;
 }
