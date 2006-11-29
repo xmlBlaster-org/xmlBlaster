@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15750 C client: Full Windows CE port (including pthreads 2.7.0 and zlib 1.2.3)
+          See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.windowsCE.html
+
  o #15742 C client: First runnable Windows CE port (without pthreads)
           Added: -DWINCE compiler define
           Open: Is there any getenv() for Windows CE?, how to handle errno.h?
