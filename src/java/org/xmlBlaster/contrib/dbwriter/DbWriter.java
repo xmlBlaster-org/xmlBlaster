@@ -161,10 +161,15 @@ public class DbWriter implements I_Update {
       ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
       ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
       ClientProperty initialDumpAsXml = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DUMP_AS_XML);
+      ClientProperty endOfTransition = (ClientProperty)attrMap.get(ReplicationConstants.END_OF_TRANSITION);
+      
       if (dumpProp != null && initialDumpAsXml == null) {
          this.writer.update(topic, content, attrMap);
       }
       else if (endToRemoteProp != null) {
+         this.writer.update(topic, content, attrMap);
+      }
+      else if (endOfTransition != null) {
          this.writer.update(topic, content, attrMap);
       }
       else {
