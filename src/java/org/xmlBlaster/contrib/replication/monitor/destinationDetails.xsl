@@ -40,51 +40,59 @@ function gotoDestinationList() {
 }
 
 function refresh() {
-   var url = 'mbean?objectname=<xsl:value-of select="$request.objectname"/>&amp;template=destinationDetails';
+   var referer = '<xsl:value-of select="$request.referer"/>';
+   var url = 'mbean?objectname=<xsl:value-of select="$request.objectname"/>&amp;template=destinationDetails&amp;referer=' + referer;
    self.location.href = url;
 }
 
 function reInitiateReplication() {
+   var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
-   var url = 'invoke?objectname=' + objName + '&amp;operation=reInitiateReplication&amp;destination=destinationDetails&amp;template=result';
+   var url = 'invoke?objectname=' + objName + '&amp;operation=reInitiateReplication&amp;destination=destinationDetails&amp;template=result&amp;referer=' + referer;
    self.location.href = url;
 }
 
 function killSession() {
+   var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
-   var url = 'invoke?objectname=' + objName + '&amp;operation=kill&amp;destination=destinationList&amp;template=result';
+   var url = 'invoke?objectname=' + objName + '&amp;operation=kill&amp;destination=destinationList&amp;template=result&amp;referer=' + referer;
    alert(url);
    self.location.href = url;
 }
 
 
 function clearQueue() {
+   var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
-   var url = 'invoke?objectname=' + objName + '&amp;operation=clearQueue&amp;destination=destinationDetails&amp;template=result';
+   var url = 'invoke?objectname=' + objName + '&amp;operation=clearQueue&amp;destination=destinationDetails&amp;template=result&amp;referer=' + referer;
    self.location.href = url;
 }
 
 function removeFirst() {
+   var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
-   var url = 'invoke?objectname=' + objName + '&amp;operation=removeQueueEntries&amp;type0=long&amp;value0=1&amp;destination=destinationDetails&amp;template=result';
+   var url = 'invoke?objectname=' + objName + '&amp;operation=removeQueueEntries&amp;type0=long&amp;value0=1&amp;destination=destinationDetails&amp;template=result&amp;referer=' + referer;
    self.location.href = url;
 }
 
 function cancelInitialUpdate() {
+   var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
-   var url = 'invoke?objectname=' + objName + '&amp;operation=cancelInitialUpdate&amp;destination=destinationDetails&amp;template=result';
+   var url = 'invoke?objectname=' + objName + '&amp;operation=cancelInitialUpdate&amp;destination=destinationDetails&amp;template=result&amp;referer=' + referer;
    self.location.href = url;
 }
 
 function toggleDispatcher() {
+   var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
-   var url = 'invoke?objectname=' + objName + '&amp;operation=toggleActive&amp;destination=destinationDetails&amp;template=result';
+   var url = 'invoke?objectname=' + objName + '&amp;operation=toggleActive&amp;destination=destinationDetails&amp;template=result&amp;referer=' + referer;
    self.location.href= url;
 }
 
 function dumpEntry() {
+   var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
-   var url = 'invoke?objectname=' + objName + '&amp;operation=dumpFirstEntry&amp;destination=destinationDetails&amp;template=result';
+   var url = 'invoke?objectname=' + objName + '&amp;operation=dumpFirstEntry&amp;destination=destinationDetails&amp;template=result&amp;referer=' + referer;
    self.location.href= url;
 }
 

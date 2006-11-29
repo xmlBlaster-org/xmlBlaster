@@ -39,13 +39,14 @@ Example of an xml output:
 
 <xsl:param name="request.destination"/>
 <xsl:param name="request.operation"/>
+<xsl:param name="request.referer"/>
 
 <xsl:template name="setDestination">
    <xsl:choose>
-     <xsl:when test="$request.destination = 'destinationDetails'">mbean?objectname=<xsl:value-of select="$request.objectname"/>&amp;template=destinationDetails</xsl:when>
+     <xsl:when test="$request.destination = 'destinationDetails'">mbean?objectname=<xsl:value-of select="$request.objectname"/>&amp;template=destinationDetails&amp;referer=<xsl:value-of select="$request.referer"/></xsl:when>
      <!-- <xsl:otherwise><xsl:value-of select="$destinationListUrl"/></xsl:otherwise> -->
      <xsl:otherwise>
-       <xsl:value-of select="'mbean?objectname=org.xmlBlaster:contribClass=contrib,*&amp;attributes=true&amp;operations=false&amp;notifications=false&amp;constructors=false&amp;template='"/><xsl:value-of select="$request.destination"/>
+       <xsl:value-of select="'mbean?objectname=org.xmlBlaster:contribClass=contrib,*&amp;attributes=true&amp;operations=false&amp;notifications=false&amp;constructors=false&amp;template='"/><xsl:value-of select="$request.destination"/>&amp;referer=<xsl:value-of select="$request.referer"/>
      </xsl:otherwise>
 
 
