@@ -55,6 +55,14 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
          printf("\n[client] CALLBACK update(): Asynchronous message [%d] update arrived:%s\n",
                 message_counter, xml);
       }
+      else {
+         if (message_counter==1) {
+            const char *persistent = (strstr(xml, "<persistent>true</persistent>")!=NULL||strstr(xml, "<persistent/>")!=NULL) ? "persistent" : "transient";
+            xa->log(xa->logUserP, XMLBLASTER_LOG_INFO, XMLBLASTER_LOG_INFO, __FILE__,
+             "Asynchronous %s message [%d] update arrived, we log every 100 again as verbose is set to false\n",
+             persistent, message_counter);
+         }
+      }
 
       message_counter++;
 
