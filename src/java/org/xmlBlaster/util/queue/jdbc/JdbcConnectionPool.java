@@ -45,7 +45,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    /** the initial capacity of this pool. */
    private int capacity;
    private int waitingCalls = 0;
-   private long connectionBusyTimeout = 60000L;
+   private long connectionBusyTimeout = 20*60*1000L; /* On high load we wait up to 20 min until xmlBlaster shuts down */
    private int   maxWaitingThreads = 200;
    private Hashtable mapping = null;
    private boolean initialized = false;
@@ -173,7 +173,12 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       if (log.isLoggable(Level.FINE)) log.fine("retreived the connection");
       if (conn == null)
-         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "get: a timeout occured when waiting for a free DB connection. Either the timeout is too short or other connections are blocking");
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
+            "get: connectionBusyTimeout=" + this.connectionBusyTimeout +
+            " occured when waiting for a free DB connection (see xmlBlaster.properties)." +
+            " Either the timeout is too short or other connections are blocking, waitingCalls=" +
+            this.waitingCalls +
+            ", connectionPoolSize=" + this.capacity);
       return conn;             
    }
 
