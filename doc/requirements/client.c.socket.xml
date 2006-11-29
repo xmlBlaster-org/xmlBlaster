@@ -1137,7 +1137,8 @@ set PATH=%PATH%;\xmlBlaster\demo\c\socket\bin</pre></li>
             <td>Set to 'zlib:stream' to switch on compression.
                You need to download zlib from 'http://www.gzip.org/zlib/' and add it for compilation
                as described in <tt>build.properties</tt>.
-               The server side SOCKET plugin must have enabled 'zlib:stream' compression as well.</td>
+               The server side SOCKET plugin must have enabled 'zlib:stream' compression as well in
+               <code>xmlBlasterPlugins.xml</code>.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
@@ -1279,6 +1280,7 @@ doxygen Doxyfile
    <see type="INTERNET">http://www.gzip.org/zlib/</see>
    <see type="REQ">protocol.socket</see>
    <see type="REQ">client.c.queue</see>
+   <see type="REQ">client.c.windowsCE</see>
    <see type="REQ">client.cpp.socket</see>
    <see type="REQ">client.cpp</see>
    <see type="REQ">interface</see>

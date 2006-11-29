@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.c.windowsCE' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+      Windows CE based xmlBlaster clients.
+   </topic>
+   <description>
+     <p>
+     The C client library supports the Windows CE environment. This setup
+     is tested for Windows CE 4.2 with <a href="http://channel9.msdn.com/wiki/default.aspx/MobileDeveloper.WindowsMobileFAQ"
+     target="others">Windows Smartphone 2003</a> target on a ARMV5 processor (compatible to ARMV4).
+     </p>
+     <p>To compile the xmlBlasterClientC DLL use the -DWINCE command line setting.</p>
+   </description>
+
+   
+   <example lang="C" type="HTML">
+      <p class="celltitel" id="windows">Example for a Windows XP setup</p>
+      <p>
+      Here is an example how to setup the development environment for free on Windows,
+      using our ant build to compile.
+      </p>
+     <p>
+     See <a href="http://channel9.msdn.com/wiki/default.aspx/MobileDeveloper.WindowsMobileFAQ" target="others">Visual Studio 2005 versus embedded VC++ 4</a>.
+     </p>
+     <p>
+     Use the zlib 1.2.3 - http://www.zlib.net/ - and compile yourself for Windows CE.
+     Set /DZLIB_DLL  (and /D_WIN32_WCE if not defined yet) and switch off pre-compiled headers
+     (exclude gzio.c and example.c).<br />
+     To switch zlib on during xmlBlasterClientC compilation use the compiler define XMLBLASTER_ZLIB=1.
+     </p>
+     <p>
+     To have single threaded xmlBlaster access (to publish(), get(), but no update())
+     please set the compiler define XB_NO_PTHREADS=1. Like this you avoid to install pthreads.
+     </p>
+     <p>
+     To have full multi threaded access with xmlBlaster callbacks please
+     link against the pthreads-win32 2.7.0 library from http://sources.redhat.com/pthreads-win32/.<br />
+     Download the patch for Windows CE from http://www.xmlBlaster.org/wince/pthreads-2006-11-29.patch
+     and apply it on pthreads 2.7.0 or better the cvs checkout from 2006-11-29.<br />
+     Compile pthread.c, pthread.h and config.h with the compiler defines /DWINCE and /D_ARM_. (all other files
+     are automatically added by pthread.c)<br />
+     </p>
+   </example>
+
+   <example lang="C" type="HTML">
+      <p class="celltitel" id="linux">Example for a Linux development setup</p>
+      <p>
+      Here is an example how to setup the development environment for free on Linux.
+      </p>
+      <table border="1">
+       <tr>
+       <th>Tool</th>
+       <th>Version</th>
+       <th>Comment</th>
+       </tr>
+
+       <tr>
+       <td>synce tools</td>
+       <td><a href="http://synce.sourceforge.net" target="others">synce</a></td>
+       <td>Access your PDA from Linux over USB, bluetooth or Ethernet (WLAN),
+        get the PDA GUI onto your Linux desktop</td>
+       </tr>
+
+       <tr>
+       <td>g++ crossompiler</td>
+       <td><a href="http://sourceforge.net/projects/cegcc" target="others">cegcc</a></td>
+       <td>Crosscompiler: Edit and compile on Linux, run on Windows CE</td>
+       </tr>
+
+      </table>
+   </example>
+
+   <example lang="C" type="HTML">
+      <p class="celltitel" id="linux">Example message delivery</p>
+      <p>
+      The following screenshot shows the connection properties (jconsole server side)
+      from a Psion Workabout Pro running Windows CE 4.2 with a Intel XScale StrongARM
+      400 MHz processor.
+      </p>
+      <p>
+      It is connected over WLAN to a Linux box on which the xmlBlaster server is running.<br />
+      At the time of the screenshot there were almost a quarter million messages delivered
+      with a throttled publish rate of 12 messages/sec (the publisher runs on a Linux box).
+      The latency (sending one message and receiving a ACK for it) is ~7 milliseconds.
+      </p>
+      <center><p>
+      <img src="client.c.windowsCE.jconsoleToPsionArm5.png"
+       border="0" title="Windows CE client example" alt="Example for a Windows CE client connected to xmlBlaster" />
+      </p></center>
+   </example>
+
+   <configuration where="client">
+      <p><a NAME="config"></a>
+      These configurations are tested:
+      </p>
+      <table border="1">
+       <tr>
+       <th>No.</th>
+       <th>OS</th>
+       <th>Compiler</th>
+       <th>xmlBlaster</th>
+       <th>Thread library</th>
+       <th>Protocol library</th>
+       <th>XML library</th>
+       <th>Date</th>
+       <th>Author</th>
+       <th>Comment</th>
+       </tr>
+
+       <tr>
+       <td>1</td>
+       <td>Windows XP</td>
+       <td><a href="http://www.microsoft.com/" target="others">VC++ 8.0</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.4+</a></td>
+       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread 2.7.0</a></td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td>-</td>
+       <td>2006-11-28</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>If you need compressed communication please use <a href="http://www.zlib.net/" target="others">zlib 1.2.3</a></td>
+       </tr>
+       <tr>
+       <td>2</td>
+       <td>Linux</td>
+       <td><a href="http://sourceforge.net/projects/cegcc/" target="others">CE g++ 4.1</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.4+</a></td>
+       <td>Linux pthreads</td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td>-</td>
+       <td>2006-11-28</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>If you need compressed communication please use <a href="http://www.zlib.net/" target="others">zlib 1.2.3</a>
+       <a href="http://www.gnu.org/software/libc/" target="others">libc 2.4</a></td>
+       </tr>
+      </table>
+
+   </configuration>
+
+   <todo type='HTML'>
+   </todo>
+
+   <see type="CODE" lang="C">HelloWorld.c</see>
+   <see type="CODE" lang="C">XmlBlasterAccessUnparsed.h</see>
+   <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
+   <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
+   <see type="INTERNET">http://www.gzip.org/zlib/</see>
+   <see type="REQ">protocol.socket</see>
+   <see type="REQ">client.c.queue</see>
+   <see type="REQ">interface</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
+   <date>2006 11 28</date>
+   <revision></revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE" lang="C">TestMethods</test> <!-- TestMethods.c -->
+   </testcase>
+</requirement>
+
