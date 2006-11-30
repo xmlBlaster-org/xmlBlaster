@@ -76,7 +76,7 @@ public class Hello : I_Callback
       bool drq = nc.disconnect("<qos/>");
       Console.WriteLine("disconnect() returned " + drq);
       
-      Console.Out.WriteLine("DONE");
+      Console.WriteLine("DONE");
    }
    
    #region I_Callback Members

@@ -138,7 +138,7 @@ namespace org.xmlBlaster
    // SEE http://msdn2.microsoft.com/en-us/library/2k1k68kw.aspx
    // Declares a class member for each structure element.
    // Must match exactly the C struct MsgUnit (sequence!)
-   [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
+   [ StructLayout( LayoutKind.Sequential )]
    public class MsgUnit 
    {
       public string key;
@@ -206,7 +206,7 @@ namespace org.xmlBlaster
 
 
 
-      [ StructLayout( LayoutKind.Sequential, CharSet=CharSet.Ansi )]
+      [ StructLayout( LayoutKind.Sequential )]
       public class StringArr {
          public string str;
       }
@@ -260,7 +260,7 @@ namespace org.xmlBlaster
       public static string ByteArrayToString(byte[] dBytes) {
          string str;
          System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-         str = enc.GetString(dBytes);
+         str = enc.GetString(dBytes,0,dBytes.Length);
          return str;
       }
       
@@ -513,12 +513,18 @@ namespace org.xmlBlaster
             for( int i = 0; i < size; i++ ) {
                manArray[ i ] = new StringArr();
                Marshal.PtrToStructure( current, manArray[ i ]);
+#              if PocketPC || Smartphone
+#              else
                Marshal.DestroyStructure( current, typeof(StringArr) );
+#              endif
                current = (IntPtr)((long)current + Marshal.SizeOf( manArray[ i ] ));
                //Console.WriteLine( "Element {0}: str={1}", i, manArray[ i ].str );
                retQosArr[i] = manArray[ i ].str;
             }
-            Marshal.FreeCoTaskMem( outArray );
+#           if Smartphone
+#           else
+               Marshal.FreeCoTaskMem(outArray);
+#           endif
             logger("xmlBlasterUnmanagedUnSubscribe: SUCCESS");
             return retQosArr;
          }
@@ -553,12 +559,18 @@ namespace org.xmlBlaster
             for( int i = 0; i < size; i++ ) {
                manArray[ i ] = new StringArr();
                Marshal.PtrToStructure( current, manArray[ i ]);
-               Marshal.DestroyStructure( current, typeof(StringArr) );
+#              if PocketPC || Smartphone
+#              else
+                  Marshal.DestroyStructure( current, typeof(StringArr) );
+#              endif
                current = (IntPtr)((long)current + Marshal.SizeOf( manArray[ i ] ));
                //Console.WriteLine( "Element {0}: str={1}", i, manArray[ i ].str );
                retQosArr[i] = manArray[ i ].str;
             }
-            Marshal.FreeCoTaskMem( outArray );
+#           if Smartphone
+#           else
+               Marshal.FreeCoTaskMem(outArray);
+#           endif
             logger("xmlBlasterUnmanagedErase: SUCCESS");
             return retQosArr;
          }
@@ -589,13 +601,19 @@ namespace org.xmlBlaster
                manArray[ i ] = new MsgUnit();
                Marshal.PtrToStructure( current, manArray[ i ]);
                //Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
-               Marshal.DestroyStructure( current, typeof(MsgUnit) );
+#              if PocketPC || Smartphone
+#              else
+                  Marshal.DestroyStructure( current, typeof(MsgUnit) );
+#              endif
                current = (IntPtr)((long)current + 
                Marshal.SizeOf( manArray[ i ] ));
                //Console.WriteLine( "Element {0}: key={1} qos={2} buffer={3} contentLength={4}", i, 
                //   manArray[ i ].key, manArray[ i ].qos, manArray[ i ].content, manArray[ i ].contentLen );
             }
-            Marshal.FreeCoTaskMem( outArray );
+#           if Smartphone
+#           else
+               Marshal.FreeCoTaskMem( outArray );
+#           endif
             logger("xmlBlasterUnmanagedGet: SUCCESS");
             return manArray;
          }
