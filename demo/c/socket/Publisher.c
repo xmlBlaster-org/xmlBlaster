@@ -16,13 +16,17 @@ See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.ht
 
 static char* readFile(const char *fn);
 
+#if defined(WINCE)
+int _tmain(int argc, _TCHAR** argv_wcs) { /* wchar_t==_TCHAR */
+   char **argv = convertWcsArgv(argv_wcs, argc);
+#else
 /**
  * Demo client to publish messages. 
  * Not all PublishQos functionality is implemented.
  * Invoke: Publisher -logLevel TRACE
  */
-int main(int argc, char** argv)
-{
+int main(int argc, const char* const* argv) {
+#endif
    int iarg, iPublish;
    const char *callbackSessionId = "topSecret";
    XmlBlasterException xmlBlasterException;

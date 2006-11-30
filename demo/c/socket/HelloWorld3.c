@@ -79,11 +79,15 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
    return true;
 }
 
+#if defined(WINCE)
+int _tmain(int argc, _TCHAR** argv_wcs) { /* wchar_t==_TCHAR */
+   char **argv = convertWcsArgv(argv_wcs, argc);
+#else
 /**
  * Invoke: HelloWorld3 -logLevel TRACE
  */
-int main(int argc, char** argv)
-{
+int main(int argc, const char* const* argv) {
+#endif
    int iarg;
    char *response = (char *)0;
    /*
@@ -370,6 +374,9 @@ int main(int argc, char** argv)
 
    freeXmlBlasterAccessUnparsed(xa);
    printf("[client] Good bye.\n");
+#  if defined(WINCE)
+      freeArgv(argv, argc);
+#  endif
    return 0;
 }
 

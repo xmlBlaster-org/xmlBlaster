@@ -101,6 +101,10 @@ static void callbackProgressListener(void *userP, const size_t currBytesRead, co
    /*printf("[client] Update data progress currBytesRead=%ld nbytes=%ld\n", (long)currBytesRead, (long)nbytes);*/
 }
 
+#if defined(WINCE)
+int _tmain(int argc, _TCHAR** argv_wcs) { /* wchar_t==_TCHAR */
+   char **argv = convertWcsArgv(argv_wcs, argc);
+#else
 /**
  * Invoke examples:
  *
@@ -108,8 +112,8 @@ static void callbackProgressListener(void *userP, const size_t currBytesRead, co
  *
  * Subscriber -session.name Subscriber/1 -dispatch/callback/retries -1 -subscribe/qos/persistent true -interactiveSubscribe true 
  */
-int main(int argc, char** argv)
-{
+int main(int argc, const char* const* argv) {
+#endif
    int iarg;
    const char *callbackSessionId = "topSecret";
    XmlBlasterException xmlBlasterException;
