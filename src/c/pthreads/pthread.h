@@ -36,9 +36,11 @@
 /*
  * See the README file for an explanation of the pthreads-win32 version
  * numbering scheme and how the DLL is named etc.
+ * xmlBlaster.org Marcel 2006-11-30:
+ * Changed <sched.h> to "sched.h" and added WINCE port: 2.7.0.0 -> 2.7.0.1
  */
-#define PTW32_VERSION 2,7,0,0
-#define PTW32_VERSION_STRING "2, 7, 0, 0\0"
+#define PTW32_VERSION 2,7,0,1
+#define PTW32_VERSION_STRING "2, 7, 0, 1\0"
 
 /* There are three implementations of cancel cleanup.
  * Note that pthread.h is included in both application
@@ -1212,7 +1214,9 @@ PTW32_DLLPORT int PTW32_CDECL pthreadCancelableTimedWait (HANDLE waitHandle,
  */
 #ifndef _UWIN
 #  if defined(NEED_ERRNO)
-     PTW32_DLLPORT int * PTW32_CDECL _errno( void );
+#     ifndef WINCE
+         PTW32_DLLPORT int * PTW32_CDECL _errno( void );
+#     endif
 #  else
 #    ifndef errno
 #      if (defined(_MT) || defined(_DLL))

@@ -1,4 +1,5 @@
 Marcel 2006-03-25 version 2.7.0
+---------------------------------
 
 See: http://sources.redhat.com/pthreads-win32/
 
@@ -22,3 +23,16 @@ on Windows.
 pthread tutorial:
 
   http://www.llnl.gov/computing/tutorials/workshops/workshop/pthreads/MAIN.html#Mutexes
+
+
+
+Marcel 2006-11-30 version 2.7.0.1
+---------------------------------
+
+Changed in pthread.h
+
+  Added WINCE port and changed 2.7.0 -> 2.7.0.1
+  #ifndef WINCE
+     PTW32_DLLPORT int * PTW32_CDECL _errno( void );
+  #endif
+
