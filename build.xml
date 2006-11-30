@@ -205,6 +205,9 @@ TODO
    <property name="OMNIORB_LIBS" value="omniORB4,omnithread" /> <!-- The necessary libs for omniORB C++ clients -->
    <property name="ORBACUS_LIBS" value="CosNaming,IDL,OB,JTC" /> <!-- The necessary libs for ORBACUS C++ clients -->
 
+   <property name="src.csharp.dir" value="./src/csharp"/>
+   <property name="csharp.debug" value="true" />
+
    <!-- property name="CFLAGS" value="-m32"/> Add your own in build.properties -->
    <!-- property name="LDFLAGS" value="${CFLAGS}"/> Add your own in build.properties -->
    <property name="C_LINK" value="shared"/>  <!-- link a shared/static (DLL) C client library xmlBlaster/lib/libxmlBlasterClientC.so -->
@@ -461,6 +464,10 @@ TODO
       <property name="${os.family}" value="true" />    <!-- set e.g unix=true to be used in if="unix" conditions -->
 
       <!-- See http://www.vamphq.com/osp.html for other os.name settings -->
+
+      <condition property="windows">
+         <equals arg1="${os.family}" arg2="windows"/>
+      </condition>
 
       <condition property="linux">
          <equals arg1="${os.name}" arg2="Linux"/>
@@ -3043,7 +3050,8 @@ TODO
             </switch>
             <switch value="${XMLBLASTER_ZLIB}">
                <case value="1">
-                  <copy file="${zlib.lib.dir}/${zlib.lib.name}.dll" tofile="${lib.dir}/${zlib.lib.name}.dll" failonerror="false"/>
+                  <property name="zlib.dll.name" value="${zlib.lib.name}.dll"/>
+                  <copy file="${zlib.lib.dir}/${zlib.dll.name}" todir="${lib.dir}" failonerror="false"/>
                </case>
                <default>
                </default>
@@ -3250,5 +3258,170 @@ TODO
     </target>
 
     <target name="delete" depends="clean,cpp-delete,c-delete,java-delete,docs-delete,tests-delete" description="Remove all generated ditribution Java, C, C++ and documentation files">
+   </target>
+
+   <!-- csc -debug+ /warn:4 -out:Hello.exe NativeC.cs Hello.cs -->
+   <target name="csharp" depends="prepare" description="Compile C# demo client" if="windows">
+      <echo message="Compiling C# demo on windows"/>
+      <property name="csharp.compiler.exe" value="csc"/>
+      <property name="csharp.out.exe" value="Hello#.exe"/>
+      <exec executable="${csharp.compiler.exe}" dir="${src.csharp.dir}" failonerror="false" failifexecutionfails="false">
+         <arg line="-debug+ /warn:4 -out:${csharp.out.exe} NativeC.cs Hello.cs"/>
+      </exec>
+      <echo message="Created C# demo ${src.csharp.dir}/${csharp.out.exe}"/> 
+   </target>
+
+   <target name="bin-win-prepare" depends="prepare,revisionnumber">
+      <property name="bin-win.dir" value="./bin-win/xmlBlaster-win-dll-${version}"/>
+   </target>
+
+   <target name="bin-win-clean" depends="bin-win-prepare" description="Remove generated bin-win distribution">
+       <delete dir="${bin-win.dir}"/>
+   </target>
+
+   <target name="bin-win" depends="bin-win-prepare,bin-win-clean" description="Create a binary distribution">
+      <!--
+         XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
+         XMLBLASTER_ZLIB=1
+         zlib.include.dir=E:/zlib/include
+         zlib.lib.dir=E:/zlib/lib
+         zlib.lib.name=zdll
+         zlib.dll.name=zlib1.dll
+         xerces.include.dir=E:/xerces-c-src_2_7_0/src
+         xerces.lib.dir=E:/xerces-c-src_2_7_0/Build/Win32/VC7.1/Debug
+         xerces.lib.name=xerces-c_2D
+         XMLBLASTER_PERSISTENT_QUEUE=1
+         sqlite.include.dir=E:/sqlite
+         sqlite.lib.dir=E:/sqlite
+         COMPILE_SOCKET_PLUGIN = 1
+         COMPILE_CORBA_PLUGIN  = 0
+         corba.product         = NONE
+
+         build c-delete cpp-delete
+         build -Dc.debug=true -Dcpp.debug=true c cpp
+         build -Dc.debug=false -Dcpp.debug=false c cpp
+         recompile c client lib with VC++ (to be C# compatible)
+         build csharp
+       -->
+      
+      <mkdir dir="${bin-win.dir}"/>
+      <tstamp>
+         <format property="touch.time" pattern="yyyy-MM-dd hh:mm aa"/>
+      </tstamp>
+
+      <echo file="${bin-win.dir}/LICENSE">http://www.xmlblaster.org/license.html</echo>
+      <echo file="${bin-win.dir}/VERSION">xmlBlaster ${version} #${revision.number}</echo>
+      <echo file="${bin-win.dir}/README">XmlBlaster Windows Binary Distribution
+
+Contains DLL for C and C++ and C# .net
+
+
+Version:
+
+   xmlBlaster ${version} #${revision.number}
+
+   sqlite 2.8.17
+
+   pthreads 2.7.0.1 (2.7.0 with WINCE patch)
+
+   zlib 1.2.3
+   
+
+
+See:
+
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
+
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
+
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html
+
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
+
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.windowsCE.html
+
+
+---
+${touch.time}
+http://www.xmlblaster.org/
+      </echo>
+
+      <property name="bin-win32.dir" value="${bin-win.dir}/win32"/>
+      <mkdir dir="${bin-win32.dir}"/>
+
+      <copy file="${lib.dir}/${zlib.dll.name}" todir="${bin-win32.dir}/bin"/>
+      <copy file="${lib.dir}/pthreadVC2.dll" tofile="${bin-win32.dir}/bin/pthreadVC2.dll"/>
+      <copy file="${lib.dir}/sqlite.dll" tofile="${bin-win32.dir}/bin/sqlite.dll"/>
+      <copy file="${lib.dir}/${xerces.dll.name}" todir="${bin-win32.dir}/bin"/>
+      <copy file="${lib.dir}/xmlBlasterClient.dll" tofile="${bin-win32.dir}/bin/xmlBlasterClient.dll"/>
+      <copy file="${lib.dir}/xmlBlasterClientC.dll" tofile="${bin-win32.dir}/bin/xmlBlasterClientC.dll"/>
+      <!--
+      <copy file="${lib.dir}/xmlBlasterClientD.dll" tofile="${bin-win32.dir}/bin/xmlBlasterClientD.dll"/>
+      <copy file="${lib.dir}/xmlBlasterClientCD.dll" tofile="${bin-win32.dir}/bin/xmlBlasterClientCD.dll"/>
+      -->
+      <copy todir="${bin-win32.dir}/bin">
+         <fileset dir="${demo.dir}/c/socket/bin">
+            <include name="**/*.exe"/>
+         </fileset>
+      </copy>
+      <copy todir="${bin-win32.dir}/bin">
+         <fileset dir="${demo.dir}/c++/bin">
+            <include name="**/*.exe"/>
+         </fileset>
+      </copy>
+
+      <copy file="${zlib.lib.dir}/${zlib.lib.name}.lib" todir="${bin-win32.dir}/lib"/>
+      <copy file="${src.c.dir}/socket/pthreadVC2.lib" todir="${bin-win32.dir}/lib"/>
+      <copy file="${sqlite.lib.dir}/sqlite.lib" todir="${bin-win32.dir}/lib"/>
+      <copy file="${xerces.lib.dir}/${xerces.lib.name}.lib" todir="${bin-win32.dir}/lib"/>
+      <copy file="${lib.dir}/xmlBlasterClient.lib" todir="${bin-win32.dir}/lib"/>
+      <copy file="${lib.dir}/xmlBlasterClientC.lib" todir="${bin-win32.dir}/lib"/>
+
+      <copy todir="${bin-win32.dir}/include">
+         <fileset dir="${src.c.dir}">
+            <include name="**/*.h"/>
+            <exclude name="HelloWorldCE/**"/>
+            <exclude name="WindowsCE/**"/>
+         </fileset>
+         <fileset dir="${zlib.include.dir}">
+            <include name="zlib.h"/>
+         </fileset>
+      </copy>
+
+      <copy todir="${bin-win32.dir}/include">
+         <fileset dir="${src.cpp.dir}">
+            <include name="**/*.h"/>
+         </fileset>
+      </copy>
+
+      <!-- Windows CE -->
+      <property name="bin-wince-arm.dir" value="${bin-win.dir}/wince-arm/"/>
+      <mkdir dir="${bin-wince-arm.dir}"/>
+      <mkdir dir="${bin-wince-arm.dir}/bin"/>
+      <mkdir dir="${bin-wince-arm.dir}/lib"/>
+      <mkdir dir="${bin-wince-arm.dir}/include"/>
+      <copy file="${lib.dir}/zlib123-Arm4.dll" todir="${bin-wince-arm.dir}/bin"/>
+      <copy file="${lib.dir}/pthreads270-Arm4.dll" todir="${bin-wince-arm.dir}/bin"/>
+      <copy file="${lib.dir}/xmlBlasterClientCD-Arm4.dll" todir="${bin-wince-arm.dir}/bin"/>
+
+      <copy todir="${bin-wince-arm.dir}/include">
+         <fileset dir="${src.c.dir}">
+            <include name="**/*.h"/>
+            <exclude name="HelloWorldCE/**"/>
+            <exclude name="WindowsCE/**"/>
+         </fileset>
+         <fileset dir="${zlib.include.dir}">
+            <include name="zlib.h"/>
+         </fileset>
+      </copy>
+
+      <copy file="${lib.dir}/zlib123-Arm4.lib" todir="${bin-wince-arm.dir}/lib"/>
+      <copy file="${lib.dir}/pthreads270-Arm4.lib" todir="${bin-wince-arm.dir}/lib"/>
+      <copy file="${lib.dir}/xmlBlasterClientC.lib" todir="${bin-wince-arm.dir}/lib"/>
+
+      <property name="bin-win.distname" value="xmlBlaster-win-dll-${version}-${revision.number}.zip"/>
+      <!-- zip destfile="${bin-win.distname}" basedir="${bin-win32.dir}/.."/ -->
+      <zip destfile="${bin-win.distname}" basedir="./bin-win"/>
+      <echo message="Binary distribution created: ${bin-win.distname}"/>
    </target>
 </project>
