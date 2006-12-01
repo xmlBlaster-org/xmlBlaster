@@ -260,7 +260,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
       // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
       this.stringToCheck = info.get("replication.initial.stringToCheck", null);
-      this.initialDataTopic = info.get("replication.initialDataTopic", null);
+      this.initialDataTopic = info.get("replication.initialDataTopic", "replication.initialData");
       String currentVersion = this.info.get("replication.version", "0.0");
       // this is only needed on the master side
       this.info.put(SUPPORTED_VERSIONS, getSupportedVersions(currentVersion));
