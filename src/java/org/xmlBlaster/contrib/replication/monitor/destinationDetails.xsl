@@ -55,8 +55,8 @@ function reInitiateReplication() {
 function killSession() {
    var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
-   var url = 'invoke?objectname=' + objName + '&amp;operation=kill&amp;destination=destinationList&amp;template=result&amp;referer=' + referer;
-   alert(url);
+   // var url = 'invoke?objectname=' + objName + '&amp;operation=kill&amp;destination=destinationList&amp;template=result&amp;referer=' + referer;
+   var url = 'invoke?objectname=' + objName + '&amp;operation=kill&amp;destination=<xsl:value-of select="$request.referer"/>&amp;template=result&amp;referer=' + referer;
    self.location.href = url;
 }
 
