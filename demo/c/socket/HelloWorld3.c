@@ -133,7 +133,7 @@ int main(int argc, const char* const* argv) {
       char callbackQos[1024];
       sprintf(callbackQos,
                "<queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>"
-               "  <callback type='SOCKET' sessionId='%s'>"
+               "  <callback type='SOCKET' sessionId='%.120s'>"
                "    socket://%.120s:%d"
                "  </callback>"
                "</queue>",
