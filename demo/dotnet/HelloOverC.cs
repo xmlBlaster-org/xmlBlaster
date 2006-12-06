@@ -1,29 +1,33 @@
 /*----------------------------------------------------------------------------
-Name:      HelloManaged.cs
+Name:      HelloOverC.cs
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Note:      Example xmlBlaster access with a managed .net C# client using xmlBlaster client C DLL library
-Compile    csc.exe /reference:%XMLBLASTER_HOME%\lib\xmlBlasterClientCmanaged.dll HelloManaged.cs
+Compile:   csc.exe /reference:%XMLBLASTER_HOME%\lib\xmlBlasterClientCmanaged.dll HelloOverC.cs
+CompileCE: Does not work as the Compact Framework (CF) does not support C++/CLI managed dlls:
+           C:\WINDOWS\Microsoft.NET\Framework\v1.1.4322\Csc.exe /noconfig /nostdlib+ /warn:4 /define:DEBUG;TRACE;Smartphone /reference:"C:\Program Files\Microsoft Visual Studio 8\SmartDevices\SDK\CompactFramework\2.0\v1.0\WindowsCE\mscorlib.dll" /reference:"C:\Program Files\Microsoft Visual Studio 8\SmartDevices\SDK\CompactFramework\2.0\v1.0\WindowsCE\System.Data.dll" /reference:"C:\Program Files\Microsoft Visual Studio 8\SmartDevices\SDK\CompactFramework\2.0\v1.0\WindowsCE\System.dll" /reference:"C:\Program Files\Microsoft Visual Studio 8\SmartDevices\SDK\CompactFramework\2.0\v1.0\WindowsCE\System.Xml.dll" /debug+ /filealign:512 /optimize- /out:obj\Debug\CsharpOverC-Arm4.exe /reference:%XMLBLASTER_HOME%\lib\xmlBlasterClientCmanaged.dll /target:exe HelloOverC.cs Properties\AssemblyInfo.cs
 Start:     Copy xmlBlasterClientCmanaged.dll to the current directory and launch
-           HelloManaged.exe --help
+           HelloOverC.exe --help
 -----------------------------------------------------------------------------*/
+#region Using directives
 using System;
 using System.Collections;
-using System.Collections.Generic;
+//using System.Collections.Generic;
 using System.Text;
 using org.xmlBlaster.client; // xmlBlasterClientCmanaged.dll
+#endregion
 
-class HelloManaged
+class HelloOverC
 {
    const string callbackSessionId = "secretCb";
 
    static void Main(string[] argv)
    {
-      new HelloManaged(argv);
+      new HelloOverC(argv);
    }
 
-   public HelloManaged(string[] args)
+   public HelloOverC(string[] args)
    {
       string connectQos = String.Format(
             "<qos>\n" +
