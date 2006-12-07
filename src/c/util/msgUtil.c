@@ -49,10 +49,13 @@ Dll_Export const char *getXmlBlasterVersion(void)
    /* Is replaced by xmlBlaster/build.xml ant task */
    static const char *p1 = "@version@";
    static const char *p2 = "@version@ #@revision.number@";
-        if (strstr(p2, "@") == 0 && strstr(p2, "${") == 0) { /* Verify that subversion replacement worked fine */
-                return p2;
-        }
-   return p1;
+   if (strstr(p2, "@") == 0 && strstr(p2, "${") == 0) { /* Verify that subversion replacement worked fine */
+       return p2;
+   }
+   if (strstr(p1, "@") == 0) { /* Verify that version replacement worked fine */
+       return p1;
+   }
+   return "1.4";
 }
 
 /**
