@@ -3,9 +3,9 @@
 @comment  Access xmlBlaster from C# (Csharp)
 @author   mr@marcelruff.info
 @prepare  Linux:    cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
-@compile  Linux:    mcs /d:XMLBLASTER_CLIENT_MONO -debug+ -out:Hello.exe NativeC.cs Hello.cs
+@compile  Linux:    mcs /d:XMLBLASTER_CLIENT_MONO -debug+ -out:Hello.exe NativeC.cs Hello.cs XmlBlasterAccess.cs
 @prepare  Windows:  Compile the C client library first (see xmlBlaster\src\c\xmlBlasterClientC.sln)
-@compile  Windows:  csc -debug+ -out:Hello.exe NativeC.cs Hello.cs
+@compile  Windows:  csc -debug+ -out:Hello.exe NativeC.cs Hello.cs XmlBlasterAccess.cs
 @run      mono Hello.exe
 @run      mono Hello.exe --help
 @see      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
