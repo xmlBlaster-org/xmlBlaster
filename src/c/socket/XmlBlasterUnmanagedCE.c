@@ -4,16 +4,17 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   See XmlBlasterUnmanagedCE.h
            Access C dll from C# on Windows CE with P/Invoke
+Todo:      Callback function (update from Dll to C#)
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <string.h> /* memset */
 #include <stdio.h>  /* printf */
 #include <XmlBlasterUnmanagedCE.h>
-//#include <locale.h> /* setlocal() */
+/*#include <locale.h>*/ /* setlocal() */
 
 #if defined(_WINDOWS)
-//#if defined(WINCE)
+/*#if defined(WINCE)*/
 
 #ifdef __cplusplus
 #	define XBFORCE_EXTERNC extern "C"
@@ -21,14 +22,9 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #	define XBFORCE_EXTERNC
 #endif
 
-static bool freeIt = true;
+static const bool freeIt = true;
 
 /*
- To access this .dll as unmanaged code, the C-API must be simplified,
- for example fixed size arrays like "char errorCode[256]" are tricky.
- We implement here a simple wrapper around XmlBlasterAccessUnparsed.h
- TODO: How to pass byte[] to C and back to C#
-  
  We should avoid C++ code as the name mangling makes difficulties,
  so we force C code here.
  See: http://www.opennetcf.org/Forums/topic.asp?TOPIC_ID=255
@@ -45,10 +41,10 @@ Dll_Export extern void sayHelloLPCT(LPCTSTR p) {
 }
 
 XBFORCE_EXTERNC extern void sayHelloP(int32_t size, const char *p) {
-	char ret[126];
+	/*char ret[126];*/
 	printf("Hello World from C DLL size=%d '%s', trying now wcs\n", size, p);
-    wcstombs(ret, (const wchar_t *)p, 126); 
-	printf("Hello World from C DLL P=%s!\n", p);
+   /* wcstombs(ret, (const wchar_t *)p, 126);
+	printf("Hello World from C DLL P=%s!\n", p); */
 }
 XBFORCE_EXTERNC extern void sayHelloEx(XmlBlasterUnmanagedCEException *exception) {
 	printf("Hello World from C DLL sayHelloEx\n");
@@ -59,9 +55,8 @@ XBFORCE_EXTERNC extern void sayHelloEx(XmlBlasterUnmanagedCEException *exception
    
 XBFORCE_EXTERNC extern char *sayHelloRet() {
    printf("dll: Invoke sayHelloRet()\n");
-   //return strcpyAlloc("Hello world allocated \xC3\xB6 in DLL");
+   /*return strcpyAlloc("Hello world allocated \xC3\xB6 in DLL");*/
    return strcpyAlloc("\xE8\xAA\x9E  German:\xC3\xB6  Korean:\xED\x95\x9C \xEA\xB5\xAD\xEC\x96\xB4  Japanese:\xE6\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E");
-   //return 0;
 }
 
 /**
@@ -70,7 +65,7 @@ XBFORCE_EXTERNC extern char *sayHelloRet() {
  * @return p the allocated pointer
  */
 XBFORCE_EXTERNC extern char *xmlBlasterUnmanagedCEMalloc(int32_t size) {
-   printf("dll: xmlBlasterUnmanagedCEMalloc(size=%d)\n", size);
+   /*printf("dll: xmlBlasterUnmanagedCEMalloc(size=%d)\n", size);*/
    if (size > 0)
       return (char *)malloc(size*sizeof(char));
    return (char *)0;
@@ -81,12 +76,15 @@ XBFORCE_EXTERNC extern char *xmlBlasterUnmanagedCEMalloc(int32_t size) {
  * @param p Can be null
  */
 XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEFree(char *p)  {
-   printf("dll: xmlBlasterUnmanagedCEFree('%s')\n", ((p!=(char *)0)?p:""));
+   /*if (p!=0)
+      printf("dll: xmlBlasterUnmanagedCEFree size=%d:\n%s\n", strlen(p), p);*/ /* dangeraous for none strings like IntPtr */
    xmlBlasterFree(p);
 }
 
 /**
  * Frees the content of the malloced pointer
+ * It is a hack as i don't know how to free the IntPtr which arrived as ** and was allocated on (*ppStruct)
+ * for example in unSubscribe(): So we call this function similar as the unSubscribe() ...
  * @param pp Can be null
  */
 XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEFreePP(char **pp)  {
@@ -94,9 +92,9 @@ XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEFreePP(char **pp)  {
       return;
    else {
       char *p = *pp;
-      printf("dll: xmlBlasterUnmanagedCEFreePP('%s')\n", ((p!=(char *)0)?p:""));
+      /*printf("dll: xmlBlasterUnmanagedCEFreePP('%s')\n", ((p!=(char *)0)?p:""));*/
       xmlBlasterFree(p);
-}
+   }
 }
 
 /**
@@ -187,10 +185,10 @@ XBFORCE_EXTERNC Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed
    const char ** ptr = (const char **)malloc(argc*sizeof(char *));
    for (i=0; i<argc; ++i) {
       ptr[i] = strcpyAlloc(argv[i]);
-      printf("dll: getAccess '%s'\n", argv[i]);
-      //if (freeIt) { xmlBlasterFree(argv[i]); argv[i] = 0; }
+      /*printf("dll: getAccess '%s'\n", argv[i]);*/
+      /*if (freeIt) { xmlBlasterFree(argv[i]); argv[i] = 0; }*/
    }
-   //if (freeIt) { xmlBlasterFree((char *)argv); }
+   /*if (freeIt) { xmlBlasterFree((char *)argv); }*/
    return getXmlBlasterAccessUnparsed(argc, ptr);
 }
 
@@ -303,7 +301,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEUnSubscribe(struct XmlBlast
       *ppStruct = (XmlBlasterUnmanagedCEStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedCEStringArr ));
       pCurStruct = *ppStruct;
       for (i=0; i<ret->len; i++, pCurStruct++) {
-         printf("C: Unsubscribe success, returned status is '%s'\n", ret->qosArr[i]);
+         /*printf("C: Unsubscribe success, returned status is '%s'\n", ret->qosArr[i]);*/
          pCurStruct->str = strcpyAlloc(ret->qosArr[i]);
       }
       freeQosArr(ret);
@@ -368,13 +366,13 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
       *pSize = cArraySize;
       *ppStruct = (MsgUnitUnmanagedCE*)malloc( cArraySize * sizeof( MsgUnitUnmanagedCE ));
       msgUnitUnmanagedP = *ppStruct;
-      printf("dll: xmlBlasterUnmanagedCEGet %ud\n", cArraySize);
+      /*printf("dll: xmlBlasterUnmanagedCEGet %ud\n", cArraySize);*/
       /* TODO: It should be possible to pass msgUnitArr->msgUnitArr* directly
          as it has the same memory layout as the IntPtr */
       for(i=0; i < cArraySize; i++, msgUnitUnmanagedP++) {
          MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[i];
          char *cnt = (char *)malloc(msgUnit->contentLen*sizeof(char));
-         printf("dll: xmlBlasterUnmanagedCEGet processing #%u\n", i);
+         /*printf("dll: xmlBlasterUnmanagedCEGet processing #%u\n", i);*/
          msgUnitUnmanagedP->contentLen = msgUnit->contentLen;
          if (cnt != 0) {
             size_t j;
@@ -384,11 +382,10 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
          msgUnitUnmanagedP->key = strcpyAlloc(msgUnit->key);
          msgUnitUnmanagedP->qos = strcpyAlloc(msgUnit->qos);
          msgUnitUnmanagedP->responseQos = strcpyAlloc("<qos/>");
-         printf("dll: xmlBlasterUnmanagedCEGet processing #%u key=%s qos=%s\n", i, msgUnitUnmanagedP->key, msgUnitUnmanagedP->qos);
+         /*printf("dll: xmlBlasterUnmanagedCEGet processing #%u key=%s qos=%s\n", i, msgUnitUnmanagedP->key, msgUnitUnmanagedP->qos);*/
       }
       freeMsgUnitArr(msgUnitArr);
    }
-   printf("dll: xmlBlasterUnmanagedCEGet DONE\n");
 }
 
 XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEPing(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedCEException *exception) {
@@ -409,4 +406,4 @@ XBFORCE_EXTERNC Dll_Export const char *xmlBlasterUnmanagedCEUsage() {
 }
 
 #endif /*defined(_WINDOWS)*/
-//#endif /*defined(WINCE)*/
+/*#endif*/ /*defined(WINCE)*/
