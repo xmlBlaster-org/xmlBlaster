@@ -7,6 +7,9 @@
 //
 // Currently only tested on Linux with Mono and on Windows XP
 //
+// It will NOT work with Windows CE because of the limited compact framework .net (CF)
+// Please use PInvokeCE.cs instead.
+//
 // Features: All features of the client C library (compression, tunnel callbacks), see
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 //
@@ -82,7 +85,7 @@ namespace org.xmlBlaster
 #     else // Windows
          // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
          //[DllImport("user32.dll", CharSet = CharSet.Auto)]
-         const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
+      const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
 #     endif
 
       // Helper struct for DLL calls to avoid 'fixed' and unsafe
@@ -103,6 +106,50 @@ namespace org.xmlBlaster
          public MsgUnit[] msgUnitArr;
       }
 
+   // SEE http://msdn2.microsoft.com/en-us/library/2k1k68kw.aspx
+   // Declares a class member for each structure element.
+   // Must match exactly the C struct MsgUnit (sequence!)
+   [StructLayout(LayoutKind.Sequential/*, CharSet=CharSet.Unicode*/ )]
+   public class MsgUnit_
+   {
+      public string key;
+      public int contentLen;
+      // Without MarshalAs: ** ERROR **: Structure field of type Byte[] can't be marshalled as LPArray
+      //[MarshalAs (UnmanagedType.ByValArray, SizeConst=100)] // does not work unlimited without SizeConst -> SIGSEGV
+      // public byte[] content; // Ensure UTF8 encoding for strings
+      public string content;
+      public string qos;
+      public string responseQos;
+      public MsgUnit_() { }
+      public MsgUnit_(string key, string contentStr, string qos)
+      {
+         this.key = key;
+         this.contentLen = contentStr.Length;
+         setContentStr(contentStr);
+         this.qos = qos;
+      }
+      /// We return a string in the default codeset
+      public string getContentStr()
+      {
+         //System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+         //return enc.GetString(this.content);
+         // How does this work? System.Text.Decoder d = System.Text.Encoding.UTF8.GetDecoder();
+         return this.content;
+      }
+      /// The binary string is UTF8 encoded (xmlBlaster default)
+      public void setContentStr(string contentStr)
+      {
+         //this.content = System.Text.Encoding.UTF8.GetBytes(contentStr);
+         this.content = contentStr;
+      }
+      public byte[] getContent() {
+         return System.Text.Encoding.UTF8.GetBytes(content);
+      }
+      public override string ToString()
+      {
+         return key + "\n" + content + "\n" + qos;
+      }
+   }
 
 
       [ StructLayout( LayoutKind.Sequential )]
@@ -189,13 +236,13 @@ namespace org.xmlBlaster
       private extern static bool xmlBlasterUnmanagedDisconnect(IntPtr xa, string qos, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY )]
-      private extern static string xmlBlasterUnmanagedPublish(IntPtr xa, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
+      private extern static string xmlBlasterUnmanagedPublish(IntPtr xa, MsgUnit_ msgUnit, ref XmlBlasterUnmanagedException exception);
 
       //[DllImport(XMLBLASTER_C_LIBRARY )]
       //private extern static QosArr xmlBlasterUnmanagedPublishArr(IntPtr xa, MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY )]
-      private extern static void xmlBlasterUnmanagedPublishOneway(IntPtr xa, MsgUnit[] msgUnitArr, int length, ref XmlBlasterUnmanagedException exception);
+      private extern static void xmlBlasterUnmanagedPublishOneway(IntPtr xa, MsgUnit_[] msgUnitArr, int length, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY )]
       private extern static string xmlBlasterUnmanagedSubscribe(IntPtr xa, string key, string qos, ref XmlBlasterUnmanagedException exception);
@@ -319,16 +366,15 @@ namespace org.xmlBlaster
       }
 
       public string publish(string key, string content, string qos) {
+	 return publish(new MsgUnit(key, content, qos));
+      }
+
+      public string publish(MsgUnit msgUnit) {
          check("publish");
          try {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
-            MsgUnit msgUnit = new MsgUnit();
-            msgUnit.key = key;
-            msgUnit.setContentStr(content);
-            //unsafe { msgUnit.content =  StrToByteArray(content); }
-            msgUnit.contentLen = content.Length;
-            msgUnit.qos = qos;
-            string ret = xmlBlasterUnmanagedPublish(xa, msgUnit, ref exception);
+            MsgUnit_ msgUnit_ = new MsgUnit_(msgUnit.getKey(), msgUnit.getContentStr(), msgUnit.getQos());
+            string ret = xmlBlasterUnmanagedPublish(xa, msgUnit_, ref exception);
             if (exception.errorCode.Length > 0) {
                logger("xmlBlasterUnmanagedPublish: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
@@ -358,7 +404,10 @@ namespace org.xmlBlaster
          check("publishOneway");
          try {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException();
-            xmlBlasterUnmanagedPublishOneway(xa, msgUnitArr, msgUnitArr.Length, ref exception);
+            MsgUnit_[] msgUnitArr_ = new MsgUnit_[msgUnitArr.Length];
+            for (int i=0; i<msgUnitArr.Length; i++)
+               msgUnitArr_[i] = new MsgUnit_(msgUnitArr[i].getKey(), msgUnitArr[i].getContentStr(), msgUnitArr[i].getQos());
+            xmlBlasterUnmanagedPublishOneway(xa, msgUnitArr_, msgUnitArr.Length, ref exception);
             if (exception.errorCode.Length > 0) {
                logger("publishOneway: Got exception from C: exception=" + exception.errorCode + " - " + exception.message);
                throw new XmlBlasterException(exception.remote!=0, exception.errorCode, exception.message);
@@ -477,7 +526,7 @@ namespace org.xmlBlaster
             throw e;
          }
          catch (Exception e) {
-            throw new XmlBlasterException("internal.unknown", "unSubscribe failed", e);
+            throw new XmlBlasterException("internal.unknown", "erase failed", e);
          }
       }
 
@@ -494,27 +543,28 @@ namespace org.xmlBlaster
             }
             
             logger("get() size=" + size);
-            MsgUnit[] manArray = new MsgUnit[ size ];
+            MsgUnit[] msgUnitArr = new MsgUnit[size];
             IntPtr current = outArray;
             for( int i = 0; i < size; i++ ) {
-               manArray[ i ] = new MsgUnit();
-               Marshal.PtrToStructure( current, manArray[ i ]);
+               MsgUnit_ msgUnit_ = new MsgUnit_();
+               Marshal.PtrToStructure(current, msgUnit_);
                //Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
 #              if PocketPC || Smartphone
 #              else
-                  Marshal.DestroyStructure( current, typeof(MsgUnit) );
+                  Marshal.DestroyStructure( current, typeof(MsgUnit_) );
 #              endif
-               current = (IntPtr)((long)current + 
-               Marshal.SizeOf( manArray[ i ] ));
+               current = (IntPtr)((long)current +
+               Marshal.SizeOf(msgUnit_));
                //Console.WriteLine( "Element {0}: key={1} qos={2} buffer={3} contentLength={4}", i, 
                //   manArray[ i ].key, manArray[ i ].qos, manArray[ i ].content, manArray[ i ].contentLen );
+               msgUnitArr[i] = new MsgUnit(msgUnit_.key, msgUnit_.getContent(), msgUnit_.qos);
             }
 #           if Smartphone
 #           else
                Marshal.FreeCoTaskMem( outArray );
 #           endif
             logger("xmlBlasterUnmanagedGet: SUCCESS");
-            return manArray;
+            return msgUnitArr;
          }
          catch (XmlBlasterException e) {
             throw e;

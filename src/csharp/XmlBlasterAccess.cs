@@ -30,19 +30,51 @@ namespace org.xmlBlaster
       string OnUpdate(string cbSessionId, MsgUnit msgUnit);
    }
 
+   /// <summary>
+   /// Access xmlBlaster, for details see
+   /// http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
+   /// All methods can throw an XmlBlasterException
+   /// </summary>
    public interface I_XmlBlasterAccess
    {
       string connect(string qos, I_Callback listener);
+      
       /// After calling diconnect() this class is not usable anymore
       /// you need to create a new instance to connect again
       bool disconnect(string qos);
+
+      /// <summary>
+      /// Publish a message to xmlBlaster
+      /// </summary>
+      /// <param name="msgUnit">The message to send</param>
+      /// <returns>The publish return qos</returns>
+      string publish(MsgUnit msgUnit);
+
+      /// <summary>
+      /// Convenience method to publish a message 
+      /// </summary>
+      /// <param name="key">The topic description</param>
+      /// <param name="content">Your data to send</param>
+      /// <param name="qos">The required quality of service</param>
+      /// <returns>The publish return qos</returns>
       string publish(string key, string content, string qos);
+
       void publishOneway(MsgUnit[] msgUnitArr);
+      
       string subscribe(string key, string qos);
+      
       string[] unSubscribe(string key, string qos);
+      
       string[] erase(string key, string qos);
+      
       MsgUnit[] get(string key, string qos);
+      
       string ping(string qos);
+      
+      /// <summary>
+      /// Check if we have a connection to the xmlBlaster server
+      /// </summary>
+      /// <returns>true if we are connected</returns>
       bool isConnected();
    }
 
@@ -91,45 +123,54 @@ namespace org.xmlBlaster
       }
    }
 
-   // SEE http://msdn2.microsoft.com/en-us/library/2k1k68kw.aspx
-   // Declares a class member for each structure element.
-   // Must match exactly the C struct MsgUnit (sequence!)
-   [StructLayout(LayoutKind.Sequential/*, CharSet=CharSet.Unicode*/ )]
+   /// <summary>
+   /// Holds a message unit
+   /// </summary>
    public class MsgUnit
    {
       public string key;
-      public int contentLen;
-      // Without MarshalAs: ** ERROR **: Structure field of type Byte[] can't be marshalled as LPArray
-      //[MarshalAs (UnmanagedType.ByValArray, SizeConst=100)] // does not work unlimited without SizeConst -> SIGSEGV
-      // public byte[] content; // Ensure UTF8 encoding for strings
-      public string content;
+      public byte[] content;
       public string qos;
-      public string responseQos;
       public MsgUnit() { }
+      public MsgUnit(string key, byte[] content, string qos)
+      {
+         this.key = key;
+         this.content = (content == null) ? new byte[0] : content;
+         this.qos = qos;
+      }
       public MsgUnit(string key, string contentStr, string qos)
       {
          this.key = key;
-         this.contentLen = contentStr.Length;
          setContentStr(contentStr);
          this.qos = qos;
       }
-      /// We return a string in the default codeset
-      public string getContentStr()
+      public string getKey()
       {
-         //System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-         //return enc.GetString(this.content);
-         // How does this work? System.Text.Decoder d = System.Text.Encoding.UTF8.GetDecoder();
+         return this.key;
+      }
+      public string getQos()
+      {
+         return this.qos;
+      }
+      public byte[] getContent()
+      {
          return this.content;
       }
-      /// The binary string is UTF8 encoded (xmlBlaster default)
+      /// We return a string in the ASCII codeset
+      public string getContentStr()
+      {
+         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+         return enc.GetString(this.content, 0, this.content.Length);
+      }
+      /// The binary string is ASCII encoded
       public void setContentStr(string contentStr)
       {
-         //this.content = System.Text.Encoding.UTF8.GetBytes(contentStr);
-         this.content = contentStr;
+         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+         this.content = enc.GetBytes(contentStr);
       }
       public override string ToString()
       {
-         return key + "\n" + content + "\n" + qos;
+         return key + "\n" + getContentStr() + "\n" + qos;
       }
    }
 }

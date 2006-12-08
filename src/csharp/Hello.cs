@@ -44,6 +44,8 @@ public class Hello : I_Callback
       I_Callback callback = this;
       nc.connect(connectQos, callback);
 
+      Console.WriteLine("Connected.");
+
       for (int i=0; i<5; i++) {
          string srq = nc.subscribe("<key oid='Hello'/>", "<qos/>");
          Console.WriteLine("subscribe() returned " + srq);
