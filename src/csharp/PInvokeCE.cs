@@ -84,7 +84,8 @@ namespace org.xmlBlaster
 #     elif PocketPC || Smartphone || WINCE
       const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD-Arm4.dll";
 #     else // Windows
-         const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
+         const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC.dll";
+      //const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
 #     endif
 
       // Helper struct for DLL calls (struct does return empty IntPtr from DLL, why?
@@ -200,7 +201,7 @@ namespace org.xmlBlaster
       /**
        * Allocates native C memory. 
        * You need to call
-       *   xmlBlasterUnmanagedExceptionFree(XmlBlasterUnmanagedException *exception)
+       *   xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedException *exception)
        * later!
        */
       void fillUnmanagedException(ref XmlBlasterUnmanagedException outE, string errorCode, string message)
@@ -219,7 +220,7 @@ namespace org.xmlBlaster
          XmlBlasterException managed = new XmlBlasterException(exception.remote != 0,
               stringFromUtf8IntPtr(exception.errorCode),
               stringFromUtf8IntPtr(exception.message));
-         xmlBlasterUnmanagedExceptionFree(ref exception);
+         xmlBlasterUnmanagedCEExceptionFree(ref exception);
          return managed;
       }
 
@@ -282,8 +283,8 @@ namespace org.xmlBlaster
        * Allocates native memory
        * @param str The UTF-16 unicode string to transfer
        * @return Contains zero terminated UTF-8,
-       * the pointer memory needs to be freed with xmlBlasterUnmanagedFree(IntPtr).
-       * All xmlBlasterUnmanagedXXX() calls free the 'char *' or 'char **'
+       * the pointer memory needs to be freed with xmlBlasterUnmanagedCEFree(IntPtr).
+       * All xmlBlasterUnmanagedCEXXX() calls free the 'char *' or 'char **'
        * passed in the dll, so we don't have to do it here in C#
        */
       unsafe static IntPtr stringToUtf8IntPtr(string str)
@@ -296,13 +297,13 @@ namespace org.xmlBlaster
        * Allocates native memory
        * @param e The byte array to transfer
        * @return C allocated char * of length e.Length() (+ 1 as we add a zero in case of strings)
-       * the pointer memory needs to be freed with xmlBlasterUnmanagedFree(IntPtr).
-       * All xmlBlasterUnmanagedXXX() calls free the 'char *' or 'char **'
+       * the pointer memory needs to be freed with xmlBlasterUnmanagedCEFree(IntPtr).
+       * All xmlBlasterUnmanagedCEXXX() calls free the 'char *' or 'char **'
        * passed in the dll, so we don't have to do it here in C#
        */
       unsafe static IntPtr byteArrayToIntPtr(byte[] e)
       {
-         IntPtr ptr = xmlBlasterUnmanagedMalloc(e.Length + 1);
+         IntPtr ptr = xmlBlasterUnmanagedCEMalloc(e.Length + 1);
          byte* bp = (byte*)ptr.ToPointer();
          for (int i = 0; i < e.Length; i++)
          {
@@ -345,7 +346,7 @@ namespace org.xmlBlaster
          for (int i = 0; i < tmp.Length; i++)
             tmp[i] = tmpP[i];
          // Now free() the malloc() IntPtr in the C DLL ...
-         xmlBlasterUnmanagedFree(ptr);
+         xmlBlasterUnmanagedCEFree(ptr);
          return tmp;
       }
 
@@ -367,16 +368,16 @@ namespace org.xmlBlaster
       //private extern static byte[] sayHelloRet(); // throws NotSupportedException on WINCE
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static IntPtr xmlBlasterUnmanagedMalloc(int size);
+      private extern static IntPtr xmlBlasterUnmanagedCEMalloc(int size);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedFree(IntPtr p);
+      private extern static void xmlBlasterUnmanagedCEFree(IntPtr p);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedFreePP(out IntPtr p);
+      private extern static void xmlBlasterUnmanagedCEFreePP(out IntPtr p);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedExceptionFree(ref XmlBlasterUnmanagedException exception);
+      private extern static void xmlBlasterUnmanagedCEExceptionFree(ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
       private extern static IntPtr getXmlBlasterAccessUnparsedUnmanaged(int argc, IntPtr[] argv);
@@ -385,46 +386,46 @@ namespace org.xmlBlaster
       private extern static void freeXmlBlasterAccessUnparsedUnmanaged(IntPtr xa);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static IntPtr xmlBlasterUnmanagedConnect(IntPtr xa, IntPtr qos, IntPtr updateUnmanaged, ref XmlBlasterUnmanagedException exception);
+      private extern static IntPtr xmlBlasterUnmanagedCEConnect(IntPtr xa, IntPtr qos, IntPtr updateUnmanaged, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static bool xmlBlasterUnmanagedInitialize(IntPtr xa, IntPtr updateUnmanaged, ref XmlBlasterUnmanagedException exception);
+      private extern static bool xmlBlasterUnmanagedCEInitialize(IntPtr xa, IntPtr updateUnmanaged, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static bool xmlBlasterUnmanagedDisconnect(IntPtr xa, IntPtr qos, ref XmlBlasterUnmanagedException exception);
+      private extern static bool xmlBlasterUnmanagedCEDisconnect(IntPtr xa, IntPtr qos, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static IntPtr xmlBlasterUnmanagedPublish(IntPtr xa, ref MsgUnitUnmanaged msgUnit, ref XmlBlasterUnmanagedException exception);
+      private extern static IntPtr xmlBlasterUnmanagedCEPublish(IntPtr xa, ref MsgUnitUnmanaged msgUnit, ref XmlBlasterUnmanagedException exception);
 
       //[DllImport(XMLBLASTER_C_LIBRARY )]
-      //private extern static QosArr xmlBlasterUnmanagedPublishArr(IntPtr xa, MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
+      //private extern static QosArr xmlBlasterUnmanagedCEPublishArr(IntPtr xa, MsgUnitArr msgUnitArr, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedPublishOneway(IntPtr xa, ref MsgUnit[] msgUnitArr, int length, ref XmlBlasterUnmanagedException exception);
+      private extern static void xmlBlasterUnmanagedCEPublishOneway(IntPtr xa, ref MsgUnit[] msgUnitArr, int length, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static IntPtr xmlBlasterUnmanagedSubscribe(IntPtr xa, IntPtr key, IntPtr qos, ref XmlBlasterUnmanagedException exception);
+      private extern static IntPtr xmlBlasterUnmanagedCESubscribe(IntPtr xa, IntPtr key, IntPtr qos, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedUnSubscribe(IntPtr xa, IntPtr key, IntPtr qos,
+      private extern static void xmlBlasterUnmanagedCEUnSubscribe(IntPtr xa, IntPtr key, IntPtr qos,
          ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedErase(IntPtr xa, IntPtr key, IntPtr qos,
+      private extern static void xmlBlasterUnmanagedCEErase(IntPtr xa, IntPtr key, IntPtr qos,
          ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedGet(IntPtr xa, IntPtr key, IntPtr qos,
+      private extern static void xmlBlasterUnmanagedCEGet(IntPtr xa, IntPtr key, IntPtr qos,
          ref XmlBlasterUnmanagedException exception, out int size, out IntPtr ptr);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static IntPtr xmlBlasterUnmanagedPing(IntPtr xa, IntPtr qos, ref XmlBlasterUnmanagedException exception);
+      private extern static IntPtr xmlBlasterUnmanagedCEPing(IntPtr xa, IntPtr qos, ref XmlBlasterUnmanagedException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static bool xmlBlasterUnmanagedIsConnected(IntPtr xa);
+      private extern static bool xmlBlasterUnmanagedCEIsConnected(IntPtr xa);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static string xmlBlasterUnmanagedUsage();
+      private extern static string xmlBlasterUnmanagedCEUsage();
 
 
       private IntPtr xa;
@@ -445,7 +446,7 @@ namespace org.xmlBlaster
          {
             if (argv[i] == "--help")
             {
-               logger("Usage:\n" + xmlBlasterUnmanagedUsage());
+               logger("Usage:\n" + xmlBlasterUnmanagedCEUsage());
                throw new XmlBlasterException("user.usage", "Good bye");
             }
             c_argv[i + 1] = stringToUtf8IntPtr(argv[i]);
@@ -455,7 +456,7 @@ namespace org.xmlBlaster
          xa = getXmlBlasterAccessUnparsedUnmanaged(c_argv.Length, c_argv);
          logger("Entering PInvokeCE() got handle");
          for (int i = 0; i < c_argv.Length; ++i)
-            xmlBlasterUnmanagedFree(c_argv[i]);
+            xmlBlasterUnmanagedCEFree(c_argv[i]);
 
          {
             /*
@@ -520,15 +521,15 @@ namespace org.xmlBlaster
          try
          {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException(false);
-            bool bb = xmlBlasterUnmanagedInitialize(xa, IntPtr.Zero, ref exception);
-            //bool bb = xmlBlasterUnmanagedInitialize(xa, updateUnmanagedFp, ref exception);
-            checkAndThrow("xmlBlasterUnmanagedInitialize", ref exception);
+            bool bb = xmlBlasterUnmanagedCEInitialize(xa, IntPtr.Zero, ref exception);
+            //bool bb = xmlBlasterUnmanagedCEInitialize(xa, updateUnmanagedFp, ref exception);
+            checkAndThrow("xmlBlasterUnmanagedCEInitialize", ref exception);
 
-            IntPtr retP = xmlBlasterUnmanagedConnect(xa, stringToUtf8IntPtr(qos), IntPtr.Zero, ref exception);
-            //string ret = xmlBlasterUnmanagedConnect(xa, qos, updateUnmanagedFp, ref exception);
-            checkAndThrow("xmlBlasterUnmanagedConnect", ref exception);
+            IntPtr retP = xmlBlasterUnmanagedCEConnect(xa, stringToUtf8IntPtr(qos), IntPtr.Zero, ref exception);
+            //string ret = xmlBlasterUnmanagedCEConnect(xa, qos, updateUnmanagedFp, ref exception);
+            checkAndThrow("xmlBlasterUnmanagedCEConnect", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
-            logger("xmlBlasterUnmanagedConnect: SUCCESS '" + ret + "'");
+            logger("xmlBlasterUnmanagedCEConnect: SUCCESS '" + ret + "'");
             return ret;
          }
          catch (XmlBlasterException e)
@@ -550,19 +551,19 @@ namespace org.xmlBlaster
          try
          {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException(false);
-            bool bb = xmlBlasterUnmanagedDisconnect(xa, stringToUtf8IntPtr(qos), ref exception);
+            bool bb = xmlBlasterUnmanagedCEDisconnect(xa, stringToUtf8IntPtr(qos), ref exception);
             if (exception.CaughtException())
             {
                ex = fillXmlBlasterException(ref exception);
                // Important logging since we don't throw the exception below
-               logger("xmlBlasterUnmanagedDisconnect: Got exception from C: " + ex.ToString());
+               logger("xmlBlasterUnmanagedCEDisconnect: Got exception from C: " + ex.ToString());
             }
             else
-               logger("xmlBlasterUnmanagedDisconnect: SUCCESS '" + bb + "'");
+               logger("xmlBlasterUnmanagedCEDisconnect: SUCCESS '" + bb + "'");
 
             freeXmlBlasterAccessUnparsedUnmanaged(xa);
             xa = IntPtr.Zero;
-            logger("xmlBlasterUnmanagedDisconnect: SUCCESS freed all resources");
+            logger("xmlBlasterUnmanagedCEDisconnect: SUCCESS freed all resources");
 
             //if (ex != null) throw ex;
             return bb;
@@ -602,13 +603,13 @@ namespace org.xmlBlaster
             MsgUnitUnmanaged msgUnitUnmanaged = new MsgUnitUnmanaged(msgUnit.getKey(),
                msgUnit.getContent(), msgUnit.getQos());
 
-            logger("xmlBlasterUnmanagedPublish: calling now ...");
-            IntPtr retP = xmlBlasterUnmanagedPublish(xa, ref msgUnitUnmanaged, ref exception);
-            logger("xmlBlasterUnmanagedPublish: returned ...");
-            checkAndThrow("xmlBlasterUnmanagedPublish", ref exception);
+            logger("xmlBlasterUnmanagedCEPublish: calling now ...");
+            IntPtr retP = xmlBlasterUnmanagedCEPublish(xa, ref msgUnitUnmanaged, ref exception);
+            logger("xmlBlasterUnmanagedCEPublish: returned ...");
+            checkAndThrow("xmlBlasterUnmanagedCEPublish", ref exception);
 
             string ret = stringFromUtf8IntPtr(retP);
-            logger("xmlBlasterUnmanagedPublish: SUCCESS '" + ret + "'");
+            logger("xmlBlasterUnmanagedCEPublish: SUCCESS '" + ret + "'");
             return ret;
          }
          catch (XmlBlasterException e)
@@ -627,7 +628,7 @@ namespace org.xmlBlaster
          at 0x63FFF14: encodeMsgUnitArr (xmlBlasterSocket.c:222)
             by 0x63FD11E: xmlBlasterPublishOneway (XmlBlasterConnectionUnparsed.c:1004)
             by 0x63F9125: xmlBlasterPublishOneway (XmlBlasterAccessUnparsed.c:726)
-            by 0x63FF0B8: xmlBlasterUnmanagedPublishOneway (XmlBlasterUnmanaged.c:365)
+            by 0x63FF0B8: xmlBlasterUnmanagedCEPublishOneway (XmlBlasterUnmanaged.c:365)
             by 0x6524CC8: ???
       */
       public void publishOneway(MsgUnit[] msgUnitArr)
@@ -636,8 +637,8 @@ namespace org.xmlBlaster
          try
          {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException(false);
-            xmlBlasterUnmanagedPublishOneway(xa, ref msgUnitArr, msgUnitArr.Length, ref exception);
-            checkAndThrow("xmlBlasterUnmanagedPublishOneway", ref exception);
+            xmlBlasterUnmanagedCEPublishOneway(xa, ref msgUnitArr, msgUnitArr.Length, ref exception);
+            checkAndThrow("xmlBlasterUnmanagedCEPublishOneway", ref exception);
             logger("publishOneway: SUCCESS");
          }
          catch (XmlBlasterException e)
@@ -656,9 +657,9 @@ namespace org.xmlBlaster
          try
          {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException(false);
-            IntPtr retP = xmlBlasterUnmanagedSubscribe(xa, stringToUtf8IntPtr(key),
+            IntPtr retP = xmlBlasterUnmanagedCESubscribe(xa, stringToUtf8IntPtr(key),
                                            stringToUtf8IntPtr(qos), ref exception);
-            checkAndThrow("xmlBlasterUnmanagedSubscribe", ref exception);
+            checkAndThrow("xmlBlasterUnmanagedCESubscribe", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
             logger(ret);
             return ret;
@@ -681,12 +682,12 @@ namespace org.xmlBlaster
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException(false);
             int size;
             IntPtr outArray = new IntPtr();
-            xmlBlasterUnmanagedUnSubscribe(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos), ref exception, out size, out outArray);
-            checkAndThrow("xmlBlasterUnmanagedUnSubcribe", ref exception);
-            logger("xmlBlasterUnmanagedUnSubcribe: parsing return size=" + size);
+            xmlBlasterUnmanagedCEUnSubscribe(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos), ref exception, out size, out outArray);
+            checkAndThrow("xmlBlasterUnmanagedCEUnSubcribe", ref exception);
+            logger("xmlBlasterUnmanagedCEUnSubcribe: parsing return size=" + size);
             if (size == 0)
             {
-               logger("xmlBlasterUnmanagedUnSubcribe: Done (no topics found)");
+               logger("xmlBlasterUnmanagedCEUnSubcribe: Done (no topics found)");
                return new String[0];
             }
             String[] retQosArr = new String[size];
@@ -700,8 +701,8 @@ namespace org.xmlBlaster
                retQosArr[i] = stringFromUtf8IntPtr(stringArr.str);
             }
             //Marshal.FreeCoTaskMem(outArray);
-            xmlBlasterUnmanagedFreePP(out outArray);
-            logger("xmlBlasterUnmanagedUnSubscribe: SUCCESS count=" + size);
+            xmlBlasterUnmanagedCEFreePP(out outArray);
+            logger("xmlBlasterUnmanagedCEUnSubscribe: SUCCESS count=" + size);
             return retQosArr;
          }
          catch (XmlBlasterException e)
@@ -722,12 +723,12 @@ namespace org.xmlBlaster
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException(false);
             int size;
             IntPtr outArray = new IntPtr();
-            xmlBlasterUnmanagedErase(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos), ref exception, out size, out outArray);
-            checkAndThrow("xmlBlasterUnmanagedErase", ref exception);
-            logger("xmlBlasterUnmanagedErase: parsing return size=" + size);
+            xmlBlasterUnmanagedCEErase(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos), ref exception, out size, out outArray);
+            checkAndThrow("xmlBlasterUnmanagedCEErase", ref exception);
+            logger("xmlBlasterUnmanagedCEErase: parsing return size=" + size);
             if (size == 0)
             {
-               logger("xmlBlasterUnmanagedErase: Done (no topics found)");
+               logger("xmlBlasterUnmanagedCEErase: Done (no topics found)");
                return new String[0];
             }
 
@@ -742,9 +743,9 @@ namespace org.xmlBlaster
                retQosArr[i] = stringFromUtf8IntPtr(stringArr.str);
             }
             //Marshal.FreeCoTaskMem(outArray);
-            logger("xmlBlasterUnmanagedErase: FREEING WRONG POINTER??");
-            xmlBlasterUnmanagedFreePP(out outArray);
-            logger("xmlBlasterUnmanagedErase: Done");
+            logger("xmlBlasterUnmanagedCEErase: FREEING WRONG POINTER??");
+            xmlBlasterUnmanagedCEFreePP(out outArray);
+            logger("xmlBlasterUnmanagedCEErase: Done");
             return retQosArr;
          }
          catch (XmlBlasterException e)
@@ -821,14 +822,14 @@ IntPtr(buffer.ToInt32()+iCurOffset),typeof(INNER) );
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException(false);
             int size;
             IntPtr outArray = new IntPtr();
-            xmlBlasterUnmanagedGet(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos), ref exception, out size, out outArray);
-            checkAndThrow("xmlBlasterUnmanagedGet", ref exception);
+            xmlBlasterUnmanagedCEGet(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos), ref exception, out size, out outArray);
+            checkAndThrow("xmlBlasterUnmanagedCEGet", ref exception);
             MsgUnit[] msgUnitArr = new MsgUnit[size];
             IntPtr current = outArray;
-            logger("xmlBlasterUnmanagedGet: parsing return size=" + size);
+            logger("xmlBlasterUnmanagedCEGet: parsing return size=" + size);
             for (int i = 0; i < size; i++)
             {
-               logger("xmlBlasterUnmanagedGet: parsing #" + i);
+               logger("xmlBlasterUnmanagedCEGet: parsing #" + i);
                MsgUnitUnmanaged msgUnitUnmanaged = new MsgUnitUnmanaged();
                Marshal.PtrToStructure(current, msgUnitUnmanaged);
                //Marshal.FreeCoTaskMem( (IntPtr)Marshal.ReadInt32( current ));
@@ -841,10 +842,10 @@ IntPtr(buffer.ToInt32()+iCurOffset),typeof(INNER) );
                   msgUnitUnmanaged.getKey(), msgUnitUnmanaged.getContent(), msgUnitUnmanaged.getQos());
                msgUnitUnmanaged.getResponseQos(); // dummy call to free memory in C DLL
             }
-            logger("xmlBlasterUnmanagedGet: freeing now IntPtr SHOULD IT BE *outArray???");
-            xmlBlasterUnmanagedFreePP(out outArray);
+            logger("xmlBlasterUnmanagedCEGet: freeing now IntPtr SHOULD IT BE *outArray???");
+            xmlBlasterUnmanagedCEFreePP(out outArray);
             //Marshal.FreeCoTaskMem( outArray );
-            logger("xmlBlasterUnmanagedGet: SUCCESS size=" + size);
+            logger("xmlBlasterUnmanagedCEGet: SUCCESS size=" + size);
             return msgUnitArr;
          }
          catch (XmlBlasterException e)
@@ -863,10 +864,10 @@ IntPtr(buffer.ToInt32()+iCurOffset),typeof(INNER) );
          try
          {
             XmlBlasterUnmanagedException exception = new XmlBlasterUnmanagedException(false);
-            IntPtr retP = xmlBlasterUnmanagedPing(xa, stringToUtf8IntPtr(qos), ref exception);
-            checkAndThrow("xmlBlasterUnmanagedPing", ref exception);
+            IntPtr retP = xmlBlasterUnmanagedCEPing(xa, stringToUtf8IntPtr(qos), ref exception);
+            checkAndThrow("xmlBlasterUnmanagedCEPing", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
-            logger("xmlBlasterUnmanagedPing: SUCCESS '" + ret + "'");
+            logger("xmlBlasterUnmanagedCEPing: SUCCESS '" + ret + "'");
             return ret;
          }
          catch (XmlBlasterException e)
@@ -885,8 +886,8 @@ IntPtr(buffer.ToInt32()+iCurOffset),typeof(INNER) );
          if (xa == new IntPtr(0)) return false;
          try
          {
-            bool bb = xmlBlasterUnmanagedIsConnected(xa);
-            logger("xmlBlasterUnmanagedIsConnected: SUCCESS '" + bb + "'");
+            bool bb = xmlBlasterUnmanagedCEIsConnected(xa);
+            logger("xmlBlasterUnmanagedCEIsConnected: SUCCESS '" + bb + "'");
             return bb;
          }
          catch (XmlBlasterException e)
@@ -901,7 +902,7 @@ IntPtr(buffer.ToInt32()+iCurOffset),typeof(INNER) );
 
       public static string usage()
       {
-         return xmlBlasterUnmanagedUsage();
+         return xmlBlasterUnmanagedCEUsage();
       }
    }
 }
