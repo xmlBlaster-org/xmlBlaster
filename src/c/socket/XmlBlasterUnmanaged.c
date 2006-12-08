@@ -172,7 +172,7 @@ Dll_Export void xmlBlasterUnmanagedUnSubscribe(struct XmlBlasterAccessUnparsed *
       *pSize = cArraySize;
       *ppStruct = (XmlBlasterUnmanagedStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedStringArr ));
       pCurStruct = *ppStruct;
-      for (i=0; i<ret->len; i++) {
+      for (i=0; i<ret->len; i++, pCurStruct++) {
          /*printf("C: Unsubscribe success, returned status is '%s'\n", ret->qosArr[i]);*/
          pCurStruct->str = strcpyAlloc(ret->qosArr[i]);
       }
@@ -197,7 +197,7 @@ Dll_Export void xmlBlasterUnmanagedErase(struct XmlBlasterAccessUnparsed *xa, co
       *pSize = cArraySize;
       *ppStruct = (XmlBlasterUnmanagedStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedStringArr ));
       pCurStruct = *ppStruct;
-      for (i=0; i<ret->len; i++) {
+      for (i=0; i<ret->len; i++, pCurStruct++) {
          pCurStruct->str = strcpyAlloc(ret->qosArr[i]);
       }
       freeQosArr(ret);
