@@ -26,12 +26,17 @@
 
          <tr>
             <td>1. Call external C library</td>
-            <td>The C xmlBlaster client library can be imported to C# with [DllImport("xmlBlasterClientC")],
+            <td>The C xmlBlaster client library can be imported to C# with [DllImport("xmlBlasterClientC.dll")],
             this uses the System.Runtime.InteropService.DllImport attribute for each external function being wrapped.<br />
             See our wrapper <a href="http://www.xmlBlaster.org/xmlBlaster/src/csharp/NativeC.cs.html" target="others">xmlBlaster/src/csharp/NativeC.cs</a><br />
             and a demo client <a href="http://www.xmlBlaster.org/xmlBlaster/src/csharp/Hello.cs.html" target="others">xmlBlaster/src/csharp/Hello.cs</a>.<br />
             You need to compile the C client library (.dll or .so) with a call '<code>build c-lib</code>' first
             (see <a href="client.c.socket.html" target="others">requirement client.c.socket</a>)<br />
+            For Windows CE there is a special wrapper 
+            <a href="http://www.xmlBlaster.org/xmlBlaster/src/csharp/PInvokeCE.cs.html" target="others">xmlBlaster/src/csharp/PInvokeCE.cs</a>
+            available as the Compact Framework .NET (CF) is very limited. More details are described
+            in requirement <a href="client.c.windowsCE.html" target="others">requirement client.c.windowsCE</a>.
+            <br />
             Todo: Make the same wrapper for our C++ client library</td>
             <td>Good performance, all functionality of the C library (like compression and tunneling callbacks) is available, a tested code base</td>
             <td>NativeC.cs was developed under Mono/Linux and Windows XP, using the code as an assembly is an open task.
@@ -202,6 +207,7 @@
    <see type="INTERNET" lang="CSHARP">http://www.xmlBlaster.org/xmlBlaster/demo/csharp/xmlrpc/README</see>
 
    <see type="REQ">interface</see>
+   <see type="REQ">client.c.windowsCE</see>
    <see type="REQ">protocol.xmlrpc</see>
 
    <author><a href="mailto:cyrille@giquello.com">Cyrille Giquello</a></author>

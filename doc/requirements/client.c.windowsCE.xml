@@ -4,7 +4,7 @@
 
 <requirement id='client.c.windowsCE' type='NEW' prio='HIGH' status='CLOSED'>
    <topic>
-      Windows CE based xmlBlaster clients.
+      Windows CE based xmlBlaster clients (C, C++, C#).
    </topic>
    <description>
      <p>
@@ -73,6 +73,28 @@
       </table>
    </example>
 
+   <example lang="Csharp" type="HTML">
+      <p class="celltitel" id="csharp">Accessing xmlBlaster from C#</p>
+      <p>
+      We provide a wrapper around our Windows CE xmlBlaster client library called
+      <a href="http://www.xmlBlaster.org/xmlBlaster/src/csharp/PInvokeCE.cs.html" target="others">xmlBlaster/src/csharp/PInvokeCE.cs</a>.
+      </p>
+      <p>
+      It wraps the xmlBlasterClientC-Arm4.dll (and pthreads270-Arm4.dll, zlib123-Arm4.dll).
+      Like this any C# code can access xmlBlaster with compression support, multithreaded and with
+      tunneled callbacks.
+      </p>
+      <p>
+      A demo client to get you started is 
+      <a href="http://www.xmlBlaster.org/xmlBlaster/src/csharp/Hello.cs.html" target="others">xmlBlaster/src/csharp/Hello.cs</a>.
+      </p>
+      <p>
+      You need to compile the three dlls yourself of download them at 
+      <a href="http://www.xmlblaster.org/xmlBlaster-win-dll-1.4-15748M.zip" target="others">http://www.xmlblaster.org/xmlBlaster-win-dll-1.4-15748M.zip</a>.
+      Then create a VC++ 8.0 project for smartphone and compile Hello.cs or your own client.
+      </p>
+   </example>
+
    <example lang="C" type="HTML">
       <p class="celltitel" id="linux">Example message delivery</p>
       <p>
@@ -89,6 +111,11 @@
       <center><p>
       <img src="client.c.windowsCE.jconsoleToPsionArm5.png"
        border="0" title="Windows CE client example" alt="Example for a Windows CE client connected to xmlBlaster" />
+      </p></center>
+      <p>The test finished with on million messages send to the PDA without any problems.</p>
+      <center><p>
+      <img src="client.c.windowsCE.screenshot.png"
+       border="0" title="Windows CE client screenshot" alt="Example for a Windows CE client connected to xmlBlaster" />
       </p></center>
    </example>
 
@@ -145,10 +172,10 @@
    <see type="CODE" lang="C">HelloWorld.c</see>
    <see type="CODE" lang="C">XmlBlasterAccessUnparsed.h</see>
    <see type="INTERNET">http://sources.redhat.com/pthreads-win32/</see>
-   <see type="INTERNET">http://xmlrpc-c.sourceforge.net/</see>
    <see type="INTERNET">http://www.gzip.org/zlib/</see>
    <see type="REQ">protocol.socket</see>
    <see type="REQ">client.c.queue</see>
+   <see type="REQ">client.csharp</see>
    <see type="REQ">interface</see>
 
 <!--   <see type="REQ">cluster</see> -->
