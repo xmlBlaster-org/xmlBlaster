@@ -17,7 +17,7 @@ namespace org.xmlBlaster
    {
       public static I_XmlBlasterAccess createInstance(String[] argv)
       {
-#        if WINCE || Smartphone || PocketPC 
+#        if WINCE || Smartphone || PocketPC || FORCE_PINVOKECE
             return new PInvokeCE(argv);
 #        else
             return new NativeC(argv);
