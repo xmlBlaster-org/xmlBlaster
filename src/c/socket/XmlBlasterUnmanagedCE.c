@@ -12,7 +12,8 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <XmlBlasterUnmanagedCE.h>
 //#include <locale.h> /* setlocal() */
 
-#if defined(WINCE)
+#if defined(_WINDOWS)
+//#if defined(WINCE)
 
 #ifdef __cplusplus
 #	define XBFORCE_EXTERNC extern "C"
@@ -49,7 +50,7 @@ XBFORCE_EXTERNC extern void sayHelloP(int32_t size, const char *p) {
     wcstombs(ret, (const wchar_t *)p, 126); 
 	printf("Hello World from C DLL P=%s!\n", p);
 }
-XBFORCE_EXTERNC extern void sayHelloEx(XmlBlasterUnmanagedException *exception) {
+XBFORCE_EXTERNC extern void sayHelloEx(XmlBlasterUnmanagedCEException *exception) {
 	printf("Hello World from C DLL sayHelloEx\n");
    exception->errorCode = strcpyAlloc("user.test");
    exception->message = strcpyAlloc("Some text");
@@ -99,10 +100,10 @@ XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEFreePP(char **pp)  {
 }
 
 /**
- * Allocates the members of XmlBlasterUnmanagedException
+ * Allocates the members of XmlBlasterUnmanagedCEException
  * You need to free it after usage
  */
-XBFORCE_EXTERNC static void convert(XmlBlasterException *in, XmlBlasterUnmanagedException *out) {
+XBFORCE_EXTERNC static void convert(XmlBlasterException *in, XmlBlasterUnmanagedCEException *out) {
    if (*in->errorCode != 0) {
       out->errorCode = strcpyAlloc(in->errorCode);
       out->message = strcpyAlloc(in->message);
@@ -113,7 +114,7 @@ XBFORCE_EXTERNC static void convert(XmlBlasterException *in, XmlBlasterUnmanaged
    }   
 }
 
-XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedException *ex) {
+XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedCEException *ex) {
    if (ex == 0) return;
    xmlBlasterFree(ex->errorCode);
    ex->errorCode = 0;
@@ -129,15 +130,15 @@ XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanag
  */
 XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception) {
    size_t i;
-   XmlBlasterUnmanagedException unmanagedException;
+   XmlBlasterUnmanagedCEException unmanagedException;
    
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
-   XmlBlasterUnmanagedUpdateFp unmanagedUpdate = (XmlBlasterUnmanagedUpdateFp)(xa->userFp);
+   XmlBlasterUnmanagedCEUpdateFp unmanagedUpdate = (XmlBlasterUnmanagedCEUpdateFp)(xa->userFp);
    
    if (userData != 0) ;  /* Supress compiler warning */
    if (unmanagedUpdate == 0) return false;
    
-   /*memset(&unmanagedException, 0, sizeof(struct XmlBlasterUnmanagedException));*/
+   /*memset(&unmanagedException, 0, sizeof(struct XmlBlasterUnmanagedCEException));*/
    unmanagedException.remote = false;
    unmanagedException.errorCode = (char)0;
    unmanagedException.message = (char)0;
@@ -181,7 +182,7 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
  *   "Hello.exe" "-dispatch/connection/plugin/socket/hostname" "192.168.1.2"
  * @return the XmlBlasterAccessUnparsed handle
  */
-XBFORCE_EXTERNC Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanaged(int argc, char** argv){
+XBFORCE_EXTERNC Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanagedCE(int argc, char** argv){
    int i=0;
    const char ** ptr = (const char **)malloc(argc*sizeof(char *));
    for (i=0; i<argc; ++i) {
@@ -193,7 +194,7 @@ XBFORCE_EXTERNC Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed
    return getXmlBlasterAccessUnparsed(argc, ptr);
 }
 
-XBFORCE_EXTERNC Dll_Export void freeXmlBlasterAccessUnparsedUnmanaged(XmlBlasterAccessUnparsed *xmlBlasterAccess) {
+XBFORCE_EXTERNC Dll_Export void freeXmlBlasterAccessUnparsedUnmanagedCE(XmlBlasterAccessUnparsed *xmlBlasterAccess) {
    if (xmlBlasterAccess != 0) {
       int i;
       for (i=0; i<xmlBlasterAccess->argc; ++i)
@@ -204,7 +205,7 @@ XBFORCE_EXTERNC Dll_Export void freeXmlBlasterAccessUnparsedUnmanaged(XmlBlaster
 }
 
 XBFORCE_EXTERNC Dll_Export bool xmlBlasterUnmanagedCEInitialize(struct XmlBlasterAccessUnparsed *xa,
-            XmlBlasterUnmanagedUpdateFp update, XmlBlasterUnmanagedException *exception) {
+            XmlBlasterUnmanagedCEUpdateFp update, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    bool ret = false;
    xa->userFp = (XmlBlasterAccessGenericFp)update;
@@ -217,7 +218,7 @@ XBFORCE_EXTERNC Dll_Export bool xmlBlasterUnmanagedCEInitialize(struct XmlBlaste
  * Your qos is freed
  */
 XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEConnect(struct XmlBlasterAccessUnparsed *xa,
-                           char *qos, XmlBlasterUnmanagedUpdateFp update, XmlBlasterUnmanagedException *exception) {
+                           char *qos, XmlBlasterUnmanagedCEUpdateFp update, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    char *ret = 0;
    if (update != 0)
@@ -232,7 +233,7 @@ XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEConnect(struct XmlBlasterA
  * Your qos is freed
  */
 XBFORCE_EXTERNC Dll_Export extern bool xmlBlasterUnmanagedCEDisconnect(struct XmlBlasterAccessUnparsed *xa,
-                           char * qos, XmlBlasterUnmanagedException *exception) {
+                           char * qos, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    bool ret = xa->disconnect(xa, qos, &e);
    convert(&e, exception);
@@ -241,7 +242,7 @@ XBFORCE_EXTERNC Dll_Export extern bool xmlBlasterUnmanagedCEDisconnect(struct Xm
 }
 
 XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCEPublish(struct XmlBlasterAccessUnparsed *xa,
-                MsgUnitUnmanaged *msgUnitUnmanaged, XmlBlasterUnmanagedException *exception) {
+                MsgUnitUnmanagedCE *msgUnitUnmanaged, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    char *ret = xa->publish(xa, msgUnitUnmanaged, &e);
    convert(&e, exception);
@@ -249,14 +250,14 @@ XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCEPublish(struct XmlB
    return ret; 
 }
 
-XBFORCE_EXTERNC Dll_Export extern QosArr *xmlBlasterUnmanagedCEPublishArr(struct XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterUnmanagedException *exception) {
+XBFORCE_EXTERNC Dll_Export extern QosArr *xmlBlasterUnmanagedCEPublishArr(struct XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    QosArr *ret = xa->publishArr(xa, msgUnitArr, &e);
    convert(&e, exception);
    return ret; 
 }
 
-XBFORCE_EXTERNC Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnitArr, int length, XmlBlasterUnmanagedException *exception) {
+XBFORCE_EXTERNC Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnitArr, int length, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    MsgUnitArr arr;
    /*printf("C: xmlBlasterUnmanagedCEPublishOneway %d", length);*/
@@ -271,7 +272,7 @@ XBFORCE_EXTERNC Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct
 /**
  * Your key and qos is freed
  */
-XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCESubscribe(struct XmlBlasterAccessUnparsed *xa, char *key, char *qos, XmlBlasterUnmanagedException *exception) {
+XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCESubscribe(struct XmlBlasterAccessUnparsed *xa, char *key, char *qos, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    char *ret = xa->subscribe(xa, key, qos, &e);
    convert(&e, exception);
@@ -281,7 +282,7 @@ XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCESubscribe(struct Xm
 }
 
 XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEUnSubscribe(struct XmlBlasterAccessUnparsed *xa,
-   char * key, char * qos, XmlBlasterUnmanagedException *exception, uint32_t* pSize, XmlBlasterUnmanagedStringArr** ppStruct) {
+   char * key, char * qos, XmlBlasterUnmanagedCEException *exception, uint32_t* pSize, XmlBlasterUnmanagedCEStringArr** ppStruct) {
    XmlBlasterException e;
    QosArr *ret = 0;
    initializeXmlBlasterException(&e);
@@ -296,10 +297,10 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEUnSubscribe(struct XmlBlast
    }
    if (ret) {
       size_t i;
-      XmlBlasterUnmanagedStringArr* pCurStruct = 0;
+      XmlBlasterUnmanagedCEStringArr* pCurStruct = 0;
       const uint32_t cArraySize = ret->len;
       *pSize = cArraySize;
-      *ppStruct = (XmlBlasterUnmanagedStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedStringArr ));
+      *ppStruct = (XmlBlasterUnmanagedCEStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedCEStringArr ));
       pCurStruct = *ppStruct;
       for (i=0; i<ret->len; i++, pCurStruct++) {
          printf("C: Unsubscribe success, returned status is '%s'\n", ret->qosArr[i]);
@@ -310,7 +311,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEUnSubscribe(struct XmlBlast
 }
 
 XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEErase(struct XmlBlasterAccessUnparsed *xa, char * key,
-     char * qos, XmlBlasterUnmanagedException *exception, uint32_t* pSize, XmlBlasterUnmanagedStringArr** ppStruct) {
+     char * qos, XmlBlasterUnmanagedCEException *exception, uint32_t* pSize, XmlBlasterUnmanagedCEStringArr** ppStruct) {
    XmlBlasterException e;
    QosArr *ret = 0;
    initializeXmlBlasterException(&e);
@@ -324,14 +325,14 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEErase(struct XmlBlasterAcce
    }
    if (ret) {
       size_t i;
-      XmlBlasterUnmanagedStringArr* pCurStruct = 0;
+      XmlBlasterUnmanagedCEStringArr* pCurStruct = 0;
       const uint32_t cArraySize = ret->len;
       *pSize = cArraySize;
       if (cArraySize == 0) {
          *ppStruct = 0;
       }
       else { 
-         *ppStruct = (XmlBlasterUnmanagedStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedStringArr ));
+         *ppStruct = (XmlBlasterUnmanagedCEStringArr*)malloc( cArraySize * sizeof( XmlBlasterUnmanagedCEStringArr ));
          pCurStruct = *ppStruct;
          for (i=0; i<ret->len; i++, pCurStruct++) {
             /*printf("dll: erase success, returned status is '%s'\n", ret->qosArr[i]);*/
@@ -343,7 +344,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEErase(struct XmlBlasterAcce
 }
 
 XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccessUnparsed *xa,
-        char * key, char *qos, XmlBlasterUnmanagedException *exception,
+        char * key, char *qos, XmlBlasterUnmanagedCEException *exception,
         uint32_t* pSize, MsgUnit** ppStruct) {
    XmlBlasterException e;
    uint32_t i;
@@ -357,7 +358,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
    /*printf("dll: xmlBlasterUnmanagedCEGet building response\n");*/
    if (msgUnitArr != (MsgUnitArr *)0) {
       const uint32_t cArraySize = msgUnitArr->len;
-      MsgUnitUnmanaged* msgUnitUnmanagedP = 0;
+      MsgUnitUnmanagedCE* msgUnitUnmanagedP = 0;
       if (cArraySize == 0) {
          *ppStruct = 0;
          freeMsgUnitArr(msgUnitArr);
@@ -365,7 +366,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
       }
 
       *pSize = cArraySize;
-      *ppStruct = (MsgUnitUnmanaged*)malloc( cArraySize * sizeof( MsgUnitUnmanaged ));
+      *ppStruct = (MsgUnitUnmanagedCE*)malloc( cArraySize * sizeof( MsgUnitUnmanagedCE ));
       msgUnitUnmanagedP = *ppStruct;
       printf("dll: xmlBlasterUnmanagedCEGet %ud\n", cArraySize);
       /* TODO: It should be possible to pass msgUnitArr->msgUnitArr* directly
@@ -390,7 +391,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
    printf("dll: xmlBlasterUnmanagedCEGet DONE\n");
 }
 
-XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEPing(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedException *exception) {
+XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEPing(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    char *ret = xa->ping(xa, qos, &e);
    convert(&e, exception);
@@ -407,4 +408,5 @@ XBFORCE_EXTERNC Dll_Export const char *xmlBlasterUnmanagedCEUsage() {
    return xmlBlasterAccessUnparsedUsage(usage);
 }
 
-#endif /*defined(WINCE)*/
+#endif /*defined(_WINDOWS)*/
+//#endif /*defined(WINCE)*/
