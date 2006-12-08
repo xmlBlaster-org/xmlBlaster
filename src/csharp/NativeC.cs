@@ -106,7 +106,7 @@ namespace org.xmlBlaster
       public struct MsgUnitUnmanagedArr {
          public string secretSessionId;
          public int len;
-         public MsgUnit[] msgUnitArr;
+         public MsgUnit_[] msgUnitArr;
       }
 
    // SEE http://msdn2.microsoft.com/en-us/library/2k1k68kw.aspx
@@ -164,10 +164,12 @@ namespace org.xmlBlaster
          if (verbose) Console.WriteLine(str);
       }
 
-      delegate string UpdateUnmanagedFp(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception);
+      delegate string UpdateUnmanagedFp(string cbSessionId, MsgUnit_ msgUnit, ref XmlBlasterUnmanagedException exception);
 
       /// Callback by xmlBlaster, see UpdateUnmanagedFp
-      string updateUnmanaged(string cbSessionId, MsgUnit msgUnit, ref XmlBlasterUnmanagedException exception) {
+      string updateUnmanaged(string cbSessionId, MsgUnit_ msgUnit_, ref XmlBlasterUnmanagedException exception) {
+         logger("updateUnmanaged() enter ...");
+         MsgUnit msgUnit = new MsgUnit(msgUnit_.key, msgUnit_.getContent(), msgUnit_.qos);
          if (null != onUpdate) {
             try {
                return onUpdate(cbSessionId, msgUnit);
@@ -369,7 +371,7 @@ namespace org.xmlBlaster
       }
 
       public string publish(string key, string content, string qos) {
-	 return publish(new MsgUnit(key, content, qos));
+	      return publish(new MsgUnit(key, content, qos));
       }
 
       public string publish(MsgUnit msgUnit) {
