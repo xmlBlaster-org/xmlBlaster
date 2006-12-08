@@ -85,7 +85,10 @@ namespace org.xmlBlaster
 #     else // Windows
          // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
          //[DllImport("user32.dll", CharSet = CharSet.Auto)]
-      const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
+	 // Throw the DLL to the current directory or set your PATH pointing to the dll:
+         const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC.dll";
+	 // or provide an absolute name:
+         //const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
 #     endif
 
       // Helper struct for DLL calls to avoid 'fixed' and unsafe
