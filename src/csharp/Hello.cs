@@ -2,10 +2,19 @@
 @file     Hello.cs
 @comment  Access xmlBlaster from C# (Csharp)
 @author   mr@marcelruff.info
+
 @prepare  Linux:    cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
 @compile  Linux:    mcs /d:XMLBLASTER_CLIENT_MONO -debug+ -out:Hello.exe NativeC.cs Hello.cs XmlBlasterAccess.cs
+
 @prepare  Windows:  Compile the C client library first (see xmlBlaster\src\c\xmlBlasterClientC.sln)
 @compile  Windows:  csc -debug+ -out:Hello.exe NativeC.cs Hello.cs XmlBlasterAccess.cs
+
+@prepare  WindowsCE:  Compile the C client library first (see xmlBlaster\src\c\WindowsCE\xmlBlasterCE.sln)
+                      or download the dll binaries xmlBlasterClientC-Arm4.dll, pthreads270-Arm4.dll, zlib123-Arm4.dll
+@compile  WindowsCE:  It is best to compile from VC++ 8.0, the compile looks something like
+                      C:\WINDOWS\Microsoft.NET\Framework\v1.1.4322\Csc.exe /noconfig /nostdlib+ -debug+ /unsafe /define:Smartphone /reference:..\..\lib\xmlBlasterClientCD-Arm4.dll -out:Hello.exe PInvokeCE.cs Hello.cs XmlBlasterAccess.cs
+                      
+
 @run      mono Hello.exe
 @run      mono Hello.exe --help
 @see      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
