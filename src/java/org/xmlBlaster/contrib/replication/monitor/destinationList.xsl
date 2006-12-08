@@ -90,7 +90,7 @@ function refresh() {
               <tr>
                 <td align="center" colspan="4" class="normal"><button title="Click to refresh this page manually" class="common" onClick="refresh()">Refresh</button></td>
                 <td align="center" colspan="4" class="normal"><button title="Click to go to the statements page" class="common" onClick="gotoStatements()">Statements</button></td>
-                <td align="center" colspan="4" class="normal"><button title="Click to initiate one more replications" class="common" onClick="gotoInitiate()">Initate Repl.</button></td>
+                <td align="center" colspan="4" class="normal"><button title="Click to initiate one more replications" class="common" onClick="gotoInitiate()">Initiate Repl.</button></td>
               </tr>
             </table>
           </td>
