@@ -46,7 +46,7 @@ static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData,
    
 
    for (i=0; i<msgUnitArr->len; i++) {
-      const char *cbSessionId = strcpyAlloc(msgUnitArr->secretSessionId);
+      char *cbSessionId = strcpyAlloc(msgUnitArr->secretSessionId);
       const char *ret = 0;
       /*
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
@@ -57,8 +57,15 @@ static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData,
       printf("XmlBlasterUnmanaged.c: before update() %d\n", (int)msgUnitArr->len);
       */
       
-      /* Call C# ... */
-      ret = unmanagedUpdate(cbSessionId, &msgUnitArr->msgUnitArr[i], &unmanagedException);
+      /* Call C# ... TODO: how to pass a byte[], the Marshal does not know the contentLen */
+      {
+      char * contentStr = 
+         strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content, msgUnitArr->msgUnitArr[i].contentLen);
+      ret = unmanagedUpdate(cbSessionId, msgUnitArr->msgUnitArr[i].key, contentStr,
+         (int32_t)msgUnitArr->msgUnitArr[i].contentLen, msgUnitArr->msgUnitArr[i].qos, &unmanagedException);
+      xmlBlasterFree(contentStr);
+      xmlBlasterFree(cbSessionId);
+      }
 
       if (unmanagedException.errorCode != 0) {
          /* catch first exception set and return */
@@ -69,8 +76,10 @@ static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData,
       }
    
       msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc(ret);
+      printf("XmlBlasterUnmanaged.c: update() done with %s\n", ret);
       /* Return QoS: Everything is OK */
    }
+   printf("XmlBlasterUnmanaged.c: update() done\n");
    
    return true;
 }

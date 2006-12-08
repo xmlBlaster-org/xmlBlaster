@@ -43,6 +43,7 @@ typedef BlobHolder XmlBlasterBlob;
 /**
  * Holds a message
  * All member pointers are allocated with malloc(), you need to free() them
+ * Needs to be consistent with MsgUnitUnmanaged declaration in C# (for P/Invoke)
  */
 typedef struct MsgUnit {
    const char *key;         /**< XML formatted ASCII string of the message topic */

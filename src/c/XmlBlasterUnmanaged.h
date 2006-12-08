@@ -47,7 +47,7 @@ typedef struct XmlBlasterUnmanagedStringArr {
 } XmlBlasterUnmanagedStringArr;
 
 
-typedef const char * (*XmlBlasterUnmanagedUpdateFp)(const char *cbSessionId, MsgUnit *msgUnit, XmlBlasterUnmanagedException *xmlBlasterException);
+typedef const char * (*XmlBlasterUnmanagedUpdateFp)(const char *cbSessionId, const char *key, char *contentStr, int32_t contentLen, const char *qos, XmlBlasterUnmanagedException *xmlBlasterException);
 
 Dll_Export extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanaged(int argc, const char* const* argv);
 Dll_Export void freeXmlBlasterAccessUnparsedUnmanaged(XmlBlasterAccessUnparsed *xmlBlasterAccess);

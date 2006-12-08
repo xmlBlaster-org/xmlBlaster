@@ -164,15 +164,21 @@ namespace org.xmlBlaster
          if (verbose) Console.WriteLine(str);
       }
 
-      delegate string UpdateUnmanagedFp(string cbSessionId, MsgUnit_ msgUnit, ref XmlBlasterUnmanagedException exception);
+      // How to pass byte[] content, how to tell the Marshal the contentLen to allocate for byte[]?
+      [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+      delegate string UpdateUnmanagedFp(string cbSessionId, string key, string content, int contentLen, string qos, ref XmlBlasterUnmanagedException exception);
 
-      /// Callback by xmlBlaster, see UpdateUnmanagedFp
-      string updateUnmanaged(string cbSessionId, MsgUnit_ msgUnit_, ref XmlBlasterUnmanagedException exception) {
-         logger("updateUnmanaged() enter ...");
-         MsgUnit msgUnit = new MsgUnit(msgUnit_.key, msgUnit_.getContent(), msgUnit_.qos);
-         if (null != onUpdate) {
+      string updateUnmanaged(string cbSessionId, string key, string content, int contentLen, string qos, ref XmlBlasterUnmanagedException exception) {
+         byte[] bytes = new byte[contentLen];
+         for (int i = 0; i < bytes.Length; i++)
+            bytes[i] = (byte)content[i];
+         MsgUnit msgUnit = new MsgUnit(key, bytes, qos);
+         if (null != onUpdate)
+         {
             try {
                return onUpdate(cbSessionId, msgUnit);
+               //onUpdate(cbSessionId, msgUnit);
+               //return;
             }
             // TODO: Exception seems not to reach the C code
             catch (XmlBlasterException e) {
