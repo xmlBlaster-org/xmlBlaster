@@ -537,9 +537,9 @@ SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, c
    qos.setSubscriptionId(subscriptionId);
    SubscribeQueueEntry entry(global_, key, qos, qos.getData().getPriority());
    queue_->put(entry);
-   if (log_.trace()) 
-      log_.trace(ME, string("queueSubscribe: entry '") + key.getOid() +
-                     "' has been queued with subscriptionId=" + subscriptionId);
+   //if (log_.trace()) 
+      log_.warn(ME, string("queueSubscribe: entry '") + key.getOid() +
+                     "' has been queued with client side generated subscriptionId=" + subscriptionId);
    return retQos;
 }
 
