@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.filepoller;
 
 import java.io.File;
+import java.sql.Timestamp;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -38,6 +39,7 @@ public class FileInfo {
    public FileInfo(File file, Logger log) {
       this();
       update(file, log);
+      //log.info("Found new file '"+this.name+"' timestamp=" + getTimestampStr() + " size=" + this.size + " lastChange=" + getLastChangeStr());
    }
    
    /**
@@ -67,7 +69,7 @@ public class FileInfo {
       if (this.timestamp != newTimestamp) {
          this.lastChange = System.currentTimeMillis();
          if (log.isLoggable(Level.FINEST))
-            log.finest("'" + this.name + "' changed: time='" + this.timestamp + "' new time='" + newTimestamp + "'");
+            log.finest("'" + this.name + "' changed: time='" + getTimestampStr() + "' new time='" + (new Timestamp(newTimestamp).toString()) + "'");
          this.timestamp = newTimestamp;
       }
    }
@@ -78,6 +80,15 @@ public class FileInfo {
    public long getLastChange() {
       return this.lastChange;
    }
+
+   public String getTimestampStr() {
+      return new Timestamp(this.timestamp).toString();
+   }
+
+   public String getLastChangeStr() {
+      return new Timestamp(this.lastChange).toString();
+   }
+
    /**
     * @return Returns the name.
     */
