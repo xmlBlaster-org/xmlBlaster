@@ -134,7 +134,7 @@ string StatusQosData::toXml(const string& extraOffset) const
    string offset = Constants::OFFSET + extraOffset;
 
    ret += offset + "<qos>"; // <!-- SubscribeRetQos -->");
-   if (!isOk()) {
+   if (!isOk() || !getStateInfo().empty()) {
       ret += offset + " <state id='" + getState();
       if (!getStateInfo().empty())
          ret += "' info='" + getStateInfo();

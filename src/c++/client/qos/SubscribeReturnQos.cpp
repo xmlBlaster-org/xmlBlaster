@@ -82,4 +82,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       return data_.isPersistent();
    }    
 
+   bool SubscribeReturnQos::isFakedReturn() const {
+      return data_.getStateInfo().find(Constants::INFO_QUEUED) == 0;
+   }    
 }}}} // namespace

@@ -77,6 +77,13 @@ public final class SubscribeReturnQos
    }
 
    /**
+    * Check if the subscription is queued on client side. 
+    * <p>
+    * This happens if the connection is polling.
+    * </p>
+    * <p>
+    * The getStateInfo() is set to "QUEUED..." in such a case
+    * </p>
     * @return true if the subscribe return value is faked from the client library (on missing server connection)
     */
    public boolean isFakedReturn() {

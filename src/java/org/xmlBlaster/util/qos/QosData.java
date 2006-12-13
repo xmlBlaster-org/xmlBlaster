@@ -121,6 +121,10 @@ public abstract class QosData implements java.io.Serializable, Cloneable
       return this.stateInfo;
    }
 
+   public boolean hasStateInfo() {
+      return this.stateInfo!=null && this.stateInfo.length()>0;
+   }
+
    /**
     * True if the message is OK on update(). 
     */

@@ -58,6 +58,11 @@ void PublishReturnQos::setKeyOid(const string& oid)
    data_.setKeyOid(oid);
 }
 
+StatusQosData& PublishReturnQos::getData()
+{
+   return data_;
+}
+
 Timestamp PublishReturnQos::getRcvTimestamp() const
 {
    return data_.getRcvTimestamp();

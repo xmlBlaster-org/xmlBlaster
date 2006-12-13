@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15794 C++ client: Changed PublishReturnQos and SubscribeReturnQos in case of client side queueing
+          to be identical to java client behaviour:
+	  state id="OK"        (previously it was "QUEUED")
+	  state info="QUEUED   (previously it was "")
+	  See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html#return
+
  o #15750 C client: Full Windows CE port (including pthreads 2.7.0 and zlib 1.2.3)
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.windowsCE.html
 

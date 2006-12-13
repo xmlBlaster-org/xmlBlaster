@@ -255,7 +255,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<qos>"); // <!-- SubscribeRetQos -->");
-      if (!statusQosData.isOk()) {
+      if (!statusQosData.isOk() || statusQosData.hasStateInfo()) {
          sb.append(offset).append(" <state id='").append(statusQosData.getState());
          if (statusQosData.getStateInfo() != null)
             sb.append("' info='").append(statusQosData.getStateInfo());

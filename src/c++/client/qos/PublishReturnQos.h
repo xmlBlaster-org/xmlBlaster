@@ -96,6 +96,7 @@ public:
     */
    std::string toXml(const std::string& extraOffset="") const;
 
+   org::xmlBlaster::util::qos::StatusQosData& getData();
 };
 
 }}}} // namespace

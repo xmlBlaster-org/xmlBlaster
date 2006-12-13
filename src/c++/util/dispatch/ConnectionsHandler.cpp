@@ -533,7 +533,8 @@ SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, c
       subscriptionId += lexical_cast<std::string>(uniqueId);
    }
    retQos.getData().setSubscriptionId(subscriptionId);
-   retQos.getData().setState("QUEUED");
+   retQos.getData().setState(Constants::STATE_OK);
+   retQos.getData().setStateInfo(Constants::INFO_QUEUED); // "QUEUED"
    qos.setSubscriptionId(subscriptionId);
    SubscribeQueueEntry entry(global_, key, qos, qos.getData().getPriority());
    queue_->put(entry);
@@ -557,7 +558,8 @@ PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
       log_.trace(ME, string("queuePublish: entry '") + msgUnit.getKey().getOid() + "' has been queued");
    PublishReturnQos retQos(global_);
    retQos.setKeyOid(msgUnit.getKey().getOid());
-   retQos.setState("QUEUED");
+   retQos.setState(Constants::STATE_OK);
+   retQos.getData().setStateInfo(Constants::INFO_QUEUED); // "QUEUED"
    PublishQueueEntry entry(global_, msgUnit, msgUnit.getQos().getPriority());
    queue_->put(entry);
    return retQos;

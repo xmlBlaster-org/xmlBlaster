@@ -156,6 +156,35 @@
       forwarded to a master node if the subscription key matches the configured
       master selection.
       </p>
+
+      <p class="celltitel"><a name="return"></a>The return string of subscribe()</p>
+      <p>
+      On successful call the subscribe() method returns detailed informations:
+      The state = "OK" means everything was successful. <br />
+      A state = "WARNING" is indicating that a multiple subscription was ignored.<br />
+      A stateInfo = "QUEUED" tells you that the subcription was queued on client side
+      as there is currently no connection to the server (we are polling).
+      Note that the returned subscriptionId is generated on client side
+      and wont match a server side subscriptionId of a previous persistent subscribe.
+      </p>
+      <p>
+     Note:<br />
+    If a subscribe is queued on client side the return subscriptionId is generated on client side
+    and may on later connect not force to be the same on server side.<br />
+    TODO: Enforce identical client + server side generation:
+    <br />
+    1. If pubSessionId>0: &lt;sessionName>-[EXACT:|XPATH:|DOMAIN:][topicOid|queryString]
+    <br />
+    2. For none fail save clients any unique Id will do
+    </p>
+    <p>Example of a queued return qos:</p>
+    <pre>
+&lt;qos>
+  &lt;state id='OK' info='QUEUED'/>
+  &lt;subscribe id='__subId:client/joe/1-1166021247822779000'/>
+&lt;/qos>
+   </pre>
+
    </description>
 
 

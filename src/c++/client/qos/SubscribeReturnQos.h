@@ -82,6 +82,19 @@ public:
    bool isPersistent() const;
 
    /**
+    * Allows to check if the subscription request was queued on client side. 
+    * <p>
+    * If a subscribe is queued the return subscriptionId is generated on client side
+    * and may on later connect not force to be the same on server side.
+    * TODO: Enforce identical client + server side generation:
+    * 1. If pubSessionId>0: <sessionName>-[EXACT:|XPATH:|DOMAIN:][topicOid|queryString]
+    * 2. For none fail save clients any unique Id will do
+    * </p>
+    * @return true if subscribe is queued
+    */
+   bool isFakedReturn() const;
+
+   /**
     * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output

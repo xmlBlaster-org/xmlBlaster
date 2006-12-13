@@ -339,7 +339,9 @@ public class HelloWorldPublish
                if (log.isLoggable(Level.FINEST)) log.finest("Returned: " + prq.toXml());
 
                log.info("#" + currCounter + "/" + numPublish +
-                         ": Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp() +
+                         ": Got status='" + prq.getState() +
+                         (prq.getData().hasStateInfo()?"' " + prq.getStateInfo():"") +
+                         "' rcvTimestamp=" + prq.getRcvTimestamp() +
                          " for published message '" + prq.getKeyOid() + "'");
             }
          }
