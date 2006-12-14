@@ -87,14 +87,15 @@ Dll_Export extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedCEE
 #define CALLBACK    __stdcall
 #define WINAPI      __stdcall
 #define WINAPIV     __cdecl
-#define APIENTRY    WINAPI
-#define APIPRIVATE  __stdcall
 */
-typedef void (CALLBACK *XmlBlasterUnmanagedCELoggerFp)(int32_t level, const char *msg);
-typedef void (CALLBACK *XmlBlasterUnmanagedCEUpdateFp)(const char *cbSessionId, MsgUnit *msgUnit, XmlBlasterUnmanagedCEException *xmlBlasterException);
+#define XB_CALLBACK_DECL __cdecl
+typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCELoggerFp)(int32_t level, const char *msg);
+typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCEUpdateFp)(const char *cbSessionId, MsgUnit *msgUnit, XmlBlasterUnmanagedCEException *xmlBlasterException);
 //typedef int32_t (__cdecl *FPTR)( int32_t i );
-typedef int32_t (CALLBACK *FPTR)( int32_t i );
+typedef int32_t (XB_CALLBACK_DECL *FPTR)( int32_t i );
+
 __declspec (dllexport) extern void TestCallBack( FPTR pf, int32_t value );
+
 //__declspec (dllexport) extern void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCELoggerFp logger);
 Dll_Export extern void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCELoggerFp logger);
 

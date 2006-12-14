@@ -115,10 +115,10 @@ static void myLogger(void *logUserP,
 
          (*managedLoggerFp)(lvl, p);
          
-         /* The C# code frees 'p' during its UNICODE marshalling 
-            with byteArrayFromIntPtr() -> xmlBlasterUnmanagedCEFree()
+         /* The C# code does not free 'p' during its UNICODE marshalling 
+            with byteArrayFromIntPtr(false) -> no xmlBlasterUnmanagedCEFree() */
          free(p);
-         */
+         
          return;
       }
       /* Else try again with more space. */
@@ -228,6 +228,8 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
 
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
    XmlBlasterUnmanagedCEUpdateFp unmanagedUpdate = (XmlBlasterUnmanagedCEUpdateFp)(xa->userFp);
+
+   xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Got update message");
    
    if (userData != 0) ;  /* Supress compiler warning */
    if (unmanagedUpdate == 0) return false;
@@ -248,8 +250,12 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
       printf("XmlBlasterUnmanaged.c: before update() %d\n", (int)msgUnitArr->len);
       */
       
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Got update, calling C# ...");
+
       /* Call C# ..., it may allocate errorCode */
       unmanagedUpdate(cbSessionId, &msgUnitArr->msgUnitArr[i], &unmanagedException);
+
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Got update, calling C# DONE");
 
       if (unmanagedException.errorCode != 0) {
          /* catch first exception set and return */
@@ -259,6 +265,7 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
          exception->remote = unmanagedException.remote;
          xmlBlasterUnmanagedCEExceptionFree(&unmanagedException);
          msgUnitArr->msgUnitArr[i].responseQos = 0;
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_WARN, __FILE__, "Rethrowing exception from C# '%s' '%s'", exception->errorCode, exception->message);
          retVal = false;
       }
       else {
