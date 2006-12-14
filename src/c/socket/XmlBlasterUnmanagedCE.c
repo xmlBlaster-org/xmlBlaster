@@ -59,6 +59,100 @@ XBFORCE_EXTERNC extern char *sayHelloRet() {
    return strcpyAlloc("\xE8\xAA\x9E  German:\xC3\xB6  Korean:\xED\x95\x9C \xEA\xB5\xAD\xEC\x96\xB4  Japanese:\xE6\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E");
 }
 
+XBFORCE_EXTERNC void TestCallBack( FPTR pf, int32_t value )
+{
+   int32_t res;
+   printf( "\ndll: Received value: %i", value );
+   printf( "\ndll: Passing to callback..." );
+   res = (*pf)(value);
+   
+   if( res )
+      printf( "dll: Callback returned %d.\n", res );
+   else
+      printf( "dll: Callback returned %d.\n", res );
+}
+
+/** TODO: transport in xa: now this dll can only handel one client!!! */
+static XmlBlasterUnmanagedCELoggerFp managedLoggerFp;
+
+static void myLogger(void *logUserP, 
+                     XMLBLASTER_LOG_LEVEL currLevel,
+                     XMLBLASTER_LOG_LEVEL level,
+                     const char *location, const char *fmt, ...);
+
+static void myLogger(void *logUserP, 
+                     XMLBLASTER_LOG_LEVEL currLevel,
+                     XMLBLASTER_LOG_LEVEL level,
+                     const char *location, const char *fmt, ...)
+{
+   /* Guess we need no more than 200 bytes. */
+   int n, size = 200;
+   char *p = 0;
+   va_list ap;
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)logUserP;
+   int32_t lvl = (int32_t)level;
+
+   /* TODO: pass managedLoggerFp with xa->... */
+   if (xa == 0 || managedLoggerFp == 0)
+      return;
+
+   if (level > currLevel) { /* XMLBLASTER_LOG_ERROR, XMLBLASTER_LOG_WARN, XMLBLASTER_LOG_INFO, XMLBLASTER_LOG_TRACE */
+      return;
+   }
+   if ((p = (char *)malloc (size)) == NULL)
+      return;
+
+   for (;;) {
+      /* Try to print in the allocated space. */
+      va_start(ap, fmt);
+      n = VSNPRINTF(p, size, fmt, ap); /* UNIX: vsnprintf(), WINDOWS: _vsnprintf() */
+      va_end(ap);
+      /* If that worked, print the string to console. */
+      if (n > -1 && n < size) {
+         /*printf("{%s-%s-%s} [%s] %s\n",
+                   __DATE__, __TIME__, getLogLevelStr(level), location, p);*/
+         /* Call now the C# logger XmlBlasterUnmanagedCELoggerFp */
+
+         (*managedLoggerFp)(lvl, p);
+         
+         /* The C# code frees 'p' during its UNICODE marshalling 
+            with byteArrayFromIntPtr() -> xmlBlasterUnmanagedCEFree()
+         free(p);
+         */
+         return;
+      }
+      /* Else try again with more space. */
+      if (n > -1)    /* glibc 2.1 */
+         size = n+1; /* precisely what is needed */
+      else           /* glibc 2.0 */
+         size *= 2;  /* twice the old size */
+      if ((p = (char *)realloc (p, size)) == NULL) {
+         return;
+      }
+   }
+}
+
+/* extern "C" __declspec (dllexport) */
+XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa,
+                           XmlBlasterUnmanagedCELoggerFp logger) {
+   /*MessageBox(NULL, L"Entering xmlBlasterUnmanagedCERegisterLogger", _T("Unmanaged"), MB_OK);*/
+   
+   printf("dll: Register logger\n");
+   if (logger != 0) {
+      /* Register our own logging function */
+      xa->log = myLogger;
+      /* Optionally pass a pointer which we can use in myLogger again */
+      xa->logUserP = xa;
+      managedLoggerFp = logger;
+   }
+   else { /* unregister */
+      xa->log = 0;
+      xa->logUserP = 0;
+      managedLoggerFp = 0;
+   }
+   xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Testing logging output only");
+}
+
 /**
  * malloc size bytes
  * @param size > 0
@@ -129,7 +223,9 @@ XBFORCE_EXTERNC extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanag
 XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception) {
    size_t i;
    XmlBlasterUnmanagedCEException unmanagedException;
-   
+   XMLBLASTER_C_bool retVal = true;
+   /*MessageBox(NULL, L"Entering interceptUpdate0", _T("Unmanaged"), MB_OK);*/
+
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
    XmlBlasterUnmanagedCEUpdateFp unmanagedUpdate = (XmlBlasterUnmanagedCEUpdateFp)(xa->userFp);
    
@@ -141,10 +237,8 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
    unmanagedException.errorCode = (char)0;
    unmanagedException.message = (char)0;
    
-
    for (i=0; i<msgUnitArr->len; i++) {
       const char *cbSessionId = strcpyAlloc(msgUnitArr->secretSessionId);
-      const char *ret = 0;
       /*
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
       printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",
@@ -155,7 +249,7 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
       */
       
       /* Call C# ..., it may allocate errorCode */
-      ret = unmanagedUpdate(cbSessionId, &msgUnitArr->msgUnitArr[i], &unmanagedException);
+      unmanagedUpdate(cbSessionId, &msgUnitArr->msgUnitArr[i], &unmanagedException);
 
       if (unmanagedException.errorCode != 0) {
          /* catch first exception set and return */
@@ -164,13 +258,16 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
             strncpy0(exception->message, unmanagedException.message, EXCEPTIONSTRUCT_MESSAGE_LEN);
          exception->remote = unmanagedException.remote;
          xmlBlasterUnmanagedCEExceptionFree(&unmanagedException);
+         msgUnitArr->msgUnitArr[i].responseQos = 0;
+         retVal = false;
       }
-   
-      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc(ret);
-      /* Return QoS: Everything is OK */
+      else {
+         msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+         /* Return QoS: Everything is OK */
+      }
    }
    
-   return true;
+   return retVal;
 }
 
 /*
@@ -219,6 +316,7 @@ XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEConnect(struct XmlBlasterA
                            char *qos, XmlBlasterUnmanagedCEUpdateFp update, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    char *ret = 0;
+   /*MessageBox(NULL, L"Entering xmlBlasterUnmanagedCEConnect", _T("Unmanaged"), MB_OK);*/
    if (update != 0)
       xa->userFp = (XmlBlasterAccessGenericFp)update;
    ret = xa->connect(xa, qos, interceptUpdate, &e);

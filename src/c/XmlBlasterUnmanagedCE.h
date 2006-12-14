@@ -78,18 +78,30 @@ Dll_Export extern void sayHelloP(int32_t size, const char *p);
 Dll_Export extern void sayHelloEx(XmlBlasterUnmanagedCEException *xmlBlasterException);
 Dll_Export extern char *sayHelloRet();
 
-
 Dll_Export extern char *xmlBlasterUnmanagedCEMalloc(int32_t size);
 Dll_Export extern void xmlBlasterUnmanagedCEFree(char *p);
 Dll_Export extern void xmlBlasterUnmanagedCEFreePP(char **pp);
 Dll_Export extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedCEException *exception);
 
-typedef const char * (*XmlBlasterUnmanagedCEUpdateFp)(const char *cbSessionId, MsgUnit *msgUnit, XmlBlasterUnmanagedCEException *xmlBlasterException);
+/*
+#define CALLBACK    __stdcall
+#define WINAPI      __stdcall
+#define WINAPIV     __cdecl
+#define APIENTRY    WINAPI
+#define APIPRIVATE  __stdcall
+*/
+typedef void (CALLBACK *XmlBlasterUnmanagedCELoggerFp)(int32_t level, const char *msg);
+typedef void (CALLBACK *XmlBlasterUnmanagedCEUpdateFp)(const char *cbSessionId, MsgUnit *msgUnit, XmlBlasterUnmanagedCEException *xmlBlasterException);
+//typedef int32_t (__cdecl *FPTR)( int32_t i );
+typedef int32_t (CALLBACK *FPTR)( int32_t i );
+__declspec (dllexport) extern void TestCallBack( FPTR pf, int32_t value );
+//__declspec (dllexport) extern void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCELoggerFp logger);
+Dll_Export extern void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCELoggerFp logger);
 
 Dll_Export extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanagedCE(int argc, char** argv);
-Dll_Export void freeXmlBlasterAccessUnparsedUnmanagedCE(XmlBlasterAccessUnparsed *xmlBlasterAccess);
+Dll_Export extern void freeXmlBlasterAccessUnparsedUnmanagedCE(XmlBlasterAccessUnparsed *xmlBlasterAccess);
 
-Dll_Export extern  char *xmlBlasterUnmanagedCEConnect(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedCEUpdateFp update, XmlBlasterUnmanagedCEException *exception);
+Dll_Export extern char *xmlBlasterUnmanagedCEConnect(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedCEUpdateFp update, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern  bool  xmlBlasterUnmanagedCEInitialize(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCEUpdateFp update, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern  bool  xmlBlasterUnmanagedCEDisconnect(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern  char *xmlBlasterUnmanagedCEPublish(struct XmlBlasterAccessUnparsed *xa, MsgUnitUnmanagedCE *msgUnit, XmlBlasterUnmanagedCEException *exception);
