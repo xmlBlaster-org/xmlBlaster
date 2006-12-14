@@ -70,10 +70,13 @@ Example:
  * 
 Preprocessor:
    XMLBLASTER_CLIENT_MONO
-   NET_2_0
+             Forces support in a Linux mono environment
    WINCE || Smartphone || PocketPC || WindowsCE || FORCE_PINVOKECE
-   CF1
-   DOTNET2
+             Any single of the above will force Windows CE compatibility
+   CF1       To have Windows CE compact framework .net 1.x support,
+             no callbacks are available in this case.
+             Please choose to install CF2 on your PDA and leave this define away.
+   DOTNET2   To have callback support, for Windows XP etc only
  * 
 */
 using System;
