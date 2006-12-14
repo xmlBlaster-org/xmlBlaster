@@ -1,13 +1,20 @@
 // PInvokeCE.cs  2006-12  http://www.xmlBlaster.org/
 // Simple layer to delegate C# calls to Windows CE xmlBlaster client C library
-// Using P/Invoke of the .NET Compact Framework 1.0
+// Simple layer to delegate C# calls to Windows CE xmlBlaster client C library
+// Using P/Invoke of the .NET 2.0
+// Using P/Invoke of the .NET Compact Framework 2.0 (CF2)
+// Using P/Invoke of the .NET Compact Framework 1.0 does NOT support callbacks
 //
-// You need:
+// You need on CE:
 //    xmlBlasterClientC-Arm4.dll
 //    pthreads270-Arm4.dll
 //    zlib123-Arm4.dll
+// You need on Windows:
+//    xmlBlasterClientC.dll
+//    pthreads270.dll
+//    zlib123.dll
 //
-// Currently only tested on Windows CE 4.2 and 5.1 with ARM processor
+// Currently only tested on normal Windows (.net 2) and Windows CE 4.2 and 5.1 (CF2) with ARM processor
 //
 // o All DLL C code is 'multibyte characters' of type UTF-8 written as 'char *'
 // o All C# code is 'wchar_t' UTF-16
@@ -17,8 +24,9 @@
 // Features: All features of the client C library (compression, tunnel callbacks), see
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 //
-// IMPORTANT: Please edit/change the lookup path below for xmlBlasterClientC.dll
-//            and set the PATH to access it
+// IMPORTANT: The dll are assumed in the current directory or in the %PATH%
+//            On Linux set the LD_LIBRARY_PATH to find the .so libraries.
+//            The ARM compatible dll's contain an '-Arm4' postfix like xmlBlasterClientC-Arm4.dll
 //
 // @todo     publishOneway crashes
 //           OnUpdate() throwing exception seems not to be passed to C
