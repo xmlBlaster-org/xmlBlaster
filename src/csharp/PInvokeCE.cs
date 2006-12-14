@@ -568,9 +568,11 @@ namespace org.xmlBlaster
       {// Declares managed prototypes for unmanaged functions.
          // System.Runtime.InteropServices: CallingConvention
          // On Windows CE CF1 or CF2 it defaults to Cdecl (on Windows it is StdCall)
+#     if DOTNET2
          [DllImport(XMLBLASTER_C_LIBRARY, CallingConvention = CallingConvention.Cdecl)]
-         //[DllImport(XMLBLASTER_C_LIBRARY)]
-         //public static extern void TestCallBack(FPtr cb, int value);
+#     else
+         [DllImport(XMLBLASTER_C_LIBRARY)]
+#     endif
          public static extern void TestCallBack(IntPtr cb, int value);
       }
       public static int DoSomething(int value)
