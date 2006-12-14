@@ -2,7 +2,7 @@
 @file     TestPInvoke.cs
 @comment  Access xmlBlaster from C# (Csharp)
 @author   mr@marcelruff.info
-@compile  csc /unsafe -debug+ /define:FORCE_PINVOKECE -out:TestPInvoke.exe PInvokeCE.cs XmlBlasterAccess.cs TestPInvoke.cs
+@compile  csc /unsafe -debug+ /define:FORCE_PINVOKECE,DOTNET2 -out:TestPInvoke.exe PInvokeCE.cs XmlBlasterAccess.cs TestPInvoke.cs
 @see      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
 */
 using System;
@@ -41,10 +41,15 @@ public class TestPInvoke : I_Callback
       I_Callback callback = this;
       xb.connect(connectQos, callback);
 
+      Console.WriteLine("Hit a key to subscribe to 'Hello' ...");
+      Console.ReadLine();
+
       string srq = xb.subscribe("<key oid='Hello'/>", "<qos/>");
       log("subscribe() returned " + srq);
 
-      Thread.Sleep(1000000000);
+      Console.WriteLine("Hit a key to continue ...");
+      Console.ReadLine();
+      //Thread.Sleep(1000000000);
       /*      
             string srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
             log("subscribe() returned " + srq);

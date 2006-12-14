@@ -121,27 +121,27 @@ namespace org.xmlBlaster
          public IntPtr content;
          public IntPtr qos;
          public IntPtr responseQos;
-         /* Has to be called exactly once! */
-         public byte[] getContent()
+         /* Has to be called exactly once if freeUnmanaged==true! */
+         public byte[] getContent(bool freeUnmanaged)
          {
             if (content == IntPtr.Zero) return new byte[0];
-            return byteArrayFromIntPtr(key);
+            return byteArrayFromIntPtr(content, freeUnmanaged);
          }
-         /* Has to be called exactly once! */
-         public string getKey()
+         /* Has to be called exactly once if freeUnmanaged==true! */
+         public string getKey(bool freeUnmanaged)
          {  // If called never: memory leak, if called twice: double free
             if (key == IntPtr.Zero)
             {
                logger("MsgUnitUnmanagedCE.key is Zero!!!!!!!!!!!!!!");
                return "";
             }
-            return stringFromUtf8IntPtr(key);
+            return stringFromUtf8IntPtr(key, freeUnmanaged);
          }
-         /* Has to be called exactly once! */
-         public string getQos()
+         /* Has to be called exactly once if freeUnmanaged==true! */
+         public string getQos(bool freeUnmanaged)
          {
             if (qos == IntPtr.Zero) return "";
-            return stringFromUtf8IntPtr(qos);
+            return stringFromUtf8IntPtr(qos, freeUnmanaged);
          }
          /* Has to be called exactly once! */
          public string getResponseQos()
@@ -270,7 +270,7 @@ namespace org.xmlBlaster
 #     if DOTNET2
       [System.Runtime.InteropServices.UnmanagedFunctionPointer(System.Runtime.InteropServices.CallingConvention.Cdecl)]
 #     endif
-      public delegate void UpdateUnmanagedFp(IntPtr cbSessionId, MsgUnitUnmanagedCEget msgUnit, ref XmlBlasterUnmanagedCEException exception);
+      public delegate void UpdateUnmanagedFp(IntPtr cbSessionId, ref MsgUnitUnmanagedCEpublish msgUnit, ref XmlBlasterUnmanagedCEException exception);
 
 #     if DOTNET2
       [System.Runtime.InteropServices.UnmanagedFunctionPointer(System.Runtime.InteropServices.CallingConvention.Cdecl)]
@@ -280,7 +280,7 @@ namespace org.xmlBlaster
       /// message is freed here by a call to the DLL native free()
       void loggerUnmanaged(int level, IntPtr message)
       {
-         string msg = stringFromUtf8IntPtr(message);
+         string msg = stringFromUtf8IntPtr(message, false);
          logger("Received DLL log #" + level + ": " + msg);
       }
 
@@ -317,12 +317,17 @@ namespace org.xmlBlaster
       }
 
       /// Callback by xmlBlaster C dll, see UpdateUnmanagedFp
-      void updateUnmanaged(IntPtr cbSessionId_, MsgUnitUnmanagedCEget msgUnitUnmanaged, ref XmlBlasterUnmanagedCEException exception)
+      /// and XmlBlasterUnmanagedCE.h
+      /// typedef void (CALLBACK *XmlBlasterUnmanagedCELoggerFp)(int32_t level, const char *msg);
+      /// The cbSessionId_ and msgUnitUnmanaged is freed by the caller
+      void updateUnmanaged(IntPtr cbSessionId_, ref MsgUnitUnmanagedCEpublish msgUnitUnmanaged, ref XmlBlasterUnmanagedCEException exception)
       {
          logger("Entering updateUnmanaged()");
-         string cbSessionId = stringFromUtf8IntPtr(cbSessionId_);
-         MsgUnit msgUnit = new MsgUnit(msgUnitUnmanaged.getKey(),
-            msgUnitUnmanaged.getContent(), msgUnitUnmanaged.getQos());
+         string cbSessionId = stringFromUtf8IntPtr(cbSessionId_, false);
+         //fillUnmanagedException(ref exception, "user.internal", "a test exception from C#");
+
+         MsgUnit msgUnit = new MsgUnit(msgUnitUnmanaged.getKey(false),
+            msgUnitUnmanaged.getContent(false), msgUnitUnmanaged.getQos(false));
          if (null != onUpdate)
          {
             try
@@ -425,23 +430,22 @@ namespace org.xmlBlaster
        */
       static string stringFromUtf8IntPtr(IntPtr ptr)
       {
+         return stringFromUtf8IntPtr(ptr, true);
+      }
+
+      static string stringFromUtf8IntPtr(IntPtr ptr, bool freeUnmanaged)
+      {
          if (ptr == IntPtr.Zero) return "";
-         byte[] bytes = byteArrayFromIntPtr(ptr);
+         byte[] bytes = byteArrayFromIntPtr(ptr, freeUnmanaged);
          return Utf8ByteArrayToString(bytes);
       }
 
-      /*
-       byte[] -> IntPtr:
-       using System.Runtime.InteropServices;
-
-byte[] test = new byte[5];
-GCHandle hObject = GCHandle.Alloc(test, GCHandleType.Pinned);
-IntPtr pObject = hObject.AddrOfPinnedObject();
-
-if(hObject.IsAllocated)
-    hObject.Free();
-       */
       unsafe static byte[] byteArrayFromIntPtr(IntPtr ptr)
+      {
+         return byteArrayFromIntPtr(ptr, true);
+      }
+
+      unsafe static byte[] byteArrayFromIntPtr(IntPtr ptr, bool freeUnmanaged)
       {
          if (ptr == IntPtr.Zero) return new byte[0];
          //Can't cast type 'System.IntPtr' to 'byte[]'
@@ -455,7 +459,7 @@ if(hObject.IsAllocated)
          for (int i = 0; i < tmp.Length; i++)
             tmp[i] = tmpP[i];
          // Now free() the malloc() IntPtr in the C DLL ...
-         xmlBlasterUnmanagedCEFree(ptr);
+         if (freeUnmanaged) xmlBlasterUnmanagedCEFree(ptr);
          return tmp;
       }
 
@@ -607,6 +611,9 @@ if(hObject.IsAllocated)
          xa = getXmlBlasterAccessUnparsedUnmanagedCE(c_argv.Length, c_argv);
          for (int i = 0; i < c_argv.Length; ++i)
             xmlBlasterUnmanagedCEFree(c_argv[i]);
+
+         Console.WriteLine("Hit a key to register logger ...");
+         Console.ReadLine();
 
          loggerUnmanagedFp = new LoggerUnmanagedFp(this.loggerUnmanaged);
          loggerFpForDelegate = Marshal.GetFunctionPointerForDelegate(loggerUnmanagedFp);
