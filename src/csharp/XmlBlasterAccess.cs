@@ -17,10 +17,10 @@ namespace org.xmlBlaster
    {
       public static I_XmlBlasterAccess createInstance(String[] argv)
       {
-#        if WINCE || Smartphone || PocketPC || FORCE_PINVOKECE
+#        if WINCE || Smartphone || PocketPC || WindowsCE || FORCE_PINVOKECE
             return new PInvokeCE(argv);
 #        else
-            return new NativeC(argv);
+         return new NativeC(argv);
 #        endif
       }
    }
@@ -76,6 +76,8 @@ namespace org.xmlBlaster
       /// </summary>
       /// <returns>true if we are connected</returns>
       bool isConnected();
+
+      void log(String str);
    }
 
    public class XmlBlasterException : ApplicationException

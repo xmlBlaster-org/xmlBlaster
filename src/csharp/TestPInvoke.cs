@@ -7,19 +7,21 @@
 */
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using org.xmlBlaster;
 
 public class TestPInvoke : I_Callback
 {
-   const string callbackSessionId = "secretCb";
+   private I_XmlBlasterAccess xb;
+   private const string callbackSessionId = "secretCb";
    
    static void Main(string[] argv) {
-       Console.WriteLine("MAIN ENTERED");
+       Console.WriteLine("[TestPInvoke.cs] main !!!!!!!!");
        new TestPInvoke(argv);
    }
    
    public TestPInvoke(string[] argv) {
-       I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance(argv);
+      xb = XmlBlasterAccessFactory.createInstance(argv);
 
       string connectQos = String.Format(
          "<qos>\n"+
@@ -34,103 +36,116 @@ public class TestPInvoke : I_Callback
          "   </callback>\n"+
          " </queue>\n"+
          "</qos>", callbackSessionId);  //"    socket://{1}:{2}"+
-      Console.WriteLine("Connecting with:" + connectQos);
+      log("Connecting with:" + connectQos);
 
       I_Callback callback = this;
-      nc.connect(connectQos, callback);
+      xb.connect(connectQos, callback);
 
-      //for (int count=0; count<10; count++) {
+      string srq = xb.subscribe("<key oid='Hello'/>", "<qos/>");
+      log("subscribe() returned " + srq);
+
+      Thread.Sleep(1000000000);
+      /*      
+            string srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+            log("subscribe() returned " + srq);
+
+            srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+            log("subscribe() returned " + srq);
+
+            string[] urq = xb.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
+            log("unSubscribe() returned");
+            for (int i = 0; i < urq.Length; i++)
+               log("unSubscribeReturn #" + i + "\n" + urq[i]);
+            GC.Collect();
+            GC.Collect();
       
-      string srq = nc.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-      Console.WriteLine("TestPInvoke.cs: subscribe() returned " + srq);
+            string prq = xb.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+            log("publish() returned " + prq);
 
-      srq = nc.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-      Console.WriteLine("TestPInvoke.cs: subscribe() returned " + srq);
+            prq = xb.publish("<key oid='C#C#'/>", "HIIIHAAAA", "<qos/>");
+            log("publish() returned " + prq);
 
-      string[] urq = nc.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
-      Console.WriteLine("unSubscribe() returned");
-      for (int i = 0; i < urq.Length; i++)
-         Console.WriteLine("unSubscribeReturn #{0}:\n{1}", i, urq[i]);
-      GC.Collect();
-      GC.Collect();
+            prq = xb.publish("<key oid='C#'/>", "HIIIHAAAA", "<qos/>");
+            log("publish() returned " + prq);
       
-      string prq = nc.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
-      Console.WriteLine("publish() returned " + prq);
+            MsgUnit[] msgs = xb.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
+            log("get(C#C#C#) returned " + msgs.Length + " messages");
+            for (int i = 0; i < msgs.Length; i++)
+               log(msgs[i].ToString());
+      */
+/*
+      msgs = xb.get("<key oid='unknown'/>", "<qos><history numEntries='6'/></qos>");
+      log("get(unknown) returned " + msgs.Length + " messages");
 
-      prq = nc.publish("<key oid='C#C#'/>", "HIIIHAAAA", "<qos/>");
-      Console.WriteLine("publish() returned " + prq);
-
-      prq = nc.publish("<key oid='C#'/>", "HIIIHAAAA", "<qos/>");
-      Console.WriteLine("publish() returned " + prq);
-      
-      MsgUnit[] msgs = nc.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
-      Console.WriteLine("get(C#C#C#) returned " + msgs.Length + " messages");
-      for (int i = 0; i < msgs.Length; i++)
-         Console.WriteLine(msgs[i].ToString());
-
-      msgs = nc.get("<key oid='unknown'/>", "<qos><history numEntries='6'/></qos>");
-      Console.WriteLine("get(unknown) returned " + msgs.Length + " messages");
-
-      string[] erq = nc.erase("<key queryType='XPATH'>//key</key>", "<qos/>");
-      Console.WriteLine("erase() returned");
+      string[] erq = xb.erase("<key queryType='XPATH'>//key</key>", "<qos/>");
+      log("erase() returned");
       for (int i = 0; i < erq.Length; i++)
-         Console.WriteLine("eraseReturn #{0}:\n{1}", i, erq[i]);
+         log("eraseReturn #"+i+"\n"+erq[i]);
 
-      string p = nc.ping("<qos/>");
-      Console.WriteLine("ping() returned " + p);
+      string p = xb.ping("<qos/>");
+      log("ping() returned " + p);
 
-      bool b = nc.isConnected();
-      Console.WriteLine("isConnected() returned " + b);
-   //}
+      bool b = xb.isConnected();
+      log("isConnected() returned " + b);
+*/
       /*
       for (int i=0; i<5; i++) {
-         string srq = nc.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-         Console.WriteLine("subscribe() returned " + srq);
+         string srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         log("subscribe() returned " + srq);
          
-         //nc.publish("<key oid='TestPInvoke'/>", "HIII", "<qos/>");
-         string prq = nc.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
-         Console.WriteLine("publish() returned " + prq);         
+         //xb.publish("<key oid='TestPInvoke'/>", "HIII", "<qos/>");
+         string prq = xb.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+         log("publish() returned " + prq);         
          
-         nc.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
-         Console.WriteLine("publish() returned " + prq);         
+         xb.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
+         log("publish() returned " + prq);         
          
-         MsgUnit[] msgs = nc.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
-         Console.WriteLine("get() returned " + msgs.Length + " messages");         
+         MsgUnit[] msgs = xb.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
+         log("get() returned " + msgs.Length + " messages");         
          
-         string p = nc.ping("<qos/>");
-         Console.WriteLine("ping() returned " + p);         
+         string p = xb.ping("<qos/>");
+         log("ping() returned " + p);         
          
-         bool b = nc.isConnected();
-         Console.WriteLine("isConnected() returned " + b);         
+         bool b = xb.isConnected();
+         log("isConnected() returned " + b);         
          
-         string[] urq = nc.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
-         Console.WriteLine("unSubscribe() returned " + urq[0]);         
+         string[] urq = xb.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         log("unSubscribe() returned " + urq[0]);         
          
-         string[] erq = nc.erase("<key oid='C#C#C#'/>", "<qos/>");
-         Console.WriteLine("erase() returned " + erq[0]);         
+         string[] erq = xb.erase("<key oid='C#C#C#'/>", "<qos/>");
+         log("erase() returned " + erq[0]);         
          
-         Console.WriteLine("\nHit a key " + i);
+         log("\nHit a key " + i);
          Console.ReadLine();
       }
       */
-      bool drq = nc.disconnect("<qos/>");
-      Console.WriteLine("TestPInvoke.cs: disconnect() returned " + drq);
+      bool drq = xb.disconnect("<qos/>");
+      log("disconnect() returned " + drq);
       
-      Console.WriteLine("DONE");
+      log("DONE");
    }
    
    #region I_Callback Members
    public string OnUpdate(string cbSessionId, MsgUnit msgUnit) {
-      Console.WriteLine("OnUpdate() invoked START ==================");
+      log("OnUpdate() invoked START ==================");
       if (callbackSessionId != cbSessionId)
-         Console.WriteLine("Not authorized");
-      Console.WriteLine(msgUnit.key);
-      Console.WriteLine(msgUnit.getContentStr());
-      Console.WriteLine(msgUnit.qos);
+         log("Not authorized");
+      log(msgUnit.key);
+      log(msgUnit.getContentStr());
+      log(msgUnit.qos);
       string ret = "<qos><state id='OK'/></qos>";
-      Console.WriteLine("OnUpdate() invoked DONE ===================");
+      log("OnUpdate() invoked DONE ===================");
       //throw new XmlBlasterException("user.update.illegalArgument", "A test exception from OnUpdate()");
       return ret;
    }
    #endregion
+
+   void log(String str) {
+      if (xb != null)
+         xb.log("[TestPInvoke.cs] " + str);
+      else {
+         Console.WriteLine("[TestPInvoke.cs] "+str);
+         System.Diagnostics.Debug.WriteLine("[TestPInvoke.cs] " + str);
+      }
+   }
 }
