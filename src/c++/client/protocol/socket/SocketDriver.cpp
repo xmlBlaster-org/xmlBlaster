@@ -292,7 +292,7 @@ void SocketDriver::reconnectOnIpLevel(void)
       connection_ = getXmlBlasterAccessUnparsed((int)argsStructP_->argc, argsStructP_->argv);
       connection_->userObject = this; // Transports us to the myUpdate() method
       connection_->log = myLogger;    // Register our own logging function
-      connection_->logUserP = this;   // Pass ourself to myLogger()
+      connection_->logUserP = this;   // Pass SocketDriver to myLogger()
    } catch_MACRO("::Constructor", true)
    
    try {
