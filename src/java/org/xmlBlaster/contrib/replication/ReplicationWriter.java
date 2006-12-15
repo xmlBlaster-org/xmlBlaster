@@ -659,6 +659,12 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          log.warning("The maximum cache size for the sqlInfo objects of " + this.sqlInfoCacheMaxSize + " entries has already been reached");
          return;
       }
+      SqlDescription desc = sqlInfo.getDescription();
+      String catalog = desc.getCatalog();
+      String schema = desc.getSchema();
+      String table = desc.getIdentity();
+      String key = getKey(catalog, schema, table);
+      this.sqlInfoCache.put(key, sqlInfo);
    }
    
    private final synchronized void clearSqlInfoCache() {

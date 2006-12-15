@@ -1028,6 +1028,6 @@ public class SqlDescription {
          return this.configuredSearchableColumns.size() > 0; 
       return this.configuredSearchableColumns.contains(column);
    }
-
+   
 }
 
