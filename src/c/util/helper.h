@@ -92,6 +92,7 @@ Dll_Export extern void initializeExceptionStruct(ExceptionStruct *exception);
 Dll_Export extern void embedException(ExceptionStruct *exception, const char *newErrorCode, const char *newMessage, const ExceptionStruct *embed);
 Dll_Export extern const char *getExceptionStr(char *out, int outSize, const ExceptionStruct *exception);
 
+/* Must match XmlBlasterAccess.cs C# LogLevel */
 typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
    /*XMLBLASTER_LOG_NOLOG=0,  don't use */
    XMLBLASTER_LOG_ERROR=1,  /**< supported, use for programming errors */
