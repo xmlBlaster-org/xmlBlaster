@@ -50,22 +50,17 @@ typedef struct XmlBlasterUnmanagedCEException {
          public IntPtr content;
          public IntPtr qos;
          public IntPtr responseQos;
-typedef struct MsgUnitUnmanagedCE {
+typedef struct MsgUnitUnmanagedCEget {
    char *key;
    uint32_t contentLen;
    char *content;
    char *qos;
    char *responseQos;
-} MsgUnitUnmanagedCE;
-*/
-typedef MsgUnit MsgUnitUnmanagedCEpublish;
-typedef struct MsgUnitUnmanagedCEget {
-   const char *key;         /**< XML formatted ASCII string of the message topic */
-   int32_t contentLen;      /**< Number of bytes in content */
-   const char *content;     /**< Raw data (not 0 terminated) */
-   const char *qos;         /**< XML formatted ASCII string of Quality of Service */
-   char *responseQos;       /**< Used to transport the response QoS string back to caller */
 } MsgUnitUnmanagedCEget;
+*/
+/* this only works if the size_t has 4 bytes (from MsgUnit) */
+typedef MsgUnit MsgUnitUnmanagedCEpublish;
+typedef MsgUnit MsgUnitUnmanagedCEget;
 
 
 /**
