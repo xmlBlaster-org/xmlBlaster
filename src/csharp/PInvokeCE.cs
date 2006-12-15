@@ -631,12 +631,23 @@ namespace org.xmlBlaster.client
             }
             if ("-logLevel".Equals(argv[i]) && (i < argv.Length-1)) {
                string level = argv[i + 1];
+#if WIN32
                Array logArray = Enum.GetValues(typeof(LogLevel));
                foreach (LogLevel logLevel in logArray)
                   if (logLevel.ToString().Equals(level)) {
                      localLogLevel = logLevel;
                      break;
                   }
+#else
+               if ("INFO".Equals(level.ToUpper()))
+                  localLogLevel = LogLevel.INFO;
+               else if ("WARN".Equals(level.ToUpper()))
+                  localLogLevel = LogLevel.WARN;
+               else if ("ERROR".Equals(level.ToUpper()))
+                  localLogLevel = LogLevel.ERROR;
+               else if ("TRACE".Equals(level.ToUpper()))
+                  localLogLevel = LogLevel.TRACE;
+#endif
             }
             c_argv[i + 1] = stringToUtf8IntPtr(argv[i]);
          }
