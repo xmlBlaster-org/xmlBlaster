@@ -20,7 +20,7 @@ See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 
 /**
  * Here we receive the callback messages from xmlBlaster
- * @param msgUnitArr The received messages
+ * @param msgUnitArr The received messages, it is freed by the call after this method ends
  * @param userData Is the corresponding XmlBlasterAccessUnparsed * pointer
  * @param exception An OUT parameter to transport back an exception
  * @see UpdateFp in XmlBlasterAccessUnparsed.h
