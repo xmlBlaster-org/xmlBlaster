@@ -7,6 +7,7 @@ package javaclients.script;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -46,8 +47,60 @@ public class XmlScript {
    private OutputStream outStream;
    private OutputStream updStream;
    private boolean prepareForPublish;
+   
+   public final class OutputStreamWithDelay extends OutputStream {
+    
+      private OutputStream out;
+      private long msgDelay;
+      private long bytesPerSecond;
+      private double kappa;
+      
+      public OutputStreamWithDelay(OutputStream out, long msgDelay, long bytesPerSecond) {
+         this.out = out;
+         this.msgDelay = msgDelay;
+         this.bytesPerSecond = bytesPerSecond;
+         if (this.bytesPerSecond > 0L)
+            this.kappa = 1000.0 / this.bytesPerSecond;
+         
+      }
 
-   public XmlScript(Global glob, String inFile, String outFile, String updFile) {
+      private final void waitForRate(int len) {
+         if (bytesPerSecond < 0L)
+            return;
+         long val = (long)(kappa*len);
+         if (val > 0L) {
+            try {
+               Thread.sleep(val);
+            }
+            catch (InterruptedException ex) {
+               ex.printStackTrace();
+            }
+         }
+      }
+      
+      public void write(byte[] b, int off, int len) throws IOException {
+         waitForRate(len);
+         this.out.write(b, off, len);
+      }
+
+      public void write(byte[] b) throws IOException {
+         if (this.msgDelay > 0L) {
+            try {
+               Thread.sleep(this.msgDelay);
+            }
+            catch (InterruptedException ex) {
+               ex.printStackTrace();
+            }
+         }
+         this.write(b, 0, b.length);
+      }
+
+      public void write(int b) throws IOException {
+         this.out.write(b);
+      }
+   }
+
+   public XmlScript(Global glob, String inFile, String outFile, String updFile, long msgDelay, long rateBytesPerSecond) {
       this.glob = glob;
       this.prepareForPublish = glob.getProperty().get("prepareForPublish", this.prepareForPublish);
 
@@ -64,6 +117,10 @@ public class XmlScript {
          else {
             this.updStream = new FileOutputStream(updFile);
          }
+         if (msgDelay > 0L || rateBytesPerSecond > 0L) {
+            this.updStream = new OutputStreamWithDelay(this.updStream, msgDelay, rateBytesPerSecond);
+         }
+         
          this.interpreter = new XmlScriptClient(this.glob, this.glob.getXmlBlasterAccess(), this.outStream, this.updStream, null);
 
          if (this.prepareForPublish) {
@@ -94,6 +151,8 @@ public class XmlScript {
          System.out.println("  if you don't specify anything as '-requestFile', then the standard input stream is taken.\n");
          System.out.println("  if you don't specify anything as '-responseFile', then the standard output stream is taken.\n");
          System.out.println("  if you don't specify anything as '-updateFile', then the same stream as for the output stream is used.\n");
+         System.out.println("  if you don't specify anything as '-msgDelay', it will not wait after each update, otherwise it will wait so many ms as specified.\n");
+         System.out.println("  if you don't specify anything as '-bytesPerSecond', it will not wait after each read, otherwise it will try to get the rate specified.\n");
          System.out.println("  -prepareForPublish true  If you want to publish a dumped dead message given by -requestFile.\n");
          System.exit(1);
       }
@@ -101,8 +160,10 @@ public class XmlScript {
       String inFile = glob.getProperty().get("requestFile", (String)null);
       String outFile = glob.getProperty().get("responseFile", (String)null);
       String updFile = glob.getProperty().get("updateFile", (String)null);
+      long msgDelay = glob.getProperty().get("msgDelay", 0L);
+      long bytesPerSecond = glob.getProperty().get("bytesPerSecond", 0L);
       
-      new XmlScript(glob, inFile, outFile, updFile);
+      new XmlScript(glob, inFile, outFile, updFile, msgDelay, bytesPerSecond);
    }
 } // XmlScript
 
