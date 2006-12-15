@@ -83,6 +83,8 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
    }
    xa->isInitialized = false;
    xa->isShutdown = false;
+   xa->connectionP = 0;
+   xa->callbackP = 0;
    xa->userObject = 0; /* A client can use this pointer to point to any client specific information */
    xa->userFp = 0;
    xa->connect = xmlBlasterConnect;
