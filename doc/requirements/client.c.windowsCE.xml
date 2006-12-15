@@ -197,7 +197,7 @@ mcs /d:XMLBLASTER_CLIENT_MONO -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess
       </p>
       <p>
       You need to compile the three dlls yourself or download them at 
-      <a href="http://www.xmlblaster.org/xmlBlaster-win-dll-1.4-15748M.zip" target="others">http://www.xmlblaster.org/xmlBlaster-win-dll-1.4-15748M.zip</a>.
+      <a href="http://www.xmlblaster.org/xmlBlaster-win-dll-1.4-15829M.zip" target="others">http://www.xmlblaster.org/xmlBlaster-win-dll-1.4-15829M.zip</a>.
       Then create a VC++ 8.0 project for Smartphone or PocketPC or Windows Mobile and compile Hello.cs, TestPInvoke.cs or your own client.
       </p>
    </example>
