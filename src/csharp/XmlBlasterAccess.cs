@@ -48,7 +48,7 @@ namespace org.xmlBlaster.client
 
    public interface I_LoggingCallback
    {
-      void OnLogging(LogLevel logLevel, string message);
+      void OnLogging(LogLevel logLevel, string location, string message);
    }
 
    /// <summary>

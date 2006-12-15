@@ -90,7 +90,8 @@ Preprocessor:
    DOTNET1   To force old .net 1.x, not tested, for Windows XP etc only
 */
 
-// Initial checks
+// Initial defines cleanup:
+// In our code we only use XMLBLASTER_CLIENT_MONO, WINCE, WIN32, CF1, DOTNET1
 #if XMLBLASTER_CLIENT_MONO
 #  warning We compile on a Linux mono box
 #elif WINCE || Smartphone || PocketPC || WindowsCE || CF1
@@ -127,7 +128,7 @@ namespace org.xmlBlaster.client
    /// Calling unmanagegd code: xmlBlasterClientC.dll
    public class PInvokeCE : I_XmlBlasterAccess
    {
-      static bool verbose = true; // TODO: log4net
+      static LogLevel localLogLevel = LogLevel.TRACE; // TODO: log4net
 
 #     if XMLBLASTER_CLIENT_MONO
          // Linux Debug libxmlBlasterClientCD.so, set LD_LIBRARY_PATH to find the shared library
@@ -175,7 +176,7 @@ namespace org.xmlBlaster.client
          {  // If called never: memory leak, if called twice: double free
             if (key == IntPtr.Zero)
             {
-               logger("MsgUnitUnmanagedCE.key is Zero!!!!!!!!!!!!!!");
+               logger(LogLevel.TRACE, "", "MsgUnitUnmanagedCE.key is Zero!!!!!!!!!!!!!!");
                return "";
             }
             return stringFromUtf8IntPtr(key, freeUnmanaged);
@@ -228,7 +229,7 @@ namespace org.xmlBlaster.client
          {  // If called never: memory leak, if called twice: double free
             if (key == IntPtr.Zero)
             {
-               logger("MsgUnitUnmanagedCE.key is Zero!!!!!!!!!!!!!!");
+               logger(LogLevel.TRACE, "", "MsgUnitUnmanagedCE.key is Zero!!!!!!!!!!!!!!");
                return "";
             }
             return stringFromUtf8IntPtr(key);
@@ -295,35 +296,38 @@ namespace org.xmlBlaster.client
 
       public void log(String str)
       {
-         logger(str);
+         logger(LogLevel.TRACE, "", str);
       }
 
-      public static void logger(String str)
+      public static void logger(LogLevel level, String location, String str)
       {
-         if (!verbose) return;
-         string prefix = "[C#] ";
-         if (str.StartsWith("[")) prefix = "";
-         System.Diagnostics.Debug.WriteLine(prefix + str);
-         Console.WriteLine(prefix + str);
+         //logLevel.ToString("d")
+         if ((int)level <= (int)localLogLevel) { // TODO: log4net
+            string prefix = (location != null && location.Length > 0) ? location : "[PInvoke]";
+	         prefix += " " + level + ": ";
+	         System.Diagnostics.Debug.WriteLine(prefix + str);
+	         Console.WriteLine(prefix + str);
+         }
       }
 
 #     if FORCE_CDELC
       [System.Runtime.InteropServices.UnmanagedFunctionPointer(System.Runtime.InteropServices.CallingConvention.Cdecl)]
 #     endif
-      public delegate void LoggerUnmanagedFp(int level, IntPtr message);
+      public delegate void LoggerUnmanagedFp(int level, IntPtr location, IntPtr message);
 
       /// Callback by xmlBlaster C dll, see LoggerUnmanagedFp
       /// message pointer is NOT freed here, it is freed by the calling C DLL after this call
-      void loggerUnmanaged(int level, IntPtr message)
+      void loggerUnmanaged(int level, IntPtr location, IntPtr message)
       {
+         string loc = stringFromUtf8IntPtr(location, false);
          string msg = stringFromUtf8IntPtr(message, false);
          LogLevel logLevel = (LogLevel)level;
-         logger("Received DLL log." + logLevel/*.ToString("d")*/ + ": " + msg);
+         logger(logLevel, loc, msg);
          if (null != onLogging)
          {
             try
             {
-               onLogging((LogLevel)level, msg); // Dispatch to C# clients
+               onLogging((LogLevel)level, loc, msg); // Dispatch to C# clients
             }
             catch (Exception e)
             {
@@ -343,13 +347,14 @@ namespace org.xmlBlaster.client
 #     endif
       public delegate void UpdateUnmanagedFp(IntPtr cbSessionId, ref MsgUnitUnmanagedCEpublish msgUnit, ref XmlBlasterUnmanagedCEException exception);
 
-      /// Callback by xmlBlaster C dll, see UpdateUnmanagedFp
-      /// and XmlBlasterUnmanagedCE.h
-      /// typedef void (CALLBACK *XmlBlasterUnmanagedCELoggerFp)(int32_t level, const char *msg);
+      /// Callback by xmlBlaster C dll, see UpdateUnmanagedFp and XmlBlasterUnmanagedCE.h
       /// The cbSessionId_ and msgUnitUnmanaged is freed by the caller
+      /// The return should be a string, but this is difficult over P/Invoke, we would
+      /// need to solve it by an out parameter. But xmlBlaster ignores it currently so it is an open TODO
+      /// Info about callback function pointer: http://msdn2.microsoft.com/en-us/library/5zwkzwf4.aspx
       void updateUnmanaged(IntPtr cbSessionId_, ref MsgUnitUnmanagedCEpublish msgUnitUnmanaged, ref XmlBlasterUnmanagedCEException exception)
       {
-         logger("Entering updateUnmanaged()");
+         logger(LogLevel.TRACE, "", "Entering updateUnmanaged()");
          string cbSessionId = stringFromUtf8IntPtr(cbSessionId_, false);
          //fillUnmanagedException(ref exception, "user.internal", "a test exception from C#");
 
@@ -360,26 +365,26 @@ namespace org.xmlBlaster.client
             try
             {
                string ret = onUpdate(cbSessionId, msgUnit);
-               logger("Ignoring " + ret);
+               logger(LogLevel.TRACE, "", "Ignoring " + ret);
             }
-            // TODO: Exception seems not to reach the C code
             catch (XmlBlasterException e)
             {
-               logger("OnUpdate() exception: " + e.ToString());
+               logger(LogLevel.WARN, "", "OnUpdate() exception: " + e.ToString());
                fillUnmanagedException(ref exception, e.ErrorCode, e.Message);
             }
             catch (Exception e)
             {
-               logger("OnUpdate() exception: " + e.ToString());
+               logger(LogLevel.ERROR, "", "OnUpdate() exception: " + e.ToString());
                fillUnmanagedException(ref exception, "user.update.internalError", e.ToString());
             }
             return;
          }
-         logger("updateUnmanaged invoked START ==================");
-         logger(msgUnit.key);
-         logger(msgUnit.getContentStr());
-         logger(msgUnit.qos);
-         logger("updateUnmanaged invoked DONE ===================");
+         logger(LogLevel.INFO, "", "updateUnmanaged got message " + msgUnit.getKey());
+         logger(LogLevel.TRACE, "", "updateUnmanaged invoked START ==================");
+         logger(LogLevel.TRACE, "", msgUnit.key);
+         logger(LogLevel.TRACE, "", msgUnit.getContentStr());
+         logger(LogLevel.TRACE, "", msgUnit.qos);
+         logger(LogLevel.TRACE, "", "updateUnmanaged invoked DONE ===================");
          //string ret = "<qos><state id='OK'/></qos>";
          //return ret;
       }
@@ -524,30 +529,13 @@ namespace org.xmlBlaster.client
       }
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void sayHello();
-
-      [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void sayHelloLPCT(string p);
-
-
-      [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void sayHelloP(int size, IntPtr p);
-
-      [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void sayHelloEx(ref XmlBlasterUnmanagedCEException exception);
-
-      [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static IntPtr sayHelloRet();
-      //private extern static byte[] sayHelloRet(); // throws NotSupportedException on WINCE
-
-      [DllImport(XMLBLASTER_C_LIBRARY)]
       private extern static IntPtr xmlBlasterUnmanagedCEMalloc(int size);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
       private extern static void xmlBlasterUnmanagedCEFree(IntPtr p);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedCERegisterLogger(ref IntPtr xa, IntPtr loggerUnmanaged);
+      private extern static void xmlBlasterUnmanagedCERegisterLogger(IntPtr xa, IntPtr loggerUnmanaged);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
       private extern static void xmlBlasterUnmanagedCEFreePP(out IntPtr p);
@@ -604,6 +592,10 @@ namespace org.xmlBlaster.client
       private extern static string xmlBlasterUnmanagedCEUsage();
 
       private IntPtr xa;
+      unsafe private void* xaP;
+      private unsafe IntPtr getXmlBlasterAccessP() {
+         return new IntPtr(xaP);
+      }
       private UpdateUnmanagedFp updateUnmanagedFp;
       private LoggerUnmanagedFp loggerUnmanagedFp;
       private bool isGCHandled = false;
@@ -635,14 +627,14 @@ namespace org.xmlBlaster.client
 
       unsafe public PInvokeCE(string[] argv)
       {
-         logger("Entering PInvokeCE() C++ CF=" + System.Environment.Version.ToString() + " OS=" +
+         logger(LogLevel.TRACE, "", "Entering PInvokeCE() C++ CF=" + System.Environment.Version.ToString() + " OS=" +
             System.Environment.OSVersion.ToString() + "....");
          FPtr cb = new FPtr(DoSomething);
-         logger("Testing callback GetFunctionPointerForDelegate()");
+         logger(LogLevel.TRACE, "", "Testing callback GetFunctionPointerForDelegate()");
          IntPtr cbForDelegate = Marshal.GetFunctionPointerForDelegate(cb);
-         logger("Testing callback DoSomething()");
+         logger(LogLevel.TRACE, "", "Testing callback DoSomething()");
          LibWrap.TestCallBack(cbForDelegate, 99);
-         logger("Done testing callback DoSomething()");
+         logger(LogLevel.TRACE, "", "Done testing callback DoSomething()");
 
          if (argv == null) argv = new String[0];
 
@@ -653,7 +645,7 @@ namespace org.xmlBlaster.client
          gch = GCHandle.Alloc(updateUnmanagedFp);
          isGCHandled = true;
          updateFpForDelegate = Marshal.GetFunctionPointerForDelegate(updateUnmanagedFp);
-         logger("All updateUnmanagedFp done");
+         logger(LogLevel.TRACE, "", "All updateUnmanagedFp done");
 
 
          // Convert command line arguments: C client lib expects the executable name as first entry
@@ -663,77 +655,51 @@ namespace org.xmlBlaster.client
          {
             if (argv[i] == "--help")
             {
-               logger("Usage:\n" + xmlBlasterUnmanagedCEUsage());
+               logger(LogLevel.TRACE, "", "Usage:\n" + xmlBlasterUnmanagedCEUsage());
                throw new XmlBlasterException("user.usage", "Good bye");
+            }
+            if ("-logLevel".Equals(argv[i]) && (i < argv.Length-1)) {
+               string level = argv[i + 1];
+               Array logArray = Enum.GetValues(typeof(LogLevel));
+               foreach (LogLevel logLevel in logArray)
+                  if (logLevel.ToString().Equals(level)) {
+                     localLogLevel = logLevel;
+                     break;
+                  }
             }
             c_argv[i + 1] = stringToUtf8IntPtr(argv[i]);
          }
 
          // Frees not c_argv (as it crashed)
          xa = getXmlBlasterAccessUnparsedUnmanagedCE(c_argv.Length, c_argv);
+         xaP = xa.ToPointer();
          for (int i = 0; i < c_argv.Length; ++i)
             xmlBlasterUnmanagedCEFree(c_argv[i]);
 
-         Console.WriteLine("Hit a key to register logger ...");
-         Console.ReadLine();
-
          loggerUnmanagedFp = new LoggerUnmanagedFp(this.loggerUnmanaged);
          loggerFpForDelegate = Marshal.GetFunctionPointerForDelegate(loggerUnmanagedFp);
-         xmlBlasterUnmanagedCERegisterLogger(ref xa, loggerFpForDelegate);
-
-         {
-            /*
-            sayHello();
-            sayHelloLPCT("Mein LPCTSTR");
-            string txt = "Text transfer";
-            sayHelloP(txt.Length, StringToUtf8ByteArray(txt));
-
-            logger("Before sayHelloRet() ...");
-            string ret = stringFromUtf8IntPtr(sayHelloRet());
-            logger("sayHelloRet(): " + ret);
-
-             [DllImport("TheirDLL.dll", SetLastError=true)]
-            public static extern void TheirDllFunc( byte[] Path );
-
-            string sPath = @"C:\MyFolder\MySubFolder\";
-            ASCIIEncoding ascii = new ASCIIEncoding();
-            byte[] byPath = ascii.GetBytes( sPath );
-            TheirDllFunc( byPath );
-
-            The external function's signature is:
-                    void TheirDllFunc( char *path); 
-            logger("PInvokeCE() ...");
-            XmlBlasterUnmanagedCEException exception = new XmlBlasterUnmanagedCEException(false);
-            logger("calling now sayHelloEx()");
-            sayHelloEx(ref exception);
-            if (exception.CaughtException())
-            {
-               XmlBlasterException e = fillXmlBlasterException(ref exception);
-               logger("Got exception: " + e.ToString());
-            }
-            */
-         }
+         xmlBlasterUnmanagedCERegisterLogger(xa, loggerFpForDelegate);
       }
 
       ~PInvokeCE()
       {
-         logger("TODO: GCHandle.Free(updateUnmanagedFp)!!!");
+         logger(LogLevel.TRACE, "", "TODO: GCHandle.Free(updateUnmanagedFp)!!!");
          if (isGCHandled)
             gch.Free();
          if (xa != new IntPtr(0))
             freeXmlBlasterAccessUnparsedUnmanagedCE(xa);
-         logger("~PInvokeCE() ...");
+         logger(LogLevel.TRACE, "", "~PInvokeCE() ...");
       }
 
       void check(string methodName)
       {
-         logger(methodName + "() check ...");
-         if (xa == new IntPtr(0))
+         logger(LogLevel.TRACE, "", methodName + "() check ...");
+         if (xa == IntPtr.Zero)
             throw new XmlBlasterException("internal.illegalState", "Can't process " + methodName + ", xmlBlaster pointer is reset, please create a new instance of PInvokeCE.cs class after a disconnect() call");
       }
 
 
-      private delegate void OnLogging(LogLevel logLevel, string message);
+      private delegate void OnLogging(LogLevel logLevel, string location, string message);
       private event OnLogging onLogging;
       public void register(I_LoggingCallback listener)
       {
@@ -765,21 +731,18 @@ namespace org.xmlBlaster.client
 #           if CF1 // Compact Framework .net 1.0
                bool bb = xmlBlasterUnmanagedCEInitialize(xa, IntPtr.Zero, ref exception);
 #           else // Compact Framework 2
-            logger("Calling now CF2 initialize");
-            bool bb = xmlBlasterUnmanagedCEInitialize(xa, updateFpForDelegate, ref exception);
-            xmlBlasterUnmanagedCERegisterLogger(ref xa, loggerFpForDelegate);
-            logger("Calling now CF2 done");
+               bool bb = xmlBlasterUnmanagedCEInitialize(xa, updateFpForDelegate, ref exception);
 #           endif
             checkAndThrow("xmlBlasterUnmanagedCEInitialize", ref exception);
 
 #           if CF1 // Compact Framework .net 1.0
                IntPtr retP = xmlBlasterUnmanagedCEConnect(xa, stringToUtf8IntPtr(qos), IntPtr.Zero, ref exception);
 #           else // Compact Framework 2
-            IntPtr retP = xmlBlasterUnmanagedCEConnect(xa, stringToUtf8IntPtr(qos), updateFpForDelegate, ref exception);
+               IntPtr retP = xmlBlasterUnmanagedCEConnect(xa, stringToUtf8IntPtr(qos), updateFpForDelegate, ref exception);
 #           endif
             checkAndThrow("xmlBlasterUnmanagedCEConnect", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
-            //logger("xmlBlasterUnmanagedCEConnect: SUCCESS '" + ret + "'");
+            //logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEConnect: SUCCESS '" + ret + "'");
             return ret;
          }
          catch (XmlBlasterException e)
@@ -806,12 +769,12 @@ namespace org.xmlBlaster.client
             {
                ex = fillXmlBlasterException(ref exception);
                // Important logging since we don't throw the exception below
-               logger("xmlBlasterUnmanagedCEDisconnect: Got exception from C: " + ex.ToString());
+               logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEDisconnect: Got exception from C: " + ex.ToString());
             }
 
             freeXmlBlasterAccessUnparsedUnmanagedCE(xa);
             xa = IntPtr.Zero;
-            logger("xmlBlasterUnmanagedCEDisconnect: SUCCESS freed all resources");
+            logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEDisconnect: SUCCESS freed all resources");
 
             //if (ex != null) throw ex;
             return bb;
@@ -831,10 +794,10 @@ namespace org.xmlBlaster.client
          if (exception.CaughtException())
          {
             XmlBlasterException e = fillXmlBlasterException(ref exception);
-            logger(location + ": Got exception from C: " + e.ToString());
+            logger(LogLevel.TRACE, "", location + ": Got exception from C: " + e.ToString());
             throw e;
          }
-         logger(location + ": SUCCESS");
+         logger(LogLevel.TRACE, "", location + ": SUCCESS");
       }
 
       public string publish(string key, string content, string qos)
@@ -884,7 +847,7 @@ namespace org.xmlBlaster.client
             XmlBlasterUnmanagedCEException exception = new XmlBlasterUnmanagedCEException(false);
             xmlBlasterUnmanagedCEPublishOneway(xa, ref msgUnitArr, msgUnitArr.Length, ref exception);
             checkAndThrow("xmlBlasterUnmanagedCEPublishOneway", ref exception);
-            logger("publishOneway: SUCCESS");
+            logger(LogLevel.TRACE, "", "publishOneway: SUCCESS");
          }
          catch (XmlBlasterException e)
          {
@@ -906,7 +869,7 @@ namespace org.xmlBlaster.client
                                            stringToUtf8IntPtr(qos), ref exception);
             checkAndThrow("xmlBlasterUnmanagedCESubscribe", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
-            //logger(ret);
+            //logger(LogLevel.TRACE, "", ret);
             return ret;
          }
          catch (XmlBlasterException e)
@@ -931,7 +894,7 @@ namespace org.xmlBlaster.client
             checkAndThrow("xmlBlasterUnmanagedCEUnSubcribe", ref exception);
             if (size == 0)
             {
-               logger("xmlBlasterUnmanagedCEUnSubcribe: Done (no topics found)");
+               logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEUnSubcribe: Done (no topics found)");
                return new String[0];
             }
             String[] retQosArr = new String[size];
@@ -968,7 +931,7 @@ namespace org.xmlBlaster.client
             checkAndThrow("xmlBlasterUnmanagedCEErase", ref exception);
             if (size == 0)
             {
-               logger("xmlBlasterUnmanagedCEErase: Done (no topics found)");
+               logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEErase: Done (no topics found)");
                return new String[0];
             }
 
@@ -981,7 +944,7 @@ namespace org.xmlBlaster.client
                current = (IntPtr)((long)current + Marshal.SizeOf(stringArr));
                retQosArr[i] = stringFromUtf8IntPtr(stringArr.str);
             }
-            //logger("xmlBlasterUnmanagedCEErase: FREEING WRONG POINTER??");
+            //logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEErase: FREEING WRONG POINTER??");
             xmlBlasterUnmanagedCEFreePP(out outArray);
             return retQosArr;
          }
@@ -1009,7 +972,7 @@ namespace org.xmlBlaster.client
             IntPtr current = outArray;
             for (int i = 0; i < size; i++)
             {
-               logger("xmlBlasterUnmanagedCEGet: parsing #" + i);
+               logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEGet: parsing #" + i);
                MsgUnitUnmanagedCEget msgUnitUnmanaged = new MsgUnitUnmanagedCEget();
                Marshal.PtrToStructure(current, msgUnitUnmanaged);
                current = (IntPtr)((long)current + Marshal.SizeOf(msgUnitUnmanaged));
@@ -1018,7 +981,7 @@ namespace org.xmlBlaster.client
                   msgUnitUnmanaged.getKey(), msgUnitUnmanaged.getContent(), msgUnitUnmanaged.getQos());
                msgUnitUnmanaged.getResponseQos(); // dummy call to free memory in C DLL
             }
-            //logger("xmlBlasterUnmanagedCEGet: freeing now IntPtr SHOULD IT BE *outArray???");
+            //logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEGet: freeing now IntPtr SHOULD IT BE *outArray???");
             xmlBlasterUnmanagedCEFreePP(out outArray);
             return msgUnitArr;
          }
@@ -1055,11 +1018,11 @@ namespace org.xmlBlaster.client
 
       public bool isConnected()
       {
-         if (xa == new IntPtr(0)) return false;
+         if (xa == IntPtr.Zero) return false;
          try
          {
             bool bb = xmlBlasterUnmanagedCEIsConnected(xa);
-            //logger("xmlBlasterUnmanagedCEIsConnected: SUCCESS '" + bb + "'");
+            logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEIsConnected: SUCCESS '" + bb + "'");
             return bb;
          }
          catch (XmlBlasterException e)
