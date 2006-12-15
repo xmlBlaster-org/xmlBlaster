@@ -11,7 +11,7 @@ using System;
 using System.Text;
 using System.Runtime.InteropServices;
 
-namespace org.xmlBlaster
+namespace org.xmlBlaster.client
 {
    public class XmlBlasterAccessFactory
    {
@@ -25,9 +25,30 @@ namespace org.xmlBlaster
       }
    }
 
+   /// <summary>
+   /// Log levels copied from xmlBlaster client C library
+   /// See helper.h enum XMLBLASTER_LOG_LEVEL_ENUM
+   /// </summary>
+   public enum LogLevel {
+      /*NOLOG=0,  don't use */
+      ERROR=1,  // supported, use for programming errors
+      WARN=2,   // supported, use for user errors and wrong configurations
+      INFO=3,   // supported, use for success information only
+      /*CALL=4,  don't use */
+      /*TIME=5,  don't use */
+      TRACE=6,  // supported, use for debugging purposes
+      DUMP=7    // supported, use for debugging purposes
+      /*PLAIN=8  don't use */
+   }
+
    public interface I_Callback
    {
       string OnUpdate(string cbSessionId, MsgUnit msgUnit);
+   }
+
+   public interface I_LoggingCallback
+   {
+      void OnLogging(LogLevel logLevel, string message);
    }
 
    /// <summary>

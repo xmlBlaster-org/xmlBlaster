@@ -8,7 +8,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using org.xmlBlaster;
+using org.xmlBlaster.client;
 
 public class TestPInvoke : I_Callback
 {
@@ -16,8 +16,12 @@ public class TestPInvoke : I_Callback
    private const string callbackSessionId = "secretCb";
    
    static void Main(string[] argv) {
-       Console.WriteLine("[TestPInvoke.cs] main !!!!!!!!");
-       new TestPInvoke(argv);
+      Console.WriteLine("[TestPInvoke.cs] startup");
+      //Array logArray = Enum.GetValues(typeof(LogLevel));
+      //foreach (LogLevel logLevel in logArray)
+      //   Console.WriteLine("Number {1} of LogLevel.WARN is {0}", logLevel, logLevel.ToString("d"));
+      // Console.WriteLine("Number {1} of LogLevel.WARN is {0}", LogLevel.WARN, LogLevel.WARN.ToString("d"));
+      new TestPInvoke(argv);
    }
    
    public TestPInvoke(string[] argv) {
