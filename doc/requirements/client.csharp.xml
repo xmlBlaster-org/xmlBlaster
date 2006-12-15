@@ -37,6 +37,9 @@
             available as the Compact Framework .NET (CF) is very limited. More details are described
             in requirement <a href="client.c.windowsCE.html" target="others">requirement client.c.windowsCE</a>.
             <br />
+            Mono/Linux 1.2 ships with complete C# 1.0 and C# 2.0 compilers, called mcs and gmcs respectively.
+            To compile PInvokeCE.cs with mono/Linux please use the 'gmcs' compiler instead of 'mcs'.
+            <br />
             Todo: Make the same wrapper for our C++ client library</td>
             <td>Good performance, all functionality of the C library (like compression and tunneling callbacks) is available, a tested code base</td>
             <td>NativeC.cs was developed under Mono/Linux and Windows XP, using the code as an assembly is an open task.
