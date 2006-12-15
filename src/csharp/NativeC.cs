@@ -10,6 +10,8 @@
 // It will NOT work with Windows CE because of the limited compact framework .net (CF)
 // Please use PInvokeCE.cs instead.
 //
+// Mono/Linux 1.2 ships with complete C# 1.0 and C# 2.0 compilers, both of them can be used here
+//
 // Features: All features of the client C library (compression, tunnel callbacks), see
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 //
@@ -73,7 +75,7 @@ Example:
 using System;
 using System.Runtime.InteropServices;
 
-namespace org.xmlBlaster
+namespace org.xmlBlaster.client
 {
    /// Calling unmanagegd code: libxmlBlasterClientC.so (Mono) or xmlBlasterClientC.dll (Windows)
    public class NativeC : I_XmlBlasterAccess
@@ -85,9 +87,9 @@ namespace org.xmlBlaster
 #     else // Windows
          // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
          //[DllImport("user32.dll", CharSet = CharSet.Auto)]
-	 // Throw the DLL to the current directory or set your PATH pointing to the dll:
+         // Throw the DLL to the current directory or set your PATH pointing to the dll:
          const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC.dll";
-	 // or provide an absolute name:
+         // or provide an absolute name:
          //const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
 #     endif
 
@@ -165,7 +167,9 @@ namespace org.xmlBlaster
       }
 
       // How to pass byte[] content, how to tell the Marshal the contentLen to allocate for byte[]?
+#     if !XMLBLASTER_CLIENT_MONO
       [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#     endif
       delegate string UpdateUnmanagedFp(string cbSessionId, string key, string content, int contentLen, string qos, ref XmlBlasterUnmanagedException exception);
 
       string updateUnmanaged(string cbSessionId, string key, string content, int contentLen, string qos, ref XmlBlasterUnmanagedException exception) {
@@ -377,7 +381,7 @@ namespace org.xmlBlaster
       }
 
       public string publish(string key, string content, string qos) {
-	      return publish(new MsgUnit(key, content, qos));
+              return publish(new MsgUnit(key, content, qos));
       }
 
       public string publish(MsgUnit msgUnit) {
@@ -622,8 +626,18 @@ namespace org.xmlBlaster
          }
       }
 
-      public static string usage() {
+      public void addLoggingListener(I_LoggingCallback listener)
+      {
+         throw new XmlBlasterException("internal.notImplemented", "Sorry, addLoggingListener is not implemented");
+      }
+
+      public string getUsage() {
          return xmlBlasterUnmanagedUsage();
+      }
+
+      public string getVersion()
+      {
+         return "?";
       }
 
 #if NATIVE_C_MAIN
