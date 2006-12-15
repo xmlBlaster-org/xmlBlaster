@@ -484,7 +484,12 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
       msgUnitUnmanagedP = *ppStruct;
       /*printf("dll: xmlBlasterUnmanagedCEGet %ud\n", cArraySize);*/
       /* TODO: It should be possible to pass msgUnitArr->msgUnitArr* directly
-         as it has the same memory layout as the IntPtr */
+         as it has the same memory layout as the IntPtr
+      */
+      /* NOTE:
+         The sizeof(MsgUnitUnmanagedCEget) returns 20 bytes
+         The same bytes are reported on the C# side (otherwise this approach fails)
+      */
       for(i=0; i < cArraySize; i++, msgUnitUnmanagedP++) {
          MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[i];
          char *cnt = (char *)malloc(msgUnit->contentLen*sizeof(char));
@@ -502,7 +507,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
       }
       freeMsgUnitArr(msgUnitArr);
    }
-   printf("DONE in get\n");
+   /*printf("DONE in get\n");*/
 }
 
 XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEPing(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedCEException *exception) {
