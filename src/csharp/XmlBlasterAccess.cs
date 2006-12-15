@@ -18,7 +18,7 @@ namespace org.xmlBlaster.client
       public static I_XmlBlasterAccess createInstance(String[] argv)
       {
          // Choose the PInvoke plugin:
-#        if XMLBLASTER_CLIENT_MONO
+#        if XMLBLASTER_CLIENT_MONO || FORCE_NATIVEC_PLUGIN
             
             return new NativeC(argv); // First try, runs fine with WIN32 and with Linux/MONO
 
