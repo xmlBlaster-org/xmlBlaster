@@ -17,10 +17,15 @@ namespace org.xmlBlaster.client
    {
       public static I_XmlBlasterAccess createInstance(String[] argv)
       {
-#        if WINCE || Smartphone || PocketPC || WindowsCE || FORCE_PINVOKECE
-            return new PInvokeCE(argv);
-#        else
-         return new NativeC(argv);
+         // Choose the PInvoke plugin:
+#        if XMLBLASTER_CLIENT_MONO
+            
+            return new NativeC(argv); // First try, runs fine with WIN32 and with Linux/MONO
+
+#        else // WIN32 || WINCE || Smartphone || PocketPC || WindowsCE || FORCE_PINVOKECE
+            
+            return new PInvokeCE(argv); // Runs fine with WIN32 and WINCE (fails with MONO)
+
 #        endif
       }
    }
