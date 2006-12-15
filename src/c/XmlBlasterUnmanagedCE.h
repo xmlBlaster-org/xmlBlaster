@@ -113,6 +113,7 @@ Dll_Export extern void xmlBlasterUnmanagedCEErase(struct XmlBlasterAccessUnparse
 Dll_Export extern  void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccessUnparsed *xa, char * key, char *qos, XmlBlasterUnmanagedCEException *exception, uint32_t* pSize, MsgUnit** ppStruct);
 Dll_Export extern  char *xmlBlasterUnmanagedCEPing(struct XmlBlasterAccessUnparsed *xa, char * qos, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern  bool xmlBlasterUnmanagedCEIsConnected(struct XmlBlasterAccessUnparsed *xa);
+Dll_Export extern const char *getXmlBlasterUnmanagedCEVersion();
 Dll_Export extern const char *xmlBlasterUnmanagedCEUsage();
 
 #ifdef __cplusplus

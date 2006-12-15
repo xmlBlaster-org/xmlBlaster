@@ -136,8 +136,7 @@ static void myLogger(void *logUserP,
 XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa,
                            XmlBlasterUnmanagedCELoggerFp logger) {
    /*MessageBox(NULL, L"Entering xmlBlasterUnmanagedCERegisterLogger", _T("Unmanaged"), MB_OK);*/
-   
-   printf("dll: Register logger\n");
+   /*printf("dll: Register logger\n");*/
    if (logger != 0) {
       /* Register our own logging function */
       xa->log = myLogger;
@@ -155,7 +154,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterLogger(struct XmlBl
       if (xa->connectionP != 0) xa->connectionP->log = 0;
       if (xa->connectionP != 0) xa->connectionP->logUserP = 0;
       if (xa->callbackP != 0) xa->callbackP->log = 0;
-      if (xa->callbackP != 0) xa->callbackP->logUserP = 0;
+      if (xa->callbackP != 0) xa->callbackP->logUserP = 0;_
       */
    }
    /*xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Testing logging output only");*/
@@ -237,7 +236,8 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
    XmlBlasterUnmanagedCEUpdateFp unmanagedUpdate = (XmlBlasterUnmanagedCEUpdateFp)(xa->userFp);
 
-   xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Got update message");
+   if (xa->logLevel>=XMLBLASTER_LOG_TRACE)
+      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Got update message");
    
    if (userData != 0) ;  /* Supress compiler warning */
    if (unmanagedUpdate == 0) return false;
@@ -258,12 +258,12 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
       printf("XmlBlasterUnmanaged.c: before update() %d\n", (int)msgUnitArr->len);
       */
       
-      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Got update, calling C# ...");
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Got update, calling C# ...");
 
       /* Call C# ..., it may allocate errorCode */
       unmanagedUpdate(cbSessionId, &msgUnitArr->msgUnitArr[i], &unmanagedException);
 
-      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Got update, calling C# DONE");
+      if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Got update, calling C# DONE");
 
       if (unmanagedException.errorCode != 0) {
          /* catch first exception set and return */
@@ -519,6 +519,11 @@ XBFORCE_EXTERNC Dll_Export bool xmlBlasterUnmanagedCEIsConnected(struct XmlBlast
 XBFORCE_EXTERNC Dll_Export const char *xmlBlasterUnmanagedCEUsage() {
    char *usage = (char *)malloc(XMLBLASTER_MAX_USAGE_LEN*sizeof(char));
    return xmlBlasterAccessUnparsedUsage(usage);
+}
+
+XBFORCE_EXTERNC Dll_Export const char *xmlBlasterUnmanagedCEVersion() {
+   char *version = strcpyAlloc(getXmlBlasterVersion());
+   return version;
 }
 
 #endif /*defined(_WINDOWS)*/
