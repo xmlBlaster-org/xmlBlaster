@@ -14,32 +14,30 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
 {
    private I_XmlBlasterAccess xb;
    private const string callbackSessionId = "secretCb";
-   
-   static void Main(string[] argv) {
-      Console.WriteLine("[TestPInvoke.cs] startup");
-      //Array logArray = Enum.GetValues(typeof(LogLevel));
-      //foreach (LogLevel logLevel in logArray)
-      //   Console.WriteLine("Number {1} of LogLevel.WARN is {0}", logLevel, logLevel.ToString("d"));
-      // Console.WriteLine("Number {1} of LogLevel.WARN is {0}", LogLevel.WARN, LogLevel.WARN.ToString("d"));
+
+   static void Main(string[] argv)
+   {
+      Console.WriteLine("[TestPInvoke.cs] Startup");
       new TestPInvoke(argv);
    }
-   
-   public TestPInvoke(string[] argv) {
+
+   public TestPInvoke(string[] argv)
+   {
       xb = XmlBlasterAccessFactory.createInstance(argv);
       xb.addLoggingListener(this);
 
       string connectQos = String.Format(
-         "<qos>\n"+
-         " <securityService type='htpasswd' version='1.0'>\n"+
-         "  <![CDATA[\n"+
-         "   <user>fritz</user>\n"+
-         "   <passwd>secret</passwd>\n"+
-         "  ]]>\n"+
-         " </securityService>\n"+
-         " <queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>\n"+
-         "   <callback type='SOCKET' sessionId='{0}'>\n"+
-         "   </callback>\n"+
-         " </queue>\n"+
+         "<qos>\n" +
+         " <securityService type='htpasswd' version='1.0'>\n" +
+         "  <![CDATA[\n" +
+         "   <user>fritz</user>\n" +
+         "   <passwd>secret</passwd>\n" +
+         "  ]]>\n" +
+         " </securityService>\n" +
+         " <queue relating='callback' maxEntries='50000' maxEntriesCache='10000'>\n" +
+         "   <callback type='SOCKET' sessionId='{0}'>\n" +
+         "   </callback>\n" +
+         " </queue>\n" +
          "</qos>", callbackSessionId);  //"    socket://{1}:{2}"+
       log("Connecting with:" + connectQos);
 
@@ -49,55 +47,59 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
       Console.WriteLine("Hit a key to subscribe to 'Hello' ...");
       Console.ReadLine();
 
+      string prq = xb.publish("<key oid='Hello'/>", "HIIIHAAAA", "<qos/>");
+      log("publish() returned " + prq);
+
       string srq = xb.subscribe("<key oid='Hello'/>", "<qos/>");
       log("subscribe() returned " + srq);
 
+      prq = xb.publish("<key oid='Hello'/>", "HIIIHAAAA", "<qos/>");
+      log("publish() returned " + prq);
+
       Console.WriteLine("Hit a key to continue ...");
       Console.ReadLine();
-      //Thread.Sleep(1000000000);
-      /*      
-            string srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-            log("subscribe() returned " + srq);
 
-            srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-            log("subscribe() returned " + srq);
+      srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+      log("subscribe() returned " + srq);
 
-            string[] urq = xb.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
-            log("unSubscribe() returned");
-            for (int i = 0; i < urq.Length; i++)
-               log("unSubscribeReturn #" + i + "\n" + urq[i]);
-            GC.Collect();
-            GC.Collect();
-      
-            string prq = xb.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
-            log("publish() returned " + prq);
+      srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+      log("subscribe() returned " + srq);
 
-            prq = xb.publish("<key oid='C#C#'/>", "HIIIHAAAA", "<qos/>");
-            log("publish() returned " + prq);
+      string[] urq = xb.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
+      log("unSubscribe() returned");
+      for (int i = 0; i < urq.Length; i++)
+         log("unSubscribeReturn #" + i + "\n" + urq[i]);
+      GC.Collect();
+      GC.Collect();
 
-            prq = xb.publish("<key oid='C#'/>", "HIIIHAAAA", "<qos/>");
-            log("publish() returned " + prq);
-      
-            MsgUnit[] msgs = xb.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
-            log("get(C#C#C#) returned " + msgs.Length + " messages");
-            for (int i = 0; i < msgs.Length; i++)
-               log(msgs[i].ToString());
-      */
-/*
+      prq = xb.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+      log("publish() returned " + prq);
+
+      prq = xb.publish("<key oid='C#C#'/>", "HIIIHAAAA", "<qos/>");
+      log("publish() returned " + prq);
+
+      prq = xb.publish("<key oid='C#'/>", "HIIIHAAAA", "<qos/>");
+      log("publish() returned " + prq);
+
+      MsgUnit[] msgs = xb.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
+      log("get(C#C#C#) returned " + msgs.Length + " messages");
+      for (int i = 0; i < msgs.Length; i++)
+         log(msgs[i].ToString());
+
       msgs = xb.get("<key oid='unknown'/>", "<qos><history numEntries='6'/></qos>");
       log("get(unknown) returned " + msgs.Length + " messages");
 
       string[] erq = xb.erase("<key queryType='XPATH'>//key</key>", "<qos/>");
       log("erase() returned");
       for (int i = 0; i < erq.Length; i++)
-         log("eraseReturn #"+i+"\n"+erq[i]);
+         log("eraseReturn #" + i + "\n" + erq[i]);
 
       string p = xb.ping("<qos/>");
       log("ping() returned " + p);
 
       bool b = xb.isConnected();
       log("isConnected() returned " + b);
-*/
+
       /*
       for (int i=0; i<5; i++) {
          string srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
@@ -131,12 +133,13 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
       */
       bool drq = xb.disconnect("<qos/>");
       log("disconnect() returned " + drq);
-      
+
       log("DONE");
    }
-   
+
    #region I_Callback Members
-   public string OnUpdate(string cbSessionId, MsgUnit msgUnit) {
+   public string OnUpdate(string cbSessionId, MsgUnit msgUnit)
+   {
       log("OnUpdate() received message from xmlBlaster:");
       if (callbackSessionId != cbSessionId)
          log("Not authorized");
