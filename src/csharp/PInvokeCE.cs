@@ -192,6 +192,7 @@ namespace org.xmlBlaster.client
          }
       }
 
+      [StructLayout(LayoutKind.Sequential/*, CharSet = CharSet.Unicode*/)]
       public class MsgUnitUnmanagedCEget // the get() only works with type 'class'! ?
       {
          public MsgUnitUnmanagedCEget()
@@ -219,26 +220,26 @@ namespace org.xmlBlaster.client
          public byte[] getContent()
          {
             if (content == IntPtr.Zero) return new byte[0];
-            return byteArrayFromIntPtr(key, contentLen, true);
+            return byteArrayFromIntPtr(content, contentLen, true);
          }
          /* Has to be called exactly once! */
          public string getKey()
          {  // If called never: memory leak, if called twice: double free
             if (key == IntPtr.Zero)
                return "";
-            return stringFromUtf8IntPtr(key);
+            return stringFromUtf8IntPtr(key, true);
          }
          /* Has to be called exactly once! */
          public string getQos()
          {
             if (qos == IntPtr.Zero) return "";
-            return stringFromUtf8IntPtr(qos);
+            return stringFromUtf8IntPtr(qos, true);
          }
          /* Has to be called exactly once! */
          public string getResponseQos()
          {
             if (responseQos == IntPtr.Zero) return "";
-            return stringFromUtf8IntPtr(key);
+            return stringFromUtf8IntPtr(responseQos, true);
          }
       }
 
@@ -942,7 +943,8 @@ namespace org.xmlBlaster.client
             XmlBlasterUnmanagedCEException exception = new XmlBlasterUnmanagedCEException(false);
             int size;
             IntPtr outArray = new IntPtr();
-            xmlBlasterUnmanagedCEGet(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos), ref exception, out size, out outArray);
+            xmlBlasterUnmanagedCEGet(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos),
+               ref exception, out size, out outArray);
             checkAndThrow("xmlBlasterUnmanagedCEGet", ref exception);
             MsgUnit[] msgUnitArr = new MsgUnit[size];
             IntPtr current = outArray;
@@ -951,6 +953,7 @@ namespace org.xmlBlaster.client
                logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEGet: parsing #" + i);
                MsgUnitUnmanagedCEget msgUnitUnmanaged = new MsgUnitUnmanagedCEget();
                Marshal.PtrToStructure(current, msgUnitUnmanaged);
+               //Console.WriteLine("msgUnitUnmanaged.contentLen=" + msgUnitUnmanaged.contentLen + " sizeof="+Marshal.SizeOf(msgUnitUnmanaged));
                current = (IntPtr)((long)current + Marshal.SizeOf(msgUnitUnmanaged));
                // The getters free the memory in the C DLL:
                msgUnitArr[i] = new MsgUnit(
