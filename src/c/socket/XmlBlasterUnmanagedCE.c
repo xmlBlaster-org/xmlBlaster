@@ -356,7 +356,7 @@ XBFORCE_EXTERNC Dll_Export extern bool xmlBlasterUnmanagedCEDisconnect(struct Xm
 }
 
 XBFORCE_EXTERNC Dll_Export extern char *xmlBlasterUnmanagedCEPublish(struct XmlBlasterAccessUnparsed *xa,
-                MsgUnitUnmanagedCE *msgUnitUnmanaged, XmlBlasterUnmanagedCEException *exception) {
+                MsgUnitUnmanagedCEpublish *msgUnitUnmanaged, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    char *ret = xa->publish(xa, msgUnitUnmanaged, &e);
    convert(&e, exception);
@@ -459,7 +459,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEErase(struct XmlBlasterAcce
 
 XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccessUnparsed *xa,
         char * key, char *qos, XmlBlasterUnmanagedCEException *exception,
-        uint32_t* pSize, MsgUnit** ppStruct) {
+        uint32_t* pSize, MsgUnitUnmanagedCEget** ppStruct) {
    XmlBlasterException e;
    uint32_t i;
    MsgUnitArr *msgUnitArr = xa->get(xa, key, qos, &e);
@@ -472,15 +472,15 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
    /*printf("dll: xmlBlasterUnmanagedCEGet building response\n");*/
    if (msgUnitArr != (MsgUnitArr *)0) {
       const uint32_t cArraySize = msgUnitArr->len;
-      MsgUnitUnmanagedCE* msgUnitUnmanagedP = 0;
+      MsgUnitUnmanagedCEget* msgUnitUnmanagedP = 0;
       if (cArraySize == 0) {
          *ppStruct = 0;
          freeMsgUnitArr(msgUnitArr);
          return;
-      }
+      } 
 
       *pSize = cArraySize;
-      *ppStruct = (MsgUnitUnmanagedCE*)malloc( cArraySize * sizeof( MsgUnitUnmanagedCE ));
+      *ppStruct = (MsgUnitUnmanagedCEget*)malloc( cArraySize * sizeof( MsgUnitUnmanagedCEget ));
       msgUnitUnmanagedP = *ppStruct;
       /*printf("dll: xmlBlasterUnmanagedCEGet %ud\n", cArraySize);*/
       /* TODO: It should be possible to pass msgUnitArr->msgUnitArr* directly
@@ -489,7 +489,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
          MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[i];
          char *cnt = (char *)malloc(msgUnit->contentLen*sizeof(char));
          /*printf("dll: xmlBlasterUnmanagedCEGet processing #%u\n", i);*/
-         msgUnitUnmanagedP->contentLen = msgUnit->contentLen;
+         msgUnitUnmanagedP->contentLen = (int32_t)msgUnit->contentLen;
          if (cnt != 0) {
             size_t j;
             for (j=0; j<msgUnit->contentLen; j++) cnt[j] = (char)msgUnit->content[j];
@@ -502,6 +502,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccess
       }
       freeMsgUnitArr(msgUnitArr);
    }
+   printf("DONE in get\n");
 }
 
 XBFORCE_EXTERNC Dll_Export char *xmlBlasterUnmanagedCEPing(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedCEException *exception) {
