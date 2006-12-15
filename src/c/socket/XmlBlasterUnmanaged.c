@@ -10,7 +10,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <stdio.h> /* printf */
 #include <XmlBlasterUnmanaged.h>
 
-#if defined(_WINDOWS) && !defined(WINCE)
+#ifndef WINCE
 
 /*
  To access this .dll as unmanaged code, the C-API must be simplified,
@@ -259,4 +259,4 @@ Dll_Export const char *xmlBlasterUnmanagedUsage() {
    return xmlBlasterAccessUnparsedUsage(usage);
 }
 
-#endif /*defined(_WINDOWS) && !defined(WINCE)*/
+#endif /*!defined(WINCE)*/

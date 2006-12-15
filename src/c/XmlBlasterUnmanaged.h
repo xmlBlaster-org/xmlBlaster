@@ -15,7 +15,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
  To access this .dll as unmanaged code from C#, the C-API must be simplified,
  for example fixed size arrays like "char errorCode[256]" are tricky.
  We implement here a simple wrapper around XmlBlasterAccessUnparsed.h
- This code is called from xmlBlaster/src/csharp/PInvokeCE.cs
+ This code is called from xmlBlaster/src/csharp/NativeC.cs
  See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
  */
 
@@ -28,7 +28,7 @@ extern "C" {
 
 #include <XmlBlasterAccessUnparsed.h>
 
-#if defined(_WINDOWS) && !defined(WINCE)
+#ifndef WINCE
 
 /**
  * Usage without fixed array size, to avoid 'unsafe' code in C#
@@ -73,6 +73,6 @@ Dll_Export extern const char *xmlBlasterUnmanagedUsage();
 #endif
 #endif
 
-#endif /*defined(_WINDOWS) && !defined(WINCE)*/
+#endif /*!defined(WINCE)*/
 #endif /* _XmlBlasterUnmanaged_H */
 
