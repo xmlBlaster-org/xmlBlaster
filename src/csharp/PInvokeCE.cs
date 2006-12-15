@@ -244,7 +244,7 @@ namespace org.xmlBlaster.client
       }
 
       // Helper struct for DLL calls
-      unsafe struct XmlBlasterUnmanagedCEException
+      public unsafe struct XmlBlasterUnmanagedCEException
       {
          public XmlBlasterUnmanagedCEException(bool isRemote)
          {
@@ -312,7 +312,7 @@ namespace org.xmlBlaster.client
             }
             else {
                string prefix = (location != null && location.Length > 0) ? location : "[PInvoke]";
-	            prefix += " " + level + ": ";
+                    prefix += " " + level + ": ";
                System.Diagnostics.Debug.WriteLine(prefix + message);
                Console.WriteLine(prefix + message);
             }
@@ -717,9 +717,9 @@ namespace org.xmlBlaster.client
          {
             XmlBlasterUnmanagedCEException exception = new XmlBlasterUnmanagedCEException(false);
 #           if CF1 // Compact Framework .net 1.0
-               bool bb = xmlBlasterUnmanagedCEInitialize(xa, IntPtr.Zero, ref exception);
+               /*bool bb = */xmlBlasterUnmanagedCEInitialize(xa, IntPtr.Zero, ref exception);
 #           else // Compact Framework 2
-               bool bb = xmlBlasterUnmanagedCEInitialize(xa, updateFpForDelegate, ref exception);
+               /*bool bb = */xmlBlasterUnmanagedCEInitialize(xa, updateFpForDelegate, ref exception);
 #           endif
             checkAndThrow("xmlBlasterUnmanagedCEInitialize", ref exception);
 

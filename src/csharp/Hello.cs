@@ -22,7 +22,7 @@
 */
 using System;
 using System.Runtime.InteropServices;
-using org.xmlBlaster;
+using org.xmlBlaster.client;
 
 public class Hello : I_Callback
 {
