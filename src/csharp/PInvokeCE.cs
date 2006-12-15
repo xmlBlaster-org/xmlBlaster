@@ -614,10 +614,18 @@ namespace org.xmlBlaster.client
          c_argv[0] = stringToUtf8IntPtr("PInvokeCE"); // TODO: my executable name
          for (int i = 0; i < argv.Length; ++i)
          {
-            if (argv[i] == "--help")
+            if (argv[i].ToLower().Equals("--help") || argv[i].ToLower().Equals("-help")
+               || argv[i].ToLower().Equals("/?"))
             {
-               string usage = getUsage();
-               logger(LogLevel.TRACE, "", "Usage:\n" + getUsage());
+               string usage = "Usage:\nxmlBlaster C client v" + getVersion()
+                  + " on " + System.Environment.OSVersion.ToString() +
+               #if WINCE
+                  " compact framework .net " + System.Environment.Version.ToString();
+               #else
+                  " .net " + System.Environment.Version.ToString();
+               #endif
+               usage += "\n" + getUsage();
+               logger(LogLevel.TRACE, "", usage);
                throw new XmlBlasterException("user.usage", usage);//"Good bye");
             }
             if ("-logLevel".Equals(argv[i]) && (i < argv.Length-1)) {
@@ -660,14 +668,16 @@ namespace org.xmlBlaster.client
       void check(string methodName)
       {
          logger(LogLevel.TRACE, "", methodName + "() check ...");
-         if (xa == IntPtr.Zero)
+         if (xa == IntPtr.Zero) {
+            logger(LogLevel.ERROR, "", "Can't process " + methodName + ", xmlBlaster pointer is reset, please create a new instance of PInvokeCE.cs class after a disconnect() call");
             throw new XmlBlasterException("internal.illegalState", "Can't process " + methodName + ", xmlBlaster pointer is reset, please create a new instance of PInvokeCE.cs class after a disconnect() call");
+         }
       }
 
 
       private delegate void OnLogging(LogLevel logLevel, string location, string message);
       private event OnLogging onLogging;
-      public void register(I_LoggingCallback listener)
+      public void addLoggingListener(I_LoggingCallback listener)
       {
          if (listener != null)
          {
@@ -835,7 +845,7 @@ namespace org.xmlBlaster.client
                                            stringToUtf8IntPtr(qos), ref exception);
             checkAndThrow("xmlBlasterUnmanagedCESubscribe", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
-            //logger(LogLevel.TRACE, "", ret);
+            logger(LogLevel.TRACE, "", ret);
             return ret;
          }
          catch (XmlBlasterException e)

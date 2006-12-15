@@ -102,7 +102,12 @@ namespace org.xmlBlaster.client
 
       string getUsage();
 
-      void register(I_LoggingCallback listener);
+      /// <summary>
+      /// Register the given listener to receive all logging output
+      /// of the C library and C# wrapper code.
+      /// </summary>
+      /// <param name="listener">The logging is redirected to this listener</param>
+      void addLoggingListener(I_LoggingCallback listener);
    }
 
    public class XmlBlasterException : ApplicationException

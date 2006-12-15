@@ -26,6 +26,7 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
    
    public TestPInvoke(string[] argv) {
       xb = XmlBlasterAccessFactory.createInstance(argv);
+      xb.addLoggingListener(this);
 
       string connectQos = String.Format(
          "<qos>\n"+
@@ -154,7 +155,7 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
 
    void log(String str)
    {
-      Console.WriteLine("[TestPInvoke.cs] "+str);
-      System.Diagnostics.Debug.WriteLine("[TestPInvoke.cs] " + str);
+      Console.WriteLine(str);
+      System.Diagnostics.Debug.WriteLine(str);
    }
 }
