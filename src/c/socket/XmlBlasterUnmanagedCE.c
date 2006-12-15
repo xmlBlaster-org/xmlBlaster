@@ -73,7 +73,7 @@ XBFORCE_EXTERNC void TestCallBack( FPTR pf, int32_t value )
 }
 
 /** TODO: transport in xa: now this dll can only handel one client!!! */
-static XmlBlasterUnmanagedCELoggerFp managedLoggerFp;
+//static XmlBlasterUnmanagedCELoggerFp managedLoggerFp;
 
 static void myLogger(void *logUserP, 
                      XMLBLASTER_LOG_LEVEL currLevel,
@@ -89,11 +89,11 @@ static void myLogger(void *logUserP,
    int n, size = 200;
    char *p = 0;
    va_list ap;
-   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)logUserP;
    int32_t lvl = (int32_t)level;
+   XmlBlasterUnmanagedCELoggerFp managedLoggerFp = (XmlBlasterUnmanagedCELoggerFp)logUserP;
 
-   /* TODO: pass managedLoggerFp with xa->... */
-   if (xa == 0 || managedLoggerFp == 0)
+
+   if (managedLoggerFp == 0)
       return;
 
    if (level > currLevel) { /* XMLBLASTER_LOG_ERROR, XMLBLASTER_LOG_WARN, XMLBLASTER_LOG_INFO, XMLBLASTER_LOG_TRACE */
@@ -113,7 +113,7 @@ static void myLogger(void *logUserP,
                    __DATE__, __TIME__, getLogLevelStr(level), location, p);*/
          /* Call now the C# logger XmlBlasterUnmanagedCELoggerFp */
 
-         (*managedLoggerFp)(lvl, p);
+         (*managedLoggerFp)(lvl, location, p);
          
          /* The C# code does not free 'p' during its UNICODE marshalling 
             with byteArrayFromIntPtr(false) -> no xmlBlasterUnmanagedCEFree() */
@@ -141,16 +141,24 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterLogger(struct XmlBl
    if (logger != 0) {
       /* Register our own logging function */
       xa->log = myLogger;
-      /* Optionally pass a pointer which we can use in myLogger again */
-      xa->logUserP = xa;
-      managedLoggerFp = logger;
+    //  if (xa->connectionP != 0) xa->connectionP->log = myLogger;
+    //  if (xa->callbackP != 0) xa->callbackP->log = myLogger;
+      /* Pass a pointer which we can use in myLogger() again */
+      xa->logUserP = logger;
+    //  if (xa->connectionP != 0) xa->connectionP->logUserP = logger;
+    //  if (xa->callbackP != 0) xa->callbackP->logUserP = logger;
    }
    else { /* unregister */
       xa->log = 0;
       xa->logUserP = 0;
-      managedLoggerFp = 0;
+      /*
+      if (xa->connectionP != 0) xa->connectionP->log = 0;
+      if (xa->connectionP != 0) xa->connectionP->logUserP = 0;
+      if (xa->callbackP != 0) xa->callbackP->log = 0;
+      if (xa->callbackP != 0) xa->callbackP->logUserP = 0;
+      */
    }
-   xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Testing logging output only");
+   /*xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Testing logging output only");*/
 }
 
 /**
@@ -286,6 +294,7 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
  */
 XBFORCE_EXTERNC Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanagedCE(int argc, char** argv){
    int i=0;
+   XmlBlasterAccessUnparsed *xa;
    const char ** ptr = (const char **)malloc(argc*sizeof(char *));
    for (i=0; i<argc; ++i) {
       ptr[i] = strcpyAlloc(argv[i]);
@@ -293,7 +302,9 @@ XBFORCE_EXTERNC Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed
       /*if (freeIt) { xmlBlasterFree(argv[i]); argv[i] = 0; }*/
    }
    /*if (freeIt) { xmlBlasterFree((char *)argv); }*/
-   return getXmlBlasterAccessUnparsed(argc, ptr);
+   xa = getXmlBlasterAccessUnparsed(argc, ptr);
+   //xa->userObject = ...; // Transports something to the interceptUpdate() method
+   return xa;
 }
 
 XBFORCE_EXTERNC Dll_Export void freeXmlBlasterAccessUnparsedUnmanagedCE(XmlBlasterAccessUnparsed *xmlBlasterAccess) {
