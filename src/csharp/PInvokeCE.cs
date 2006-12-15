@@ -128,7 +128,7 @@ namespace org.xmlBlaster.client
    /// Calling unmanagegd code: xmlBlasterClientC.dll
    public class PInvokeCE : I_XmlBlasterAccess
    {
-      static LogLevel localLogLevel = LogLevel.TRACE; // TODO: log4net
+      static LogLevel localLogLevel = LogLevel.INFO; // TODO: log4net
 
 #     if XMLBLASTER_CLIENT_MONO
          // Linux Debug libxmlBlasterClientCD.so, set LD_LIBRARY_PATH to find the shared library
@@ -175,10 +175,7 @@ namespace org.xmlBlaster.client
          public string getKey(bool freeUnmanaged)
          {  // If called never: memory leak, if called twice: double free
             if (key == IntPtr.Zero)
-            {
-               logger(LogLevel.TRACE, "", "MsgUnitUnmanagedCE.key is Zero!!!!!!!!!!!!!!");
                return "";
-            }
             return stringFromUtf8IntPtr(key, freeUnmanaged);
          }
          /* Has to be called exactly once if freeUnmanaged==true! */
@@ -228,10 +225,7 @@ namespace org.xmlBlaster.client
          public string getKey()
          {  // If called never: memory leak, if called twice: double free
             if (key == IntPtr.Zero)
-            {
-               logger(LogLevel.TRACE, "", "MsgUnitUnmanagedCE.key is Zero!!!!!!!!!!!!!!");
                return "";
-            }
             return stringFromUtf8IntPtr(key);
          }
          /* Has to be called exactly once! */
@@ -299,14 +293,28 @@ namespace org.xmlBlaster.client
          logger(LogLevel.TRACE, "", str);
       }
 
-      public static void logger(LogLevel level, String location, String str)
+      public void logger(LogLevel level, String location, String message)
       {
          //logLevel.ToString("d")
          if ((int)level <= (int)localLogLevel) { // TODO: log4net
-            string prefix = (location != null && location.Length > 0) ? location : "[PInvoke]";
-	         prefix += " " + level + ": ";
-	         System.Diagnostics.Debug.WriteLine(prefix + str);
-	         Console.WriteLine(prefix + str);
+            if (null != onLogging)
+            {
+               try
+               {
+                  onLogging((LogLevel)level, location, message); // Dispatch to C# clients
+               }
+               catch (Exception e)
+               {
+                  System.Diagnostics.Debug.WriteLine(e.ToString());
+                  Console.WriteLine(e.ToString());
+               }
+            }
+            else {
+               string prefix = (location != null && location.Length > 0) ? location : "[PInvoke]";
+	            prefix += " " + level + ": ";
+               System.Diagnostics.Debug.WriteLine(prefix + message);
+               Console.WriteLine(prefix + message);
+            }
          }
       }
 
@@ -323,17 +331,6 @@ namespace org.xmlBlaster.client
          string msg = stringFromUtf8IntPtr(message, false);
          LogLevel logLevel = (LogLevel)level;
          logger(logLevel, loc, msg);
-         if (null != onLogging)
-         {
-            try
-            {
-               onLogging((LogLevel)level, loc, msg); // Dispatch to C# clients
-            }
-            catch (Exception e)
-            {
-               Console.WriteLine(e.ToString());
-            }
-         }
       }
 
 
@@ -352,6 +349,11 @@ namespace org.xmlBlaster.client
       /// The return should be a string, but this is difficult over P/Invoke, we would
       /// need to solve it by an out parameter. But xmlBlaster ignores it currently so it is an open TODO
       /// Info about callback function pointer: http://msdn2.microsoft.com/en-us/library/5zwkzwf4.aspx
+      /// Nice example how to pass a pointer to a managed object to DLL
+      /// and on callback cast it again to the managed object:
+      ///  http://msdn2.microsoft.com/en-us/library/44ey4b32.aspx
+      /// See http://msdn2.microsoft.com/en-us/library/ss9sb93t.aspx
+      /// Samples: http://msdn2.microsoft.com/en-us/library/fzhhdwae.aspx
       void updateUnmanaged(IntPtr cbSessionId_, ref MsgUnitUnmanagedCEpublish msgUnitUnmanaged, ref XmlBlasterUnmanagedCEException exception)
       {
          logger(LogLevel.TRACE, "", "Entering updateUnmanaged()");
@@ -589,64 +591,23 @@ namespace org.xmlBlaster.client
       private extern static bool xmlBlasterUnmanagedCEIsConnected(IntPtr xa);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static string xmlBlasterUnmanagedCEUsage();
+      private extern static IntPtr xmlBlasterUnmanagedCEUsage();
+
+      [DllImport(XMLBLASTER_C_LIBRARY)]
+      private extern static IntPtr xmlBlasterUnmanagedCEVersion();
 
       private IntPtr xa;
-      unsafe private void* xaP;
-      private unsafe IntPtr getXmlBlasterAccessP() {
-         return new IntPtr(xaP);
-      }
       private UpdateUnmanagedFp updateUnmanagedFp;
       private LoggerUnmanagedFp loggerUnmanagedFp;
-      private bool isGCHandled = false;
-      private GCHandle gch;
       private IntPtr updateFpForDelegate;
       private IntPtr loggerFpForDelegate;
 
-      // Callback Test code only:
-      // From http://msdn2.microsoft.com/en-us/library/5zwkzwf4.aspx
-      public class LibWrap
-      {// Declares managed prototypes for unmanaged functions.
-         // System.Runtime.InteropServices: CallingConvention
-         // On Windows CE CF1 or CF2 it defaults to Cdecl (on Windows it is StdCall)
-#     if FORCE_CDELC
-         [DllImport(XMLBLASTER_C_LIBRARY, CallingConvention = CallingConvention.Cdecl)]
-#     else
-         [DllImport(XMLBLASTER_C_LIBRARY)]
-#     endif
-         public static extern void TestCallBack(IntPtr cb, int value);
-      }
-      public static int DoSomething(int value)
-      {
-         Console.WriteLine("\n[C#]: Callback called with param: {0}", value);
-         return 66;
-      }
-      // Nice example how to pass a pointer to a managed object to DLL
-      // and on callback cast it again to the managed object
-      //http://msdn2.microsoft.com/en-us/library/44ey4b32.aspx
-
       unsafe public PInvokeCE(string[] argv)
       {
-         logger(LogLevel.TRACE, "", "Entering PInvokeCE() C++ CF=" + System.Environment.Version.ToString() + " OS=" +
-            System.Environment.OSVersion.ToString() + "....");
-         FPtr cb = new FPtr(DoSomething);
-         logger(LogLevel.TRACE, "", "Testing callback GetFunctionPointerForDelegate()");
-         IntPtr cbForDelegate = Marshal.GetFunctionPointerForDelegate(cb);
-         logger(LogLevel.TRACE, "", "Testing callback DoSomething()");
-         LibWrap.TestCallBack(cbForDelegate, 99);
-         logger(LogLevel.TRACE, "", "Done testing callback DoSomething()");
-
          if (argv == null) argv = new String[0];
 
-         // See http://msdn2.microsoft.com/en-us/library/ss9sb93t.aspx
-         // Samples: http://msdn2.microsoft.com/en-us/library/fzhhdwae.aspx
          updateUnmanagedFp = new UpdateUnmanagedFp(this.updateUnmanaged);
-         // prevents the managed object from being collected
-         gch = GCHandle.Alloc(updateUnmanagedFp);
-         isGCHandled = true;
          updateFpForDelegate = Marshal.GetFunctionPointerForDelegate(updateUnmanagedFp);
-         logger(LogLevel.TRACE, "", "All updateUnmanagedFp done");
-
 
          // Convert command line arguments: C client lib expects the executable name as first entry
          IntPtr[] c_argv = new IntPtr[argv.Length + 1];
@@ -655,8 +616,9 @@ namespace org.xmlBlaster.client
          {
             if (argv[i] == "--help")
             {
-               logger(LogLevel.TRACE, "", "Usage:\n" + xmlBlasterUnmanagedCEUsage());
-               throw new XmlBlasterException("user.usage", "Good bye");
+               string usage = getUsage();
+               logger(LogLevel.TRACE, "", "Usage:\n" + getUsage());
+               throw new XmlBlasterException("user.usage", usage);//"Good bye");
             }
             if ("-logLevel".Equals(argv[i]) && (i < argv.Length-1)) {
                string level = argv[i + 1];
@@ -672,21 +634,25 @@ namespace org.xmlBlaster.client
 
          // Frees not c_argv (as it crashed)
          xa = getXmlBlasterAccessUnparsedUnmanagedCE(c_argv.Length, c_argv);
-         xaP = xa.ToPointer();
          for (int i = 0; i < c_argv.Length; ++i)
             xmlBlasterUnmanagedCEFree(c_argv[i]);
 
          loggerUnmanagedFp = new LoggerUnmanagedFp(this.loggerUnmanaged);
          loggerFpForDelegate = Marshal.GetFunctionPointerForDelegate(loggerUnmanagedFp);
          xmlBlasterUnmanagedCERegisterLogger(xa, loggerFpForDelegate);
+
+         logger(LogLevel.INFO, "", "xmlBlaster C client v" + getVersion() 
+            + " on " + System.Environment.OSVersion.ToString() +
+#        if WINCE
+            " compact framework .net " + System.Environment.Version.ToString());
+#        else
+            " .net " + System.Environment.Version.ToString());
+#        endif
       }
 
       ~PInvokeCE()
       {
-         logger(LogLevel.TRACE, "", "TODO: GCHandle.Free(updateUnmanagedFp)!!!");
-         if (isGCHandled)
-            gch.Free();
-         if (xa != new IntPtr(0))
+         if (xa != IntPtr.Zero)
             freeXmlBlasterAccessUnparsedUnmanagedCE(xa);
          logger(LogLevel.TRACE, "", "~PInvokeCE() ...");
       }
@@ -1035,9 +1001,16 @@ namespace org.xmlBlaster.client
          }
       }
 
-      public static string usage()
+      public string getVersion()
       {
-         return xmlBlasterUnmanagedCEUsage();
+         IntPtr retP = xmlBlasterUnmanagedCEVersion();
+         return stringFromUtf8IntPtr(retP);
+      }
+
+      public string getUsage()
+      {
+         IntPtr retP = xmlBlasterUnmanagedCEUsage();
+         return stringFromUtf8IntPtr(retP);
       }
    }
 }

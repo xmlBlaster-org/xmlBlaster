@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using org.xmlBlaster.client;
 
-public class TestPInvoke : I_Callback
+public class TestPInvoke : I_Callback, I_LoggingCallback
 {
    private I_XmlBlasterAccess xb;
    private const string callbackSessionId = "secretCb";
@@ -136,25 +136,25 @@ public class TestPInvoke : I_Callback
    
    #region I_Callback Members
    public string OnUpdate(string cbSessionId, MsgUnit msgUnit) {
-      log("OnUpdate() invoked START ==================");
+      log("OnUpdate() received message from xmlBlaster:");
       if (callbackSessionId != cbSessionId)
          log("Not authorized");
-      log(msgUnit.key);
-      log(msgUnit.getContentStr());
-      log(msgUnit.qos);
-      string ret = "<qos><state id='OK'/></qos>";
-      log("OnUpdate() invoked DONE ===================");
+      log(msgUnit.ToString());
+      return "<qos><state id='OK'/></qos>";
       //throw new XmlBlasterException("user.update.illegalArgument", "A test exception from OnUpdate()");
-      return ret;
    }
    #endregion
 
-   void log(String str) {
-      if (xb != null)
-         xb.log("[TestPInvoke.cs] " + str);
-      else {
-         Console.WriteLine("[TestPInvoke.cs] "+str);
-         System.Diagnostics.Debug.WriteLine("[TestPInvoke.cs] " + str);
-      }
+   #region I_LoggingCallback Members
+   public void OnLogging(LogLevel logLevel, string location, string message)
+   {
+      log(logLevel.ToString() + " " + location + ": " + message);
+   }
+   #endregion
+
+   void log(String str)
+   {
+      Console.WriteLine("[TestPInvoke.cs] "+str);
+      System.Diagnostics.Debug.WriteLine("[TestPInvoke.cs] " + str);
    }
 }

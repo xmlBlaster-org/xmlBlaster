@@ -98,7 +98,11 @@ namespace org.xmlBlaster.client
       /// <returns>true if we are connected</returns>
       bool isConnected();
 
-      void log(String str);
+      string getVersion();
+
+      string getUsage();
+
+      void register(I_LoggingCallback listener);
    }
 
    public class XmlBlasterException : ApplicationException
