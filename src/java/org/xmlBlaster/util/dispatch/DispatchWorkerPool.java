@@ -45,10 +45,11 @@ public class DispatchWorkerPool //implements I_RunlevelListener
          this.priority = priority;
       }
       public Thread newThread(Runnable command) {
-         Thread t = new Thread(command, "XmlBlaster.DispatchWorkerPool."+id + "-" + this.count++);
+         String threadName = "XmlBlaster.DispatchWorkerPool."+id + "-" + this.count++;
+         log.fine("Created a new thread '" + threadName + "'");
+         Thread t = new Thread(command, threadName);
          t.setDaemon(true);
          t.setPriority(priority);
-         //System.out.println("Created new daemon thread instance for DispatchWorkerPool");
          return t;
       }
    }
