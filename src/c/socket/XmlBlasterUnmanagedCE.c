@@ -11,15 +11,15 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <string.h> /* memset */
 #include <stdio.h>  /* printf */
 #include <XmlBlasterUnmanagedCE.h>
-/*#include <locale.h>*/ /* setlocal() */
-
-#if defined(_WINDOWS)
-/*#if defined(WINCE)*/
+#ifndef WINCE
+#  include <stdarg.h>
+#  include <locale.h> /* setlocal() */
+#endif
 
 #ifdef __cplusplus
-#	define XBFORCE_EXTERNC extern "C"
+#       define XBFORCE_EXTERNC extern "C"
 #else
-#	define XBFORCE_EXTERNC
+#       define XBFORCE_EXTERNC
 #endif
 
 static const bool freeIt = true;
@@ -29,51 +29,6 @@ static const bool freeIt = true;
  so we force C code here.
  See: http://www.opennetcf.org/Forums/topic.asp?TOPIC_ID=255
 */
-
-/**
- * Simple function for testing
- */
-XBFORCE_EXTERNC extern void sayHello() {
-	printf("Hello World from C DLL!\n");
-}
-Dll_Export extern void sayHelloLPCT(LPCTSTR p) {
-	printf("Hello World from C DLL LPCTSTR=%s!\n", p);
-}
-
-XBFORCE_EXTERNC extern void sayHelloP(int32_t size, const char *p) {
-	/*char ret[126];*/
-	printf("Hello World from C DLL size=%d '%s', trying now wcs\n", size, p);
-   /* wcstombs(ret, (const wchar_t *)p, 126);
-	printf("Hello World from C DLL P=%s!\n", p); */
-}
-XBFORCE_EXTERNC extern void sayHelloEx(XmlBlasterUnmanagedCEException *exception) {
-	printf("Hello World from C DLL sayHelloEx\n");
-   exception->errorCode = strcpyAlloc("user.test");
-   exception->message = strcpyAlloc("Some text");
-   exception->remote = 1;
-}
-   
-XBFORCE_EXTERNC extern char *sayHelloRet() {
-   printf("dll: Invoke sayHelloRet()\n");
-   /*return strcpyAlloc("Hello world allocated \xC3\xB6 in DLL");*/
-   return strcpyAlloc("\xE8\xAA\x9E  German:\xC3\xB6  Korean:\xED\x95\x9C \xEA\xB5\xAD\xEC\x96\xB4  Japanese:\xE6\x97\xA5\xE6\x9C\xAC\xE8\xAA\x9E");
-}
-
-XBFORCE_EXTERNC void TestCallBack( FPTR pf, int32_t value )
-{
-   int32_t res;
-   printf( "\ndll: Received value: %i", value );
-   printf( "\ndll: Passing to callback..." );
-   res = (*pf)(value);
-   
-   if( res )
-      printf( "dll: Callback returned %d.\n", res );
-   else
-      printf( "dll: Callback returned %d.\n", res );
-}
-
-/** TODO: transport in xa: now this dll can only handel one client!!! */
-//static XmlBlasterUnmanagedCELoggerFp managedLoggerFp;
 
 static void myLogger(void *logUserP, 
                      XMLBLASTER_LOG_LEVEL currLevel,
@@ -140,22 +95,12 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterLogger(struct XmlBl
    if (logger != 0) {
       /* Register our own logging function */
       xa->log = myLogger;
-    //  if (xa->connectionP != 0) xa->connectionP->log = myLogger;
-    //  if (xa->callbackP != 0) xa->callbackP->log = myLogger;
       /* Pass a pointer which we can use in myLogger() again */
       xa->logUserP = logger;
-    //  if (xa->connectionP != 0) xa->connectionP->logUserP = logger;
-    //  if (xa->callbackP != 0) xa->callbackP->logUserP = logger;
    }
    else { /* unregister */
       xa->log = 0;
       xa->logUserP = 0;
-      /*
-      if (xa->connectionP != 0) xa->connectionP->log = 0;
-      if (xa->connectionP != 0) xa->connectionP->logUserP = 0;
-      if (xa->callbackP != 0) xa->callbackP->log = 0;
-      if (xa->callbackP != 0) xa->callbackP->logUserP = 0;_
-      */
    }
    /*xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Testing logging output only");*/
 }
@@ -303,7 +248,7 @@ XBFORCE_EXTERNC Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed
    }
    /*if (freeIt) { xmlBlasterFree((char *)argv); }*/
    xa = getXmlBlasterAccessUnparsed(argc, ptr);
-   //xa->userObject = ...; // Transports something to the interceptUpdate() method
+   /*xa->userObject = ...; // Transports something to the interceptUpdate() method*/
    return xa;
 }
 
@@ -531,6 +476,3 @@ XBFORCE_EXTERNC Dll_Export const char *xmlBlasterUnmanagedCEVersion() {
    char *version = strcpyAlloc(getXmlBlasterVersion());
    return version;
 }
-
-#endif /*defined(_WINDOWS)*/
-/*#endif*/ /*defined(WINCE)*/

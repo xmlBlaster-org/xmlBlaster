@@ -28,9 +28,6 @@ See:       P/Invoke for CE: http://msdn2.microsoft.com/en-us/library/Aa446536.as
 
 #include <XmlBlasterAccessUnparsed.h>
 
-#if defined(_WINDOWS)
-//#if defined(WINCE)
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -71,16 +68,6 @@ typedef struct XmlBlasterUnmanagedCEStringArr {
 } XmlBlasterUnmanagedCEStringArr;
 
 
-/**
- * Simple function for testing
- */
-Dll_Export extern void sayHello();
-/* typedef CONST WCHAR *LPCWSTR, *PCWSTR;*/
-Dll_Export extern void sayHelloLPCT(LPCTSTR p);
-Dll_Export extern void sayHelloP(int32_t size, const char *p);
-Dll_Export extern void sayHelloEx(XmlBlasterUnmanagedCEException *xmlBlasterException);
-Dll_Export extern char *sayHelloRet();
-
 Dll_Export extern char *xmlBlasterUnmanagedCEMalloc(int32_t size);
 Dll_Export extern void xmlBlasterUnmanagedCEFree(char *p);
 Dll_Export extern void xmlBlasterUnmanagedCEFreePP(char **pp);
@@ -91,13 +78,15 @@ Dll_Export extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedCEE
 #define WINAPI      __stdcall
 #define WINAPIV     __cdecl
 */
-#define XB_CALLBACK_DECL __cdecl
+#if defined(_WINDOWS)
+#  define XB_CALLBACK_DECL __cdecl
+# else/* XMLBLASTER_CLIENT_MONO */
+#  define XB_CALLBACK_DECL
+#endif
 typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCELoggerFp)(int32_t level, const char *location, const char *msg);
 typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCEUpdateFp)(const char *cbSessionId, MsgUnit *msgUnit, XmlBlasterUnmanagedCEException *xmlBlasterException);
 /*typedef int32_t (__cdecl *FPTR)( int32_t i );*/
 typedef int32_t (XB_CALLBACK_DECL *FPTR)( int32_t i );
-
-__declspec (dllexport) extern void TestCallBack( FPTR pf, int32_t value );
 
 Dll_Export extern void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCELoggerFp logger);
 
@@ -116,13 +105,11 @@ Dll_Export extern void xmlBlasterUnmanagedCEErase(struct XmlBlasterAccessUnparse
 Dll_Export extern  void xmlBlasterUnmanagedCEGet(struct XmlBlasterAccessUnparsed *xa, char * key, char *qos, XmlBlasterUnmanagedCEException *exception, uint32_t* pSize, MsgUnitUnmanagedCEget** ppStruct);
 Dll_Export extern  char *xmlBlasterUnmanagedCEPing(struct XmlBlasterAccessUnparsed *xa, char * qos, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern  bool xmlBlasterUnmanagedCEIsConnected(struct XmlBlasterAccessUnparsed *xa);
-Dll_Export extern const char *getXmlBlasterUnmanagedCEVersion();
+Dll_Export extern const char *xmlBlasterUnmanagedCEVersion();
 Dll_Export extern const char *xmlBlasterUnmanagedCEUsage();
 
 #ifdef __cplusplus
 }      /* extern "C" */
 #endif
-#endif /*defined(_WINDOWS)*/
-//#endif /* defined(WINCE) */
 #endif /* _XmlBlasterUnmanagedCE_H */
 
