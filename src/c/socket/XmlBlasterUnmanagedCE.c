@@ -176,6 +176,7 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
    size_t i;
    XmlBlasterUnmanagedCEException unmanagedException;
    XMLBLASTER_C_bool retVal = true;
+   int32_t isOneway = 0;
    /*MessageBox(NULL, L"Entering interceptUpdate0", _T("Unmanaged"), MB_OK);*/
 
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
@@ -192,6 +193,7 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
    unmanagedException.errorCode = (char)0;
    unmanagedException.message = (char)0;
    
+   isOneway = msgUnitArr->isOneway;
    for (i=0; i<msgUnitArr->len; i++) {
       const char *cbSessionId = strcpyAlloc(msgUnitArr->secretSessionId);
       /*
@@ -206,7 +208,7 @@ XBFORCE_EXTERNC static XMLBLASTER_C_bool interceptUpdate(MsgUnitArr *msgUnitArr,
       if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Got update, calling C# ...");
 
       /* Call C# ..., it may allocate errorCode */
-      unmanagedUpdate(cbSessionId, &msgUnitArr->msgUnitArr[i], &unmanagedException);
+      unmanagedUpdate(cbSessionId, &msgUnitArr->msgUnitArr[i], isOneway, &unmanagedException);
 
       if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Got update, calling C# DONE");
 

@@ -169,9 +169,10 @@ namespace org.xmlBlaster.client
    /// </summary>
    public class MsgUnit
    {
-      public string key;
-      public byte[] content;
-      public string qos;
+      private string key;
+      private byte[] content;
+      private string qos;
+      protected bool oneway;
       public MsgUnit() { }
       public MsgUnit(string key, byte[] content, string qos)
       {
@@ -208,6 +209,10 @@ namespace org.xmlBlaster.client
       {
          System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
          this.content = enc.GetBytes(contentStr);
+      }
+      public bool isOneway()
+      {
+         return this.oneway;
       }
       public override string ToString()
       {

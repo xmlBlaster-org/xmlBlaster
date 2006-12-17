@@ -355,7 +355,18 @@ namespace org.xmlBlaster.client
 #     if FORCE_CDELC
       [System.Runtime.InteropServices.UnmanagedFunctionPointer(System.Runtime.InteropServices.CallingConvention.Cdecl)]
 #     endif
-      public delegate void UpdateUnmanagedFp(IntPtr cbSessionId, ref MsgUnitUnmanagedCEpublish msgUnit, ref XmlBlasterUnmanagedCEException exception);
+      public delegate void UpdateUnmanagedFp(IntPtr cbSessionId, ref MsgUnitUnmanagedCEpublish msgUnit, int isOneway, ref XmlBlasterUnmanagedCEException exception);
+
+      /// <summary>
+      /// Helper class to set isOneway
+      /// </summary>
+      public class MsgUnitInternal : MsgUnit {
+         public MsgUnitInternal(string key, byte[] content, string qos, bool isOneway_)
+         : base(key, content, qos)
+         {
+            oneway = isOneway_;
+         }
+      }
 
       /// Callback by xmlBlaster C dll, see UpdateUnmanagedFp and XmlBlasterUnmanagedCE.h
       /// The cbSessionId_ and msgUnitUnmanaged is freed by the caller
@@ -367,14 +378,16 @@ namespace org.xmlBlaster.client
       ///  http://msdn2.microsoft.com/en-us/library/44ey4b32.aspx
       /// See http://msdn2.microsoft.com/en-us/library/ss9sb93t.aspx
       /// Samples: http://msdn2.microsoft.com/en-us/library/fzhhdwae.aspx
-      void updateUnmanaged(IntPtr cbSessionId_, ref MsgUnitUnmanagedCEpublish msgUnitUnmanaged, ref XmlBlasterUnmanagedCEException exception)
+      void updateUnmanaged(IntPtr cbSessionId_, ref MsgUnitUnmanagedCEpublish msgUnitUnmanaged, int isOneway_, ref XmlBlasterUnmanagedCEException exception)
       {
-         logger(LogLevel.TRACE, "", "Entering updateUnmanaged()");
+         bool isOneway = isOneway_ == 1;
+         logger(LogLevel.TRACE, "", "Entering updateUnmanaged() isOneway=" + isOneway);
          string cbSessionId = stringFromUtf8IntPtr(cbSessionId_, false);
          //fillUnmanagedException(ref exception, "user.internal", "a test exception from C#");
 
-         MsgUnit msgUnit = new MsgUnit(msgUnitUnmanaged.getKey(false),
-            msgUnitUnmanaged.getContent(false), msgUnitUnmanaged.getQos(false));
+         MsgUnit msgUnit = new MsgUnitInternal(msgUnitUnmanaged.getKey(false),
+            msgUnitUnmanaged.getContent(false), msgUnitUnmanaged.getQos(false),
+            isOneway);
          if (null != onUpdate)
          {
             try
@@ -384,21 +397,21 @@ namespace org.xmlBlaster.client
             }
             catch (XmlBlasterException e)
             {
-               logger(LogLevel.WARN, "", "OnUpdate() exception: " + e.ToString());
+               logger(LogLevel.WARN, "", "onUpdate() exception: " + e.ToString());
                fillUnmanagedException(ref exception, e.ErrorCode, e.Message);
             }
             catch (Exception e)
             {
-               logger(LogLevel.ERROR, "", "OnUpdate() exception: " + e.ToString());
+               logger(LogLevel.ERROR, "", "onUpdate() exception: " + e.ToString());
                fillUnmanagedException(ref exception, "user.update.internalError", e.ToString());
             }
             return;
          }
          logger(LogLevel.INFO, "", "updateUnmanaged got message " + msgUnit.getKey());
          logger(LogLevel.TRACE, "", "updateUnmanaged invoked START ==================");
-         logger(LogLevel.TRACE, "", msgUnit.key);
+         logger(LogLevel.TRACE, "", msgUnit.getKey());
          logger(LogLevel.TRACE, "", msgUnit.getContentStr());
-         logger(LogLevel.TRACE, "", msgUnit.qos);
+         logger(LogLevel.TRACE, "", msgUnit.getQos());
          logger(LogLevel.TRACE, "", "updateUnmanaged invoked DONE ===================");
          //string ret = "<qos><state id='OK'/></qos>";
          //return ret;

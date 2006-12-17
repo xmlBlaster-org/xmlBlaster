@@ -84,7 +84,7 @@ Dll_Export extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedCEE
 #  define XB_CALLBACK_DECL
 #endif
 typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCELoggerFp)(int32_t level, const char *location, const char *msg);
-typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCEUpdateFp)(const char *cbSessionId, MsgUnit *msgUnit, XmlBlasterUnmanagedCEException *xmlBlasterException);
+typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCEUpdateFp)(const char *cbSessionId, MsgUnit *msgUnit, int32_t isOneway, XmlBlasterUnmanagedCEException *xmlBlasterException);
 /*typedef int32_t (__cdecl *FPTR)( int32_t i );*/
 typedef int32_t (XB_CALLBACK_DECL *FPTR)( int32_t i );
 

@@ -50,7 +50,7 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
          string prq = xb.publish("<key oid='Hello'/>", "publish-1", "<qos/>");
          log("publish() returned " + prq);
 
-         string srq = xb.subscribe("<key oid='Hello'/>", "<qos/>");
+         string srq = xb.subscribe("<key oid='Hello'/>", "<qos><updateOneway/></qos>");
          log("subscribe() returned " + srq);
          GC.Collect();
          GC.Collect();
@@ -116,7 +116,7 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
    #region I_Callback Members
    public string OnUpdate(string cbSessionId, MsgUnit msgUnit)
    {
-      log("OnUpdate() received message from xmlBlaster:");
+      log("OnUpdate() received "+(msgUnit.isOneway()?"oneway ":"")+"message from xmlBlaster:");
       if (callbackSessionId != cbSessionId)
          log("Not authorized");
       log(msgUnit.ToString());
