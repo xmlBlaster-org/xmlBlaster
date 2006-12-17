@@ -91,18 +91,26 @@ Preprocessor:
 */
 
 // Initial defines cleanup:
-// In our code we only use XMLBLASTER_CLIENT_MONO, WINCE, WIN32, CF1, DOTNET1
+// In our code we only use
+//   XMLBLASTER_CLIENT_MONO
+//   XMLBLASTER_WINCE
+//   XMLBLASTER_WIN32
+//   CF1
+//   DOTNET1
+//   FORCE_CDELC
 #if XMLBLASTER_CLIENT_MONO
 #  warning We compile on a Linux mono box
-#elif WINCE || Smartphone || PocketPC || WindowsCE || CF1
-#  define WINCE
+#elif (WINCE || Smartphone || PocketPC || WindowsCE || CF1)
+   // VC2005 automatically set 'WindowsCE' for Mobile (Windows CE 5.0)
+   // and typically one of the other defines for Smart Devices 2003
+#  define XMLBLASTER_WINCE
 #  if CF1
 #    warning We compile for Windows CE compact framework .net 1.0, no xmlBlaster callback are available!
 #  else
 #    warning INFO: We compile for Windows CE compact framework .net 2.x
 #  endif
 #else // Assume WIN32
-#  define WIN32
+#  define XMLBLASTER_WIN32
 #  if DOTNET1
 #    warning We compile for Windows .net 1.x, no xmlBlaster callback are implemented!
 #  else
@@ -111,11 +119,12 @@ Preprocessor:
 #endif
 
 // Setting local defines
-#if (WIN32 || XMLBLASTER_CLIENT_MONO) && !DOTNET1
-#  define FORCE_CDELC // only supported in .net 2, is default on WINCE
-      // CF1 and CF2 and .net 1.x don't support UnmanagedFunctionPointer
-      // CallingConvention=CallingConvention.Cdecl supported in .net CF1 and CF2
-      // UnmanagedFunctionPointer: new in .net 2.0
+#if (XMLBLASTER_WIN32 || XMLBLASTER_CLIENT_MONO) && !DOTNET1
+#  define FORCE_CDELC // only supported in .net 2 (cdecl is default on WINCE)
+// #  warning INFO: We use UnmanagedFunctionPointer
+// CF1 and CF2 and .net 1.x don't support UnmanagedFunctionPointer
+// CallingConvention=CallingConvention.Cdecl supported in .net CF1 and CF2
+// UnmanagedFunctionPointer: new in .net 2.0
 #endif
 
 using System;
@@ -133,9 +142,9 @@ namespace org.xmlBlaster.client
 #     if XMLBLASTER_CLIENT_MONO
          // Linux Debug libxmlBlasterClientCD.so, set LD_LIBRARY_PATH to find the shared library
          const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD";
-#     elif WINCE
+#     elif XMLBLASTER_WINCE
          const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD-Arm4.dll";
-#     else // WIN32
+#     else // XMLBLASTER_WIN32
          const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC.dll";
          //const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
 #     endif
@@ -244,7 +253,7 @@ namespace org.xmlBlaster.client
       }
 
       // Helper struct for DLL calls
-      public unsafe struct XmlBlasterUnmanagedCEException
+      public struct XmlBlasterUnmanagedCEException
       {
          public XmlBlasterUnmanagedCEException(bool isRemote)
          {
@@ -449,7 +458,7 @@ namespace org.xmlBlaster.client
        * All xmlBlasterUnmanagedCEXXX() calls free the 'char *' or 'char **'
        * passed in the dll, so we don't have to do it here in C#
        */
-      unsafe static IntPtr stringToUtf8IntPtr(string str)
+      static IntPtr stringToUtf8IntPtr(string str)
       {
          byte[] bytes = StringToUtf8ByteArray(str);
          return byteArrayToIntPtr(bytes);
@@ -603,9 +612,12 @@ namespace org.xmlBlaster.client
       private IntPtr updateFpForDelegate;
       private IntPtr loggerFpForDelegate;
 
-      unsafe public PInvokeCE(string[] argv)
+      public PInvokeCE(string[] argv)
       {
          if (argv == null) argv = new String[0];
+
+         string deviceId = getDeviceUniqueId();
+         logger(LogLevel.TRACE, "", "Using deviceUniqueId '" + deviceId + "'");
 
          updateUnmanagedFp = new UpdateUnmanagedFp(this.updateUnmanaged);
          updateFpForDelegate = Marshal.GetFunctionPointerForDelegate(updateUnmanagedFp);
@@ -620,7 +632,7 @@ namespace org.xmlBlaster.client
             {
                string usage = "Usage:\nxmlBlaster C client v" + getVersion()
                   + " on " + System.Environment.OSVersion.ToString() +
-               #if WINCE
+               #if XMLBLASTER_WINCE
                   " compact framework .net " + System.Environment.Version.ToString();
                #else
                   " .net " + System.Environment.Version.ToString();
@@ -631,7 +643,7 @@ namespace org.xmlBlaster.client
             }
             if ("-logLevel".Equals(argv[i]) && (i < argv.Length-1)) {
                string level = argv[i + 1];
-#              if WINCE   // Enum.GetValues is not supported
+#              if XMLBLASTER_WINCE   // Enum.GetValues is not supported
                   if ("INFO".Equals(level.ToUpper()))
                      localLogLevel = LogLevel.INFO;
                   else if ("WARN".Equals(level.ToUpper()))
@@ -665,8 +677,9 @@ namespace org.xmlBlaster.client
 
          logger(LogLevel.INFO, "", "xmlBlaster C client v" + getVersion() 
             + " on " + System.Environment.OSVersion.ToString() +
-#        if WINCE
-            " compact framework .net " + System.Environment.Version.ToString());
+#        if XMLBLASTER_WINCE
+            " compact framework .net " + System.Environment.Version.ToString() +
+            " deviceId=" + deviceId);
 #        else
             " .net " + System.Environment.Version.ToString());
 #        endif
@@ -1038,5 +1051,73 @@ namespace org.xmlBlaster.client
          IntPtr retP = xmlBlasterUnmanagedCEUsage();
          return stringFromUtf8IntPtr(retP);
       }
+
+      public string getDeviceUniqueId() {
+#        if XMLBLASTER_WINCE
+            byte[] bytes = GetDeviceID("xmlBlasterClient");
+            if (bytes == null) return null;
+            string deviceId = toHexString(bytes);
+            //{// Remove again
+            //   throw new XmlBlasterException("bla", "My deviceId=" + deviceId);
+            //}
+            return deviceId;
+#        else
+            return null;
+#        endif
+      }
+
+      private string toHexString(byte[] bytes) {
+         if (bytes == null) return null;
+         StringBuilder temp = new StringBuilder();
+         for (int i=0; i<bytes.Length; i++)
+            temp.Append(bytes[i].ToString("X2")); // hex view
+            //temp.Append(bytes[i].ToString("D3")).Append(" "); // Decimal view
+         return temp.ToString();
+      }
+
+#if XMLBLASTER_WINCE
+      /*
+HRESULT GetDeviceUniqueID(
+  LPBYTE pbApplicationData,
+  DWORD cbApplictionData,
+  DWORD dwDeviceIDVersion,
+  LPBYTE pbDeviceIDOutput,
+  DWORD* pcbDeviceIDOutput
+);
+      */
+      //http://blogs.msdn.com/windowsmobile/archive/2006/01/09/510997.aspx#514959
+      [DllImport("coredll.dll")]
+      private extern static int GetDeviceUniqueID([In, Out] byte[] appdata,
+                                                  int cbApplictionData,
+                                                  int dwDeviceIDVersion,
+                                                  [In, Out] byte[] deviceIDOuput,
+                                                  out uint pcbDeviceIDOutput);
+
+      /// Works only on Windows Mobile 5 and above
+      private byte[] GetDeviceID(string AppString)
+      {
+         // Call the GetDeviceUniqueID
+         byte[] AppData = new byte[AppString.Length];
+         for (int count = 0; count < AppString.Length; count++)
+            AppData[count] = (byte)AppString[count];
+
+         int appDataSize = AppData.Length;
+         byte[] DeviceOutput = new byte[20];
+         uint SizeOut = 20;
+
+         try {
+            GetDeviceUniqueID(AppData, appDataSize, 1, DeviceOutput, out SizeOut);
+         }
+         catch (Exception e) {
+            logger(LogLevel.WARN, "", "GetDeviceUniqueID() is not supported on this platform: " + e.ToString());
+            return null;
+         }
+
+         if (SizeOut == 0)
+            return null;
+
+         return DeviceOutput;
+      }
+#endif
    }
 }
