@@ -99,23 +99,27 @@ Preprocessor:
 //   DOTNET1
 //   FORCE_CDELC
 #if XMLBLASTER_CLIENT_MONO
-#  warning We compile on a Linux mono box
-#elif (WINCE || Smartphone || PocketPC || WindowsCE || CF1)
+#  warning INFO: We compile on a Linux mono box
+#endif
+
+#if (WINCE || Smartphone || PocketPC || WindowsCE || CF1)
    // VC2005 automatically set 'WindowsCE' for Mobile (Windows CE 5.0)
    // and typically one of the other defines for Smart Devices 2003
 #  define XMLBLASTER_WINCE
-#  if CF1
-#    warning We compile for Windows CE compact framework .net 1.0, no xmlBlaster callback are available!
-#  else
-#    warning INFO: We compile for Windows CE compact framework .net 2.x
-#  endif
-#else // Assume WIN32
+#  warning INFO: We compile for Windows CE compact framework .net
+#endif
+
+#if !(WINCE || Smartphone || PocketPC || WindowsCE || CF1) && !XMLBLASTER_CLIENT_MONO  // Assume WIN32
 #  define XMLBLASTER_WIN32
-#  if DOTNET1
-#    warning We compile for Windows .net 1.x, no xmlBlaster callback are implemented!
-#  else
-#    warning INFO: We compile for Windows .net 2.x target
-#  endif
+#  warning INFO: We compile for Windows .net target
+#endif
+
+#if CF1
+#  warning We compile for Windows CE compact framework .net 1.0, no xmlBlaster callback are available!
+#endif
+
+#if DOTNET1
+#  warning We compile for Windows .net 1.x, no xmlBlaster callback are implemented!
 #endif
 
 // Setting local defines
@@ -1066,7 +1070,7 @@ namespace org.xmlBlaster.client
 #        endif
       }
 
-      private string toHexString(byte[] bytes) {
+      public static string toHexString(byte[] bytes) {
          if (bytes == null) return null;
          StringBuilder temp = new StringBuilder();
          for (int i=0; i<bytes.Length; i++)
