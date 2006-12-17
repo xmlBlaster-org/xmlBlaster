@@ -10,14 +10,14 @@ import java.sql.Array;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-//  JDK 1.6
+/*  JDK 1.6
 import java.sql.BaseQuery;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.NClob;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLXML;
-//
+*/
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -395,7 +395,7 @@ public class DebugConnection implements Connection {
       checkIfOutsidePool();
       this.conn.setTypeMap(arg0);
    }
-
+/*
 // JDK 1.6 dummies   
 public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
         // TODO Auto-generated method stub
@@ -471,5 +471,5 @@ public Object unwrap(Class arg0) throws SQLException {
         // TODO Auto-generated method stub
         return null;
 }
-
+*/
 }
