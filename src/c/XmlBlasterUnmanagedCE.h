@@ -80,7 +80,7 @@ Dll_Export extern void xmlBlasterUnmanagedCEExceptionFree(XmlBlasterUnmanagedCEE
 */
 #if defined(_WINDOWS)
 #  define XB_CALLBACK_DECL __cdecl
-# else/* XMLBLASTER_CLIENT_MONO */
+# else/* XMLBLASTER_MONO */
 #  define XB_CALLBACK_DECL
 #endif
 typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCELoggerFp)(int32_t level, const char *location, const char *msg);

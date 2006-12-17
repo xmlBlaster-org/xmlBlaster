@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15838 C# client: Csharp support extended
+          o Supporting C and C++ clients as unmanaged code on Windows CE and normal Windows
+          o Supporting C# as managed code on Windows CE and normal Windows
+          See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.windowsCE.html
+	  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
+
  o #15794 C++ client: Changed PublishReturnQos and SubscribeReturnQos in case of client side queueing
           to be identical to java client behaviour:
 	  state id="OK"        (previously it was "QUEUED")

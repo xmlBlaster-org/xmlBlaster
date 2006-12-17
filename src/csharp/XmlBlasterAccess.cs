@@ -22,7 +22,7 @@ namespace org.xmlBlaster.client
 
             return new PInvokeCE(argv); // Runs fine with WIN32 and WINCE (fails with MONO)
 
-#        elif XMLBLASTER_CLIENT_MONO || FORCE_NATIVEC_PLUGIN
+#        elif XMLBLASTER_MONO || FORCE_NATIVEC_PLUGIN
             
             return new NativeC(argv); // First try, runs fine with WIN32 and with Linux/MONO
 

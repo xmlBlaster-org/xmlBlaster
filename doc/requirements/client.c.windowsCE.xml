@@ -21,7 +21,7 @@
 
        <tr>
        <td>Windows CE 4.2</td>
-       <td>ARMV5 processor (compatible to ARMV4)</td>
+       <td>ARM</td>
        <td>It should run on any Smart Device (Pocket PC 2003 or
        <a href="http://channel9.msdn.com/wiki/default.aspx/MobileDeveloper.WindowsMobileFAQ"
      target="others">Windows Smartphone 2003</a>
@@ -30,7 +30,7 @@
 
        <tr>
        <td>Windows Mobile CE 5.1</td>
-       <td>ARMV8</td>
+       <td>ARM</td>
        <td>HP IPAQ hw6910</td>
        </tr>
 
@@ -62,7 +62,7 @@
        </tr>
 
        <tr>
-       <td>XMLBLASTER_CLIENT_MONO</td>
+       <td>XMLBLASTER_MONO</td>
        <td>Linux</td>
        <td>To compile with mono 1.2 (C# 1 'mcs' or C# 2 'gmcs') on Linux</td>
        </tr>
@@ -110,7 +110,7 @@ csc /unsafe -debug+ -out:TestPInvoke.exe PInvokeCE.cs XmlBlasterAccess.cs TestPI
 <pre>
 cd xmlBlaster\src\csharp
 
-mcs /d:XMLBLASTER_CLIENT_MONO -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess.cs Hello.cs
+mcs /d:XMLBLASTER_MONO -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess.cs Hello.cs
 </pre>
 
       <p class="celltitel" id="windows">Managed code access (C++,VB.net,C#)</p>

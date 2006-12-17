@@ -8,7 +8,7 @@
 // Currently only tested on Linux with Mono and on Windows XP
 //
 // It will NOT work with Windows CE because of the limited compact framework .net (CF)
-// Please use PInvokeCE.cs instead.
+// Please use the PInvokeCE.cs plugin instead.
 //
 // Mono/Linux 1.2 ships with complete C# 1.0 and C# 2.0 compilers, both of them can be used here
 //
@@ -31,7 +31,7 @@
 // @author   mr@marcelruff.info
 //
 // @prepare Linux: cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
-// @compile Linux: mcs /d:NATIVE_C_MAIN /d:XMLBLASTER_CLIENT_MONO -debug+ -out:NativeC.exe NativeC.cs XmlBlasterAccess.cs
+// @compile Linux: mcs /d:NATIVE_C_MAIN /d:XMLBLASTER_MONO -debug+ -out:NativeC.exe NativeC.cs XmlBlasterAccess.cs
 //
 // @prepare Windows: Compile the C client library first (see xmlBlaster\src\c\xmlBlasterClientC.sln)
 // @compile Windows: csc /d:NATIVE_C_MAIN -debug+ -out:NativeC.exe NativeC.cs XmlBlasterAccess.cs   (Windows)
@@ -82,7 +82,7 @@ namespace org.xmlBlaster.client
    {
       bool verbose = false; // TODO: log4net
 
-#     if XMLBLASTER_CLIENT_MONO // Linux Debug, set LD_LIBRARY_PATH to find the shared library
+#     if XMLBLASTER_MONO // Linux Debug, set LD_LIBRARY_PATH to find the shared library
          const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD"; //libxmlBlasterClientCD.so
 #     else // Windows
          // http://msdn2.microsoft.com/en-us/library/e765dyyy.aspx
@@ -167,7 +167,7 @@ namespace org.xmlBlaster.client
       }
 
       // How to pass byte[] content, how to tell the Marshal the contentLen to allocate for byte[]?
-#     if !XMLBLASTER_CLIENT_MONO
+#     if !XMLBLASTER_MONO
       [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #     endif
       delegate string UpdateUnmanagedFp(string cbSessionId, string key, string content, int contentLen, string qos, ref XmlBlasterUnmanagedException exception);

@@ -3275,14 +3275,14 @@ TODO
 
    <!--
     Using mono 'mcs' for C#1 or 'gmcs' for C#2 
-    mcs /d:"XMLBLASTER_CLIENT_MONO;BLA;BLUB" -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess.cs Hello.cs
+    mcs /d:"XMLBLASTER_MONO;BLA;BLUB" -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess.cs Hello.cs
    -->
    <target name="csharp-mono" depends="prepare" description="Compile C# demo client" if="unix">
       <echo message="Compiling C# demo for mono"/>
       <property name="csharp.compiler.exe" value="gmcs"/>
       <property name="csharp.out.exe" value="Hello#.exe"/>
       <exec executable="${csharp.compiler.exe}" dir="${src.csharp.dir}" failonerror="true" failifexecutionfails="false">
-         <arg line="-debug+ /unsafe /warn:4 /define:'XMLBLASTER_CLIENT_MONO' -out:${csharp.out.exe} NativeC.cs XmlBlasterAccess.cs Hello.cs"/>
+         <arg line="-debug+ /unsafe /warn:4 /define:'XMLBLASTER_MONO' -out:${csharp.out.exe} NativeC.cs XmlBlasterAccess.cs Hello.cs"/>
       </exec>
       <echo message="Created C# demo ${src.csharp.dir}/${csharp.out.exe}"/> 
       <echo message="Usage: 'mono ${src.csharp.dir}/${csharp.out.exe} -dispatch/connection/plugin/socket/hostname localhost'"/> 

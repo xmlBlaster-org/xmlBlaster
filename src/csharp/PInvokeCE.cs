@@ -1,8 +1,8 @@
 // PInvokeCE.cs  2006-12  http://www.xmlBlaster.org/
 // Simple layer to delegate C# calls to Windows CE xmlBlaster client C library
-// Simple layer to delegate C# calls to Windows CE xmlBlaster client C library
-// Using P/Invoke of the .NET 2.0
-// Using P/Invoke of the .NET Compact Framework 2.0 (CF2)
+// Using P/Invoke of the .NET 1.0 is not tested
+// Using P/Invoke of the .NET 2.0 is fully supported
+// Using P/Invoke of the .NET Compact Framework 2.0 (CF2) is fully supported
 // Using P/Invoke of the .NET Compact Framework 1.0 does NOT support callbacks
 //
 // You need on CE:
@@ -25,11 +25,10 @@
 //           http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 //
 // IMPORTANT: The dll are assumed in the current directory or in the %PATH%
-//            On Linux set the LD_LIBRARY_PATH to find the .so libraries.
-//            The ARM compatible dll's contain an '-Arm4' postfix like xmlBlasterClientC-Arm4.dll
+//           On Linux set the LD_LIBRARY_PATH to find the .so libraries.
+//           The ARM compatible dll's contain an '-Arm4' postfix like xmlBlasterClientC-Arm4.dll
 //
 // @todo     publishOneway crashes
-//           OnUpdate() throwing exception seems not to be passed to C
 //           logging with log4net
 //           write a testsuite
 //           write a requirement
@@ -38,12 +37,11 @@
 //
 // @author   xmlBlaster@marcelruff.info
 //
-// @prepare Compile the C client library first (see xmlBlaster\src\c\xmlBlasterClientC.sln)
-// @compile csc /d:NATIVE_C_MAIN -debug+ -out:PInvokeCE.exe PInvokeCE.cs   (Windows)
+// @prepare  Compile the C client library first (see xmlBlaster\src\c\xmlBlasterClientC.sln)
 //
 // @see      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
-// @see http://msdn.microsoft.com/mobility/understanding/articles/default.aspx?pull=/library/en-us/dnnetcomp/html/netcfintrointerp.asp?frame=true
-// @see http://msdn.microsoft.com/mobility/understanding/articles/default.aspx?pull=/library/en-us/dnnetcomp/html/netcfadvinterop.asp
+// @see      http://msdn.microsoft.com/mobility/understanding/articles/default.aspx?pull=/library/en-us/dnnetcomp/html/netcfintrointerp.asp?frame=true
+// @see      http://msdn.microsoft.com/mobility/understanding/articles/default.aspx?pull=/library/en-us/dnnetcomp/html/netcfadvinterop.asp
 //
 // @see Callback function pointers: http://msdn2.microsoft.com/en-us/library/5zwkzwf4.aspx
 // @c        http://www.xmlBlaster/org
@@ -77,10 +75,10 @@ XmlBlaster C SOCKET client
    -logLevel            ERROR | WARN | INFO | TRACE | DUMP [WARN]
 
 Example:
-  PInvokeCE -logLevel TRACE -dispatch/connection/plugin/socket/hostname 192.168.2.9
+  TestPInvoke -logLevel TRACE -dispatch/connection/plugin/socket/hostname 192.168.2.9
  * 
 Preprocessor:
-   XMLBLASTER_CLIENT_MONO
+   XMLBLASTER_MONO
              Forces support in a Linux mono environment
    WINCE || Smartphone || PocketPC || WindowsCE || FORCE_PINVOKECE
              Any single of the above will force Windows CE compatibility
@@ -92,13 +90,14 @@ Preprocessor:
 
 // Initial defines cleanup:
 // In our code we only use
-//   XMLBLASTER_CLIENT_MONO
+//   XMLBLASTER_MONO
 //   XMLBLASTER_WINCE
 //   XMLBLASTER_WIN32
 //   CF1
 //   DOTNET1
 //   FORCE_CDELC
-#if XMLBLASTER_CLIENT_MONO
+// NOTE: mono compiler is buggy and can't handle nested #if !
+#if XMLBLASTER_MONO
 #  warning INFO: We compile on a Linux mono box
 #endif
 
@@ -109,7 +108,7 @@ Preprocessor:
 #  warning INFO: We compile for Windows CE compact framework .net
 #endif
 
-#if !(WINCE || Smartphone || PocketPC || WindowsCE || CF1) && !XMLBLASTER_CLIENT_MONO  // Assume WIN32
+#if !(WINCE || Smartphone || PocketPC || WindowsCE || CF1) && !XMLBLASTER_MONO  // Assume WIN32
 #  define XMLBLASTER_WIN32
 #  warning INFO: We compile for Windows .net target
 #endif
@@ -123,7 +122,7 @@ Preprocessor:
 #endif
 
 // Setting local defines
-#if (XMLBLASTER_WIN32 || XMLBLASTER_CLIENT_MONO) && !DOTNET1
+#if (XMLBLASTER_WIN32 || XMLBLASTER_MONO) && !DOTNET1
 #  define FORCE_CDELC // only supported in .net 2 (cdecl is default on WINCE)
 // #  warning INFO: We use UnmanagedFunctionPointer
 // CF1 and CF2 and .net 1.x don't support UnmanagedFunctionPointer
@@ -143,7 +142,7 @@ namespace org.xmlBlaster.client
    {
       static LogLevel localLogLevel = LogLevel.INFO; // TODO: log4net
 
-#     if XMLBLASTER_CLIENT_MONO
+#     if XMLBLASTER_MONO
          // Linux Debug libxmlBlasterClientCD.so, set LD_LIBRARY_PATH to find the shared library
          const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD";
 #     elif XMLBLASTER_WINCE
@@ -581,7 +580,7 @@ namespace org.xmlBlaster.client
       //private extern static QosArr xmlBlasterUnmanagedCEPublishArr(IntPtr xa, MsgUnitUnmanagedCEArr msgUnitArr, ref XmlBlasterUnmanagedCEException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedCEPublishOneway(IntPtr xa, ref MsgUnit[] msgUnitArr, int length, ref XmlBlasterUnmanagedCEException exception);
+      private extern static void xmlBlasterUnmanagedCEPublishOneway(IntPtr xa, out MsgUnitUnmanagedCEpublish[] msgUnitArr, int length, ref XmlBlasterUnmanagedCEException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
       private extern static IntPtr xmlBlasterUnmanagedCESubscribe(IntPtr xa, IntPtr key, IntPtr qos, ref XmlBlasterUnmanagedCEException exception);
@@ -851,8 +850,12 @@ namespace org.xmlBlaster.client
          check("publishOneway");
          try
          {
+            MsgUnitUnmanagedCEpublish[] arr = new MsgUnitUnmanagedCEpublish[msgUnitArr.Length];
+            for (int i=0; i<msgUnitArr.Length; i++)
+               arr[i] = new MsgUnitUnmanagedCEpublish(msgUnitArr[i].getKey(),
+                        msgUnitArr[i].getContent(), msgUnitArr[i].getQos());
             XmlBlasterUnmanagedCEException exception = new XmlBlasterUnmanagedCEException(false);
-            xmlBlasterUnmanagedCEPublishOneway(xa, ref msgUnitArr, msgUnitArr.Length, ref exception);
+            xmlBlasterUnmanagedCEPublishOneway(xa, out arr, arr.Length, ref exception);
             checkAndThrow("xmlBlasterUnmanagedCEPublishOneway", ref exception);
             logger(LogLevel.TRACE, "", "publishOneway: SUCCESS");
          }
