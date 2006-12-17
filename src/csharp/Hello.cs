@@ -95,9 +95,9 @@ public class Hello : I_Callback
       Console.WriteLine("OnUpdate() invoked START ==================");
       if (callbackSessionId != cbSessionId)
          Console.WriteLine("Not authorized");
-      Console.WriteLine(msgUnit.key);
+      Console.WriteLine(msgUnit.getKey());
       Console.WriteLine(msgUnit.getContentStr());
-      Console.WriteLine(msgUnit.qos);
+      Console.WriteLine(msgUnit.getQos());
       string ret = "<qos><state id='OK'/></qos>";
       Console.WriteLine("OnUpdate() invoked DONE ===================");
       //throw new XmlBlasterException("user.update.illegalArgument", "A test exception from OnUpdate()");

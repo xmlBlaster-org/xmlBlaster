@@ -201,9 +201,9 @@ namespace org.xmlBlaster.client
             }
          }
          logger("C# updateUnmanaged invoked START ==================");
-         logger(msgUnit.key);
+         logger(msgUnit.getKey());
          logger(msgUnit.getContentStr());
-         logger(msgUnit.qos);
+         logger(msgUnit.getQos());
          string ret = "<qos><state id='OK'/></qos>";
          logger("C# updateUnmanaged invoked DONE ===================");
          return ret;
