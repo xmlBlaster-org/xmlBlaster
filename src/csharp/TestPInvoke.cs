@@ -2,8 +2,8 @@
 @file     TestPInvoke.cs
 @comment  Access xmlBlaster from C# (Csharp)
 @author   mr@marcelruff.info
-@compile  csc /unsafe -debug+ /define:FORCE_PINVOKECE,DOTNET2 -out:TestPInvoke.exe PInvokeCE.cs XmlBlasterAccess.cs TestPInvoke.cs
-          gmcs /unsafe /d:XMLBLASTER_CLIENT_MONO,FORCE_PINVOKECE -debug+ -out:TestPInvoke.exe PInvokeCE.cs TestPInvoke.cs XmlBlasterAccess.cs
+@compile  csc /unsafe -debug+ -out:TestPInvoke.exe PInvokeCE.cs XmlBlasterAccess.cs TestPInvoke.cs
+          gmcs /unsafe /define:"XMLBLASTER_CLIENT_MONO;FORCE_PINVOKECE" -debug+ -out:TestPInvoke.exe PInvokeCE.cs TestPInvoke.cs XmlBlasterAccess.cs
 @see      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
 */
 using System;
