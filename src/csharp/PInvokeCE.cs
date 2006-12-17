@@ -580,7 +580,7 @@ namespace org.xmlBlaster.client
       //private extern static QosArr xmlBlasterUnmanagedCEPublishArr(IntPtr xa, MsgUnitUnmanagedCEArr msgUnitArr, ref XmlBlasterUnmanagedCEException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
-      private extern static void xmlBlasterUnmanagedCEPublishOneway(IntPtr xa, out MsgUnitUnmanagedCEpublish[] msgUnitArr, int length, ref XmlBlasterUnmanagedCEException exception);
+      private extern static void xmlBlasterUnmanagedCEPublishOneway(IntPtr xa, IntPtr msgUnitArr, int length, ref XmlBlasterUnmanagedCEException exception);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
       private extern static IntPtr xmlBlasterUnmanagedCESubscribe(IntPtr xa, IntPtr key, IntPtr qos, ref XmlBlasterUnmanagedCEException exception);
@@ -800,7 +800,7 @@ namespace org.xmlBlaster.client
          if (exception.CaughtException())
          {
             XmlBlasterException e = fillXmlBlasterException(ref exception);
-            logger(LogLevel.TRACE, "", location + ": Got exception from C: " + e.ToString());
+            logger(LogLevel.WARN, "", location + ": Got exception from C: " + e.ToString());
             throw e;
          }
          logger(LogLevel.TRACE, "", location + ": SUCCESS");
@@ -848,14 +848,25 @@ namespace org.xmlBlaster.client
       public void publishOneway(MsgUnit[] msgUnitArr)
       {
          check("publishOneway");
+         if (msgUnitArr.Length < 1)
+            return;
+         IntPtr arrP = IntPtr.Zero;
          try
          {
-            MsgUnitUnmanagedCEpublish[] arr = new MsgUnitUnmanagedCEpublish[msgUnitArr.Length];
-            for (int i=0; i<msgUnitArr.Length; i++)
-               arr[i] = new MsgUnitUnmanagedCEpublish(msgUnitArr[i].getKey(),
+            IntPtr current = arrP;
+            for (int i=0; i<msgUnitArr.Length; i++) {
+               MsgUnitUnmanagedCEpublish msgUnitUnmanaged = new MsgUnitUnmanagedCEpublish(msgUnitArr[i].getKey(),
                         msgUnitArr[i].getContent(), msgUnitArr[i].getQos());
+               if (i == 0) {
+                  int len = Marshal.SizeOf(msgUnitUnmanaged);
+                  arrP = Marshal.AllocHGlobal(msgUnitArr.Length * len);
+                  current = arrP;
+               } 
+               Marshal.StructureToPtr(msgUnitUnmanaged, current, false);
+               current = (IntPtr)((long)current + Marshal.SizeOf(msgUnitUnmanaged));
+            }
             XmlBlasterUnmanagedCEException exception = new XmlBlasterUnmanagedCEException(false);
-            xmlBlasterUnmanagedCEPublishOneway(xa, out arr, arr.Length, ref exception);
+            xmlBlasterUnmanagedCEPublishOneway(xa, arrP, msgUnitArr.Length, ref exception);
             checkAndThrow("xmlBlasterUnmanagedCEPublishOneway", ref exception);
             logger(LogLevel.TRACE, "", "publishOneway: SUCCESS");
          }
@@ -866,6 +877,9 @@ namespace org.xmlBlaster.client
          catch (Exception e)
          {
             throw new XmlBlasterException("internal.unknown", "publishOneway failed", e);
+         }
+         finally {
+            if (arrP != IntPtr.Zero) Marshal.FreeHGlobal(arrP);
          }
       }
 
