@@ -45,93 +45,68 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
       I_Callback callback = this;
       xb.connect(connectQos, callback);
 
-      Console.WriteLine("Hit a key to subscribe to 'Hello' ...");
-      Console.ReadLine();
+      for (int run=0; run<2; run++) {
 
-      string prq = xb.publish("<key oid='Hello'/>", "HIIIHAAAA", "<qos/>");
-      log("publish() returned " + prq);
+         string prq = xb.publish("<key oid='Hello'/>", "publish-1", "<qos/>");
+         log("publish() returned " + prq);
 
-      string srq = xb.subscribe("<key oid='Hello'/>", "<qos/>");
-      log("subscribe() returned " + srq);
-
-      prq = xb.publish("<key oid='Hello'/>", "HIIIHAAAA", "<qos/>");
-      log("publish() returned " + prq);
-
-      Console.WriteLine("Hit a key to continue ...");
-      Console.ReadLine();
-
-      srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-      log("subscribe() returned " + srq);
-
-      srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-      log("subscribe() returned " + srq);
-
-      string[] urq = xb.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
-      log("unSubscribe() returned");
-      for (int i = 0; i < urq.Length; i++)
-         log("unSubscribeReturn #" + i + "\n" + urq[i]);
-      GC.Collect();
-      GC.Collect();
-
-      prq = xb.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
-      log("publish() returned " + prq);
-
-      prq = xb.publish("<key oid='C#C#'/>", "HIIIHAAAA", "<qos/>");
-      log("publish() returned " + prq);
-
-      prq = xb.publish("<key oid='C#'/>", "HIIIHAAAA", "<qos/>");
-      log("publish() returned " + prq);
-
-      MsgUnit[] msgs = xb.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
-      log("get(C#C#C#) returned " + msgs.Length + " messages");
-      for (int i = 0; i < msgs.Length; i++)
-         log(msgs[i].ToString());
-
-      msgs = xb.get("<key oid='unknown'/>", "<qos><history numEntries='6'/></qos>");
-      log("get(unknown) returned " + msgs.Length + " messages");
-
-      string[] erq = xb.erase("<key queryType='XPATH'>//key</key>", "<qos/>");
-      log("erase() returned");
-      for (int i = 0; i < erq.Length; i++)
-         log("eraseReturn #" + i + "\n" + erq[i]);
-
-      string p = xb.ping("<qos/>");
-      log("ping() returned " + p);
-
-      bool b = xb.isConnected();
-      log("isConnected() returned " + b);
-
-      /*
-      for (int i=0; i<5; i++) {
-         string srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         string srq = xb.subscribe("<key oid='Hello'/>", "<qos/>");
          log("subscribe() returned " + srq);
-         
-         //xb.publish("<key oid='TestPInvoke'/>", "HIII", "<qos/>");
-         string prq = xb.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
-         log("publish() returned " + prq);         
-         
-         xb.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
-         log("publish() returned " + prq);         
-         
-         MsgUnit[] msgs = xb.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
-         log("get() returned " + msgs.Length + " messages");         
-         
-         string p = xb.ping("<qos/>");
-         log("ping() returned " + p);         
-         
-         bool b = xb.isConnected();
-         log("isConnected() returned " + b);         
-         
-         string[] urq = xb.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
-         log("unSubscribe() returned " + urq[0]);         
-         
-         string[] erq = xb.erase("<key oid='C#C#C#'/>", "<qos/>");
-         log("erase() returned " + erq[0]);         
-         
-         log("\nHit a key " + i);
+         GC.Collect();
+         GC.Collect();
+
+         prq = xb.publish("<key oid='Hello'/>", "publish-2", "<qos/>");
+         log("publish() returned " + prq);
+
+         Thread.Sleep(1000);
+         Console.WriteLine("There should be some updates, hit a key to continue ...");
          Console.ReadLine();
+
+         srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         log("subscribe() returned " + srq);
+
+         srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         log("subscribe() returned " + srq);
+
+         string[] urq = xb.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         log("unSubscribe() returned");
+         for (int i = 0; i < urq.Length; i++)
+            log("unSubscribeReturn #" + i + "\n" + urq[i]);
+         GC.Collect();
+         GC.Collect();
+
+         prq = xb.publish("<key oid='C#C#C#'/>", "more publishes", "<qos/>");
+         log("publish() returned " + prq);
+
+         MsgUnit[] arr = new MsgUnit[6];
+         for (int i=0; i<arr.Length; i++)
+            arr[i] = new MsgUnit("<key oid='C#C#'/>", "oneway-"+i, "<qos/>");
+         xb.publishOneway(arr);
+         log("publishOneway() send " + arr.Length + " messages");
+
+         prq = xb.publish("<key oid='C#'/>", "HIIIHAAAA", "<qos/>");
+         log("publish() returned " + prq);
+
+         MsgUnit[] msgs = xb.get("<key oid='C#C#'/>", "<qos><history numEntries='4'/></qos>");
+         log("get(C#C#) returned " + msgs.Length + " messages (get was limited to 4)");
+         for (int i = 0; i < msgs.Length; i++)
+            log(msgs[i].ToString());
+
+         msgs = xb.get("<key oid='unknown'/>", "<qos><history numEntries='6'/></qos>");
+         log("get(unknown) returned " + msgs.Length + " messages");
+
+         string[] erq = xb.erase("<key queryType='XPATH'>//key</key>", "<qos/>");
+         log("erase() returned");
+         for (int i = 0; i < erq.Length; i++)
+            log("eraseReturn #" + i + "\n" + erq[i]);
+
+         string p = xb.ping("<qos/>");
+         log("ping() returned " + p);
+
+         bool b = xb.isConnected();
+         log("isConnected() returned " + b);
       }
-      */
+
       bool drq = xb.disconnect("<qos/>");
       log("disconnect() returned " + drq);
 
