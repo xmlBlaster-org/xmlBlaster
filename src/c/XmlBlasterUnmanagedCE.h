@@ -98,7 +98,7 @@ Dll_Export extern  bool  xmlBlasterUnmanagedCEInitialize(struct XmlBlasterAccess
 Dll_Export extern  bool  xmlBlasterUnmanagedCEDisconnect(struct XmlBlasterAccessUnparsed *xa, char *qos, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern  char *xmlBlasterUnmanagedCEPublish(struct XmlBlasterAccessUnparsed *xa, MsgUnitUnmanagedCEpublish *msgUnit, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern  QosArr *xmlBlasterUnmanagedCEPublishArr(struct XmlBlasterAccessUnparsed *xa, MsgUnitArr *msgUnitArr, XmlBlasterUnmanagedCEException *exception);
-Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnitArr, int length, XmlBlasterUnmanagedCEException *exception);
+Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct XmlBlasterAccessUnparsed *xa, void *msgUnitArr, int length, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern  char *xmlBlasterUnmanagedCESubscribe(struct XmlBlasterAccessUnparsed *xa, char *key, char *qos, XmlBlasterUnmanagedCEException *exception);
 Dll_Export extern void xmlBlasterUnmanagedCEUnSubscribe(struct XmlBlasterAccessUnparsed *xa, char * key, char * qos, XmlBlasterUnmanagedCEException *exception, uint32_t* pSize, XmlBlasterUnmanagedCEStringArr** ppStruct);
 Dll_Export extern void xmlBlasterUnmanagedCEErase(struct XmlBlasterAccessUnparsed *xa, char * key, char * qos, XmlBlasterUnmanagedCEException *exception, uint32_t* pSize, XmlBlasterUnmanagedCEStringArr** ppStruct);

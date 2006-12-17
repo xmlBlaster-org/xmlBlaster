@@ -316,16 +316,23 @@ XBFORCE_EXTERNC Dll_Export extern QosArr *xmlBlasterUnmanagedCEPublishArr(struct
    return ret; 
 }
 
-XBFORCE_EXTERNC Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnitArr, int length, XmlBlasterUnmanagedCEException *exception) {
+XBFORCE_EXTERNC Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct XmlBlasterAccessUnparsed *xa, void *msgUnitArr, int length, XmlBlasterUnmanagedCEException *exception) {
    XmlBlasterException e;
    MsgUnitArr arr;
-   /*printf("C: xmlBlasterUnmanagedCEPublishOneway %d", length);*/
+   /*printf("C: xmlBlasterUnmanagedCEPublishOneway %d\n", length);*/
    arr.isOneway = true;
    arr.len = length;
    arr.msgUnitArr = msgUnitArr;
    *arr.secretSessionId = 0;
    xa->publishOneway(xa, &arr, &e);
    convert(&e, exception);
+   if (freeIt) {
+      size_t i;
+      for (i=0; i<arr.len; i++) {
+         freeMsgUnitData(&arr.msgUnitArr[i]);
+      }
+      /*free(msgUnitArr.msgUnitArr); is memory from C# IntPtr*/
+   }
 }
 
 /**
