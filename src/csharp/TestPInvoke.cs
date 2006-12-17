@@ -9,12 +9,14 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Forms;
 using org.xmlBlaster.client;
 
 public class TestPInvoke : I_Callback, I_LoggingCallback
 {
    private I_XmlBlasterAccess xb;
    private const string callbackSessionId = "secretCb";
+   private String[] argv;
 
    static void Main(string[] argv)
    {
@@ -24,6 +26,25 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
 
    public TestPInvoke(string[] argv)
    {
+      this.argv = argv;
+      runAllMethods();
+      //runIdTest();
+   }
+
+   private void runIdTest() {
+      Console.WriteLine("Hello world");
+      xb = XmlBlasterAccessFactory.createInstance(argv);
+      xb.addLoggingListener(this);
+      log("Accessing not IDs");
+      string deviceId = xb.getDeviceUniqueId();
+      MessageBox.Show("DeviceUniqueId="+deviceId, "Name Entry Error",
+         MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+      string emeiId = xb.getEmeiId();
+      MessageBox.Show("EMEI="+emeiId, "Name Entry Error",
+         MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+   }
+
+   private void runAllMethods() {
       xb = XmlBlasterAccessFactory.createInstance(argv);
       xb.addLoggingListener(this);
 

@@ -485,3 +485,179 @@ XBFORCE_EXTERNC Dll_Export const char *xmlBlasterUnmanagedCEVersion() {
    char *version = strcpyAlloc(getXmlBlasterVersion());
    return version;
 }
+
+
+// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/apisp/html/sp_extapi_linegetgeneralinfo.asp
+// Tutorial: http://www.developer.com/ws/pc/print.php/10947_3503761_1
+#include <commctrl.h>
+#include "tapi.h"
+#include "extapi.h"
+
+#define TAPI_API_HIGH_VERSION   0x00020000
+#define EXT_API_LOW_VERSION     0x00010000
+#define EXT_API_HIGH_VERSION    0x00010000
+   /*
+   OS Versions: Windows CE 3.0 and later
+   Header: extapi.h
+   Library: cellcore.lib
+   */
+
+#define DEVICE_ID_LENGTH            20
+#define APPLICATION_DATA            "@^!MyAppName!^@"
+#define APPLICATION_DATA_LENGTH     15
+
+static void GetTAPIErrorMsg(TCHAR *szMsg,int nSize, DWORD dwError)
+{
+	LPTSTR lpBuffer = 0;
+	DWORD dwRet = 0;
+	
+	dwRet = ::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL,TAPIERROR_FORMATMESSAGE(dwError),MAKELANGID(LANG_NEUTRAL, LANG_NEUTRAL),
+		(LPTSTR) &lpBuffer,0,NULL);
+	memset(szMsg,0,nSize);
+	if (lpBuffer && dwRet)
+	{
+		_tcscpy(szMsg,lpBuffer);
+		LocalFree(lpBuffer);
+	}
+	else
+	{
+		_stprintf(szMsg,L"Unknown Error: 0x%X",dwError);
+	}
+}
+
+/**
+ * You need to add cellcore.lib for compilation (WINCE). 
+ * TODO: Not yet tested: What is inside the lineGeneralInfo.dwSerialNumberOffset??
+ * TODO: Needs security model?
+ * @return malloced string with IMEI, you need to free it
+ */
+const char *getXmlBlasterEmei() {
+#ifdef WINCE_EMEI
+   /*TCHAR imei[80]; // 40 should be OK */
+   LPBYTE pLineGeneralInfoBytes = NULL;
+   LINEGENERALINFO lineGeneralInfo;
+   HLINEAPP hLineApp = 0;
+   HLINE hLine = 0;
+   DWORD dwNumDevs;
+   DWORD dwAPIVersion = TAPI_API_HIGH_VERSION;
+   DWORD dwExtVersion = 0;
+   DWORD dwDeviceID;
+   DWORD dwMediaMode = LINEMEDIAMODE_DATAMODEM; // | LINEMEDIAMODE_INTERACTIVEVOICE;
+   LONG tapiresult; /* functions return 0 (SUCCESS) */
+   LINEINITIALIZEEXPARAMS lineInitializeExParams;
+
+   lineGeneralInfo.dwTotalSize = sizeof(lineGeneralInfo); 
+
+   lineInitializeExParams.dwTotalSize = sizeof(lineInitializeExParams);
+   lineInitializeExParams.dwOptions = LINEINITIALIZEEXOPTION_USEEVENT; //The application desires to use the Event Handle event notification mechanism
+   tapiresult = lineInitializeEx(&hLineApp, 0, 0, L"MyApp", &dwNumDevs, &dwAPIVersion, &lineInitializeExParams);
+   if (tapiresult) {
+      MessageBox(NULL, L"lineInitializeEx failed", _T("Unmanaged"), MB_OK);
+      return 0;
+   }
+
+   //MessageBox(NULL, L"lineInitializeEx OK", _T("Unmanaged"), MB_OK);
+   for (dwDeviceID = 0; dwDeviceID < dwNumDevs; dwDeviceID++) {
+      tapiresult = lineOpen(hLineApp, dwDeviceID, &hLine, dwAPIVersion, 0, 0,
+                          LINECALLPRIVILEGE_OWNER, dwMediaMode, 0); //returns 0 (SUCCESS)
+      if (tapiresult) {
+         MessageBox(NULL, L"lineOpen failed", _T("Unmanaged"), MB_OK);
+         continue;
+      }
+
+      tapiresult = lineNegotiateExtVersion(hLineApp, dwDeviceID, dwAPIVersion,
+                  EXT_API_LOW_VERSION, EXT_API_HIGH_VERSION, &dwExtVersion); //returns 0 (SUCCESS)
+      if (tapiresult) {
+         MessageBox(NULL, L"lineNegotiateExtVersion failed", _T("Unmanaged"), MB_OK);
+         continue;
+      }
+
+      tapiresult = lineGetGeneralInfo(hLine, &lineGeneralInfo); //FAILs and gives error: -2147483595 (Invalid pointer)
+      if (tapiresult != 0 && tapiresult != LINEERR_STRUCTURETOOSMALL) {
+		   TCHAR szMsg[255];
+		   GetTAPIErrorMsg(szMsg,sizeof(szMsg), tapiresult);
+         MessageBox(NULL, szMsg, _T("Unmanaged"), MB_OK);
+		   continue;
+      }
+
+      //MessageBox(NULL, L"success!!!", _T("Unmanaged"), MB_OK);
+
+      pLineGeneralInfoBytes = new BYTE[lineGeneralInfo.dwNeededSize];
+      LPLINEGENERALINFO plviGeneralInfo;
+      plviGeneralInfo = (LPLINEGENERALINFO)pLineGeneralInfoBytes;
+	
+      if(pLineGeneralInfoBytes != NULL) {
+         plviGeneralInfo->dwTotalSize = lineGeneralInfo.dwNeededSize;
+         if ((tapiresult = lineGetGeneralInfo(hLine, plviGeneralInfo)) != 0) {
+		      TCHAR szMsg[255];
+		      GetTAPIErrorMsg(szMsg,sizeof(szMsg), tapiresult);
+            MessageBox(NULL, szMsg, _T("Unmanaged"), MB_OK);
+         }
+         else {
+            LPTSTR tsManufacturer, tsModel, tsRevision, tsSerialNumber, tsSubscriberNumber;
+			   TCHAR szUnavailable[] = L"Unavailable";
+			   if(plviGeneralInfo->dwManufacturerSize) { 
+			      tsManufacturer = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwManufacturerOffset);
+			   }
+			   else {
+			      tsManufacturer = szUnavailable;
+			   }
+			
+			   if(plviGeneralInfo->dwModelSize)	{ 
+			      tsModel = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwModelOffset);
+			   }
+			   else {
+			      tsModel = szUnavailable;
+			   }
+			
+			   if(plviGeneralInfo->dwRevisionSize)	{
+			      tsRevision = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwRevisionOffset);
+			   }
+			   else {
+			      tsRevision = szUnavailable;
+			   }
+			
+			   if(plviGeneralInfo->dwSerialNumberSize) {
+			      tsSerialNumber = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwSerialNumberOffset);
+			   }
+			   else {
+			      tsSerialNumber = szUnavailable;
+			   }
+			
+			   if(plviGeneralInfo->dwSubscriberNumberSize)
+			   {
+			      tsSubscriberNumber = (WCHAR*)(((BYTE*)plviGeneralInfo)+plviGeneralInfo->dwSubscriberNumberOffset);
+			   }
+			   else
+			   {
+			      tsSubscriberNumber = szUnavailable;
+			   }
+
+            // AFXSTR.H
+            //typedef ATL::CStringT< TCHAR, StrTraitMFC< TCHAR > > CString;
+            /*
+            CString sInfo;
+			   sInfo.Format(L"Manufacturer: %s\nModel: %s\nRevision: %s\nSerial No: %s\nSubscriber No: %s\n",
+				   tsManufacturer, 
+				   tsModel, 
+				   tsRevision, 
+				   tsSerialNumber, 
+				   tsSubscriberNumber);
+            */
+            char *imeiId = (char *)malloc(128);
+            strcpy(imeiId, ( ( (char*)plviGeneralInfo) + lineGeneralInfo.dwSerialNumberOffset));
+
+            //MessageBox(NULL, (LPCWSTR)( ( (char*)plviGeneralInfo) + lineGeneralInfo.dwSerialNumberOffset),  _T("Unmanaged"), MB_OK);
+            
+            delete plviGeneralInfo;
+            return imeiId;
+         }
+         delete plviGeneralInfo;
+      }  
+  } /* for */
+  return 0;
+#else
+   return strcpyAlloc("NotImplemented");
+#endif
+}

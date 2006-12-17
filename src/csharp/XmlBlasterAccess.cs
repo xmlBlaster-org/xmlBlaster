@@ -117,6 +117,23 @@ namespace org.xmlBlaster.client
       /// </summary>
       /// <param name="listener">The logging is redirected to this listener</param>
       void addLoggingListener(I_LoggingCallback listener);
+
+      /// <summary>
+      /// Returns the telephone EMEI id if available. 
+      /// The International Mobile Equipment Identity (IMEI) is a 15 digit number
+      /// and unique over time and space for your PDA.
+      /// </summary>
+      /// <returns>null if not found</returns>
+      string getEmeiId();
+
+      /// <summary>
+      /// Returns the device unique id, to be used in favour of getEmeiId().
+      /// Supported since Windows CE 5.0.1, please check
+      /// the correct behaviour on your device as it may not
+      /// be implemented properly by your vendor.
+      /// </summary>
+      /// <returns>return null if not found</returns>
+      string getDeviceUniqueId();
    }
 
    public class XmlBlasterException : ApplicationException

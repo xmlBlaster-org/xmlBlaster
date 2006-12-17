@@ -88,6 +88,8 @@ typedef void (XB_CALLBACK_DECL *XmlBlasterUnmanagedCEUpdateFp)(const char *cbSes
 /*typedef int32_t (__cdecl *FPTR)( int32_t i );*/
 typedef int32_t (XB_CALLBACK_DECL *FPTR)( int32_t i );
 
+Dll_Export extern const char *getXmlBlasterEmei();
+
 Dll_Export extern void xmlBlasterUnmanagedCERegisterLogger(struct XmlBlasterAccessUnparsed *xa, XmlBlasterUnmanagedCELoggerFp logger);
 
 Dll_Export extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsedUnmanagedCE(int argc, char** argv);

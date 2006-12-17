@@ -563,6 +563,9 @@ namespace org.xmlBlaster.client
       private extern static void xmlBlasterUnmanagedCEFree(IntPtr p);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
+      private extern static IntPtr getXmlBlasterEmei();
+
+      [DllImport(XMLBLASTER_C_LIBRARY)]
       private extern static void xmlBlasterUnmanagedCERegisterLogger(IntPtr xa, IntPtr loggerUnmanaged);
 
       [DllImport(XMLBLASTER_C_LIBRARY)]
@@ -1086,6 +1089,25 @@ namespace org.xmlBlaster.client
          return stringFromUtf8IntPtr(retP);
       }
 
+      public string getEmeiId() {
+#        if XMLBLASTER_WINCE
+         try {
+            IntPtr intPtr = getXmlBlasterEmei();
+            if (intPtr == IntPtr.Zero)
+               return null;
+            byte[] bytes = byteArrayFromIntPtr(intPtr, -1, true);
+            string emeiId = toHexString(bytes);
+            return emeiId;
+         }
+         catch (Exception e) {
+            logger(LogLevel.WARN, "", "getEmeiId() is not supported on this platform: " + e.ToString());
+            return null;
+         }
+#        else
+            return null;
+#        endif
+      }
+
       public string getDeviceUniqueId() {
 #        if XMLBLASTER_WINCE
             byte[] bytes = GetDeviceID("xmlBlasterClient");
@@ -1153,5 +1175,5 @@ HRESULT GetDeviceUniqueID(
          return DeviceOutput;
       }
 #endif
-   }
-}
+   } // class PInvokeCE
+} // namespace
