@@ -3264,9 +3264,9 @@ TODO
    <target name="csharp" depends="prepare" description="Compile C# demo client" if="windows">
       <echo message="Compiling C# demo on windows"/>
       <property name="csharp.compiler.exe" value="csc"/>
-      <property name="csharp.out.exe" value="Hello#.exe"/>
-      <exec executable="${csharp.compiler.exe}" dir="${src.csharp.dir}" failonerror="false" failifexecutionfails="false">
-         <arg line="-debug+ /warn:4 -out:${csharp.out.exe} NativeC.cs Hello.cs"/>
+      <property name="csharp.out.exe" value="TestPinvoke.exe"/>
+      <exec executable="${csharp.compiler.exe}" dir="${src.csharp.dir}" failonerror="true" failifexecutionfails="false">
+         <arg line="-debug+ /unsafe /warn:4 -out:${csharp.out.exe} PInvokeCE.cs XmlBlasterAccess.cs TestPinvoke.cs"/>
       </exec>
       <echo message="Created C# demo ${src.csharp.dir}/${csharp.out.exe}"/> 
    </target>
