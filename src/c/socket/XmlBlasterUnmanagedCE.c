@@ -324,7 +324,7 @@ XBFORCE_EXTERNC Dll_Export extern void xmlBlasterUnmanagedCEPublishOneway(struct
    /*printf("C: xmlBlasterUnmanagedCEPublishOneway %d\n", length);*/
    arr.isOneway = true;
    arr.len = length;
-   arr.msgUnitArr = msgUnitArr;
+   arr.msgUnitArr = (MsgUnit*)msgUnitArr;
    *arr.secretSessionId = 0;
    xa->publishOneway(xa, &arr, &e);
    convert(&e, exception);
