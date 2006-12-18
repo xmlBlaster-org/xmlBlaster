@@ -486,7 +486,7 @@ XBFORCE_EXTERNC Dll_Export const char *xmlBlasterUnmanagedCEVersion() {
    return version;
 }
 
-
+#ifdef WINCE_EMEI
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/apisp/html/sp_extapi_linegetgeneralinfo.asp
 // Tutorial: http://www.developer.com/ws/pc/print.php/10947_3503761_1
 #include <commctrl.h>
@@ -525,6 +525,7 @@ static void GetTAPIErrorMsg(TCHAR *szMsg,int nSize, DWORD dwError)
 		_stprintf(szMsg,L"Unknown Error: 0x%X",dwError);
 	}
 }
+#endif /* WINCE_EMEI */
 
 /**
  * You need to add cellcore.lib for compilation (WINCE). 
