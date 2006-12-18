@@ -133,6 +133,7 @@ Preprocessor:
 using System;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Collections;
 
 
 namespace org.xmlBlaster.client
@@ -437,8 +438,8 @@ namespace org.xmlBlaster.client
       XmlBlasterException fillXmlBlasterException(ref XmlBlasterUnmanagedCEException exception)
       {
          XmlBlasterException managed = new XmlBlasterException(exception.remote != 0,
-              stringFromUtf8IntPtr(exception.errorCode),
-              stringFromUtf8IntPtr(exception.message));
+              stringFromUtf8IntPtr(exception.errorCode, false),
+              stringFromUtf8IntPtr(exception.message, false));
          xmlBlasterUnmanagedCEExceptionFree(ref exception);
          return managed;
       }
@@ -450,7 +451,8 @@ namespace org.xmlBlaster.client
        */
       public static byte[] StringToUtf8ByteArray(string str)
       {
-         byte[] data = System.Text.Encoding.UTF8.GetBytes(str); // TODO
+         if (str == null) return new byte[0];
+         byte[] data = System.Text.Encoding.UTF8.GetBytes(str);
          return data;
       }
 
@@ -509,7 +511,7 @@ namespace org.xmlBlaster.client
        *   byte[] tmp = stringReturner();
        * we have a workaround and return an IntPtr.
        * The string which was allocated in the DLL C code is
-       * extracted here and then then freed by a call to
+       * extracted here and then freed by a call to
        *   xmlBlasterFree(IntPtr)
        * @param ptr A C malloced 'char *' containing UTF-8 text
        * @return    A unicode 'wchar_t *' UTF-16 string
@@ -631,24 +633,96 @@ namespace org.xmlBlaster.client
       private IntPtr updateFpForDelegate;
       private IntPtr loggerFpForDelegate;
 
+      public PInvokeCE() {
+      }
+
+      /// <summary>
+      /// Convenience method, calls initialize()
+      /// </summary>
+      /// <param name="argv">argv [0] contains the first argument, etc.
+      ///  "-dispatch/connection/plugin/socket/hostname" "192.168.1.2"</param>
       public PInvokeCE(string[] argv)
       {
-         if (argv == null) argv = new String[0];
+         initialize(toHashtable(argv));
+      }
 
-         string deviceId = getDeviceUniqueId();
-         logger(LogLevel.TRACE, "", "Using deviceUniqueId '" + deviceId + "'");
+      public static Hashtable toHashtable(string[] argv)
+      {
+         Hashtable hash = new Hashtable();
+         //hash.Add("__exe__", "PInvokeCE");
+         for (int i = 0; i < argv.Length; ++i)
+         {
+            string key = (argv[i].StartsWith("-"))?argv[i].Substring(1):argv[i];
+            string value = "";
+            if (i < (argv.Length -1)) {
+               i++;
+               value = argv[i];
+            }
+            hash.Add(key, value);
+         }
+         return hash;
+      }
+
+      /// <summary>
+      /// Convert command line arguments: C client lib expects the executable name as first entry
+      /// </summary>
+      /// <param name="hash"></param>
+      /// <returns></returns>
+      private IntPtr[] create_C_args(Hashtable hash) {
+         int c_argc = 2 * hash.Count + 1;
+
+         IntPtr[] c_argv = new IntPtr[c_argc];
+         c_argv[0] = stringToUtf8IntPtr("PInvokeCE"); // TODO: my executable name
+
+         ArrayList aKeys = new ArrayList(hash.Keys);
+         int i = 1;
+         foreach (string key_ in aKeys) {
+            string value = (string)hash[key_];
+            if (value == null) value = "";
+            string key = (key_.StartsWith("-")) ? key_ : ("-" + key_);
+            c_argv[i] = stringToUtf8IntPtr(key);
+            i++;
+            c_argv[i] = stringToUtf8IntPtr(value);
+            i++;
+         }
+         return c_argv;
+      }
+
+      public void setLogLevel(string level) {
+#        if XMLBLASTER_WINCE   // Enum.GetValues is not supported
+            if ("INFO".Equals(level.ToUpper()))
+               localLogLevel = LogLevel.INFO;
+            else if ("WARN".Equals(level.ToUpper()))
+               localLogLevel = LogLevel.WARN;
+            else if ("ERROR".Equals(level.ToUpper()))
+               localLogLevel = LogLevel.ERROR;
+            else if ("TRACE".Equals(level.ToUpper()))
+               localLogLevel = LogLevel.TRACE;
+            else if ("DUMP".Equals(level.ToUpper()))
+               localLogLevel = LogLevel.DUMP;
+#        else
+            Array logArray = Enum.GetValues(typeof(LogLevel));
+            foreach (LogLevel logLevel in logArray)
+               if (logLevel.ToString().Equals(level)) {
+                  localLogLevel = logLevel;
+                  break;
+               }
+         #endif
+      }
+
+      public void initialize(string[] argv) {
+         initialize(toHashtable(argv));
+      }
+
+      public void initialize(Hashtable properties) {
+         if (properties == null) properties = new Hashtable();
 
          updateUnmanagedFp = new UpdateUnmanagedFp(this.updateUnmanaged);
          updateFpForDelegate = Marshal.GetFunctionPointerForDelegate(updateUnmanagedFp);
 
-         // Convert command line arguments: C client lib expects the executable name as first entry
-         IntPtr[] c_argv = new IntPtr[argv.Length + 1];
-         c_argv[0] = stringToUtf8IntPtr("PInvokeCE"); // TODO: my executable name
-         for (int i = 0; i < argv.Length; ++i)
+         if (properties.Contains("-help") || properties.Contains("help")
+               || properties.Contains("/?"))
          {
-            if (argv[i].ToLower().Equals("--help") || argv[i].ToLower().Equals("-help")
-               || argv[i].ToLower().Equals("/?"))
-            {
                string usage = "Usage:\nxmlBlaster C client v" + getVersion()
                   + " on " + System.Environment.OSVersion.ToString() +
                #if XMLBLASTER_WINCE
@@ -659,32 +733,13 @@ namespace org.xmlBlaster.client
                usage += "\n" + getUsage();
                logger(LogLevel.TRACE, "", usage);
                throw new XmlBlasterException("user.usage", usage);//"Good bye");
-            }
-            if ("-logLevel".Equals(argv[i]) && (i < argv.Length-1)) {
-               string level = argv[i + 1];
-#              if XMLBLASTER_WINCE   // Enum.GetValues is not supported
-                  if ("INFO".Equals(level.ToUpper()))
-                     localLogLevel = LogLevel.INFO;
-                  else if ("WARN".Equals(level.ToUpper()))
-                     localLogLevel = LogLevel.WARN;
-                  else if ("ERROR".Equals(level.ToUpper()))
-                     localLogLevel = LogLevel.ERROR;
-                  else if ("TRACE".Equals(level.ToUpper()))
-                     localLogLevel = LogLevel.TRACE;
-                  else if ("DUMP".Equals(level.ToUpper()))
-                     localLogLevel = LogLevel.DUMP;
-#              else
-                  Array logArray = Enum.GetValues(typeof(LogLevel));
-                  foreach (LogLevel logLevel in logArray)
-                     if (logLevel.ToString().Equals(level)) {
-                        localLogLevel = logLevel;
-                        break;
-                     }
-#              endif
-            }
-            c_argv[i + 1] = stringToUtf8IntPtr(argv[i]);
          }
 
+         if (properties.Contains("logLevel")) {
+            setLogLevel((string)properties["logLevel"]);
+         }
+
+         IntPtr[] c_argv = create_C_args(properties);
          // Frees not c_argv (as it crashed)
          xa = getXmlBlasterAccessUnparsedUnmanagedCE(c_argv.Length, c_argv);
          for (int i = 0; i < c_argv.Length; ++i)
@@ -694,15 +749,24 @@ namespace org.xmlBlaster.client
          loggerFpForDelegate = Marshal.GetFunctionPointerForDelegate(loggerUnmanagedFp);
          xmlBlasterUnmanagedCERegisterLogger(xa, loggerFpForDelegate);
 
-         logger(LogLevel.INFO, "", "xmlBlaster C client v" + getVersion() 
+         // At this stage (constructor) no logListener can be here, so this
+         // output will end up in the console
+         logInfos(LogLevel.TRACE);
+      }
+
+      public void logInfos(LogLevel level) {
+         // At this stage (constructor) no logListener can be here, so this
+         // output will end up in the console
+         logger(level, "", "xmlBlaster C client v" + getVersion() 
             + " on " + System.Environment.OSVersion.ToString() +
 #        if XMLBLASTER_WINCE
-            " compact framework .net " + System.Environment.Version.ToString() +
-            " deviceId=" + deviceId);
+            " compact framework .net " + System.Environment.Version.ToString());
+            //" deviceId=" + getDeviceUniqueId());
 #        else
             " .net " + System.Environment.Version.ToString());
 #        endif
       }
+
 
       ~PInvokeCE()
       {
@@ -747,6 +811,7 @@ namespace org.xmlBlaster.client
          {
             onUpdate += new OnUpdate(listener.OnUpdate);
          }
+         logInfos(LogLevel.INFO);
          try
          {
             XmlBlasterUnmanagedCEException exception = new XmlBlasterUnmanagedCEException(false);
@@ -816,7 +881,8 @@ namespace org.xmlBlaster.client
          if (exception.CaughtException())
          {
             XmlBlasterException e = fillXmlBlasterException(ref exception);
-            logger(LogLevel.WARN, "", location + ": Got exception from C: " + e.ToString());
+            logger(LogLevel.WARN, "", location + ": errorCode=" + e.ErrorCode);
+            logger(LogLevel.TRACE, "", location + ": Got exception from C: " + e.ToString());
             throw e;
          }
          logger(LogLevel.TRACE, "", location + ": SUCCESS");
@@ -1165,7 +1231,8 @@ HRESULT GetDeviceUniqueID(
             GetDeviceUniqueID(AppData, appDataSize, 1, DeviceOutput, out SizeOut);
          }
          catch (Exception e) {
-            logger(LogLevel.WARN, "", "GetDeviceUniqueID() is not supported on this platform: " + e.ToString());
+            logger(LogLevel.WARN, "", "GetDeviceUniqueID() is not supported on this platform");
+            logger(LogLevel.TRACE, "", "GetDeviceUniqueID() is not supported on this platform: " + e.ToString());
             return null;
          }
 

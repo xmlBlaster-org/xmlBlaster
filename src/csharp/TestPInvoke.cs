@@ -9,7 +9,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Windows.Forms;
 using org.xmlBlaster.client;
 
 public class TestPInvoke : I_Callback, I_LoggingCallback
@@ -33,20 +32,24 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
 
    private void runIdTest() {
       Console.WriteLine("Hello world");
-      xb = XmlBlasterAccessFactory.createInstance(argv);
+      xb = XmlBlasterAccessFactory.createInstance();
       xb.addLoggingListener(this);
+      xb.initialize(argv);
       log("Accessing not IDs");
       string deviceId = xb.getDeviceUniqueId();
-      MessageBox.Show("DeviceUniqueId="+deviceId, "Name Entry Error",
-         MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+      log("deviceId=" + deviceId);
+      //MessageBox.Show("DeviceUniqueId="+deviceId, "Name Entry Error",
+      //   MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
       string emeiId = xb.getEmeiId();
-      MessageBox.Show("EMEI="+emeiId, "Name Entry Error",
-         MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
+      log("EMEI=" + emeiId);
+      //MessageBox.Show("EMEI="+emeiId, "Name Entry Error",
+      //   MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
    }
 
    private void runAllMethods() {
-      xb = XmlBlasterAccessFactory.createInstance(argv);
+      xb = XmlBlasterAccessFactory.createInstance();
       xb.addLoggingListener(this);
+      xb.initialize(argv);
 
       string connectQos = String.Format(
          "<qos>\n" +

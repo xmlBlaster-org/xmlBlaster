@@ -9,26 +9,27 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
 using System;
 using System.Text;
+using System.Collections;
 using System.Runtime.InteropServices;
 
 namespace org.xmlBlaster.client
 {
    public class XmlBlasterAccessFactory
    {
-      public static I_XmlBlasterAccess createInstance(String[] argv)
+      public static I_XmlBlasterAccess createInstance()
       {
          // Choose the PInvoke plugin:
 #        if FORCE_PINVOKECE_PLUGIN
 
-            return new PInvokeCE(argv); // Runs fine with WIN32 and WINCE (fails with MONO)
+            return new PInvokeCE(); // Runs fine with WIN32 and WINCE (fails with MONO)
 
 #        elif XMLBLASTER_MONO || FORCE_NATIVEC_PLUGIN
             
-            return new NativeC(argv); // First try, runs fine with WIN32 and with Linux/MONO
+            return new NativeC(); // First try, runs fine with WIN32 and with Linux/MONO
 
 #        else // WIN32 || WINCE || Smartphone || PocketPC || WindowsCE || FORCE_PINVOKECE
             
-            return new PInvokeCE(argv); // Runs fine with WIN32 and WINCE (fails with MONO)
+            return new PInvokeCE(); // Runs fine with WIN32 and WINCE (fails with MONO)
 
 #        endif
       }
@@ -67,6 +68,18 @@ namespace org.xmlBlaster.client
    /// </summary>
    public interface I_XmlBlasterAccess
    {
+      /// <summary>
+      /// Convenience to pass command line arguments
+      /// </summary>
+      /// <param name="argv">e.g. "-logLevel" "INFO"</param>
+      void initialize(string[] argv);
+
+      /// <summary>
+      /// Initialize the client library
+      /// </summary>
+      /// <param name="properties">e.g. "logLevel" "INFO"</param>
+      void initialize(Hashtable properties);
+
       string connect(string qos, I_Callback listener);
       
       /// After calling diconnect() this class is not usable anymore

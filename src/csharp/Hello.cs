@@ -33,7 +33,8 @@ public class Hello : I_Callback
    }
    
    public Hello(string[] argv) {
-      I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance(argv);
+      I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance();
+      nc.initialize(argv);
 
       string connectQos = String.Format(
          "<qos>\n"+
