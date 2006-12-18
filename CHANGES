@@ -1,9 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
- o #15838 C# client: Csharp support extended
+ o #15851 C# client: Csharp support extended
           o Supporting C and C++ clients as unmanaged code on Windows CE and normal Windows
-          o Supporting C# as managed code on Windows CE and normal Windows
+          o Supporting C# as managed code on Windows CE and normal Windows and Mono/Linux
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.windowsCE.html
 	  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
 
