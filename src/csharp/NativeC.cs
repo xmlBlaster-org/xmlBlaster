@@ -74,6 +74,7 @@ Example:
 */
 using System;
 using System.Runtime.InteropServices;
+using System.Collections;
 
 namespace org.xmlBlaster.client
 {
@@ -284,7 +285,10 @@ namespace org.xmlBlaster.client
       private IntPtr xa;
       private UpdateUnmanagedFp updateUnmanagedFp;
       
-      public NativeC(string[] argv) {
+      public NativeC() {
+      }
+
+      public void initialize(string[] argv) {
          if (argv == null) argv = new String[0];
 
          updateUnmanagedFp = new UpdateUnmanagedFp(this.updateUnmanaged);
@@ -303,6 +307,10 @@ namespace org.xmlBlaster.client
          xa = getXmlBlasterAccessUnparsedUnmanaged(c_argv.Length, c_argv);
             
          logger("NativeC() ...");         
+      }
+
+      public void initialize(Hashtable properties) {
+         throw new XmlBlasterException("internal.notImplemented", "Please call initialize(string[]");
       }
 
       ~NativeC() {
@@ -641,10 +649,21 @@ namespace org.xmlBlaster.client
          return "?";
       }
 
+      public string getEmeiId() {
+         logger("Sorry, getEmeiId() is not implemented");
+         return null;
+      }
+
+      public string getDeviceUniqueId() {
+         logger("Sorry, getDeviceUniqueId() is not implemented");
+         return null;
+      }
+
 #if NATIVE_C_MAIN
       static void Main(string[] argv) {
         
-         I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance(argv);
+         I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance();
+         nc.initialize(argv);
 
          // crashed with [3], why??
          MsgUnit[] msgUnitArr = new MsgUnit[3];

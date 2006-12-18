@@ -5,6 +5,7 @@
 
 @prepare  Linux:    cd ~/xmlBlaster; build c-lib; cd ~/xmlBlaster/src/csharp; ln -s ../../lib/libxmlBlasterClientCD.so .
 @compile  Linux:    mcs /unsafe /d:"XMLBLASTER_MONO" -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess.cs Hello.cs
+                    gmcs /unsafe /d:XMLBLASTER_MONO /d:FORCE_PINVOKECE_PLUGIN -debug+ -out:Hello.exe PInvokeCE.cs XmlBlasterAccess.cs Hello.cs
 
 @prepare  Windows:  Compile the C client library first (see xmlBlaster\src\c\xmlBlasterClientC.sln)
 @compile  Windows:  csc /unsafe -debug+ -out:Hello.exe XmlBlasterAccess.cs PInvokeCE.cs Hello.cs
