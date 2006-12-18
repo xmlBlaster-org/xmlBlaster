@@ -21,6 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SignalCatcher;
 import org.xmlBlaster.util.I_SignalListener;
 import org.xmlBlaster.util.log.XbFormatter;
+import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
@@ -105,8 +106,11 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
     * without loading xmlBlaster.properties again
     * @param utilGlob The environment for this server instance
     */
-   public Main(org.xmlBlaster.util.Global utilGlob) {
-      init(utilGlob);
+   public Main(Global utilGlob) {
+      if (utilGlob instanceof ServerScope)
+         init(utilGlob);
+      else
+         init(new ServerScope(Property.propsToArgs(utilGlob.getProperty().getProperties())));
    }
 
    /**
