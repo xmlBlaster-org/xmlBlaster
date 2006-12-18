@@ -110,8 +110,10 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
    /* Currently forced to false: needs mutex and reference counter to not freeMsgUnitArr twice */
    xa->lowLevelAutoAck = false;
 
+   /* We shouldn't do much logging here, as the caller had no chance to redirect it up to now */
    if (xa->callbackMultiThreaded == true) {
-      xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Multi threaded callback delivery is activated with -plugin/socket/multiThreaded true");
+      if (xa->logLevel>=XMLBLASTER_LOG_DUMP) 
+         xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_DUMP, __FILE__, "Multi threaded callback delivery is activated with -plugin/socket/multiThreaded true");
       /*xa->callbackMultiThreaded = false;*/
    }
    /* stdint.h: # define INT32_MAX              (2147483647) */
@@ -121,7 +123,7 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
    memset(&xa->callbackThreadId, 0, sizeof(pthread_t));
    xa->threadCounter = 0;
 
-   if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+   if (xa->logLevel>=XMLBLASTER_LOG_DUMP) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_DUMP, __FILE__,
                                 "Created handle: -logLevel=%s -plugin/socket/responseTimeout=%ld",
                                 getLogLevelStr(xa->logLevel), xa->responseTimeout);
 
