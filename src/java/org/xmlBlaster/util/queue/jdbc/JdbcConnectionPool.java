@@ -338,12 +338,12 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    }
    
    private final void setInPool(Connection conn, boolean inPool) {
-      if (conn instanceof DebugConnection)
-         ((DebugConnection)conn).setInPool(inPool); // assert code
+      //if (conn instanceof DebugConnection)
+      //   ((DebugConnection)conn).setInPool(inPool); // assert code
    }
    private final boolean isInPool(Connection conn) {
-      if (conn instanceof DebugConnection)
-         return ((DebugConnection)conn).isInPool();
+      //if (conn instanceof DebugConnection)
+      //   return ((DebugConnection)conn).isInPool();
       return false;
    }
    
@@ -356,9 +356,9 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          }
          // Connection conn = DriverManager.getConnection(url, user, password);
          Connection conn = null;
-         if (this.debug)
-            conn = new DebugConnection(DriverManager.getConnection(url, user, password));
-         else
+         //if (this.debug)
+         //   conn = new DebugConnection(DriverManager.getConnection(url, user, password));
+         //else
             conn = DriverManager.getConnection(url, user, password);
          if (doLog) {
             log.info(getIsolationLevel(conn));
