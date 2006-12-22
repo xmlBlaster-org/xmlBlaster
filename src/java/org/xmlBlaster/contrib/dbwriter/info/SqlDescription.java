@@ -388,6 +388,12 @@ public class SqlDescription {
       int colSize = col.getColSize();
       if (colSize < 1 || val.length <= colSize)
          return val;
+      
+      int sqlType = col.getSqlType();
+      if (colSize < 1 || sqlType == Types.BLOB || sqlType == Types.CLOB || sqlType == Types.LONGVARBINARY || sqlType == Types.LONGVARCHAR) {
+         log.fine("Not cutting entry '" + col.getColName() + "' since colSize=" + colSize + " and sqlType=" + sqlType);
+         return val;
+      }      
       log.warning("The entry on column='" + colName + "' is too long: " + val.length + " but should be max " + colSize + ". Will cut the end");
       byte[] tmpBuf = val;
       val = new byte[colSize];
