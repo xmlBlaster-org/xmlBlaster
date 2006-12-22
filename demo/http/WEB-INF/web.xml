@@ -14,6 +14,22 @@
     <servlet-class>http.dhtml.systemInfo.SystemInfo</servlet-class>
   </servlet>
 
+  <servlet>
+    <servlet-name>PullServlet</servlet-name>
+    <description>Simple unprotected xmlBlaster access</description>
+    <servlet-class>org.xmlBlaster.protocol.http.simple.PullServlet</servlet-class>
+    <init-param>
+      <param-name>loginName</param-name>
+      <param-value>pullServlet</param-value>
+      <description>Any browser may access!</description>
+    </init-param>
+    <init-param>
+      <param-name>passwd</param-name>
+      <param-value>something</param-value>
+      <description>Any browser may access!</description>
+    </init-param>
+  </servlet>
+
   <!-- Core servlets to support persistent http -->
   <servlet>
     <servlet-name>BlasterHttpProxyServlet</servlet-name>
@@ -124,6 +140,10 @@
   </servlet>
 
 
+  <servlet-mapping>
+    <servlet-name>PullServlet</servlet-name>
+    <url-pattern>/pull</url-pattern>
+  </servlet-mapping>
   <servlet-mapping>
     <servlet-name>SystemInfo</servlet-name>
     <url-pattern>/dhtml/systemInfo</url-pattern>
