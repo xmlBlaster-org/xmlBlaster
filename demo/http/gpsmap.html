@@ -1,9 +1,14 @@
 <html style="background-color:#EDF0F3;background:#EDF0F3;" xmlns="http://www.w3.org/1999/xhtml">
 <!-- tidy -utf8 -indent -wrap 256 -asxhtml gpsmap.html -->
 
-<!-- To be used with PullServlet.java -->
-<!-- Setup a PDA sending GPS coordinates over GPRS, UMTS or WLAN -->
-<!-- @author Marcel Ruff xmlBlaster@marcelruff.info 2006 -->
+<!--
+ Follow the GPS coordinates with google maps.
+ Setup a PDA sending GPS coordinates over GPRS, UMTS or WLAN to xmlBlaster.
+ To be used with PullServlet.java
+ build deploy_war    creates war for tomcat 
+ http://localhost:8080/xmlBlaster/gpsmap.html
+ @author Marcel Ruff xmlBlaster@marcelruff.info 2006
+ -->
 
 
 <head>
@@ -93,8 +98,8 @@
    </p>
    <p>
    <iframe id="myMapFrame"  frameborder="1"
-     vspace="0"  hspace="0"  marginwidth="0"  marginheight="0" width="800"  scrolling="yes"
-      height="600" src=""/>
+     vspace="0"  hspace="0"  marginwidth="0"  marginheight="0" width="1000"  scrolling="yes"
+      height="800" src=""/>
    </p>
 </body>
 </html>
