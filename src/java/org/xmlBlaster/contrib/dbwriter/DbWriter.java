@@ -38,6 +38,9 @@ public class DbWriter implements I_Update {
    private I_DbPool dbPool;
    private boolean poolOwner;
    private boolean isAlive;
+   // this is used mainly when testing to get an event when an update is finished
+   private I_Update registeredForUpdates;
+   
    
    /**
     * Default constructor, you need to call {@link #init} thereafter. 
@@ -160,38 +163,49 @@ public class DbWriter implements I_Update {
       if (!this.isAlive) {
          throw new Exception("update topic='" + topic + "' happens when we not alive: \n");
       }
-      ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
-      ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
-      ClientProperty initialDumpAsXml = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DUMP_AS_XML);
-      ClientProperty endOfTransition = (ClientProperty)attrMap.get(ReplicationConstants.END_OF_TRANSITION);
-      
-      if (dumpProp != null && initialDumpAsXml == null) {
-         this.writer.update(topic, is, attrMap);
-      }
-      else if (endToRemoteProp != null) {
-         this.writer.update(topic, is, attrMap);
-      }
-      else if (endOfTransition != null) {
-         this.writer.update(topic, is, attrMap);
-      }
-      else {
-         SqlInfo updateInfo = this.parser.parse(new InputSource(is));
-         if (updateInfo == null) {
-            log.warning("The entry was not for us");
-            return;
+      try {
+         ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
+         ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
+         ClientProperty initialDumpAsXml = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DUMP_AS_XML);
+         ClientProperty endOfTransition = (ClientProperty)attrMap.get(ReplicationConstants.END_OF_TRANSITION);
+         
+         if (dumpProp != null && initialDumpAsXml == null) {
+            this.writer.update(topic, is, attrMap);
          }
-         ClientProperty keepTransactionOpenProp = (ClientProperty)attrMap.get(ReplicationConstants.KEEP_TRANSACTION_OPEN);
-         if (keepTransactionOpenProp != null && keepTransactionOpenProp.getBooleanValue()) {
-            // is the property already set ? No, then pass it to the info object
-            if (updateInfo.getDescription().getAttribute(ReplicationConstants.KEEP_TRANSACTION_OPEN) == null) {
-               log.fine("Setting the property '" + ReplicationConstants.KEEP_TRANSACTION_OPEN + "' to true");
-               updateInfo.getDescription().setAttribute(keepTransactionOpenProp);
+         else if (endToRemoteProp != null) {
+            this.writer.update(topic, is, attrMap);
+         }
+         else if (endOfTransition != null) {
+            this.writer.update(topic, is, attrMap);
+         }
+         else {
+            SqlInfo updateInfo = this.parser.parse(new InputSource(is));
+            if (updateInfo == null) {
+               log.warning("The entry was not for us");
+               return;
             }
-            else
-               log.warning("The property '" + ReplicationConstants.KEEP_TRANSACTION_OPEN + "' was already set as a description attribute (will not overwrite it)");
+            ClientProperty keepTransactionOpenProp = (ClientProperty)attrMap.get(ReplicationConstants.KEEP_TRANSACTION_OPEN);
+            if (keepTransactionOpenProp != null && keepTransactionOpenProp.getBooleanValue()) {
+               // is the property already set ? No, then pass it to the info object
+               if (updateInfo.getDescription().getAttribute(ReplicationConstants.KEEP_TRANSACTION_OPEN) == null) {
+                  log.fine("Setting the property '" + ReplicationConstants.KEEP_TRANSACTION_OPEN + "' to true");
+                  updateInfo.getDescription().setAttribute(keepTransactionOpenProp);
+               }
+               else
+                  log.warning("The property '" + ReplicationConstants.KEEP_TRANSACTION_OPEN + "' was already set as a description attribute (will not overwrite it)");
+            }
+            this.writer.store(updateInfo);
          }
-         this.writer.store(updateInfo);
+      }
+      finally {
+         if (this.registeredForUpdates != null)
+            this.registeredForUpdates.update(topic, null, attrMap);
       }
    }
+   
+   public void registerForUpdates(I_Update registeredForUpdates) {
+      this.registeredForUpdates = registeredForUpdates;
+   }
+   
    
 }
