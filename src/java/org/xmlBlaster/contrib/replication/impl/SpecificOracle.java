@@ -117,7 +117,8 @@ public class SpecificOracle extends SpecificDefault {
       String tablePrefix = newOldPrefix + prefix;
       buf.append("       ").append(contName).append(" := NULL;\n");
       buf.append("       oid := ROWIDTOCHAR(").append(tablePrefix).append(".rowid);\n");
-      if ("new".equals(prefix)) {
+      boolean isNew = "new".equals(prefix);
+      if (isNew) {
          if (containsLongs)
             return buf.toString();
       }
@@ -137,72 +138,70 @@ public class SpecificOracle extends SpecificDefault {
                buf.append("          ").append(this.debugFunction).append("('   col ").append(colName).append(" type ").append(typeName).append(" typeNr ").append(type).append(" prefix ").append(prefix).append("');\n");
             buf.append("       END IF;\n");
          }
-         
-         if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY)
+
+         boolean doLongWorkaround = type != Types.LONGVARCHAR && type != Types.LONGVARBINARY; // used also at the end of loop
+         if (doLongWorkaround)
             buf.append("          IF ").append(varName).append(" IS NOT NULL THEN\n");
          
-         if (type == Types.LONGVARCHAR || type == Types.LONGVARBINARY) {
-            /*
-             * don't use the LONGS since they can not be used inside a trigger. For INSERT
-             * the RAWID will be used and the entry will be read when processing the data, for
-             * DELETE and UPDATE the LONGS will not be used to search.
-             */
-         }
-         else if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY
-               || type == Types.STRUCT) {
-            buf.append("             blobCont := EMPTY_BLOB;\n");
-            buf.append("             dbms_lob.createtemporary(blobCont, TRUE);\n");
-            buf.append("             dbms_lob.open(blobCont, dbms_lob.lob_readwrite);\n");
-            if (type == Types.BLOB) {
-               buf.append("             dbms_lob.append(blobCont,").append(varName).append(");\n");
+         boolean doProcess = isNew || cols[i].isSearchable();
+         if (doProcess) { // we don't want it on old entries since these are only used to find the entry to process
+            // this could be a problem if the type of a col is searchable on the source(master) but not on the slave.
+            if (type == Types.LONGVARCHAR || type == Types.LONGVARBINARY) {
+               /*
+                * don't use the LONGS since they can not be used inside a trigger. For INSERT
+                * the RAWID will be used and the entry will be read when processing the data, for
+                * DELETE and UPDATE the LONGS will not be used to search.
+                */
+            }
+            else if (type == Types.BINARY || type == Types.BLOB || type == Types.JAVA_OBJECT || type == Types.VARBINARY
+                  || type == Types.STRUCT) {
+               buf.append("             blobCont := EMPTY_BLOB;\n");
+               buf.append("             dbms_lob.createtemporary(blobCont, TRUE);\n");
+               buf.append("             dbms_lob.open(blobCont, dbms_lob.lob_readwrite);\n");
+               if (type == Types.BLOB) {
+                  buf.append("             dbms_lob.append(blobCont,").append(varName).append(");\n");
+               }
+               else {
+                  buf.append("             dbms_lob.writeappend(blobCont,").append("length(");
+                  buf.append(varName).append("),").append(varName).append(");\n");
+               }
+               buf.append("             fake := ").append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont,").append(contName).append(");\n");
+               buf.append("             dbms_lob.close(blobCont);\n");
+               buf.append("             dbms_lob.freetemporary(blobCont);\n");
+            }
+            else if (type == Types.DATE || type == Types.TIMESTAMP || typeName.equals("TIMESTAMP")) {
+               buf.append("             tmpCont := EMPTY_CLOB;\n");
+               buf.append("             dbms_lob.createtemporary(tmpCont, TRUE);\n");
+               buf.append("             dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
+               // on new oracle data coming from old versions could be sqlType=TIMESTAMP but type='DATE'
+               if (typeName.equals("DATE") || type == Types.DATE) 
+                  buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS');\n");
+               else // then timestamp
+                  buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
+               buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
+               buf.append("             fake := ").append(this.replPrefix).append("col2xml('");
+               buf.append(colName).append("', tmpCont,").append(contName).append(");\n");
+               buf.append("             dbms_lob.close(tmpCont);\n");
+               buf.append("             dbms_lob.freetemporary(tmpCont);\n");
             }
             else {
-               buf.append("             dbms_lob.writeappend(blobCont,").append("length(");
-               buf.append(varName).append("),").append(varName).append(");\n");
+               if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
+                     || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
+                  buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
+                  buf.append("             fake := ").append(this.replPrefix);
+                  buf.append("fill_blob_char(tmpNum, '").append(colName).append("',").append(contName).append(");\n");
+               }
+               else {
+                  // buf.append("             tmpNum := ").append(varName).append(";\n");
+                  buf.append("             fake := ").append(this.replPrefix);
+                  buf.append("fill_blob_char(").append(varName).append(", '").append(colName).append("',");
+                  buf.append(contName).append(");\n");
+               }
+               
             }
-            buf.append("             fake := ").append(this.replPrefix).append("col2xml_base64('").append(colName).append("', blobCont,").append(contName).append(");\n");
-            buf.append("             dbms_lob.close(blobCont);\n");
-            buf.append("             dbms_lob.freetemporary(blobCont);\n");
-         }
-         else if (type == Types.DATE || type == Types.TIMESTAMP || typeName.equals("TIMESTAMP")) {
-            buf.append("             tmpCont := EMPTY_CLOB;\n");
-            buf.append("             dbms_lob.createtemporary(tmpCont, TRUE);\n");
-            buf.append("             dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
-            // on new oracle data coming from old versions could be sqlType=TIMESTAMP but type='DATE'
-            if (typeName.equals("DATE") || type == Types.DATE) 
-               buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS');\n");
-            else // then timestamp
-               buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
-            buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
-            buf.append("             fake := ").append(this.replPrefix).append("col2xml('");
-            buf.append(colName).append("', tmpCont,").append(contName).append(");\n");
-            buf.append("             dbms_lob.close(tmpCont);\n");
-            buf.append("             dbms_lob.freetemporary(tmpCont);\n");
-         }
-         else {
-            if (type == Types.INTEGER || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.FLOAT
-                  || type == Types.DOUBLE || type == Types.DATE || type == Types.TIMESTAMP || type == Types.OTHER) {
-               buf.append("             tmpNum := TO_CHAR(").append(varName).append(");\n");
-               buf.append("             fake := ").append(this.replPrefix);
-               buf.append("fill_blob_char(tmpNum, '").append(colName).append("',").append(contName).append(");\n");
-            }
-            else {
-               // buf.append("             tmpNum := ").append(varName).append(";\n");
-               buf.append("             fake := ").append(this.replPrefix);
-               buf.append("fill_blob_char(").append(varName).append(", '").append(colName).append("',");
-               buf.append(contName).append(");\n");
-            }
-            
-            // buf.append("             tmpCont := EMPTY_CLOB;\n");
-            // buf.append("             dbms_lob.createtemporary(tmpCont, TRUE);\n");
-            // buf.append("             dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);\n");
-            // buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
-            // buf.append("             dbms_lob.close(tmpCont);\n");
-            // buf.append("             dbms_lob.append(").append(contName).append(", ").append(this.replPrefix).append(
-            //       "col2xml('").append(colName).append("', tmpCont));\n");
          }
          
-         if (type != Types.LONGVARCHAR && type != Types.LONGVARBINARY) {
+         if (doLongWorkaround) {
             if (!isInsert) { // on inserts we want to avoid writing unnecessary null entries
                buf.append("          ELSE\n");
                buf.append("             fake := ").append(this.replPrefix).append("col2xml_null('");
