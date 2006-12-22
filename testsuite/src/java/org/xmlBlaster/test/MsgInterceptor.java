@@ -12,6 +12,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
@@ -20,6 +21,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.InterruptedException;
+import java.util.Map;
 import java.util.Vector;
 
 import junit.framework.Assert;
@@ -28,7 +30,7 @@ import java.lang.ref.WeakReference;
 /**
  * Intercepts incoming message in update() and collects them in a Vector for nice handling. 
  */
-public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCallback 
+public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCallback, I_Update 
 {
    private final WeakReference weakglob;
    private final WeakReference weaklog;
@@ -37,6 +39,7 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
    private int verbosity = 2;
    private boolean countErased;
    private I_StreamingCallback streamTestsuite;
+   private I_Update contribTestsuite;
    private byte[] msgContent;
    
    /**
@@ -45,6 +48,14 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
    public MsgInterceptor(Global glob, Logger log, I_Callback testsuite, I_StreamingCallback streamTestsuite) {
       this(glob, log, testsuite);
       this.streamTestsuite = streamTestsuite;
+   }
+
+   /**
+    * @param testsuite If != null your update() variant will be called as well
+    */
+   public MsgInterceptor(Global glob, Logger log, I_Callback testsuite, I_Update contribTestsuite) {
+      this(glob, log, testsuite);
+      this.contribTestsuite = contribTestsuite;
    }
 
    /**
@@ -122,7 +133,7 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
    }
    
    /**
-    * This is the callback method (I_Callback) invoked from xmlBlaster
+    * This is the callback method (I_StreamingCallback) invoked from xmlBlaster
     * It directly calls the update method from the testsuite (delegation)
     */
    public String update(String cbSessionId, UpdateKey updateKey, InputStream is, UpdateQos updateQos) throws XmlBlasterException {
@@ -143,6 +154,23 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
          add(new Msg(cbSessionId, updateKey, msgContent, updateQos));
       }
       return ret;
+   }
+
+
+   /**
+    * This is the callback method (I_StreamingCallback) invoked from xmlBlaster
+    * It directly calls the update method from the testsuite (delegation)
+    */
+   public void update(String topic, InputStream is, Map attrMap) throws Exception {
+      if (this.contribTestsuite != null) {
+         try {
+            this.contribTestsuite.update(topic, is, attrMap);
+         }
+         catch (IOException ex) {
+            throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_ILLEGALARGUMENT, "update", "update", ex);
+         }
+      }
+      add(new Msg(null, null, new byte[0], null));
    }
 
    /**
