@@ -5,15 +5,22 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Properties;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
@@ -23,6 +30,8 @@ import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationAgent;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
+import org.xmlBlaster.test.MsgInterceptor;
+import org.xmlBlaster.util.Global;
 
 /**
  * Test basic functionality for the replication. This test needs an instance of xmlBlaster running.
@@ -49,6 +58,8 @@ public class TestReplication extends XMLTestCase {
    private String tableName2 = "TEST_REPLICATION2";
    private String replPrefix = "repl_";
    private long sleepDelay;
+   private MsgInterceptor interceptor;
+   
    /**
     * Start the test.
     * <pre>
@@ -60,6 +71,10 @@ public class TestReplication extends XMLTestCase {
       // junit.swingui.TestRunner.run(TestReplication.class);
       TestReplication test = new TestReplication();
       try {
+         test.setUp();
+         test.testBigBlobs();
+         test.tearDown();
+
          test.setUp();
          test.testUntrimmedSpaces();
          test.tearDown();
@@ -93,6 +108,7 @@ public class TestReplication extends XMLTestCase {
    public TestReplication() {
       super();
       XMLUnit.setIgnoreWhitespace(true);
+      this.interceptor = new MsgInterceptor(new Global(), log, null, (I_Update)null);
    }
 
    /**
@@ -103,6 +119,7 @@ public class TestReplication extends XMLTestCase {
    public TestReplication(String arg0) {
       super(arg0);
       XMLUnit.setIgnoreWhitespace(true);
+      this.interceptor = new MsgInterceptor(new Global(), log, null, (I_Update)null);
    }
 
    /**
@@ -218,12 +235,8 @@ public class TestReplication extends XMLTestCase {
          log.info("setUp: going to cleanup now ...");
          this.sleepDelay = this.readerInfo.getLong("test.sleepDelay", -1L);
          if (this.sleepDelay < 0L)
-            this.sleepDelay = this.writerInfo.getLong("test.sleepDelay", 1500L);
+            this.sleepDelay = 25000L;
          log.info("setUp: The sleep delay will be '" + this.sleepDelay + "' ms");
-
-         long tmp = this.readerInfo.getLong("alertScheduler.pollInterval", 10000000L);
-         if (this.sleepDelay <= (tmp-500L))
-            assertTrue("The sleep delay '" + this.sleepDelay + "' is too short since the polling interval for the dbWatcher is '" + tmp + "'", false);
          dbSpecific.cleanup(conn, doWarn);
          try {
             pool.update("DROP TABLE " + this.tableName);
@@ -259,6 +272,8 @@ public class TestReplication extends XMLTestCase {
       log.info("setUp: Instantiating");
       this.agent = new ReplicationAgent();
       this.agent.init(this.readerInfo, this.writerInfo);
+      this.interceptor.clear();
+      this.agent.registerForUpdates(this.interceptor);
       log.info("setUp: terminated");
    }
 
@@ -268,6 +283,7 @@ public class TestReplication extends XMLTestCase {
    protected void tearDown() throws Exception {
       super.tearDown();
       // here we should also cleanup all resources on the database : TODO
+      this.agent.registerForUpdates(null);
       this.agent.shutdown();
       this.agent = null;
    }
@@ -332,7 +348,7 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
          }
-         
+         this.interceptor.clear();
          String sql = "CREATE TABLE " + tableName + "(name VARCHAR(20), city VARCHAR(15), PRIMARY KEY (name))";
          pool.update(sql);
          
@@ -344,7 +360,7 @@ public class TestReplication extends XMLTestCase {
           * The DbWriter shall receive the messages it subscribed to and the replica shall be created and filled.
           */
 
-         Thread.sleep(this.sleepDelay);
+         this.interceptor.waitOnUpdate(this.sleepDelay, 2);
          // a new table must have been created ...
          conn = pool.reserve();
          ResultSet rs = conn.getMetaData().getTables(null, this.specificHelper.getOwnSchema(pool), this.dbHelper.getIdentifier(this.tableName2), null);
@@ -402,9 +418,10 @@ public class TestReplication extends XMLTestCase {
          
          {
             try {
+               this.interceptor.clear();
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), age INTEGER, PRIMARY KEY(name))";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -432,9 +449,10 @@ public class TestReplication extends XMLTestCase {
 
          {
             try {
+               this.interceptor.clear();
                sql = "INSERT INTO " + this.tableName + " VALUES ('first', 44)";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -466,9 +484,10 @@ public class TestReplication extends XMLTestCase {
       
          {
             try {
+               this.interceptor.clear();
                sql = "UPDATE " + this.tableName + " SET age=33 WHERE name='first'";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -500,9 +519,10 @@ public class TestReplication extends XMLTestCase {
 
          {
             try {
+               this.interceptor.clear();
                sql = "DELETE FROM " + this.tableName;
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -530,9 +550,10 @@ public class TestReplication extends XMLTestCase {
       
          {
             try {
+               this.interceptor.clear();
                sql = "ALTER TABLE " + this.tableName + " ADD (city VARCHAR(30))";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -560,9 +581,10 @@ public class TestReplication extends XMLTestCase {
          }
          {
             try {
+               this.interceptor.clear();
                sql = "DROP TABLE " + this.tableName;
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -625,9 +647,10 @@ public class TestReplication extends XMLTestCase {
          
          {
             try { // we explicitly choose a table witout pk (to test searches)
+               this.interceptor.clear();
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), age INTEGER, address VARCHAR(30))";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -655,9 +678,10 @@ public class TestReplication extends XMLTestCase {
 
          {
             try {
+               this.interceptor.clear();
                sql = "INSERT INTO " + this.tableName + " (name, address) VALUES ('first', 'SOMEWHERE')";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -691,9 +715,10 @@ public class TestReplication extends XMLTestCase {
       
          {
             try {
+               this.interceptor.clear();
                sql = "UPDATE " + this.tableName + " SET age=33,address=NULL WHERE name='first'";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -727,9 +752,10 @@ public class TestReplication extends XMLTestCase {
 
          {
             try {
+               this.interceptor.clear();
                sql = "DELETE FROM " + this.tableName;
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -756,9 +782,10 @@ public class TestReplication extends XMLTestCase {
          }
          {
             try {
+               this.interceptor.clear();
                sql = "DROP TABLE " + this.tableName;
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -793,7 +820,6 @@ public class TestReplication extends XMLTestCase {
    }
    
    
-   
    /**
     * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
     * 
@@ -824,7 +850,9 @@ public class TestReplication extends XMLTestCase {
             try { // we explicitly choose a table without pk (to test searches)
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(30), age INTEGER, address VARCHAR(30))";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               
+               // Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -852,9 +880,10 @@ public class TestReplication extends XMLTestCase {
 
          {
             try {
+               this.interceptor.clear();
                sql = "INSERT INTO " + this.tableName + " (name, address) VALUES (' firstOne ', ' SOMEWHERE ')";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -888,9 +917,10 @@ public class TestReplication extends XMLTestCase {
       
          {
             try {
+               this.interceptor.clear();
                sql = "UPDATE " + this.tableName + " SET age=33,address=NULL WHERE name=' firstOne '";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -924,9 +954,10 @@ public class TestReplication extends XMLTestCase {
 
          {
             try {
+               this.interceptor.clear();
                sql = "DELETE FROM " + this.tableName;
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -953,9 +984,191 @@ public class TestReplication extends XMLTestCase {
          }
          {
             try {
+               this.interceptor.clear();
                sql = "DROP TABLE " + this.tableName;
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  assertTrue("Testing '" + sql + "'. It must have resulted in an exception but did not.", false);
+               }
+               catch (Exception e) {
+               }
+               finally {
+                  if (rs != null)
+                     rs.close();
+                  rs = null;
+               }
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DROP' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+      } 
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
+   
+   private class Pusher extends Thread {
+
+      private int sweeps;
+      private byte[] blob;
+      private OutputStream os;
+      public Pusher(int sweeps, byte[] blob, OutputStream os) {
+         this.sweeps = sweeps;
+         this.blob = blob;
+         this.os = os;
+      }
+      
+      public void run() {
+         try {
+            Random random = new Random();
+            for (int i=0; i < sweeps; i++) {
+               random.nextBytes(blob);
+               os.write(blob);
+            }
+            os.close();
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+      }
+   }
+   
+   /**
+    * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
+    * 
+    */
+   public final void testBigBlobs() {
+      log.info("Start testBigBlobs");
+      I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String sql = null;
+         try {
+            boolean force = false;
+            String destination = null;
+            boolean forceSend = false;
+            TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+            tableToWatch.setActions("IDU");
+            getDbSpecific().addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
+         }
+         
+         {
+            try { // we explicitly choose a table without pk (to test searches)
+               this.interceptor.clear();
+               sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(30), data BLOB)";
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 2, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must be empty", false, rs.next());
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'CREATE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+
+         {
+            try {
+               this.interceptor.clear();
+               sql = "INSERT INTO " + this.tableName + " (name, data) VALUES (?, ?)";
+               PreparedStatement ps = conn.prepareStatement(sql);
+
+               ps.setString(1, "someName");
+               byte[] blob = new byte[4096];
+               int sweeps = 10240 / 2; // 20 MB
+               
+               int length = blob.length * sweeps;
+               PipedInputStream pi = new PipedInputStream();
+               PipedOutputStream po = new PipedOutputStream(pi);
+               ps.setBinaryStream(2, pi, length);
+               
+               Pusher pusher = new Pusher(sweeps, blob, po);
+               pusher.start();
+               ps.execute();
+               ps.close();
+               pusher.join();
+               ps = null;
+               
+               this.interceptor.waitOnUpdate(1000*this.sleepDelay, 1);
+               
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  rs.next();
+                  String name = rs.getString(1);
+                  assertEquals("comparing the name", "someName", name);
+                  
+                  InputStream is = rs.getBinaryStream(2);
+                  byte[] buf = new byte[1000];
+                  int val;
+                  int sum = 0;
+                  while ( (val=is.read(buf)) > -1) {
+                     sum += val;
+                  }
+                  is.close();
+                  assertEquals("Comparing the size of the blob: ", length, sum);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'INSERT' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+         {
+            try {
+               this.interceptor.clear();
+               sql = "DROP TABLE " + this.tableName;
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -1018,9 +1231,10 @@ public class TestReplication extends XMLTestCase {
          
          {
             try {
+               this.interceptor.clear();
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), age INTEGER, PRIMARY KEY(name))";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -1057,7 +1271,7 @@ public class TestReplication extends XMLTestCase {
                conn2 = pool.reserve();
                //conn1.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
                //conn2.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-               
+               this.interceptor.clear();
                conn1.clearWarnings();
                conn2.clearWarnings();
                conn1.setAutoCommit(false);
@@ -1082,8 +1296,7 @@ public class TestReplication extends XMLTestCase {
                st1.close();
                
                // Should be 2 since conn1 commits last
-               
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 2);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -1119,9 +1332,10 @@ public class TestReplication extends XMLTestCase {
       
          {
             try {
+               this.interceptor.clear();
                sql = "UPDATE " + this.tableName + " SET age=33 WHERE name='first'";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -1153,9 +1367,10 @@ public class TestReplication extends XMLTestCase {
 
          {
             try {
+               this.interceptor.clear();
                sql = "DELETE FROM " + this.tableName;
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -1183,9 +1398,10 @@ public class TestReplication extends XMLTestCase {
       
          {
             try {
+               this.interceptor.clear();
                sql = "ALTER TABLE " + this.tableName + " ADD (city VARCHAR(30))";
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -1213,9 +1429,10 @@ public class TestReplication extends XMLTestCase {
          }
          {
             try {
+               this.interceptor.clear();
                sql = "DROP TABLE " + this.tableName;
                pool.update(sql);
-               Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
