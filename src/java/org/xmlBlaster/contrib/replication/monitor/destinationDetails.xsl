@@ -102,7 +102,6 @@ function dumpEntry() {
 
 
 <body>
-   <xsl:value-of select="$request.referer"/>
   <center>
     <xsl:call-template name="header"/>
     <div class="middle">Replication Details<br/>
