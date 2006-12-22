@@ -238,14 +238,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "connect");
           
-      ClientProperty tmp = qos.getClientProperty(Constants.UPDATE_BULK_ACK);
-      if (tmp != null) {
-         if (tmp.getBooleanValue()) {
-            log.info("Setting the flag '" + Constants.UPDATE_BULK_ACK + "' to 'true' since specified in ConnectQos");
-            this.updateBulkAck = true;
-         }
-      }
-      
       synchronized (this) {
 
          if (this.startupTime == 0) {
@@ -262,6 +254,15 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          try {
             this.connectQos = (qos==null) ? new ConnectQos(glob) : qos;
 
+            ClientProperty tmp = this.connectQos.getClientProperty(Constants.UPDATE_BULK_ACK);
+            if (tmp != null) {
+               if (tmp.getBooleanValue()) {
+                  log.info("Setting the flag '" + Constants.UPDATE_BULK_ACK + "' to 'true' since specified in ConnectQos");
+                  this.updateBulkAck = true;
+               }
+            }
+            
+            
             // We need to set a unique ID for this client so that global.getId() is unique
             // which is used e.g. in the JDBC plugin
             SessionName sn = getSessionName();
