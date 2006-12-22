@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.dbwatcher;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.prefs.Preferences;
 
 
@@ -18,6 +20,7 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
 import org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher;
+import org.xmlBlaster.test.contrib.TestUtils;
 
 import java.util.logging.Logger;
 
@@ -158,15 +161,15 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
       DbWatcher pc = new DbWatcher(info);
       XmlBlasterPublisher mom = (XmlBlasterPublisher)pc.getMom();
       mom.subscribe("XPATH://key", new I_Update() {
-         public void update(String topic, byte[] content, Map attrMap) {
-            log.info("Received '" + topic + "' from MoM: "  + content);
+         public void update(String topic, java.io.InputStream is, Map attrMap) {
+            log.info("Received '" + topic + "' from MoM");
             try {
-               writeToFile(topic, new String(content));
+               writeToFile(topic, new String(TestUtils.getContent(is)));
             }
             catch (Exception e) {
                // Ignore   
             }
-            updateMap.put(topic, content);  
+            updateMap.put(topic, is);
          }
       });
       

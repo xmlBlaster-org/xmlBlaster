@@ -6,6 +6,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Test ClientProperty. 
@@ -319,6 +320,35 @@ public class ClientPropertyTest extends XMLTestCase {
       
    }
 
+   public void testClientPropertyParsingWithUntrimmedSpaces() throws Exception {
+      MsgQosData data = new MsgQosData(this.glob, MethodName.PUBLISH);
+      String name1 = "leadingSpaces";
+      String val1 = "  val1";
+      String name2 = "endingSpaces";
+      String val2 = "val2  ";
+      String name3 = "bothSpaces";
+      String val3 = "  val3  ";
+      String name4 = "singleSpace";
+      String val4 = " val4 ";
+      ClientProperty prop1 = new ClientProperty(name1, null, null, val1);
+      ClientProperty prop2 = new ClientProperty(name2, null, null, val2);
+      ClientProperty prop3 = new ClientProperty(name3, null, null, val3);
+      ClientProperty prop4 = new ClientProperty(name4, null, null, val4);
+      data.addClientProperty(prop1);
+      data.addClientProperty(prop2);
+      data.addClientProperty(prop3);
+      data.addClientProperty(prop4);
+      String xml = data.toXml();
+      System.out.println("The content of the qos is '" + xml + "'");
+      MsgQosSaxFactory parser = new MsgQosSaxFactory(this.glob);
+      MsgQosData data1 = parser.readObject(xml);
+      assertEquals(name1, val1, data1.getClientProperty(name1).getStringValue());
+      assertEquals(name2, val2, data1.getClientProperty(name2).getStringValue());
+      assertEquals(name3, val3, data1.getClientProperty(name3).getStringValue());
+      assertEquals(name4, val4, data1.getClientProperty(name4).getStringValue());
+      
+   }
+
    public void testClientPropertyEnclosedXmlTree() throws Exception {
       
       String xml =  "<qos>\n" +
@@ -347,8 +377,6 @@ public class ClientPropertyTest extends XMLTestCase {
       prop = data.getClientProperty("StringKey");
       System.out.println(prop.toXml());
       
-      
-      
       xml =  "<qos>\n" +
       "  <isPublish/>\n" + 
       "  <clientProperty name='StringKey' type='' encoding='forcePlain'><clientProperty name='aaa' type='' encoding=''>Something</clientProperty></clientProperty>\n" + 
@@ -358,9 +386,6 @@ public class ClientPropertyTest extends XMLTestCase {
       data = parser.readObject(xml);
       prop = data.getClientProperty("StringKey");
       System.out.println(prop.toXml());
-      
-      
-      
       
       System.out.println("END");
    }
@@ -382,6 +407,7 @@ public class ClientPropertyTest extends XMLTestCase {
          testSub.testClientPropertyTypes();
          testSub.testClientPropertyAutoEncoding();
          testSub.testClientPropertyParsing();
+         testSub.testClientPropertyParsingWithUntrimmedSpaces();
          testSub.tearDown();
       }
       catch(Throwable e) {

@@ -141,22 +141,18 @@ public class I_QueueTest extends TestCase {
    }
 
    protected void setUp() {
-
       // cleaning up the database from previous runs ...
-/*
       QueuePropertyBase prop = null;
       try {
          prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
-
-         String queueId = "cb:SetupQueue";
-         JdbcQueuePlugin jdbcQueue = new JdbcQueuePlugin();
-         jdbcQueue.initialize(queueId, prop);
-         jdbcQueue.destroy();
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "SomeQueueId");
+         queue.initialize(queueId, prop);
+         queue.clear();
+         queue.shutdown();
       }
       catch (Exception ex) {
          log.severe("could not propertly set up the database: " + ex.getMessage());
       }
-*/
    }
 
    /**

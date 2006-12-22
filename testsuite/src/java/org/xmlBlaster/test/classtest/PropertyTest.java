@@ -44,7 +44,7 @@ public class PropertyTest extends XMLTestCase {
       ContextNode ctx = ContextNode.valueOf("/node/heron");
       Map props = glob.getProperty().getPropertiesForContextNode(ctx, "logging", "__default");
       
-      assertEquals("Number of entries found", 3, props.size());
+      assertEquals("Number of entries found", 2, props.size());
    }
 
 

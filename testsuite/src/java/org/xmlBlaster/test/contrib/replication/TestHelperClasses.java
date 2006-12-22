@@ -5,6 +5,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
@@ -179,7 +180,7 @@ public class TestHelperClasses extends XMLTestCase {
          byte[] content = new byte[100000];
          File checkFile = new File("/tmp/dummy");
          checkFile.delete();
-         callback.update("dummy", content, null);
+         callback.update("dummy", new ByteArrayInputStream(content), null);
          assertTrue("The file 'dummy' must exist", checkFile.exists());
       }
       catch (Exception ex) {
@@ -196,13 +197,13 @@ public class TestHelperClasses extends XMLTestCase {
          map.put("_filename", new ClientProperty("_filename", null, null, filename));
          String key = XBMessage.addToKeyAndCheck(XBConnectionMetaData.JMSX_GROUP_SEQ);
          map.put(key, new ClientProperty(key, null, null, "" + 0L));
-         callback.update("dummy", "first".getBytes(), map);
+         callback.update("dummy", new ByteArrayInputStream("first".getBytes()), map);
 
          map.clear();
          map.put("_filename", new ClientProperty("_filename", null, null, filename));
          key = XBMessage.addToKeyAndCheck(XBConnectionMetaData.JMSX_GROUP_SEQ);
          map.put(key, new ClientProperty(key, null, null, "" + 1L));
-         callback.update("dummy", "second".getBytes(), map);
+         callback.update("dummy", new ByteArrayInputStream("second".getBytes()), map);
          
          map.clear();
          map.put("_filename", new ClientProperty("_filename", null, null, filename));
@@ -210,7 +211,7 @@ public class TestHelperClasses extends XMLTestCase {
          map.put(key, new ClientProperty(key, null, null, "" + 2L));
          key = XBMessage.addToKeyAndCheck(XBConnectionMetaData.JMSX_GROUP_EOF);
          map.put(key, new ClientProperty(key, null, null, "true"));
-         callback.update("dummy", "third".getBytes(), map);
+         callback.update("dummy", new ByteArrayInputStream("third".getBytes()), map);
          
          assertTrue("The file 'dummy' must exist", checkFile.exists());
          FileInputStream fis = new FileInputStream(checkFile);
@@ -904,7 +905,7 @@ public class TestHelperClasses extends XMLTestCase {
          
          SqlInfoParser parser = new SqlInfoParser(info);
          
-         sql = parser.readObject(xml);
+         sql = parser.parse(xml);
          
          ReplicationWriter writer = new ReplicationWriter();
          writer.init(info);

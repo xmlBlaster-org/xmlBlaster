@@ -192,8 +192,12 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
-
-      pool.update("DROP TABLE PERFORM"); 
+      try {
+         pool.update("DROP TABLE PERFORM");
+      }
+      catch (SQLException ex) {
+         log.info("An Exception here is allowed");
+      }
       
       pool.update("CREATE TABLE PERFORM (name1 VARCHAR(20), name2 VARCHAR(128), name3 BLOB, primary key (name1))"); 
 

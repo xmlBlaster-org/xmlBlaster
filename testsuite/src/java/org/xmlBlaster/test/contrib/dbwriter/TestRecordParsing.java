@@ -7,6 +7,7 @@ package org.xmlBlaster.test.contrib.dbwriter;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.xml.sax.InputSource;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
@@ -15,6 +16,7 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 
+import java.io.ByteArrayInputStream;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.List;
@@ -56,6 +58,10 @@ public class TestRecordParsing extends XMLTestCase {
 
           test.setUp();
           test.testParsing();
+          test.tearDown();
+
+          test.setUp();
+          test.testParsingStream();
           test.tearDown();
        }
        catch (Exception ex) {
@@ -111,8 +117,7 @@ public class TestRecordParsing extends XMLTestCase {
       "  <command>INSERT</command>\n" +
       "  <ident>EDDI</ident>\n" +
       "  <colname type='DATE' nullable='0'>DATUM</colname>\n" +
-      "  <colname type='NUMBER' precision='11' scale='0'\n" +
-      "              signed='false' nullable='1'>CPU</colname>\n" +
+      "  <colname type='NUMBER' precision='11' signed='false' nullable='1'>CPU</colname>\n" +
       "  <colname type='VARCHAR2' precision='20' nullable='0' readOnly='true'>COL1</colname>\n" +
       "  <colname table='OMZ' nullable='0' schema='AA' catalog='CAT' type='VARCHAR2'\n" +
       "              precision='10' pk='true' fkCatalog='dummy' fkSchema='dummy1' fkTable='fkTab'" +
@@ -141,12 +146,95 @@ public class TestRecordParsing extends XMLTestCase {
       "  <col name='ICAO_ID'>EDDI</col>\n" +
       "  <attr name='SUBNET_ID'>X25</attr>\n" +
       " </row>\n" +
-      "</sql>      \n";
+      "</sql>\n";
 
       
       SqlInfoParser parser = new SqlInfoParser(this.info);
-      SqlInfo record = parser.readObject(xml);
+      SqlInfo record = parser.parse(xml);
 
+      SqlDescription description = record.getDescription();
+      assertNotNull("the description shall not be null", description);
+      assertNotNull("the identity shall not be null", description.getIdentity());
+      assertNotNull("the command shall not be null", description.getCommand());
+
+      assertEquals("the identity content is wrong", "EDDI", description.getIdentity());
+      assertEquals("the command content is wrong", "INSERT", description.getCommand());
+
+      // test the column descriptions 
+      SqlColumn[] colDescriptions = description.getColumns();
+      assertEquals("the number of column descriptions is wrong", 4, colDescriptions.length);
+      String[] names = new String[] { "DATUM", "CPU", "COL1", "ICAO_ID"};
+      for (int i=0; i < colDescriptions.length; i++) {
+         log.info("test column description #" + i + " names: '" + names[i] + "' and '" + colDescriptions[i].getColName() + "'");
+         assertEquals("the name of the column description #" + i + " is wrong", names[i], colDescriptions[i].getColName());
+      }
+      
+      List rows = record.getRows();
+      assertEquals("the number of rows is wrong", 3, rows.size());
+      int[] attr = new int[] { 2, 0, 1 };
+      for (int i=0; i < 3; i++) {
+         SqlRow row = (SqlRow)rows.get(i);
+         assertEquals("wrong number of columns for row '" + i+ "'", 4, row.getColumnNames().length);
+         assertEquals("wrong number of attributes for row '" + i+ "'", attr[i], row.getAttributeNames().length);
+      }
+      
+      System.out.println("\n\nshould be:\n" + xml);
+      System.out.println("\nis:\n" + record.toXml(""));
+      assertXMLEqual("output xml is not the same as input xml", xml, record.toXml(""));
+      //assertXpathNotExists("/myRootTag/row[@num='0']", xml);
+      //assertXpathEvaluatesTo("CREATE", "/myRootTag/desc/command/text()", xml);
+      log.info("SUCCESS");
+   }
+   
+   /**
+    * If the table does not exist we expect a null ResultSet
+    * @throws Exception Any type is possible
+    */
+   public final void testParsingStream() throws Exception {
+      log.info("Start testParsingStream()");
+      /** Comments are not allowed otherwise the xml are not considered the same */
+      String xml = "" + 
+      "<?xml version='1.0' encoding='UTF-8' ?>\n" +
+      "<sql>\n" +
+      " <desc>\n" +
+      "  <command>INSERT</command>\n" +
+      "  <ident>EDDI</ident>\n" +
+      "  <colname type='DATE' nullable='0'>DATUM</colname>\n" +
+      "  <colname type='NUMBER' precision='11' signed='false' nullable='1'>CPU</colname>\n" +
+      "  <colname type='VARCHAR2' precision='20' nullable='0' readOnly='true'>COL1</colname>\n" +
+      "  <colname table='OMZ' nullable='0' schema='AA' catalog='CAT' type='VARCHAR2'\n" +
+      "              precision='10' pk='true' fkCatalog='dummy' fkSchema='dummy1' fkTable='fkTab'" +
+      " fkCol='colName' fkSeq='1' fkUpdRule='none' fkDelRule='some' fkDef='somedef'>ICAO_ID</colname>\n" +
+      "  <attr name='TEST3'>SOMEATTR3</attr>\n" +
+      "  <attr name='TEST1'>SOMEATTR1</attr>\n" +
+      " </desc>\n" +
+      " <row num='0'>\n" +
+      "  <col name='DATUM'>2005-01-05 15:52:06.0</col>\n" +
+      "  <col name='CPU'>238333</col>\n" +
+      "  <col name='COL1'>Bla</col>\n" +
+      "  <col name='ICAO_ID'>EDDI</col>\n" +
+      "  <attr name='LR'>SRANIL</attr>\n" +
+      "  <attr name='SUBNET_ID'>TCP</attr>\n" +
+      " </row>\n" +
+      " <row num='1'>\n" +
+      "  <col name='DATUM'>2005-01-05 15:52:07.0</col>\n" +
+      "  <col name='CPU'>238340</col>\n" +
+      "  <col name='COL1' encoding='base64'>QmxdXT5CbA==</col>\n" +
+      "  <col name='ICAO_ID'>EDDI</col>\n" +
+      " </row>\n" +
+      " <row num='2'>\n" +
+      "  <col name='DATUM'>2005-01-05 15:52:08.0</col>\n" +
+      "  <col name='CPU'>238343</col>\n" +
+      "  <col name='COL1'>BOO</col>\n" +
+      "  <col name='ICAO_ID'>EDDI</col>\n" +
+      "  <attr name='SUBNET_ID'>X25</attr>\n" +
+      " </row>\n" +
+      "</sql>\n";
+
+      
+      SqlInfoParser parser = new SqlInfoParser(this.info);
+      
+      SqlInfo record = parser.parse(new InputSource(new ByteArrayInputStream(xml.getBytes())));
       SqlDescription description = record.getDescription();
       assertNotNull("the description shall not be null", description);
       assertNotNull("the identity shall not be null", description.getIdentity());
@@ -220,7 +308,7 @@ public class TestRecordParsing extends XMLTestCase {
 		           "</sql>\n";
       
       SqlInfoParser parser = new SqlInfoParser(this.info);
-      SqlInfo record = parser.readObject(xml);
+      SqlInfo record = parser.parse(xml);
       log.info(record.toXml(""));
       
       xml = "" +
@@ -233,7 +321,7 @@ public class TestRecordParsing extends XMLTestCase {
       "  </row>\n" +
       "</sql>\n";
 
-      record = parser.readObject(xml);
+      record = parser.parse(xml);
       log.info(record.toXml(""));
       
       

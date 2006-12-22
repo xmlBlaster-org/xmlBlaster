@@ -5,6 +5,7 @@ package org.xmlBlaster.test.classtest;
 
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.FileLocator;
@@ -18,8 +19,31 @@ import junit.framework.TestCase;
  */
 public class FileLocatorTest extends TestCase {
 
+   private Logger log = Logger.getLogger(FileLocatorTest.class.getName());
+   
    public static void main(String[] args) {
-      junit.swingui.TestRunner.run(FileLocatorTest.class);
+      // junit.swingui.TestRunner.run(FileLocatorTest.class);
+      
+      FileLocatorTest test = new FileLocatorTest("file locator test");
+      
+      try {
+         test.setUp();
+         test.testFileInExternalJarFile();
+         test.tearDown();
+         
+         test.setUp();
+         test.testFileAccess();
+         test.tearDown();
+         
+         test.setUp();
+         test.testHttpAccess();
+         test.tearDown();
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         fail();
+      }
+      
    }
 
    /**
@@ -43,6 +67,20 @@ public class FileLocatorTest extends TestCase {
    protected void tearDown() throws Exception {
       super.tearDown();
    }
+
+   /**
+    * This test must currently be done manually, the file to be found must reside in a jar file
+    * outside the jar files normally used by xmlBlaster.
+    * 
+    * @throws XmlBlasterException
+    */
+   public void testFileInExternalJarFile() throws XmlBlasterException {
+      String filename = "avitech/resources/axl/xsl/notamRequest.xsl";
+      String txt = FileLocator.readAsciiFile(filename);
+      log.info(txt);
+      
+   }
+
    
    public void testHttpAccess() throws XmlBlasterException {
       Global glob = Global.instance();

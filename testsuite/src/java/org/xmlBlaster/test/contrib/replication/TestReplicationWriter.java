@@ -215,7 +215,7 @@ public class TestReplicationWriter extends XMLTestCase {
          // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
          SqlInfoParser parser = new SqlInfoParser(info);
 
-         SqlInfo dbUpdateInfo = parser.readObject(message);
+         SqlInfo dbUpdateInfo = parser.parse(message);
          String sql = this.dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
          try {
             this.replicationWriter.store(dbUpdateInfo);
@@ -600,7 +600,7 @@ public class TestReplicationWriter extends XMLTestCase {
 
       info.put("table.ais.test001", "actions=IDU,trigger=ndb001tr");
       info.put("table.ais.test002", "actions=IDU,trigger=ndb002tr");
-      info.put("table.ais.test003", "actions=IDU,trigger=,sequence=ndb003tr");
+      info.put("table.ais.test003", "actions=IDU,trigger=ndb003tr");
       info.put("table.AIS.AD_ICAO_LOCATIONS", "trigger=REPL_NDB_001");
       info.put("table.AIS.AERODROME_RUNWAYS", "trigger=REPL_NDB_002");
       info.put("table.AIS.SIDS", "trigger=REPL_NDB_003");
