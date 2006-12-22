@@ -143,6 +143,12 @@ public abstract class AddressBase implements Cloneable
    public String DEFAULT_dispatchPlugin = PluginManagerBase.NO_PLUGIN_TYPE; // "undef";
    protected PropString dispatchPlugin = new PropString(DEFAULT_dispatchPlugin);
 
+   /**
+    * Setting this property will not throw an exception on pings when a ping response timeout is detected. Instead it
+    * will just set the 'stalled' flag in the dispatch statistics.
+    */
+   public boolean DEFAULT_stallOnPingTimeout = false;
+   protected PropBoolean stallOnPingTimeout = new PropBoolean(DEFAULT_stallOnPingTimeout);
 
    /** The node id to which we want to connect */
    protected String nodeId;
@@ -224,7 +230,7 @@ public abstract class AddressBase implements Cloneable
       this.ptpAllowed.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "ptpAllowed");
       this.sessionId.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "sessionId");
       this.dispatchPlugin.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "DispatchPlugin/defaultPlugin");
-
+      this.stallOnPingTimeout.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "stallOnPingTimeout");
       //log.error(ME, getType() + " " + "DEBUG ONLY " + this.compressType + " " + this.minSize + toXml());
    }
 
@@ -844,6 +850,16 @@ public abstract class AddressBase implements Cloneable
       return this.dispatchPlugin.getValue();
    }
 
+   
+   public final boolean isStallOnPingTimeout() {
+      return this.stallOnPingTimeout.getValue();
+   }
+
+   public final void setStallOnPingTimeout(boolean stallOnPingTimeout) {
+      this.stallOnPingTimeout.setValue(stallOnPingTimeout);
+   }
+
+   
    /**
     * Called for SAX callback start tag
     */
@@ -926,6 +942,9 @@ public abstract class AddressBase implements Cloneable
                }
                else if( attrs.getQName(i).equalsIgnoreCase("dispatchPlugin") ) {
                   this.dispatchPlugin.setValue(attrs.getValue(i).trim());
+               }
+               else if( attrs.getQName(i).equalsIgnoreCase("stallOnPingTimeout") ) {
+                  this.stallOnPingTimeout.setValue(new Boolean(attrs.getValue(i).trim()).booleanValue());
                }
                else {
                   log.severe("Ignoring unknown attribute " + attrs.getQName(i) + " in " + rootTag + " section.");
@@ -1081,7 +1100,10 @@ public abstract class AddressBase implements Cloneable
       if (this.useForSubjectQueue.isModified())
           sb.append(" useForSubjectQueue='").append(this.useForSubjectQueue.getValue()).append("'");
       if (this.dispatchPlugin.isModified())
-          sb.append(" dispatchPlugin='").append(this.dispatchPlugin.getValue()).append("'");
+         sb.append(" dispatchPlugin='").append(this.dispatchPlugin.getValue()).append("'");
+      if (this.stallOnPingTimeout.isModified())
+         sb.append(" stallOnPingTimeout='").append(isStallOnPingTimeout()).append("'");
+      
       sb.append(">");
       sb.append(offset).append(" ").append(getRawAddress());
       if (this.collectTime.isModified() || this.burstModeMaxEntries.isModified() || this.burstModeMaxBytes.isModified()) {
@@ -1138,6 +1160,9 @@ public abstract class AddressBase implements Cloneable
       text += "   -dispatch/" + this.instanceName + "/delay\n";
       text += "                       Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
       text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
+      text += "   -dispatch/" + this.instanceName + "/stallOnPingTimeout\n";
+      text += "                       if true it will set the 'stalled' flag in the dispatch statistics instead of\n";
+      text += "                       going in polling mode when a ping response timeout occurs. Default is false\n";
       // other settings like burstMode are in the derived classes
       return text;
    }

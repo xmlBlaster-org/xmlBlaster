@@ -283,8 +283,9 @@ abstract public class DispatchConnection implements I_Timeout
       }
       
       data = (data==null)?"":data;
+      boolean stalled = false;
+      DispatchStatistic stats = this.connectionsHandler.getDispatchStatistic(); 
       try {
-         DispatchStatistic stats = this.connectionsHandler.getDispatchStatistic(); 
          if (log.isLoggable(Level.FINE)) 
             log.fine(ME + stats.toXml(""));
          
@@ -300,7 +301,7 @@ abstract public class DispatchConnection implements I_Timeout
                this.previousBytesWritten = currentBytesWritten;
                this.previousBytesRead = currentBytesRead;
                handleTransition(false, null);
-               stats.setStalled(false);
+               stalled = false;
                return Constants.RET_OK;
             }
             else {
@@ -319,12 +320,12 @@ abstract public class DispatchConnection implements I_Timeout
                else {
                   String debug = " currentBytesWritten='" + currentBytesWritten + "' currentBytesRead='" + currentBytesRead + "'"; 
                   log.fine(ME + "there was NO activity since last ping, will set the connection to stalled. " + debug);
-                  stats.setStalled(true);
+                  stalled = true;
                   return Constants.RET_OK;
                }
             }
          }
-         stats.setStalled(false);
+         stalled = false;
          this.previousBytesWritten = stats.getOverallBytesWritten() + stats.getCurrBytesWritten();
          this.previousBytesRead = stats.getOverallBytesRead() + stats.getCurrBytesRead();
          
@@ -352,11 +353,49 @@ abstract public class DispatchConnection implements I_Timeout
       catch (Throwable e) { // the remote ping does not throw any XmlBlasterException, see xmlBlaster.idl
          if (isAlive() && log.isLoggable(Level.FINE)) 
             log.fine(ME + "Exception from remote ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString() + ": " + e.toString());
+         e = processResponseTimeoutException(stats, e);
+         if (e == null)
+            stalled = true;
          handleTransition(byDispatchConnectionsHandler, e);
          return ""; // Only reached if from timeout
       }
+      finally {
+         if (stats != null)
+            stats.setStalled(stalled);
+      }
    }
-
+   
+   /**
+    * Returns true if it is an XmlBlasterException with error code COMMUNICATION_RESPONSETIMEOUT, false otherwise 
+    * @param e
+    * @return
+    */
+   private final static boolean isResponseTimeout(Throwable e) {
+      if (e == null)
+         return false;
+      if (e instanceof XmlBlasterException) {
+         XmlBlasterException ex = (XmlBlasterException)e;
+         if (ex.getErrorCode().equals(ErrorCode.COMMUNICATION_RESPONSETIMEOUT))
+            return true;
+         return isResponseTimeout(ex.getEmbeddedException());
+      }
+      return false;
+   }
+   
+   /**
+    * 
+    * @param e the original Communication Exception
+    * @return the original communication exception or null if it wants to force a 'stalled' in case a ping timeout occured
+    */
+   private final Throwable processResponseTimeoutException(DispatchStatistic stats, Throwable e) {
+      if (this.address == null || !this.address.isStallOnPingTimeout())
+         return e;
+      if (isResponseTimeout(e)) {
+         return null;
+      }
+      return e;
+   }
+   
    /** On reconnect polling try to establish the connection */
    abstract protected void reconnect() throws XmlBlasterException;
 

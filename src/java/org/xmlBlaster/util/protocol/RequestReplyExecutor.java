@@ -600,7 +600,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             removeLatch(startSignal); // synchronized (this.latchSet) { this.latchSet.remove(startSignal); }
          }
          String tmp = (msgInfo==null) ? "" : msgInfo.getMethodNameStr();
-         String str = "Request blocked and timedout, giving up now waiting on " +
+         String str = "Request blocked and timed out, giving up now waiting on " +
                       tmp + "(" + requestId + ") response. Please check settings of " +
                       "responseTimeout="+this.responseTimeout+
                       " pingResponseTimeout="+this.pingResponseTimeout+
