@@ -200,6 +200,8 @@ public class SpecificOracle extends SpecificDefault {
                
             }
          }
+         else
+            buf.append("             fake := 0;\n");
          
          if (doLongWorkaround) {
             if (!isInsert) { // on inserts we want to avoid writing unnecessary null entries
