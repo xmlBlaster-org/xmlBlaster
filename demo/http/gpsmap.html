@@ -67,7 +67,7 @@
          } 
       } 
 
-      function getGps()
+      function getGps(forceLoad)
       {
          xmlHttp=GetXmlHttpObject()
          if (xmlHttp==null)
@@ -77,29 +77,44 @@
          } 
          var url="/xmlBlaster/pull";
          url=url+"?sid="+Math.random();
+         if (forceLoad==true)
+                url += "&forceLoad=true";
 
          xmlHttp.onreadystatechange=stateChanged 
          xmlHttp.open("GET",url,true)
          xmlHttp.send(null)
-         time = setTimeout('getGps()',10000);
+         time = setTimeout('getGps(false)',2000);
       }
        //]]>
    </script>
 
-  <title>XmlBlaster Status</title>
+  <title>GPS real time via xmlBlaster</title>
 </head>
 
-<body onload="getGps()">
+<body onload="getGps(true)">
    <h1>Where is Gran'ma goin?</h1>
    <p>
    <!--iframe id="myLocation"  frameborder="1"
      vspace="0"  hspace="0"  marginwidth="0"  marginheight="0" width="800"  scrolling="yes"
       height="100" src=""/-->
    </p>
+   <table>
+   <tr><td>
+   <p>What is going on ?</p>
    <p>
-   <iframe id="myMapFrame"  frameborder="1"
-     vspace="0"  hspace="0"  marginwidth="0"  marginheight="0" width="1000"  scrolling="yes"
-      height="800" src=""/>
+   <i>Gran'ma carries a PDA which receives GPS data and sends it via
+   GPRS, UMTS or WLAN to xmlBlaster (whatever is available).
+   A tiny serlvet subscribes to those coordinates and your browser uses
+   Ajax to refresh Gran'mas trip and displays it with Google-maps.</i>
    </p>
+   <p>Merry X-Mas! <a href="mailto:mr@marcelruff.info"/>Contact Gran'mas guard</a></p>
+   <p><a href="http://www.xmlBlaster.org"/>Powered by xmlBlaster.org</a></p>
+   </td></tr>
+   <tr><td>
+   <iframe id="myMapFrame"  frameborder="1"
+     vspace="0"  hspace="0"  marginwidth="0"  marginheight="0" width="800"  scrolling="yes"
+      height="700" src=""/>
+   </td></tr>
+   </table>
 </body>
 </html>
