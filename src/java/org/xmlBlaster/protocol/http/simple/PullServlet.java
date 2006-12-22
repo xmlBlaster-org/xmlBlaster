@@ -23,13 +23,13 @@ import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
- * This servlet supports requests from a browser,
- * it queries the topic "vehicle.location" which
- * needs to contain GPS coordinates (published for example
- * by a PDA).
+ * This servlet supports requests from a browser, it queries the topic
+ * "vehicle.location" which needs to contain GPS coordinates (published for
+ * example by a PDA).
  * 
- * <p>Use xmlBlaster/demo/http/gpsmap.html to display
- * the coordinates in a map.</p>
+ * <p>
+ * Use xmlBlaster/demo/http/gpsmap.html to display the coordinates in a map.
+ * </p>
  * 
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2006
  */
@@ -41,15 +41,18 @@ public class PullServlet extends HttpServlet {
 	private String loginName = "pullServlet";
 
 	private String passwd = "something";
-	
-    public void init(ServletConfig conf) throws ServletException {
-	      super.init(conf);
-    }
+
+	public void init(ServletConfig conf) throws ServletException {
+		super.init(conf);
+	}
 
 	public void doGet(HttpServletRequest req, HttpServletResponse res)
 			throws ServletException, IOException {
+		String host = req.getRemoteAddr();
+		String ME = "PullServlet.doGet("+host+"): ";
+		boolean forceLoad = req.getParameter("forceLoad") != null;
+		System.out.println(ME+"forceLoad=" + forceLoad);
 
-		System.out.println("Entering doGet() ...");
 		try {
 			I_XmlBlasterAccess xmlBlaster = getXmlBlaster(req);
 
@@ -58,41 +61,47 @@ public class PullServlet extends HttpServlet {
 			MsgUnit[] msgs = xmlBlaster.getCached(gk, gq);
 			String data = "";
 			if (msgs.length > 0) {
-				data = msgs[msgs.length - 1].getContentStr();
-			}
-			else {
+				System.out
+						.println(ME+ msgs.length + " msgs found ...");
+				byte[] content = msgs[msgs.length - 1].getContent();
+				data = new String(content, "UTF-8");
+			} else {
+				System.out.println(ME+"no data found ...");
 				PrintWriter out = res.getWriter();
 				out.close();
 				return;
 			}
-			
+
 			// Expecting a PDA sending me Gran'mas position
 			// with simplified NMEA:
 			// >Gran'mas place,047°46'55.86",N,009°10'00.95",E,0<
 			String[] tokens = StringPairTokenizer.toArray(data, ",");
 			String label = tokens[0];
 			String latitude = tokens[1];
-			//String latitudeL = tokens[2]; // N S
+			// String latitudeL = tokens[2]; // N S
 			String longitude = tokens[3];
-			//String longitudeL = tokens[4]; // E W
-			
-			//System.out.println("label=" + label + " latitude=" + latitude + " longitude=" + longitude);
+			// String longitudeL = tokens[4]; // E W
+
+			// System.out.println("label=" + label + " latitude=" + latitude + "
+			// longitude=" + longitude);
 			String url = "http://maps.google.com/maps?q=";
 			url += latitude + ",+" + longitude;
 			url += "+(" + label + ")&iwloc=A&hl=en";
-			
+
 			HttpSession session = req.getSession(true);
-			String lastUrl = (String)session.getAttribute("lastUrl");
-			if (lastUrl != null && lastUrl.equals(url)) {
-				PrintWriter out = res.getWriter();
-				out.close();
-				System.out.println("Ignoring identical");
-				return;
+			if (!forceLoad) {
+				String lastUrl = (String) session.getAttribute("lastUrl");
+				if (lastUrl != null && lastUrl.equals(url)) {
+					PrintWriter out = res.getWriter();
+					out.close();
+					System.out.println(ME+"Ignoring identical");
+					return;
+				}
 			}
 			session.setAttribute("lastUrl", url);
-			
+
 			String encoded = url;
-			//String encoded = Global.encode(url, null);
+			// String encoded = Global.encode(url, null);
 
 			// set header field first
 			res.setContentType("text/plain");
@@ -101,7 +110,7 @@ public class PullServlet extends HttpServlet {
 			PrintWriter out = res.getWriter();
 			out.print(encoded);
 			out.close();
-			System.out.println("Send new url=" + encoded);
+			System.out.println(ME+"Send new url=" + encoded);
 		} catch (XmlBlasterException e) {
 			System.err.println(e.toString());
 			// set header field first
@@ -113,22 +122,22 @@ public class PullServlet extends HttpServlet {
 
 	private synchronized I_XmlBlasterAccess getXmlBlaster(HttpServletRequest req)
 			throws XmlBlasterException {
-		//HttpSession session = req.getSession(true);
-		//I_XmlBlasterAccess xmlBlaster = (I_XmlBlasterAccess) session
-		//		.getAttribute("xmlBlaster");
+		// HttpSession session = req.getSession(true);
+		// I_XmlBlasterAccess xmlBlaster = (I_XmlBlasterAccess) session
+		// .getAttribute("xmlBlaster");
 		if (xmlBlasterAccess == null) {
 			Global glob = new Global();
 			xmlBlasterAccess = glob.getXmlBlasterAccess();
-			ConnectQos qos = new ConnectQos(glob, loginName+"/1", passwd);
+			ConnectQos qos = new ConnectQos(glob, loginName + "/1", passwd);
 			xmlBlasterAccess.connect(qos, new I_Callback() {
 				public String update(String cbSessionId, UpdateKey updateKey,
 						byte[] content, UpdateQos updateQos) {
-					System.out.println("Ignoring update " + updateKey.getOid());
+					System.out.println("PullServler.update(): Ignoring update " + updateKey.getOid());
 					return "";
 				}
 			});
 			xmlBlasterAccess.createSynchronousCache(20);
-			//session.setAttribute("xmlBlaster", xmlBlaster);
+			// session.setAttribute("xmlBlaster", xmlBlaster);
 		}
 		return xmlBlasterAccess;
 	}
@@ -136,10 +145,17 @@ public class PullServlet extends HttpServlet {
 	public String getServletInfo() {
 		return "Unprotected access to xmlBlaster";
 	}
-	
+
 	public synchronized void destroy() {
-		if (xmlBlasterAccess != null)
-			xmlBlasterAccess.disconnect(null);
-		xmlBlasterAccess = null;
+		if (xmlBlasterAccess != null) {
+			try {
+				xmlBlasterAccess.disconnect(null);
+			} catch (Throwable e) {
+				System.out.println("Ignoring disconnect problem "
+						+ e.toString());
+			} finally {
+				xmlBlasterAccess = null;
+			}
+		}
 	}
 }
