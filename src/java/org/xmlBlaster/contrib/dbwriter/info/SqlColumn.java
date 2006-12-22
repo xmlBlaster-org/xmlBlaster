@@ -408,7 +408,9 @@ public class SqlColumn {
             buf.append(" ").append(FK_DEFERRABILITY_ATTR).append("='").append(this.fkDef).append("'");
       }
       // this will not be parsed.
-      buf.append(" ").append(DATA_TYPE).append("='").append(getSqlTypeAsText(this.getSqlType())).append("'");
+      String tmp = getSqlTypeAsText(this.getSqlType());
+      if (tmp != null && !"NULL".equals(tmp))
+         buf.append(" ").append(DATA_TYPE).append("='").append(tmp).append("'");
 
       buf.append(">");
       buf.append(this.colName);

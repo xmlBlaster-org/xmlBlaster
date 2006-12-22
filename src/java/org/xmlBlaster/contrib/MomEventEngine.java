@@ -9,6 +9,7 @@ package org.xmlBlaster.contrib;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -184,12 +185,12 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       try {
-         content = decompress(content, updateQos.getClientProperties());
+         InputStream is = decompress(new ByteArrayInputStream(content), updateQos.getClientProperties());
          String timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
          updateQos.getData().addClientProperty(ContribConstants.TIMESTAMP_ATTR, timestamp);
          
          if (this.eventHandler != null)
-            this.eventHandler.update(updateKey.getOid(), content, updateQos.getClientProperties());
+            this.eventHandler.update(updateKey.getOid(), is, updateQos.getClientProperties());
          else 
             throw new Exception("update: No event handler has been registered, you must register one");
          return Constants.RET_OK;
@@ -264,8 +265,9 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
     * @param compressSizeLimit The limit for compression. If less than one no compression
     * is done. If the size of the buffer is less than this limit it is not compressed either.
     * @return the compressed buffer or the input buffer if no compression was needed.
+    * @deprecated
     */
-   public static byte[] compress(byte[] buffer, Map props, int compressSizeLimit, String zipType) {
+   public static byte[] compressOLD(byte[] buffer, Map props, int compressSizeLimit, String zipType) {
       if (compressSizeLimit <  1L)
          return buffer;
       if (buffer.length < compressSizeLimit)
@@ -303,6 +305,49 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       }
    }
 
+   /**
+    * Compresses the message if needed. 
+    * @param buffer The buffer to compress
+    * @param props The properties to update with the compressed flag (uncompressed size)
+    * @param compressSizeLimit The limit for compression. If less than one no compression
+    * is done. If the size of the buffer is less than this limit it is not compressed either.
+    * @return the compressed buffer or the input buffer if no compression was needed.
+    */
+   public static byte[] compress(byte[] buffer, Map props, int compressSizeLimit, String zipType) {
+      if (compressSizeLimit <  1L)
+         return buffer;
+      if (buffer.length < compressSizeLimit)
+         return buffer;
+      int uncompressedLength = buffer.length;
+
+      // check if not already compressed
+      if (props != null && props.containsKey(DbWatcherConstants._COMPRESSION_TYPE)) {
+         log.fine("The message is already compressed, will not compress it");
+         return buffer;
+      }
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      byte[] ret = null;
+      try {
+          GZIPOutputStream zippedStream = new GZIPOutputStream(baos);
+          zippedStream.write(buffer);
+          zippedStream.finish();
+          ret = baos.toByteArray();
+          if (ret.length >= uncompressedLength) {
+             log.fine("The compressed size is bigger than the original. Will not compress since it does not make sense");
+             return buffer;
+          }
+          if (props != null) {
+             props.put(DbWatcherConstants._UNCOMPRESSED_SIZE, "" + uncompressedLength);
+             props.put(DbWatcherConstants._COMPRESSION_TYPE, DbWatcherConstants.COMPRESSION_TYPE_GZIP);
+          }
+          return ret;
+      }
+      catch(IOException ex) {
+         log.severe("An exception occured when compressing: '" + ex.getMessage() + "' will not compress");
+         return buffer;
+      }
+   }
+
    private final static String dumpProps(Map clientProperties) {
       if (clientProperties == null)
          return "";
@@ -315,7 +360,14 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
       return buf.toString();
    }
    
-   public static byte[] decompress(byte[] buffer, Map clientProperties) {
+   /**
+    * 
+    * @param buffer
+    * @param clientProperties
+    * @deprecated you should use the one with InputStream instead since less memory hungry (for big messages)
+    * @return
+    */
+   public static byte[] decompressXX(byte[] buffer, Map clientProperties) {
       if (clientProperties == null)
          return buffer;
       Object obj = clientProperties.get(DbWatcherConstants._COMPRESSION_TYPE);
@@ -368,5 +420,41 @@ public class MomEventEngine implements I_Callback, I_ChangePublisher {
          return buffer;
       }
    }
-   
+
+   public static InputStream decompress(InputStream is, Map clientProperties) {
+      if (clientProperties == null)
+         return is;
+      Object obj = clientProperties.get(DbWatcherConstants._COMPRESSION_TYPE);
+      if (obj == null) {
+         log.fine("The client property '" + DbWatcherConstants._COMPRESSION_TYPE + "' was not found. Will not expand");
+         return is;
+      }
+      if (obj instanceof String)
+         obj = new ClientProperty(DbWatcherConstants._COMPRESSION_TYPE, null, null, (String)obj);
+      ClientProperty prop = (ClientProperty)obj;
+      String compressionType = prop.getStringValue().trim();
+      if (DbWatcherConstants.COMPRESSION_TYPE_GZIP.equals(compressionType)) {
+         obj = clientProperties.get(DbWatcherConstants._UNCOMPRESSED_SIZE);
+         if (obj == null) {
+            log.severe("Can not expand message since no uncompressed size defined (will return it unexpanded)");
+            return is;
+         }
+         if (obj instanceof String)
+            obj = new ClientProperty(DbWatcherConstants._UNCOMPRESSED_SIZE, null, null, (String)obj);
+         prop = (ClientProperty)obj;
+         
+         try {
+            GZIPInputStream ret = new GZIPInputStream(is);
+            clientProperties.remove(DbWatcherConstants._COMPRESSION_TYPE);
+            clientProperties.remove(DbWatcherConstants._UNCOMPRESSED_SIZE);
+            return ret;
+         }
+         catch (IOException ex) {
+            log.severe("An Exception occured when trying to decompress the stream, probably not gzipped");
+            ex.printStackTrace();
+            return is;
+         }
+      }
+      return is;
+   }
 }

@@ -6,20 +6,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.dbwriter;
 
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 
 public class DefaultWriter implements I_Writer {
 
    Logger log = Logger.getLogger(DefaultWriter.class.getName());
    
-   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+   public void update(String topic, InputStream is, Map attrMap) throws Exception {
       log.info("=========== NEW BINARY MESSAGE ============\n" + topic + "\n");
    }
 

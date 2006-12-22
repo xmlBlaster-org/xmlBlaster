@@ -6,7 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE filep
 
 package org.xmlBlaster.contrib.filewriter;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.client.I_Callback;
@@ -169,10 +171,10 @@ public class Receiver implements I_Plugin, I_Callback {
 
    public synchronized String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       try {
-         content = MomEventEngine.decompress(content, updateQos.getClientProperties());
+         InputStream is = MomEventEngine.decompress(new ByteArrayInputStream(content), updateQos.getClientProperties());
          String timestamp = "" + updateQos.getRcvTimestamp().getTimestamp();
          updateQos.getData().addClientProperty(ContribConstants.TIMESTAMP_ATTR, timestamp);
-         this.callback.update(updateKey.getOid(), content, updateQos.getClientProperties());
+         this.callback.update(updateKey.getOid(), is, updateQos.getClientProperties());
          return "OK";
       }
       catch (Exception ex) {

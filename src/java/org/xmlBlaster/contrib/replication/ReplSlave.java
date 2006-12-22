@@ -6,9 +6,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -460,9 +462,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          // if (prop == null) {
          if (msgUnit.getContentMime() != null && msgUnit.getContentMime().equals("text/xml")) {
             byte[] content = msgUnit.getContent();
-            content = MomEventEngine.decompress(content, msgUnit.getQosData().getClientProperties());
-            byte[] newContent = this.manager.transformVersion(this.replPrefix, this.ownVersion, this.slaveSessionId, content);
-            msgUnit.setContent(newContent);
+            InputStream is = MomEventEngine.decompress(new ByteArrayInputStream(content), msgUnit.getQosData().getClientProperties());
+            content = ReplManagerPlugin.getContent(is);
+            content = this.manager.transformVersion(this.replPrefix, this.ownVersion, this.slaveSessionId, content);
+            msgUnit.setContent(content);
          }
       }
    }
@@ -1053,7 +1056,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             return new byte[0];
          byte[] content = (byte[])msgUnit.getContent().clone();
          Map cp = new HashMap(msgUnit.getQosData().getClientProperties());
-         return MomEventEngine.decompress(content, cp);
+         return ReplManagerPlugin.getContent(MomEventEngine.decompress(new ByteArrayInputStream(content), cp));
       }
       catch (Exception ex) {
          ex.printStackTrace();

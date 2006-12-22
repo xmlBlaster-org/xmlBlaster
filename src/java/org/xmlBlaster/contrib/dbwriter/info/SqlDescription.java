@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import org.xml.sax.InputSource;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
@@ -586,8 +587,8 @@ public class SqlDescription {
             throw new Exception("The attribute '" + ReplicationConstants.OLD_CONTENT_ATTR + "' was not defined for '" + newRow.toXml("") + "'");
 
          String xmlLiteral = OLD_PREFIX + prop.getStringValue() + OLD_POSTFIX;
-         
-         SqlInfo sqlInfo = parserForOld.parse(xmlLiteral);
+         ByteArrayInputStream bais = new ByteArrayInputStream(xmlLiteral.getBytes());
+         SqlInfo sqlInfo = parserForOld.parse(new InputSource(bais));
          if (sqlInfo.getRowCount() < 1)
             throw new Exception("The string '" + xmlLiteral + "' did not contain any row for '" + newRow.toXml("") + "'");
          
@@ -836,8 +837,12 @@ public class SqlDescription {
       }
       throw new IllegalArgumentException("getColumnAtPosition: The position '" + pos + "' has not been found among the ones processed which are '" + buf.toString() + "'");
    }
-   
+
    public String toXml(String extraOffset) {
+      return toXml(extraOffset, false);
+   }
+   
+   final String toXml(String extraOffset, boolean doTruncate) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -856,6 +861,10 @@ public class SqlDescription {
       for (int i=0; i < this.columnList.size(); i++) {
          SqlColumn desc = (SqlColumn)this.columnList.get(i);
          sb.append(desc.toXml(extraOffset + "  "));
+         if (doTruncate && sb.length() > SqlInfo.MAX_BUF_SIZE) {
+            sb.append(" ...");
+            return sb.toString();
+         }
       }
       
       Iterator iter = this.attributeKeys.iterator();
@@ -863,6 +872,10 @@ public class SqlDescription {
          Object key = iter.next();
          ClientProperty prop = (ClientProperty)this.attributes.get(key);
          sb.append(prop.toXml(extraOffset + "  ", SqlInfoParser.ATTR_TAG));
+         if (doTruncate && sb.length() > SqlInfo.MAX_BUF_SIZE) {
+            sb.append(" ...");
+            return sb.toString();
+         }
       }
       sb.append(offset).append("</").append(DESC_TAG).append(">");
       return sb.toString();

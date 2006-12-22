@@ -5,13 +5,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwriter;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.MomEventEngine;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
@@ -36,12 +40,29 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
    private SqlColumn colDescription;
    private I_Info info; 
    boolean caseSensitive;
-   
-   
+
    public SqlInfoParser() throws Exception {
       this(null);
    }
 
+   public static void main(String[] args) {
+      if (args.length < 1) {
+         System.err.println("Usage: java " + SqlInfoParser.class.getName() + " inputFilename");
+         System.exit(-1);
+      }
+      
+      try {
+         I_Info info = new PropertiesInfo(System.getProperties());
+         SqlInfoParser parser = new SqlInfoParser(info);
+         InputSource is = new InputSource(new FileInputStream(args[0]));
+         SqlInfo sqlInfo = parser.readObject(is);
+         System.out.println("Number of rows: " + sqlInfo.getRowCount());
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+   }
+   
    /**
     * Can be used as singleton.
     */
@@ -67,31 +88,28 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
    }
 
    public SqlInfo parse(String data) throws Exception {
-      return readObject(data);
+      InputSource is = new InputSource(new ByteArrayInputStream(data.getBytes()));
+      return readObject(is);
    }
 
-
+   public SqlInfo parse(InputSource is) throws Exception {
+      clearCharacter();
+      return readObject(is);
+   }
 
    /**
     * Parses the given xml Qos and returns a StatusQosData holding the data. 
     * Parsing of update() and publish() QoS is supported here.
     * @param the XML based ASCII string
     */
-   public synchronized SqlInfo readObject(String xmlQos) throws XmlBlasterException {
+   public synchronized SqlInfo readObject(InputSource is) throws XmlBlasterException {
       try {
-         if (xmlQos == null) {
-            xmlQos = "<" + SqlInfo.SQL_TAG + "/>";
-         }
-
          this.updateRecord = new SqlInfo(this.info);
-
-         if (!isEmpty(xmlQos)) // if possible avoid expensive SAX parsing
-            init(xmlQos);      // use SAX parser to parse it (is slow)
-
+         init(is);      // use SAX parser to parse it (is slow)
          return this.updateRecord;
       }
       catch (XmlBlasterException ex) {
-         log.severe("SqlInfoParser.readObject: could not parse string '" + xmlQos + "'");
+         log.severe("SqlInfoParser.readObject: could not parse input stream");
          throw ex;
       }
    }
@@ -258,6 +276,11 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
       
   }
 
+   private final void clearCharacter() {
+      // character.setLength(0);
+      character = new StringBuffer(4096);
+   }
+   
    /**
     * End element, event from SAX parser.
     * <p />
@@ -290,28 +313,28 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
       if (name.equalsIgnoreCase(SqlRow.ROW_TAG)) {
          this.inRow = false;
          this.recordRow = null;
-         character.setLength(0);
+         clearCharacter();
          return;
       }
 
       if (name.equalsIgnoreCase(SqlDescription.DESC_TAG)) {
          this.inDescription = false;
          this.recordDescription = null;
-         character.setLength(0);
+         clearCharacter();
          return;
       }
 
       if (name.equalsIgnoreCase(SqlDescription.IDENT_TAG)) {
          if (this.inDescription) 
             this.recordDescription.setIdentity(this.character.toString().trim());
-         character.setLength(0);
+         clearCharacter();
          return;
       }
 
       if (name.equalsIgnoreCase(SqlDescription.COMMAND_TAG)) {
          if (this.inDescription) 
             this.recordDescription.setCommand(this.character.toString().trim());
-         character.setLength(0);
+         clearCharacter();
          return;
       }
 
@@ -320,11 +343,10 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
          this.colDescription.setColName(new String(this.character).trim());
          this.recordDescription.addColumn(this.colDescription);
          this.colDescription = null;
-         character.setLength(0);
+         clearCharacter();
          return;
       }
-      
-      character.setLength(0); // reset data from unknown tags
+      clearCharacter(); // reset data from unknown tags
    }
 
 }

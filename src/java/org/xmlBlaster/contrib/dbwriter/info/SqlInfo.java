@@ -43,6 +43,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 public class SqlInfo implements ReplicationConstants {
 
    public final static String SQL_TAG = "sql";
+   final static int MAX_BUF_SIZE = 4096;
    private static Logger log = Logger.getLogger(SqlInfo.class.getName());
 
    private SqlDescription description;
@@ -608,20 +609,36 @@ public class SqlInfo implements ReplicationConstants {
    public List getRows() {
       return this.rows;
    }
-   
+
    public String toXml(String extraOffset) {
+      return toXml(extraOffset, false);
+   }
+   
+   public String toString() {
+      return toXml("", true);
+   }
+   
+   private final String toXml(String extraOffset, boolean doTruncate) {
       String charSet = info.get("charSet", "UTF-8");
+      final boolean withRowTag = true; // used for row.toXml()
       StringBuffer sb = new StringBuffer("<?xml version='1.0' encoding='" + charSet + "' ?>");
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
       sb.append(offset).append("<").append(SQL_TAG).append(">");
       if (this.description != null)
-         sb.append(this.description.toXml(extraOffset + "  "));
-
+         sb.append(this.description.toXml(extraOffset + "  ", doTruncate));
+      if (doTruncate && sb.length() > MAX_BUF_SIZE) {
+         sb.append(" ... (total num of rows=").append(this.rows.size()).append(")");
+         return sb.toString();
+      }
       Iterator iter = this.rows.iterator();
       while (iter.hasNext()) {
          SqlRow recordRow = (SqlRow)iter.next();
-         sb.append(recordRow.toXml(extraOffset + "  "));
+         sb.append(recordRow.toXml(extraOffset + "  ", withRowTag, doTruncate));
+         if (doTruncate && sb.length() > MAX_BUF_SIZE) {
+            sb.append(" ... (total num of rows=").append(this.rows.size()).append(")");
+            return sb.toString();
+         }
       }
       sb.append(offset).append("</").append(SQL_TAG).append(">");
       return sb.toString();

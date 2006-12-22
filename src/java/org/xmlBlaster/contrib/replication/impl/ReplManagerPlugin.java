@@ -78,7 +78,11 @@ import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -180,19 +184,24 @@ public class ReplManagerPlugin extends GlobalInfo
       return this.transformerCache.transform(replPrefix, srcVersion, destVersion, destination, srcData, null);
    }
    
-   
-   public byte[] transformVersion(String replPrefix, String destVersion, String destination, byte[] srcData) throws Exception {
+   public byte[] transformVersion(String replPrefix, String destVersion, String destination, byte[] content) throws Exception {
       I_Info tmpInfo = (I_Info)this.replications.get(replPrefix);
       if (tmpInfo == null)
          throw new Exception("The replication with replication.prefix='" + replPrefix + "' was not found");
       String srcVersion = tmpInfo.get("replication.version", "0.0").trim();
       if (srcVersion.length() < 1)
          throw new Exception("The replication '" + replPrefix + "' has no version defined");
-      return transformVersion(replPrefix, srcVersion, destVersion, destination, srcData);
+      return transformVersion(replPrefix, srcVersion, destVersion, destination, content);
    }
    
-   public String transformVersion(String replPrefix, String destVersion, String destination, String srcData) throws Exception {
-      return new String(transformVersion(replPrefix, destVersion, destination, srcData.getBytes()));
+   public String transformVersion(String replPrefix, String destVersion, String destination, String is) throws Exception {
+      I_Info tmpInfo = (I_Info)this.replications.get(replPrefix);
+      if (tmpInfo == null)
+         throw new Exception("The replication with replication.prefix='" + replPrefix + "' was not found");
+      String srcVersion = tmpInfo.get("replication.version", "0.0").trim();
+      if (srcVersion.length() < 1)
+         throw new Exception("The replication '" + replPrefix + "' has no version defined");
+      return new String(transformVersion(replPrefix, srcVersion, destVersion, destination, is.getBytes()));
    }
    
    public void clearVersionCache() {
@@ -639,6 +648,22 @@ public class ReplManagerPlugin extends GlobalInfo
       this.cachedListOfReplications = null; // clear the cache
    }
    
+   public static byte[] getContent(InputStream is) throws IOException, ClassNotFoundException {
+      int ret = 0;
+      byte[] buf = new byte[1024];
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try {
+         while ( (ret=is.read(buf)) > -1) {
+            baos.write(buf, 0, ret);
+         }
+      }
+      catch (IOException ex) {
+         ex.printStackTrace();
+         return new byte[0];
+      }
+      return baos.toByteArray();
+   }
+   
    /**
     * It becomes events from all ReplicationConverter instances which want to register themselves for
     * administration of initial updates.
@@ -647,7 +672,8 @@ public class ReplManagerPlugin extends GlobalInfo
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       try {
-         content = MomEventEngine.decompress(content, updateQos.getClientProperties());
+         InputStream is = MomEventEngine.decompress(new ByteArrayInputStream(content), updateQos.getClientProperties());
+         content = getContent(is);
          SessionName senderSession = updateQos.getSender();
          String request = updateQos.getClientProperty("_command", "");
          log.info("The master Replicator with session '" + senderSession.getRelativeName() + "' is sending '" + request + "'");

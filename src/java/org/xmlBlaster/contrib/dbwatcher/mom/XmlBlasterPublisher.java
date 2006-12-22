@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwatcher.mom;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -147,7 +149,7 @@ public class XmlBlasterPublisher implements
     */
    public void startProducing() throws Exception {
       registerAlertListener(new I_Update() {
-         public void update(String topic, byte[] content, Map attrMap) {
+         public void update(String topic, java.io.InputStream is, Map attrMap) {
             try {
                 if (log.isLoggable(Level.FINE)) log.fine("Alert notification arrived '" + topic + "' with " + ((attrMap==null)?0:attrMap.size()) + " attributes");
                 changeDetector.checkAgain(attrMap);
@@ -495,7 +497,7 @@ public class XmlBlasterPublisher implements
                   log.fine("Receiving alert message '" + k.getOid() + "'");
                   Map attrMap = clientPropertiesToMap(q.getClientProperties());
                   try {
-                     momCb.update(k.getOid(), c, attrMap);
+                     momCb.update(k.getOid(), new ByteArrayInputStream(c), attrMap);
                   }
                   catch (Exception e) {
                      log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
@@ -549,7 +551,7 @@ public class XmlBlasterPublisher implements
                if (log.isLoggable(Level.FINE)) log.fine("Receiving xmlBlaster message " + k.getOid());
                Map attrMap = clientPropertiesToMap(q.getClientProperties());
                try {
-                  momCb.update(k.getOid(), c, attrMap);
+                  momCb.update(k.getOid(), new ByteArrayInputStream(c), attrMap);
                }
                catch (Exception e) {
                   log.severe("Can't subscribe from xmlBlaster: " + e.getMessage());
@@ -577,8 +579,8 @@ public class XmlBlasterPublisher implements
     * @return The UpdateReturnQos 
     * @see I_Callback#update
     */
-   public String update(String s, UpdateKey k, byte[] c, UpdateQos q) throws XmlBlasterException {
-      c = MomEventEngine.decompress(c, q.getClientProperties());
+   public String update(String s, UpdateKey k, byte[] content, UpdateQos q) throws XmlBlasterException {
+      InputStream is = MomEventEngine.decompress(new ByteArrayInputStream(content), q.getClientProperties());
       if (this.defaultUpdate == null) { 
          log.warning("No update message expected, ignoring received " + k.toXml());
          return Constants.RET_OK;
@@ -587,7 +589,7 @@ public class XmlBlasterPublisher implements
          try {
             // TODO Add here the specific qos attributes to the map.
             q.getData().addClientProperty("_sender", q.getSender().getRelativeName());
-            this.defaultUpdate.update(s, c, q.getClientProperties());
+            this.defaultUpdate.update(s, is, q.getClientProperties());
             return Constants.RET_OK;
          }
          catch (Exception ex) {

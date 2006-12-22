@@ -7,11 +7,13 @@
 package org.xmlBlaster.contrib.replication.impl;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -376,12 +378,12 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    /**
     * @see org.xmlBlaster.contrib.I_Update#update(java.lang.String, byte[], java.util.Map)
     */
-   public final void update(String topic, byte[] content, Map attrMap) {
+   public final void update(String topic, InputStream is, Map attrMap) {
 
+      String msg = new String();
       try {
-         if (content == null)
-            content = new byte[0];
-         String msg = new String(content);
+         if (is != null)
+            msg = new String(ReplManagerPlugin.getContent(is));
          // this comes from the requesting ReplSlave
          log.info("update for '" + topic + "' and msg='" + msg + "'");
          if (REPL_REQUEST_UPDATE.equals(msg)) {
@@ -497,7 +499,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          }
       }
       catch (Throwable ex) {
-         log.severe("An exception occured when processing the received update '" + new String(content) + "': " + ex.getMessage());
+         log.severe("An exception occured when processing the received update '" + msg + "': " + ex.getMessage());
          ex.printStackTrace();
       }
    }

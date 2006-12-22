@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib;
 
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -18,5 +19,6 @@ public interface I_Update {
     * @param content The message content
     * @param attrMap A map with attribute, can be null 
     */
-   void update(String topic, byte[] content, Map attrMap) throws Exception;
+   // void update(String topic, byte[] content, Map attrMap) throws Exception;
+   void update(String topic, InputStream is, Map attrMap) throws Exception;
 }

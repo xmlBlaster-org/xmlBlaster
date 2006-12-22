@@ -266,8 +266,12 @@ public class SqlRow {
    public String toXml(String extraOffset) {
       return toXml(extraOffset, true);
    }
-   
+
    public String toXml(String extraOffset, boolean withRowTag) {
+      return toXml(extraOffset, withRowTag, false);
+   }
+   
+   final String toXml(String extraOffset, boolean withRowTag, boolean doTruncate) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -286,13 +290,22 @@ public class SqlRow {
             Object key = iter.next();
             ClientProperty prop = (ClientProperty)this.columns.get(key);
             sb.append(prop.toXml(extraOffset + "  ", COL_TAG));
+            if (doTruncate && sb.length() > SqlInfo.MAX_BUF_SIZE) {
+               sb.append(" ...");
+               return sb.toString();
+            }
          }
       }
+      
       Iterator iter = this.attributeKeys.iterator();
       while (iter.hasNext()) {
          Object key = iter.next();
          ClientProperty prop = (ClientProperty)this.attributes.get(key);
          sb.append(prop.toXml(extraOffset + "  ", SqlInfoParser.ATTR_TAG));
+         if (doTruncate && sb.length() > SqlInfo.MAX_BUF_SIZE) {
+            sb.append(" ...");
+            return sb.toString();
+         }
       }
       if (withRowTag)
          sb.append(offset).append("</").append(ROW_TAG).append(">");

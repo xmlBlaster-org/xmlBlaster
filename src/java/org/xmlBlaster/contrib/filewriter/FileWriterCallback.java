@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,6 +31,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 public class FileWriterCallback implements I_Update, ContribConstants {
    
    private static Logger log = Logger.getLogger(FileWriterCallback.class.getName());
+   private final static int BUF_SIZE = 300000;
    private String dirName;
    private String lockExtention;
    private File directory;
@@ -85,7 +87,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
    }
 
    
-   private static void storeChunk(File tmpDir, String fileName, long chunkNumber, char sep, boolean overwrite, byte[] content) throws Exception {
+   private static void storeChunk(File tmpDir, String fileName, long chunkNumber, char sep, boolean overwrite, InputStream is) throws Exception {
       fileName = fileName + sep + chunkNumber;
       File file = new File(tmpDir, fileName);
       if (file == null)
@@ -102,10 +104,15 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          }
       }
       try {
-         log.info("storing file '" + fileName + "' on directory '" + tmpDir.getName() + "', size: " + content.length + " bytes and chunk number '" + chunkNumber + "'");
+         log.info("storing file '" + fileName + "' on directory '" + tmpDir.getName() + "' and chunk number '" + chunkNumber + "'");
          
          FileOutputStream fos = new FileOutputStream(file);
-         fos.write(content);
+         int ret = 0;
+         byte[] buf = new byte[BUF_SIZE];
+         while ( (ret=is.read(buf)) > -1) {
+            fos.write(buf, 0, ret);
+         }
+         // fos.write(content);
          fos.close();
       }
       catch (IOException ex) {
@@ -189,7 +196,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
     * @throws Exception If an error occurs when writing / reading the files. This method tries
     * to clean up the destination file in case of an exception when writing.
     */
-   private void putAllChunksTogheter(String fileName, long expectedChunks, byte[] lastContent, boolean isCompleteMsg) throws Exception {
+   private void putAllChunksTogheter(String fileName, long expectedChunks, InputStream is, boolean isCompleteMsg) throws Exception {
       File file = new File(this.directory, fileName);
       if (file == null)
          throw new Exception("the file for '" + fileName + "' was null");
@@ -230,7 +237,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
             numChunks = files.length > expectedChunks ? expectedChunks : files.length; 
          }
          // put all chunks toghether in one single file
-         int bufSize = 300000;
+         int bufSize = BUF_SIZE;
          byte[] buf = new byte[bufSize];
 
          FileOutputStream fos = null;
@@ -246,8 +253,17 @@ public class FileWriterCallback implements I_Update, ContribConstants {
                fis.close();
             }
             
+            if (is != null) {
+               int ret = 0;
+               while ( (ret=is.read(buf)) > -1) {
+                  fos.write(buf, 0, ret);
+               }
+               is.close();
+            }
+            /*
             if (lastContent != null && lastContent.length != 0)
                fos.write(lastContent);
+            */
             fos.close();
          }
          catch (Throwable ex) {
@@ -312,7 +328,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
    }
    
    
-   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+   public void update(String topic, InputStream is, Map attrMap) throws Exception {
       String fileName = null;
       boolean isLastMsg = true;
       String exMsg = null;
@@ -352,14 +368,14 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          fileName = topic;
          log.warning("The message did not contain any filename nor timestamp. Will write to '" + fileName + "'");
       }
-      log.fine("storing file '" + fileName + "' on directory '" + this.directory.getName() + "', size: " + content.length + " bytes");
+      log.fine("storing file '" + fileName + "' on directory '" + this.directory.getName() + "'");
 
       boolean isCompleteMsg = isLastMsg && chunkCount == 0L;
       if (exMsg == null) { // no exception
          if (isLastMsg)
-            putAllChunksTogheter(fileName, chunkCount, content, isCompleteMsg);
+            putAllChunksTogheter(fileName, chunkCount, is, isCompleteMsg);
          else
-            storeChunk(this.tmpDirectory, fileName, chunkCount, '.', this.overwrite, content);
+            storeChunk(this.tmpDirectory, fileName, chunkCount, '.', this.overwrite, is);
       }
       else if (!isCompleteMsg) { // clean up old chunks
          File[] files = getChunkFilenames(fileName, '.'); // retrieves the chunks in correct order

@@ -5,10 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.dbwriter;
 
+import java.io.InputStream;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xml.sax.InputSource;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
@@ -154,9 +156,9 @@ public class DbWriter implements I_Update {
     * Determines wether the message is a database dump or not. If it is a database dump it stores the content to a file,
     * otherwise it processes the message according to the normal processing flow.
     */
-   public synchronized void update(String topic, byte[] content, Map attrMap) throws Exception {
+   public synchronized void update(String topic, InputStream is, Map attrMap) throws Exception {
       if (!this.isAlive) {
-         throw new Exception("update topic='" + topic + "' happens when we not alive: \n" + content);
+         throw new Exception("update topic='" + topic + "' happens when we not alive: \n");
       }
       ClientProperty dumpProp = (ClientProperty)attrMap.get(ReplicationConstants.DUMP_ACTION);
       ClientProperty endToRemoteProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
@@ -164,18 +166,18 @@ public class DbWriter implements I_Update {
       ClientProperty endOfTransition = (ClientProperty)attrMap.get(ReplicationConstants.END_OF_TRANSITION);
       
       if (dumpProp != null && initialDumpAsXml == null) {
-         this.writer.update(topic, content, attrMap);
+         this.writer.update(topic, is, attrMap);
       }
       else if (endToRemoteProp != null) {
-         this.writer.update(topic, content, attrMap);
+         this.writer.update(topic, is, attrMap);
       }
       else if (endOfTransition != null) {
-         this.writer.update(topic, content, attrMap);
+         this.writer.update(topic, is, attrMap);
       }
       else {
-         SqlInfo updateInfo = this.parser.parse(new String(content));
+         SqlInfo updateInfo = this.parser.parse(new InputSource(is));
          if (updateInfo == null) {
-            log.warning("The entry with content '" + new String(content) + "' was not for us");
+            log.warning("The entry was not for us");
             return;
          }
          ClientProperty keepTransactionOpenProp = (ClientProperty)attrMap.get(ReplicationConstants.KEEP_TRANSACTION_OPEN);

@@ -6,8 +6,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.replication;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -292,12 +294,12 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    
    public void store(SqlInfo dbInfo) throws Exception {
       if (checkIfAlreadyProcessed(dbInfo)) {
-         log.info("Entry '" + dbInfo.toXml("") + "' already processed, will ignore it");
+         log.info("Entry '" + dbInfo.toString() + "' already processed, will ignore it");
          return;
       }
       SqlDescription description = dbInfo.getDescription();
       if (description == null) {
-         log.warning("store: The message was a dbInfo but lacked description. " + dbInfo.toXml(""));
+         log.warning("store: The message was a dbInfo but lacked description. " + dbInfo.toString());
          return;
       }
       boolean keepTransactionOpen = false;
@@ -354,7 +356,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          if (groupEx != null)
             map.put(XBConnectionMetaData.JMSX_GROUP_EX, groupEx);
          String topic = "xmlDump";
-         this.updateDump(topic, content, map);
+         this.updateDump(topic, new ByteArrayInputStream(content), map);
          return;
       }
       
@@ -372,7 +374,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          completeTableName = schema + "." + table;
       
       // log.info(ME + ".store invoked for cmd='" + command + "' and identity ='" + identity + "'");
-      log.info("store invoked for \n" + dbInfo.toXml(""));
+      log.info("store invoked for \n" + dbInfo.toString());
       if (this.nirvanaClient)
          return;
       if (isAllowedCommand(command)) {
@@ -640,7 +642,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          }
       }
       else {
-         log.severe("store with not command. The entry will be ignored. " + dbInfo.toXml(""));
+         log.severe("store with not command. The entry will be ignored. " + dbInfo.toString());
       }
    }
 
@@ -720,7 +722,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    /**
     * This is invoked for dump files
     */
-   private void updateDump(String topic, byte[] content, Map attrMap) throws Exception {
+   private void updateDump(String topic, InputStream is, Map attrMap) throws Exception {
       clearSqlInfoCache();
       ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR);
       String filename = null;
@@ -732,7 +734,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          filename = prop.getStringValue();
       log.info("'" + topic + "' dumping file '" + filename + "' on '" + this.importLocation + "'");
       // will now write to the file system
-      this.callback.update(topic, content, attrMap);
+      this.callback.update(topic, is, attrMap);
       // and now perform an import of the DB
       boolean isEof = true;
       boolean isException = false;
@@ -779,7 +781,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       }
    }
 
-   private void updateManualTransfer(String topic, byte[] content, Map attrMap) throws Exception {
+   private void updateManualTransfer(String topic, InputStream is, Map attrMap) throws Exception {
       ClientProperty subDirProp = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DATA_ID);
       if (subDirProp == null)
          throw new Exception("updateManualTransfer: the mandatory property '" + ReplicationConstants.INITIAL_DATA_ID + "' was not found in the message");
@@ -837,14 +839,14 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   throw new Exception("The qos for message unit of '" + file.getAbsoluteFile() + "' is null");
                Map subMap = msgUnit.getQosData().getClientProperties();
                byte[] subContent = msgUnit.getContent();
-               dbWriter.update(topic, subContent, subMap);
+               dbWriter.update(topic, new ByteArrayInputStream(subContent), subMap);
             }
          }
       }
    }
 
    
-   public void update(String topic, byte[] content, Map attrMap) throws Exception {
+   public void update(String topic, InputStream is, Map attrMap) throws Exception {
       if (this.nirvanaClient) {
          log.warning("The content of the data for this writer ' is sent to nirvana since 'replication.nirvanaClient' is set to 'true'");
          return;
@@ -858,9 +860,9 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          deleteFiles(attrMap);
       }
       else if (dumpProp != null)
-         updateDump(topic, content, attrMap);
+         updateDump(topic, is, attrMap);
       else if (endToRemoteProp != null)
-         updateManualTransfer(topic, content, attrMap);
+         updateManualTransfer(topic, is, attrMap);
       else
          log.severe("Unknown operation");
       
