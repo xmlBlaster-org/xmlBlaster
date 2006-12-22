@@ -1,0 +1,100 @@
+<html style="background-color:#EDF0F3;background:#EDF0F3;" xmlns="http://www.w3.org/1999/xhtml">
+<!-- tidy -utf8 -indent -wrap 256 -asxhtml gpsmap.html -->
+
+<!-- To be used with PullServlet.java -->
+<!-- Setup a PDA sending GPS coordinates over GPRS, UMTS or WLAN -->
+<!-- @author Marcel Ruff xmlBlaster@marcelruff.info 2006 -->
+
+
+<head>
+   <meta name="generator" content="HTML Tidy for Linux/x86 (vers 1 July 2005), see www.w3.org" />
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   <meta http-equiv="pragma" content="no-cache" />
+   <meta http-equiv="cache-control" content="no-cache" />
+   <script language="JavaScript" type="text/javascript">
+       //<![CDATA[
+      var time = null
+      var xmlHttp = null;
+      var mapWindow = null;
+
+      function GetXmlHttpObject(handler)
+      { 
+         var objXMLHttp=null
+         if (window.XMLHttpRequest)
+         {
+         objXMLHttp=new XMLHttpRequest()
+         }
+         else if (window.ActiveXObject)
+         {
+         objXMLHttp=new ActiveXObject("Microsoft.XMLHTTP")
+         }
+         return objXMLHttp
+      }
+
+      function showmap(url)
+      {
+         if (url == undefined || url == null || url == "")
+            return;
+
+         /*
+         var myLocation = document.getElementById("myLocation");
+         var doc = myLocation.contentDocument;
+         if (doc == undefined || doc == null)
+            doc = myLocation.contentWindow.document;
+         doc.open();
+         doc.write(url);
+         doc.close();       
+         */
+
+         var myMapFrame = document.getElementById("myMapFrame");
+         myMapFrame.src = url;
+         myMapFrame.style.visibility="visible";
+
+         document.all.myMapFrame.style.visibility="visible";
+      }
+
+      function stateChanged() 
+      { 
+         if (xmlHttp.readyState==4 || xmlHttp.readyState=="complete")
+         { 
+            showmap(xmlHttp.responseText);
+            //showmap("http://maps.google.com/maps?q=047%C2%B046'55.45%22,+009%C2%B010'01.49%22+(Marcel+shopping)&iwloc=A&hl=en");
+         } 
+      } 
+
+      function getGps()
+      {
+         xmlHttp=GetXmlHttpObject()
+         if (xmlHttp==null)
+         {
+            alert ("Browser does not support HTTP Request")
+            return
+         } 
+         var url="/xmlBlaster/pull";
+         url=url+"?sid="+Math.random();
+
+         xmlHttp.onreadystatechange=stateChanged 
+         xmlHttp.open("GET",url,true)
+         xmlHttp.send(null)
+         time = setTimeout('getGps()',10000);
+      }
+       //]]>
+   </script>
+
+  <title>XmlBlaster Status</title>
+</head>
+
+<body onload="getGps()">
+   <h1>Where is Gran'ma goin?</h1>
+   <p>
+   <!--iframe id="myLocation"  frameborder="1"
+     vspace="0"  hspace="0"  marginwidth="0"  marginheight="0" width="800"  scrolling="yes"
+      height="100" src=""/-->
+   </p>
+   <p>
+   <iframe id="myMapFrame"  frameborder="1"
+     vspace="0"  hspace="0"  marginwidth="0"  marginheight="0" width="800"  scrolling="yes"
+      height="600" src=""/>
+   </p>
+</body>
+</html>
