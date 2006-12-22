@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
@@ -540,5 +541,11 @@ public class ReplicationAgent {
       }
    
    }
+
+   public void registerForUpdates(I_Update registeredForUpdates) {
+      if (this.dbWriter != null)
+         this.dbWriter.registerForUpdates(registeredForUpdates);
+   }
+   
 
 }
