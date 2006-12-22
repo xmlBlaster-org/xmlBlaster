@@ -1,5 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+ 
+ o #15866 added the possibility to disable going to polling if a response timeout comes from a ping:
+          use dispatch/callback/stallOnPingTimeout=true or/and dispatch/connection/stallOnPingTimeout=true.
+          This property is passed in the AddressBase
 
  o #15851 C# client: Csharp support extended
           o Supporting C and C++ clients as unmanaged code on Windows CE and normal Windows
