@@ -80,7 +80,7 @@ public class PullServlet extends HttpServlet {
 			Position pos = getCurrentPosition(req);
 			if (pos == null) {
 				// System.out.println(ME+"no data found ...");
-				if (newBrowser) {
+				if (newBrowser || forceLoad) {
 					out.write(getStartupUrl());
 					System.out.println(ME + getStartupUrl());
 				}
