@@ -18,6 +18,7 @@ namespace org.xmlBlaster.client
    {
       public static I_XmlBlasterAccess createInstance()
       {
+         /*
          // Choose the PInvoke plugin:
 #        if FORCE_PINVOKECE_PLUGIN
 
@@ -31,7 +32,13 @@ namespace org.xmlBlaster.client
             
             return new PInvokeCE(); // Runs fine with WIN32 and WINCE (fails with MONO)
 
-#        endif
+#        endif*/
+         return createInstance("org.xmlBlaster.client.PInvokeCE");
+      }
+      public static I_XmlBlasterAccess createInstance(string typeName)
+      {
+         System.Reflection.Assembly SourceAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+         return (I_XmlBlasterAccess)SourceAssembly.CreateInstance(typeName);
       }
    }
 
