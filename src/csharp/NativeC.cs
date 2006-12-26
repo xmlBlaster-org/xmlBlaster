@@ -711,8 +711,13 @@ namespace org.xmlBlaster.client
 
       public void AddLoggingListener(I_LoggingCallback listener)
       {
-         logger("Sorry, addLoggingListener() is not implemented");
+         logger("Sorry, AddLoggingListener() is not implemented");
          //throw new XmlBlasterException("internal.notImplemented", "Sorry, addLoggingListener is not implemented");
+      }
+
+      public void RemoveLoggingListener(I_LoggingCallback listener)
+      {
+         logger("Sorry, RemoveLoggingListener() is not implemented");
       }
 
       public string GetUsage()
