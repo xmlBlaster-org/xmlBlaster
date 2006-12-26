@@ -1,4 +1,7 @@
 // NativeC.cs
+// deprecated: Please use the PInvokeCE.cs plugin
+// Remains for .NET 1.x code and for older Mono 'mcs' compiler.
+//
 // Simple layer to delegate C# calls to xmlBlaster client C library (using P/Invoke).
 // libxmlBlasterClientC.so on Mono/Linux is accessed and must be available
 // xmlBlasterClientC.dll on Windows is needed and must be available
