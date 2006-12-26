@@ -1,1 +1,13 @@
+Test suite for C# clients of xmlBlaster (http://www.xmlBlaster.org)
+
 These test shall be executed using http://www.nunit.org (v 2.2.9)
+
+Compile it using Visual Studio 2005 or manually on command line.
+
+Open in the Nunit GUI
+
+   %XMLBLASTER_HOME%\testsuite\src\csharp\bin\Debug\xmlBlasterTest.dll
+
+Note: Some test require a running xmlBlaster server on localhost
+
+
