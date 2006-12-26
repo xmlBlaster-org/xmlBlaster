@@ -413,6 +413,26 @@ namespace org.xmlBlaster.client
       }
 
       /// <summary>
+      /// Extract e.g. "hello" from "<a>hello</a>"
+      /// </summary>
+      /// <param name="xml"></param>
+      /// <param name="tag"></param>
+      /// <returns></returns>
+      public static string extract(string xml, string tag) {
+         if (xml == null || tag == null) return null;
+         string startToken = "<" + tag + ">";
+         string endToken = "</" + tag + ">";
+         int start = xml.IndexOf(startToken);
+         int end = xml.IndexOf(endToken);
+         if (start != -1 && end != -1) {
+            start += startToken.Length;
+            return xml.Substring(start, end-start);
+         }
+         return null;
+      }
+
+
+      /// <summary>
       /// Supports query on attributes or tag values
       /// </summary>
       /// <param name="key">For example "/qos/priority/text()"</param>
@@ -428,10 +448,78 @@ namespace org.xmlBlaster.client
                return node.Value;
             else if (node.NodeType == XmlNodeType.Text)
                return node.Value;
+            else if (node.NodeType == XmlNodeType.Element && node.HasChildNodes) {
+               if (node.FirstChild.NodeType == XmlNodeType.CDATA) {
+                  // Returns string inside a CDATA section
+                  return node.FirstChild.Value;
+               }
+               else if (node.FirstChild.NodeType == XmlNodeType.Element) {
+                  // Returns string with all sub-tags
+                  return node.OuterXml;
+               }
+            }
          }
          return defaultValue;
       }
 
+      /// <summary>
+      /// Query bools without text() to find empty tags like "<persistent/>"
+      /// </summary>
+      /// <param name="key">"/qos/persistent" or "qos/persistent/text()"</param>
+      /// <param name="defaultValue"></param>
+      /// <returns></returns>
+      public bool GetXPath(string key, bool defaultValue)
+      {
+         if (key == null) return defaultValue;
+         if (key.EndsWith("/text()"))
+            key = key.Substring(0, key.Length - "/text()".Length);
+         XmlNodeList xmlNodeList = GetXmlNodeList(key);
+         string value = "" + defaultValue;
+         for (int i = 0; i < xmlNodeList.Count; i++)
+         {
+            XmlNode node = xmlNodeList[i];
+            if (node.NodeType == XmlNodeType.Attribute) {
+               value = node.Value;
+               break;
+            }
+            else if (node.NodeType == XmlNodeType.Text)
+            {
+               value = node.Value;
+               break;
+            }
+            else if (node.NodeType == XmlNodeType.Element)
+            {
+               if (node.HasChildNodes &&
+                   node.FirstChild.NodeType == XmlNodeType.Text) {
+                  value = node.FirstChild.Value;
+                  break;
+               }
+               else if (node.Value == null)
+                  return true;
+            }
+         }
+         try {
+            return bool.Parse(value);
+         }
+         catch (Exception) {
+            return defaultValue;
+         }
+      }
+      /*
+      public bool GetXPath(string key, bool defaultValue)
+      {
+         string ret = GetXPath(key, null);
+         if (ret == null) return defaultValue;
+         try
+         {
+            return bool.Parse(ret);
+         }
+         catch (Exception)
+         {
+            return defaultValue;
+         }
+      }
+      */
       public long GetXPath(string key, long defaultValue)
       {
          string ret = GetXPath(key, null);
@@ -453,20 +541,6 @@ namespace org.xmlBlaster.client
          try
          {
             return int.Parse(ret);
-         }
-         catch (Exception)
-         {
-            return defaultValue;
-         }
-      }
-
-      public bool GetXPath(string key, bool defaultValue)
-      {
-         string ret = GetXPath(key, null);
-         if (ret == null) return defaultValue;
-         try
-         {
-            return bool.Parse(ret);
          }
          catch (Exception)
          {
@@ -744,7 +818,7 @@ namespace org.xmlBlaster.client
          return GetXPath("/qos/expiration/@lifeTime", -1L);
       }
 
-      public string toXml()
+      public string ToXml()
       {
          return this.xml;
       }
@@ -837,11 +911,12 @@ namespace org.xmlBlaster.client
 
    public class UnSubscribeReturnQos : SubscribeReturnQos
    {
-      internal UnSubscribeReturnQos(string xmlQos) : base(xmlQos)
+      internal UnSubscribeReturnQos(string xmlQos)
+         : base(xmlQos)
       {
       }
    }
-   
+
    public class EraseReturnQos
    {
       private readonly StatusQos statusQosData;
@@ -897,7 +972,8 @@ namespace org.xmlBlaster.client
       }
 
       /// "2002-02-10 10:52:40.879456789"
-      public string GetRcvTime() {
+      public string GetRcvTime()
+      {
          return this.statusQosData.GetRcvTime();
       }
 
@@ -909,6 +985,85 @@ namespace org.xmlBlaster.client
       public string toXml()
       {
          return this.statusQosData.toXml();
+      }
+   }
+
+   public class ConnectReturnQos : Qos
+   {
+      internal ConnectReturnQos(string xmlQos)
+         : base(xmlQos)
+      {
+      }
+
+      public string GetSecurityServiceUser()
+      {
+         string ret = GetXPath("/qos/securityService", "").Trim();
+         return extract(ret, "user");
+      }
+
+      public string GetSecurityServicePasswd()
+      {
+         //Fails if a CDATA section
+         //return GetXPath("/qos/securityService/passwd/text()", "");
+         string ret = GetXPath("/qos/securityService", "").Trim();
+         return extract(ret, "passwd");
+      }
+
+      public SessionName GetSessionName()
+      {
+         string text = GetXPath("/qos/session/@name", "");
+         if (text == null || text.Length < 1) return null;
+         return new SessionName(text);
+      }
+
+      public long GetSessionTimeout()
+      {
+         return GetXPath("/qos/session/@timeout", 3600000L);
+      }
+
+      public int GetSessionMax()
+      {
+         return GetXPath("/qos/session/@maxSessions", 10);
+      }
+
+      public bool GetSessionClear()
+      {
+         return GetXPath("/qos/session/@clearSessions", false);
+      }
+
+      public bool GetSessionReconnectSameOnly()
+      {
+         return GetXPath("/qos/session/@reconnectSameClientOnly", false);
+      }
+
+      public string GetSecretSessionId()
+      {
+         return GetXPath("/qos/session/@sessionId", "");
+      }
+
+      public bool IsPtp()
+      {
+         return GetXPath("/qos/ptp/text()", false);
+      }
+
+      public bool IsReconnected()
+      {
+         return GetXPath("/qos/reconnected/text()", false);
+      }
+
+      public bool IsPersistent()
+      {
+         return GetXPath("/qos/persistent", false);
+      }
+      /*
+                              public string Get()
+                              {
+                                 return GetXPath("/qos/", "");
+                              }
+                              */
+      public string toXml()
+      {
+         return base.xml;
       }
    }
 }
