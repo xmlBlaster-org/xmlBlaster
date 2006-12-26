@@ -77,12 +77,10 @@ namespace org.xmlBlaster.client
       public bool IsDefaultDomain()
       {
          string domain = GetDomain();
-         if (domain == null || domain.Equals(DEFAULT_DOMAIN))
+         if (domain == null || domain.Length < 1 || domain.Equals(DEFAULT_DOMAIN))
             return true;
          return false;
       }
-
-
    }
 
    public class MsgKey : Key
@@ -152,7 +150,7 @@ namespace org.xmlBlaster.client
          if (IsExact())
             return EXACT_URL_PREFIX + GetOid();
          else if (IsXPath())
-            return XPATH_URL_PREFIX + GetQueryString();
+            return XPATH_URL_PREFIX + GetQueryString().Trim();
          else if (IsDomain())
             return DOMAIN_URL_PREFIX + GetDomain();
          throw new ApplicationException("getUrl() failed: Unknown query type: " + ToXml());
