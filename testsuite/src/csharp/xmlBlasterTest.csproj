@@ -49,10 +49,13 @@
     <Compile Include="..\..\..\src\csharp\XmlBlasterAccess.cs">
       <Link>XmlBlasterAccess.cs</Link>
     </Compile>
+    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="KeyTest.cs" />
     <Compile Include="QosTest.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XmlBlasterAccessTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
