@@ -147,6 +147,12 @@ namespace org.xmlBlaster.client
       void AddLoggingListener(I_LoggingCallback listener);
 
       /// <summary>
+      /// Remove the given listener
+      /// </summary>
+      /// <param name="listener">Redirection is stopped for this listener</param>
+      void RemoveLoggingListener(I_LoggingCallback listener);
+
+      /// <summary>
       /// Returns the telephone EMEI id if available. 
       /// The International Mobile Equipment Identity (IMEI) is a 15 digit number
       /// and unique over time and space for your PDA.

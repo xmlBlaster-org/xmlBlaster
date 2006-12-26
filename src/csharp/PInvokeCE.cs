@@ -142,6 +142,7 @@ namespace org.xmlBlaster.client
    public class PInvokeCE : I_XmlBlasterAccess
    {
       static LogLevel localLogLevel = LogLevel.INFO; // TODO: log4net
+      private bool initializeIsCalled = false;
 
 #     if XMLBLASTER_MONO
          // Linux Debug libxmlBlasterClientCD.so, set LD_LIBRARY_PATH to find the shared library
@@ -749,6 +750,8 @@ namespace org.xmlBlaster.client
          loggerFpForDelegate = Marshal.GetFunctionPointerForDelegate(loggerUnmanagedFp);
          xmlBlasterUnmanagedCERegisterLogger(xa, loggerFpForDelegate);
 
+         this.initializeIsCalled = true;
+
          // At this stage (constructor) no logListener can be here, so this
          // output will end up in the console
          logInfos(LogLevel.TRACE);
@@ -794,7 +797,7 @@ namespace org.xmlBlaster.client
             onLogging += new OnLogging(listener.OnLogging);
          }
       }
-      public void Unregister(I_LoggingCallback listener)
+      public void RemoveLoggingListener(I_LoggingCallback listener)
       {
          if (listener != null)
          {
@@ -806,6 +809,9 @@ namespace org.xmlBlaster.client
       private event OnUpdate onUpdate;
       public ConnectReturnQos Connect(string qos, I_Callback listener)
       {
+         if (!this.initializeIsCalled)
+            Initialize(new Hashtable());
+
          check("connect");
          if (listener != null)
          {
