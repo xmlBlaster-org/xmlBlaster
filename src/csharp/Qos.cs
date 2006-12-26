@@ -108,8 +108,8 @@ namespace org.xmlBlaster.client
             {
                Encoding enc = Encoding.GetEncoding(GetCharset());//, Encoding.UTF8, Encoding.UTF8); //EncoderFallback, DecoderFallback);
                if (enc != null)
-                  return enc.GetString(content);
-               return System.Text.Encoding.UTF8.GetString(content);
+                  return enc.GetString(content, 0, content.Length);
+               return System.Text.Encoding.UTF8.GetString(content, 0, content.Length);
             }
             catch (Exception ex)
             {
@@ -209,7 +209,8 @@ namespace org.xmlBlaster.client
          // parse absolute part
          if (name.StartsWith("/"))
          {
-            string[] arr = name.Split(splitter, StringSplitOptions.RemoveEmptyEntries);
+            string strip = name.Substring(1);
+            string[] arr = strip.Split(splitter); // not in CF2: StringSplitOptions
             if (arr.Length == 0)
             {
                throw new Exception("'" + name + "': The root tag must be '/node'.");
