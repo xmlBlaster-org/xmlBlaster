@@ -16,9 +16,13 @@ public class Start
       catch (Exception) {
          // OK, expected
       }
-      */
       KeyTest keyTest = new KeyTest();
       keyTest.CheckComplete();
+      */
+
+      XmlBlasterAccessTest xbTest = new XmlBlasterAccessTest();
+      xbTest.CheckMethods();
+
       Console.WriteLine("Done");
    }
 }
