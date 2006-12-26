@@ -170,5 +170,65 @@ namespace org.xmlBlaster.client
          Assert.AreEqual("2001-12-07 23:31:45.862000002", qos.GetRcvTime());
          Assert.AreEqual(1007764305862000002, qos.GetRcvTimeNanos());
       }
+
+      [Test]
+      public void CheckConnectReturnQos()
+      {
+         string qosStr = "<qos>"
+         + "   <securityService type='htpasswd' version='1.0'>"
+         + "     <![CDATA["
+         + "     <user>fred</user>"
+         + "     <passwd>secret</passwd>"
+         + "     ]]>"
+         + "   </securityService>"
+         + ""
+         + "   <session name='joe/3' timeout='3600000' maxSessions='10'"
+         + "               clearSessions='false' reconnectSameClientOnly='false' sessionId='4e56890ghdFzj0'/>"
+         + ""
+         + "   <!-- Recoverable session after server crash / restart -->"
+         + "   <persistent/>"
+         + "   <reconnected>false</reconnected>"
+         + "   <ptp>true</ptp>"
+         + ""
+         + "   <duplicateUpdates>false</duplicateUpdates>"
+         + ""
+         + "   <!-- Setting to control client side behavior, used for cluster configuration -->"
+         + "   <queue relating='connection' maxEntries='10000000' maxEntriesCache='1000'>"
+         + "      <address type='IOR' bootstrapPort='7600' dispatchPlugin='undef'/>"
+         + "   </queue>"
+         + ""
+         + "   <!-- Configure the server side subject queue (one for each login name) -->"
+         + "   <queue relating='subject' type='CACHE' version='1.0'"
+         + "             maxEntries='5000' maxBytes='1000000'"
+         + "             maxEntriesCache='100' maxBytesCache='100000'"
+         + "             onOverflow='deadMessage'/>"
+         + ""
+         + "   <!-- Configure the server side callback queue (one for each login session) -->"
+         + "   <queue relating='callback' maxEntries='1000' maxBytes='4000000'"
+         + "                                                   onOverflow='deadMessage'>"
+         + "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='10000'"
+         + "          retries='-1' delay='10000' oneway='false' dispatcherActive='true' dispatchPlugin='undef'>"
+         + "         IOR:10000010033200000099000010...."
+         + "         <burstMode collectTime='400' maxEntries='20' maxBytes='-1' />"
+         + "         <compress type='gzip' minSize='3000'/> <!-- only implemented for SOCKET protocol -->"
+         + "         <ptp>true</ptp>"
+         + "         <attribute name='key1' type='int'>2005</attribute>"
+         + "      </callback>"
+         + "   </queue>"
+         + ""
+         + "   <!-- a client specific property: here it could be the bean to invoke on updates -->"
+         + "   <clientProperty name='onMessageDefault'>beanName</clientProperty>"
+         + "</qos>";
+         ConnectReturnQos qos = new ConnectReturnQos(qosStr);
+         Assert.AreEqual("fred", qos.GetSecurityServiceUser());
+         Assert.AreEqual("secret", qos.GetSecurityServicePasswd());
+         SessionName sessionName = qos.GetSessionName();
+         Assert.IsNotNull(sessionName);
+         Assert.AreEqual("client/joe/session/3", sessionName.GetRelativeName());
+         Assert.AreEqual(true, qos.IsPtp());
+         Assert.AreEqual(true, qos.IsPersistent());
+         Assert.AreEqual("beanName", qos.GetClientProperty("onMessageDefault", ""));
+         Assert.AreEqual(1, qos.GetClientProperties().Count);
+      }
    }
 }
