@@ -35,6 +35,9 @@ namespace org.xmlBlaster.client
          Assert.AreEqual("4711", key.GetOid());
          Assert.AreEqual("text/xml", key.GetContentMime());
          Assert.AreEqual("V1.0", key.GetContentMimeExtended());
+         Assert.AreEqual(false, key.IsAdministrative());
+         Assert.AreEqual(false, key.IsDeadMessage());
+         Assert.AreEqual(true, key.IsDefaultDomain());
          string inner = key.GetClientTags();
          //We need a XMLUnit ...
          //Assert.AreSame(clientTags.Trim(), inner.Trim());
@@ -68,6 +71,8 @@ namespace org.xmlBlaster.client
          Assert.AreEqual("XPATH", key.GetQueryType());
          Assert.AreEqual("//something", key.GetQueryString().Trim());
          Assert.AreEqual("some", key.GetDomain());
+         Assert.AreEqual(false, key.IsDefaultDomain());
+         Assert.AreEqual("xpath://something", key.GetUrl());
       }
    }
 }
