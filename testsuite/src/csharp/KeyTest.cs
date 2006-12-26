@@ -38,11 +38,14 @@ namespace org.xmlBlaster.client
          Assert.AreEqual(false, key.IsAdministrative());
          Assert.AreEqual(false, key.IsDeadMessage());
          Assert.AreEqual(true, key.IsDefaultDomain());
+#if XMLBLASTER_MONO
+#else
          string inner = key.GetClientTags();
          //We need a XMLUnit ...
          //Assert.AreSame(clientTags.Trim(), inner.Trim());
          StringAssert.Contains("AGENT", inner);
          StringAssert.Contains("DRIVER", inner);
+#endif
       }
 
       [Test]
@@ -50,6 +53,7 @@ namespace org.xmlBlaster.client
       {
          string keyStr = "";
          MsgKey key = new MsgKey(keyStr);
+         Assert.IsNotNull(key);
       }
 
       [ExpectedException(typeof(System.Xml.XmlException))]

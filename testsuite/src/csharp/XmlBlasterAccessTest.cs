@@ -55,10 +55,10 @@ public class XmlBlasterAccessTest : I_Callback, I_LoggingCallback
       xb.Connect(null, null);
    }
 
+   //[Platform("NET-2.0")]
    /// <summary>
    /// This test expects a runngin xmlBlaster server!
    /// </summary>
-   [Platform("NET-2.0")]
    [Test]
    public void CheckMethods()
    {
