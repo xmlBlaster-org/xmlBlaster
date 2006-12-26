@@ -34,8 +34,8 @@ public class Hello : I_Callback
    }
    
    public Hello(string[] argv) {
-      I_XmlBlasterAccess nc = XmlBlasterAccessFactory.createInstance();
-      nc.initialize(argv);
+      I_XmlBlasterAccess nc = XmlBlasterAccessFactory.CreateInstance();
+      nc.Initialize(argv);
 
       string connectQos = String.Format(
          "<qos>\n"+
@@ -53,53 +53,53 @@ public class Hello : I_Callback
       Console.WriteLine("Connecting with:" + connectQos);
 
       I_Callback callback = this;
-      nc.connect(connectQos, callback);
+      ConnectReturnQos qos = nc.Connect(connectQos, callback);
 
       Console.WriteLine("Connected.");
 
       for (int i=0; i<5; i++) {
-         string srq = nc.subscribe("<key oid='Hello'/>", "<qos/>");
-         Console.WriteLine("subscribe() returned " + srq);
+         SubscribeReturnQos srq = nc.Subscribe("<key oid='Hello'/>", "<qos/>");
+         Console.WriteLine("subscribe() returned " + srq.GetSubscriptionId());
          
          //nc.publish("<key oid='Hello'/>", "HIII", "<qos/>");
-         string prq = nc.publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
-         Console.WriteLine("publish() returned " + prq);         
+         PublishReturnQos prq = nc.Publish("<key oid='C#C#C#'/>", "HIIIHAAAA", "<qos/>");
+         Console.WriteLine("publish() returned " + prq.GetKeyOid());         
          
-         nc.publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
-         Console.WriteLine("publish() returned " + prq);         
+         prq = nc.Publish("<key oid='C#C#C#'/>", "HIIIHOOO", "<qos/>");
+         Console.WriteLine("publish() returned " + prq.GetKeyOid());         
          
-         MsgUnit[] msgs = nc.get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
+         MsgUnitGet[] msgs = nc.Get("<key oid='C#C#C#'/>", "<qos><history numEntries='6'/></qos>");
          Console.WriteLine("get() returned " + msgs.Length + " messages");         
          
-         string p = nc.ping("<qos/>");
+         string p = nc.Ping("<qos/>");
          Console.WriteLine("ping() returned " + p);         
          
-         bool b = nc.isConnected();
+         bool b = nc.IsConnected();
          Console.WriteLine("isConnected() returned " + b);         
          
-         string[] urq = nc.unSubscribe("<key oid='Hello'/>", "<qos/>");
-         Console.WriteLine("unSubscribe() returned " + urq[0]);         
+         UnSubscribeReturnQos[] urq = nc.UnSubscribe("<key oid='Hello'/>", "<qos/>");
+         Console.WriteLine("unSubscribe() returned " + urq[0].GetSubscriptionId());         
          
-         string[] erq = nc.erase("<key oid='C#C#C#'/>", "<qos/>");
-         Console.WriteLine("erase() returned " + erq[0]);         
+         EraseReturnQos[] erq = nc.Erase("<key oid='C#C#C#'/>", "<qos/>");
+         Console.WriteLine("erase() returned " + erq[0].GetKeyOid());
          
          Console.WriteLine("\nHit a key " + i);
          Console.ReadLine();
       }
-      bool drq = nc.disconnect("<qos/>");
+      bool drq = nc.Disconnect("<qos/>");
       Console.WriteLine("disconnect() returned " + drq);
       
       Console.WriteLine("DONE");
    }
    
    #region I_Callback Members
-   public string OnUpdate(string cbSessionId, MsgUnit msgUnit) {
+   public string OnUpdate(string cbSessionId, MsgUnitUpdate msgUnit) {
       Console.WriteLine("OnUpdate() invoked START ==================");
       if (callbackSessionId != cbSessionId)
          Console.WriteLine("Not authorized");
-      Console.WriteLine(msgUnit.getKey());
-      Console.WriteLine(msgUnit.getContentStr());
-      Console.WriteLine(msgUnit.getQos());
+      Console.WriteLine(msgUnit.GetUpdateKey().ToXml());
+      Console.WriteLine(msgUnit.GetContentStr());
+      Console.WriteLine(msgUnit.GetUpdateQos().ToXml());
       string ret = "<qos><state id='OK'/></qos>";
       Console.WriteLine("OnUpdate() invoked DONE ===================");
       //throw new XmlBlasterException("user.update.illegalArgument", "A test exception from OnUpdate()");

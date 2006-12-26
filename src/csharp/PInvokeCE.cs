@@ -361,7 +361,7 @@ namespace org.xmlBlaster.client
       /// <summary>
       /// Helper class to set isOneway
       /// </summary>
-      public class MsgUnitInternal : MsgUnit {
+      public class MsgUnitInternal : MsgUnitUpdate {
          public MsgUnitInternal(string key, byte[] content, string qos, bool isOneway_)
          : base(key, content, qos)
          {
@@ -386,7 +386,7 @@ namespace org.xmlBlaster.client
          string cbSessionId = stringFromUtf8IntPtr(cbSessionId_, false);
          //fillUnmanagedException(ref exception, "user.internal", "a test exception from C#");
 
-         MsgUnit msgUnit = new MsgUnitInternal(msgUnitUnmanaged.getKey(false),
+         MsgUnitUpdate msgUnit = new MsgUnitInternal(msgUnitUnmanaged.getKey(false),
             msgUnitUnmanaged.getContent(false), msgUnitUnmanaged.getQos(false),
             isOneway);
          if (null != onUpdate)
@@ -408,11 +408,11 @@ namespace org.xmlBlaster.client
             }
             return;
          }
-         logger(LogLevel.INFO, "", "updateUnmanaged got message " + msgUnit.getKey());
+         logger(LogLevel.INFO, "", "updateUnmanaged got message " + msgUnit.GetKeyStr());
          logger(LogLevel.TRACE, "", "updateUnmanaged invoked START ==================");
-         logger(LogLevel.TRACE, "", msgUnit.getKey());
-         logger(LogLevel.TRACE, "", msgUnit.getContentStr());
-         logger(LogLevel.TRACE, "", msgUnit.getQos());
+         logger(LogLevel.TRACE, "", msgUnit.GetKeyStr());
+         logger(LogLevel.TRACE, "", msgUnit.GetContentStr());
+         logger(LogLevel.TRACE, "", msgUnit.GetQosStr());
          logger(LogLevel.TRACE, "", "updateUnmanaged invoked DONE ===================");
          //string ret = "<qos><state id='OK'/></qos>";
          //return ret;
@@ -643,7 +643,7 @@ namespace org.xmlBlaster.client
       ///  "-dispatch/connection/plugin/socket/hostname" "192.168.1.2"</param>
       public PInvokeCE(string[] argv)
       {
-         initialize(toHashtable(argv));
+         Initialize(toHashtable(argv));
       }
 
       public static Hashtable toHashtable(string[] argv)
@@ -710,11 +710,11 @@ namespace org.xmlBlaster.client
          #endif
       }
 
-      public void initialize(string[] argv) {
-         initialize(toHashtable(argv));
+      public void Initialize(string[] argv) {
+         Initialize(toHashtable(argv));
       }
 
-      public void initialize(Hashtable properties) {
+      public void Initialize(Hashtable properties) {
          if (properties == null) properties = new Hashtable();
 
          updateUnmanagedFp = new UpdateUnmanagedFp(this.updateUnmanaged);
@@ -723,14 +723,14 @@ namespace org.xmlBlaster.client
          if (properties.Contains("-help") || properties.Contains("help")
                || properties.Contains("/?"))
          {
-               string usage = "Usage:\nxmlBlaster C client v" + getVersion()
+               string usage = "Usage:\nxmlBlaster C client v" + GetVersion()
                   + " on " + System.Environment.OSVersion.ToString() +
                #if XMLBLASTER_WINCE
                   " compact framework .net " + System.Environment.Version.ToString();
                #else
                   " .net " + System.Environment.Version.ToString();
                #endif
-               usage += "\n" + getUsage();
+               usage += "\n" + GetUsage();
                logger(LogLevel.TRACE, "", usage);
                throw new XmlBlasterException("user.usage", usage);//"Good bye");
          }
@@ -757,7 +757,7 @@ namespace org.xmlBlaster.client
       public void logInfos(LogLevel level) {
          // At this stage (constructor) no logListener can be here, so this
          // output will end up in the console
-         logger(level, "", "xmlBlaster C client v" + getVersion() 
+         logger(level, "", "xmlBlaster C client v" + GetVersion() 
             + " on " + System.Environment.OSVersion.ToString() +
 #        if XMLBLASTER_WINCE
             " compact framework .net " + System.Environment.Version.ToString());
@@ -787,14 +787,14 @@ namespace org.xmlBlaster.client
 
       private delegate void OnLogging(LogLevel logLevel, string location, string message);
       private event OnLogging onLogging;
-      public void addLoggingListener(I_LoggingCallback listener)
+      public void AddLoggingListener(I_LoggingCallback listener)
       {
          if (listener != null)
          {
             onLogging += new OnLogging(listener.OnLogging);
          }
       }
-      public void unregister(I_LoggingCallback listener)
+      public void Unregister(I_LoggingCallback listener)
       {
          if (listener != null)
          {
@@ -802,9 +802,9 @@ namespace org.xmlBlaster.client
          }
       }
 
-      private delegate string OnUpdate(string cbSessionId, MsgUnit msgUnit);
+      private delegate string OnUpdate(string cbSessionId, MsgUnitUpdate msgUnit);
       private event OnUpdate onUpdate;
-      public string connect(string qos, I_Callback listener)
+      public ConnectReturnQos Connect(string qos, I_Callback listener)
       {
          check("connect");
          if (listener != null)
@@ -830,7 +830,7 @@ namespace org.xmlBlaster.client
             checkAndThrow("xmlBlasterUnmanagedCEConnect", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
             //logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEConnect: SUCCESS '" + ret + "'");
-            return ret;
+            return new ConnectReturnQos(ret);
          }
          catch (XmlBlasterException e)
          {
@@ -844,7 +844,7 @@ namespace org.xmlBlaster.client
 
       /// After calling diconnect() this class is not usable anymore
       /// you need to create a new instance to connect again
-      public bool disconnect(string qos)
+      public bool Disconnect(string qos)
       {
          check("disconnect");
          XmlBlasterException ex = null;
@@ -888,25 +888,25 @@ namespace org.xmlBlaster.client
          logger(LogLevel.TRACE, "", location + ": SUCCESS");
       }
 
-      public string publish(string key, string content, string qos)
+      public PublishReturnQos Publish(string key, string content, string qos)
       {
-         return publish(new MsgUnit(key, content, qos));
+         return Publish(new MsgUnit(key, content, qos));
       }
 
-      public string publish(MsgUnit msgUnit)
+      public PublishReturnQos Publish(MsgUnit msgUnit)
       {
          check("publish");
          try
          {
             XmlBlasterUnmanagedCEException exception = new XmlBlasterUnmanagedCEException(false);
-            MsgUnitUnmanagedCEpublish msgUnitUnmanaged = new MsgUnitUnmanagedCEpublish(msgUnit.getKey(),
-               msgUnit.getContent(), msgUnit.getQos());
+            MsgUnitUnmanagedCEpublish msgUnitUnmanaged = new MsgUnitUnmanagedCEpublish(msgUnit.GetKeyStr(),
+               msgUnit.GetContent(), msgUnit.GetQosStr());
 
             IntPtr retP = xmlBlasterUnmanagedCEPublish(xa, out msgUnitUnmanaged, ref exception);
             checkAndThrow("xmlBlasterUnmanagedCEPublish", ref exception);
 
             string ret = stringFromUtf8IntPtr(retP);
-            return ret;
+            return new PublishReturnQos(ret);
          }
          catch (XmlBlasterException e)
          {
@@ -918,16 +918,7 @@ namespace org.xmlBlaster.client
          }
       }
 
-      // TODO: Crashs for array size > 2
-      /*
-       Invalid read of size 1
-         at 0x63FFF14: encodeMsgUnitArr (xmlBlasterSocket.c:222)
-            by 0x63FD11E: xmlBlasterPublishOneway (XmlBlasterConnectionUnparsed.c:1004)
-            by 0x63F9125: xmlBlasterPublishOneway (XmlBlasterAccessUnparsed.c:726)
-            by 0x63FF0B8: xmlBlasterUnmanagedCEPublishOneway (XmlBlasterUnmanaged.c:365)
-            by 0x6524CC8: ???
-      */
-      public void publishOneway(MsgUnit[] msgUnitArr)
+      public void PublishOneway(MsgUnit[] msgUnitArr)
       {
          check("publishOneway");
          if (msgUnitArr.Length < 1)
@@ -937,8 +928,8 @@ namespace org.xmlBlaster.client
          {
             IntPtr current = arrP;
             for (int i=0; i<msgUnitArr.Length; i++) {
-               MsgUnitUnmanagedCEpublish msgUnitUnmanaged = new MsgUnitUnmanagedCEpublish(msgUnitArr[i].getKey(),
-                        msgUnitArr[i].getContent(), msgUnitArr[i].getQos());
+               MsgUnitUnmanagedCEpublish msgUnitUnmanaged = new MsgUnitUnmanagedCEpublish(msgUnitArr[i].GetKeyStr(),
+                        msgUnitArr[i].GetContent(), msgUnitArr[i].GetQosStr());
                if (i == 0) {
                   int len = Marshal.SizeOf(msgUnitUnmanaged);
                   arrP = Marshal.AllocHGlobal(msgUnitArr.Length * len);
@@ -965,7 +956,7 @@ namespace org.xmlBlaster.client
          }
       }
 
-      public string subscribe(string key, string qos)
+      public SubscribeReturnQos Subscribe(string key, string qos)
       {
          check("subscribe");
          try
@@ -976,7 +967,7 @@ namespace org.xmlBlaster.client
             checkAndThrow("xmlBlasterUnmanagedCESubscribe", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
             logger(LogLevel.TRACE, "", ret);
-            return ret;
+            return new SubscribeReturnQos(ret);
          }
          catch (XmlBlasterException e)
          {
@@ -988,7 +979,7 @@ namespace org.xmlBlaster.client
          }
       }
 
-      public string[] unSubscribe(string key, string qos)
+      public UnSubscribeReturnQos[] UnSubscribe(string key, string qos)
       {
          check("unSubscribe");
          try
@@ -1001,16 +992,17 @@ namespace org.xmlBlaster.client
             if (size == 0)
             {
                logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEUnSubcribe: Done (no topics found)");
-               return new String[0];
+               return new UnSubscribeReturnQos[0];
             }
-            String[] retQosArr = new String[size];
+            UnSubscribeReturnQos[] retQosArr = new UnSubscribeReturnQos[size];
             IntPtr current = outArray;
             for (int i = 0; i < size; i++)
             {
                StringArr stringArr = new StringArr();
                Marshal.PtrToStructure(current, stringArr);
                current = (IntPtr)((long)current + Marshal.SizeOf(stringArr));
-               retQosArr[i] = stringFromUtf8IntPtr(stringArr.str);
+               string ret = stringFromUtf8IntPtr(stringArr.str);
+               retQosArr[i] = new UnSubscribeReturnQos(ret);
             }
             xmlBlasterUnmanagedCEFreePP(out outArray);
             return retQosArr;
@@ -1025,7 +1017,7 @@ namespace org.xmlBlaster.client
          }
       }
 
-      public string[] erase(string key, string qos)
+      public EraseReturnQos[] Erase(string key, string qos)
       {
          check("erase");
          try
@@ -1038,17 +1030,18 @@ namespace org.xmlBlaster.client
             if (size == 0)
             {
                logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEErase: Done (no topics found)");
-               return new String[0];
+               return new EraseReturnQos[0];
             }
 
-            String[] retQosArr = new String[size];
+            EraseReturnQos[] retQosArr = new EraseReturnQos[size];
             IntPtr current = outArray;
             for (int i = 0; i < size; i++)
             {
                StringArr stringArr = new StringArr();
                Marshal.PtrToStructure(current, stringArr);
                current = (IntPtr)((long)current + Marshal.SizeOf(stringArr));
-               retQosArr[i] = stringFromUtf8IntPtr(stringArr.str);
+               string ret = stringFromUtf8IntPtr(stringArr.str);
+               retQosArr[i] = new EraseReturnQos(ret);
             }
             //logger(LogLevel.TRACE, "", "xmlBlasterUnmanagedCEErase: FREEING WRONG POINTER??");
             xmlBlasterUnmanagedCEFreePP(out outArray);
@@ -1064,7 +1057,7 @@ namespace org.xmlBlaster.client
          }
       }
 
-      public MsgUnit[] get(string key, string qos)
+      public MsgUnitGet[] Get(string key, string qos)
       {
          check("get");
          try
@@ -1075,7 +1068,7 @@ namespace org.xmlBlaster.client
             xmlBlasterUnmanagedCEGet(xa, stringToUtf8IntPtr(key), stringToUtf8IntPtr(qos),
                ref exception, out size, out outArray);
             checkAndThrow("xmlBlasterUnmanagedCEGet", ref exception);
-            MsgUnit[] msgUnitArr = new MsgUnit[size];
+            MsgUnitGet[] msgUnitArr = new MsgUnitGet[size];
             IntPtr current = outArray;
             for (int i = 0; i < size; i++)
             {
@@ -1085,7 +1078,7 @@ namespace org.xmlBlaster.client
                //Console.WriteLine("msgUnitUnmanaged.contentLen=" + msgUnitUnmanaged.contentLen + " sizeof="+Marshal.SizeOf(msgUnitUnmanaged));
                current = (IntPtr)((long)current + Marshal.SizeOf(msgUnitUnmanaged));
                // The getters free the memory in the C DLL:
-               msgUnitArr[i] = new MsgUnit(
+               msgUnitArr[i] = new MsgUnitGet(
                   msgUnitUnmanaged.getKey(), msgUnitUnmanaged.getContent(), msgUnitUnmanaged.getQos());
                msgUnitUnmanaged.getResponseQos(); // dummy call to free memory in C DLL
             }
@@ -1103,7 +1096,7 @@ namespace org.xmlBlaster.client
          }
       }
 
-      public string ping(string qos)
+      public string Ping(string qos)
       {
          check("ping");
          try
@@ -1124,7 +1117,7 @@ namespace org.xmlBlaster.client
          }
       }
 
-      public bool isConnected()
+      public bool IsConnected()
       {
          if (xa == IntPtr.Zero) return false;
          try
@@ -1143,19 +1136,19 @@ namespace org.xmlBlaster.client
          }
       }
 
-      public string getVersion()
+      public string GetVersion()
       {
          IntPtr retP = xmlBlasterUnmanagedCEVersion();
          return stringFromUtf8IntPtr(retP);
       }
 
-      public string getUsage()
+      public string GetUsage()
       {
          IntPtr retP = xmlBlasterUnmanagedCEUsage();
          return stringFromUtf8IntPtr(retP);
       }
 
-      public string getEmeiId() {
+      public string GetEmeiId() {
 #        if XMLBLASTER_WINCE
          try {
             IntPtr intPtr = getXmlBlasterEmei();
@@ -1174,7 +1167,7 @@ namespace org.xmlBlaster.client
 #        endif
       }
 
-      public string getDeviceUniqueId() {
+      public string GetDeviceUniqueId() {
 #        if XMLBLASTER_WINCE
             byte[] bytes = GetDeviceID("xmlBlasterClient");
             if (bytes == null) return null;

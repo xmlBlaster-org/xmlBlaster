@@ -409,7 +409,6 @@ namespace org.xmlBlaster.client
             this.xmlDocument.LoadXml(tmp);
          }
          XmlNodeList xmlNodeList = this.xmlDocument.SelectNodes(key);
-         Console.WriteLine("Found " + xmlNodeList.Count);
          return xmlNodeList;
       }
 
@@ -822,6 +821,14 @@ namespace org.xmlBlaster.client
       public string ToXml()
       {
          return this.xml;
+      }
+   }
+
+   public class GetQos : MsgQos
+   {
+      public GetQos(string qos)
+         : base(qos)
+      {
       }
    }
 

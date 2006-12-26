@@ -105,6 +105,14 @@ namespace org.xmlBlaster.client
       }
    }
 
+   public class GetKey : MsgKey
+   {
+      public GetKey(string qos)
+         : base(qos)
+      {
+      }
+   }
+
    public class StatusKey : Key
    {
       public StatusKey(string qos)

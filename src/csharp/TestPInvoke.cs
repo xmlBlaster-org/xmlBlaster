@@ -2,8 +2,8 @@
 @file     TestPInvoke.cs
 @comment  Access xmlBlaster from C# (Csharp)
 @author   mr@marcelruff.info
-@compile  csc /unsafe -debug+ -out:TestPInvoke.exe PInvokeCE.cs XmlBlasterAccess.cs TestPInvoke.cs
-          gmcs /unsafe /define:"XMLBLASTER_MONO;FORCE_PINVOKECE_PLUGIN" -debug+ -out:TestPInvoke.exe PInvokeCE.cs TestPInvoke.cs XmlBlasterAccess.cs
+@compile  csc /unsafe -debug+ -out:TestPInvoke.exe PInvokeCE.cs XmlBlasterAccess.cs Key.cs Qos.cs TestPInvoke.cs
+          gmcs /unsafe /define:"XMLBLASTER_MONO;FORCE_PINVOKECE_PLUGIN" -debug+ -out:TestPInvoke.exe PInvokeCE.cs TestPInvoke.cs XmlBlasterAccess.cs Key.cs Qos.cs
 @see      http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
 */
 using System;
@@ -32,24 +32,24 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
 
    private void runIdTest() {
       Console.WriteLine("Hello world");
-      xb = XmlBlasterAccessFactory.createInstance();
-      xb.addLoggingListener(this);
-      xb.initialize(argv);
+      xb = XmlBlasterAccessFactory.CreateInstance();
+      xb.AddLoggingListener(this);
+      xb.Initialize(argv);
       log("Accessing not IDs");
-      string deviceId = xb.getDeviceUniqueId();
+      string deviceId = xb.GetDeviceUniqueId();
       log("deviceId=" + deviceId);
       //MessageBox.Show("DeviceUniqueId="+deviceId, "Name Entry Error",
       //   MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
-      string emeiId = xb.getEmeiId();
+      string emeiId = xb.GetEmeiId();
       log("EMEI=" + emeiId);
       //MessageBox.Show("EMEI="+emeiId, "Name Entry Error",
       //   MessageBoxButtons.OK, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1);
    }
 
    private void runAllMethods() {
-      xb = XmlBlasterAccessFactory.createInstance();
-      xb.addLoggingListener(this);
-      xb.initialize(argv);
+      xb = XmlBlasterAccessFactory.CreateInstance();
+      xb.AddLoggingListener(this);
+      xb.Initialize(argv);
 
       string connectQos = String.Format(
          "<qos>\n" +
@@ -67,80 +67,81 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
       log("Connecting with:" + connectQos);
 
       I_Callback callback = this;
-      xb.connect(connectQos, callback);
+      xb.Connect(connectQos, callback);
 
       for (int run=0; run<2; run++) {
 
-         string prq = xb.publish("<key oid='Hello'/>", "publish-1", "<qos/>");
-         log("publish() returned " + prq);
+         PublishReturnQos prq = xb.Publish("<key oid='Hello'/>", "publish-1", "<qos/>");
+         log("publish() returned " + prq.GetKeyOid());
 
-         string srq = xb.subscribe("<key oid='Hello'/>", "<qos><updateOneway/></qos>");
-         log("subscribe() returned " + srq);
+         SubscribeReturnQos srq = xb.Subscribe("<key oid='Hello'/>", "<qos><updateOneway/></qos>");
+         log("subscribe() returned " + srq.GetSubscriptionId());
          GC.Collect();
          GC.Collect();
 
-         prq = xb.publish("<key oid='Hello'/>", "publish-2", "<qos/>");
-         log("publish() returned " + prq);
+         prq = xb.Publish("<key oid='Hello'/>", "publish-2", "<qos/>");
+         log("publish() returned " + prq.GetKeyOid());
 
          Thread.Sleep(1000);
          Console.WriteLine("There should be some updates, hit a key to continue ...");
          Console.ReadLine();
 
-         srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-         log("subscribe() returned " + srq);
+         srq = xb.Subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         log("subscribe() returned " + srq.GetSubscriptionId());
 
-         srq = xb.subscribe("<key oid='TestPInvoke'/>", "<qos/>");
-         log("subscribe() returned " + srq);
+         srq = xb.Subscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         log("subscribe() returned " + srq.GetSubscriptionId());
 
-         string[] urq = xb.unSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
+         UnSubscribeReturnQos[] urq = xb.UnSubscribe("<key oid='TestPInvoke'/>", "<qos/>");
          log("unSubscribe() returned");
          for (int i = 0; i < urq.Length; i++)
-            log("unSubscribeReturn #" + i + "\n" + urq[i]);
+            log("unSubscribeReturn #" + i + ": " + urq[i].GetSubscriptionId());
          GC.Collect();
          GC.Collect();
 
-         prq = xb.publish("<key oid='C#C#C#'/>", "more publishes", "<qos/>");
-         log("publish() returned " + prq);
+         prq = xb.Publish("<key oid='C#C#C#'/>", "more publishes", "<qos/>");
+         log("publish() returned " + prq.GetKeyOid());
 
          MsgUnit[] arr = new MsgUnit[6];
          for (int i=0; i<arr.Length; i++)
             arr[i] = new MsgUnit("<key oid='C#C#'/>", "oneway-"+i, "<qos/>");
-         xb.publishOneway(arr);
+         xb.PublishOneway(arr);
          log("publishOneway() send " + arr.Length + " messages");
 
-         prq = xb.publish("<key oid='C#'/>", "HIIIHAAAA", "<qos/>");
-         log("publish() returned " + prq);
+         prq = xb.Publish("<key oid='C#'/>", "HIIIHAAAA", "<qos/>");
+         log("publish() returned " + prq.GetRcvTimeNanos());
 
-         MsgUnit[] msgs = xb.get("<key oid='C#C#'/>", "<qos><history numEntries='4'/></qos>");
+         MsgUnit[] msgs = xb.Get("<key oid='C#C#'/>", "<qos><history numEntries='4'/></qos>");
          log("get(C#C#) returned " + msgs.Length + " messages (get was limited to 4)");
          for (int i = 0; i < msgs.Length; i++)
             log(msgs[i].ToString());
 
-         msgs = xb.get("<key oid='unknown'/>", "<qos><history numEntries='6'/></qos>");
+         msgs = xb.Get("<key oid='unknown'/>", "<qos><history numEntries='6'/></qos>");
          log("get(unknown) returned " + msgs.Length + " messages");
 
-         string[] erq = xb.erase("<key queryType='XPATH'>//key</key>", "<qos/>");
+         EraseReturnQos[] erq = xb.Erase("<key queryType='XPATH'>//key</key>", "<qos/>");
          log("erase() returned");
          for (int i = 0; i < erq.Length; i++)
-            log("eraseReturn #" + i + "\n" + erq[i]);
+            log("eraseReturn #" + i + ": " + erq[i].GetKeyOid());
 
-         string p = xb.ping("<qos/>");
-         log("ping() returned " + p);
+         string p = xb.Ping("<qos/>");
+         StatusQos pp = new StatusQos(p);
+         log("ping() returned " + pp.GetState());
 
-         bool b = xb.isConnected();
+         bool b = xb.IsConnected();
          log("isConnected() returned " + b);
       }
 
-      bool drq = xb.disconnect("<qos/>");
+      bool drq = xb.Disconnect("<qos/>");
       log("disconnect() returned " + drq);
 
       log("DONE");
    }
 
    #region I_Callback Members
-   public string OnUpdate(string cbSessionId, MsgUnit msgUnit)
+   public string OnUpdate(string cbSessionId, MsgUnitUpdate msgUnit)
    {
-      log("OnUpdate() received "+(msgUnit.isOneway()?"oneway ":"")+"message from xmlBlaster:");
+      log("OnUpdate() received "+(msgUnit.IsOneway()?"oneway ":"")+"message from xmlBlaster:");
       if (callbackSessionId != cbSessionId)
          log("Not authorized");
       log(msgUnit.ToString());

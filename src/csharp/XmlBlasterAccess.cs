@@ -16,7 +16,7 @@ namespace org.xmlBlaster.client
 {
    public class XmlBlasterAccessFactory
    {
-      public static I_XmlBlasterAccess createInstance()
+      public static I_XmlBlasterAccess CreateInstance()
       {
          /*
          // Choose the PInvoke plugin:
@@ -33,9 +33,16 @@ namespace org.xmlBlaster.client
             return new PInvokeCE(); // Runs fine with WIN32 and WINCE (fails with MONO)
 
 #        endif*/
-         return createInstance("org.xmlBlaster.client.PInvokeCE");
+         return CreateInstance("org.xmlBlaster.client.PInvokeCE");
       }
-      public static I_XmlBlasterAccess createInstance(string typeName)
+
+      /// <summary>
+      /// Create a client library instance to access xmlBlaster. 
+      /// </summary>
+      /// <param name="typeName">For example "org.xmlBlaster.client.PInvokeCE", this
+      /// plugin supports Windowx CE CF2, Windows .net 2 and Linux mono 1.2</param>
+      /// <returns></returns>
+      public static I_XmlBlasterAccess CreateInstance(string typeName)
       {
          System.Reflection.Assembly SourceAssembly = System.Reflection.Assembly.GetExecutingAssembly();
          return (I_XmlBlasterAccess)SourceAssembly.CreateInstance(typeName);
@@ -46,21 +53,22 @@ namespace org.xmlBlaster.client
    /// Log levels copied from xmlBlaster client C library
    /// See helper.h enum XMLBLASTER_LOG_LEVEL_ENUM
    /// </summary>
-   public enum LogLevel {
+   public enum LogLevel
+   {
       /*NOLOG=0,  don't use */
-      ERROR=1,  // supported, use for programming errors
-      WARN=2,   // supported, use for user errors and wrong configurations
-      INFO=3,   // supported, use for success information only
+      ERROR = 1,  // supported, use for programming errors
+      WARN = 2,   // supported, use for user errors and wrong configurations
+      INFO = 3,   // supported, use for success information only
       /*CALL=4,  don't use */
       /*TIME=5,  don't use */
-      TRACE=6,  // supported, use for debugging purposes
-      DUMP=7    // supported, use for debugging purposes
+      TRACE = 6,  // supported, use for debugging purposes
+      DUMP = 7    // supported, use for debugging purposes
       /*PLAIN=8  don't use */
    }
 
    public interface I_Callback
    {
-      string OnUpdate(string cbSessionId, MsgUnit msgUnit);
+      string OnUpdate(string cbSessionId, MsgUnitUpdate msgUnit);
    }
 
    public interface I_LoggingCallback
@@ -79,26 +87,26 @@ namespace org.xmlBlaster.client
       /// Convenience to pass command line arguments
       /// </summary>
       /// <param name="argv">e.g. "-logLevel" "INFO"</param>
-      void initialize(string[] argv);
+      void Initialize(string[] argv);
 
       /// <summary>
       /// Initialize the client library
       /// </summary>
       /// <param name="properties">e.g. "logLevel" "INFO"</param>
-      void initialize(Hashtable properties);
+      void Initialize(Hashtable properties);
 
-      string connect(string qos, I_Callback listener);
-      
+      ConnectReturnQos Connect(string qos, I_Callback listener);
+
       /// After calling diconnect() this class is not usable anymore
       /// you need to create a new instance to connect again
-      bool disconnect(string qos);
+      bool Disconnect(string qos);
 
       /// <summary>
       /// Publish a message to xmlBlaster
       /// </summary>
       /// <param name="msgUnit">The message to send</param>
       /// <returns>The publish return qos</returns>
-      string publish(MsgUnit msgUnit);
+      PublishReturnQos Publish(MsgUnit msgUnit);
 
       /// <summary>
       /// Convenience method to publish a message 
@@ -107,36 +115,36 @@ namespace org.xmlBlaster.client
       /// <param name="content">Your data to send</param>
       /// <param name="qos">The required quality of service</param>
       /// <returns>The publish return qos</returns>
-      string publish(string key, string content, string qos);
+      PublishReturnQos Publish(string key, string content, string qos);
 
-      void publishOneway(MsgUnit[] msgUnitArr);
-      
-      string subscribe(string key, string qos);
-      
-      string[] unSubscribe(string key, string qos);
-      
-      string[] erase(string key, string qos);
-      
-      MsgUnit[] get(string key, string qos);
-      
-      string ping(string qos);
-      
+      void PublishOneway(MsgUnit[] msgUnitArr);
+
+      SubscribeReturnQos Subscribe(string key, string qos);
+
+      UnSubscribeReturnQos[] UnSubscribe(string key, string qos);
+
+      EraseReturnQos[] Erase(string key, string qos);
+
+      MsgUnitGet[] Get(string key, string qos);
+
+      string Ping(string qos);
+
       /// <summary>
       /// Check if we have a connection to the xmlBlaster server
       /// </summary>
       /// <returns>true if we are connected</returns>
-      bool isConnected();
+      bool IsConnected();
 
-      string getVersion();
+      string GetVersion();
 
-      string getUsage();
+      string GetUsage();
 
       /// <summary>
       /// Register the given listener to receive all logging output
       /// of the C library and C# wrapper code.
       /// </summary>
       /// <param name="listener">The logging is redirected to this listener</param>
-      void addLoggingListener(I_LoggingCallback listener);
+      void AddLoggingListener(I_LoggingCallback listener);
 
       /// <summary>
       /// Returns the telephone EMEI id if available. 
@@ -144,7 +152,7 @@ namespace org.xmlBlaster.client
       /// and unique over time and space for your PDA.
       /// </summary>
       /// <returns>null if not found</returns>
-      string getEmeiId();
+      string GetEmeiId();
 
       /// <summary>
       /// Returns the device unique id, to be used in favour of getEmeiId().
@@ -153,17 +161,17 @@ namespace org.xmlBlaster.client
       /// be implemented properly by your vendor.
       /// </summary>
       /// <returns>return null if not found</returns>
-      string getDeviceUniqueId();
+      string GetDeviceUniqueId();
    }
 
    public class XmlBlasterException : ApplicationException
    {
-      bool remote;
+      private bool remote;
       public bool Remote
       {
          get { return remote; }
       }
-      string errorCode;
+      private string errorCode;
       public string ErrorCode
       {
          get { return errorCode; }
@@ -201,14 +209,57 @@ namespace org.xmlBlaster.client
       }
    }
 
+   public class MsgUnitGet : MsgUnit
+   {
+      private GetQos getQos;
+      private GetKey getKey;
+      public MsgUnitGet(string key, byte[] content, string qos)
+         : base(key, content, qos)
+      {
+         this.getKey = new GetKey(key);
+         this.getQos = new GetQos(qos);
+      }
+
+      public GetKey GetGetKey()
+      {
+         return this.getKey;
+      }
+      public GetQos GetGetQos()
+      {
+         return this.getQos;
+      }
+   }
+
+
+   public class MsgUnitUpdate : MsgUnit
+   {
+      private UpdateQos updateQos;
+      private UpdateKey updateKey;
+      public MsgUnitUpdate(string key, byte[] content, string qos)
+         : base(key, content, qos)
+      {
+         this.updateKey = new UpdateKey(key);
+         this.updateQos = new UpdateQos(qos);
+      }
+
+      public UpdateKey GetUpdateKey()
+      {
+         return this.updateKey;
+      }
+      public UpdateQos GetUpdateQos()
+      {
+         return this.updateQos;
+      }
+   }
+
    /// <summary>
    /// Holds a message unit
    /// </summary>
    public class MsgUnit
    {
-      private string key;
-      private byte[] content;
-      private string qos;
+      protected string key;
+      protected byte[] content;
+      protected string qos;
       protected bool oneway;
       public MsgUnit() { }
       public MsgUnit(string key, byte[] content, string qos)
@@ -220,40 +271,40 @@ namespace org.xmlBlaster.client
       public MsgUnit(string key, string contentStr, string qos)
       {
          this.key = key;
-         setContentStr(contentStr);
+         SetContentStr(contentStr);
          this.qos = qos;
       }
-      public string getKey()
+      public string GetKeyStr()
       {
          return this.key;
       }
-      public string getQos()
+      public string GetQosStr()
       {
          return this.qos;
       }
-      public byte[] getContent()
+      public byte[] GetContent()
       {
          return this.content;
       }
       /// We return a string in the ASCII codeset
-      public string getContentStr()
+      public string GetContentStr()
       {
          System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
          return enc.GetString(this.content, 0, this.content.Length);
       }
       /// The binary string is ASCII encoded
-      public void setContentStr(string contentStr)
+      public void SetContentStr(string contentStr)
       {
          System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
          this.content = enc.GetBytes(contentStr);
       }
-      public bool isOneway()
+      public bool IsOneway()
       {
          return this.oneway;
       }
       public override string ToString()
       {
-         return key + "\n" + getContentStr() + "\n" + qos;
+         return key + "\n" + GetContentStr() + "\n" + qos;
       }
    }
 }
