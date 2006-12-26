@@ -878,7 +878,7 @@ namespace org.xmlBlaster.client
    public class SubscribeReturnQos
    {
       private readonly StatusQos statusQosData;
-      private readonly bool isFakedReturn;
+      //private readonly bool isFakedReturn;
 
       internal SubscribeReturnQos(string xmlQos)
          : this(xmlQos, false)
@@ -887,7 +887,7 @@ namespace org.xmlBlaster.client
 
       internal SubscribeReturnQos(string xmlQos, bool isFakedReturn)
       {
-         this.isFakedReturn = isFakedReturn;
+         //this.isFakedReturn = isFakedReturn;
          this.statusQosData = new StatusQos(xmlQos);
          //this.statusQosData.SetMethod(MethodName.SUBSCRIBE);
       }
