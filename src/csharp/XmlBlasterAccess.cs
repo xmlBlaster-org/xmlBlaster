@@ -292,16 +292,16 @@ namespace org.xmlBlaster.client
       {
          return this.content;
       }
-      /// We return a string in the ASCII codeset
+      /// We return a string in the UTF-8 codeset
       public string GetContentStr()
       {
-         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+         System.Text.UTF8Encoding enc = new System.Text.UTF8Encoding();
          return enc.GetString(this.content, 0, this.content.Length);
       }
-      /// The binary string is ASCII encoded
+      /// The binary string is UTF-8 encoded
       public void SetContentStr(string contentStr)
       {
-         System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+         System.Text.UTF8Encoding enc = new System.Text.UTF8Encoding();
          this.content = enc.GetBytes(contentStr);
       }
       public bool IsOneway()
