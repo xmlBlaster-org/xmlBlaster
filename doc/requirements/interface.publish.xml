@@ -37,6 +37,15 @@
        <li>publishOneway() Publishes many messages in a bulk without a return value (without synchronous ACK)</li>
       </ul>
 
+      <p class="celltitel" id="qos" name="pubsub">PublishKey example (publish/subscribe mode)</p>
+<pre class="BORDER">
+&lt;key oid='4711' contentMime='text/xml' contentMimeExtended='-'>
+   &lt;AGENT id='192.168.124.20' subId='1' type='generic'>
+     &lt;DRIVER id='FileProof' pollingFreq='10'>
+     &lt;/DRIVER>
+   &lt;/AGENT>
+&lt;/key>
+</pre>
 
       <p class="celltitel" id="qos" name="pubsub">PublishQos example (publish/subscribe mode)</p>
 <pre class="BORDER">

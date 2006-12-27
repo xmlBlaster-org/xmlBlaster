@@ -42,7 +42,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
    <pre>
 &lt;qos>
 
-   &lt;securityService type="htpasswd" version="1.0">
+   &lt;securityService type='htpasswd' version='1.0'>
      &lt;![CDATA[
      &lt;user>michele&lt;/user>
      &lt;passwd>secret&lt;/passwd>
@@ -68,7 +68,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
    &lt;queue relating='subject' type='CACHE' version='1.0'
              maxEntries='5000' maxBytes='1000000'
              maxEntriesCache='100' maxBytesCache='100000'
-             onOverflow='deadMessage'>
+             onOverflow='deadMessage'/>
 
    &lt;!-- Configure the server side callback queue (one for each login session) -->
    &lt;queue relating='callback' maxEntries='1000' maxBytes='4000000'
