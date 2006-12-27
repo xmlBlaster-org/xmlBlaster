@@ -26,13 +26,11 @@
       { 
          var objXMLHttp=null
          if (window.XMLHttpRequest)
-         {
-         objXMLHttp=new XMLHttpRequest()
-         }
+         	objXMLHttp=new XMLHttpRequest()
          else if (window.ActiveXObject)
-         {
-         objXMLHttp=new ActiveXObject("Microsoft.XMLHTTP")
-         }
+	         objXMLHttp=new ActiveXObject("Microsoft.XMLHTTP")
+	     if (objXMLHttp == null)
+	     	alert("Your browser does not support Ajax");
          return objXMLHttp
       }
 
@@ -40,41 +38,39 @@
       {
          if (url == undefined || url == null || url == "")
             return;
-
-         /*
-         var myLocation = document.getElementById("myLocation");
-         var doc = myLocation.contentDocument;
-         if (doc == undefined || doc == null)
-            doc = myLocation.contentWindow.document;
-         doc.open();
-         doc.write(url);
-         doc.close();       
-         */
-
          var myMapFrame = document.getElementById("myMapFrame");
          myMapFrame.src = url;
          myMapFrame.style.visibility="visible";
-
          document.all.myMapFrame.style.visibility="visible";
       }
 
       function stateChanged() 
       { 
          if (xmlHttp.readyState==4 || xmlHttp.readyState=="complete")
-         { 
-            showmap(xmlHttp.responseText);
-            //showmap("http://maps.google.com/maps?q=047%C2%B046'55.45%22,+009%C2%B010'01.49%22+(Marcel+shopping)&iwloc=A&hl=en");
+         {
+         	var ret = xmlHttp.responseText;
+
+         	if (ret == null || ret.length == 0) {
+         		return;
+         	}
+         		
+      	    //alert("Received: " + ret);
+      	    
+         	if (ret.toUpperCase().indexOf("HTTP:") == 0) {
+	           showmap(ret);
+               //showmap("http://maps.google.com/maps?q=047%C2%B046'55.45%22,+009%C2%B010'01.49%22+(Marcel+shopping)&iwloc=A&hl=en");
+            }
+            else {
+		      var textArea = document.getElementById("cheapSmsReceive");
+		      textArea.value = ret;
+            }
          } 
       } 
 
       function getGps(forceLoad)
       {
          xmlHttp=GetXmlHttpObject()
-         if (xmlHttp==null)
-         {
-            alert ("Browser does not support HTTP Request")
-            return
-         } 
+         if (xmlHttp==null) return
          var url="/xmlBlaster/pull";
          url=url+"?sid="+Math.random();
          if (forceLoad==true)
@@ -84,6 +80,27 @@
          xmlHttp.open("GET",url,true)
          xmlHttp.send(null)
          time = setTimeout('getGps(false)',2000);
+      }
+
+      function sendSmsResponse() 
+      { 
+         if (xmlHttp.readyState==4 || xmlHttp.readyState=="complete")
+         { 
+            alert("Cheap SMS is send (less than one Cent / SMS if sent over xmlBlaster)");
+         } 
+      } 
+
+      function sendSms()
+      {
+         var textInput = document.getElementById("cheapSmsSend");
+         xmlHttp=GetXmlHttpObject()
+         if (xmlHttp==null) return
+         var url="http://marcelruff.mine.nu:8080/xmlBlaster/pull";
+         url+="?sid="+Math.random();
+         url+="&action=publish&cheapSmsSend="+ escape(textInput.value);
+         xmlHttp.onreadystatechange=sendSmsResponse 
+         xmlHttp.open("GET",url,true)
+         xmlHttp.send(null)
       }
        //]]>
    </script>
@@ -111,6 +128,26 @@
    <i>Don't expect to see movements all the time, Gran'ma often takes a rest.
    Stay tuned and check again, sometimes she suddenly goes on excursion.</i>
    </p>
+   
+   <form onsubmit="sendSms(); return false;" method="post" accept-charset="UTF-8">
+      <table>
+         <tr>
+          <td>Send Gran'ma a note <input type="submit" value="Send">
+          </td>
+          <td>Message from Gran'ma</td></tr>
+         <tr><td>
+         <textarea cols="45" rows="4" id="cheapSmsSend" name="cheapSmsSend">
+Hi Granny!
+         </textarea>
+         </td>
+         <td>
+         <textarea cols="45" rows="4" readonly="true" id="cheapSmsReceive" name="cheapSmsReceive">
+Hi dear, i'm fine.
+         </textarea>
+      </td></tr>
+      </table>
+   </form>
+
    <p>Merry X-Mas! <a href="mailto:mr@marcelruff.info"/>Contact Gran'mas guard</a></p>
    <p><a href="http://www.xmlBlaster.org"/>Powered by xmlBlaster.org</a></p>
    </td></tr>
