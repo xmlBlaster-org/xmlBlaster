@@ -138,12 +138,13 @@ public class HelloWorldPublish
             log.info("   -content        [generated]");
             log.info("   -contentSize    " + contentSize);
          }
-         else if (contentFile != null && contentFile.length() > 0) {
-            log.info("   -contentFile    " + contentFile);
-         }
+         //else if (contentFile != null && contentFile.length() > 0) {
+         //   log.info("   -contentFile    " + contentFile);
+         //}
          else {
             log.info("   -content        " + contentStr);
             log.info("   -contentSize    " + contentStr.length());
+            log.info("   -contentFile    " + contentFile);
          }
          log.info("   -priority       " + priority.toString());
          log.info("   -persistent     " + persistent);
