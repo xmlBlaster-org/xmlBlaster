@@ -68,6 +68,8 @@ public final class RunlevelManager implements RunlevelManagerMBean
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
    private ContextNode contextNode;
+   
+   private boolean allowDynamicPlugins;
 
    /**
     * For listeners who want to be informed about runlevel changes. 
@@ -88,6 +90,12 @@ public final class RunlevelManager implements RunlevelManagerMBean
       // For JMX instanceName may not contain ","
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
             "RunlevelManager", this.glob.getScopeContextNode());
+      
+      this.allowDynamicPlugins = this.glob.getProperty().get("xmlBlaster/allowDynamicPlugins", false);
+      if (allowDynamicPlugins) {
+         String text = "xmlBlaster/allowDynamicPlugins=true: Please protect this feature as any code can be injected, add preventive authorization settings, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html#dynamic";
+         log.warning(text);
+      }
    }
    
    // Is done from external engine.Global to avoid 
@@ -139,7 +147,18 @@ public final class RunlevelManager implements RunlevelManagerMBean
     */
    public final String publish(SessionInfo sessionInfo, MsgUnit msgUnit, PublishQosServer publishQos) throws XmlBlasterException {
       PluginConfigSaxFactory factory = new PluginConfigSaxFactory(this.glob);
+
       // TODO: Send the jar in the content, and the XML in clientProperty
+      
+      String jarName = msgUnit.getQosData().getClientProperty(Constants.CLIENTPROPERTY_PLUGIN_JARNAME, "dynamicPlugin.jar");
+
+      if (!this.allowDynamicPlugins) {
+         String text = "xmlBlaster/allowDynamicPlugins=false: Your dynamic plugin '" 
+            + jarName + "' is rejected, see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html#dynamic";
+         log.warning(text);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, text);
+      }
+      
       String xml = msgUnit.getQosData().getClientProperty(Constants.CLIENTPROPERTY_PLUGIN_XML, "");
       if (xml == null) {
          String text = "Missing '" + Constants.CLIENTPROPERTY_PLUGIN_XML + "' with plugin registration markup as in xmlBlasterPlugins.xml";
@@ -147,8 +166,6 @@ public final class RunlevelManager implements RunlevelManagerMBean
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, text);
       }
       
-      String jarName = msgUnit.getQosData().getClientProperty(Constants.CLIENTPROPERTY_PLUGIN_JARNAME, "dynamicPlugin.jar");
-
       PluginConfig pluginConfig = factory.readObject(xml);
       
       byte[] jarFile = msgUnit.getContent();

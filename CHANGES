@@ -1,5 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+
+ o #15906 Switched off dynamically loadable plugins as a default setting.
+          See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html#dynamic
  
  o #15866 added the possibility to disable going to polling if a response timeout comes from a ping:
           use dispatch/callback/stallOnPingTimeout=true or/and dispatch/connection/stallOnPingTimeout=true.

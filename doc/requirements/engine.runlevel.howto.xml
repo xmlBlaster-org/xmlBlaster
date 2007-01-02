@@ -125,6 +125,10 @@ cp xmlBlaster/config/xmlBlasterPlugins.xml.template  $HOME/xmlBlasterPlugins.xml
       <p class="celltitel">Deploying to a running server</p>
       <a name="dynamic"/>
       <h3>This example shows how to deploy a plugin without restarting xmlBlaster</h3>
+<b>Note: This feature has a high security risc as any authorized client can inject
+any code into the xmlBlaster server. This code is executed with the rights of the
+user running the xmlBlaster server. Therefore this features is switched off as a default
+setting with <code>xmlBlaster/allowDynamicPlugins=false</code></b>.
       <p>
       You can send a xmlBlaster message containing the plugin jar file (with your coded plugin)
       and the xml markup to register the plugin. XmlBlaster than automatically
@@ -149,6 +153,14 @@ jar cvf dynamic.jar javaclients/ClientPlugin.class
      <p>The LOAD directive is not important in this case as xmlBlaster is already
      up and running, there for we leave it away in the following command line example.
      </p>
+      <p>
+      Start the xmlBlaster server with dynamic plugins enabled:
+      </p>
+
+<pre class="BORDER">
+  java org.xmlBlaster.Main -xmlBlaster/allowDynamicPlugins true                 
+</pre>
+
       <p>
       Now we are ready to send the plugin to a already running xmlBlaster server (all in one line):
       </p>
@@ -196,7 +208,14 @@ jar cvf dynamic.jar javaclients/ClientPlugin.class
             <th>Description</th>
             <th>Implemented</th>
          </tr>
-
+			<tr>
+            <td>xmlBlaster/allowDynamicPlugins</td>
+            <td>false</td>
+            <td>Switching this feature on has a very high security risk, as any code can
+be injected. This settings needs to be set on startup and can't be changed during a running server.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
       </table>
    </configuration>
 
