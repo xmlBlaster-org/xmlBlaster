@@ -254,7 +254,7 @@
   &lt;!-- remainingLife is calculated relative to when xmlBlaster has sent the message -->
   &lt;expiration lifeTime='129595811' remainingLife='1200'/> <!-- [millisec] -->
   
-  &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
+  &lt;queue index='0' size='1'/> &lt;!-- If queued messages are flushed on login -->
   
   &lt;redeliver>4&lt;/redeliver> &lt;!-- Only sent if message sending had previous errors -->
   
