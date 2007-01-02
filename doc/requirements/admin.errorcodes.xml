@@ -329,6 +329,7 @@ errorCode description=A null pointer is an xmlBlaster internal programming error
    <todo type='HTML'>
    </todo>
    
+   <see type="REQ">admin.errorcodes.listing</see>
    <see type="API">org.xmlBlaster.util.def.ErrorCode</see>
    <see type="API">org.xmlBlaster.util.XmlBlasterException</see>
    <!-- see type="REQ">admin.commands</see -->
