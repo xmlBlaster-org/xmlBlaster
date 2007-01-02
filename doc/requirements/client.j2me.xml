@@ -226,6 +226,7 @@ AddType application/java-archive .jar
    <see type="REQ">interface</see>
    <see type="REQ">client.browser</see>
    <see type="REQ">client.java.applet</see>
+   <see type="INTERNET" label="Mobile development kits from Sun">http://developers.sun.com/techtopics/mobility/downloads/index.html</see>
    <see type="INTERNET">http://jakarta.apache.org/tomcat/</see>
    <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/index.html</see>
    <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/HelloWorld3.html</see>
