@@ -183,7 +183,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
    }
 
    /**
-    * Puts all chunks stored in separate files toghether in one single one.
+    * Puts all chunks stored in separate files together in one single one.
     * 
     * @param fileName The name of the complete (destination) file.
     * @param expectedChunks The number of expected chunks. If the number of chunks found is
@@ -196,7 +196,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
     * @throws Exception If an error occurs when writing / reading the files. This method tries
     * to clean up the destination file in case of an exception when writing.
     */
-   private void putAllChunksTogheter(String fileName, long expectedChunks, InputStream is, boolean isCompleteMsg) throws Exception {
+   private void putAllChunksTogether(String fileName, long expectedChunks, InputStream is, boolean isCompleteMsg) throws Exception {
       File file = new File(this.directory, fileName);
       if (file == null)
          throw new Exception("the file for '" + fileName + "' was null");
@@ -236,7 +236,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
             }
             numChunks = files.length > expectedChunks ? expectedChunks : files.length; 
          }
-         // put all chunks toghether in one single file
+         // put all chunks together in one single file
          int bufSize = BUF_SIZE;
          byte[] buf = new byte[bufSize];
 
@@ -271,10 +271,10 @@ public class FileWriterCallback implements I_Update, ContribConstants {
                if (file.exists()) {
                   if (file.canWrite()) {
                      if (!file.delete())
-                        log.warning("An exception occured when putting all chunks toghether for '" + fileName + "' but could not delete the file for an unknown reason. The original exception was '" + ex.getMessage() + "'");
+                        log.warning("An exception occured when putting all chunks together for '" + fileName + "' but could not delete the file for an unknown reason. The original exception was '" + ex.getMessage() + "'");
                   }
                   else
-                     log.warning("An exception occured when putting all chunks toghether for '" + fileName + "' but could not delete the file since it is not writable. The original exception was '" + ex.getMessage() + "'");
+                     log.warning("An exception occured when putting all chunks together for '" + fileName + "' but could not delete the file since it is not writable. The original exception was '" + ex.getMessage() + "'");
                }
             }
             if (ex instanceof Exception)
@@ -373,7 +373,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       boolean isCompleteMsg = isLastMsg && chunkCount == 0L;
       if (exMsg == null) { // no exception
          if (isLastMsg)
-            putAllChunksTogheter(fileName, chunkCount, is, isCompleteMsg);
+            putAllChunksTogether(fileName, chunkCount, is, isCompleteMsg);
          else
             storeChunk(this.tmpDirectory, fileName, chunkCount, '.', this.overwrite, is);
       }
