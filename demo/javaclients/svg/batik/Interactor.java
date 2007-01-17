@@ -99,7 +99,7 @@ public class Interactor extends InteractorAdapter
 
 
    /**
-    * The reason why this method is not called togheter when setting the canvas
+    * The reason why this method is not called together when setting the canvas
     * is that the graphics node is different for each new DOM loaded, while the
     * canvas is always the same even if a second DOM has been loaded. If you
     * invoke this method before a DOM has been completely loaded, it is set to
