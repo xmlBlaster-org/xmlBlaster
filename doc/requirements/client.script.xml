@@ -79,6 +79,8 @@
 &lt;replaceQosTokens/>
 &lt;replaceKeyTokens/>
 &lt;replaceContentTokens/>
+
+&lt;replaceTokens/> <!-- for echo, wait and input -->
     </pre>
 
      <h2>Setting configuration properties</h2>
@@ -111,6 +113,11 @@ java javaclients.script.XmlScript \
 <xmlBlaster>
   <!-- note that if you omit the qos it will take an empty one (default) -->
 
+  <replaceTokens />
+  <property name="waitMillis">1000</property>
+
+  <echo message="Starting now ${waitMillis} ..."/>
+
   <echo message="Starting now ..."/>
 
   <connect/>
@@ -119,7 +126,7 @@ java javaclients.script.XmlScript \
 
   <subscribe><key oid="test"></key><qos/></subscribe>
 
-  <wait delay="1000" />
+  <wait delay="${waitMillis}" />
   <publish>
     <key oid="test"><airport name="london" /></key>
     <content>This is a simple script test</content>
@@ -142,13 +149,13 @@ java javaclients.script.XmlScript \
      <key queryType="XPATH">//airport</key>
    </subscribe>
 
-  <wait delay="1000" />
+  <wait delay="${waitMillis}" />
 
   <unSubscribe><key oid="test"/></unSubscribe>
 
   <erase><key oid="test"></key><qos/></erase>
 
-  <wait delay="1000" />
+  <wait delay="${waitMillis}" />
 
   <disconnect />
 </xmlBlaster>
