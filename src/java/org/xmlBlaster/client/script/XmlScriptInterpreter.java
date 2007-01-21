@@ -16,8 +16,10 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.EncodableData;
+import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.StopParseException;
@@ -112,6 +114,8 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    private boolean replaceQosTokens;
    private boolean replaceKeyTokens;
    private boolean replaceContentTokens;
+   /** Replace tokens in wait or echo markup */
+   private boolean replaceTokens;
 
    /** Encapsulates the content of the current message (useful for encoding) */
    protected EncodableData contentData;
@@ -158,6 +162,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
 
    public final String ECHO_TAG = "echo";
    public final String INPUT_TAG = "input";
+   public final String WAIT_TAG = "wait";
    
    /**
     * You need to call initialize() if using this default constructor. 
@@ -313,6 +318,11 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
 
+      if ("replaceTokens".equals(qName)) {
+          this.replaceTokens = true;
+          return;
+       }
+       
       if ("replaceKeyTokens".equals(qName)) {
          this.replaceKeyTokens = true;
          return;
@@ -363,25 +373,28 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          return;
       }
       
-      if ("wait".equals(qName)) {
+      if (WAIT_TAG.equals(qName)) {
          String message = atts.getValue("message");
          if (message != null) {
+        	message = replaceVariables(message);
             System.out.println(message);
          }
          this.waitNumUpdates = 0;
          String tmp = atts.getValue("updates");
+         tmp = replaceVariables(tmp);
          if (tmp != null) {
             try {
-               this.waitNumUpdates = Integer.parseInt(tmp);
+               this.waitNumUpdates = Integer.parseInt(tmp.trim());
             }
             catch (Throwable e) {
             }
          }
          long delay = Integer.MAX_VALUE;
          tmp = atts.getValue("delay");
+         tmp = replaceVariables(tmp);
          if (tmp != null) {
             try {
-               delay = Long.parseLong(tmp);
+               delay = Long.parseLong(tmp.trim());
                if (delay == 0) delay = Integer.MAX_VALUE;
             }
             catch (Throwable e) {
@@ -413,6 +426,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          if (message == null) {
             message = "";
          }
+      	 message = replaceVariables(message);
          System.out.println(message);
          return;
       }
@@ -422,20 +436,20 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          if (inputMessage == null) {
             inputMessage = "Hit a key to continue> ";
          }
+         inputMessage = replaceVariables(inputMessage);
          // this.validargs = atts.getValue("validargs"); "y/n"
          {  // Wait a bit to have updates processed
             String tmp = atts.getValue("delay");
             if (tmp == null) {
                tmp = "500";
             }
-            if (tmp != null && tmp.trim().length() > 0) {
-               try {
-                  long delay = Long.parseLong(tmp);
-                  Thread.sleep(delay);
-               }
-               catch (Throwable e) {
-               }
-            }
+            tmp = replaceVariables(tmp);
+           try {
+              long delay = Long.parseLong(tmp.trim());
+              Thread.sleep(delay);
+           }
+           catch (Throwable e) {
+           }
          }
          /*int ret = */Global.waitOnKeyboardHit(inputMessage);
          return;
@@ -456,6 +470,19 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          this.propertyName = atts.getValue("name");
          return;
       }
+   }
+   
+   private String replaceVariables(String template) {
+      if (!replaceTokens) return template;
+      
+      ReplaceVariable r = new ReplaceVariable();
+      String result = r.replace(template,
+         new I_ReplaceVariable() {
+            public String get(String key) {
+               return glob.getProperty().get(key, key);
+            }
+         });
+      return result;
    }
 
    /**
