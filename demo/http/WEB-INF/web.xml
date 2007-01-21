@@ -30,6 +30,17 @@
     </init-param>
   </servlet>
 
+  <servlet>
+    <servlet-name>AjaxServlet</servlet-name>
+    <description>XmlScript access with ajax polling</description>
+    <servlet-class>org.xmlBlaster.protocol.http.ajax.AjaxServlet</servlet-class>
+    <init-param>
+      <param-name>maxInactiveInterval</param-name>
+      <param-value>60000</param-value>
+      <description>If now Ajax call arrives after 60 sec the session dies</description>
+    </init-param>
+  </servlet>
+
   <!-- Core servlets to support persistent http -->
   <servlet>
     <servlet-name>BlasterHttpProxyServlet</servlet-name>
@@ -143,6 +154,10 @@
   <servlet-mapping>
     <servlet-name>PullServlet</servlet-name>
     <url-pattern>/pull</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>AjaxServlet</servlet-name>
+    <url-pattern>/ajax</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>SystemInfo</servlet-name>
