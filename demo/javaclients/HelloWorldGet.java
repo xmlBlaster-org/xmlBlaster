@@ -34,9 +34,9 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
  *
  * Invoke (after starting the xmlBlaster server):
  * <pre>
- * java javaclients.HelloWorldGet -xpath //key  -numHistory 2
+ * java javaclients.HelloWorldGet -xpath //key  -historyNum 2
  *
- * java javaclients.HelloWorldGet -interactive false -oid Hello  -numHistory -1
+ * java javaclients.HelloWorldGet -interactive false -oid Hello  -historyNum -1
  *
  * java javaclients.HelloWorldGet -session.name joeGet/5 -passwd secret
  *
@@ -64,7 +64,7 @@ public class HelloWorldGet
          String oid = glob.getProperty().get("oid", "");
          String domain = glob.getProperty().get("domain", (String)null);
          String xpath = glob.getProperty().get("xpath", "");
-         int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
+         int historyNumUpdates = glob.getProperty().get("historyNum", 1);
          boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
          String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
          String filterVersion = glob.getProperty().get("filter.version", "1.0");
@@ -83,7 +83,7 @@ public class HelloWorldGet
          log.info("   -oid                " + oid);
          log.info("   -domain             " + domain);
          log.info("   -xpath              " + xpath);
-         log.info("   -historyNumUpdates  " + historyNumUpdates);
+         log.info("   -historyNum         " + historyNumUpdates);
          log.info("   -historyNewestFirst " + historyNewestFirst);
          log.info("   -content            " + content);
          log.info("   -disconnect         " + disconnect);
