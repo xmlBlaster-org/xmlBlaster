@@ -212,7 +212,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @param numOfBytes inclusive, and minimum one is returned (but not if limitEntry suppress it)
     * @param entry
     * @param leaveOne Usually set to false. (true for cache queue to never flush transient queue totally)
-    * @return the list containing all entries which fit into the constrains, never null.
+    * @return the list containing all 'I_QueueEntry' entries which fit into the constrains, never null.
     */
    ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException;
