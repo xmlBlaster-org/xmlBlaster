@@ -154,16 +154,20 @@ public class XmlScript {
          System.out.println("  if you don't specify anything as '-msgDelay', it will not wait after each update, otherwise it will wait so many ms as specified.\n");
          System.out.println("  if you don't specify anything as '-bytesPerSecond', it will not wait after each read, otherwise it will try to get the rate specified.\n");
          System.out.println("  -prepareForPublish true  If you want to publish a dumped dead message given by -requestFile.\n");
+         System.out.println("  if you don't specify anything as '-numRuns', it will execute the script one time, otherwise it will repeat execution the given times.\n");
          System.exit(1);
       }
       
       String inFile = glob.getProperty().get("requestFile", (String)null);
       String outFile = glob.getProperty().get("responseFile", (String)null);
       String updFile = glob.getProperty().get("updateFile", (String)null);
+      int numRuns = glob.getProperty().get("numRuns", 1);
       long msgDelay = glob.getProperty().get("msgDelay", 0L);
       long bytesPerSecond = glob.getProperty().get("bytesPerSecond", 0L);
       
-      new XmlScript(glob, inFile, outFile, updFile, msgDelay, bytesPerSecond);
+      if (numRuns < 0) numRuns = Integer.MAX_VALUE; // forever
+      for (int i=0; i<numRuns; i++)
+    	  new XmlScript(glob, inFile, outFile, updFile, msgDelay, bytesPerSecond);
    }
 } // XmlScript
 
