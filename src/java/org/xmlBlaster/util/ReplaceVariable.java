@@ -62,6 +62,8 @@ public final class ReplaceVariable
     * @throws IllegalArgumentException if matching "}" is missing
     */
    public final String replace(String text, I_ReplaceVariable cb) {
+	  if (text == null) return null;
+	  if (cb == null) return text;
       int minIndex = 0;
       for (int ii = 0;; ii++) {
          int fromIndex = text.indexOf(this.startToken, minIndex);
