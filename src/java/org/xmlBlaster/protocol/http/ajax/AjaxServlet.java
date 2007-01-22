@@ -271,7 +271,7 @@ public class AjaxServlet extends HttpServlet {
 		}
 		String tmp = props.getProperty("maxInactiveInterval");
 		if (tmp != null)
-			this.maxInactiveInterval = Integer.valueOf(tmp);
+			this.maxInactiveInterval = Integer.valueOf(tmp).intValue();
 		this.blasterInstanceMap = new HashMap/*<String, BlasterInstance>*/();
 	}
 
