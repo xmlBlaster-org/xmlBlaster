@@ -217,12 +217,14 @@ public class MX4JAdaptor extends GlobalInfo {
       
       public void writeResponse(HttpOutputStream outputStream, HttpInputStream inputStream, Document doc) throws IOException {
          // log.severe(debug(inputStream));
+         /*
          log.severe(getTemplate(inputStream));
          Attr attr = doc.createAttribute("role");
          attr.setValue("prova");
          Attr attr1 = doc.createAttribute("roleEl");
          attr1.setValue("provaEl");
          doc.getDocumentElement().appendChild(attr1);
+         */
          // doc.appendChild(attr);
 
          super.writeResponse(outputStream, inputStream, doc);
