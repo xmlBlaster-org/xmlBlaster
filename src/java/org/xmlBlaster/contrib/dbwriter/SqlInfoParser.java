@@ -92,8 +92,11 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
       return readObject(is);
    }
 
-   public SqlInfo parse(InputSource is) throws Exception {
+   public SqlInfo parse(InputSource is, String encoding) throws Exception {
       clearCharacter();
+      if (encoding != null)
+         is.setEncoding(encoding); // this only has an effect if the input source contains an InputStream an not
+                                   // a character stream (Reader)
       return readObject(is);
    }
 

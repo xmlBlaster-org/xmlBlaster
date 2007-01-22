@@ -12,7 +12,13 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 
 public interface I_Parser extends I_ContribPlugin {
 
-   SqlInfo parse(InputSource data) throws Exception;
-   
+   /**
+    * 
+    * @param data
+    * @param encoding The encoding if you want to speciy one, if null, the default is taken.
+    * @return
+    * @throws Exception
+    */
+   SqlInfo parse(InputSource data, String encoding) throws Exception;
    
 }

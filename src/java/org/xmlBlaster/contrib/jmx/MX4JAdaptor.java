@@ -13,6 +13,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -20,8 +22,12 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import mx4j.tools.adaptor.http.HttpAdaptor;
+import mx4j.tools.adaptor.http.HttpInputStream;
+import mx4j.tools.adaptor.http.HttpOutputStream;
 import mx4j.tools.adaptor.http.XSLTProcessor;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -36,6 +42,17 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  */
 public class MX4JAdaptor extends GlobalInfo {
 
+   public class XblHttpAdaptor extends HttpAdaptor {
+      
+      public XblHttpAdaptor() {
+         super();
+      }
+
+
+   
+   }
+   
+   
    private static Logger log = Logger.getLogger(MX4JAdaptor.class.getName());
    private ObjectName name;
    
@@ -151,7 +168,65 @@ public class MX4JAdaptor extends GlobalInfo {
          */
          return ret;
       }
+
+      private String debug(HttpInputStream is) throws IOException {
+         Map headers = is.getHeaders();
+         Iterator iter = headers.entrySet().iterator();
+         StringBuffer buf = new StringBuffer(1024);
+         buf.append("headers: \n");
+         while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            String key = (String)entry.getKey();
+            String val = (String)entry.getValue();
+            buf.append("   ").append(key).append("\t: ").append(val).append("\n");
+         }
+         buf.append("\n");
+         buf.append("method\t: ").append(is.getMethod());
+         buf.append("path  \t: ").append(is.getPath());
+         buf.append("query\t: ").append(is.getQueryString());
+         buf.append("query\t: ").append(is.getQueryString());
+         buf.append("query\t: ").append(is.getQueryString());
+         Map variables  = is.getHeaders();
+         iter = variables.entrySet().iterator();
+         buf.append("variables: \n");
+         while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            String key = (String)entry.getKey();
+            String val = (String)entry.getValue();
+            buf.append("   ").append(key).append("\t: ").append(val).append("\n");
+         }
+         buf.append("\n");
+         return buf.toString();
+      }
+    
+      private String getTemplate(HttpInputStream is) {
+         String query = is.getQueryString();
+         if (query == null)
+            return null;
+         final String template = "template=";
+         final int length = template.length();
+         int pos = query.indexOf(template);
+         if (pos < 0)
+            return null;
+         String end = query.substring(pos + length);
+         pos = end.indexOf('&');
+         if (pos < 0)
+            return end;
+         return end.substring(0, pos);
+      }
       
+      public void writeResponse(HttpOutputStream outputStream, HttpInputStream inputStream, Document doc) throws IOException {
+         // log.severe(debug(inputStream));
+         log.severe(getTemplate(inputStream));
+         Attr attr = doc.createAttribute("role");
+         attr.setValue("prova");
+         Attr attr1 = doc.createAttribute("roleEl");
+         attr1.setValue("provaEl");
+         doc.getDocumentElement().appendChild(attr1);
+         // doc.appendChild(attr);
+
+         super.writeResponse(outputStream, inputStream, doc);
+      }
    }
    
    public MX4JAdaptor() {
@@ -170,6 +245,10 @@ public class MX4JAdaptor extends GlobalInfo {
       server.registerMBean(adapter, name);
       adapter.setHost(host);
       adapter.setPort(port);
+      // TODO add here authorization method
+      String authenticationMethod = adapter.getAuthenticationMethod();
+      if (authenticationMethod != null)
+         log.info("The authentication method for the mx4j http adapter is '" + authenticationMethod + "'");
       
       String xsltProcessor = get("xsltProcessor", null);
       ObjectName processorName = null;

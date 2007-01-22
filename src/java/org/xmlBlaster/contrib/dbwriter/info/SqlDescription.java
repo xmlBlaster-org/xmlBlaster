@@ -83,6 +83,7 @@ public class SqlDescription {
    private boolean pkKnown;
    private boolean schemaKnown;
    private String schema; // since this is contained in the col info
+   private String charSet = null;
    
    /** this is only needed for tables which do not have any PK and on updates */
    private I_Parser parser;
@@ -166,6 +167,7 @@ public class SqlDescription {
       this.attributes = new HashMap();
       this.attributeKeys = new ArrayList();
       this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
+      this.charSet = info.get("charSet", null);
       this.info = info;
       try {
          this.parser = new SqlInfoParser();
@@ -594,7 +596,7 @@ public class SqlDescription {
 
          String xmlLiteral = OLD_PREFIX + prop.getStringValue() + OLD_POSTFIX;
          ByteArrayInputStream bais = new ByteArrayInputStream(xmlLiteral.getBytes());
-         SqlInfo sqlInfo = parserForOld.parse(new InputSource(bais));
+         SqlInfo sqlInfo = parserForOld.parse(new InputSource(bais), this.charSet);
          if (sqlInfo.getRowCount() < 1)
             throw new Exception("The string '" + xmlLiteral + "' did not contain any row for '" + newRow.toXml("") + "'");
          

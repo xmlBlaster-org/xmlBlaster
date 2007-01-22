@@ -40,7 +40,7 @@ public class DbWriter implements I_Update {
    private boolean isAlive;
    // this is used mainly when testing to get an event when an update is finished
    private I_Update registeredForUpdates;
-   
+   private String charSet = null;
    
    /**
     * Default constructor, you need to call {@link #init} thereafter. 
@@ -114,7 +114,7 @@ public class DbWriter implements I_Update {
       }
       else
          log.severe("Couldn't initialize I_EventEngine, please configure 'mom.class'.");
-      
+      this.charSet = info.get("charSet", null);
       if (log.isLoggable(Level.FINE)) log.fine("DbWriter created");
    }
    
@@ -179,7 +179,9 @@ public class DbWriter implements I_Update {
             this.writer.update(topic, is, attrMap);
          }
          else {
-            SqlInfo updateInfo = this.parser.parse(new InputSource(is));
+            InputSource inputSource = new InputSource(is);
+            // inputSource.setEncoding(encoding)
+            SqlInfo updateInfo = this.parser.parse(inputSource, this.charSet);
             if (updateInfo == null) {
                log.warning("The entry was not for us");
                return;
