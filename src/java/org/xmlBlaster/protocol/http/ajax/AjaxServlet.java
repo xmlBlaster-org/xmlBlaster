@@ -54,8 +54,7 @@ class BlasterInstance implements I_Callback {
 	private static Logger log = Logger.getLogger(BlasterInstance.class
 			.getName());
 
-	//private Map<String, BlasterInstance> blasterInstanceMap;
-	private Map blasterInstanceMap;
+	private Map/*<String, BlasterInstance>*/ blasterInstanceMap;
 
 	private I_XmlBlasterAccess xmlBlasterAccess;
 
@@ -72,7 +71,7 @@ class BlasterInstance implements I_Callback {
 	private final String RELATED_AJAX = "ajax";
 
 	public BlasterInstance(HttpServletRequest req,
-			Map<String, BlasterInstance> blasterInstanceMap) {
+			Map/*<String, BlasterInstance>*/ blasterInstanceMap) {
 		this.blasterInstanceMap = blasterInstanceMap;
 		req.getSession().setAttribute("sessionTimeoutListener",
 				new SessionTimeoutListener(this));
@@ -259,7 +258,7 @@ public class AjaxServlet extends HttpServlet {
 	private int maxInactiveInterval = 60; // sec
 
 	/** key is the browser sessionId */
-	private Map<String, BlasterInstance> blasterInstanceMap;
+	private Map/*<String, BlasterInstance>*/ blasterInstanceMap;
 
 	public void init(ServletConfig conf) throws ServletException {
 		super.init(conf);
@@ -273,7 +272,7 @@ public class AjaxServlet extends HttpServlet {
 		String tmp = props.getProperty("maxInactiveInterval");
 		if (tmp != null)
 			this.maxInactiveInterval = Integer.valueOf(tmp);
-		this.blasterInstanceMap = new HashMap<String, BlasterInstance>();
+		this.blasterInstanceMap = new HashMap/*<String, BlasterInstance>*/();
 	}
 
 	public void doPost(HttpServletRequest req, HttpServletResponse res)
@@ -380,7 +379,7 @@ public class AjaxServlet extends HttpServlet {
 
 	public BlasterInstance[] getBlasterInstances() {
 		synchronized (this.blasterInstanceMap) {
-			return this.blasterInstanceMap.values().toArray(
+			return (BlasterInstance[])this.blasterInstanceMap.values().toArray(
 					new BlasterInstance[this.blasterInstanceMap.size()]);
 		}
 	}
