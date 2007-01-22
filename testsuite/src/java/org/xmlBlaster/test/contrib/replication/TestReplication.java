@@ -1112,7 +1112,7 @@ public class TestReplication extends XMLTestCase {
 
                ps.setString(1, "someName");
                byte[] blob = new byte[4096];
-               int sweeps = 10240 / 2; // 20 MB
+               int sweeps = 10240; // 40 MB
                
                int length = blob.length * sweeps;
                PipedInputStream pi = new PipedInputStream();

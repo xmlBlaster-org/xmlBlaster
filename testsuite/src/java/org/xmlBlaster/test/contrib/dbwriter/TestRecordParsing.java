@@ -17,6 +17,8 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.List;
@@ -234,7 +236,20 @@ public class TestRecordParsing extends XMLTestCase {
       
       SqlInfoParser parser = new SqlInfoParser(this.info);
       
-      SqlInfo record = parser.parse(new InputSource(new ByteArrayInputStream(xml.getBytes())));
+      String xmlFileName = System.getProperty("xmlFileName",null);
+      InputSource is = null;
+      if (xmlFileName == null) {
+         new InputSource(new ByteArrayInputStream(xml.getBytes()));
+      }
+      else {
+         String isChar = System.getProperty("isChar", "false");
+         if ("true".equals(isChar))
+            is = new InputSource(new FileReader(xmlFileName));
+         else
+            is = new InputSource(new FileInputStream(xmlFileName));
+      }
+      String charSet = System.getProperty("charSet", null);
+      SqlInfo record = parser.parse(is, charSet);
       SqlDescription description = record.getDescription();
       assertNotNull("the description shall not be null", description);
       assertNotNull("the identity shall not be null", description.getIdentity());
