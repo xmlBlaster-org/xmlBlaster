@@ -37,7 +37,6 @@ import org.xmlBlaster.util.Base64;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReplaceVariable;
-import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -55,7 +54,8 @@ class BlasterInstance implements I_Callback {
 	private static Logger log = Logger.getLogger(BlasterInstance.class
 			.getName());
 
-	private Map<String, BlasterInstance> blasterInstanceMap;
+	//private Map<String, BlasterInstance> blasterInstanceMap;
+	private Map blasterInstanceMap;
 
 	private I_XmlBlasterAccess xmlBlasterAccess;
 
@@ -372,57 +372,6 @@ public class AjaxServlet extends HttpServlet {
 		// this.blasterInstanceMap.put(req.getSession().getId(),
 		// blasterInstance);
 		return blasterInstance;
-	}
-
-	// Expecting a PDA sending me Gran'mas position
-	// with simplified NMEA:
-	// >Gran'mas place,047°46'55.86",N,009°10'00.95",E,0<
-	public Position parsePosition(byte[] data_) {
-
-		String data;
-		try {
-			data = new String(data_, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			throw new IllegalArgumentException(e.toString());
-		}
-		Position pos = new Position();
-		String[] tokens = StringPairTokenizer.toArray(data, ",");
-		if (tokens.length < 6)
-			throw new IllegalArgumentException("Illegal data: " + data);
-		pos.label = tokens[0];
-		pos.latitude = tokens[1];
-		pos.latitudeL = tokens[2];
-		pos.longitude = tokens[3];
-		pos.longitudeL = tokens[4];
-		pos.heading = tokens[5];
-		return pos;
-	}
-
-	class Position {
-		String label = ""; // "Gran'ma on tour
-
-		String latitude = "";
-
-		String latitudeL = ""; // N S
-
-		String longitude = "";
-
-		String longitudeL = ""; // E W
-
-		String heading = ""; // direction degree
-
-		public String toString() {
-			return "label=" + label + " latitude=" + latitude + " longitude="
-					+ longitude;
-		}
-
-		public boolean equals(Position other) {
-			if (label.equals(other.label) && latitude.equals(other.latitude)
-					&& longitude.equals(other.longitude))
-				return true;
-			return false;
-		}
 	}
 
 	public String getServletInfo() {
