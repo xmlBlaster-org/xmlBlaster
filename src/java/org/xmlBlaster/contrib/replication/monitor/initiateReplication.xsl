@@ -66,16 +66,16 @@ DefaultDomain:description=Printer,type=laser,date=1993t
 <Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Replications" strinit="true" type="java.lang.String" value="aicm,ndb"/>
 <Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Slaves" strinit="true" type="java.lang.String" value="client/ReplWriter-DEE_V_01-AIS/1,client/ReplWriter-NDB-AIS/1"/>
 <Constructor description="Constructor exposed for management" name="org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin"/>
-	<Operation description="Operation exposed for management" impact="unknown" name="initiateReplication" return="java.lang.String">
+        <Operation description="Operation exposed for management" impact="unknown" name="initiateReplication" return="java.lang.String">
 <Parameter description="Operation's parameter n. 1" id="0" name="param1" strinit="true" type="java.lang.String"/>
 <Parameter description="Operation's parameter n. 2" id="1" name="param2" strinit="true" type="java.lang.String"/>
 </Operation>
-	<Operation description="Operation exposed for management" impact="unknown" name="broadcastSql" return="void">
+        <Operation description="Operation exposed for management" impact="unknown" name="broadcastSql" return="void">
 <Parameter description="Operation's parameter n. 1" id="0" name="param1" strinit="true" type="java.lang.String"/>
 <Parameter description="Operation's parameter n. 2" id="1" name="param2" strinit="true" type="java.lang.String"/>
 <Parameter description="Operation's parameter n. 3" id="2" name="param3" strinit="true" type="boolean"/>
 </Operation>
-	<Operation description="Operation exposed for management" impact="unknown" name="recreateTriggers" return="java.lang.String">
+        <Operation description="Operation exposed for management" impact="unknown" name="recreateTriggers" return="java.lang.String">
 <Parameter description="Operation's parameter n. 1" id="0" name="param1" strinit="true" type="java.lang.String"/>
 </Operation>
 </MBean>
@@ -92,6 +92,10 @@ http://localhost:9999/mbean?objectname=org.xmlBlaster:contribClass=contrib,contr
 -->
 
 <xsl:include href="customize.xsl"/>
+
+<xsl:variable name="isUser" select="/*/@user"/>
+<xsl:variable name="isInitiator" select="/*/@initiator"/>
+<xsl:variable name="isAdmin" select="/*/@admin"/>
 
 <xsl:template name="replaceString">
    <xsl:param name="content" />
@@ -287,16 +291,23 @@ function initialFilesChanged() {
      <xsl:otherwise>
      </xsl:otherwise>
    </xsl:choose>
-	      <tr>
+              <tr>
                 <td colspan="1" align="center"><button class="small" title="Click to return to the replication list" onClick="cancel()">Cancel</button></td>
 
                 <td colspan="1" align="center">
-   <xsl:element name="button">
-      <xsl:attribute name="class">small</xsl:attribute>
-      <xsl:attribute name="Title">Click to start (initiate) the choosen replication combination</xsl:attribute>
-      <xsl:attribute name="onClick">initiateReplication('<xsl:value-of select="@objectname"/>')</xsl:attribute>
-      Initiate Repl.
-   </xsl:element>
+                <xsl:choose>
+                   <xsl:when test="$isAdmin = 'true'">
+                     <xsl:element name="button">
+                        <xsl:attribute name="class">small</xsl:attribute>
+                        <xsl:attribute name="Title">Click to start (initiate) the choosen replication combination</xsl:attribute>
+                        <xsl:attribute name="onClick">initiateReplication('<xsl:value-of select="@objectname"/>')</xsl:attribute>
+                        Initiate Repl.
+                     </xsl:element>
+                   </xsl:when>
+                   <xsl:otherwise>
+                      <xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text>
+                   </xsl:otherwise>
+                </xsl:choose>
                 </td>
               </tr>
               </table>

@@ -23,10 +23,12 @@
 
 -->
 
-
 <xsl:include href="customize.xsl"/>
 
 <!-- the variables used in this document: -->
+<xsl:variable name="isUser" select="/*/@user"/>
+<xsl:variable name="isInitiator" select="/*/@initiator"/>
+<xsl:variable name="isAdmin" select="/*/@admin"/>
 
 <xsl:template match ='/'>
 <html>
@@ -89,7 +91,14 @@ function refresh() {
             <table width="450" align="center" border="0" summary="">
               <tr>
                 <td align="center" colspan="4" class="normal"><button title="Click to refresh this page manually" class="common" onClick="refresh()">Refresh</button></td>
-                <td align="center" colspan="4" class="normal"><button title="Click to go to the statements page" class="common" onClick="gotoStatements()">Statements</button></td>
+                <xsl:choose>
+                   <xsl:when test="$isAdmin = 'true'">
+                      <td align="center" colspan="4" class="normal"><button title="Click to go to the statements page" class="common" onClick="gotoStatements()">Statements</button></td>
+                   </xsl:when>
+                   <xsl:otherwise>
+                      <td align="center" colspan="4" class="normal"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+                   </xsl:otherwise>
+                </xsl:choose>
                 <td align="center" colspan="4" class="normal"><button title="Click to initiate one more replications" class="common" onClick="gotoInitiate()">Initiate Repl.</button></td>
               </tr>
             </table>
