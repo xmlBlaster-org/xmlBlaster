@@ -13,6 +13,10 @@
 
 <xsl:param name="request.referer"/>
 
+<xsl:variable name="isUser" select="/*/@user"/>
+<xsl:variable name="isInitiator" select="/*/@initiator"/>
+<xsl:variable name="isAdmin" select="/*/@admin"/>
+
 <xsl:template match ='/'>
 <html>
 <head>                                                                                       
@@ -113,7 +117,14 @@ function dumpEntry() {
     <xsl:apply-templates/> 
 
               <tr>
+           <xsl:choose>
+              <xsl:when test="$isAdmin = 'true'">
                 <td align="center" colspan="1" class="normal"><button class="danger" onClick="killSession()" title="Click to delete definitively this replication">Remove</button></td>
+              </xsl:when>
+              <xsl:otherwise>
+            <td align="center" colspan="1" class="normal"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+              </xsl:otherwise>
+           </xsl:choose>
                 <td align="center" colspan="1" class="normal"><button class="small" onClick="gotoDestinationList()" title="Click to go back to replication list">Back</button></td>
                 <td align="center" colspan="1" class="normal"><button class="small" onClick="refresh()" title="Click to refresh this page manually">Refresh</button></td>
                 <!-- <td align="center" colspan="1" class="normal"><button class="small" onClick="reInitiateReplication()" title="Click if you want to restart this replication (initial update)">Restart Repl</button></td> -->
@@ -172,12 +183,20 @@ function dumpEntry() {
            </td>
              </xsl:otherwise>
            </xsl:choose>
+
+           <xsl:choose>
+              <xsl:when test="$isAdmin = 'true'">
            <td align="center" colspan="1" class="normal">
                  <button class="small" onClick="clearQueue()" title="Click to clear/delete all entries from the Holdback message queue">Clear Queue</button>
            </td>
             <td align="center" colspan="1" class="normal">
                   <button class="small" onClick="removeFirst()" title="Click to remove only the first entry of the holdback message queue">Remove First</button>
             </td>
+              </xsl:when>
+              <xsl:otherwise>
+            <td align="center" colspan="2" class="normal"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+              </xsl:otherwise>
+           </xsl:choose>
          </tr>
 
          <!-- Counter Line -->
@@ -213,9 +232,18 @@ function dumpEntry() {
                </xsl:element>
             </td>
             <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+
+           <xsl:choose>
+              <xsl:when test="$isInitiator = 'true'">
             <td align="center" colspan="1" class="normal">
                   <button class="small" onClick="cancelInitialUpdate()" title="Click to cancel an initiated replication (if the status is not running)">Cancel Update</button>
             </td>
+              </xsl:when>
+              <xsl:otherwise>
+            <td align="center" colspan="1" class="normal"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+              </xsl:otherwise>
+           </xsl:choose>
+
           </tr>
 
 

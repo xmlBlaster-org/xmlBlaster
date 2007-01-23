@@ -12,10 +12,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
@@ -25,10 +27,13 @@ import mx4j.tools.adaptor.http.HttpAdaptor;
 import mx4j.tools.adaptor.http.HttpInputStream;
 import mx4j.tools.adaptor.http.HttpOutputStream;
 import mx4j.tools.adaptor.http.XSLTProcessor;
+import mx4j.util.Base64Codec;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xmlBlaster.contrib.GlobalInfo;
+import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxWrapper;
@@ -43,27 +48,32 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 public class MX4JAdaptor extends GlobalInfo {
 
    public class XblHttpAdaptor extends HttpAdaptor {
-      
       public XblHttpAdaptor() {
          super();
       }
-
-
-   
    }
    
-   
    private static Logger log = Logger.getLogger(MX4JAdaptor.class.getName());
+   private final static String USER_ROLE = "user";
+   private final static String ADMIN_ROLE = "admin";
+   private final static String INITIATOR_ROLE = "initiator";
+
    private ObjectName name;
+   private Map roles;
+   private String authMethod;
    
    public class ContribXsltProcessor extends XSLTProcessor {
       
       private String prefix;
       private Set warnings;
+      private String authMethod; 
+      private Map roles;
       
-      public ContribXsltProcessor() {
+      public ContribXsltProcessor(Map roles, String authMethod) {
          super();
          this.warnings = new HashSet();
+         this.roles = roles;
+         this.authMethod = authMethod;
       }
       
       public void setFile(String prefix) {
@@ -181,11 +191,11 @@ public class MX4JAdaptor extends GlobalInfo {
             buf.append("   ").append(key).append("\t: ").append(val).append("\n");
          }
          buf.append("\n");
-         buf.append("method\t: ").append(is.getMethod());
-         buf.append("path  \t: ").append(is.getPath());
-         buf.append("query\t: ").append(is.getQueryString());
-         buf.append("query\t: ").append(is.getQueryString());
-         buf.append("query\t: ").append(is.getQueryString());
+         buf.append("method\t: ").append(is.getMethod()).append("\n");
+         buf.append("path  \t: ").append(is.getPath()).append("\n");
+         buf.append("query\t: ").append(is.getQueryString()).append("\n");
+         buf.append("query\t: ").append(is.getQueryString()).append("\n");
+         buf.append("query\t: ").append(is.getQueryString()).append("\n");
          Map variables  = is.getHeaders();
          iter = variables.entrySet().iterator();
          buf.append("variables: \n");
@@ -215,24 +225,79 @@ public class MX4JAdaptor extends GlobalInfo {
          return end.substring(0, pos);
       }
       
-      public void writeResponse(HttpOutputStream outputStream, HttpInputStream inputStream, Document doc) throws IOException {
-         // log.severe(debug(inputStream));
-         /*
-         log.severe(getTemplate(inputStream));
-         Attr attr = doc.createAttribute("role");
-         attr.setValue("prova");
-         Attr attr1 = doc.createAttribute("roleEl");
-         attr1.setValue("provaEl");
-         doc.getDocumentElement().appendChild(attr1);
-         */
-         // doc.appendChild(attr);
 
+      private String extractUserName(HttpInputStream is) throws IOException {
+         String authentication = is.getHeader("authorization");
+         if (authentication == null)
+            return null;
+         
+         if (this.authMethod.equals("basic")) {
+            authentication = authentication.substring(5, authentication.length());
+            String decodeString = new String(Base64Codec.decodeBase64(authentication.getBytes()));
+            if (decodeString.indexOf(":") > 0) {
+               try {
+                  StringTokenizer tokens = new StringTokenizer(decodeString, ":");
+                  return tokens.nextToken(); // username
+               }
+               catch (Exception ex) {
+                  ex.printStackTrace();
+                  return null;
+               }
+            }
+         }
+         return null;
+      }
+
+      
+      public void writeResponse(HttpOutputStream outputStream, HttpInputStream inputStream, Document doc) throws IOException {
+         log.severe(debug(inputStream));
+         Element el = doc.getDocumentElement();
+
+         Attr admin = doc.createAttribute(ADMIN_ROLE);
+         Attr initiator = doc.createAttribute(INITIATOR_ROLE);
+         Attr user = doc.createAttribute(USER_ROLE);
+         if (this.authMethod != null) {
+            String userName = extractUserName(inputStream);
+            if (userName == null)
+               userName = "";
+            String roles = (String)this.roles.get(userName);
+            if (roles == null) {
+               admin.setValue("false");
+               initiator.setValue("false");
+               user.setValue("false");
+            }
+            else if (roles.indexOf(ADMIN_ROLE) > -1) {
+               admin.setValue("true");
+               initiator.setValue("true");
+               user.setValue("true");
+            }
+            else if (roles.indexOf(INITIATOR_ROLE) > -1) {
+               admin.setValue("false");
+               initiator.setValue("true");
+               user.setValue("true");
+            }
+            else {
+               admin.setValue("false");
+               initiator.setValue("false");
+               user.setValue("true");
+            }
+         }
+         else {
+            admin.setValue("true");
+            initiator.setValue("true");
+            user.setValue("true");
+         }
+         el.setAttributeNode(admin);
+         el.setAttributeNode(initiator);
+         el.setAttributeNode(user);
+         
          super.writeResponse(outputStream, inputStream, doc);
       }
    }
    
    public MX4JAdaptor() {
       super((Set)null);
+      this.roles = new HashMap();
    }
    
    private final void instantiateAdaptor(Global global) throws Exception {
@@ -247,10 +312,40 @@ public class MX4JAdaptor extends GlobalInfo {
       server.registerMBean(adapter, name);
       adapter.setHost(host);
       adapter.setPort(port);
-      // TODO add here authorization method
-      String authenticationMethod = adapter.getAuthenticationMethod();
-      if (authenticationMethod != null)
-         log.info("The authentication method for the mx4j http adapter is '" + authenticationMethod + "'");
+      this.authMethod = get("authenticationMethod", null);
+      log.info("Authentication Method is '" + this.authMethod + "'");
+      if (this.authMethod != null) {
+         this.authMethod = this.authMethod.trim();
+         if ("basic".equals(this.authMethod))
+            adapter.setAuthenticationMethod(this.authMethod);
+         else
+            log.warning("Authentication method '" + authMethod + "' not recognized, will switch to 'basic'");
+         log.info("Authentication Method is '" + this.authMethod + "'");
+         Map users = InfoHelper.getPropertiesStartingWith("replication.monitor.user.", this, null);
+         if (users != null && users.size() > 0) {
+            Iterator iter = users.entrySet().iterator();
+            while (iter.hasNext()) {
+               Map.Entry entry = (Map.Entry)iter.next();
+               String name = (String)entry.getKey();
+               String val = (String)entry.getValue();
+               log.severe("name='" + name + "' value='" + val + "'");
+               int pos = val.indexOf(':');
+               String pwd = null;
+               String roles = USER_ROLE;
+               if (pos > -1) {
+                  pwd = val.substring(0, pos);
+                  roles = val.substring(pos+1);
+               }
+               else
+                  pwd = val;
+               log.info("registering monitor user '" + name + "' having roles : " + roles + "' (pwd='" + pwd + "')");
+               adapter.addAuthorization(name, pwd);
+               this.roles.put(name, roles);
+            }
+         }
+         else
+            log.info("No Users found for the monitor");
+      }
       
       String xsltProcessor = get("xsltProcessor", null);
       ObjectName processorName = null;
@@ -261,7 +356,7 @@ public class MX4JAdaptor extends GlobalInfo {
          processorName = new ObjectName(JmxWrapper.getObjectNameLiteral(this.global, contextNode));
          
          // XSLTProcessor processor = new XSLTProcessor();
-         ContribXsltProcessor processor = new ContribXsltProcessor();
+         ContribXsltProcessor processor = new ContribXsltProcessor(this.roles, this.authMethod);
          
          server.registerMBean(processor, processorName);
          

@@ -874,6 +874,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    
    
    public void clearQueue() throws Exception {
+      setStatus(STATUS_INCONSISTENT);
+      log.warning("has been invoked");
       (new Thread() {
          public void run() {
             try {
@@ -887,6 +889,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    }
 
    public long removeQueueEntries(long entries) throws Exception {
+      setStatus(STATUS_INCONSISTENT);
+      log.warning("has been invoked with entries='" + entries + "'");
       return getSession().removeFromCallbackQueue(entries);
    }
    
