@@ -550,7 +550,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                             ((reason != null) ? (": " + reason) : "");
                log.warning(text);
                PublishKey publishKey = new PublishKey(glob, Constants.OID_DEAD_LETTER);
-               publishKey.setClientTags("<oid>"+entry.getKeyOid()+"</oid>");
+               //publishKey.setClientTags("<oid>"+entry.getKeyOid()+"</oid>");
                // null: use the content from origMsgUnit:
                pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGKEY, origMsgUnit.getKey()); //"__key"
                pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGQOS, origMsgUnit.getQos()); //"__qos"
