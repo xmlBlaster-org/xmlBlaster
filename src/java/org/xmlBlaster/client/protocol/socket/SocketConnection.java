@@ -8,6 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.client.protocol.socket;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.Socket;
 
 import java.util.logging.Logger;
@@ -19,6 +20,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 
@@ -183,7 +185,7 @@ public class SocketConnection implements I_XmlBlasterConnection
             this.sock = this.socketUrl.createSocketSSL(this.localSocketUrl, this.clientAddress);
          }
          else {
-            if (this.localSocketUrl.getPort() > -1) {
+            if (this.localSocketUrl.isEnforced()) {
                this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort(),
                                    this.localSocketUrl.getInetAddress(), this.localSocketUrl.getPort());
             }
@@ -193,15 +195,15 @@ public class SocketConnection implements I_XmlBlasterConnection
             }
          }
 
-         if (this.localSocketUrl.getPort() > -1) {
+         if (this.localSocketUrl.isEnforced()) {
             log.info(getType() + (ssl ? " SSL" : "") +
                   " client connected to '" + this.socketUrl.getUrl() +
                   "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
                   " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway);
          }
          else {
-            this.clientAddress.setPluginProperty("localPort", ""+this.sock.getLocalPort());
-            this.clientAddress.setPluginProperty("localHostname", this.sock.getLocalAddress().getHostAddress());
+            this.clientAddress.getEnv("localPort", this.sock.getLocalPort()).setValue(this.sock.getLocalPort(), PropEntry.CREATED_BY_DEFAULT);
+            this.clientAddress.getEnv("localHostname", this.sock.getLocalAddress().getHostAddress()).setValue(this.sock.getLocalAddress().getHostAddress(), PropEntry.CREATED_BY_DEFAULT);
             this.localSocketUrl = new SocketUrl(glob, this.sock.getLocalAddress().getHostAddress(), this.sock.getLocalPort());
             log.info(getType() + (ssl ? " SSL" : "") +
                   " client connected to '" + socketUrl.getUrl() +
@@ -225,6 +227,18 @@ public class SocketConnection implements I_XmlBlasterConnection
          //e.printStackTrace(); 
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
                                        "XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
+      }
+      catch (BindException e) { // If client host changed address: Cannot assign requested address
+         String str = "Connection to xmlBlaster server failed local=" + this.localSocketUrl + " remote=" + this.socketUrl + ": " + e.toString();
+         log.warning(str);
+         //e.printStackTrace(); 
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str);
+      }
+      catch (java.net.SocketException e) { // ifconfig eth0 down: Network is unreachable
+         String str = "Connection to xmlBlaster server failed local=" + this.localSocketUrl + " remote=" + this.socketUrl + ": " + e.toString();
+         if (log.isLoggable(Level.FINE)) log.fine(str);
+         //e.printStackTrace(); 
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str);
       }
       catch (java.io.IOException e) {
          String str = "Connection to xmlBlaster server failed local=" + this.localSocketUrl + " remote=" + this.socketUrl + ": " + e.toString();

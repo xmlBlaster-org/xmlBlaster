@@ -8,6 +8,7 @@ package org.xmlBlaster.protocol.socket;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -228,7 +229,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                conQos.setAddressServer(this.driver.getAddressServer());
-               setLoginName(conQos.getUserId());
+               setLoginName(conQos.getSessionName().getRelativeName());
                Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
                
@@ -240,7 +241,9 @@ public class HandleClient extends SocketExecutor implements Runnable
 
                CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
-                  cbKey = cbArr[ii].getType() + cbArr[ii].getRawAddress();
+                  Timestamp tt = new Timestamp();
+                  cbArr[ii].setHashkey(tt.toString());
+                  cbKey = cbArr[ii].getType() + cbArr[ii].getHashkey(); // we can't use the client IP because it can change and it would allow kidnapping
                   SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
                   SocketUrl remoteUrl = new SocketUrl(glob, socket.getInetAddress().getHostAddress(), socket.getPort());
                   if (driver.getAddressServer() != null) {

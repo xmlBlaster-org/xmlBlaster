@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.property.PropInt;
+import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.FileLocator;
 import java.net.InetAddress;
@@ -30,10 +32,12 @@ public class SocketUrl
    private static Logger log = Logger.getLogger(SocketUrl.class.getName());
    /** The string representation like "192.168.1.1", useful if multihomed computer */
    private String hostname = null;
+   private PropString hostnameProp;
    /** xmlBlaster server host */
    private java.net.InetAddress inetAddress = null;
    /** The port */
    private int port = SocketUrl.DEFAULT_SERVER_PORT;
+   private PropInt portProp;
    private boolean isLocal = false;
    /** Flag to use TCP/IP */
    public static final boolean SOCKET_TCP = false;
@@ -45,6 +49,7 @@ public class SocketUrl
    public static final int DEFAULT_SERVER_PORT = 7607;
    private static boolean firstKey = true;
    private static boolean firstTrust = true;
+   private boolean isEnforced = false;
 
    /**
     * @param hostname if null or empty the local IP will be used
@@ -96,20 +101,33 @@ public class SocketUrl
 
       if (isLocal) {
          this.isLocal = true;
-         this.port = address.getEnv("localPort", defaultServerPort).getValue();
-         this.hostname = address.getEnv("localHostname", glob.getLocalIP()).getValue();
+         this.portProp = address.getEnv("localPort", defaultServerPort); 
+         this.port = this.portProp.getValue();
+         this.hostnameProp = address.getEnv("localHostname", glob.getLocalIP());
+         this.hostname = this.hostnameProp.getValue();
       }
       else {
          if (address.getRawAddress() != null && address.getRawAddress().length() > 2) {
             parse(address.getRawAddress());
             createInetAddress(); // first check
+            this.isEnforced = true;
             return;
          }
-         this.port = address.getEnv("port", defaultServerPort).getValue();
-         this.hostname = address.getEnv("hostname", glob.getLocalIP()).getValue();
+         this.portProp = address.getEnv("port", defaultServerPort); 
+         this.port = this.portProp.getValue();
+         this.hostnameProp = address.getEnv("hostname", glob.getLocalIP());
+         this.hostname = this.hostnameProp.getValue();
          address.setRawAddress(getUrl());
       }
       createInetAddress(); // first check
+   }
+   
+   /** @return true if host or port was given by user configuration, false if default is chosen */
+   public boolean isEnforced() {
+      if (this.isEnforced) return true;
+      boolean enforcedHost = (this.hostnameProp == null) ? false : !this.hostnameProp.isDefault();
+      boolean enforcedPort = (this.portProp == null) ? false : !this.portProp.isDefault();
+      return enforcedHost || enforcedPort;
    }
 
    public String getHostname() {

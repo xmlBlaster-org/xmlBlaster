@@ -590,6 +590,14 @@ public abstract class AddressBase implements Cloneable
       return this.rawAddress.getValue();
    }
 
+   private String hashkey = null;
+   public final void setHashkey(String hashkey) {
+      this.hashkey = hashkey;
+   }
+   public final String getHashkey() {
+      return this.hashkey;
+   }
+   
    /**
     * Returns the protocol type.
     * @return e.g. "EMAIL" or "IOR" (never null).

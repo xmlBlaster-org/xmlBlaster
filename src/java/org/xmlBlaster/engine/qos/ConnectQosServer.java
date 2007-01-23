@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.qos;
 import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.ConnectQosData;
@@ -50,6 +51,11 @@ public final class ConnectQosServer
     */
    public ConnectQosServer getClone(Global newGlob) throws XmlBlasterException {
       ConnectQosServer aClone = new ConnectQosServer(newGlob, toXml());
+      CallbackAddress[] cbArr = getSessionCbQueueProperty().getCallbackAddresses();
+      CallbackAddress[] aCloneCbArr = aClone.getSessionCbQueueProperty().getCallbackAddresses(); 
+      for (int ii=0; cbArr!=null && ii<cbArr.length && aCloneCbArr != null && ii<aCloneCbArr.length; ii++) {
+         aCloneCbArr[ii].setHashkey(cbArr[ii].getHashkey());
+      }
       aClone.bypassCredentialCheck(bypassCredentialCheck());
       aClone.isFromPersistenceRecovery(isFromPersistenceRecovery());
       aClone.setPersistenceUniqueId(getPersistenceUniqueId());

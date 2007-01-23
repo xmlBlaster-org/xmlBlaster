@@ -95,7 +95,7 @@ public final class CbDispatchConnection extends DispatchConnection
    public final void loadPlugin() throws XmlBlasterException {
       // Check if a native callback driver is passed in the glob Hashtable (e.g. for "SOCKET" or "native"), take this instance
       //if (address.getId().equalsIgnoreCase("NATIVE")) {
-      this.cbKey = address.getType() + address.getRawAddress();
+      this.cbKey = address.getType() + address.getHashkey();
       this.cbDriver = glob.getNativeCallbackDriver(this.cbKey);
 
       if (this.cbDriver == null) { // instantiate the callback plugin ...
