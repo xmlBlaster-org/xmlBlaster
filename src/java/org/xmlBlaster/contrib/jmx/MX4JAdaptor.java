@@ -250,7 +250,7 @@ public class MX4JAdaptor extends GlobalInfo {
 
       
       public void writeResponse(HttpOutputStream outputStream, HttpInputStream inputStream, Document doc) throws IOException {
-         log.severe(debug(inputStream));
+         // log.severe(debug(inputStream));
          Element el = doc.getDocumentElement();
 
          Attr admin = doc.createAttribute(ADMIN_ROLE);
@@ -328,7 +328,7 @@ public class MX4JAdaptor extends GlobalInfo {
                Map.Entry entry = (Map.Entry)iter.next();
                String name = (String)entry.getKey();
                String val = (String)entry.getValue();
-               log.severe("name='" + name + "' value='" + val + "'");
+               log.fine("name='" + name + "' value='" + val + "'");
                int pos = val.indexOf(':');
                String pwd = null;
                String roles = USER_ROLE;
@@ -338,7 +338,7 @@ public class MX4JAdaptor extends GlobalInfo {
                }
                else
                   pwd = val;
-               log.info("registering monitor user '" + name + "' having roles : " + roles + "' (pwd='" + pwd + "')");
+               log.fine("registering monitor user '" + name + "' having roles : " + roles + "'");
                adapter.addAuthorization(name, pwd);
                this.roles.put(name, roles);
             }
