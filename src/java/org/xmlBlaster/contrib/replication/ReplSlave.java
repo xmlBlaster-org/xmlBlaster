@@ -30,9 +30,7 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.admin.I_AdminSession;
-import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
-import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.SessionName;
@@ -70,6 +68,10 @@ import org.xmlBlaster.util.xbformat.XmlScriptParser;
 public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConstants {
 
    private static Logger log = Logger.getLogger(ReplSlave.class.getName());
+   private final static String CONN_STALLED = "stalled";
+   private final static String CONN_CONNECTED = "connected";
+   private final static String CONN_DISCONNECTED = "disconnected";
+   
    private String slaveSessionId;
    private String name;
    private String statusTopic;
@@ -112,6 +114,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private long tmpMsgSeq;
    private long tmpMsgSeq2;
    private long messageSeq;
+   private String masterConn = CONN_DISCONNECTED;
    
    /** we don't want to sync the check method because the jmx will synchronize on the object too */
    private Object initSync = new Object();
@@ -408,17 +411,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    }
    
    private I_AdminSession getSession() throws Exception {
-      I_Authenticate auth = getEngineGlobal(this.global).getAuthenticate();
-      if (auth == null)
-         throw new Exception("prepareForRequest: could not retreive the Authenticator object. Can not continue.");
-      SessionName sessionName = new SessionName(this.global, this.slaveSessionId);
-      I_AdminSubject subject = auth.getSubjectInfoByName(sessionName);
-      if (subject == null)
-         throw new Exception("prepareForRequest: no subject (slave) found with the session name '" + this.slaveSessionId + "'");
-      I_AdminSession session = subject.getSessionByPubSessionId(sessionName.getPublicSessionId());
-      if (session == null)
-         throw new Exception("prepareForRequest: no session '" + this.slaveSessionId + "' found. Valid sessions for this user are '" + subject.getSessionList() + "'");
-      return session;
+      return this.manager.getSession(this.slaveSessionId);
    }
    
    /**
@@ -545,6 +538,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
+   
    /**
     * 
     */
@@ -637,7 +631,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
 
             // check if the message has to be stored locally
             ClientProperty endToRemote = msgUnit.getQosData().getClientProperty(ReplicationConstants.INITIAL_DATA_END_TO_REMOTE);
-            if (initialFilesLocation != null && (endToRemote == null || !endToRemote.getBooleanValue())) {
+            if (initialFilesLocation != null && (endToRemote == null || !endToRemote.getBooleanValue()) && (endMsg == null || !endMsg.getBooleanValue())) {
                storeChunkLocally(entry, initialFilesLocation, subDirName);
                queue.removeRandom(entry);
                // entries.remove(i);
@@ -995,6 +989,24 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          this.queueEntries = -1L;
       }
       
+      try {
+         I_AdminSession masterSession = this.manager.getMasterSession(this.replPrefix);
+         if (masterSession != null) {
+            if (masterSession.isStalled())
+               this.masterConn = CONN_STALLED;
+            else if (masterSession.getConnectionState().equals(ConnectionStateEnum.ALIVE.toString()))
+               this.masterConn = CONN_CONNECTED;
+            else
+               this.masterConn = CONN_DISCONNECTED;
+         }
+         else {
+            this.masterConn = CONN_DISCONNECTED;
+         }
+      }
+      catch (Exception ex) {
+         this.masterConn = CONN_DISCONNECTED;
+         ex.printStackTrace();
+      }
       // isConnected
       try {
          this.connected = session.getConnectionState().equals(ConnectionStateEnum.ALIVE.toString());
@@ -1186,10 +1198,28 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     */
    public String getConnection() {
       if (isStalled())
-         return "stalled";
+         return CONN_STALLED;
       if (isConnected())
-         return "connected";
-      return "disconnected";
+         return CONN_CONNECTED;
+      return CONN_DISCONNECTED;
+   }
+   
+   public String getMasterConnection() {
+      return this.masterConn;
+   }
+   
+   public String getCascadedConnection() {
+      ReplSlave cascadedSlave = getCascaded();
+      if (cascadedSlave == null)
+         return CONN_DISCONNECTED;
+      return cascadedSlave.getConnection();
+   }
+   
+   public String getCascadedMasterConnection() {
+      ReplSlave cascadedSlave = getCascaded();
+      if (cascadedSlave == null)
+         return CONN_DISCONNECTED;
+      return cascadedSlave.getMasterConnection();
    }
    
 }

@@ -81,7 +81,7 @@ function refresh() {
             <th class="normal" title="Current counter for this replication. This is a monoton increasing positive integer" colspan="1">Counter</th>
             <th class="normal" title="Status of the replication initiation." colspan="1">Status</th>
             <th class="normal" title="Status of the dispacher, can either be active or disactivated." colspan="1">Active / Standby</th>
-            <th class="normal" title="Status of the connection to the destination, either connected or disconnected." colspan="1">Connection</th>
+            <th class="normal" title="Connection Status from Master to Server and from Server to Slave. Either connected disconnected or stalled." colspan="1">Connection</th>
             <th class="normal" title="Current version of the data on the slave." colspan="1">Version</th>
           </tr>
     
@@ -128,6 +128,7 @@ function refresh() {
    <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
    <xsl:param name="activeStatus" select="Attribute[@name='Active']/@value"/>
    <xsl:param name="connectedStatus" select="Attribute[@name='Connection']/@value"/>
+   <xsl:variable name="masterConnectStatus" select="Attribute[@name='MasterConnection']/@value"/>
    <xsl:param name="version" select="Attribute[@name='Version']/@value"/>
 
 <!--
@@ -201,11 +202,19 @@ function refresh() {
             </xsl:choose>
             <td align="center" colspan="1" class="normal">
                <xsl:element name="img">
+                  <xsl:attribute name="height">20</xsl:attribute>
+                  <xsl:attribute name="src">./<xsl:value-of select="$masterConnectStatus"/>.png</xsl:attribute>
+                  <xsl:attribute name="alt"><xsl:value-of select="$masterConnectStatus"/></xsl:attribute>
+                  <xsl:attribute name="title">master (source) <xsl:value-of select="$masterConnectStatus"/></xsl:attribute>
+               </xsl:element>
+               <xsl:element name="img">
                   <xsl:attribute name="height">18</xsl:attribute>
                   <xsl:attribute name="src">./<xsl:value-of select="$connectedStatus"/>.png</xsl:attribute>
                   <xsl:attribute name="alt"><xsl:value-of select="$connectedStatus"/></xsl:attribute>
-                  <xsl:attribute name="title"><xsl:value-of select="$connectedStatus"/></xsl:attribute>
+                  <xsl:attribute name="title">slave (destination) <xsl:value-of select="$connectedStatus"/></xsl:attribute>
                </xsl:element>
+
+
             </td>
             <td align="center" colspan="1" class="normal"><xsl:value-of select="$version"/></td>
           </tr>

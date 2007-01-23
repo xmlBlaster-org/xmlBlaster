@@ -43,6 +43,7 @@ import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.DbPool;
 import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwatcher.DbWatcherConstants;
 import org.xmlBlaster.contrib.replication.I_ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
@@ -51,8 +52,11 @@ import org.xmlBlaster.engine.I_SubscriptionListener;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.SubscriptionEvent;
 import org.xmlBlaster.engine.SubscriptionInfo;
+import org.xmlBlaster.engine.admin.I_AdminSession;
+import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -1609,5 +1613,30 @@ public class ReplManagerPlugin extends GlobalInfo
    public int getMaxNumOfEntries() {
       return this.maxNumOfEntries;
    }
+   
+   public I_AdminSession getSession(String sessionId) throws Exception {
+      I_Authenticate auth = getEngineGlobal(this.global).getAuthenticate();
+      if (auth == null)
+         throw new Exception("prepareForRequest: could not retreive the Authenticator object. Can not continue.");
+      SessionName sessionName = new SessionName(this.global, sessionId);
+      I_AdminSubject subject = auth.getSubjectInfoByName(sessionName);
+      if (subject == null)
+         throw new Exception("prepareForRequest: no subject (slave) found with the session name '" + sessionId + "'");
+      I_AdminSession session = subject.getSessionByPubSessionId(sessionName.getPublicSessionId());
+      if (session == null)
+         throw new Exception("prepareForRequest: no session '" + sessionId + "' found. Valid sessions for this user are '" + subject.getSessionList() + "'");
+      return session;
+   }
+   
+   public I_AdminSession getMasterSession(String replicationPrefix) throws Exception {
+      I_Info masterInfo = getReplicationInfo(replicationPrefix);
+      if (masterInfo == null)
+         return null;
+      String sessionId = masterInfo.get(DbWatcherConstants.MOM_LOGIN_NAME, null);
+      if (sessionId == null)
+         return null;
+      return getSession(sessionId);
+   }
+   
 }
 

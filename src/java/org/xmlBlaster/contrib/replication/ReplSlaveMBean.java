@@ -47,5 +47,8 @@ public interface ReplSlaveMBean {
    boolean isCascadedActive();
    boolean isCascadedConnected();
    String getCascadedVersion();
+   String getMasterConnection();
+   String getCascadedConnection();
+   String getCascadedMasterConnection();
    
 }

@@ -252,7 +252,7 @@ function dumpEntry() {
             <td colspan="1" class="normal" title="Status of the dispatcher: active or destactivated">Active / Standby</td>
             <xsl:choose>
               <xsl:when test="Attribute[@name='Active']/@value = 'true'">
-            <td align="center" colspan="1" class="normal"><img height="20" src="./active.png" alt="active" title="active" /></td>
+            <td align="center" colspan="1" class="normal"><img height="20" src="./active.png" alt="active" title="slave (destination) active" /></td>
             <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
             <td align="center" colspan="1" class="normal">
                   <button class="small" onClick="toggleDispatcher()" title="Click to pause: i.e. disactivate the dispatcher">Standby</button>
@@ -260,7 +260,7 @@ function dumpEntry() {
                      </xsl:when>
               <xsl:otherwise>
 
-            <td align="center" colspan="1" class="normal"><img height="20" src="./inactive.png" alt="inactive" title="inactive" /></td>
+            <td align="center" colspan="1" class="normal"><img height="20" src="./inactive.png" alt="inactive" title="slave (destination) inactive" /></td>
             <td colspan="1"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
             <td align="center" colspan="1" class="normal">
                   <button class="small" onClick="toggleDispatcher()" title="Click to continue: go from Standby to Active">Activate</button>
@@ -271,14 +271,21 @@ function dumpEntry() {
 
          <!-- Status Of Connection Line -->
           <tr class="inner">
-            <td colspan="1" class="normal" title="Status of the connection: connected (online) or disconnected (offline)">Connection</td>
+            <td colspan="1" class="normal" title="Connection status: connected (online) or disconnected (offline): left master right slave">Connection</td>
             <td align="center" colspan="1" class="normal">
                <xsl:variable name="connectStatus" select="Attribute[@name='Connection']/@value"/>
+               <xsl:variable name="masterConnectStatus" select="Attribute[@name='MasterConnection']/@value"/>
+               <xsl:element name="img">
+                  <xsl:attribute name="height">20</xsl:attribute>
+                  <xsl:attribute name="src">./<xsl:value-of select="$masterConnectStatus"/>.png</xsl:attribute>
+                  <xsl:attribute name="alt"><xsl:value-of select="$masterConnectStatus"/></xsl:attribute>
+                  <xsl:attribute name="title">master (source) <xsl:value-of select="$masterConnectStatus"/></xsl:attribute>
+               </xsl:element>
                <xsl:element name="img">
                   <xsl:attribute name="height">20</xsl:attribute>
                   <xsl:attribute name="src">./<xsl:value-of select="$connectStatus"/>.png</xsl:attribute>
                   <xsl:attribute name="alt"><xsl:value-of select="$connectStatus"/></xsl:attribute>
-                  <xsl:attribute name="title"><xsl:value-of select="$connectStatus"/></xsl:attribute>
+                  <xsl:attribute name="title">slave (destination) <xsl:value-of select="$connectStatus"/></xsl:attribute>
                </xsl:element>
             </td>
             <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
