@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15930 Dead letter is now not containing <oid>...</oid> anymore
+          Is send already QoS
+
  o #15906 Switched off dynamically loadable plugins as a default setting.
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html#dynamic
  
