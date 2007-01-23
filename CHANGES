@@ -1,6 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15934 Fixed java client library for changing client side IP address
+          Reconnect is now supported.
+          Security fix which allowed hijacking the callback address
+
  o #15930 Dead letter is now not containing <oid>...</oid> anymore
           Is send already QoS
 
