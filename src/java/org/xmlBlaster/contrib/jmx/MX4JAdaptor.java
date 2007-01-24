@@ -290,7 +290,8 @@ public class MX4JAdaptor extends GlobalInfo {
          el.setAttributeNode(admin);
          el.setAttributeNode(initiator);
          el.setAttributeNode(user);
-         
+         // outputStream.setHeader("Cache-Control", "no-cache");
+         // outputStream.setHeader("Content-Type", "text/xml");
          super.writeResponse(outputStream, inputStream, doc);
       }
    }

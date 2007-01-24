@@ -393,7 +393,8 @@ public class ReplManagerPlugin extends GlobalInfo
                this.initialFilesLocation = realInitialFilesLocation.trim();
                individualInfo.put(INITIAL_FILES_LOCATION, this.initialFilesLocation);
             }
-            
+            else
+               individualInfo.putObject(INITIAL_FILES_LOCATION, null);
             individualInfo.put(REPL_VERSION, requestedVersion);
             individualInfo.putObject("org.xmlBlaster.engine.Global", this.global);
             I_ReplSlave slave = null;
