@@ -31,7 +31,7 @@
        <tr>
        <td>Windows Mobile CE 5.1</td>
        <td>ARM</td>
-       <td>HP IPAQ hw6910</td>
+       <td>HP IPAQ hw6910 and Motorola HC700</td>
        </tr>
 
       </table>
@@ -94,7 +94,7 @@
        </tr>
        
       </table>
-      <p>Example compilation on a Windows platform (Win32 or CE)</p>
+      <p>Example compilation on a Windows platform (Win32 or CE compact framework .net 2.x)</p>
 <pre>
 cd xmlBlaster\src\csharp
 
@@ -113,8 +113,10 @@ cd xmlBlaster\src\csharp
 mcs /d:XMLBLASTER_MONO -debug+ -out:Hello.exe NativeC.cs XmlBlasterAccess.cs Hello.cs
 </pre>
 
-      <p class="celltitel" id="windows">Managed code access (C++,VB.net,C#)</p>
+      <p class="celltitel" id="windows">Managed C++ wrapper (C++,VB.net,C#)</p>
       <p>There is a first - not finished - prototype of a managed C++ code.
+      Note that managed C++ is NOT supported on CE compact framework .net, it
+      is only supported on normal desktop .NET environments.
       Probably this approach is dropped again as the above C# approach covers
       all and can act as a gateway for other .net languages.<br />
       This XmlBlasterManaged.cpp code is based on the new C++/CLI specification
