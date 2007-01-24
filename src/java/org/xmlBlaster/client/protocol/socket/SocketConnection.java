@@ -203,13 +203,13 @@ public class SocketConnection implements I_XmlBlasterConnection
                   "', callback address is '" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort() + "'");
          }
          else {
-            this.clientAddress.getEnv("localPort", this.sock.getLocalPort()).setValue(this.sock.getLocalPort(), PropEntry.CREATED_BY_DEFAULT);
-            this.clientAddress.getEnv("localHostname", this.sock.getLocalAddress().getHostAddress()).setValue(this.sock.getLocalAddress().getHostAddress(), PropEntry.CREATED_BY_DEFAULT);
+            // SocketUrl constructor updates client address
             this.localSocketUrl = new SocketUrl(glob, this.sock.getLocalAddress().getHostAddress(), this.sock.getLocalPort());
+            this.clientAddress.setRawAddress(this.socketUrl.getUrl());
             log.info(getType() + (ssl ? " SSL" : "") +
                   " client connected to '" + socketUrl.getUrl() +
                   "', callback address is '" + this.localSocketUrl.getUrl() +
-                  "' useUdpForOneway=" + this.useUdpForOneway);
+                  "' useUdpForOneway=" + this.useUdpForOneway + " clientAddress='" + this.clientAddress.getRawAddress() + "'");
          }
 
          // start the socket sender and callback thread here

@@ -136,7 +136,12 @@ abstract public class DispatchConnectionsHandler
             for (int ii=0; ii<tmpList.size(); ii++) {
                boolean found = false;
                for (int jj=0; jj<cbAddr.length; jj++) {
-                  if (((DispatchConnection)tmpList.get(ii)).getAddress().isSameAddress(cbAddr[jj])) {
+                  Object obj = cbAddr[jj].getCallbackDriver();
+                  DispatchConnection  tmpConn = (DispatchConnection)tmpList.get(ii);
+                  if (obj != null && obj != tmpConn.getAddress().getCallbackDriver()) {
+                     continue;
+                  }
+                  if (tmpConn.getAddress().isSameAddress(cbAddr[jj])) {
                      found = true;
                      break;
                   }
