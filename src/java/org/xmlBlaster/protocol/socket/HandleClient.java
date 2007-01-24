@@ -17,7 +17,6 @@ import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -241,9 +240,6 @@ public class HandleClient extends SocketExecutor implements Runnable
 
                CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
-                  //Timestamp tt = new Timestamp();
-                  //cbArr[ii].setCallbackDriver(tt.toString());
-                  //this.cbKey = cbArr[ii].getType() + cbArr[ii].getCallbackDriver(); // we can't use the client IP because it can change and it would allow kidnapping
                   SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
                   SocketUrl remoteUrl = new SocketUrl(glob, socket.getInetAddress().getHostAddress(), socket.getPort());
                   if (driver.getAddressServer() != null) {
@@ -254,15 +250,6 @@ public class HandleClient extends SocketExecutor implements Runnable
                      if (log.isLoggable(Level.FINE)) log.fine("Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      cbArr[ii].setCallbackDriver(this.callback);
-                     //org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
-                     //if (oldCallback != null) { // Remove old and lost login of client with same callback address
-                     //   log.warning("Destroying old callback driver '" + cbArr[ii].getRawAddress() + "' ...");
-                     //   //oldCallback.shutdown(); don't destroy socket, is done by others
-                     //   driver.getGlobal().removeNativeCallbackDriver(cbKey);
-                     //   oldCallback = null;
-                     //}
-                     //if (log.isLoggable(Level.FINE)) HandleClient.log.fine("run: register new callback driver: '" + cbKey + "'");
-                     //driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
                   }
                   else {
                      log.severe("Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
