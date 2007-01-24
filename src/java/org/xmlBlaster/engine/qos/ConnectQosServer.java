@@ -54,7 +54,7 @@ public final class ConnectQosServer
       CallbackAddress[] cbArr = getSessionCbQueueProperty().getCallbackAddresses();
       CallbackAddress[] aCloneCbArr = aClone.getSessionCbQueueProperty().getCallbackAddresses(); 
       for (int ii=0; cbArr!=null && ii<cbArr.length && aCloneCbArr != null && ii<aCloneCbArr.length; ii++) {
-         aCloneCbArr[ii].setHashkey(cbArr[ii].getHashkey());
+         aCloneCbArr[ii].setCallbackDriver(cbArr[ii].getCallbackDriver());
       }
       aClone.bypassCredentialCheck(bypassCredentialCheck());
       aClone.isFromPersistenceRecovery(isFromPersistenceRecovery());

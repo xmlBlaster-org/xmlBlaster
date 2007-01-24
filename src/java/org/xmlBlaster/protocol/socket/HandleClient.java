@@ -5,31 +5,31 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.Socket;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.def.Constants;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
-import org.xmlBlaster.util.MsgUnitRaw;
 
 import edu.emory.mathcs.backport.java.util.concurrent.ExecutorService;
 import edu.emory.mathcs.backport.java.util.concurrent.Executors;
-
-import java.net.DatagramPacket;
-import java.net.Socket;
-import java.net.DatagramSocket;
-import java.io.IOException;
 
 
 /**
@@ -54,7 +54,7 @@ public class HandleClient extends SocketExecutor implements Runnable
    private CallbackSocketDriver callback;
    /** The socket connection to/from one client */
    protected DatagramSocket sockUDP;
-   private String cbKey = null; // Remember the key for the Global map
+   //private String cbKey = null; // Remember the key for the Global map
    /** Holds remote "host:port" for logging */
    protected String remoteSocketStr;
    /** The socket connection to/from one client */
@@ -146,8 +146,8 @@ public class HandleClient extends SocketExecutor implements Runnable
          if (!running)
             return;
          if (log.isLoggable(Level.FINE)) log.fine("Shutdown cb connection to " + loginName + " ...");
-         if (cbKey != null)
-            driver.getGlobal().removeNativeCallbackDriver(cbKey);
+         //if (cbKey != null)
+         //   driver.getGlobal().removeNativeCallbackDriver(cbKey);
 
          running = false;
 
@@ -241,9 +241,9 @@ public class HandleClient extends SocketExecutor implements Runnable
 
                CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
-                  Timestamp tt = new Timestamp();
-                  cbArr[ii].setHashkey(tt.toString());
-                  cbKey = cbArr[ii].getType() + cbArr[ii].getHashkey(); // we can't use the client IP because it can change and it would allow kidnapping
+                  //Timestamp tt = new Timestamp();
+                  //cbArr[ii].setCallbackDriver(tt.toString());
+                  //this.cbKey = cbArr[ii].getType() + cbArr[ii].getCallbackDriver(); // we can't use the client IP because it can change and it would allow kidnapping
                   SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
                   SocketUrl remoteUrl = new SocketUrl(glob, socket.getInetAddress().getHostAddress(), socket.getPort());
                   if (driver.getAddressServer() != null) {
@@ -253,15 +253,16 @@ public class HandleClient extends SocketExecutor implements Runnable
                   if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
                      if (log.isLoggable(Level.FINE)) log.fine("Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
                      this.callback = new CallbackSocketDriver(this.loginName, this);
-                     org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
-                     if (oldCallback != null) { // Remove old and lost login of client with same callback address
-                        log.warning("Destroying old callback driver '" + cbArr[ii].getRawAddress() + "' ...");
-                        //oldCallback.shutdown(); don't destroy socket, is done by others
-                        driver.getGlobal().removeNativeCallbackDriver(cbKey);
-                        oldCallback = null;
-                     }
-                     if (log.isLoggable(Level.FINE)) HandleClient.log.fine("run: register new callback driver: '" + cbKey + "'");
-                     driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
+                     cbArr[ii].setCallbackDriver(this.callback);
+                     //org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
+                     //if (oldCallback != null) { // Remove old and lost login of client with same callback address
+                     //   log.warning("Destroying old callback driver '" + cbArr[ii].getRawAddress() + "' ...");
+                     //   //oldCallback.shutdown(); don't destroy socket, is done by others
+                     //   driver.getGlobal().removeNativeCallbackDriver(cbKey);
+                     //   oldCallback = null;
+                     //}
+                     //if (log.isLoggable(Level.FINE)) HandleClient.log.fine("run: register new callback driver: '" + cbKey + "'");
+                     //driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
                   }
                   else {
                      log.severe("Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");

@@ -6,24 +6,23 @@ Comment:   Holding connect address and callback address string including protoco
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.address;
 
-import java.util.logging.Logger;
+import java.util.Iterator;
+import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xml.sax.Attributes;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
-import org.xml.sax.Attributes;
-
 import org.xmlBlaster.util.plugin.PluginManagerBase;
+import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.property.PropEntry;
-import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.property.PropLong;
-import org.xmlBlaster.util.property.PropBoolean;
+import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.qos.ClientProperty;
-
-import java.util.Iterator;
-import java.util.Properties;
 
 
 /**
@@ -590,12 +589,13 @@ public abstract class AddressBase implements Cloneable
       return this.rawAddress.getValue();
    }
 
-   private String hashkey = null;
-   public final void setHashkey(String hashkey) {
-      this.hashkey = hashkey;
+   // used by SOCKET as the same socket is used for callback tunneling
+   private Object/*I_CallbackDriver*/ callbackDriver = null;
+   public final void setCallbackDriver(Object/*I_CallbackDriver*/ callbackDriver) {
+      this.callbackDriver = callbackDriver;
    }
-   public final String getHashkey() {
-      return this.hashkey;
+   public final Object getCallbackDriver() {
+      return this.callbackDriver;
    }
    
    /**

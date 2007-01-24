@@ -93,12 +93,19 @@ public final class CbDispatchConnection extends DispatchConnection
 
    /** Load the appropriate protocol driver */
    public final void loadPlugin() throws XmlBlasterException {
-      // Check if a native callback driver is passed in the glob Hashtable (e.g. for "SOCKET" or "native"), take this instance
-      //if (address.getId().equalsIgnoreCase("NATIVE")) {
-      this.cbKey = address.getType() + address.getHashkey();
-      this.cbDriver = glob.getNativeCallbackDriver(this.cbKey);
+      // Check if a native callback driver is passed in the glob Hashtable (e.g. for "jdbc" or "native"), take this instance
+      
+      // SOCKET protocol
+      this.cbDriver = (I_CallbackDriver)this.address.getCallbackDriver();
 
-      if (this.cbDriver == null) { // instantiate the callback plugin ...
+      if (this.cbDriver == null) {
+         // JDBC service
+         this.cbKey = address.getType() + address.getRawAddress();
+         this.cbDriver = glob.getNativeCallbackDriver(this.cbKey);
+      }
+
+      if (this.cbDriver == null) {
+         // instantiate the callback plugin (CORBA, XMLRPC) ...
          this.cbDriver = ((org.xmlBlaster.engine.ServerScope)glob).getCbProtocolManager().getNewCbProtocolDriverInstance(address.getType());
          if (this.cbDriver == null)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, callback protocol type='" + address.getType() + "' is not supported");
