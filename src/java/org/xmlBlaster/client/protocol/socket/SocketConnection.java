@@ -199,7 +199,8 @@ public class SocketConnection implements I_XmlBlasterConnection
             log.info(getType() + (ssl ? " SSL" : "") +
                   " client connected to '" + this.socketUrl.getUrl() +
                   "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
-                  " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway);
+                  " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway +
+                  "', callback address is '" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort() + "'");
          }
          else {
             this.clientAddress.getEnv("localPort", this.sock.getLocalPort()).setValue(this.sock.getLocalPort(), PropEntry.CREATED_BY_DEFAULT);
