@@ -113,7 +113,7 @@ public class XmlBlasterAccessTest : I_Callback, I_LoggingCallback
    #endregion
 
    #region I_LoggingCallback Members
-   public void OnLogging(LogLevel logLevel, string location, string message)
+   public void OnLogging(XmlBlasterLogLevel logLevel, string location, string message)
    {
       log(logLevel.ToString() + " " + location + ": " + message);
    }
