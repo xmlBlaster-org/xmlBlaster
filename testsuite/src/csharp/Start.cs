@@ -17,7 +17,17 @@ public class Start
    static void Main(string[] argv)
    {
       Console.WriteLine("Startup");
+      testNmea();
+      //testXmlBlaster();
+   }
 
+   private static void testNmea()
+   {
+      NmeaTest n = new NmeaTest();
+      n.CheckSerialInput();
+   }
+
+   private static void testXmlBlaster() {
       QosTest qosTest = new QosTest();
       qosTest.CheckConnectReturnQos();
       qosTest.CheckComplete();
