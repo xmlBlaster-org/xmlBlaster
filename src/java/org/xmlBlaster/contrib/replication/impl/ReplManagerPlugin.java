@@ -145,7 +145,7 @@ public class ReplManagerPlugin extends GlobalInfo
    /** Keys are requestId Strings, and values are SqlStatement objects */
    private Map sqlStatementMap;
    private boolean shutdown;
-   private boolean initialized;
+   private volatile boolean initialized;
    
    private String instanceName;
    private long maxSize = 999999L;

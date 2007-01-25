@@ -62,7 +62,7 @@ public class HandleClient extends SocketExecutor implements Runnable
    private String secretSessionId = null;
 
    private boolean callCoreInSeparateThread=true;
-   protected static ExecutorService executorService;
+   protected volatile static ExecutorService executorService;
    
 
    /**

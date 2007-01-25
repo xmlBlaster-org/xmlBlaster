@@ -307,7 +307,6 @@ public class MX4JAdaptor extends GlobalInfo {
       String host = get("host", "0.0.0.0");
       String adaptorName = get("adaptorName", "HttpAdaptorMX4J");
       MBeanServer server = global.getJmxWrapper().getMBeanServer();
-
       HttpAdaptor adapter = new HttpAdaptor();
       this.name = new ObjectName("Adaptor:name=" + adaptorName);
       server.registerMBean(adapter, name);

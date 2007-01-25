@@ -99,7 +99,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    /** manager for sending callback messages */
    private DispatchManager dispatchManager;
    /** Statistic about send/received messages, can be null if there is a DispatchManager around */
-   private DispatchStatistic statistic;
+   private volatile DispatchStatistic statistic;
    private boolean isShutdown = false;
    /** Protects timerKey refresh */
    private final Object EXPIRY_TIMER_MONITOR = new Object();
@@ -128,7 +128,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private ReentrantLock lock = new ReentrantLock();
    
    /** this is used for administrative gets (queries on callback queue) */
-   private QueueQueryPlugin queueQueryPlugin;
+   private volatile QueueQueryPlugin queueQueryPlugin;
 
    /**
     * Create this instance when a client did a login.

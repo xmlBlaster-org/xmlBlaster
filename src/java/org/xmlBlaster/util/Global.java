@@ -113,7 +113,7 @@ public class Global implements Cloneable
    private static Logger log = Logger.getLogger(Global.class.getName());
    private static boolean logIsInitialized;
 
-   private static Global firstInstance;
+   private volatile static Global firstInstance;
 
    /** The amount of physical RAM of this machine.
     * Set by JmxWrappter.java, else 0
@@ -150,9 +150,9 @@ public class Global implements Cloneable
    protected String ME = "Global";
    protected String ip_addr = null;
    protected String id = "";
-   private String instanceId;
+   private volatile String instanceId;
 
-   protected Property property = null;
+   protected volatile Property property = null;
    protected String errorText = null;
 
    protected ContextNode contextNode;
@@ -171,17 +171,17 @@ public class Global implements Cloneable
    /** Helper to synchronize objectMap access */
    public final Object objectMapMonitor = new Object();
    
-   protected Address bootstrapAddress;
+   protected volatile Address bootstrapAddress;
    protected PluginLoader clientSecurityLoader;
 
-   protected QueuePluginManager queuePluginManager;
+   protected volatile QueuePluginManager queuePluginManager;
 
-   protected DispatchPluginManager dispatchPluginManager;
+   protected volatile DispatchPluginManager dispatchPluginManager;
 
-   protected ProtocolPluginManager protocolPluginManager;
-   protected CbServerPluginManager cbServerPluginManager;
+   protected volatile ProtocolPluginManager protocolPluginManager;
+   protected volatile CbServerPluginManager cbServerPluginManager;
 
-   private HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
+   private volatile HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
 
    protected Hashtable logChannels = new Hashtable();
 
@@ -189,27 +189,27 @@ public class Global implements Cloneable
    protected DocumentBuilderFactory docBuilderFactory;
    protected TransformerFactory transformerFactory;
 
-   protected I_MsgKeyFactory msgKeyFactory;
-   protected I_QueryKeyFactory queryKeyFactory;
-   protected I_ConnectQosFactory connectQosFactory;
-   protected I_DisconnectQosFactory disconnectQosFactory;
-   protected I_MsgQosFactory msgQosFactory;
-   protected I_QueryQosFactory queryQosFactory;
-   protected I_StatusQosFactory statusQosFactory;
+   protected volatile I_MsgKeyFactory msgKeyFactory;
+   protected volatile I_QueryKeyFactory queryKeyFactory;
+   protected volatile I_ConnectQosFactory connectQosFactory;
+   protected volatile I_DisconnectQosFactory disconnectQosFactory;
+   protected volatile I_MsgQosFactory msgQosFactory;
+   protected volatile I_QueryQosFactory queryQosFactory;
+   protected volatile I_StatusQosFactory statusQosFactory;
 
-   protected Timeout pingTimer;
-   protected Timeout burstModeTimer;
-   protected Timeout messageTimer;
-   protected Timeout jdbcConnectionPoolTimer;
-   protected DispatchWorkerPool dispatchWorkerPool;
+   protected volatile Timeout pingTimer;
+   protected volatile Timeout burstModeTimer;
+   protected volatile Timeout messageTimer;
+   protected volatile Timeout jdbcConnectionPoolTimer;
+   protected volatile DispatchWorkerPool dispatchWorkerPool;
 
    protected static int counter = 0;
 
-   private PluginManagerBase pluginManager;
-   private PluginRegistry pluginRegistry;
+   private volatile PluginManagerBase pluginManager;
+   private volatile PluginRegistry pluginRegistry;
 
    /** The client handle to access xmlBlaster */
-   protected I_XmlBlasterAccess xmlBlasterAccess;
+   protected volatile I_XmlBlasterAccess xmlBlasterAccess;
 
    protected boolean isDoingShutdown = false;
    

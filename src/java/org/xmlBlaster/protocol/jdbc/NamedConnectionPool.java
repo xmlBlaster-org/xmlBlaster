@@ -74,8 +74,7 @@ import java.sql.DriverManager;
  * @see         org.xmlBlaster.util.pool.ResourceWrapper
  * @since       xmlBlaster 0.78
  */
-public class NamedConnectionPool
-{
+public class NamedConnectionPool {
    private static final String ME = "NamedConnectionPool";
    private Global glob;
    private static Logger log = Logger.getLogger(NamedConnectionPool.class.getName());

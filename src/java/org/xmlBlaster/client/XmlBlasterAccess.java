@@ -98,7 +98,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    /** The dispatcher framework **/
    private DispatchManager dispatchManager;
    /** Statistic about send/received messages, can be null if there is a DispatchManager around */
-   private DispatchStatistic statistic;
+   private volatile DispatchStatistic statistic;
    /** The object handling message delivery problems */
    private I_MsgErrorHandler msgErrorHandler;
    /** Client side helper classes to load the authentication xml string */

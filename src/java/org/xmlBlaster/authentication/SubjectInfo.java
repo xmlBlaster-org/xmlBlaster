@@ -86,7 +86,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * the SessionInfo object the value
     */
    private Map sessionMap = new HashMap();
-   private SessionInfo[] sessionArrCache;
+   private volatile SessionInfo[] sessionArrCache;
    public CallbackAddress[] callbackAddressCache = null;
 
    private MsgErrorHandler msgErrorHandler;
@@ -123,7 +123,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    private I_Queue subjectQueue;
 
    /** this is used for administrative gets (queries on callback queue) */
-   private QueueQueryPlugin queueQueryPlugin;
+   private volatile QueueQueryPlugin queueQueryPlugin;
    
    /** Statistics */
    private static long instanceCounter = 0L;

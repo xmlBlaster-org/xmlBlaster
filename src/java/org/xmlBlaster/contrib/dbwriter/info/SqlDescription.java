@@ -97,7 +97,7 @@ public class SqlDescription {
     * in this table. It is used for delete and update to find the entry on which to perform the
     * operation
     */
-   private Set configuredSearchableColumns;
+   private volatile Set configuredSearchableColumns;
    
    /**
     * Gets the name of the schema. Since this information is not contained in the object iself but in the

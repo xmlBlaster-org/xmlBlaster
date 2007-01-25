@@ -38,7 +38,7 @@ public class Subject implements I_Subject {
     * Authenticate the user
     * <p/>
     * @param String Password
-    * @exception XmlBlasterExceotion Thrown if the user has no valid proof of his identity
+    * @exception XmlBlasterException Thrown if the user has no valid proof of his identity
     */
    void authenticate(String passwd) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".authenticationFailed", "Wrong identity!");

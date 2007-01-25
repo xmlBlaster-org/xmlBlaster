@@ -52,7 +52,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
 {
    private static Logger log = Logger.getLogger(ServerScope.class.getName());
    
-   private RunlevelManager runlevelManager;
+   private volatile RunlevelManager runlevelManager;
    private int currRunlevel = 0;
 
    /** the authentication service (a layer around it for security reasons) */
@@ -61,29 +61,29 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    private RequestBroker requestBroker;
    private NodeId nodeId;
    /** Unique id, even for each restart of a node */
-   private String instanceId;
-   private ClusterManager clusterManager;
-   private Timeout sessionTimer;
-   private Timeout topicTimer;
-   private Timeout telnetSessionTimer;
+   private volatile String instanceId;
+   private volatile ClusterManager clusterManager;
+   private volatile Timeout sessionTimer;
+   private volatile Timeout topicTimer;
+   private volatile Timeout telnetSessionTimer;
 
    private boolean useCluster;
    private boolean firstUseCluster = true; // to allow caching
 
-   private CbProtocolManager cbProtocolManager;
+   private volatile CbProtocolManager cbProtocolManager;
 
-   private StoragePluginManager topicStorePluginManager;
+   private volatile StoragePluginManager topicStorePluginManager;
 
-   private CommandManager commandManager;
+   private volatile CommandManager commandManager;
    private boolean useAdminManager = true;
    private boolean firstUseAdminManager = true; // to allow caching
    private MomClientGateway momClientGateway = null;
 
-   private MsgFileDumper msgFileDumper;
+   private volatile MsgFileDumper msgFileDumper;
 
    private PluginHolder pluginHolder;
 
-   private MsgDistributorPluginManager msgDistributorPluginManager;
+   private virtual MsgDistributorPluginManager msgDistributorPluginManager;
 
    private SubjectEntryShuffler subjectEntryShuffler;
    

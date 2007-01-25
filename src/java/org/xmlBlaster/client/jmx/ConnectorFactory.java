@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 public class ConnectorFactory  {
 
-   private static ConnectorFactory singletonFactory;
+   private volatile static ConnectorFactory singletonFactory;
    private static Global applicationGlobal;
    private static Object syncObject = new Object();
 
