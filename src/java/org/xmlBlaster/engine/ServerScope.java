@@ -83,7 +83,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
 
    private PluginHolder pluginHolder;
 
-   private virtual MsgDistributorPluginManager msgDistributorPluginManager;
+   private volatile MsgDistributorPluginManager msgDistributorPluginManager;
 
    private SubjectEntryShuffler subjectEntryShuffler;
    
