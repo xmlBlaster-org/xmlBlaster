@@ -102,7 +102,7 @@ public class HelloWorldSubscribe implements I_Callback
    private String fileExtension;
    private String filePrefix;
    private String fileDateFormat;
-   private DateFormat formatter;
+   private volatile DateFormat formatter;
    private String fileLock;
    private String fileHeader;
    private int historyNumUpdates;
