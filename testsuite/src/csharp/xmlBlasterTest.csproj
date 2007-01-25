@@ -51,6 +51,7 @@
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="KeyTest.cs" />
+    <Compile Include="NmeaTest.cs" />
     <Compile Include="QosTest.cs" />
     <Compile Include="XmlBlasterAccessTest.cs" />
   </ItemGroup>
