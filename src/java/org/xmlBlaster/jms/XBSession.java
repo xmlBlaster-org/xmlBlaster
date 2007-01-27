@@ -104,7 +104,10 @@ public class XBSession extends Thread implements Session, I_Callback {
    XBSession(XBConnection connection, int ackMode, boolean transacted) {
       this.connection = connection;
       this.global = this.connection.getConnectQos().getData().getGlobal();
+      postConstructor(ackMode, transacted);
+   }
 
+   private final void postConstructor(int ackMode, boolean transacted) {
       if (log.isLoggable(Level.FINER)) 
          log.finer("constructor");
       this.ackMode = ackMode;
@@ -115,7 +118,7 @@ public class XBSession extends Thread implements Session, I_Callback {
       this.channel = new LinkedQueue();
       this.consumerMap = new HashMap();
    }
-
+   
    /**
     * This constructor is used if you want to pass a Global which has already
     * done some work (connected) on the I_XmlBlasterAccess. Caution, you will not
@@ -127,16 +130,7 @@ public class XBSession extends Thread implements Session, I_Callback {
     */
    public XBSession(Global global, int ackMode, boolean transacted) {
       this.global = global;
-
-      if (log.isLoggable(Level.FINER)) 
-         log.finer("constructor");
-      this.ackMode = ackMode;
-      this.durableSubscriptionMap = new HashMap();
-      this.open = true;
-      this.transacted = transacted;
-      this.controlThread = Thread.currentThread();
-      this.channel = new LinkedQueue();
-      this.consumerMap = new HashMap();
+      postConstructor(ackMode, transacted);
       this.syncMode = MODE_ASYNC;
    }
 
@@ -171,11 +165,13 @@ public class XBSession extends Thread implements Session, I_Callback {
       // only activate if already in asyc mode, i.e. if there is at least 
       // one msgListener associated to this session
       boolean realDoActivate = (doActivate && (this.syncMode == MODE_ASYNC));
-      String oid = "__cmd:" + this.sessionName + "/?dispatcherActive=" + realDoActivate; 
-      PublishQos qos = new PublishQos(this.global);
-      PublishKey key = new PublishKey(this.global, oid);
-      this.global.getXmlBlasterAccess().publish(new MsgUnit(key, (byte[])null, qos));
-      this.connectionActivated = realDoActivate;
+      if ( (doActivate && this.syncMode == MODE_ASYNC) || !doActivate) {
+         String oid = "__cmd:" + this.sessionName + "/?dispatcherActive=" + doActivate; 
+         PublishQos qos = new PublishQos(this.global);
+         PublishKey key = new PublishKey(this.global, oid);
+         this.global.getXmlBlasterAccess().publish(new MsgUnit(key, (byte[])null, qos));
+         this.connectionActivated = realDoActivate;
+      }
    }
    
    /**

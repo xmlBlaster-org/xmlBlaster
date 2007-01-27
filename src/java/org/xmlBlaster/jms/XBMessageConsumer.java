@@ -170,7 +170,7 @@ public class XBMessageConsumer implements MessageConsumer, I_Callback {
          GetQos getQos = new GetQos(this.global);
          QuerySpecQos querySpecQos = new QuerySpecQos(this.global, "QueueQuery", "1.0", "maxEntries=1&maxSize=-1&consumable=true&waitingDelay=" + delay + "&subscriptionId=" + this.subscribeReturnQos.getSubscriptionId());
          getQos.addQuerySpec(querySpecQos);
-         String getOid = "__cmd:" + this.session.sessionName + "/?cbQueueEntries";
+         String getOid = "__cmd:" + this.session.sessionName + "/?callbackQueueEntries";
          MsgUnit[] mu = this.global.getXmlBlasterAccess().get(new GetKey(this.global, getOid), getQos);
          if (mu == null || mu.length < 1 || mu[0] == null) return null;
          String sender = mu[0].getQosData().getSender().getAbsoluteName();
