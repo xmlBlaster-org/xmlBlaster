@@ -116,6 +116,47 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       this.serverGlobal = this.origGlobal.getClone(args);
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
       log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+
+      try { // we just connect and disconnect to make sure all resources are really cleaned up
+         Global tmpGlobal = this.origGlobal.getClone(null);
+         I_XmlBlasterAccess con = tmpGlobal.getXmlBlasterAccess(); // Find orb
+
+         String passwd = "secret";
+         ConnectQos connectQos = new ConnectQos(tmpGlobal, senderName, passwd); // == "<qos>...</qos>";
+         connectQos.setSessionName(new SessionName(tmpGlobal, "general/1"));
+         // set the persistent connection 
+         connectQos.setPersistent(this.persistent);
+         // Setup fail save handling for connection ...
+         Address addressProp = new Address(tmpGlobal);
+         addressProp.setDelay(reconnectDelay); // retry connecting every 2 sec
+         addressProp.setRetries(-1);       // -1 == forever
+         addressProp.setPingInterval(-1L); // switched off
+         con.registerConnectionListener(this);
+         connectQos.setAddress(addressProp);
+         
+         // setup failsafe handling for callback ...
+         if (this.failsafeCallback) {
+            CallbackAddress cbAddress = new CallbackAddress(tmpGlobal);
+            cbAddress.setRetries(-1);
+            cbAddress.setPingInterval(-1);
+            cbAddress.setDelay(1000L);
+            cbAddress.setSecretCbSessionId("someSecredSessionId");
+            connectQos.addCallbackAddress(cbAddress);
+         }
+         con.connect(connectQos, this);
+         DisconnectQos disconnectQos = new DisconnectQos(tmpGlobal);
+         con.disconnect(disconnectQos);
+      }
+      catch (XmlBlasterException e) {
+          log.warning("setUp() - login failed: " + e.getMessage());
+          fail("setUp() - login fail: " + e.getMessage());
+      }
+      catch (Exception e) {
+          log.severe("setUp() - login failed: " + e.toString());
+          e.printStackTrace();
+          fail("setUp() - login fail: " + e.toString());
+      }
+      
       try {
          I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess(); // Find orb
 

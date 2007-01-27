@@ -75,9 +75,9 @@ public class FileLocatorTest extends TestCase {
     * @throws XmlBlasterException
     */
    public void testFileInExternalJarFile() throws XmlBlasterException {
-      String filename = "avitech/resources/axl/xsl/notamRequest.xsl";
-      String txt = FileLocator.readAsciiFile(filename);
-      log.info(txt);
+      String filename = "somefile.xsl";
+      // String txt = FileLocator.readAsciiFile(filename);
+      // log.info(txt);
       
    }
 

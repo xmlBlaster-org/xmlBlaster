@@ -202,6 +202,7 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
          subscriber.setMessageListener(this);
          Session producerSession = connection.createSession(transacted, ackMode);
          MessageProducer publisher = producerSession.createProducer(this.topic);
+         connection.start();
 
          for (int i=0; i < this.nmax; i++) {
             TextMessage msg = producerSession.createTextMessage();

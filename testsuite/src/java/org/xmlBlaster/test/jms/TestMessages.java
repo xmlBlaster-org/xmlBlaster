@@ -159,125 +159,6 @@ public class TestMessages extends TestCase {
       }
    }
 
-   /**
-    * Tests if the setting of properties when readonly works correctly
-    * according to the specification for the javax.jms.Message
-    * @see http://java.sun.com/j2ee/1.4/docs/api/javax.jms.Message.html
-    */
-   public void testReadOnlyProperties() {
-      try {
-         byte[] content = "testReadOnlyProperties".getBytes();
-         int type = XBMessage.TEXT;
-         XBMessage msg = new XBMessage(null, content, type);
-
-         String[] keys = new String[] {"Boolean", "Byte", "Short", "Int", "Long", "Float", "Double", "String"};
-
-         try {
-            msg.setBooleanProperty(keys[0], false);
-            assertTrue("the setting of the boolean property should not be possible in read only mode", false);
-         }
-         catch (MessageNotWriteableException e) {
-         }
-         try {
-            msg.setByteProperty(keys[1], (byte)1);
-            assertTrue("the setting of the byte property should not be possible in read only mode", false);
-         }
-         catch (MessageNotWriteableException e) {
-         }
-         try {
-            msg.setShortProperty(keys[2], (short)2);
-            assertTrue("the setting of the short property should not be possible in read only mode", false);
-         }
-         catch (MessageNotWriteableException e) {
-         }
-         try {
-            msg.setIntProperty(keys[3], (int)3);
-            assertTrue("the setting of the int property should not be possible in read only mode", false);
-         }
-         catch (MessageNotWriteableException e) {
-         }
-         try {
-            msg.setLongProperty(keys[4], (long)4);
-            assertTrue("the setting of the long property should not be possible in read only mode", false);
-         }
-         catch (MessageNotWriteableException e) {
-         }
-         try {
-            msg.setFloatProperty(keys[5], (float)5.01);
-            assertTrue("the setting of the float property should not be possible in read only mode", false);
-         }
-         catch (MessageNotWriteableException e) {
-         }
-         try {
-            msg.setDoubleProperty(keys[6], (double)6.02);
-            assertTrue("the setting of the double property should not be possible in read only mode", false);
-         }
-         catch (MessageNotWriteableException e) {
-         }
-         try {
-            msg.setStringProperty(keys[7], "7 (String)");
-            assertTrue("the setting of the string property should not be possible in read only mode", false);
-         }
-         catch (MessageNotWriteableException e) {
-         }
-         
-         msg.clearProperties();
-         
-         try {
-            msg.setBooleanProperty(keys[0], false);
-         }
-         catch (MessageNotWriteableException e) {
-            assertTrue("the setting of the boolean property should be possible since not in read only mode", false);
-         }
-         try {
-            msg.setByteProperty(keys[1], (byte)1);
-         }
-         catch (MessageNotWriteableException e) {
-            assertTrue("the setting of the byte property should be possible since not in read only mode", false);
-         }
-         try {
-            msg.setShortProperty(keys[2], (short)2);
-         }
-         catch (MessageNotWriteableException e) {
-            assertTrue("the setting of the short property should be possible since not in read only mode", false);
-         }
-         try {
-            msg.setIntProperty(keys[3], (int)3);
-         }
-         catch (MessageNotWriteableException e) {
-            assertTrue("the setting of the int property should be possible since not in read only mode", false);
-         }
-         try {
-            msg.setLongProperty(keys[4], (long)4);
-         }
-         catch (MessageNotWriteableException e) {
-            assertTrue("the setting of the long property should be possible since not in read only mode", false);
-         }
-         try {
-            msg.setFloatProperty(keys[5], (float)5.01);
-         }
-         catch (MessageNotWriteableException e) {
-            assertTrue("the setting of the float property should be possible since not in read only mode", false);
-         }
-         try {
-            msg.setDoubleProperty(keys[6], (double)6.02);
-         }
-         catch (MessageNotWriteableException e) {
-            assertTrue("the setting of the double property should be possible since not in read only mode", false);
-         }
-         try {
-            msg.setStringProperty(keys[7], "7 (String)");
-         }
-         catch (MessageNotWriteableException e) {
-            assertTrue("the setting of the string property should be possible since not in read only mode", false);
-         }
-      }
-      catch (Exception ex) {
-         ex.printStackTrace();
-         assertTrue("exception occured ", false);
-      }
-   }
-
    public void testTextMessage() {
       try {
          { // 1. key, content and qos all null in constructor
@@ -388,10 +269,6 @@ public class TestMessages extends TestCase {
 
       test.setUp();
       test.testPropertyValueConversion();
-      test.tearDown();
-
-      test.setUp();
-      test.testReadOnlyProperties();
       test.tearDown();
 
       test.setUp();
