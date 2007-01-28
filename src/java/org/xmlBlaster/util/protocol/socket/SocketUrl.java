@@ -43,8 +43,8 @@ public class SocketUrl
    public static final boolean SOCKET_TCP = false;
    /** Flag to use UDP */
    public static final boolean SOCKET_UDP = true;
-   /** Default port of xmlBlaster socket server is 7608 */
-   public static final int DEFAULT_SERVER_CBPORT = 7608;
+   // Default port of xmlBlaster socket local side is 0 (choosen by OS) */
+   //public static final int DEFAULT_SERVER_CBPORT = 0;
    /** Default port of xmlBlaster socket server is 7607 */
    public static final int DEFAULT_SERVER_PORT = 7607;
    private static boolean firstKey = true;
