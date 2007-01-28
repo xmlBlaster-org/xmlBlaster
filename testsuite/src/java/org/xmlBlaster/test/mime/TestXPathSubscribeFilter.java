@@ -38,6 +38,8 @@ import java.util.HashMap;
  * </pre>
  *
  * @author Peter Antman
+ * @see org.xmlBlaster.engine.mime.xpath.XPathFilter
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html
  */
 public class TestXPathSubscribeFilter extends TestCase implements I_Callback
 {
@@ -48,7 +50,6 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
    private I_XmlBlasterAccess con = null;
    private String name;
    private String passwd = "secret";
-   private int numReceived = 0;         // error checking
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7624;
 
@@ -259,11 +260,10 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info("Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() );
+      log.info("Receiving update of a message " + updateKey.getOid() + " for subId: " + updateQos.getSubscriptionId() + " content=" + new String(content));
       int ii = ((Integer)subscriberTable.get(updateQos.getSubscriptionId())).intValue();
       log.fine("Got message " + new String(content));
       subRec[ii]++;
-      numReceived++;
       return "";
    }
    
