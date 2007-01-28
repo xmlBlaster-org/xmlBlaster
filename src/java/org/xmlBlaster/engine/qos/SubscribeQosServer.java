@@ -11,6 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
@@ -64,8 +65,15 @@ public final class SubscribeQosServer
    
    Global getGlobal() { return this.glob; }
 
+   public boolean isRecoveredFromPersistenceStore() {
+      ClientProperty clientProperty = this.queryQosData.getClientProperty(Constants.PERSISTENCE_ID);
+      return clientProperty != null;
+   }
+
    public static void verifySubscriptionId(SessionName sessionName, QueryKeyData xmlKey, SubscribeQosServer subscribeQos)
       throws XmlBlasterException {
+      if (subscribeQos.isRecoveredFromPersistenceStore())
+         return;
       String subscriptionId = subscribeQos.getSubscriptionId();
       if (subscriptionId != null) {
          boolean isOk = true;
