@@ -820,6 +820,15 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "subscribe");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
+      if (getSessionName().isPubSessionIdUser() &&
+    	  subscribeQos.getData().getMultiSubscribe()==false &&
+    	  !subscribeQos.getData().hasSubscriptionId()) {
+    	  // For failsave clients we generate on client side the subscriptionId
+    	  // In case of offline/clientSideQueued operation we guarantee like this a not changing
+    	  // subscriptionId and the client code can reliably use the subscriptionId for further dispatching
+    	  // of update() messages.
+    	  subscribeQos.getData().generateSubscriptionId(getSessionName(), subscribeKey.getData());
+      }
       MsgQueueSubscribeEntry entry  = new MsgQueueSubscribeEntry(glob,
                                       this.clientQueue.getStorageId(), subscribeKey.getData(), subscribeQos.getData());
       return (SubscribeReturnQos)queueMessage(entry);

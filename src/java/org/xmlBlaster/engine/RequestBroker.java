@@ -607,11 +607,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
       return new String[0];
    }
-
+   
    public String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {
       if (!sessionInfo.hasCallback()) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
+      
+      SubscribeQosServer.verifySubscriptionId(sessionInfo.getSessionName(), xmlKey, subscribeQos);
+      
       try {
          if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getId() + "' ...");
          String returnOid = "";

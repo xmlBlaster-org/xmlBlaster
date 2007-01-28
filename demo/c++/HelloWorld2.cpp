@@ -122,6 +122,7 @@ public:
          SubscribeKey subKey(global_);
          subKey.setOid("HelloWorld2");
          SubscribeQos subQos(global_);
+         subQos.setMultiSubscribe(false);
          log_.info(ME, string("subscribing to xmlBlaster with key: ") + subKey.toXml() +
                        " and qos: " + subQos.toXml());
                        

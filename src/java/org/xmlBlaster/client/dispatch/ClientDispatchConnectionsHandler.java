@@ -21,7 +21,6 @@ import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
-import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
@@ -98,9 +97,10 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
 
          else if (MethodName.SUBSCRIBE == msgQueueEntry.getMethodName()) {
             MsgQueueSubscribeEntry entry = (MsgQueueSubscribeEntry)msgQueueEntry;
-            if (entry.getSubscribeQosData().getSubscriptionId() == null) {
-               String subscriptionId = QueryKeyData.generateSubscriptionId(dispatchManager.getQueue().getStorageId().getPostfix());
-               entry.getSubscribeQosData().setSubscriptionId(subscriptionId);
+            if (!entry.getSubscribeQosData().hasSubscriptionId()) {
+               entry.getSubscribeQosData().generateSubscriptionId(glob.getXmlBlasterAccess().getSessionName(), entry.getSubscribeKeyData());
+               //String subscriptionId = QueryKeyData.generateSubscriptionId(dispatchManager.getQueue().getStorageId().getPostfix());
+               //entry.getSubscribeQosData().setSubscriptionId(subscriptionId);
             }
             statRetQos.setSubscriptionId(entry.getSubscribeQosData().getSubscriptionId());
             SubscribeReturnQos subscribeReturnQos = new SubscribeReturnQos(glob, statRetQos, true);

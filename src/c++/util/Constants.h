@@ -177,6 +177,10 @@ namespace org { namespace xmlBlaster {
 //   extern Dll_Export const char * DOMAIN; // doesn't compile with g++ 3.1.1
    extern Dll_Export const char * D_O_M_A_I_N;
    extern Dll_Export const char * REGEX;
+   
+   extern Dll_Export const char * XPATH_URL_PREFIX;
+   extern Dll_Export const char * EXACT_URL_PREFIX;
+   extern Dll_Export const char * DOMAIN_URL_PREFIX;
 
    extern Dll_Export const char * SOCKET;
    extern Dll_Export const char * IOR;

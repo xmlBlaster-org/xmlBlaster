@@ -229,6 +229,10 @@ namespace org { namespace xmlBlaster { namespace util {
          "Your published message could not be handled, check your QoS"
    );
 
+   const ErrorCode USER_SUBSCRIBE_ID("user.subscribe.id",
+         "Your subscription tries to pass an illegal subscriptionId."
+   );
+
    const ErrorCode USER_CONNECT("user.connect",
          "Your connection request could not be handled, check your QoS"
    );

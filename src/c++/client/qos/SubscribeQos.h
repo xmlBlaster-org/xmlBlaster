@@ -9,6 +9,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <client/qos/GetQos.h>
+#include <util/SessionName.h>
+#include <client/key/SubscribeKey.h>
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
@@ -71,6 +73,8 @@ public:
     * @param multiSubscribe defaults to true
     */
    void setMultiSubscribe(bool multiSubscribe);
+   
+   bool getMultiSubscribe() const;
 
    /**
     * false Inhibit the delivery of messages to myself if i have published it.
@@ -90,6 +94,19 @@ public:
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.id.html">The engine.qos.subscribe.id requirement</a>
     */
    void setSubscriptionId(const std::string& subscriptionId) const;
+
+   /**
+    * A client side subscriptionId must start with "__subId:" followed by the relative session name. 
+    * <p>This us only useful for positive session Ids in fail save environments: if the
+    * subscription is queued the faked subscriptionId will be used later by the server</p>
+    * @param sessionName
+    * @param subscribeKey
+    * @return e.g. "__subId:client/joe/session/1-XPATH://key" for pubSessionId>0 and multiSubscribe=false
+    * or e.g. "__subId:client/joe-135692304540000" in other cases
+    */
+   std::string generateSubscriptionId(org::xmlBlaster::util::SessionNameRef sessionName, const org::xmlBlaster::client::key::SubscribeKey& subscribeKey);
+
+   bool hasSubscriptionId() const;
 
    /**
     * Sets the subscription to persistent (true) or not persistent (false).

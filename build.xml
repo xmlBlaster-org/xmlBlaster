@@ -957,6 +957,11 @@ TODO
       <copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/protocol/http/appletproxy/">
         <fileset dir="${build.dest}/org/xmlBlaster/protocol/http/appletproxy/"/>
       </copy>
+      <copy todir="${build.war}/WEB-INF/classes/org/xmlBlaster/protocol/http/ajax/">
+        <fileset dir="${build.dest}/org/xmlBlaster/protocol/http/ajax/">
+           <exclude name="${build.dest}/org/xmlBlaster/protocol/http/ajax/*.java" unless="isJdk15"/>
+        </fileset>
+      </copy>
       <copy todir="${build.war}/WEB-INF/classes/http">
          <fileset dir="${build.dest}/http"/>
       </copy>
@@ -986,6 +991,7 @@ TODO
       </copy>
       <copy file="${demo.http.dir}/index.html" tofile="${build.war}/index.html"/>
       <copy file="${demo.http.dir}/gpsmap.html" tofile="${build.war}/gpsmap.html"/>
+	  <copy file="${demo.http.dir}/gps.html" tofile="${build.war}/gps.html" failonerror="false"/>
       <copy file="${config.dir}/favicon.ico" tofile="${build.war}/favicon.ico"/>
       <copy file="${demo.http.dir}/README" tofile="${build.war}/README"/>
       <copy todir="${build.war}/images">

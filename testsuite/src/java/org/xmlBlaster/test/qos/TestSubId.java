@@ -49,7 +49,6 @@ public class TestSubId extends TestCase implements I_Callback
    private I_XmlBlasterAccess senderConnection;
    private String senderName;
    private String senderContent;
-   private String receiverName;         // sender/receiver is here the same client
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
@@ -70,7 +69,6 @@ public class TestSubId extends TestCase implements I_Callback
       this.glob = glob;
 
       this.senderName = loginName;
-      this.receiverName = loginName;
    }
 
 
@@ -105,11 +103,37 @@ public class TestSubId extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
       try {
-         EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
-         assertEquals("Erase", 1, arr.length);
+         /*EraseReturnQos[] arr = */senderConnection.erase(xmlKey, "<qos/>");
+         //For illegal subid we wont erase anything
+         //assertEquals("Erase", 1, arr.length);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
+   }
+
+
+   /**
+    * Subscribe with a client side forced illegal subscriptionId
+    */
+   public void testIllegalSubscriptionId()
+   {
+      if (log.isLoggable(Level.FINE)) log.fine("Subscribing using XPath syntax ...");
+
+      String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'>\n" +
+                      "</key>";
+      SubscribeQos sq = new SubscribeQos(glob);
+      int myCounter = 99;
+      try {
+         sentSubscribeId = Constants.SUBSCRIPTIONID_PREFIX +
+                  "client/someOtherUser/session/1" +
+                  "-" + myCounter;
+         sq.setSubscriptionId(sentSubscribeId);
+         senderConnection.subscribe(xmlKey, sq.toXml()).getSubscriptionId();
+         fail("Illegal subscriptionId should throw an exception");
+         
+      } catch(XmlBlasterException e) {
+         log.info("SUCCESS, got expected XmlBlasterException: " + e.getMessage());
+      }
    }
 
 
@@ -125,12 +149,11 @@ public class TestSubId extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'>\n" +
                       "</key>";
       SubscribeQos sq = new SubscribeQos(glob);
-      String serverName = "heron";
       int myCounter = 99;
       try {
-         sentSubscribeId = Constants.SUBSCRIPTIONID_CLIENT_PREFIX +
-                  "/" + connectReturnQos.getSessionName() +
-                  "/" + myCounter;
+         sentSubscribeId = Constants.SUBSCRIPTIONID_PREFIX +
+                  connectReturnQos.getSessionName().getRelativeName() +
+                  "-" + myCounter;
          sq.setSubscriptionId(sentSubscribeId);
          numReceived = 0;
          this.subscribeId = null;
@@ -152,7 +175,7 @@ public class TestSubId extends TestCase implements I_Callback
     * <p />
     * The returned publishOid is checked
     */
-   public void testPublish()
+   public void doPublish()
    {
       if (log.isLoggable(Level.FINE)) log.fine("Publishing a message ...");
 
@@ -185,7 +208,7 @@ public class TestSubId extends TestCase implements I_Callback
       try { Thread.sleep(1000L); } catch( InterruptedException i) {}                                            // Wait some time for callback to arrive ...
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
-      testPublish();
+      doPublish();
       waitOnUpdate(5000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
 
@@ -257,6 +280,7 @@ public class TestSubId extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
+       suite.addTest(new TestSubId(new Global(), "testIllegalSubscriptionId", loginName));
        suite.addTest(new TestSubId(new Global(), "testPublishAfterSubscribe", loginName));
        return suite;
    }

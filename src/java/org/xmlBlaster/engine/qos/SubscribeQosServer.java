@@ -6,7 +6,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
@@ -32,19 +36,22 @@ public final class SubscribeQosServer
 {
    private final QueryQosData queryQosData;
    private boolean doInhibitInitialUpdates = false;
+   private final Global glob;
 
    /**
     * Constructor which accepts a raw data struct. 
     */
    public SubscribeQosServer(Global glob, QueryQosData queryQosData) {
+      this.glob = glob;
       this.queryQosData = queryQosData;
    }
-
+   
    /**
     * Constructs the specialized quality of service object for a subscribe() call.
     * @param the XML based ASCII string
     */
    public SubscribeQosServer(Global glob, String xmlQos) throws XmlBlasterException {
+      this.glob = glob;
       this.queryQosData = glob.getQueryQosFactory().readObject(xmlQos);
    }
 
@@ -54,6 +61,32 @@ public final class SubscribeQosServer
    public QueryQosData getData() {
       return this.queryQosData;
    }
+   
+   Global getGlobal() { return this.glob; }
+
+   public static void verifySubscriptionId(SessionName sessionName, QueryKeyData xmlKey, SubscribeQosServer subscribeQos)
+      throws XmlBlasterException {
+      String subscriptionId = subscribeQos.getSubscriptionId();
+      if (subscriptionId != null) {
+         boolean isOk = true;
+         
+         //"__subId:client/joe/session/1-[your-unqiue-postfix]"
+         if (!subscriptionId.startsWith(Constants.SUBSCRIPTIONID_PREFIX)
+               || subscriptionId.length() < (Constants.SUBSCRIPTIONID_PREFIX.length()+5))
+            isOk = false;
+
+         String tail = subscriptionId.substring(Constants.SUBSCRIPTIONID_PREFIX.length());
+         if (!tail.startsWith(sessionName.getRelativeName(true)))
+            isOk = false;
+         
+         if (!isOk)
+            throw new XmlBlasterException(subscribeQos.getGlobal(), ErrorCode.USER_SUBSCRIBE_ID,
+               "Your subscriptionId '" + subscriptionId +
+               "' is invalid, we expect something like '" +
+               subscribeQos.getData().generateSubscriptionId(sessionName, xmlKey));
+      }
+   }
+
 
    /**
     * Return the subscribe filters or null if none is specified. 

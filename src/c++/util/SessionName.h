@@ -69,6 +69,7 @@ public:
     */
    void setAbsoluteName(/*const std::string nodeId="",*/ const std::string& name);
    std::string getRelativeName() const;
+   std::string getRelativeName(bool forceSessionMarker) const;
    std::string getAbsoluteName() const;
    std::string getClusterNodeId() const;
    void setClusterNodeId(const std::string& clusterNodeId);

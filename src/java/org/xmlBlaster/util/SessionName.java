@@ -209,16 +209,24 @@ public final class SessionName implements java.io.Serializable
    }
 
    /**
-    * @return e.g. "client/joe/2" or "client/joe", never null
+    * @return e.g. "client/joe/session/2" or "client/joe", never null
     */
    public String getRelativeName() {
-      if (this.relativeName == null) {
+      return getRelativeName(false);
+   }
+   
+   /**
+    * @param forceSessionMarker If false the configured syntax is chosen, if true wie force the /session/ markup
+    * @return e.g. "client/joe/session/2" or "client/joe", never null
+    */
+   public String getRelativeName(boolean forceSessionMarker) {
+      if (this.relativeName == null || forceSessionMarker) {
          StringBuffer buf = new StringBuffer(126);
          // For example "client/joe/session/-1"
          buf.append(ContextNode.SUBJECT_MARKER_TAG).append("/").append(subjectId);
          if (isSession()) {
             buf.append("/");
-            if (useSessionMarker)
+            if (useSessionMarker || forceSessionMarker)
                buf.append(ContextNode.SESSION_MARKER_TAG).append("/");
             buf.append(""+this.pubSessionId);
          }

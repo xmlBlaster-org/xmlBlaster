@@ -524,14 +524,9 @@ SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, c
       if (log_.trace()) log_.trace(ME+":queueSubscribe", "created a client queue");
    }
    SubscribeReturnQos retQos(global_);
-   std::string subscriptionId;
-   {
-      subscriptionId = Constants::SUBSCRIPTIONID_PREFIX; // "__subId:"
-      subscriptionId += global_.getImmutableId();
-      org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp();
-      subscriptionId += "-";
-      subscriptionId += lexical_cast<std::string>(uniqueId);
-   }
+   SubscribeQos& q = const_cast<SubscribeQos&>(qos);
+   SessionNameRef sessionName = global_.getSessionName();
+   std::string subscriptionId = q.generateSubscriptionId(sessionName, key);
    retQos.getData().setSubscriptionId(subscriptionId);
    retQos.getData().setState(Constants::STATE_OK);
    retQos.getData().setStateInfo(Constants::INFO_QUEUED); // "QUEUED"

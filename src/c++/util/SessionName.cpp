@@ -146,9 +146,14 @@ void SessionName::setAbsoluteName(const string& name)
 
 string SessionName::getRelativeName() const
 {
+    return getRelativeName(false);
+}
+
+string SessionName::getRelativeName(bool forceSessionMarker) const
+{
    string ret = string("client/") + subjectId_;
    if (pubSessionId_ != 0) {
-      if (useSessionMarker_)
+      if (useSessionMarker_ || forceSessionMarker)
          ret += string("/session/") + lexical_cast<std::string>(pubSessionId_);
       else
          ret += string("/") + lexical_cast<std::string>(pubSessionId_);

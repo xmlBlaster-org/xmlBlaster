@@ -54,7 +54,7 @@
       <pre>
 &lt;qos>
    &lt;!-- Force a subscription ID from client side -->
-   &lt;subscribe id='_subId:1'/>
+   &lt;subscribe id='__subId:client/subscriber/session/1-exact:MyHelloTopic'/>
 
    &lt;!-- Recoverable subscription after server crash / restart -->
    &lt;persistent/>
@@ -171,7 +171,8 @@
      Note:<br />
     If a subscribe is queued on client side the return subscriptionId is generated on client side
     and may on later connect not force to be the same on server side.<br />
-    TODO: Enforce identical client + server side generation:
+    The client side generated is assured to be identical if you use a positive public sessionId
+    and have set multiSubscribe to false (a typical fail safe configured client).
     <br />
     1. If pubSessionId>0: &lt;sessionName>-[EXACT:|XPATH:|DOMAIN:][topicOid|queryString]
     <br />
@@ -181,7 +182,7 @@
     <pre>
 &lt;qos>
   &lt;state id='OK' info='QUEUED'/>
-  &lt;subscribe id='__subId:client/joe/1-1166021247822779000'/>
+  &lt;subscribe id='__subId:client/joe/session/1-1166021247822779000'/>
 &lt;/qos>
    </pre>
 
@@ -347,6 +348,7 @@
    </configuration>
 
    <see type="REQ">interface</see>
+   <see type="REQ">engine.qos.subscribe.id</see>
    <see type="REQ">engine.qos.subscribe.duplicate</see>
    <see type="REQ">engine.qos.subscribe.multiSubscribe</see>
    <see type="REQ">client.subscribe.dispatch</see>

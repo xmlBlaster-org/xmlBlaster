@@ -75,6 +75,18 @@ string UnSubscribeKey::getDomain() const
    return queryKeyData_.getDomain();
 }
 
+string UnSubscribeKey::getUrl() const
+{
+   if (string(Constants::EXACT) == getQueryType())
+      return Constants::EXACT_URL_PREFIX+getOid();
+   else if (string(Constants::XPATH) == getQueryType())
+      return Constants::XPATH_URL_PREFIX+getQueryString();
+   else if (string(Constants::D_O_M_A_I_N) == getQueryType())
+      return Constants::DOMAIN_URL_PREFIX+getDomain();
+   //else if (regex)
+   throw XmlBlasterException(USER_ILLEGALARGUMENT, ME, "getUrl() failed: Unknown query type: " + toXml(""));
+}
+
 string UnSubscribeKey::toXml(const string& extraOffset) const
 {
    return queryKeyData_.toXml(extraOffset);

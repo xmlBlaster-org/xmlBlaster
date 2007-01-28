@@ -18,14 +18,14 @@
      environment, a proposed syntax is:
      </p>
      <pre>
-"__subId:/node/[cluserNodeId]/client/[loginName]/[publicSessionId]/[your number or id]"
+"__subId:client/[loginName]/session/[publicSessionId]-[your number or id]"
      </pre>
      <p>
      Example:
      </p>
      <pre>
 &lt;qos> <!-- subscribe QoS -->
-   &lt;id>"__subId:/node/heron/client/joe/3/34&lt;/id>
+   &lt;id>__subId:client/subscriber/session/2-13340998000&lt;/id>
    ...
 &lt;/qos>
      </pre>
@@ -34,10 +34,31 @@
      which you can use to build a unique subscription ID:
      </p>
      <pre>
-   public final static String SUBSCRIPTIONID_CLIENT_PREFIX = "__subId:/node/";
+   public final static String SUBSCRIPTIONID_PREFIX = "__subId:";
      </pre>
+   <p>
+   If you have a fail safe client configured, using a positive session id (e.g. 'client/joe/session/1')
+   and the subscription flag multiSubscribe is set to false, the java and C++ client library
+   will automaticaly generate a subscriptionId which won't change on next restart of the client
+   and which will be used by the server. The syntax is like:
+   </p>
+   <pre>
+__subId:[relativeSessionName]-[subscriptionUrl]
+__subId:client/subscriber/session/2-exact:Hello
+</pre>
+   <p>
+Benefit: If on client restart we are queueing the returned faked subscriptionId will
+match the later used one of the xmlBlaster server. We can easily use the subscriptionId
+as a key in a client code hashtable to dispatch update() messages.
+</p>
+<p>
+Note: multiSubscribe==false allows max one subscription on a topic, even it has
+different mime query plugins (the latest wins).
+</p>
+
    </description>
-   <example lang="Java">
+   <example lang="Java" type="HTML">
+<pre>
       <![CDATA[
 import org.xmlBlaster.client.qos.SubscribeQos;
 
@@ -46,10 +67,8 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 try {
    SubscribeQos sq = new SubscribeQos(glob);
 
-   String subId = Constants.SUBSCRIPTIONID_CLIENT_PREFIX + serverName +
-                  "/client/" + connectQos.getUserId() +
-                  "/" + connectReturnQos.getPublicSessionId() +
-                  "/" + myCounter;
+   String subId = Constants.SUBSCRIPTIONID_PREFIX +
+                  sessionName.getRelativeName(true) + "-" + myCounter;
 
    sq.setSubscriptionId(subId);
 
@@ -60,6 +79,7 @@ catch (Exception e) {
 }
 ...
       ]]>
+</pre>
    </example>
    <see>org.xmlBlaster.client.qos.SubscribeQos</see>
    <author>xmlBlaster@marcelruff.info</author>

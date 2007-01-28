@@ -512,7 +512,7 @@ abstract public class DispatchConnectionsHandler
       else {
          DispatchConnection[] arr = getConnectionsArrCopy();
          for (int ii=0; ii<arr.length; ii++) {
-            sb.append(offset).append(" <" + arr[ii].getDriverName() + " />");
+            sb.append(offset).append(" <connection type='" + arr[ii].getDriverName() + "' state='" + arr[ii].getState() + "'/>");
          }
       }
       sb.append(offset).append("</DispatchConnectionsHandler>");

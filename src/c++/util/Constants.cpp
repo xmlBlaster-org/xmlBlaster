@@ -67,6 +67,10 @@ const char * EXACT = "EXACT";
 const char * D_O_M_A_I_N = "DOMAIN";
 const char * REGEX       = "REGEX";
 
+const char * XPATH_URL_PREFIX = "xpath:";
+const char * EXACT_URL_PREFIX = "exact:";
+const char * DOMAIN_URL_PREFIX = "domain:";
+
 const char * SOCKET  = "SOCKET";
 const char * IOR     = "IOR";
 const char * EMAIL   = "EMAIL";

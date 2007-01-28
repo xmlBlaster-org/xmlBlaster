@@ -6,7 +6,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
@@ -366,6 +369,14 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    public String getSubscriptionId() {
       return this.subscriptionId;
    }
+   
+   /**
+    *
+    * @return true if the client has forced a subscriptionId
+    */
+   public boolean hasSubscriptionId() {
+	   return (this.subscriptionId!=null && this.subscriptionId.length()!=0);
+   }
 
    /**
     * Force the identifier (unique handle) for this subscription. 
@@ -376,6 +387,37 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
       this.subscriptionId = subscriptionId;
    }
 
+   /**
+    * A client side subscriptionId must start with "__subId:" followed by the relative session name. 
+    * <p>This us only useful for positive session Ids in fail save environments: if the
+    * subscription is queued the faked subscriptionId will be used later by the server</p>
+    * @param sessionName
+    * @param subscribeKey
+    * @return e.g. "__subId:client/joe/session/1-XPATH://key" for pubSessionId>0 and multiSubscribe=false
+    * or e.g. "__subId:client/joe-135692304540000" in other cases
+    */
+   public String generateSubscriptionId(SessionName sessionName, QueryKeyData subscribeKey) {
+      if (sessionName.isPubSessionIdUser() || !getMultiSubscribe()) {
+         // This key is assured to be the same on client restart
+         // a previous subscription in the server will have the same subscriptionId
+         // Benefit: If on client restart we are queueing the returned faked subscriptionId will
+         // match the later used one of the xmlBlaster server. We can easily use the subscriptionId
+         // as a key in client code hashtable to dispatch update() messages
+         // Note: multiSubscribe==false allows max one subscription on a topic, even it has
+         // different mime query plugins (the latest wins)
+         this.subscriptionId = Constants.SUBSCRIPTIONID_PREFIX +
+                               sessionName.getRelativeName(true) + "-" +
+                               subscribeKey.getUrl();
+      }
+      else {
+         this.subscriptionId = Constants.SUBSCRIPTIONID_PREFIX +
+                               sessionName.getRelativeName(true) + "-" +
+                               new Timestamp().getTimestamp();
+      }
+	   return this.subscriptionId;
+	   
+   }
+   
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>

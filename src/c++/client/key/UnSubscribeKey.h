@@ -84,6 +84,13 @@ public:
     * @return A domain std::string or null
     */
    std::string getDomain() const;
+   
+   /**
+    * Access simplified URL like string. 
+    * 
+    * @return examples are "exact:hello", "xpath://key", "domain:sport"
+    */
+   std::string getUrl() const;
 
    /**
     * Dump state of this object into a XML ASCII std::string.

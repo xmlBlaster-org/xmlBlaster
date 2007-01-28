@@ -103,6 +103,40 @@ void SubscribeQos::setSubscriptionId(const string& subscriptionId) const
    data_.setSubscriptionId(subscriptionId);
 }
 
+bool SubscribeQos::hasSubscriptionId() const {
+  return data_.getSubscriptionId().size() > 0;
+}
+
+bool SubscribeQos::getMultiSubscribe() const {
+  return data_.getMultiSubscribe();
+}
+
+std::string SubscribeQos::generateSubscriptionId(org::xmlBlaster::util::SessionNameRef sessionName, const org::xmlBlaster::client::key::SubscribeKey& subscribeKey)
+{
+      if (sessionName->getPubSessionId() > 0 || !getMultiSubscribe()) {
+         // This key is assured to be the same on client restart
+         // a previous subscription in the server will have the same subscriptionId
+         // Benefit: If on client restart we are queueing the returned faked subscriptionId will
+         // match the later used one of the xmlBlaster server. We can easily use the subscriptionId
+         // as a key in client code hashtable to dispatch update() messages
+         // Note: multiSubscribe==false allows max one subscription on a topic, even it has
+         // different mime query plugins (the latest wins)
+         setSubscriptionId(Constants::SUBSCRIPTIONID_PREFIX +
+                               sessionName->getRelativeName(true) + "-" +
+                               subscribeKey.getUrl());
+      }
+      else {
+         TimestampFactory& factory = TimestampFactory::getInstance();
+         Timestamp timestamp = factory.getTimestamp();
+         setSubscriptionId(Constants::SUBSCRIPTIONID_PREFIX +
+                               /* immutableId is also relativeName */
+                               /*is global_.getImmutableId() better than sessionName?? */
+                               sessionName->getRelativeName(true) + "-" +
+                               lexical_cast<string>(timestamp));
+      }
+      return data_.getSubscriptionId();
+   }
+
 void SubscribeQos::setPersistent(bool persistent) {
    data_.setPersistent(persistent);
 }

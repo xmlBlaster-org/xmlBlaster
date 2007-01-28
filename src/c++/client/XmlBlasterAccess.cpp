@@ -350,6 +350,12 @@ string XmlBlasterAccess::getId()
    return getSessionName();
 }
 
+SessionNameRef XmlBlasterAccess::getSessionNameRef()
+{
+   if (!connectReturnQos_.isNull()) return connectReturnQos_->getSessionQos().getSessionName();
+   return connectQos_->getSessionQos().getSessionName();
+}
+
 string XmlBlasterAccess::getSessionName()
 {
    string ret;
@@ -407,7 +413,21 @@ SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const Su
       log_.dump(ME, string("subscribe. The key:\n") + key.toXml());
       log_.dump(ME, string("subscribe. The Qos:\n") + qos.toXml());
    }
-   if (callback != 0) {
+
+   SessionNameRef sessionName = getSessionNameRef();
+   if (sessionName->getPubSessionId() > 0 &&
+      qos.getMultiSubscribe()==false &&
+      !qos.hasSubscriptionId()) {
+      // For failsave clients we generate on client side the subscriptionId
+      // In case of offline/clientSideQueued operation we guarantee like this a not changing
+      // subscriptionId and the client code can reliably use the subscriptionId for further dispatching
+      // of update() messages.
+      SubscribeQos& q = const_cast<SubscribeQos&>(qos);
+      q.generateSubscriptionId(sessionName, key);
+      if (log_.trace()) log_.trace(ME, "subscribe: generated client side subscriptionId=" + q.getData().getSubscriptionId());
+   }
+
+   if (callback != 0) { // using a subscribe specific callback?
       if (log_.trace()) log_.trace(ME, "subscribe: inserting individual callback in callback map");
       org::xmlBlaster::util::thread::Lock lockUpdate(updateMutex_);
       SubscribeReturnQos retQos = connection_->subscribe(key, qos);

@@ -492,6 +492,14 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_SUBSCRIBE_ID = new ErrorCode("user.subscribe.id",
+         "Your subscription tries to pass an illegal subscriptionId.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.subscribe", "interface.subscribe"),
+            new ResourceInfo(ResourceInfo.REQ, "engine.qos.subscribe.id", "engine.qos.subscribe.id")
+         }
+      );
+
    public static final ErrorCode USER_SUBSCRIBE_NOCALLBACK = new ErrorCode("user.subscribe.noCallback",
          "You try to subscribe to a topic but have no callback registered on connect.",
          new ResourceInfo[] {

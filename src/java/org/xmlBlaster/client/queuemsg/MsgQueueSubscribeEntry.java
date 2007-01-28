@@ -23,7 +23,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  */
 public final class MsgQueueSubscribeEntry extends MsgQueueEntry
 {
-   private final static String ME = "SubscribeQueueEntry";
+   private static final long serialVersionUID = 1L;
    private final QueryQosData subscribeQosData;
    private final QueryKeyData subscribeKeyData;
    private SessionName receiver;
@@ -84,7 +84,7 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
     * @see MsgQueueEntry#getSender()
     */
    public SessionName getSender() {
-      return null;
+      return (this.subscribeQosData==null) ? null : this.subscribeQosData.getSender();
    }
 
    /**
@@ -107,7 +107,7 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
     * @see MsgQueueEntry#getKeyOid()
     */
    public String getKeyOid() {
-      return null;
+      return (this.subscribeKeyData==null) ? null: this.subscribeKeyData.getOid();
    }
 
    /**

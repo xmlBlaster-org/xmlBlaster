@@ -241,6 +241,12 @@ public:
    std::string getSessionName();
 
    /**
+    * Your changes outside change the internal sessionName. 
+    * @return A reference counted SessionName. 
+    */
+   org::xmlBlaster::util::SessionNameRef getSessionNameRef();
+
+   /**
     * Access the login name.
     * @return your login name or null if you are not logged in
     */

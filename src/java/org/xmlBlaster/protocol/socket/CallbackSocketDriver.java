@@ -66,7 +66,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    }
 
    public String getName() {
-      return this.loginName;
+      return Global.getStrippedString(this.ME);
    }
 
    /**

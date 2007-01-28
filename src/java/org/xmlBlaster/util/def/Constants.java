@@ -189,10 +189,10 @@ public class Constants {
    public final static String SESSIONID_PREFIX = "sessionId:";
    public final static String SUBSCRIPTIONID_PREFIX = "__subId:";
    public final static String SUBSCRIPTIONID_PtP = SUBSCRIPTIONID_PREFIX+"PtP";
-   /** If subscription ID is given by client, e.g. "__subId:/node/heron/client/joe/3/34"
+   /** If subscription ID is given by client, e.g. "__subId:client/joe/session/3-34"
      * see Requirement engine.qos.subscribe.id
      */
-   public final static String SUBSCRIPTIONID_CLIENT_PREFIX = "__subId:/node/";
+   //public final static String SUBSCRIPTIONID_CLIENT_PREFIX__XXXXXXX = "__subId:/node/";
 
    public final static String INTERNAL_LOGINNAME_PREFIX_FOR_PLUGINS = "_";
    public final static String INTERNAL_OID_PREFIX_FOR_PLUGINS = "_";
