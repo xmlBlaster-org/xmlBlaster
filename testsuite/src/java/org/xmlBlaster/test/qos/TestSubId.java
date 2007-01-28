@@ -152,7 +152,7 @@ public class TestSubId extends TestCase implements I_Callback
       int myCounter = 99;
       try {
          sentSubscribeId = Constants.SUBSCRIPTIONID_PREFIX +
-                  connectReturnQos.getSessionName().getRelativeName() +
+                  connectReturnQos.getSessionName().getRelativeName(true) +
                   "-" + myCounter;
          sq.setSubscriptionId(sentSubscribeId);
          numReceived = 0;
