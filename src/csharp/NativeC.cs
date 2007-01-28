@@ -389,6 +389,22 @@ namespace org.xmlBlaster.client
          }
       }
 
+      public void LeaveServer()
+      {
+         check("LeaveServer");
+         try
+         {
+            IntPtr tmp = xa;
+            xa = IntPtr.Zero;
+            freeXmlBlasterAccessUnparsedUnmanagedCE(tmp);
+            logger(XmlBlasterLogLevel.TRACE, "", "freeXmlBlasterAccessUnparsedUnmanagedCE: SUCCESS freed all resources");
+         }
+         catch (Exception e)
+         {
+            throw new XmlBlasterException("internal.unknown", "LeaveServer failed", e);
+         }
+      }
+
       /// After calling diconnect() this class is not usable anymore
       /// you need to create a new instance to connect again
       public bool Disconnect(string qos)
@@ -723,7 +739,17 @@ namespace org.xmlBlaster.client
          logger("Sorry, RemoveLoggingListener() is not implemented");
       }
 
-      public string GetUsage()
+      public void AddCallbackProgressListener(I_ProgressCallback listener)
+      {
+         logger("Sorry, AddCallbackProgressListener() is not implemented");
+      }
+
+      public void RemoveCallbackProgressListener(I_ProgressCallback listener)
+      {
+         logger("Sorry, RemoveCallbackProgressListener() is not implemented");
+      }
+
+     public string GetUsage()
       {
          return xmlBlasterUnmanagedUsage();
       }

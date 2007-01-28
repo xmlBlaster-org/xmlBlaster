@@ -53,7 +53,7 @@ namespace org.xmlBlaster.client
    /// Log levels copied from xmlBlaster client C library
    /// See helper.h enum XMLBLASTER_LOG_LEVEL_ENUM
    /// </summary>
-   public enum LogLevel
+   public enum XmlBlasterLogLevel
    {
       /*NOLOG=0,  don't use */
       ERROR = 1,  // supported, use for programming errors
@@ -73,7 +73,12 @@ namespace org.xmlBlaster.client
 
    public interface I_LoggingCallback
    {
-      void OnLogging(LogLevel logLevel, string location, string message);
+      void OnLogging(XmlBlasterLogLevel logLevel, string location, string message);
+   }
+
+   public interface I_ProgressCallback
+   {
+      void OnData(bool read, int currBytesRead, int nbytes);
    }
 
    /// <summary>
@@ -100,6 +105,12 @@ namespace org.xmlBlaster.client
       /// After calling diconnect() this class is not usable anymore
       /// you need to create a new instance to connect again
       bool Disconnect(string qos);
+
+      /// <summary>
+      /// Cleanup all client side resources, the server side session
+      /// remains for a future relogin
+      /// </summary>
+      void LeaveServer();
 
       /// <summary>
       /// Publish a message to xmlBlaster
@@ -152,6 +163,18 @@ namespace org.xmlBlaster.client
       /// <param name="listener">Redirection is stopped for this listener</param>
       void RemoveLoggingListener(I_LoggingCallback listener);
 
+      /// <summary>
+      /// Register the given listener to receive all logging output
+      /// of the C library and C# wrapper code.
+      /// </summary>
+      /// <param name="listener">The logging is redirected to this listener</param>
+      void AddCallbackProgressListener(I_ProgressCallback listener);
+
+      /// <summary>
+      /// Remove the given listener
+      /// </summary>
+      /// <param name="listener">Redirection is stopped for this listener</param>
+      void RemoveCallbackProgressListener(I_ProgressCallback listener);
       /// <summary>
       /// Returns the telephone EMEI id if available. 
       /// The International Mobile Equipment Identity (IMEI) is a 15 digit number

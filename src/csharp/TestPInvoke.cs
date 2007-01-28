@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using org.xmlBlaster.client;
 
-public class TestPInvoke : I_Callback, I_LoggingCallback
+public class TestPInvoke : I_Callback, I_LoggingCallback, I_ProgressCallback
 {
    private I_XmlBlasterAccess xb;
    private const string callbackSessionId = "secretCb";
@@ -68,6 +68,7 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
 
       I_Callback callback = this;
       xb.Connect(connectQos, callback);
+      xb.AddCallbackProgressListener(this);
 
       for (int run=0; run<2; run++) {
 
@@ -151,9 +152,16 @@ public class TestPInvoke : I_Callback, I_LoggingCallback
    #endregion
 
    #region I_LoggingCallback Members
-   public void OnLogging(LogLevel logLevel, string location, string message)
+   public void OnLogging(XmlBlasterLogLevel logLevel, string location, string message)
    {
       log(logLevel.ToString() + " " + location + ": " + message);
+   }
+   #endregion
+
+   #region I_ProgressCallback Members
+   public void OnData(bool read, int currBytesRead, int nbytes)
+   {
+      Console.WriteLine("Read " + currBytesRead + "/" + nbytes + " bytes");
    }
    #endregion
 

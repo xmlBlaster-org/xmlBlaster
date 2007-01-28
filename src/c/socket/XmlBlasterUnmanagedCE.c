@@ -105,6 +105,42 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterLogger(struct XmlBl
    /*xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__, "Testing logging output only");*/
 }
 
+
+static void callbackProgressListener(void *userP, const size_t currBytesRead, const size_t nbytes);
+/**
+ * Access the read socket progress. 
+ * You need to register this function pointer if you want to see the progress of huge messages
+ * on slow connections.
+ */
+static void callbackProgressListener(void *userP, const size_t currBytesRead, const size_t nbytes) {
+   XmlBlasterUnmanagedCECallbackProgressListenerFp *fp = (XmlBlasterUnmanagedCECallbackProgressListenerFp *)userP;
+   if (fp != 0) {
+      int32_t curr = (int32_t)currBytesRead;
+      int32_t n = (int32_t)nbytes;
+      printf("C-DLL: entering callbackProgressListener(fp=%d) %d/%d\n", (int)fp, curr, n);
+      (*fp)(curr, n);
+      printf("C-DLL: done callbackProgressListener(fp=%d) %d/%d\n", (int)fp, curr, n);
+   }
+}
+/**
+ * Called by managed C# code to register for progress notifications
+ */
+XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterProgressListener(
+   struct XmlBlasterAccessUnparsed *xa,
+   XmlBlasterUnmanagedCECallbackProgressListenerFp csharpProgressListenerFp) {
+
+   if (xa && xa->callbackP != 0) {
+      xa->callbackP->readFromSocket.numReadUserP = csharpProgressListenerFp;
+      if (callbackProgressListener != 0) {
+         printf("C-DLL: doing xmlBlasterUnmanagedCERegisterProgressListener(csharpProgressListenerFp=%d)\n", (int)csharpProgressListenerFp);
+         xa->callbackP->readFromSocket.numReadFuncP = callbackProgressListener;
+      }
+      else {
+         xa->callbackP->readFromSocket.numReadFuncP = 0; // Dangerous: not thread safe, TODO: Add a mutex
+      }
+   }
+}
+
 /**
  * malloc size bytes
  * @param size > 0
