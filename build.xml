@@ -79,8 +79,8 @@ TODO
    <property file="build.properties" />
 
    <property name="name" value="xmlBlaster"/>
-   <property name="version" value="1.4"/>
-   <property name="year" value="1999-2006"/>
+   <property name="version" value="1.5"/>
+   <property name="year" value="1999-2007"/>
 
    <!-- property name="build.compiler" value="classic"/ -->
    <property name="debug" value="on"/>
@@ -991,7 +991,7 @@ TODO
       </copy>
       <copy file="${demo.http.dir}/index.html" tofile="${build.war}/index.html"/>
       <copy file="${demo.http.dir}/gpsmap.html" tofile="${build.war}/gpsmap.html"/>
-	  <copy file="${demo.http.dir}/gps.html" tofile="${build.war}/gps.html" failonerror="false"/>
+          <copy file="${demo.http.dir}/gps.html" tofile="${build.war}/gps.html" failonerror="false"/>
       <copy file="${config.dir}/favicon.ico" tofile="${build.war}/favicon.ico"/>
       <copy file="${demo.http.dir}/README" tofile="${build.war}/README"/>
       <copy todir="${build.war}/images">

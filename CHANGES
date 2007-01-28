@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for 1.5 [2007-01-28] #15961
+===================================
+
  o #15953 C++ and Java client library now create client side subscriptionId if
           pubSessionId>0 and multiSubscribe=false (fail safe operation).
           Like this we avoid returning a temporary subscriptionId if a subscribe is queued
