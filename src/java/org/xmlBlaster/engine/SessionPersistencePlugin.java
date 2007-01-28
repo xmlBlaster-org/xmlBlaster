@@ -375,7 +375,11 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, 0L);
       int num = this.sessionStore.remove(entry);
       if (num != 1) {
-         log.severe("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "' failed, entry not found.");
+         XmlBlasterException ex = sessionInfo.getTransportConnectFail();
+         if (ex != null)
+            log.fine("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "' failed, entry not found.");
+         else
+            log.severe("sessionRemoved (persistent) for uniqueId: '" + uniqueId + "' failed, entry not found.");
       }
    }
 

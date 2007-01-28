@@ -437,6 +437,7 @@ final public class Authenticate implements I_RunlevelListener
          log.warning("Connection for " + id + " failed: " + e.getMessage());
          //e.printStackTrace(); Sometimes nice, often not - what to do?
          try {
+            if (sessionInfo != null) sessionInfo.setTransportConnectFail(e);
             disconnect(secretSessionId, (String)null); // cleanup
          }
          catch (Throwable th) {

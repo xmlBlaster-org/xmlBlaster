@@ -109,6 +109,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    /** To prevent noisy warnings */
    private boolean transientWarn;
    
+   private XmlBlasterException transportConnectFail;
+   
    /** Holding properties send by our remote client via the topic __sys__sessionProperties */
    private ClientPropertiesInfo remoteProperties;
 
@@ -1043,5 +1045,21 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    
    public boolean isStalled() {
       return getDispatchStatistic().isStalled();
+   }
+
+   /**
+    * If the connection failed the reason is stored here, like this
+    * cleanup code knows what happened.
+    * @return the transportConnectFail
+    */
+   public XmlBlasterException getTransportConnectFail() {
+      return this.transportConnectFail;
+   }
+
+   /**
+    * @param transportConnectFail the transportConnectFail to set
+    */
+   public void setTransportConnectFail(XmlBlasterException transportConnectFail) {
+      this.transportConnectFail = transportConnectFail;
    }
 }
