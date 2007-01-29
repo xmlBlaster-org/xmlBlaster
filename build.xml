@@ -989,9 +989,12 @@ TODO
       <copy todir="${build.war}/persistentWindow">
          <fileset dir="${src.java.dir}/org/xmlBlaster/protocol/http/persistentWindow"/>
       </copy>
+      <copy todir="${build.war}/js">
+         <fileset dir="${demo.http.dir}/js"/>
+      </copy>
       <copy file="${demo.http.dir}/index.html" tofile="${build.war}/index.html"/>
-      <copy file="${demo.http.dir}/gpsmap.html" tofile="${build.war}/gpsmap.html"/>
-          <copy file="${demo.http.dir}/gps.html" tofile="${build.war}/gps.html" failonerror="false"/>
+      <copy file="${demo.http.dir}/gpsmap.html" tofile="${build.war}/gpsmap.html" failonerror="false"/>
+      <copy file="${demo.http.dir}/gps.html" tofile="${build.war}/gps.html" failonerror="false"/>
       <copy file="${config.dir}/favicon.ico" tofile="${build.war}/favicon.ico"/>
       <copy file="${demo.http.dir}/README" tofile="${build.war}/README"/>
       <copy todir="${build.war}/images">
