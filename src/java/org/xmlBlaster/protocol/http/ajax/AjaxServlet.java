@@ -108,10 +108,11 @@ class BlasterInstance implements I_Callback {
 		log.info("Created new sessionId=" + this.sessionId);
 	}
 
-	public void execute(byte[] xmlScriptRaw, Writer out)
+	public synchronized void execute(byte[] xmlScriptRaw, Writer out)
 			throws XmlBlasterException, UnsupportedEncodingException,
 			IOException {
 		String xmlScript = new String(xmlScriptRaw, "UTF-8");
+      log.info("Processing script: " + xmlScript);
 		java.io.Reader reader = new java.io.StringReader(xmlScript);
 		java.io.ByteArrayOutputStream outStream = new java.io.ByteArrayOutputStream();
 		XmlScriptClient interpreter = new XmlScriptClient(this.glob,
