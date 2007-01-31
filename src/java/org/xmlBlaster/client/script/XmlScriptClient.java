@@ -295,7 +295,7 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
    }
    
    private void writeResponse(MethodName methodName, String[] messages) throws XmlBlasterException {
-      super.response.append("\n<!-- __________________________________ ").append((methodName==null)?"":methodName.toString()).append(" response _____________________ -->");
+      //super.response.append("\n<!-- __________________________________ ").append((methodName==null)?"":methodName.toString()).append(" response _____________________ -->");
       if (methodName != null) super.response.append("\n<").append(methodName.toString()).append(">");
       if (messages != null && messages.length > 0) {
          if (messages.length == 1)

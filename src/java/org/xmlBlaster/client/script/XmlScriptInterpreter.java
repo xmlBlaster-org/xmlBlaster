@@ -8,6 +8,7 @@ package org.xmlBlaster.client.script;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.apache.log.util.LoggerListener;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
@@ -581,8 +582,9 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
    protected void flushResponse() throws XmlBlasterException {
       try {
          if (this.out != null) {
+            if (log.isLoggable(Level.FINE)) log.fine("Sending response: " + this.response.toString());
             synchronized(this.out) {
-               this.out.write(this.response.toString().getBytes());
+               this.out.write(this.response.toString().getBytes("UTF-8"));
             }
          }   
       }
