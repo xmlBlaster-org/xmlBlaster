@@ -9,6 +9,7 @@ package org.xmlBlaster.protocol.http.ajax;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -299,8 +300,10 @@ public class AjaxServlet extends HttpServlet {
 		}
 
 		// set header field first
-		res.setContentType("text/plain; charset=UTF-8");
-		PrintWriter out = res.getWriter();
+      //res.setContentType("text/plain; charset=UTF-8");
+      // xml header don't like empty response, so send at least "<void/>
+		res.setContentType("text/xml; charset=UTF-8");
+      StringWriter out = new StringWriter();
 
 		try {
 			BlasterInstance blasterInstance = getBlasterInstance(req);
@@ -328,7 +331,7 @@ public class AjaxServlet extends HttpServlet {
 				boolean foundPos = blasterInstance.sendUpdates(out);
 				if (!foundPos) {
 					if (newBrowser || forceLoad) {
-						out.print(blasterInstance.getStartupPos());
+						out.write(blasterInstance.getStartupPos());
 						log(ME + blasterInstance.getStartupPos());
 					}
 				}
@@ -349,8 +352,13 @@ public class AjaxServlet extends HttpServlet {
 			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
 					+ e.toString());
 		} finally {
-			out.close();
-
+         PrintWriter backToBrowser = res.getWriter();
+         System.out.println("Sending now '" + out.getBuffer().toString() + "'");
+         if (out.getBuffer().length() > 0)
+            backToBrowser.write(out.getBuffer().toString());
+         else
+            backToBrowser.write("<void/>"); // text/xml needs at least a root tag!
+         backToBrowser.close();
 		}
 	}
 
