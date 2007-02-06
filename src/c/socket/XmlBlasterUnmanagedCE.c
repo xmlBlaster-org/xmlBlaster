@@ -136,7 +136,7 @@ XBFORCE_EXTERNC Dll_Export void xmlBlasterUnmanagedCERegisterProgressListener(
          xa->callbackP->readFromSocket.numReadFuncP = callbackProgressListener;
       }
       else {
-         xa->callbackP->readFromSocket.numReadFuncP = 0; // Dangerous: not thread safe, TODO: Add a mutex
+         xa->callbackP->readFromSocket.numReadFuncP = 0; /* Dangerous: not thread safe, TODO: Add a mutex */
       }
    }
 }
