@@ -294,7 +294,7 @@ TODO
       <compilerarg value="${CFLAGS}" if="CFLAGS" />  <!-- Will be quoted "", which does not allow to specify multiple args! -->
       <compilerarg value="${CFLAGS2}" if="CFLAGS2" />
       <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
-      <compilerarg value="__MacOSX__" if="OSX" />
+      <compilerarg value="-D__MacOSX__" if="OSX" />
       <compilerarg value="-Wall" />
       <compilerarg value="-pedantic" />
       <compilerarg value="-Wno-long-long" />  <!-- with -pedantic: to suppress warning: ANSI C does not support `long long', C99 supports it -->
