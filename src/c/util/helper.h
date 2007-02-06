@@ -118,7 +118,10 @@ Dll_Export extern void sleepMillis(long millis);
 Dll_Export extern int64_t getTimestamp(void);   /* if no 'int64_t=long long' support we need a workaround */
 Dll_Export extern bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime); /* timespec forces pthread */
 Dll_Export extern void getCurrentTimeStr(char *timeStr, int bufSize);
+
+#include <wchar.h>
 Dll_Export extern char **convertWcsArgv(wchar_t **argv_wcs, int argc);
+
 Dll_Export extern void freeArgv(char **argv, int argc);
 Dll_Export extern char *strFromBlobAlloc(const char *blob, const size_t len);
 Dll_Export extern char *strcpyAlloc(const char *src);
