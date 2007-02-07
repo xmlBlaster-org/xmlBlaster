@@ -661,7 +661,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    free(rawMsg);
    rawMsg = 0;
 
-   if (msgType==MSG_TYPE_RESPONSE || msgType==MSG_TYPE_EXCEPTION || !strcmp(XMLBLASTER_PUBLISH_ONEWAY, methodName))
+   if (msgType==MSG_TYPE_RESPONSE || msgType==MSG_TYPE_EXCEPTION || !strcmp(XMLBLASTER_PUBLISH_ONEWAY, methodName) || !strcmp(XMLBLASTER_DISCONNECT, methodName))
       return true; /* Responses and exceptions are oneway */
 
    if (responseSocketDataHolder) { /* if not oneway read the response message */
