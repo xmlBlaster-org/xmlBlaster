@@ -1,6 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15967-#15972 Mac OSX c client library compilation patch
+
 Changes for 1.5 [2007-01-28] #15961
 ===================================
 
