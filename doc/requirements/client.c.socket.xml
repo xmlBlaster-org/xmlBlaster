@@ -126,6 +126,7 @@
      <pre>
 cd xmlBlaster
 build              c-lib     (UNIX gcc)
+build -Duse-gcc=1  c-lib     (Mac OSX with gcc)
 build -Duse-icc=1  c-lib     (UNIX Intel icc compiler)
 build -Duse-CC=1   c-lib     (Solaris CC)
 build -Duse-msvc=1 c-lib     (Windows Visual C++)
@@ -171,7 +172,7 @@ build -Duse-icc=true c
      <pre>
 cd xmlBlaster/src/c
 
-Linux C:
+Linux C: (for Mac OSX add '-D__MacOSX__')
   gcc -Wall -g -I. -UXB_USE_PTHREADS -o HelloWorld HelloWorld.c util/helper.c util/msgUtil.c util/Properties.c
       socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterZlib.c
 
