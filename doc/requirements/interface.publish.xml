@@ -437,6 +437,7 @@ print "\nLogout done, bye.\n";
    <see type="REQ">interface</see>
    <see type="REQ">engine.message.lifecycle</see>
 
+   <see type="REQ">engine.qos.clientProperty</see>
    <see type="REQ">engine.qos.publish.PubSub</see>
    <see type="REQ">engine.qos.publish.persistent</see>
    <see type="REQ">engine.qos.publish.forceUpdate</see>
