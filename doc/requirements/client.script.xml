@@ -279,7 +279,8 @@ java javaclients.script.XmlScript \
    <update>
    <sessionId>unknown</sessionId>
       <key oid='test'/>
-      <content><![CDATA [This is a simple script test 4]]&gt;</content>
+      <!-- Same attributes as clientProperty are supported: -->
+      <content encoding="base64" charset="windows-1252">SGVsbG9Xb3JsZA==</content>
       <qos>
          <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
          <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
