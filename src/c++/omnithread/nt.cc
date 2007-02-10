@@ -26,7 +26,9 @@
 //
 
 #include <stdlib.h>
+#if !defined(WINCE)
 #include <errno.h>
+#endif
 #include <omnithread.h>
 #include <process.h>
 

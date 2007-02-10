@@ -15,7 +15,7 @@ Comment:   Testing the Timeout Features
 
 /**
  * Embedds an xmlBlaster server so that you can control its start and stop from within a c++ program.
- * 
+ * Is not supported on Windows CE
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  */
 

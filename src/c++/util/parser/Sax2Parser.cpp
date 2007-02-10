@@ -5,8 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
 -----------------------------------------------------------------------------*/
 
-#ifndef _UTIL_PARSER_SAX2PARSER_C
-#define _UTIL_PARSER_SAX2PARSER_C
+#ifndef _UTIL_PARSER_SAX2XERCESPARSER_C
+#define _UTIL_PARSER_SAX2XERCESPARSER_C
+
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
 
 #if defined(_WIN32)
   #pragma warning(disable:4786)
@@ -440,7 +444,8 @@ void Sax2Parser::releaseXMLCh(char** data)
 #endif
 }
 
-#endif
+#endif  // XMLBLASTER_XERCES_PLUGIN
 
 }}}} // namespace
+#endif // _UTIL_PARSER_SAX2XERCESPARSER_C
 

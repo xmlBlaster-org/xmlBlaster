@@ -1,5 +1,5 @@
-//				Package : omnithread
-// omnithread/posix.h		Created : 7/94 tjr
+//                              Package : omnithread
+// omnithread/posix.h           Created : 7/94 tjr
 //
 //    Copyright (C) 1994,1995,1996, 1997 Olivetti & Oracle Research Laboratory
 //
@@ -34,6 +34,11 @@
 #endif
 #endif
 
+// Use our pthreads_win32 port to WINCE (marcelruff.info)
+#if defined(WINCE)
+#include <pthreads/pthread.h>
+#else
+
 #ifndef __POSIX_NT__
 #  include <pthread.h>
 #else
@@ -48,10 +53,11 @@
 #    undef OMNI_DEFINED_WIN32_LEAN_AND_MEAN
 #  endif
 #endif
+#endif
 
 extern "C" void* omni_thread_wrapper(void* ptr);
 
-#define OMNI_MUTEX_IMPLEMENTATION			\
+#define OMNI_MUTEX_IMPLEMENTATION                       \
     pthread_mutex_t posix_mutex;
 
 #define OMNI_MUTEX_LOCK_IMPLEMENTATION                  \
@@ -60,17 +66,17 @@ extern "C" void* omni_thread_wrapper(void* ptr);
 #define OMNI_MUTEX_UNLOCK_IMPLEMENTATION                \
     pthread_mutex_unlock(&posix_mutex);
 
-#define OMNI_CONDITION_IMPLEMENTATION			\
+#define OMNI_CONDITION_IMPLEMENTATION                   \
     pthread_cond_t posix_cond;
 
-#define OMNI_SEMAPHORE_IMPLEMENTATION			\
-    omni_mutex m;					\
-    omni_condition c;					\
+#define OMNI_SEMAPHORE_IMPLEMENTATION                   \
+    omni_mutex m;                                       \
+    omni_condition c;                                   \
     int value;
 
-#define OMNI_THREAD_IMPLEMENTATION			\
-    pthread_t posix_thread;				\
-    static int posix_priority(priority_t);		\
+#define OMNI_THREAD_IMPLEMENTATION                      \
+    pthread_t posix_thread;                             \
+    static int posix_priority(priority_t);              \
     friend void* omni_thread_wrapper(void* ptr);
 
 #endif

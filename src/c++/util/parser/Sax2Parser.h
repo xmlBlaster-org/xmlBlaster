@@ -5,8 +5,12 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
 -----------------------------------------------------------------------------*/
 
-#ifndef _UTIL_PARSER_SAX2PARSER_H
-#define _UTIL_PARSER_SAX2PARSER_H
+#ifndef _UTIL_PARSER_SAX2XERCESPARSER_H
+#define _UTIL_PARSER_SAX2XERCESPARSER_H
+
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
 
 #include <util/xmlBlasterDef.h>
 #include <util/parser/I_Parser.h>
@@ -239,4 +243,5 @@ protected:
 };
 }}}} // namespace
 
-#endif
+#endif // XMLBLASTER_XERCES_PLUGIN
+# endif // _UTIL_PARSER_SAX2XERCESPARSER_H

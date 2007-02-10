@@ -15,8 +15,12 @@ Comment:   The abstraction parser for xml literals
 #include <util/ErrorCode.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <xercesc/util/PlatformUtils.hpp>
-#include <xercesc/util/PanicHandler.hpp>
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
+#  include <xercesc/util/PlatformUtils.hpp>
+#  include <xercesc/util/PanicHandler.hpp>
+#endif // XMLBLASTER_XERCES_PLUGIN
 #include <util/parser/ParserFactory.h>
 #include <util/parser/Sax2Parser.h>
 
@@ -33,6 +37,9 @@ ParserFactory* ParserFactory::factory_ = NULL;
 /**
  * Xerces panic handler
  */
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
 class  XmlBlasterPanicHandler : public PanicHandler
 {
  public:
@@ -68,6 +75,7 @@ class  XmlBlasterPanicHandler : public PanicHandler
 };
 
 static XmlBlasterPanicHandler xmlBlasterPanicHandler;
+#endif // XMLBLASTER_XERCES_PLUGIN
 
 
 ParserFactory& ParserFactory::getFactory()
@@ -100,7 +108,11 @@ ParserFactory::~ParserFactory()
 {
    if (isInitialized_) {
       //std::cerr << "ParserFactory destructor" << std::endl;
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
       XMLPlatformUtils::Terminate();
+#endif
    }
 }
 
@@ -113,6 +125,9 @@ std::string ParserFactory::getLocale(org::xmlBlaster::util::Global& global)
 
 void ParserFactory::initialize(org::xmlBlaster::util::Global& global)
 {
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
    try {
       if (!isInitialized_) {
          //std::cerr << "Initializing xerces with '" << getLocale(global) << "'" << std::endl;
@@ -125,18 +140,22 @@ void ParserFactory::initialize(org::xmlBlaster::util::Global& global)
       char* message = XMLString::transcode(e.getMessage());
       std::string txt = std::string("XMLPlatformUtils::Initialize() - XMLException during initialization. Exception message is: ") + std::string(message);
       Sax2Parser::releaseXMLCh(&message);
-      throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
+          throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }
    catch (const std::exception& e) {
       std::string txt = std::string("XMLPlatformUtils::Initialize() - std::exception during initialization. Exception message is: ") + std::string(e.what());
       throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }
+#endif // XMLBLASTER_XERCES_PLUGIN
 }
 
 I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler)
 {
-        initialize(global);
+      initialize(global);
 
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
    try {
       return new Sax2Parser(global, handler);
    }
@@ -153,6 +172,7 @@ I_Parser* ParserFactory::createParser(org::xmlBlaster::util::Global& global, Xml
       std::string txt = std::string("Sax2Parser() - std::exception during initialization. Exception message is: ") + std::string(e.what());
       throw util::XmlBlasterException(INTERNAL_UNKNOWN, ME, txt);
    }
+#endif // XMLBLASTER_XERCES_PLUGIN
 }
 
 

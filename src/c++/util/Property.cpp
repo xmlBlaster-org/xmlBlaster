@@ -14,6 +14,12 @@
 using namespace std;
 using namespace org::xmlBlaster::util;
 
+#if defined(WINCE) /* No getenv() for Windows CE. TODO: Use some registry workaround as others do */
+char *getenv(const char *key) {
+      return 0;
+}
+#endif
+
 #define  MAX_NEST 50
 
 Property::Property(int args, const char * const argv[]) : properties_() {

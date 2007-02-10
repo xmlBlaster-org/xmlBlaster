@@ -26,6 +26,7 @@ EmbeddedServerRunner::EmbeddedServerRunner(EmbeddedServer& owner) : ME("Embedded
 
 void EmbeddedServerRunner::run()
 {  
+#if !defined(WINCE)
    if (owner_.log_.call()) owner_.log_.call(ME, "::run");
 
    if (owner_.isRunning_) {
@@ -60,6 +61,7 @@ void EmbeddedServerRunner::run()
       owner_.log_.error(ME, "could not start the embedded server: your OS does not have a command processor, plase start your server manually");
       owner_.isRunning_ = false;
    }
+#endif //!defined(WINCE)
 }
 
 

@@ -18,7 +18,11 @@ Version:   $Id$
 #include <util/qos/storage/MsgUnitStoreProperty.h>
 #include <util/qos/storage/ClientQueueProperty.h>
 #include <util/qos/storage/CbQueueProperty.h>
-#include <util/parser/Sax2Parser.h>
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
+#  include <util/parser/Sax2Parser.h>
+#endif
 #ifdef COMPILE_SOCKET_PLUGIN
 #  include <client/protocol/socket/SocketDriver.h>
 #endif
@@ -438,8 +442,12 @@ string Global::usage()
       sb += org::xmlBlaster::client::protocol::corba::CorbaDriver::usage();
       sb += "\n";
 #  endif
+#  if defined(XMLBLASTER_MSXML_PLUGIN)
+#     error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#  else  // XMLBLASTER_XERCES_PLUGIN
    sb += org::xmlBlaster::util::parser::Sax2Parser::usage();
    sb += "\n";
+#  endif
    sb += org::xmlBlaster::util::qos::SessionQos::usage();
    sb += "\n";
    sb += org::xmlBlaster::util::qos::address::Address(Global::getInstance()).usage();

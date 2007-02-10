@@ -80,6 +80,14 @@ class omni_thread;
 #elif defined(__vxWorks__)
 #include <omnithread/VxThread.h>
 
+#elif defined(WINCE)
+
+#if defined(__POSIX_NT__)
+#include <omnithread/posix.h>
+#else
+#include <omnithread/nt.h>
+#endif
+
 #elif defined(__WIN32__)
 
 #if defined(__POSIX_NT__)

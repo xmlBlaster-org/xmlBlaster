@@ -45,7 +45,9 @@
 //
 
 #include <stdlib.h>
+#if !defined(WINCE) // marcelruff.info TODO: same procedure as with http://sources.redhat.com/pthreads-win32
 #include <errno.h>
+#endif
 #include <time.h>
 #include <omnithread.h>
 

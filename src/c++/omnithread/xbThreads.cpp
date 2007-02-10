@@ -24,6 +24,14 @@
 #include "nt.cc"
 #endif
 
+#elif defined(WINCE)
+
+// marcelruff.info: To use posix http://sources.redhat.com/pthreads-win32 for Windows CE
+#if defined(__POSIX_NT__)
+#include "posix.cc"
+#else
+#include "nt.cc"
+#endif
  
 #elif defined(__sunos__)
 #if __OSVERSION__ != 5

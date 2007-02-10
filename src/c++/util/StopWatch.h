@@ -9,7 +9,9 @@ Comment:   Handling the Client data
 #define _UTIL_STOPWATCH_H
 
 #include <util/XmlBCfg.h>
+#if !defined(WINCE)
 #include <sys/timeb.h>
+#endif
 #include <string>
 #include <util/lexical_cast.h>
 
@@ -22,25 +24,35 @@ namespace util {
  * Use this helper class if you want to measure elapsed time in some code 
  * fragment. If you specify (a positive) time in the argument list, it is the
  * time in milliseconds which the stop watch should wait.
+ * <p>Is not implemented for Windows CE</p>
  */
    class Dll_Export StopWatch {
 
    private:
+#if defined(WINCE)
+#else
       struct timeb *startTime_, *currentTime_;
+#endif
       long   stopTime_;
 
    public:
       StopWatch(long stopTime=-1) {
+#if defined(WINCE)
+#else
          startTime_   = new timeb();
          currentTime_ = new timeb();
          restart(stopTime);
+#endif
       }
       
 
       ~StopWatch() {
+#if defined(WINCE)
+#else
          delete startTime_;
          delete currentTime_;
-      }
+#endif
+          }
 
 
       /**
@@ -49,11 +61,15 @@ namespace util {
        * @return elapsed Milliseconds since creation or restart()
        */
       long elapsed() const {
+#if defined(WINCE)
+                return 0;
+#else
          ftime(currentTime_);
          double seconds  = difftime(currentTime_->time, startTime_->time);
          double milliSec = 
             (double)currentTime_->millitm - (double)startTime_->millitm;
          return (long)(1000.0 * seconds + milliSec);
+#endif //(WINCE)
       }
 
       
@@ -87,7 +103,10 @@ namespace util {
        */
       void restart(long stopTime=-1) {
          stopTime_ = stopTime;
+#if defined(WINCE)
+#else
          ftime(startTime_);
+#endif
       }
 
       /**
