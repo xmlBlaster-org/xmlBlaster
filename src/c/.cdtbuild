@@ -14,8 +14,8 @@
 </option>
 <option id="gnu.c.compiler.option.include.paths.235957674" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
-<listOptionValue builtIn="false" value="${SQLITE_HOME}/include"/>
-<listOptionValue builtIn="false" value="${ZLIB_HOME}/include"/>
+<listOptionValue builtIn="false" value="${sqlite_include_dir}"/>
+<listOptionValue builtIn="false" value="${zlib_include_dir}"/>
 <listOptionValue builtIn="false" value="/usr/include"/>
 </option>
 <option id="gnu.c.compiler.option.warnings.pedantic.1416751142" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
@@ -28,9 +28,9 @@
 <listOptionValue builtIn="false" value="sqlite"/>
 </option>
 <option id="gnu.c.link.option.paths.1498660134" superClass="gnu.c.link.option.paths" valueType="stringList">
-<listOptionValue builtIn="false" value="/usr/lib"/>
-<listOptionValue builtIn="false" value="${ZLIB_HOME}/lib"/>
-<listOptionValue builtIn="false" value="${SQLITE_HOME}/lib"/>
+<listOptionValue builtIn="false" value="${zlib_lib_dir}"/>
+<listOptionValue builtIn="false" value="${sqlite_lib_dir}"/>
+<listOptionValue builtIn="false" value="${usr_lib_dir}"/>
 </option>
 <option id="gnu.c.link.option.shared.783582631" superClass="gnu.c.link.option.shared" value="true" valueType="boolean"/>
 </tool>

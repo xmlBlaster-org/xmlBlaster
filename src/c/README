@@ -22,9 +22,15 @@ Compilation can be done with
   o ANT see xmlBlaster/build.xml and configure xmlBlaster/build.properties
 
   o Eclipse >= 3.2 with CDT >= 3.1 (see .cdt* files)
-	export SQLITE_HOME=/opt/sqlite-bin
-	export ZLIB_HOME=/opt/zlib-bin
-	export $XMLBLASTER_HOME=/home/xmlblast/xmlBlaster
+     # Example C compilation with eclipse 3.2 and CDT 3.1.0 64 bit: Set environment or macro:
+     export usr_lib_dir=/usr/lib64
+     #XMLBLASTER_ZLIB=1
+     export zlib_include_dir=/usr/include
+     export zlib_lib_dir=/usr/lib64
+     #XMLBLASTER_PERSISTENT_QUEUE=1
+     export sqlite_include_dir=/usr/include
+     export sqlite_lib_dir=/usr/lib64
+     export XMLBLASTER_HOME=/home/xmlblast/xmlBlaster
 
   o VC++ 2005 for Windows or Windows CE, see .vcproj files
 
