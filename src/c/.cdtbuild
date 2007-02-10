@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.1.0?>
+
+<ManagedProjectBuildInfo>
+<project id="xmlBlasterClientC.cdt.managedbuild.target.gnu.exe.2050257080" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe">
+<configuration artifactName="xmlBlasterClientC" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.219208913" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1438910986" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.91148311" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+<option id="gnu.c.compiler.option.preprocessor.def.symbols.981984303" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+<listOptionValue builtIn="false" value="XMLBLASTER_PERSISTENT_QUEUE=1"/>
+<listOptionValue builtIn="false" value="XMLBLASTER_ZLIB=1"/>
+<listOptionValue builtIn="false" value="_REENTRANT"/>
+</option>
+<option id="gnu.c.compiler.option.include.paths.235957674" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
+<listOptionValue builtIn="false" value="${SQLITE_HOME}/include"/>
+<listOptionValue builtIn="false" value="${ZLIB_HOME}/include"/>
+<listOptionValue builtIn="false" value="/usr/include"/>
+</option>
+<option id="gnu.c.compiler.option.warnings.pedantic.1416751142" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
+<option id="gnu.c.compiler.option.misc.other.1312870158" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fPIC" valueType="string"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.795644704" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
+<option id="gnu.c.link.option.libs.1488208309" superClass="gnu.c.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="z"/>
+<listOptionValue builtIn="false" value="pthread"/>
+<listOptionValue builtIn="false" value="sqlite"/>
+</option>
+<option id="gnu.c.link.option.paths.1498660134" superClass="gnu.c.link.option.paths" valueType="stringList">
+<listOptionValue builtIn="false" value="/usr/lib"/>
+<listOptionValue builtIn="false" value="${ZLIB_HOME}/lib"/>
+<listOptionValue builtIn="false" value="${SQLITE_HOME}/lib"/>
+</option>
+<option id="gnu.c.link.option.shared.783582631" superClass="gnu.c.link.option.shared" value="true" valueType="boolean"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1555864514" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1540984953" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug"/>
+<macros/>
+</toolChain>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.219208913./xmlBlasterClientC/HelloWorld.c" name="HelloWorld.c" rcbsApplicability="disable" resourcePath="/xmlBlasterClientC/HelloWorld.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/HelloWorld.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/HelloWorld.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.219208913./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c" name="XmlBlasterConnectionUnparsedMain.c" rcbsApplicability="disable" resourcePath="/xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479./xmlBlasterClientC/XmlBlasterConnectionUnparsedMain.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1539935479"/>
+</resourceConfiguration>
+</configuration>
+<macros/>
+</project>
+</ManagedProjectBuildInfo>
