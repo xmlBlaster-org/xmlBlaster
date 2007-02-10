@@ -1,9 +1,10 @@
 ---------------------------------------------------------------------
-  C based SOCKET access to xmlBlaster, May 2003
+  C based SOCKET access to xmlBlaster
 ---------------------------------------------------------------------
 
 This is the C based SOCKET client for xmlBlaster.
-It should compile on Linux, Windows (PocketPC, WinCE) and other UNIX OS.
+
+It should compile on Linux, Windows (XP, PocketPC, WinCE etc), MAC OSX and other UNIX OS.
 
 Please read 
 
@@ -16,4 +17,19 @@ o See xmlBlaster/demo/c/socket/README for demo clients
 o The testsuite is in xmlBlaster/testsuite/src/c
 
 
-xmlblaster@marcelruff.info 05/2003
+Compilation can be done with
+  
+  o ANT see xmlBlaster/build.xml and configure xmlBlaster/build.properties
+
+  o Eclipse >= 3.2 with CDT >= 3.1 (see .cdt* files)
+	export SQLITE_HOME=/opt/sqlite-bin
+	export ZLIB_HOME=/opt/zlib-bin
+	export $XMLBLASTER_HOME=/home/xmlblast/xmlBlaster
+
+  o VC++ 2005 for Windows or Windows CE, see .vcproj files
+
+You can compile it with/without zlib (compression) and sqlite (database) support.
+
+
+
+xmlblaster@marcelruff.info 2007
