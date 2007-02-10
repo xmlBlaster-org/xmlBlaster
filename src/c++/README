@@ -33,6 +33,27 @@ Xerces XML parser:
   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.compile.html
 
 
+Compiling with eclipse:
+=======================
+
+We provide
+   .cdtproject .project .cdtbuild
+to compile with eclipse >= 3.2 and CDT >= 3.1.0
+
+Add to your environment:
+
+   export usr_lib_dir=/usr/lib
+   export zlib_include_dir=/opt/zlib-bin/include
+   export zlib_lib_dir=/opt/zlib-bin/lib
+   export sqlite_include_dir=/opt/sqlite-bin/include
+   export sqlite_lib_dir=/opt/sqlite-bin/lib
+   export xerces_include_dir=/opt/xerces-c-src_2_7_0-bin/include
+   export xerces_lib_dir=/opt/xerces-c-src_2_7_0-bin/lib
+
+to find the third party libraries.
+
+
+
 HOW TO RUN THE TESTSUITE:
 =========================
 
