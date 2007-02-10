@@ -21,7 +21,7 @@ Version:   $Id$
 #if defined(XMLBLASTER_MSXML_PLUGIN)
 #  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
 #else  // XMLBLASTER_XERCES_PLUGIN
-#  include <util/parser/Sax2Parser.h>
+#  include <util/parser/Sax2XercesParser.h>
 #endif
 #ifdef COMPILE_SOCKET_PLUGIN
 #  include <client/protocol/socket/SocketDriver.h>

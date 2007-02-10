@@ -15,14 +15,21 @@ Comment:   The abstraction parser for xml literals
 #include <util/ErrorCode.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
+
 #if defined(XMLBLASTER_MSXML_PLUGIN)
 #  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
 #else  // XMLBLASTER_XERCES_PLUGIN
 #  include <xercesc/util/PlatformUtils.hpp>
 #  include <xercesc/util/PanicHandler.hpp>
 #endif // XMLBLASTER_XERCES_PLUGIN
+
 #include <util/parser/ParserFactory.h>
-#include <util/parser/Sax2Parser.h>
+
+#if defined(XMLBLASTER_MSXML_PLUGIN)
+#  error Implement Microsoft XML parser for /DXMLBLASTER_MSXML_PLUGIN
+#else  // XMLBLASTER_XERCES_PLUGIN
+#  include <util/parser/Sax2XercesParser.h>
+#endif // XMLBLASTER_XERCES_PLUGIN
 
 
  

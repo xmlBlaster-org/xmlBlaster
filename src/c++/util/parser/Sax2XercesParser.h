@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-Name:      Sax2Parser.h
+Name:      Sax2XercesParser.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks

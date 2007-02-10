@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------
-Name:      Sax2Parser.cpp
+Name:      Sax2XercesParser.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
@@ -16,7 +16,7 @@ Comment:   Default handling of Sax callbacks
   #pragma warning(disable:4786)
 #endif
 
-#include <util/parser/Sax2Parser.h>
+#include <util/parser/Sax2XercesParser.h>
 #include <xercesc/sax/SAXException.hpp>
 #include <xercesc/sax2/SAX2XMLReader.hpp>
 #include <xercesc/sax2/XMLReaderFactory.hpp>
