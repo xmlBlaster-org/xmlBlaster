@@ -52,6 +52,9 @@ Add to your environment:
 
 to find the third party libraries.
 
+Add the Project over File -> Import -> General -> Existing Projects into Workspace
+and add xmlBlaster/src/c++ for 'Select root directory'. (Tested with Linux)
+
 
 
 HOW TO RUN THE TESTSUITE:
