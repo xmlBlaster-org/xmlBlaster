@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.1.0?>
+
+<ManagedProjectBuildInfo>
+<project id="Cpp-HelloWorld2.cdt.managedbuild.target.gnu.exe.1660621369" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe">
+<configuration artifactName="Cpp-HelloWorld2" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1669240189" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" postbuildStep="cp ${XMLBLASTER_HOME}/demo/c++/Debug/Cpp-HelloWorld2 ${XMLBLASTER_HOME}/demo/c++/bin/HelloWorld2">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.1593365266" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
+<option id="gnu.cpp.compiler.option.include.paths.40748000" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
+<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++"/>
+</option>
+<option id="gnu.cpp.compiler.option.warnings.pedantic.348244259" superClass="gnu.cpp.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
+<option id="gnu.cpp.compiler.option.other.other.382333710" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -Wall -pedantic -Wno-long-long -D_REENTRANT -rdynamic -export-dynamic -U_ENABLE_STACK_TRACE_ -DOMNITHREAD  -DXMLBLASTER_PERSISTENT_QUEUE=1 -DXMLBLASTER_ZLIB=1 -DCOMPILE_SOCKET_PLUGIN=1" valueType="string"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1901933976" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.430559339" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.59829959" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+<option id="gnu.cpp.link.option.libs.1865768037" superClass="gnu.cpp.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="xerces-c"/>
+<listOptionValue builtIn="false" value="xmlBlasterClientCD"/>
+<listOptionValue builtIn="false" value="xmlBlasterClientD"/>
+<listOptionValue builtIn="false" value="sqlite"/>
+<listOptionValue builtIn="false" value="z"/>
+</option>
+<option id="gnu.cpp.link.option.paths.1127556089" superClass="gnu.cpp.link.option.paths" valueType="stringList">
+<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/lib"/>
+<listOptionValue builtIn="false" value="${xerces_lib_dir}"/>
+<listOptionValue builtIn="false" value="${zlib_lib_dir}"/>
+<listOptionValue builtIn="false" value="${sqlite_lib_dir}"/>
+<listOptionValue builtIn="false" value="${usr_lib_dir}"/>
+</option>
+<option id="gnu.cpp.link.option.userobjs.1382387840" superClass="gnu.cpp.link.option.userobjs"/>
+<option id="gnu.cpp.link.option.flags.207622879" superClass="gnu.cpp.link.option.flags" value="&quot;-Wl,-rpath=${xerces_lib_dir} -Wl,-rpath=${zlib_lib_dir} -Wl,-rpath=${sqlite_lib_dir} -Wl,-rpath=${usr_lib_dir} -Wl,-rpath=${XMLBLASTER_HOME}/lib&quot;" valueType="string"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.35664435" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug"/>
+<macros/>
+</toolChain>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/ExternOrb.cpp" name="ExternOrb.cpp" rcbsApplicability="disable" resourcePath="/Cpp-HelloWorld2/ExternOrb.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/ExternOrb.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/ExternOrb.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/Leak.cpp" name="Leak.cpp" rcbsApplicability="disable" resourcePath="/Cpp-HelloWorld2/Leak.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/Leak.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/Leak.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/MultiConnectDemo.cpp" name="MultiConnectDemo.cpp" rcbsApplicability="disable" resourcePath="/Cpp-HelloWorld2/MultiConnectDemo.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/MultiConnectDemo.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/MultiConnectDemo.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/PublishDemo.cpp" name="PublishDemo.cpp" rcbsApplicability="disable" resourcePath="/Cpp-HelloWorld2/PublishDemo.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/PublishDemo.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/PublishDemo.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/SubscribeDemo.cpp" name="SubscribeDemo.cpp" rcbsApplicability="disable" resourcePath="/Cpp-HelloWorld2/SubscribeDemo.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/SubscribeDemo.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/SubscribeDemo.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1669240189./Cpp-HelloWorld2/TestEmptyContent.cpp" name="TestEmptyContent.cpp" rcbsApplicability="disable" resourcePath="/Cpp-HelloWorld2/TestEmptyContent.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/TestEmptyContent.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373./Cpp-HelloWorld2/TestEmptyContent.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.2033967373"/>
+</resourceConfiguration>
+</configuration>
+<configuration artifactName="Cpp-HelloWorld2" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.release.1178659680" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.664089039" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.818329583" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.1929926386" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.40239831" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.780956973" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.1554332624" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release"/>
+</toolChain>
+</configuration>
+<macros/>
+</project>
+</ManagedProjectBuildInfo>
