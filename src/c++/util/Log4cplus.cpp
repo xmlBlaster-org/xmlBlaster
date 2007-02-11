@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Embed logging library log4cpp http://log4cplus.sourceforge.net/
 ----------------------------------------------------------------------------*/
 
-#ifdef XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN
+#if XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN==1
 
 #include <util/Log4cplus.h>
 #include <log4cplus/logger.h>

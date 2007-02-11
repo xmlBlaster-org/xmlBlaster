@@ -479,7 +479,7 @@ LogManager& Global::getLogManager()
 I_Log& Global::getLog(const string &logName)
 {
    try {
-#     ifdef XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN
+#     if XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN==1
          static bool first = true;
          if (first) {
             logManager_.setLogFactory("log4cplus", new Log4cplusFactory());

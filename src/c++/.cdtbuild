@@ -3,20 +3,20 @@
 
 <ManagedProjectBuildInfo>
 <project id="xmlBlasterClientCPP.cdt.managedbuild.target.gnu.exe.797195204" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe">
-<configuration artifactExtension="so" artifactName="libxmlBlasterClientD" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1483991281" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+<configuration artifactExtension="so" artifactName="libxmlBlasterClientD" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1483991281" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" postannouncebuildStep="Copy lib to xmlBlaster/lib directory" postbuildStep="cp ${XMLBLASTER_HOME}/src/c++/Debug/${BuildArtifactFileName} ${XMLBLASTER_HOME}/lib">
 <toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.2106847399" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1740539441" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
 <option id="gnu.cpp.compiler.option.preprocessor.def.1600476173" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 <listOptionValue builtIn="false" value="OMNITHREAD"/>
-<listOptionValue builtIn="false" value="XMLBLASTER_NONE"/>
 <listOptionValue builtIn="false" value="COMPILE_SOCKET_PLUGIN=1"/>
-<listOptionValue builtIn="false" value="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1"/>
+<listOptionValue builtIn="false" value="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=0"/>
 <listOptionValue builtIn="false" value="_REENTRANT"/>
 </option>
 <option id="gnu.cpp.compiler.option.include.paths.848123249" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++"/>
+<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++/generated"/>
 <listOptionValue builtIn="false" value="${xerces_include_dir}"/>
 <listOptionValue builtIn="false" value="${sqlite_include_dir}"/>
 <listOptionValue builtIn="false" value="${zlib_include_dir}"/>

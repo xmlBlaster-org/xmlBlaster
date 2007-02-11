@@ -7,7 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #ifndef _ORG_XMLBLASTER_UTIL_LOG4CPLUS_H
 #define _ORG_XMLBLASTER_UTIL_LOG4CPLUS_H
 
-#ifdef XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN
+#if XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN==1
 
 #include <util/xmlBlasterDef.h>
 #include <string>
