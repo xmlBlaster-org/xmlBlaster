@@ -1,6 +1,13 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #15994 Added C and C++ project files for eclipse and VC++2005
+          see xmlBlaster/src/c/README and xmlBlaster/src/c++/README
+          see xmlBlaster/demo/socket/README and xmlBlaster/demo/c++/README
+
+ o #15980 C++ client library: Partially added support for WINCE
+          Porting to MSXML and fixing errno.h in omnithread is missing
+
  o #15967-#15972 Mac OSX c client library compilation patch
 
 Changes for 1.5 [2007-01-28] #15961
