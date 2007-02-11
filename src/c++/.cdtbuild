@@ -20,7 +20,6 @@
 <listOptionValue builtIn="false" value="${xerces_include_dir}"/>
 <listOptionValue builtIn="false" value="${sqlite_include_dir}"/>
 <listOptionValue builtIn="false" value="${zlib_include_dir}"/>
-<listOptionValue builtIn="false" value="/usr/include"/>
 </option>
 <option id="gnu.cpp.compiler.option.warnings.pedantic.1413421069" superClass="gnu.cpp.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
 <option id="gnu.cpp.compiler.option.other.other.1106197204" superClass="gnu.cpp.compiler.option.other.other" value="-c -fPIC -fmessage-length=0 -Wno-long-long -ftemplate-depth-20" valueType="string"/>
