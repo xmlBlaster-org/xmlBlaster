@@ -16,7 +16,6 @@
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
 <listOptionValue builtIn="false" value="${sqlite_include_dir}"/>
 <listOptionValue builtIn="false" value="${zlib_include_dir}"/>
-<listOptionValue builtIn="false" value="/usr/include"/>
 </option>
 <option id="gnu.c.compiler.option.warnings.pedantic.1416751142" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
 <option id="gnu.c.compiler.option.misc.other.1312870158" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fPIC" valueType="string"/>
