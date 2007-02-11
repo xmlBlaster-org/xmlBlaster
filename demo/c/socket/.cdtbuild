@@ -24,7 +24,6 @@
 <option id="gnu.c.link.option.libs.1615513586" superClass="gnu.c.link.option.libs" valueType="libs">
 <listOptionValue builtIn="false" value="xmlBlasterClientCD"/>
 <listOptionValue builtIn="false" value="z"/>
-<listOptionValue builtIn="false" value="sqlite"/>
 <listOptionValue builtIn="false" value="pthread"/>
 </option>
 <option id="gnu.c.link.option.paths.1219310806" superClass="gnu.c.link.option.paths" valueType="stringList">
