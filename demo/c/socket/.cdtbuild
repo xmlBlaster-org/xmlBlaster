@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.1.0?>
+
+<ManagedProjectBuildInfo>
+<project id="C-HelloWorld3.cdt.managedbuild.target.gnu.exe.1184563604" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe">
+<configuration artifactName="HelloWorld3" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.debug.1743229659" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" postbuildStep="cp ${XMLBLASTER_HOME}/demo/c/socket/Debug/HelloWorld3 ${XMLBLASTER_HOME}/demo/c/socket/bin">
+<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.351038995" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+<option id="gnu.c.compiler.option.preprocessor.def.symbols.1779802871" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+<listOptionValue builtIn="false" value="_REENTRANT"/>
+</option>
+<option id="gnu.c.compiler.option.include.paths.2122525305" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
+</option>
+<option id="gnu.c.compiler.option.warnings.pedantic.1890327004" superClass="gnu.c.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
+<option id="gnu.c.compiler.exe.debug.option.debugging.level.1024492411" superClass="gnu.c.compiler.exe.debug.option.debugging.level" value="gnu.c.debugging.level.default" valueType="enumerated"/>
+<option id="gnu.c.compiler.option.preprocessor.undef.symbol.1048876944" superClass="gnu.c.compiler.option.preprocessor.undef.symbol" valueType="stringList">
+<listOptionValue builtIn="false" value="_ENABLE_STACK_TRACE_"/>
+</option>
+<option id="gnu.c.compiler.option.misc.other.58410661" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -rdynamic -export-dynamic" valueType="string"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.75842580" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.593541378" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug">
+<option id="gnu.c.link.option.libs.1615513586" superClass="gnu.c.link.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="xmlBlasterClientCD"/>
+<listOptionValue builtIn="false" value="z"/>
+<listOptionValue builtIn="false" value="sqlite"/>
+<listOptionValue builtIn="false" value="pthread"/>
+</option>
+<option id="gnu.c.link.option.paths.1219310806" superClass="gnu.c.link.option.paths" valueType="stringList">
+<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/lib"/>
+<listOptionValue builtIn="false" value="${zlib_lib_dir}"/>
+<listOptionValue builtIn="false" value="${usr_lib_dir}"/>
+</option>
+<option id="gnu.c.link.option.ldflags.2105011967" superClass="gnu.c.link.option.ldflags" value="-g -Wl,-rpath=${XMLBLASTER_HOME}/lib:${zlib_lib_dir}:${usr_lib_dir}" valueType="string"/>
+<option id="gnu.c.link.option.other.436855715" superClass="gnu.c.link.option.other" valueType="stringList"/>
+</tool>
+<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1652674577" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.57728882" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug"/>
+<macros/>
+</toolChain>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1743229659.1595568309" name="Get.c" rcbsApplicability="disable" resourcePath="/C-HelloWorld3/Get.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/Get.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/Get.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1743229659.1608694030" name="HelloWorldUdp.c" rcbsApplicability="disable" resourcePath="/C-HelloWorld3/HelloWorldUdp.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/HelloWorldUdp.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/HelloWorldUdp.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1743229659.1641331690" name="LogRedirect.c" rcbsApplicability="disable" resourcePath="/C-HelloWorld3/LogRedirect.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/LogRedirect.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/LogRedirect.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1743229659.2086944105" name="Publisher.c" rcbsApplicability="disable" resourcePath="/C-HelloWorld3/Publisher.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/Publisher.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/Publisher.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1743229659.65749289" name="Subscriber.c" rcbsApplicability="disable" resourcePath="/C-HelloWorld3/Subscriber.c" toolsToInvoke="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/Subscriber.c">
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516./C-HelloWorld3/Subscriber.c" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.245252516"/>
+</resourceConfiguration>
+</configuration>
+<macros/>
+</project>
+</ManagedProjectBuildInfo>

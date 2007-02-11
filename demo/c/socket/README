@@ -23,12 +23,37 @@ and than compile the demo clients in this directory.
 The executables are put to xmlBlaster/demo/c/socket/bin
 
 
+
 Run:
 ----
 
   java org.xmlBlaster.Main
 
   bin/LogRedirect -logLevel TRACE
+
+
+Compiling/Debugging with eclipse:
+---------------------------------
+
+We provide
+   .cdtproject .project .cdtbuild
+to compile with eclipse >= 3.2 and CDT >= 3.1.0
+
+Add to your environment:
+
+   export usr_lib_dir=/usr/lib
+   export zlib_include_dir=/opt/zlib-bin/include
+   export zlib_lib_dir=/opt/zlib-bin/lib
+
+to find the third party libraries.
+
+Add the Project over File -> Import -> General -> Existing Projects into Workspace
+and add xmlBlaster/src/c++ for 'Select root directory'. (Tested with Linux)
+
+   # Example C++ compilation with eclipse 3.2 and CDT 3.1.0 64 bit (all libs installed as RPM):
+   export usr_lib_dir=/usr/lib64
+   export zlib_include_dir=/usr/include
+   export zlib_lib_dir=/usr/lib64
 
 
 mr@marcelruff.info 06/2003
