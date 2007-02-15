@@ -147,8 +147,8 @@ namespace org.xmlBlaster.client
 #     if XMLBLASTER_MONO
          // Linux Debug libxmlBlasterClientCD.so, set LD_LIBRARY_PATH to find the shared library
          const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD";
-#     elif XMLBLASTER_WINCE
-         const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD-Arm4.dll";
+#     elif XMLBLASTER_WINCE // xmlBlasterClientC-$(ARCHFAM).dll
+      const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC-ARM.dll";
 #     else // XMLBLASTER_WIN32
          const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC.dll";
          //const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
