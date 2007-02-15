@@ -2896,6 +2896,8 @@ TODO
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
             <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
+            <linkerarg value="${LDFLAGS2}" if="LDFLAGS2"/>
+            <linkerarg value="${LDFLAGS3}" if="LDFLAGS3"/>
             <!-- TAO -->
             <fileset dir="${CORBACPP_HOME}/../ace" includes="ace${tao.lib.type}.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/tao" includes="TAO${tao.lib.type}.lib" if="TAO,windows" />
@@ -3036,6 +3038,8 @@ TODO
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
            <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
+           <linkerarg value="${LDFLAGS2}" if="LDFLAGS2"/>
+           <linkerarg value="${LDFLAGS3}" if="LDFLAGS3"/>
            <libset dir="${build.src.c.dir}/socket" libs="pthreadVC2" />
            <syslibset libs="ws2_32" />
            <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
@@ -3172,6 +3176,8 @@ TODO
 
          <linker name="msvc" if="use-msvc">
             <linkerarg value="${LDFLAGS}" if="LDFLAGS"/>
+            <linkerarg value="${LDFLAGS2}" if="LDFLAGS2"/>
+            <linkerarg value="${LDFLAGS3}" if="LDFLAGS3"/>
             <libset casesensitive="false" dir="${lib.dir}" libs="${c.lib.name}" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir}" libs="${c.lib.name}.dll" />  <!-- xmlBlasterClientC.dll -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
