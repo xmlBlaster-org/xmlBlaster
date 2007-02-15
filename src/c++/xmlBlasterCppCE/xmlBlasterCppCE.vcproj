@@ -14,6 +14,9 @@
 		<Platform
 			Name="Smartphone 2003 (ARMV4)"
 		/>
+		<Platform
+			Name="Win32"
+		/>
 	</Platforms>
 	<ToolFiles>
 	</ToolFiles>
@@ -341,6 +344,135 @@
 			<DebuggerTool
 			/>
 		</Configuration>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="$(XMLBLASTER_HOME)/src/c;$(XMLBLASTER_HOME)/src/c++;$(zlib_include_dir);$(sqlite_include_dir);$(xerces_include_dir)"
+				PreprocessorDefinitions="COMPILE_SOCKET_PLUGIN=1;XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1;LOG4CPLUS_BUILD_DLL=1;XMLBLASTER_PERSISTENT_QUEUE=1;XMLBLASTER_ZLIB=1;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_WINDLL;__WIN32__;-DOMNITHREAD;_OMNITHREAD_DLL=1;WIN32DLL_EXPORTS=1;WIN32;_DEBUG;_USRDLL;_UNICODE"
+				ExceptionHandling="1"
+				RuntimeLibrary="3"
+				CallingConvention="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="zdll.lib pthreadVC2.lib sqlite.lib xmlBlasterClientCD.lib xerces-c_2D.lib"
+				AdditionalLibraryDirectories="&quot;$(zlib_lib_dir)&quot;;&quot;$(sqlite_lib_dir)&quot;;&quot;$(xerces_lib_dir)&quot;;&quot;$(XMLBLASTER_HOME)/src/c/socket&quot;;&quot;$(XMLBLASTER_HOME)/lib&quot;"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -350,46 +482,6 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
-			<File
-				RelativePath=".\stdafx.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Pocket PC 2003 (ARMV4)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Smartphone 2003 (ARMV4)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Pocket PC 2003 (ARMV4)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Smartphone 2003 (ARMV4)"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\xmlBlasterCppCE.cpp"
-				>
-			</File>
 			<Filter
 				Name="util"
 				>
@@ -649,6 +741,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\util\parser\Sax2XercesParser.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\util\parser\XmlHandlerBase.cpp"
 						>
 					</File>
@@ -656,6 +752,54 @@
 				<Filter
 					Name="queue"
 					>
+					<File
+						RelativePath="..\util\queue\CacheQueuePlugin.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\ConnectQueueEntry.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\EraseQueueEntry.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\MsgQueueEntry.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\PublishQueueEntry.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\QueueFactory.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\RamQueuePlugin.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\SQLiteQueuePlugin.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\SubscribeQueueEntry.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\util\queue\UnSubscribeQueueEntry.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="thread"
+					>
+					<File
+						RelativePath="..\util\thread\ThreadImpl.cpp"
+						>
+					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -696,6 +840,10 @@
 				<Filter
 					Name="protocol"
 					>
+					<File
+						RelativePath="..\client\protocol\CbServerPluginManager.cpp"
+						>
+					</File>
 					<Filter
 						Name="socket"
 						>
@@ -774,16 +922,214 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="log4cplus"
+				>
+				<File
+					RelativePath="..\log4cplus\appender.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\appenderattachableimpl.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\configurator.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\consoleappender.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\factory.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\fileappender.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\filter.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\global-init.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\hierarchy.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\hierarchylocker.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\layout.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\logger.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\loggerimpl.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\loggingevent.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\loggingserver.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\loglevel.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\loglog.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\logloguser.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\ndc.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\nteventlogappender.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\nullappender.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\objectregistry.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\patternlayout.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\pointer.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\property.cxx"
+					>
+					<FileConfiguration
+						Name="Debug|Pocket PC 2003 (ARMV4)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Smartphone 2003 (ARMV4)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Pocket PC 2003 (ARMV4)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Smartphone 2003 (ARMV4)"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\log4cplus\rootlogger.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\sleep.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\socket-win32.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\socket.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\socketappender.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\socketbuffer.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\stringhelper.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\syslogappender.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\threads.cxx"
+					>
+				</File>
+				<File
+					RelativePath="..\log4cplus\timehelper.cxx"
+					>
+				</File>
+				<Filter
+					Name="spi"
+					>
+				</Filter>
+				<Filter
+					Name="helpers"
+					>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\stdafx.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
