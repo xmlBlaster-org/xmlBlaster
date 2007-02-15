@@ -386,7 +386,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zdll.lib pthreadVC2.lib sqlite.lib xmlBlasterClientCD.lib xerces-c_2D.lib"
+				OutputFile="$(XMLBLASTER_HOME)\lib\xmlBlasterClientD.dll"
 				AdditionalLibraryDirectories="&quot;$(zlib_lib_dir)&quot;;&quot;$(sqlite_lib_dir)&quot;;&quot;$(xerces_lib_dir)&quot;;&quot;$(XMLBLASTER_HOME)/src/c/socket&quot;;&quot;$(XMLBLASTER_HOME)/lib&quot;"
+				ImportLibrary="$(XMLBLASTER_HOME)\lib\xmlBlasterClientD.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
