@@ -153,6 +153,9 @@ Linux C:
 
 Linux C++:
 
+Mac OSX:
+ export DYLD_LIBRARY_PATH=/opt/sqlite-bin/lib
+
 Windows:
 
 Solaris:
