@@ -33,6 +33,15 @@ Compilation can be done with
      export XMLBLASTER_HOME=/home/xmlblast/xmlBlaster
 
   o VC++ 2005 for Windows or Windows CE, see .vcproj files
+     # Example C compilation with Visual Studio: Set environment or macro:
+     REM XMLBLASTER_ZLIB=1
+     set zlib_include_dir=E:\zlib\include
+     set zlib_lib_dir=E:\zlib\lib
+     REM XMLBLASTER_PERSISTENT_QUEUE=1
+     set sqlite_include_dir=E:\sqlite
+     set sqlite_lib_dir=E:\sqlite
+     set XMLBLASTER_HOME=/home/xmlblast/xmlBlaster
+     
 
 You can compile it with/without zlib (compression) and sqlite (database) support.
 
