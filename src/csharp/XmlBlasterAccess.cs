@@ -11,6 +11,7 @@ using System;
 using System.Text;
 using System.Collections;
 using System.Runtime.InteropServices;
+//using org.xmlBlaster.util;
 
 namespace org.xmlBlaster.client
 {
@@ -333,7 +334,19 @@ namespace org.xmlBlaster.client
       }
       public override string ToString()
       {
-         return key + "\n" + GetContentStr() + "\n" + qos;
+         return key + org.xmlBlaster.util.Defines.NewLine + GetContentStr() + org.xmlBlaster.util.Defines.NewLine + qos;
       }
+   }
+}
+
+namespace org.xmlBlaster.util
+{
+   public class Defines {
+#if (WINCE || Smartphone || PocketPC || WindowsCE || CF1 || CF2)
+      public static readonly string NewLine = "\r\n";
+#else
+      //  A string containing "\r\n" for non-Unix platforms, or a string containing "\n" for Unix platforms.
+      public static readonly string NewLine = System.Environment.NewLine;
+#endif
    }
 }

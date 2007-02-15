@@ -551,7 +551,6 @@ namespace org.xmlBlaster.client
 
    public class Qos : KeyQosParser
    {
-      //private string NewLine = "\r\n";
       public const string STATE_OK = "OK";
       public const string STATE_WARN = "WARNING";
       public const string STATE_TIMEOUT = "TIMEOUT";
