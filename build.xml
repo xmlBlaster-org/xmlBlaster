@@ -3319,18 +3319,26 @@ TODO
 
    <target name="bin-win" depends="bin-win-prepare,bin-win-clean" description="Create a binary distribution">
       <!--
+         Prepare xerces with 	E:\xerces-c-src_2_7_0\Projects\Win32\VC7.1\xerces-all\xerces-all.sln -> XercesLib
+            Compile a 'Debug' and a 'Release' variant and copy Relase\xerces-c_2.* to Debug\
+
          XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
+         
          XMLBLASTER_ZLIB=1
          zlib.include.dir=E:/zlib/include
          zlib.lib.dir=E:/zlib/lib
          zlib.lib.name=zdll
          zlib.dll.name=zlib1.dll
+         
          xerces.include.dir=E:/xerces-c-src_2_7_0/src
          xerces.lib.dir=E:/xerces-c-src_2_7_0/Build/Win32/VC7.1/Debug
-         xerces.lib.name=xerces-c_2D
+         xerces.lib.name=xerces-c_2
+         xerces.dll.name=xerces-c_2_7
+         
          XMLBLASTER_PERSISTENT_QUEUE=1
          sqlite.include.dir=E:/sqlite
          sqlite.lib.dir=E:/sqlite
+         
          COMPILE_SOCKET_PLUGIN = 1
          COMPILE_CORBA_PLUGIN  = 0
          corba.product         = NONE
@@ -3360,7 +3368,7 @@ Version:
 
    sqlite 2.8.17
 
-   pthreads 2.7.0.1 (2.7.0 with WINCE patch)
+   pthreads 2.8 (2.7.0 with WINCE patch)
 
    zlib 1.2.3
    
@@ -3390,7 +3398,8 @@ http://www.xmlblaster.org/
       <copy file="${lib.dir}/${zlib.dll.name}" todir="${bin-win32.dir}/bin"/>
       <copy file="${lib.dir}/pthreadVC2.dll" tofile="${bin-win32.dir}/bin/pthreadVC2.dll"/>
       <copy file="${lib.dir}/sqlite.dll" tofile="${bin-win32.dir}/bin/sqlite.dll"/>
-      <copy file="${lib.dir}/${xerces.dll.name}" todir="${bin-win32.dir}/bin"/>
+      <copy file="${lib.dir}/${xerces.dll.name}.dll" todir="${bin-win32.dir}/bin"/>
+      <copy file="${lib.dir}/${xerces.dll.name}${CPP_DEBUG_POSTFIX}.dll" todir="${bin-win32.dir}/bin"/>
       <copy file="${lib.dir}/xmlBlasterClient.dll" tofile="${bin-win32.dir}/bin/xmlBlasterClient.dll"/>
       <copy file="${lib.dir}/xmlBlasterClientC.dll" tofile="${bin-win32.dir}/bin/xmlBlasterClientC.dll"/>
       <!--
