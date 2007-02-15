@@ -2215,6 +2215,7 @@ TODO
       <copy todir="${build.src.cpp.dir}" filtering="true">
          <fileset dir="${src.cpp.dir}">
             <exclude name="README"/>
+            <exclude name="xmlBlasterCppCE/**"/>
             <exclude name="**/log4cplus/property.cxx"/>
          </fileset>
       </copy>
@@ -3325,7 +3326,7 @@ TODO
 
    <target name="bin-win" depends="bin-win-prepare,bin-win-clean" description="Create a binary distribution">
       <!--
-         Prepare xerces with 	E:\xerces-c-src_2_7_0\Projects\Win32\VC7.1\xerces-all\xerces-all.sln -> XercesLib
+         Prepare xerces with    E:\xerces-c-src_2_7_0\Projects\Win32\VC7.1\xerces-all\xerces-all.sln -> XercesLib
             Compile a 'Debug' and a 'Release' variant and copy Relase\xerces-c_2.* to Debug\
 
          XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
