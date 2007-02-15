@@ -8,9 +8,9 @@ telecommunication, radar, car industry, process monitoring etc.
 This  release  is backward compatible to the previous, it is a
 bug fix maintenance release. See CHANGES for more details.
 
-It  is  tested under Linux/Solaris-SPARC/FreeBSD/WinXP with JDK
-1.4-1.6 and g++ 2.9x/3.x/4.x, icc 8.x and 9.x, MSVisualC++ from
-2003,  MSVisualC++  2005  beta2,  SunCC  compilers. There is no
+It is tested under Linux/Solaris-SPARC/FreeBSD/WinXP/WINCE with
+JDK  1.4-1.6 and g++ 2.9x/3.x/4.x, icc 8.x and 9.x, MSVisualC++
+from 2003, MSVisualC++ 2005 beta2, SunCC compilers. There is no
 reason  why other platforms/compilers should not work, just try
 it.
 
