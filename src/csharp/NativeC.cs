@@ -396,8 +396,8 @@ namespace org.xmlBlaster.client
          {
             IntPtr tmp = xa;
             xa = IntPtr.Zero;
-            freeXmlBlasterAccessUnparsedUnmanagedCE(tmp);
-            logger(XmlBlasterLogLevel.TRACE, "", "freeXmlBlasterAccessUnparsedUnmanagedCE: SUCCESS freed all resources");
+            freeXmlBlasterAccessUnparsedUnmanaged(tmp);
+            logger("freeXmlBlasterAccessUnparsedUnmanaged: SUCCESS freed all resources");
          }
          catch (Exception e)
          {

@@ -55,7 +55,7 @@ public class Hello : I_Callback
       I_Callback callback = this;
       ConnectReturnQos qos = nc.Connect(connectQos, callback);
 
-      Console.WriteLine("Connected.");
+      Console.WriteLine("Connected." + qos.GetSessionName());
 
       for (int i=0; i<5; i++) {
          SubscribeReturnQos srq = nc.Subscribe("<key oid='Hello'/>", "<qos/>");
