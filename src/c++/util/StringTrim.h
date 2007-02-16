@@ -195,7 +195,7 @@ namespace util {
          if (str.capacity() < 1) return str;
 
          int i;
-         for (i=str.length()-1; i >= 0; i--) {
+         for (i=(int)str.length()-1; i >= 0; i--) {
              if (!isspace(str[i])) {
                  str = str.substr(0, i+1);
                  return str;
@@ -232,7 +232,7 @@ namespace util {
 
          int jj=0;
          if (isspace(str[str.size()-1])) {
-            for (jj=str.size()-2; jj >= 0; jj--) {
+            for (jj=(int)str.size()-2; jj >= 0; jj--) {
                 if (!isspace(str[jj])) {
                    str.resize(jj+1);
                    break;

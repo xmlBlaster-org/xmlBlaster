@@ -38,7 +38,7 @@ namespace util {
       
       StringStripper(const std::string &separator) {
          separator_ = separator;
-         sepSize_   = separator_.length();
+         sepSize_   = (int)separator_.length();
       }
       
       /** 
@@ -50,7 +50,7 @@ namespace util {
          std::vector<std::string> ret;
          std::string         sub;
          int            pos;
-         while ((pos=line.find(separator_)) >= 0) {
+         while ((pos=(int)line.find(separator_)) >= 0) {
             sub.assign(line,0, pos);
             line = line.substr(pos+sepSize_);
             ret.insert(ret.end(), sub);

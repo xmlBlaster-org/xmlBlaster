@@ -151,7 +151,7 @@ class Dll_Export Timeout : public org::xmlBlaster::util::thread::Thread
     * @return The number of active timers
     */
    int getSize() const {
-      return timeoutMap_.size();
+      return (int)timeoutMap_.size();
    }
 
    /**

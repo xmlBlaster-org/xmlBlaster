@@ -15,10 +15,22 @@
 #include <sstream>
 #include <typeinfo>
 #include <util/XmlBCfg.h>
+#include <stdio.h> 
 #if __GNUC__ == 2
   // g++ 2.95.3 does only know limits.h
 #else
 #  include <limits>
+#endif
+
+#if defined(_WINDOWS)
+#  if _MSC_VER >= 1400  /* _WINDOWS: 1200->VC++6.0, 1310->VC++7.1 (2003), 1400->VC++8.0 (2005) */
+//#    define SNPRINTF snprintf0
+#    define SNPRINTF sprintf_s
+#  else
+#    define SNPRINTF _snprintf
+#  endif
+#else
+#  define SNPRINTF snprintf
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -107,7 +119,7 @@ namespace org { namespace xmlBlaster { namespace util {
         }
         virtual const char *what() const throw()
         {
-            sprintf((char*)str_, "bad lexical cast: source type value '%.50s' could not be interpreted as target '%.50s'", 
+            SNPRINTF((char*)str_, 255, "bad lexical cast: source type value '%.50s' could not be interpreted as target '%.50s'", 
                      source->name(), target->name());
             return str_;
         }
