@@ -3356,7 +3356,7 @@ TODO
          build c-delete cpp-delete
          build -Dc.debug=true -Dcpp.debug=true c cpp
          build -Dc.debug=false -Dcpp.debug=false c cpp
-         recompile c client lib with VC++ (to be C# compatible)
+         recompile c client lib with VC++ (to be C# compatible, i couldn't find out which compiler setting is wrong, but ant-dlls are not found by csharp, dumpbin.exe shows differernces)
          build csharp
        -->
       
