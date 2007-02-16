@@ -65,6 +65,37 @@ export xerces_include_dir=/usr/include
 export xerces_lib_dir=/usr/lib64
 
 
+Quick setup for Visual Studio C++ 2005
+======================================
+C/C++ -> Preprocessor:
+----------------------
+COMPILE_SOCKET_PLUGIN=1
+XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1
+LOG4CPLUS_BUILD_DLL=1
+XMLBLASTER_PERSISTENT_QUEUE=1
+XMLBLASTER_ZLIB=1
+_WINDOWS
+_CRT_SECURE_NO_DEPRECATE
+_WINDLL
+__WIN32__
+-DOMNITHREAD
+_OMNITHREAD_DLL=1
+WIN32DLL_EXPORTS=1
+WIN32
+_DEBUG
+_USRDLL
+_UNICODE
+
+_WINDLL is our __declspec (dllexport) marker
+
+C/C++ -> General -> Additional Include Directories
+   $(XMLBLASTER_HOME)/src/c;$(XMLBLASTER_HOME)/src/c++;$(zlib_include_dir);$(sqlite_include_dir);$(xerces_include_dir)
+
+Linker->General->Additional Library Directories
+   $(zlib_lib_dir);$(sqlite_lib_dir);$(xerces_lib_dir);$(XMLBLASTER_HOME)/src/c/socket;$(XMLBLASTER_HOME)/lib
+
+Linker->General->Additional Library Directories
+   zdll.lib pthreadVC2.lib sqlite.lib xmlBlasterClientCD.lib xerces-c_2D.lib
 
 
 HOW TO RUN THE TESTSUITE:
