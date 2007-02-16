@@ -9,11 +9,20 @@
 <option id="gnu.cpp.compiler.option.include.paths.40748000" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c"/>
 <listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++"/>
+<listOptionValue builtIn="false" value="${XMLBLASTER_HOME}/src/c++/generated"/>
 </option>
 <option id="gnu.cpp.compiler.option.warnings.pedantic.348244259" superClass="gnu.cpp.compiler.option.warnings.pedantic" value="true" valueType="boolean"/>
-<option id="gnu.cpp.compiler.option.other.other.382333710" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -Wall -pedantic -Wno-long-long -D_REENTRANT -rdynamic -export-dynamic -U_ENABLE_STACK_TRACE_ -DOMNITHREAD  -DXMLBLASTER_PERSISTENT_QUEUE=1 -DXMLBLASTER_ZLIB=1 -DCOMPILE_SOCKET_PLUGIN=1" valueType="string"/>
+<option id="gnu.cpp.compiler.option.other.other.382333710" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -Wall -pedantic -Wno-long-long -rdynamic -export-dynamic" valueType="string"/>
+<option id="gnu.cpp.compiler.option.preprocessor.def.1824850307" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+<listOptionValue builtIn="false" value="_REENTRANT "/>
+</option>
+<option id="gnu.cpp.compiler.option.preprocessor.undef.177495716" superClass="gnu.cpp.compiler.option.preprocessor.undef" valueType="stringList">
+<listOptionValue builtIn="false" value="_ENABLE_STACK_TRACE_"/>
+</option>
 </tool>
-<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1901933976" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug"/>
+<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1901933976" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+<option id="gnu.c.compiler.option.preprocessor.def.symbols.1512317360" superClass="gnu.c.compiler.option.preprocessor.def.symbols"/>
+</tool>
 <tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.430559339" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.59829959" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
 <option id="gnu.cpp.link.option.libs.1865768037" superClass="gnu.cpp.link.option.libs" valueType="libs">
