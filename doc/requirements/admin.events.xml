@@ -74,9 +74,9 @@
  <tr><td>service/RunlevelManager/event/startupRunlevel9</td><td>Captures event when startup runlevel reaches 9 (RUNNING), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
  <tr><td>service/RunlevelManager/event/shutdownRunlevel8</td><td>Captures event when shutdown runlevel reaches 8 (RUNNING_RPE), any other runlevel is possible as well (note that this plugin must be active beforehand)</td></tr>
  <tr><td>client/*/session/*/event/connect</td><td>Captures event on client login (all clients)</td></tr>
- <tr><td>client/[subjectId]/session/[publicSessionId]/event/connect</td><td>Captures event on given client login, e.g. "client/joe/session/1/event/connect". The combination of publicSessionId=noneWildcard and subjectId=* is not supported.</td></tr>
+ <tr><td>client/[subjectId]/session/[publicSessionId]/event/connect</td><td>Captures event on given client login, e.g. "client/joe/session/1/event/connect". The combination of publicSessionId=* and/or subjectId=* is supported.</td></tr>
  <tr><td>client/*/session/*/event/disconnect</td><td>Captures event on client logout (all clients)</td></tr>
- <tr><td>client/[subjectId]/session/[publicSessionId]/event/disconnect</td><td>Captures event on given client logout, e.g. "client/joe/session/1/event/disconnect". The combination of publicSessionId=noneWildcard and subjectId=* is not supported.</td></tr>
+ <tr><td>client/[subjectId]/session/[publicSessionId]/event/disconnect</td><td>Captures event on given client logout, e.g. "client/joe/session/1/event/disconnect". The combination of publicSessionId=* and/or subjectId=* is supported.</td></tr>
  <tr><td>topic/*/event/subscribe</td><td>Captures if subscribe() is invoked (on all topics)</td></tr>
  <tr><td>topic/[topicId]/event/subscribe</td><td>Captures if subscribe() on the specified topic is invoked</td></tr>
  <tr><td>client/[subjectId]/session/[publicSessionId]/event/subscribe</td><td>Captures if the given client has invoked subscribe(), e.g. "client/joe/session/1/event/subscribe". The publicSessionId can be a wildcard "*".</td></tr>

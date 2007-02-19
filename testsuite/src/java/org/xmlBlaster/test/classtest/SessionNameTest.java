@@ -3,6 +3,7 @@ package org.xmlBlaster.test.classtest;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.context.ContextNode;
 
 import junit.framework.*;
 
@@ -33,6 +34,9 @@ public class SessionNameTest extends TestCase {
          assertFalse("", sessionName.matchRelativeName("client/jack/session/3"));
          assertFalse("", sessionName.matchRelativeName("client/joe/session/2"));
          assertFalse("", sessionName.matchRelativeName("client/x"));
+         assertEquals("", "client/*/session/2", sessionName.getRelativeSubjectIdWildcard());
+         assertEquals("", "client/jack/session/*", sessionName.getRelativePubSessionIdWildcard());
+         assertEquals("", "client/*/session/*", sessionName.getRelativeWildcard());
       }
       catch (IllegalArgumentException e) {
          fail("testMatch failed: " + e.toString());

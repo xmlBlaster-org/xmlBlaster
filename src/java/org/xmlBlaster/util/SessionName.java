@@ -342,6 +342,30 @@ public final class SessionName implements java.io.Serializable
    }
 
    /**
+    * Note: no blanks in the example below are allowed, we need to write it like this to distinguish it from a java comment
+    * @return e.g. "client/ * /session/2"
+    */
+   public String getRelativeSubjectIdWildcard() {
+      return ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + getPublicSessionId();
+   }
+
+   /**
+    * Note: no blanks in the example below are allowed, we need to write it like this to distinguish it from a java comment
+    * @return e.g. "client/joe/session/ * 
+    */
+   public String getRelativePubSessionIdWildcard() {
+      return ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
+   }
+
+   /**
+    * Note: no blanks in the example below are allowed, we need to write it like this to distinguish it from a java comment
+    * @return "client/* /session/* 
+    */
+   public String getRelativeWildcard() {
+      return ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
+   }
+
+   /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of SessionName as a XML ASCII string

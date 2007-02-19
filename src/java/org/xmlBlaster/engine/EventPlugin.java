@@ -1219,17 +1219,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                String name = currSessionName.getAbsoluteName();
                boolean found = this.pendingCallbackSessionInfoSet.remove(name);
                if (!found) { // wild card entries remain
-                  found = this.pendingCallbackSessionInfoSet.contains(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP+"*"+ContextNode.SEP+
-                        ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+currSessionName.getPublicSessionId());
+                  found = this.pendingCallbackSessionInfoSet.contains(currSessionName.getRelativeSubjectIdWildcard());
                   if (!found) {
-                     found = this.pendingCallbackSessionInfoSet.contains(ContextNode.SUBJECT_MARKER_TAG+
-                           ContextNode.SEP+currSessionName.getLoginName()+ContextNode.SEP+
-                           ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+"*");
+                     found = this.pendingCallbackSessionInfoSet.contains(currSessionName.getRelativePubSessionIdWildcard());
                   }
                   if (!found) {
-                     found = this.pendingCallbackSessionInfoSet.contains(ContextNode.SUBJECT_MARKER_TAG+
-                           ContextNode.SEP+"*"+ContextNode.SEP+
-                           ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+"*");
+                     found = this.pendingCallbackSessionInfoSet.contains(currSessionName.getRelativeWildcard());
                   }
                }
                if (found) {
@@ -1263,12 +1258,16 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       String foundEvent = relativeName + event;  // "client/joe/session/1/event/connect"
       if (!this.clientSet.contains(foundEvent)) {
          // "client/joe/session/*/event/connect"
-         foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+         foundEvent = sessionName.getRelativePubSessionIdWildcard() + event;
          if (!this.clientSet.contains(foundEvent)) {
-            // "client/*/session/*/event/connect"
-            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+            // "client/*/session/1/event/connect"
+            foundEvent = sessionName.getRelativeSubjectIdWildcard() + event;
             if (!this.clientSet.contains(foundEvent)) {
-               return;
+               // "client/*/session/*/event/connect"
+               foundEvent = sessionName.getRelativeWildcard() + event;
+               if (!this.clientSet.contains(foundEvent)) {
+                  return;
+               }
             }
          }
       }
@@ -1349,12 +1348,16 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       String foundEvent = relativeName + event;  // "client/joe/session/1/event/disconnect"
       if (!this.clientSet.contains(foundEvent)) {
          // "client/joe/session/*/event/disconnect"
-         foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+         foundEvent = sessionName.getRelativePubSessionIdWildcard() + event;
          if (!this.clientSet.contains(foundEvent)) {
-            // "client/*/session/*/event/disconnect"
-            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*" + event;
+            // "client/*/session/1/event/disconnect"
+            foundEvent = sessionName.getRelativeSubjectIdWildcard() + event;
             if (!this.clientSet.contains(foundEvent)) {
-               return;
+               // "client/*/session/*/event/disconnect"
+               foundEvent = sessionName.getRelativeWildcard() + event;
+               if (!this.clientSet.contains(foundEvent)) {
+                  return;
+               }
             }
          }
       }

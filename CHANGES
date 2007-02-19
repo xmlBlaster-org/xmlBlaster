@@ -1,9 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
- o #16020 Bugfix & extension for administrative 'event/callbackState'
+ o #16021 Bugfix & extension for administrative 'event/callbackState'
           It now fires on the initial login a "ALIVE" or "POLLING" event
 	  The subjectId and/or the publicSessionId can now be a wildcard "*".
+	  The connect and disconnect event now support wildcarded subjectId.
           See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html
 
  o #15994 Added C and C++ project files for eclipse and VC++2005
