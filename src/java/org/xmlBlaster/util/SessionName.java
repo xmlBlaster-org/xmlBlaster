@@ -318,6 +318,30 @@ public final class SessionName implements java.io.Serializable
    }
 
    /**
+    * Check matching name, the subjectId or pubSessionId can be a wildcard "*"
+    * (note: no blanks in the example below are allowed, we need to write it like this to distinguish it from a java comment)
+    * @param pattern for example "client/ * /session/ *", ""client/ * /session/1", "client/joe/session/ *", "client/joe/session/1"
+    * @return true if wildcard matches or exact match
+    */
+   public boolean matchRelativeName(String pattern) {
+      if (pattern == null) return false;
+      if (pattern.indexOf("*") == -1) // exact match
+         return equalsRelative(new SessionName(this.glob, pattern));
+      if (pattern.equals(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP+"*"+ContextNode.SEP+ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+"*"))
+         return true; // "client/*/session/*"
+      if (pattern.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP+"*"+ContextNode.SEP)) {
+         SessionName tmp = new SessionName(this.glob, pattern);
+         return tmp.getPublicSessionId() == this.getPublicSessionId();
+      }
+      if (pattern.endsWith(ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+"*")) {
+         // our ctor fails to parse "*" to a number, so we do it manually here
+         String[] arr = org.xmlBlaster.util.ReplaceVariable.toArray(pattern, ContextNode.SEP); //"/"
+         return (arr.length >= 2 && arr[1].equals(this.getLoginName()));
+      }
+      return false;
+   }
+
+   /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of SessionName as a XML ASCII string

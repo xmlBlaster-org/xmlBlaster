@@ -539,22 +539,31 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                // Not yet supported: "client/joe/session/1/event/callbackAlive", "client/joe/session/1/event/callbackPolling"
                int index = event.lastIndexOf("/event/");
                String name = event.substring(0, index);
-               log.fine("Register callback session state event = " + event);
-               SessionName sessionName = new SessionName(this.engineGlob, name);
-               SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
-               DispatchManager mgr = null;
-               if (sessionInfo != null)
-                  mgr = sessionInfo.getDispatchManager();
-               if (mgr != null) {
-                  mgr.addConnectionStatusListener(this);
-               }
-               else {
-                  if (this.pendingCallbackSessionInfoSet == null) this.pendingCallbackSessionInfoSet = new TreeSet();
-                  this.pendingCallbackSessionInfoSet.add(sessionName.getAbsoluteName());
-               }
                this.requestBroker.getAuthenticate().addClientListener(this);
                if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
-               this.callbackSessionStateSet.add(sessionName.getRelativeName());
+               if (event.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP+"*"+ContextNode.SEP) ||
+                   event.endsWith(ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+"*"+"/event/callbackState")) {
+                  // "client/*/session/1/event/callbackState" or "client/joe/session/*/event/callbackState"
+                  if (this.pendingCallbackSessionInfoSet == null) this.pendingCallbackSessionInfoSet = new TreeSet();
+                  this.pendingCallbackSessionInfoSet.add(name);
+                  this.callbackSessionStateSet.add(name);
+               }
+               else {
+                  log.fine("Register callback session state event = " + event);
+                  SessionName sessionName = new SessionName(this.engineGlob, name);
+                  SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+                  DispatchManager mgr = null;
+                  if (sessionInfo != null)
+                     mgr = sessionInfo.getDispatchManager();
+                  if (mgr != null) {
+                     mgr.addConnectionStatusListener(this);
+                  }
+                  else {
+                     if (this.pendingCallbackSessionInfoSet == null) this.pendingCallbackSessionInfoSet = new TreeSet();
+                     this.pendingCallbackSessionInfoSet.add(sessionName.getAbsoluteName());
+                  }
+                  this.callbackSessionStateSet.add(sessionName.getRelativeName());
+               }
             }
             else if (event.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP)) {
                // "client/joe/session/1/event/connect", "client/*/session/*/event/disconnect"
@@ -1206,8 +1215,23 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.pendingCallbackSessionInfoSet != null) {
          synchronized (this.pendingCallbackSessionInfoSet) {
             try {
-               String name = clientEvent.getSessionInfo().getSessionName().getAbsoluteName();
+               SessionName currSessionName = clientEvent.getSessionInfo().getSessionName();
+               String name = currSessionName.getAbsoluteName();
                boolean found = this.pendingCallbackSessionInfoSet.remove(name);
+               if (!found) { // wild card entries remain
+                  found = this.pendingCallbackSessionInfoSet.contains(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP+"*"+ContextNode.SEP+
+                        ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+currSessionName.getPublicSessionId());
+                  if (!found) {
+                     found = this.pendingCallbackSessionInfoSet.contains(ContextNode.SUBJECT_MARKER_TAG+
+                           ContextNode.SEP+currSessionName.getLoginName()+ContextNode.SEP+
+                           ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+"*");
+                  }
+                  if (!found) {
+                     found = this.pendingCallbackSessionInfoSet.contains(ContextNode.SUBJECT_MARKER_TAG+
+                           ContextNode.SEP+"*"+ContextNode.SEP+
+                           ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+"*");
+                  }
+               }
                if (found) {
                   SessionName sessionName = new SessionName(this.engineGlob, name);
                   SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
@@ -1215,7 +1239,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   if (sessionInfo != null)
                      mgr = sessionInfo.getDispatchManager();
                   if (mgr != null) {
-                     mgr.addConnectionStatusListener(this);
+                     mgr.addConnectionStatusListener(this, true); // true: fire initial event
                      // done already:
                      //if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
                      //this.callbackSessionStateSet.add(sessionName.getRelativeName());
@@ -1834,10 +1858,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          // "client/joe/session/*"
          foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + sessionName.getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
          if (!this.callbackSessionStateSet.contains(foundEvent)) {
-            // "client/*/session/*"
-            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
+            foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + sessionName.getPublicSessionId();
+            // "client/*/session/1"
             if (!this.callbackSessionStateSet.contains(foundEvent)) {
-               return;
+               // "client/*/session/*"
+               foundEvent = ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
+               if (!this.callbackSessionStateSet.contains(foundEvent)) {
+                  return;
+               }
             }
          }
       }

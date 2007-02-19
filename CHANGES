@@ -1,9 +1,14 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16020 Bugfix & extension for administrative 'event/callbackState'
+          It now fires on the initial login a "ALIVE" or "POLLING" event
+	  The subjectId and/or the publicSessionId can now be a wildcard "*".
+          See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html
+
  o #15994 Added C and C++ project files for eclipse and VC++2005
-          see xmlBlaster/src/c/README and xmlBlaster/src/c++/README
-          see xmlBlaster/demo/socket/README and xmlBlaster/demo/c++/README
+          See xmlBlaster/src/c/README and xmlBlaster/src/c++/README
+          See xmlBlaster/demo/socket/README and xmlBlaster/demo/c++/README
 
  o #15980 C++ client library: Partially added support for WINCE
           Porting to MSXML and fixing errno.h in omnithread is missing

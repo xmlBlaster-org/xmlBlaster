@@ -177,7 +177,22 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
       return this.connectionStatusListeners.add(connectionStatusListener);
    }
+   
+   public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener, boolean fireInitial) {
+      if (connectionStatusListener == null) return true;
+      boolean ret = this.connectionStatusListeners.add(connectionStatusListener);
+      if (fireInitial) {
+         if (isDead())
+            connectionStatusListener.toAlive(this, ConnectionStateEnum.DEAD);
+         else if (isPolling())
+            connectionStatusListener.toAlive(this, ConnectionStateEnum.POLLING);
+         else
+            connectionStatusListener.toAlive(this, ConnectionStateEnum.ALIVE);
+      }
+      return ret;
+   }
 
+   
    /**
     * Remove the given listener
     * @param connectionStatusListener

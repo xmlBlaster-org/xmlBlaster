@@ -22,6 +22,24 @@ public class SessionNameTest extends TestCase {
       this.glob = Global.instance();
    }
 
+   public void testMatch() {
+      System.out.println("***SessionNameTest: testMatch ...");
+      try {
+         SessionName sessionName = new SessionName(glob, "client/jack/session/2");
+         assertTrue("", sessionName.matchRelativeName("client/*/session/*"));
+         assertTrue("", sessionName.matchRelativeName("client/*/session/2"));
+         assertTrue("", sessionName.matchRelativeName("client/jack/session/*"));
+         assertTrue("", sessionName.matchRelativeName("client/jack/session/2"));
+         assertFalse("", sessionName.matchRelativeName("client/jack/session/3"));
+         assertFalse("", sessionName.matchRelativeName("client/joe/session/2"));
+         assertFalse("", sessionName.matchRelativeName("client/x"));
+      }
+      catch (IllegalArgumentException e) {
+         fail("testMatch failed: " + e.toString());
+      }
+      System.out.println("***SessionNameTest: testMatch done");
+   }
+   
    public void testParse() {
       System.out.println("***SessionNameTest: testParse ...");
       try {
@@ -237,6 +255,7 @@ public class SessionNameTest extends TestCase {
       SessionNameTest testSub = new SessionNameTest("SessionNameTest");
       testSub.setUp();
       testSub.testParse();
+      testSub.testMatch();
       //testSub.tearDown();
    }
 }
