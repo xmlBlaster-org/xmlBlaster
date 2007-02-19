@@ -448,6 +448,7 @@ public final class ClientDispatchConnection extends DispatchConnection
          this.encryptedConnectQos = connectEntry.getConnectQosData().toXml();
       }
 
+      // TODO: pass connectEntry.getConnectQosData().getSender().getLoginName(); as this is used by SOCKET:requestId
       String rawReturnVal = this.driver.connect(this.encryptedConnectQos); // Invoke remote server
 
       connectionsHandler.getDispatchStatistic().incrNumConnect(1);
