@@ -321,6 +321,7 @@ public class SocketConnection implements I_XmlBlasterConnection
          I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(getType(), getVersion());
          // NOTE: This address should come from the client !!!
          org.xmlBlaster.util.qos.address.CallbackAddress cba = new org.xmlBlaster.util.qos.address.CallbackAddress(glob);
+         // TODO: extract the real loginName from connectQos
          server.initialize(this.glob, getLoginName(), cba, this.cbClient);
          // NOTE: This happens only if the client has no callback configured, we create a faked one here (as the SOCKET plugin needs it)
       }
