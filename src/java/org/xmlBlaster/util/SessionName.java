@@ -220,7 +220,9 @@ public final class SessionName implements java.io.Serializable
     * @return e.g. "client/joe/session/2" or "client/joe", never null
     */
    public String getRelativeName(boolean forceSessionMarker) {
-      if (this.relativeName == null || forceSessionMarker) {
+      // Conflict with existing "client/joe/session/1" and reconnecting "client/joe/1"
+      // swtich cache of
+      /*if (this.relativeName == null || forceSessionMarker) {*/
          StringBuffer buf = new StringBuffer(126);
          // For example "client/joe/session/-1"
          buf.append(ContextNode.SUBJECT_MARKER_TAG).append("/").append(subjectId);
@@ -231,7 +233,7 @@ public final class SessionName implements java.io.Serializable
             buf.append(""+this.pubSessionId);
          }
          this.relativeName = buf.toString();
-      }
+      /*}*/
       return this.relativeName;
    }
 
