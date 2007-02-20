@@ -1,6 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16022 Bugfix The new SessionName '/session/' tag introduced a subtle bug which could lead
+          to failed reconnect on same session.
+	  This bug was introduced with revision #15523
+
  o #16021 Bugfix & extension for administrative 'event/callbackState'
           It now fires on the initial login a "ALIVE" or "POLLING" event
 	  The subjectId and/or the publicSessionId can now be a wildcard "*".
