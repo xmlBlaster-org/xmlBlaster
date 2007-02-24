@@ -482,15 +482,52 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
 #elif defined(WINCE)
          /* Header: Winsock2.h. */
          /* Link Library: Ws2.lib. */
+         struct hostent* remoteHost;
+         unsigned int addr;
          hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
          tmphstbuf = 0;
          hstbuflen = 0;
-         return gethostbyname(host); /* Not thread safe */
+
+         /* If the user input is an alpha name for the host, use gethostbyname() */
+         if (isalpha(host[0])) {   /* host address is a name */
+           remoteHost = gethostbyname(host); /* Not thread safe */
+         }
+         else  { 
+           /* If not, get host by addr (assume IPv4) e.g. "192.168.1.1" */
+           addr = inet_addr(host);
+           remoteHost = gethostbyaddr((char *) &addr, 4, AF_INET);
+         }
+
+         if (WSAGetLastError() != 0) {
+            if (WSAGetLastError() == 11001)
+               printf("Host %s not found\n", host);
+            return 0;
+         }
+         return remoteHost;
 #elif defined(_WINDOWS)
+         /*Winsock2.h, Ws2_32.lib, Ws2_32.dll*/
+         struct hostent* remoteHost;
+         unsigned int addr;
          hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
          tmphstbuf = 0;
          hstbuflen = 0;
-         return gethostbyname(host); /* Not thread safe */
+
+         /* If the user input is an alpha name for the host, use gethostbyname() */
+         if (isalpha(host[0])) {   /* host address is a name */
+           remoteHost = gethostbyname(host); /* Not thread safe */
+         }
+         else  { 
+           /* If not, get host by addr (assume IPv4) e.g. "192.168.1.1" */
+           addr = inet_addr(host);
+           remoteHost = gethostbyaddr((char *) &addr, 4, AF_INET);
+         }
+
+         if (WSAGetLastError() != 0) {
+            if (WSAGetLastError() == 11001)
+               printf("Host %s not found\n", host);
+            return 0;
+         }
+         return remoteHost;
 #else /* HAVE_FUNC_GETHOSTBYNAME_R_6 Linux */ /* defined(__hpux) with gcc 2.8 - 3.4.3 */
    struct hostent *hp=0;
    int herr=0,res=0;
