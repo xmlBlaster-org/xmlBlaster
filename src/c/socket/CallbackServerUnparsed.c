@@ -214,7 +214,7 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
          if (cb->responseListener[i].msgRequestInfoP == 0) {
             continue;
          }
-         if (true) {  
+         if (true) {  /* Handle waiting MSG_TYPE_INVOKE threads (oneways are not in this list) */
             ResponseListener *listener = &cb->responseListener[i];
             MsgRequestInfo *msgRequestInfoP = listener->msgRequestInfoP;
             XmlBlasterException exception;
@@ -269,6 +269,8 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
          cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_ERROR, __FILE__,
             "PANIC: Did not expect an INVOCATION '%c'='%d' as a callback",
                   socketDataHolder->type, (int)socketDataHolder->type);
+         freeBlobHolderContent(&socketDataHolder->blob);
+         return;
       }
    }
 
