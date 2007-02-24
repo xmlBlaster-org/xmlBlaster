@@ -92,6 +92,24 @@ ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFun
 }
 
 /**
+ * Check if the given arguments mark a oneway message. 
+ * @param msgType The message type like MSG_TYPE_INVOKE
+ * @param methodName The name of the invoked message like "publish", can be null
+ * @return if true it is treated as oneway
+ */
+bool xbl_isOneway(XMLBLASTER_MSG_TYPE msgType, const char *const methodName) {
+   if (msgType==MSG_TYPE_RESPONSE || msgType==MSG_TYPE_EXCEPTION)
+      return true; /* Responses and exceptions are oneway */
+   if (methodName == 0)
+      return false;
+   if (   
+       !strcmp(XMLBLASTER_PUBLISH_ONEWAY, methodName)
+       /*|| !strcmp(XMLBLASTER_DISCONNECT, methodName)*/ /* according to protocol.socket it returns an ACK: shall we remove it? */
+       ) return true;
+   return false;
+}
+
+/**
  * Creates a raw blob to push over a socket as described in protocol.socket
  * @param msgUnit The message which we need to send
  * @param debug Pass true for debugging output to stdout

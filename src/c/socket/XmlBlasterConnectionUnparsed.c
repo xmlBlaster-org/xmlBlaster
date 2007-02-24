@@ -661,7 +661,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    free(rawMsg);
    rawMsg = 0;
 
-   if (msgType==MSG_TYPE_RESPONSE || msgType==MSG_TYPE_EXCEPTION || !strcmp(XMLBLASTER_PUBLISH_ONEWAY, methodName) || !strcmp(XMLBLASTER_DISCONNECT, methodName))
+   if (xbl_isOneway(msgType, methodName))
       return true; /* Responses and exceptions are oneway */
 
    if (responseSocketDataHolder) { /* if not oneway read the response message */
@@ -820,7 +820,7 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
 {
    SocketDataHolder responseSocketDataHolder;
 
-   if (checkArgs(xb, "disconnect", true, exception) == false ) return 0;
+   if (checkArgs(xb, XMLBLASTER_DISCONNECT, true, exception) == false ) return 0;
 
    if (sendData(xb, XMLBLASTER_DISCONNECT, MSG_TYPE_INVOKE, (const char *)qos, 
                 (qos == (const char *)0) ? 0 : strlen(qos),

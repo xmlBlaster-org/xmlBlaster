@@ -94,6 +94,8 @@ extern void closeSocket(int fd);
 extern ssize_t writen(const int fd, const char *ptr, const size_t nbytes);
 extern ssize_t readn(const int fd, char *ptr, const size_t nbytes, XmlBlasterNumReadFunc fpNumRead, void *userP);
 
+extern bool xbl_isOneway(XMLBLASTER_MSG_TYPE msgType, const char *const methodName);
+
 /**
  * Creates a raw blob to push over a socket as described in the protocol.socket requirement. 
  * @param msgType invoke, response or exception

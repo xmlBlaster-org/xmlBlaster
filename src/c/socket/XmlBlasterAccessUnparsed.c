@@ -218,7 +218,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 
    {  /* Wait for any pending update() dispatcher threads to die */
       int i;
-      int num = 100;
+      int num = 1000;
       int interval = 10;
       for (i=0; i<num; i++) {
          if ((int)xa->threadCounter < 1)
@@ -226,6 +226,10 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
          sleepMillis(interval);
          if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
              "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for update thread to join. %d/%d", interval, i, num);
+      }
+      if (i >= num) {
+         if (xa->logLevel>=XMLBLASTER_LOG_ERROR) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_ERROR, __FILE__,
+             "freeXmlBlasterAccessUnparsed(): There are active callback threads in user code which didn't return after sleeping for %ld millis, we continue now to shutdown ...", (long)interval*num);
       }
    }
 
@@ -396,7 +400,8 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
    bool retVal;
    XmlBlasterAccessUnparsed * const xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
 
-   if (!strcmp(XMLBLASTER_PUBLISH_ONEWAY, msgRequestInfoP->methodName))
+   /* if (!strcmp(XMLBLASTER_PUBLISH_ONEWAY, msgRequestInfoP->methodName)) */
+   if (xbl_isOneway(MSG_TYPE_INVOKE, msgRequestInfoP->methodName))
       return msgRequestInfoP;
 
    /* ======== Initialize threading ====== */
