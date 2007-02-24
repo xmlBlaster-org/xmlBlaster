@@ -64,6 +64,7 @@ public class HandleClient extends SocketExecutor implements Runnable
    private boolean callCoreInSeparateThread=true;
    protected volatile static ExecutorService executorService;
    
+   protected boolean disconnectIsCalled = false;
 
    /**
     * Creates an instance which serves exactly one client.
@@ -266,6 +267,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                driver.addClient(this.secretSessionId, this);
              }
             else if (MethodName.DISCONNECT == receiver.getMethodName()) {
+               this.disconnectIsCalled = true;
                executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
                // Note: the disconnect will call over the CbInfo our shutdown as well
                // setting sessionId = null prevents that our shutdown calls disconnect() again.
@@ -384,7 +386,10 @@ public class HandleClient extends SocketExecutor implements Runnable
                   if (log.isLoggable(Level.FINE)) log.fine("TCP socket '" + remoteSocketStr + "' is shutdown: " + e.toString());
                }
                else if (e.toString().indexOf("EOF") != -1) {
-                  log.warning("Lost TCP connection from '" + remoteSocketStr + "': " + e.toString());
+                  if (this.disconnectIsCalled)
+                     log.fine("Lost TCP connection from '" + remoteSocketStr + "' after sending disconnect(): " + e.toString());
+                  else
+                     log.warning("Lost TCP connection from '" + remoteSocketStr + "': " + e.toString());
                }
                else {
                   log.warning("Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
