@@ -3327,7 +3327,7 @@ TODO
        <delete dir="${bin-win.dir}"/>
    </target>
 
-   <target name="bin-win" depends="bin-win-prepare,bin-win-clean" description="Create a binary distribution">
+   <target name="bin-win" depends="initialize-cpp,bin-win-prepare,bin-win-clean" description="Create a binary distribution">
       <!--
          Prepare xerces with    E:\xerces-c-src_2_7_0\Projects\Win32\VC7.1\xerces-all\xerces-all.sln -> XercesLib
             Compile a 'Debug' and a 'Release' variant and copy Relase\xerces-c_2.* to Debug\
@@ -3378,7 +3378,7 @@ Version:
 
    sqlite 2.8.17
 
-   pthreads 2.8 (2.7.0 with WINCE patch)
+   pthreads 2.7.0 (for ARM 2.8 with WINCE patch)
 
    zlib 1.2.3
    
@@ -3457,9 +3457,9 @@ http://www.xmlblaster.org/
       <mkdir dir="${bin-wince-arm.dir}/bin"/>
       <mkdir dir="${bin-wince-arm.dir}/lib"/>
       <mkdir dir="${bin-wince-arm.dir}/include"/>
-      <copy file="${lib.dir}/zlib123-Arm4.dll" todir="${bin-wince-arm.dir}/bin"/>
-      <copy file="${lib.dir}/pthreads270-Arm4.dll" todir="${bin-wince-arm.dir}/bin"/>
-      <copy file="${lib.dir}/xmlBlasterClientCD-Arm4.dll" todir="${bin-wince-arm.dir}/bin"/>
+      <copy file="${lib.dir}/zlib-ARM.dll" todir="${bin-wince-arm.dir}/bin"/>
+      <copy file="${lib.dir}/pthreads-ARM.dll" todir="${bin-wince-arm.dir}/bin"/>
+      <copy file="${lib.dir}/xmlBlasterClientC${CPP_DEBUG_POSTFIX}-ARM.dll" todir="${bin-wince-arm.dir}/bin" failonerror="false"/>
 
       <copy todir="${bin-wince-arm.dir}/include">
          <fileset dir="${src.c.dir}">
@@ -3472,8 +3472,8 @@ http://www.xmlblaster.org/
          </fileset>
       </copy>
 
-      <copy file="${lib.dir}/zlib123-Arm4.lib" todir="${bin-wince-arm.dir}/lib"/>
-      <copy file="${lib.dir}/pthreads270-Arm4.lib" todir="${bin-wince-arm.dir}/lib"/>
+      <copy file="${lib.dir}/zlib-ARM.lib" todir="${bin-wince-arm.dir}/lib"/>
+      <copy file="${lib.dir}/pthreads-ARM.lib" todir="${bin-wince-arm.dir}/lib"/>
       <copy file="${lib.dir}/xmlBlasterClientC.lib" todir="${bin-wince-arm.dir}/lib"/>
 
       <property name="bin-win.distname" value="xmlBlaster-win-dll-${version}-${revision.number}.zip"/>
