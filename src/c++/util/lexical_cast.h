@@ -24,13 +24,13 @@
 
 #if defined(_WINDOWS)
 #  if _MSC_VER >= 1400  /* _WINDOWS: 1200->VC++6.0, 1310->VC++7.1 (2003), 1400->VC++8.0 (2005) */
-//#    define SNPRINTF snprintf0
-#    define SNPRINTF sprintf_s
+//#    define XMLBLASTER_CPP_SNPRINTF snprintf0
+#    define XMLBLASTER_CPP_SNPRINTF sprintf_s
 #  else
-#    define SNPRINTF _snprintf
+#    define XMLBLASTER_CPP_SNPRINTF _snprintf
 #  endif
 #else
-#  define SNPRINTF snprintf
+#  define XMLBLASTER_CPP_SNPRINTF snprintf
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -119,7 +119,7 @@ namespace org { namespace xmlBlaster { namespace util {
         }
         virtual const char *what() const throw()
         {
-            SNPRINTF((char*)str_, 255, "bad lexical cast: source type value '%.50s' could not be interpreted as target '%.50s'", 
+            XMLBLASTER_CPP_SNPRINTF((char*)str_, 255, "bad lexical cast: source type value '%.50s' could not be interpreted as target '%.50s'", 
                      source->name(), target->name());
             return str_;
         }
