@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16022 Bugfix C client library
+          The disconnect is not oneway (see protocol.socket specification),
+	  this bug was introduced in r15972 2007-02-07.
+	  Fixed memory leak for unexpected reveived messages (does not happen in normal operation).
+	  Increased max. waiting on pending update threads to 10 sec (during shutdown).
+
  o #16022 Bugfix The new SessionName '/session/' tag introduced a subtle bug which could lead
           to failed reconnect on same session.
 	  This bug was introduced with revision #15523
