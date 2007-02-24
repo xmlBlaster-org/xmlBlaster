@@ -10,7 +10,8 @@
 <option id="gnu.cpp.compiler.option.preprocessor.def.1600476173" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 <listOptionValue builtIn="false" value="OMNITHREAD"/>
 <listOptionValue builtIn="false" value="COMPILE_SOCKET_PLUGIN=1"/>
-<listOptionValue builtIn="false" value="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=0"/>
+<listOptionValue builtIn="false" value="XMLBLASTER_PERSISTENT_QUEUE=1"/>
+<listOptionValue builtIn="false" value="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1"/>
 <listOptionValue builtIn="false" value="_REENTRANT"/>
 </option>
 <option id="gnu.cpp.compiler.option.include.paths.848123249" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
