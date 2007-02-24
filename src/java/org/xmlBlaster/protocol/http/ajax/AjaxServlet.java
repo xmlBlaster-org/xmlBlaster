@@ -349,6 +349,7 @@ public class AjaxServlet extends HttpServlet {
 		} catch (Throwable e) {
 			log.severe("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
 					+ e.toString());
+         e.printStackTrace();
 			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
 					+ e.toString());
 		} finally {
