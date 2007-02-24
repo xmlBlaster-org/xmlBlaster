@@ -3,6 +3,12 @@
 # Helper to start the different test groups in sequence (UNIX only)
 # You need to manually close each of the GUI windows to continue
 #
+
+# Precondition:
+# Edit xmlBlaster.properties and add 'protocol=IOR'
+# Edit xmlBlasterPlugins.xml and set connectEvent, disconnectEvent and clientListEvent to true
+# Compile all: build delete all c cpp csharp	(for the optional 'csharp' target you need mono installed)
+
 rm -rf $HOME/tmp/fileRecorder
 echo "STARTING classtest TESTS ..."
 java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
