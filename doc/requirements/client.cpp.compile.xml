@@ -288,6 +288,43 @@ cd xmlBlaster
    </example>
 
 
+   <example lang="CPP" type="HTML">
+      <h2><a NAME="exampleEclipse"></a>Example with eclipse</h2>
+      <p>If you have installed compiled and installed the dlls, following steps are
+      needed to setup your first own client.</p>
+    <pre>
+    Properties -> GCC -> Directories:
+       ${XMLBLASTER_HOME}/src/c++
+
+    Properties -> Linker -> Libraries:
+      xerces-c
+      sqlite
+      z
+      xmlBlasterClientCD
+      xmlBlasterClientD
+
+    Properties -> Linker -> Library search path:
+      ${XMLBLASTER_HOME}/lib
+      ${zlib_lib_dir}
+      ${sqlite_lib_dir}
+      ${xerces_lib_dir}
+      ${usr_lib_dir}
+
+    Properties -> Linker -> Miscellaneous -> Linker flags:
+      "-Wl,-rpath=${xerces_lib_dir} -Wl,-rpath=${zlib_lib_dir} -Wl,-rpath=${sqlite_lib_dir} -Wl,-rpath=${usr_lib_dir} -Wl,-rpath=${XMLBLASTER_HOME}/lib"
+
+   </pre>
+   assuming your environment contains:
+    <pre>
+   export usr_lib_dir=/usr/lib
+   export zlib_lib_dir=/opt/zlib-bin/lib
+   export sqlite_lib_dir=/opt/sqlite-bin/lib
+   export xerces_lib_dir=/opt/xerces-c-src_2_7_0-bin/lib
+   </pre>
+
+   On Windows you need to set the preprocessor define <code>/D_WINDOWS</code>.
+   </example>
+
    <configuration where="client">
    <p>
    Take a copy from xmlBlaster/build.properties to ${user.home}/build.properties and
