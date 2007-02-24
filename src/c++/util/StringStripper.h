@@ -25,8 +25,7 @@ namespace util {
  *
  * <pre>
  * std::string name = "motor.electric.stepper.motor1";
- * StringStripper stripper = new StringStripper(".");
- * std::vector<String> vec = stripper->strip(name);
+ * std::vector<std::string> vec = StringStripper(".").strip(name);
  * </pre>
  */
    class Dll_Export StringStripper {
