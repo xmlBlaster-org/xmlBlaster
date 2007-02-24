@@ -457,7 +457,7 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
 
    dbInfo = getDbInfo(queueP);
 
-   if (dbInfo->numOfEntries >= dbInfo->prop.maxNumOfEntries) {
+   if ((int64_t)dbInfo->numOfEntries >= dbInfo->prop.maxNumOfEntries) {
       strncpy0(exception->errorCode, "resource.overflow.queue.entries", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] The maximum number of queue entries = %d is exhausted", __FILE__, __LINE__, dbInfo->prop.maxNumOfEntries);
