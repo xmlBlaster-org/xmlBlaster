@@ -124,7 +124,7 @@ public:
 
     virtual ~MsgQueueEntry();
 
-    Global& getGlobal() const { return global_; }
+    org::xmlBlaster::util::Global& getGlobal() const { return global_; }
 
     void copy(const MsgQueueEntry& entry);
 
