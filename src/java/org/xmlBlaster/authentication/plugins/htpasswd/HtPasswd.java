@@ -411,6 +411,8 @@ public class HtPasswd {
                System.out.println("======NO PASSWD ENTRY==================================");
             }
          }
+         
+         //log.info("Successfully read " + htpasswdFilename + " with " + this.htpasswdMap.size() + " entries");
 
          return true;
       }
