@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xmlBlasterClientC", "xmlBlasterClientC\xmlBlasterClientC.vcproj", "{BCFECE96-BEEF-4592-B231-F0E15A0F077D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloWorld3", "HelloWorld3\HelloWorld3.vcproj", "{C2AC3D6D-8F32-4F71-AAE7-BCF9FD31C132}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BCFECE96-BEEF-4592-B231-F0E15A0F077D} = {BCFECE96-BEEF-4592-B231-F0E15A0F077D}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BCFECE96-BEEF-4592-B231-F0E15A0F077D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BCFECE96-BEEF-4592-B231-F0E15A0F077D}.Debug|Win32.Build.0 = Debug|Win32
+		{BCFECE96-BEEF-4592-B231-F0E15A0F077D}.Release|Win32.ActiveCfg = Release|Win32
+		{BCFECE96-BEEF-4592-B231-F0E15A0F077D}.Release|Win32.Build.0 = Release|Win32
+		{C2AC3D6D-8F32-4F71-AAE7-BCF9FD31C132}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C2AC3D6D-8F32-4F71-AAE7-BCF9FD31C132}.Debug|Win32.Build.0 = Debug|Win32
+		{C2AC3D6D-8F32-4F71-AAE7-BCF9FD31C132}.Release|Win32.ActiveCfg = Release|Win32
+		{C2AC3D6D-8F32-4F71-AAE7-BCF9FD31C132}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
