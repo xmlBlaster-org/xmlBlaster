@@ -281,8 +281,17 @@ public:
             {
                std::vector<unsigned char> ret = cp.getValue();
                std::string str;
+#if defined(__sun)
+               // No assign
+               cout << "NEW=";
+               for (int i=0; i<ret.size(); i++) {
+                  cout << ret.at(i);
+               }
+               cout << endl;
+#else
                str.assign(ret.begin(),ret.end());
                cout << "NEW=" << str << endl;
+#endif
             }
             assertEquals(log_, ME, "key", cp.getName(), "name");
             assertEquals(log_, ME, "Hallo", cp.getStringValue(), "value");
