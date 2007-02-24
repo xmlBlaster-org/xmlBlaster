@@ -104,6 +104,9 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
     * for example from qosData.getQuerySpecArr()[0].getQuery().getQuery()     
     */
    public MsgUnit[] query(Object source, String query) throws XmlBlasterException {
+      // If the SOCKET shuts down it sends a InterruptException to this thread so it
+      // falls out of await() and is not leaked. What about CORBA/XMLRPC?
+      
       //if (log.isLoggable(Level.FINER)) log.call(ME, "query for '" + keyData.getOid() + "'");
       if (source == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "The source on which do the query is null");
