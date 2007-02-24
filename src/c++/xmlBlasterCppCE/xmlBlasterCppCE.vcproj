@@ -183,6 +183,77 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="$(XMLBLASTER_HOME)/src/c;$(XMLBLASTER_HOME)/src/c++;$(zlib_include_dir);$(sqlite_include_dir);$(xerces_include_dir)"
+				PreprocessorDefinitions="COMPILE_SOCKET_PLUGIN=1;XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1;LOG4CPLUS_BUILD_DLL=1;XMLBLASTER_PERSISTENT_QUEUE=1;XMLBLASTER_ZLIB=1;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_WINDLL;__WIN32__;-DOMNITHREAD;_OMNITHREAD_DLL=1;WIN32DLL_EXPORTS=1;WIN32;_DEBUG;_USRDLL;_UNICODE"
+				ExceptionHandling="1"
+				RuntimeLibrary="3"
+				CallingConvention="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="zdll.lib pthreadVC2.lib sqlite.lib xmlBlasterClientCD.lib xerces-c_2D.lib"
+				OutputFile="$(XMLBLASTER_HOME)\lib\xmlBlasterClientD.dll"
+				AdditionalLibraryDirectories="&quot;$(zlib_lib_dir)&quot;;&quot;$(sqlite_lib_dir)&quot;;&quot;$(xerces_lib_dir)&quot;;&quot;$(XMLBLASTER_HOME)/src/c/socket&quot;;&quot;$(XMLBLASTER_HOME)/lib&quot;"
+				ImportLibrary="$(XMLBLASTER_HOME)\lib\xmlBlasterClientD.lib"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
 			Name="Release|Pocket PC 2003 (ARMV4)"
 			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
@@ -345,7 +416,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|Win32"
+			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
@@ -367,12 +438,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
 				AdditionalIncludeDirectories="$(XMLBLASTER_HOME)/src/c;$(XMLBLASTER_HOME)/src/c++;$(zlib_include_dir);$(sqlite_include_dir);$(xerces_include_dir)"
-				PreprocessorDefinitions="COMPILE_SOCKET_PLUGIN=1;XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1;LOG4CPLUS_BUILD_DLL=1;XMLBLASTER_PERSISTENT_QUEUE=1;XMLBLASTER_ZLIB=1;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_WINDLL;__WIN32__;-DOMNITHREAD;_OMNITHREAD_DLL=1;WIN32DLL_EXPORTS=1;WIN32;_DEBUG;_USRDLL;_UNICODE"
-				ExceptionHandling="1"
-				RuntimeLibrary="3"
-				CallingConvention="0"
+				PreprocessorDefinitions="COMPILE_SOCKET_PLUGIN=1;XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1;LOG4CPLUS_BUILD_DLL=1;XMLBLASTER_PERSISTENT_QUEUE=1;XMLBLASTER_ZLIB=1;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_WINDLL;__WIN32__;-DOMNITHREAD;_OMNITHREAD_DLL=1;WIN32;_DEBUG;_USRDLL;_UNICODE"
+				RuntimeLibrary="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -385,70 +453,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zdll.lib pthreadVC2.lib sqlite.lib xmlBlasterClientCD.lib xerces-c_2D.lib"
-				OutputFile="$(XMLBLASTER_HOME)\lib\xmlBlasterClientD.dll"
+				AdditionalDependencies="zdll.lib pthreadVC2.lib sqlite.lib xmlBlasterClientC.lib xerces-c_2.lib"
+				OutputFile="$(XMLBLASTER_HOME)\lib\xmlBlasterClient.dll"
 				AdditionalLibraryDirectories="&quot;$(zlib_lib_dir)&quot;;&quot;$(sqlite_lib_dir)&quot;;&quot;$(xerces_lib_dir)&quot;;&quot;$(XMLBLASTER_HOME)/src/c/socket&quot;;&quot;$(XMLBLASTER_HOME)/lib&quot;"
-				ImportLibrary="$(XMLBLASTER_HOME)\lib\xmlBlasterClientD.lib"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
+				IgnoreDefaultLibraryNames="libcmt.lib"
+				ImportLibrary="$(XMLBLASTER_HOME)\lib\xmlBlasterClient.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -1043,6 +1052,15 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
 						Name="Release|Pocket PC 2003 (ARMV4)"
 						>
 						<Tool
@@ -1056,15 +1074,6 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							ObjectFile="$(IntDir)/$(InputName)1.obj"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\$(InputName)1.obj"
-							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
 						/>
 					</FileConfiguration>
 					<FileConfiguration
