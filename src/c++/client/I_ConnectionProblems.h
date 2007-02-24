@@ -40,7 +40,8 @@ public:
     * erase all entries manually. Note that this method is invoked also when the connection has been 
     * established the first time.
     */
-   virtual bool reachedAlive(StatesEnum oldState,
+   virtual bool reachedAlive(
+                  org::xmlBlaster::client::StatesEnum oldState,
                   org::xmlBlaster::util::dispatch::I_ConnectionsHandler* connectionsHandler) = 0;
 
    /**
@@ -48,14 +49,16 @@ public:
     * informing the client that the connection was lost (i.e. when the state of the
     * connectionsHandler has gone to DEAD).
     */
-   virtual void reachedDead(StatesEnum oldState,
+   virtual void reachedDead(
+                  org::xmlBlaster::client::StatesEnum oldState,
                   org::xmlBlaster::util::dispatch::I_ConnectionsHandler* connectionsHandler) = 0;
 
    /**
     * This is the callback method invoked from org::xmlBlaster::util::dispatch::ConnectionsHandler
     * informing the client that the connection state has changed to POLLING.
     */
-   virtual void reachedPolling(StatesEnum oldState,
+   virtual void reachedPolling(
+                  org::xmlBlaster::client::StatesEnum oldState,
                   org::xmlBlaster::util::dispatch::I_ConnectionsHandler* connectionsHandler) = 0;
 
 };
