@@ -62,6 +62,10 @@ import org.xmlBlaster.client.qos.UpdateQos;
  * We use the <tt>LOCAL</tt> protocol driver to talk to xmlBlaster, therefor this
  * plugin works only if the client and server is in the same virtual machine (JVM).
  * </p>
+ * <p>
+ * A typical authorization line in xmlBlaster.htpasswd could be:
+ * </p>
+ * <pre>_DeadMessageDumper:yZfKBiZG8:connect,disconnect,subscribe(exact:__sys__deadMessage)</pre>
  *
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html">The admin.errorHandling requirement</a>
@@ -92,7 +96,7 @@ public class DeadMessageDumper implements I_Plugin {
       this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
 
 
-      if (log.isLoggable(Level.FINER)) this.log.finer("init");
+      if (log.isLoggable(Level.FINER)) log.finer("init");
 
       String defaultPath = System.getProperty("user.home") + System.getProperty("file.separator") + "tmp";
 
@@ -131,7 +135,7 @@ public class DeadMessageDumper implements I_Plugin {
     * @see org.xmlBlaster.util.plugin.I_Plugin#shutdown()
     */
    public void shutdown() throws XmlBlasterException {
-      if (log.isLoggable(Level.FINER)) this.log.finer("shutdown");
+      if (log.isLoggable(Level.FINER)) log.finer("shutdown");
       if (connection != null) connection.disconnect(null);
    }
 
