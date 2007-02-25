@@ -195,6 +195,13 @@ final public class Authenticate implements I_RunlevelListener
     */
    public /*synchronized*/ final ConnectReturnQosServer connect(ConnectQosServer connectQos, String secretSessionId) throws XmlBlasterException
    {
+      if (connectQos.getSessionQos().getSessionName().getLoginName().equals(this.glob.getId())) {
+         String text = "You are not allowed to login with the cluster node name " + connectQos.getSessionName().toString() + ", access denied.";
+         log.warning(text);
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_IDENTICALCLIENT,
+                   ME+".connect()", text);
+      }
+
       // [1] Try reconnecting with secret sessionId
       try {
          if (log.isLoggable(Level.FINE)) log.fine("Entering connect(sessionName=" + connectQos.getSessionName().getAbsoluteName() + ")"); // " secretSessionId=" + secretSessionId + ")");
