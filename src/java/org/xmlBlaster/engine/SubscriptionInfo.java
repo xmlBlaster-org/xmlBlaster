@@ -502,7 +502,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * @see org.xmlBlaster.util.qos.QueryQosData#generateSubscriptionId(String)
     * @see generateUniqueKey
     */
-   public static void verifySubscriptionId(SessionName sessionName, QueryKeyData xmlKey, SubscribeQosServer subscribeQos)
+   public static void verifySubscriptionId(boolean isClusterNode, SessionName sessionName, QueryKeyData xmlKey, SubscribeQosServer subscribeQos)
       throws XmlBlasterException {
       if (subscribeQos.isRecoveredFromPersistenceStore())
          return;
@@ -519,6 +519,9 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
          
          // "__subId:client/joe/session/1-XPATH://key"
          if (!tail.startsWith(sessionName.getRelativeName(true)) &&
+               
+               // It could by a slave of a slave cluster node, so the check sessionName.getLoginName() is not enough
+               !isClusterNode &&
                
                //"__subId:heron-3456646466" for cluster slaves
               /*connectQos.isClusterNode()) &&*/ !tail.startsWith(sessionName.getLoginName()+"-"))

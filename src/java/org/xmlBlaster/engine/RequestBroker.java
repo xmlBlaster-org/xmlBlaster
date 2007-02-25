@@ -614,7 +614,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       }
       
       try {
-         SubscriptionInfo.verifySubscriptionId(sessionInfo.getSessionName(), xmlKey, subscribeQos);
+         SubscriptionInfo.verifySubscriptionId(sessionInfo.getConnectQos().isClusterNode(), sessionInfo.getSessionName(), xmlKey, subscribeQos);
          
          if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getId() + "' ...");
          String returnOid = "";
