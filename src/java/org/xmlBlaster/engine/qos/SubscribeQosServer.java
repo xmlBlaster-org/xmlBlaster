@@ -6,11 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.qos;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.AccessFilterQos;
@@ -63,38 +60,12 @@ public final class SubscribeQosServer
       return this.queryQosData;
    }
    
-   Global getGlobal() { return this.glob; }
+   public Global getGlobal() { return this.glob; }
 
    public boolean isRecoveredFromPersistenceStore() {
       ClientProperty clientProperty = this.queryQosData.getClientProperty(Constants.PERSISTENCE_ID);
       return clientProperty != null;
    }
-
-   public static void verifySubscriptionId(SessionName sessionName, QueryKeyData xmlKey, SubscribeQosServer subscribeQos)
-      throws XmlBlasterException {
-      if (subscribeQos.isRecoveredFromPersistenceStore())
-         return;
-      String subscriptionId = subscribeQos.getSubscriptionId();
-      if (subscriptionId != null) {
-         boolean isOk = true;
-         
-         //"__subId:client/joe/session/1-[your-unqiue-postfix]"
-         if (!subscriptionId.startsWith(Constants.SUBSCRIPTIONID_PREFIX)
-               || subscriptionId.length() < (Constants.SUBSCRIPTIONID_PREFIX.length()+5))
-            isOk = false;
-
-         String tail = subscriptionId.substring(Constants.SUBSCRIPTIONID_PREFIX.length());
-         if (!tail.startsWith(sessionName.getRelativeName(true)))
-            isOk = false;
-         
-         if (!isOk)
-            throw new XmlBlasterException(subscribeQos.getGlobal(), ErrorCode.USER_SUBSCRIBE_ID,
-               "Your subscriptionId '" + subscriptionId +
-               "' is invalid, we expect something like '" +
-               subscribeQos.getData().generateSubscriptionId(sessionName, xmlKey));
-      }
-   }
-
 
    /**
     * Return the subscribe filters or null if none is specified. 

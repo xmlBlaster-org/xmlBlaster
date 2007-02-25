@@ -613,9 +613,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
       
-      SubscribeQosServer.verifySubscriptionId(sessionInfo.getSessionName(), xmlKey, subscribeQos);
-      
       try {
+         SubscriptionInfo.verifySubscriptionId(sessionInfo.getSessionName(), xmlKey, subscribeQos);
+         
          if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getId() + "' ...");
          String returnOid = "";
 
@@ -715,6 +715,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          return qos.toXml();
       }
       catch (XmlBlasterException e) {
+         log.warning(e.getMessage());
          throw e;
       }
       catch (Throwable e) {

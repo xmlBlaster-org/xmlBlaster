@@ -24,6 +24,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.cluster.NodeId;
 
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -185,7 +186,10 @@ public final class NodeInfo
       this.remoteGlob.setBootstrapAddress(getAddress());
 
       // Shall we allow a configurable user name for cluster slave logins?
-      // TODO: Change this "/1" to use a SessionName instance:
+      // Required: To use the cluster.node.id as login name
+      //           so other cluster nodes accept our subscriptionId, e.g. "__subId:heron-3456646466"
+      //SessionName sessionName = new SessionName(this.getRemoteGlob(), this.remoteGlob.getId() + "/1"); // is done in setUserId already
+      //data.getSessionQos().setSessionName(sessionName);
       data.setUserId(this.remoteGlob.getId() + "/1"); // the login name, e.g. "heron/1"
       // The password is from the environment -passwd or more specific -passwd[heron]
       // Or from the XML securityQos

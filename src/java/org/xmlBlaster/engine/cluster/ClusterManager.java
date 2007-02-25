@@ -489,6 +489,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       }
 
       SubscribeQos subscribeQos2 = new SubscribeQos(this.glob, subscribeQos.getData());
+      // The cluster master needs to accept our "__subId:heron-3456646466"
       
       ClientProperty clientProperty = subscribeQos2.getClientProperty(Constants.PERSISTENCE_ID);
       if (clientProperty != null) {

@@ -15,9 +15,11 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.key.KeyData;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.IsoDateParser;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -473,7 +475,7 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
     * @param clusterWideUnique If false the key is unique for this xmlBlaster instance only
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>__subId:heron-53</code>
-    * @see org.xmlBlaster.util.key.QueryKeyData#generateSubscriptionId(String)
+    * @see org.xmlBlaster.util.qos.QueryQosData#generateSubscriptionId(String)
     */
    private static String generateUniqueKey(KeyData keyData, QueryQosData xmlQos, boolean clusterWideUnique) throws XmlBlasterException {
       if (xmlQos.getSubscriptionId() != null && xmlQos.getSubscriptionId().length() > 0) {
@@ -481,13 +483,53 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       }
       StringBuffer buf = new StringBuffer(126);
       buf.append(Constants.SUBSCRIPTIONID_PREFIX);
-      if (clusterWideUnique)
+      if (clusterWideUnique) { // needs to be accepted by other cluster nodes
          buf.append(keyData.getGlobal().getNodeId().getId()).append("-");
+      }
       if (keyData.isQuery())
          buf.append(keyData.getQueryType());
       Timestamp tt = new Timestamp();
       buf.append(String.valueOf(tt.getTimestamp()));
       return buf.toString();
+   }
+
+   /**
+    * 
+    * @param sessionName
+    * @param xmlKey
+    * @param subscribeQos
+    * @throws XmlBlasterException
+    * @see org.xmlBlaster.util.qos.QueryQosData#generateSubscriptionId(String)
+    * @see generateUniqueKey
+    */
+   public static void verifySubscriptionId(SessionName sessionName, QueryKeyData xmlKey, SubscribeQosServer subscribeQos)
+      throws XmlBlasterException {
+      if (subscribeQos.isRecoveredFromPersistenceStore())
+         return;
+      String subscriptionId = subscribeQos.getSubscriptionId();
+      if (subscriptionId != null) {
+         boolean isOk = true;
+         
+         //"__subId:client/joe/session/1-[your-unqiue-postfix]"
+         if (!subscriptionId.startsWith(Constants.SUBSCRIPTIONID_PREFIX)
+               || subscriptionId.length() < (Constants.SUBSCRIPTIONID_PREFIX.length()+5))
+            isOk = false;
+   
+         String tail = subscriptionId.substring(Constants.SUBSCRIPTIONID_PREFIX.length());
+         
+         // "__subId:client/joe/session/1-XPATH://key"
+         if (!tail.startsWith(sessionName.getRelativeName(true)) &&
+               
+               //"__subId:heron-3456646466" for cluster slaves
+              /*connectQos.isClusterNode()) &&*/ !tail.startsWith(sessionName.getLoginName()+"-"))
+            isOk = false;
+         
+         if (!isOk)
+            throw new XmlBlasterException(subscribeQos.getGlobal(), ErrorCode.USER_SUBSCRIBE_ID,
+               "Your subscriptionId '" + subscriptionId +
+               "' is invalid, we expect something like '" +
+               subscribeQos.getData().generateSubscriptionId(sessionName, xmlKey));
+      }
    }
 
    /**
