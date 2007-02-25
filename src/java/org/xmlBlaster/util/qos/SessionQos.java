@@ -25,7 +25,7 @@ import org.xmlBlaster.util.property.PropBoolean;
  */
 public final class SessionQos implements java.io.Serializable, Cloneable
 {
-   private final String ME = "SessionQos";
+   private static final long serialVersionUID = 1L;
    private final transient Global glob;
    private static Logger log = Logger.getLogger(SessionQos.class.getName());
 
