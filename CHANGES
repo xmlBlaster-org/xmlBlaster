@@ -1,6 +1,13 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for 1.5.1 [2007-02-25] #16054
+=====================================
+
+ o #16051/#16053 Bugfix: Support for #15953 subscriptionId in cluster environment
+
+ o #16050 Prevent clients from using same login name as server cluster.node.id
+
  o #16045 C client library fix for Win32 and WinCE
           You can now pass raw IP address without DNS lookup
 
