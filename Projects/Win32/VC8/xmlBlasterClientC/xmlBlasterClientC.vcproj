@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -65,6 +65,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="zdll.lib sqlite.lib pthreadVC2.lib Ws2_32.lib"
+				OutputFile="$(OutDir)\$(ProjectName)D.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(zlib_lib_dir)&quot;;&quot;$(sqlite_lib_dir)&quot;;$(XMLBLASTER_HOME)/src/c/socket"
 				GenerateDebugInformation="true"
@@ -94,13 +95,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy xmlBlasterClientC.dll to xmlBlaster\lib"
-				CommandLine="call copy $(ProjectDir)\$(ConfigurationName)\$(ProjectName).dll  $(XMLBLASTER_HOME)\lib"
+				Description="Copy xmlBlasterClientCD.dll to xmlBlaster\lib"
+				CommandLine="call copy $(ProjectDir)\$(ConfigurationName)\$(ProjectName)D.dll  $(XMLBLASTER_HOME)\lib"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(ProjectDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -123,7 +124,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;XMLBLASTERCLIENTC_EXPORTS"
+				AdditionalIncludeDirectories="&quot;$(sqlite_include_dir)&quot;;&quot;$(zlib_include_dir)&quot;;&quot;$(XMLBLASTER_HOME)/src/c&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;XMLBLASTERCLIENTC_EXPORTS;XMLBLASTER_ZLIB=1;XMLBLASTER_PERSISTENT_QUEUE=1"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -141,7 +143,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="zdll.lib sqlite.lib pthreadVC2.lib Ws2_32.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;$(zlib_lib_dir)&quot;;&quot;$(sqlite_lib_dir)&quot;;$(XMLBLASTER_HOME)/src/c/socket"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -171,6 +175,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy xmlBlasterClientC.dll to xmlBlaster\lib"
+				CommandLine="call copy $(ProjectDir)\$(ConfigurationName)\$(ProjectName).dll  $(XMLBLASTER_HOME)\lib"
 			/>
 		</Configuration>
 	</Configurations>
