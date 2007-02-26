@@ -24,7 +24,6 @@ import org.xmlBlaster.util.qos.address.Address;
  * @see org.xmlBlaster.client.XmlBlasterAccess
  */
 public class XmlBlasterAccessTest extends TestCase {
-   private String ME = "XmlBlasterAccessTest";
    private Global glob;
    private static Logger log = Logger.getLogger(XmlBlasterAccessTest.class.getName());
 
@@ -120,8 +119,7 @@ public class XmlBlasterAccessTest extends TestCase {
          assertTrue("", xmlBlasterAccess.getConnectReturnQos() == null);
          assertTrue("", xmlBlasterAccess.getConnectQos() == null);
          assertTrue("", xmlBlasterAccess.getId() != null);
-         //Changed on V1.5.1 to return the Global ID (does this make sense?)
-         //assertTrue("", xmlBlasterAccess.getSessionName() == null);
+         assertTrue("", xmlBlasterAccess.getSessionName() == null);
 
          try {
             xmlBlasterAccess.subscribe((SubscribeKey)null, null);

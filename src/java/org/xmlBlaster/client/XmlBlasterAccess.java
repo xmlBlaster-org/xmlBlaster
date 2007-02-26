@@ -674,12 +674,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (this.connectQos != null) {
          return this.connectQos.getSessionName();
       }
-      if (this.glob.getId() != null) {
-         try { // to avoid NPE for deadmessagedumper with missing authorization (native plugin) during generateSubscriptionId()
-            return new SessionName(this.glob, this.glob.getId());
-         } catch (Exception e) {
-         }
-      }
       return null;
    }
 
