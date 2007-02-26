@@ -173,8 +173,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     * This is the callback method invoked natively
     * informing the client in an asynchronous mode about new messages.
     * <p />
-    * It implements the interface I_CallbackRaw, used for example by the
-    * InvocationRecorder
+    * It implements the interface I_CallbackRaw.
     * <p />
     * It nicely converts the raw MsgUnitRaw with raw Strings and arrays
     * in corresponding objects and calls for every received message

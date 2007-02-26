@@ -1,26 +1,19 @@
 package org.xmlBlaster.test.classtest;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.Address;
-
-import java.io.*;
 
 import junit.framework.*;
 
 /**
- * Test FileIO class. 
- * <p />
  * Invoke: java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.classtest.SocketUrlTest
  *
  * @see org.xmlBlaster.protocol.socket.SocketUrl
  */
 public class SocketUrlTest extends TestCase {
-   private String ME = "SocketUrlTest";
    protected Global glob;
    private static Logger log = Logger.getLogger(SocketUrlTest.class.getName());
 
@@ -138,7 +131,7 @@ public class SocketUrlTest extends TestCase {
       try {
          try {
             String url = null;
-            SocketUrl s = new SocketUrl(glob, url);
+            new SocketUrl(glob, url);
             fail("Null url is not allowed");
          } catch (XmlBlasterException e) {
             log.info("SUCCESS testParseUrl(): expected exception: " + e.toString());

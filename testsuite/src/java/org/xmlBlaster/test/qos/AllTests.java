@@ -71,7 +71,6 @@ public class AllTests
       suite.addTest(TestPubForce.suite());
       suite.addTest(TestErase.suite());
       suite.addTest(TestUpdateClientException.suite());
-      suite.addTest(TestInvocationRecorder.suite());
       suite.addTest(TestClientProperty.suite());
       return suite;
    }

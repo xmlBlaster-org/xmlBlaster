@@ -23,10 +23,8 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SessionNameTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SocketUrlTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.XmlBlasterAccessTest.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.FileIOTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TimestampTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TimeoutTest.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.InvocationRecorderTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.ClientPropertyTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.ConnectQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.DisconnectQosTest.class));

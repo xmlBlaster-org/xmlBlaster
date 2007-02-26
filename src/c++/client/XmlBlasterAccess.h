@@ -64,8 +64,8 @@ namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 namespace org { namespace xmlBlaster { namespace client {
 
 /*
- * The interface org::xmlBlaster::client::I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
- * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
+ * The interface org::xmlBlaster::client::I_CallbackRaw/I_Callback/I_CallbackExtended are enforced by AbstractCallbackExtended
+ * is for the protocol drivers.
  */
 typedef std::map<std::string, I_Callback*> CallbackMapType;
 typedef std::map<std::string, std::string> StringMap;
