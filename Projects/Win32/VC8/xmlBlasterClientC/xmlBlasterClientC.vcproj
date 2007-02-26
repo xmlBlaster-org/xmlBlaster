@@ -96,7 +96,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy xmlBlasterClientCD.dll to xmlBlaster\lib"
-				CommandLine="call copy $(SolutionDir)\$(ConfigurationName)\$(ProjectName)D.dll  $(XMLBLASTER_HOME)\lib"
+				CommandLine="call copy &quot;$(TargetPath)&quot;  $(XMLBLASTER_HOME)\lib&#x0D;&#x0A;call copy &quot;$(TargetDir)\$(TargetName).lib&quot;  $(XMLBLASTER_HOME)\lib"
 			/>
 		</Configuration>
 		<Configuration
@@ -176,7 +176,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy xmlBlasterClientC.dll to xmlBlaster\lib"
-				CommandLine="call copy $(SolutionDir)\$(ConfigurationName)\$(ProjectName).dll  $(XMLBLASTER_HOME)\lib"
+				CommandLine="call copy &quot;$(TargetPath)&quot;  $(XMLBLASTER_HOME)\lib&#x0D;&#x0A;call copy &quot;$(TargetDir)\$(TargetName).lib&quot;  $(XMLBLASTER_HOME)\lib"
 			/>
 		</Configuration>
 	</Configurations>
