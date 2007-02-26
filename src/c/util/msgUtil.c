@@ -499,8 +499,8 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
          }
 
          if (WSAGetLastError() != 0) {
-            if (WSAGetLastError() == 11001)
-               printf("Host %s not found\n", host);
+            /*if (WSAGetLastError() == 11001)
+               printf("Host %s not found\n", host);*/
             return 0;
          }
          return remoteHost;
@@ -523,8 +523,8 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
          }
 
          if (WSAGetLastError() != 0) {
-            if (WSAGetLastError() == 11001)
-               printf("Host %s not found\n", host);
+            /*if (WSAGetLastError() == 11001)
+               printf("Host %s not found\n", host);*/
             return 0;
          }
          return remoteHost;
