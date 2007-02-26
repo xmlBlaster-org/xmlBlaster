@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
 
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.Constants;
@@ -557,7 +558,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       log.info("Entering testSoftErased ...");
       this.updateInterceptor.clear();
 
-      try {
       {  // topic transition from START -> [1] -> UNCONFIGURED
          subscribeMsg();
          String dump = getDump();
@@ -570,8 +570,8 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
       }
 
       {  // topic transition from UNCONFIGURED -> [4] -> ALIVE
-         long topicDestroyDelay = 400000L;
-         long msgLifeTime = 400000L;
+         long topicDestroyDelay = 4000L;
+         long msgLifeTime = 40000000L;
          this.blockUpdateTime = 3000L; // Blocking callback thread for 3 sec to force state SOFTERASED !!
          sendExpiringMsg(true, topicDestroyDelay, msgLifeTime); 
          assertEquals("numReceived after sending", 1, this.updateInterceptor.waitOnUpdate(2000L, 1)); // message arrived?
@@ -599,12 +599,6 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
          try { Thread.sleep(4500L); } catch( InterruptedException i) {}
          String dump = getDump();
          assertTrue("Not expected a dead topic:" + dump, dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") == -1);
-      }
-      }
-      catch (Throwable e) {
-         log.severe("Problem: " + e.toString());
-         e.printStackTrace();
-         //throw e;
       }
       log.info("SUCCESS testSoftErased");
    }
@@ -742,6 +736,7 @@ public class TestTopicLifeCycle extends XMLTestCase implements I_Callback {
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
+       suite.addTest(new TestTopicLifeCycle(new Global(), "testSoftErased"));
        suite.addTest(new TestTopicLifeCycle(new Global(), "testExpiry"));
        suite.addTest(new TestTopicLifeCycle(new Global(), "testUnreferencedAlive"));
        suite.addTest(new TestTopicLifeCycle(new Global(), "testVolatile"));
