@@ -1,7 +1,7 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for 1.5.1 [2007-02-26] #16060
+Changes for 1.5.1 [2007-02-26] #16061
 =====================================
 
  o #16059 Bugfix: The queue entry reference counting could lead to leaked msgUnit entries on I_Queue.clear() calls
