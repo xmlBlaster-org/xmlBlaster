@@ -1225,20 +1225,38 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * Clears everything and removes the queue (i.e. frees the associated table)
     */
    synchronized public long clear() {
-      long numOfEntries = getNumOfEntries();
-      try {
-         if (this.persistentQueue != null) this.persistentQueue.clear();
+      if (this.notifiedAboutAddOrRemove) {
+         long numOfEntries = getNumOfEntries();
+         while (true) {
+            long curr = getNumOfEntries();
+            if (curr <= 0) break;
+            //if (curr > 10000) curr = 10000; is protected by maxEntriesCached
+            try {
+               long count = remove(curr, -1); // with callback to Entry for reference counting
+               if (count == 0) break;
+            }
+            catch (Throwable e) {
+               log.severe(ME+"Ignoring exception in clear(): " + e.toString());
+            }
+         }
+         return numOfEntries;
       }
-      catch (Throwable e) {
-         log.severe(ME+"Ignoring exception in clear(): " + e.toString());
+      else { // Entries don't have reference counting: The quick way:
+         long numOfEntries = getNumOfEntries();
+         try {
+            if (this.persistentQueue != null) this.persistentQueue.clear();
+         }
+         catch (Throwable e) {
+            log.severe(ME+"Ignoring exception in clear(): " + e.toString());
+         }
+         try {
+            this.transientQueue.clear();
+         }
+         catch (Throwable e) {
+            log.severe(ME+"Ignoring exception in clear(): " + e.toString());
+         }
+         return numOfEntries;
       }
-      try {
-         this.transientQueue.clear();
-      }
-      catch (Throwable e) {
-         log.severe(ME+"Ignoring exception in clear(): " + e.toString());
-      }
-      return numOfEntries;
    }
 
    /**
