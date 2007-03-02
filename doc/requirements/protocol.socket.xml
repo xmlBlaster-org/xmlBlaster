@@ -45,7 +45,9 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
       </tr>
       <tr>
          <td>msgLen</td>
-         <td>The number of bytes of the message, including itself, the header, the data (and the checksum if appended)</td>
+         <td>The number of bytes of the message, including itself, the header, the data (and the checksum if appended).
+         Each digit is a single byte with number characters, the numbers are right adjusted with leading blanks (0x20).
+         For example a byte with the integer values 0x34 is meant to be the character number '4'.</td>
          <td>10</td>
       </tr>
       <tr>
