@@ -12,7 +12,7 @@
       avoids using OS resources like ports and threads.<br />
       Switching the protocol is just a configuration setting, so any existing
       client can choose to communicate locally. </p>
-      <p>Client that want's to be able to use the local protocol must however have access to the serverside "singleton" org.xmlBlaster.engine.Global, either directly or through a global wich contains the serverside global i is ObjectEntry under the key: <code>ServerNodeScope</code>. Futhermore, it must see to it than any cloning it does of its global (for example to be able to use more than one XmlBlasterAccess) contians this ServerNodeScope entry. The <code>org.xmlBlaster.j2ee.util.GlobalUtil</code> may be used to do just that.</p>
+      <p>Client that want's to be able to use the local protocol must however have access to the serverside "singleton" org.xmlBlaster.engine.ServerScope, either directly or through a global wich contains the serverside global i is ObjectEntry under the key: <code>ServerNodeScope</code>. Futhermore, it must see to it than any cloning it does of its global (for example to be able to use more than one XmlBlasterAccess) contians this ServerNodeScope entry. The <code>org.xmlBlaster.j2ee.util.GlobalUtil</code> may be used to do just that.</p>
     <p>There are currently three ways to do this.</p>
       <p>
       It is possible to start xmlBlaster clients with the runlevel manager of xmlBlaster.
@@ -21,7 +21,7 @@
       <code>I_Plugin</code> interface to be loadable as a plugin, this is described in
       the <i>engine.runlevel</i> requirement.
       </p>
-    <p>If one starts an embedded XmlBlaster it is also possible to access the engine.Global: <code>serverThread.getMain().getGlobal()</code></p>
+    <p>If one starts an embedded XmlBlaster it is also possible to access the ServerScope: <code>serverThread.getMain().getGlobal()</code></p>
     <p>When using the JBoss/JMX service to start XmlBlaster it is also possible to specify a JNDIname where an instance of GlobalUtil should be bound. This GlobalUtil instance will contain a reference to the engine global as long as its looked up in the same VM.</p>
     </description>
 
