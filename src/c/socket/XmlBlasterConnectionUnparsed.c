@@ -257,8 +257,8 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    memset((char *)&hostbuf, 0, sizeof(struct hostent));
    hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen);
    /* printf("gethostbyname error=%d\n", WSAGetLastError()); */
-   portP = getservbyname(servTcpPort, "tcp");
    if (hostP != 0) {
+      portP = getservbyname(servTcpPort, "tcp");
       xmlBlasterAddr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
       free(tmphstbuf);
       if (portP != 0)
@@ -379,10 +379,14 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       }
    }
    else {
+#     if defined(_WINDOWS)
+         errno = WSAGetLastError(); /* for error codes see http://msdn2.microsoft.com/en-us/library/ms740668.aspx */
+#     endif
       strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s, errno=%d",
                __FILE__, __LINE__, serverHostName, servTcpPort, errno);
+      xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
       return false;
    }
    xb->isInitialized = true;
