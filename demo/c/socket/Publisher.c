@@ -65,6 +65,7 @@ int main(int argc, const char* const* argv) {
    {  /* connect */
       char *response = (char *)0;
       const char * const sessionName = xa->props->getString(xa->props, "session.name", "Publisher");
+      const char * const passwd = xa->props->getString(xa->props, "passwd", "publisher");
       long sessionTimeout = xa->props->getLong(xa->props, "session.timeout", 86400000L);
       int maxSessions = xa->props->getInt(xa->props, "session.maxSessions", 10);
       const bool persistent = xa->props->getBool(xa->props, "persistentConnection", false);
@@ -82,13 +83,13 @@ int main(int argc, const char* const* argv) {
                " <securityService type='htpasswd' version='1.0'>"
                "  <![CDATA["
                "   <user>%.80s</user>"
-               "   <passwd>publisher</passwd>"
+               "   <passwd>%.40s</passwd>"
                "  ]]>"
                " </securityService>"
                " <session name='%.80s' timeout='%ld' maxSessions='%d' clearSessions='false' reconnectSameClientOnly='false'/>"
                " %.20s"
                "%.1024s"
-               "</qos>", sessionName, sessionName, sessionTimeout, maxSessions, persistent?"<persistent/>":"", callbackQos);
+               "</qos>", sessionName, passwd, sessionName, sessionTimeout, maxSessions, persistent?"<persistent/>":"", callbackQos);
 
       response = xa->connect(xa, connectQos, 0, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
