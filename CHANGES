@@ -1,6 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16078 Update to HSQLDB 1.8.0.7 from September 2006
+
  o #16075 The SOCKET connection transports the client side IP address to the security plugins
           Extension by Xavier Roques
 
