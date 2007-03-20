@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16075 The SOCKET connection transports the client side IP address to the security plugins
+          Extension by Xavier Roques
+
 Changes for 1.5.1 [2007-02-26] #16061
 =====================================
 
