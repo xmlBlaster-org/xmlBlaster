@@ -17,7 +17,7 @@ import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
-                                       
+
 /**
  * Some helper methods for test clients
  */
@@ -39,6 +39,18 @@ public class Util
     */
    public static String[] getOtherServerPorts(int serverPort) {
       Vector vec = getOtherServerPortVec(serverPort);
+      return (String[])vec.toArray(new String[0]);
+   }
+
+   /**
+    * If you want to start a second xmlBlaster instances
+    * set environment that the ports don't conflict
+    * @param others Other params to add
+    */
+   public static String[] getOtherServerPorts(int serverPort, String[] others) {
+      Vector vec = getOtherServerPortVec(serverPort);
+      for (int i=0; i<others.length; i++)
+         vec.add(others[i]);
       return (String[])vec.toArray(new String[0]);
    }
 
@@ -148,7 +160,7 @@ public class Util
    }
 
    /**
-    * Do an administrative command to the server with a temporaty login session. 
+    * Do an administrative command to the server with a temporaty login session.
     * @param command "__sys__UserList" or "__cmd:/node/heron/?clientList"
     */
    public static MsgUnit[] adminGet(Global glob, String command) throws XmlBlasterException {
