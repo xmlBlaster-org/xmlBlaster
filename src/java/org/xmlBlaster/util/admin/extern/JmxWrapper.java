@@ -131,6 +131,13 @@ public class JmxWrapper
       this.glob = glob;
 
       this.ME = "JmxWrapper" + this.glob.getLogPrefixDashed();
+
+		boolean supportJmx = glob.getProperty().get("xmlBlaster/jmx/support", true);
+		if (!supportJmx) { // Embedded jboss can't handle it if we initialize JMS ourself
+			log.warning("Any JMX support is switched off with 'xmlBlaster/jmx/support=false'");
+         return;
+      }
+
       getMBeanServer(); // Initialize this.mbeanServer
       init();
       if (useJmx > 0) {
@@ -202,7 +209,7 @@ public class JmxWrapper
                   }
                }
                catch (Exception e) {
-                  log.fine("java.lang.management.ManagementFactory is not available for JMX monitoring");
+                  log.fine("java.lang.management.ManagementFactory is not available for JMX monitoring: " + e.toString());
                }
                if (this.mbeanServer == null) {
                   // For JDK < 1.5 fall back to 
