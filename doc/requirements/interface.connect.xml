@@ -191,7 +191,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     When all your client side initialization is done you need to manually activate
     the callback dispatcher with a administrative command, for example with
     telnet <pre> set client/receiver/1/?dispatcherActive=true</pre> or a command
-    message <pre>__cmd:?client/receiver/1/?dispatcherActive=true</pre>
+    message <pre>__cmd:client/receiver/1/?dispatcherActive=true</pre>
     This setting defaults to <i>true</i>.
     </p>
    </td>
