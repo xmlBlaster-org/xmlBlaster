@@ -1,12 +1,11 @@
 package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xml.sax.Attributes;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.SaxHandlerBase;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.util.ReplaceVariable;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 
 
 /**
@@ -23,8 +22,6 @@ import org.xmlBlaster.util.ReplaceVariable;
  */
 public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 {
-   private static String ME = "SecurityQos-htpasswd";
-
    // helper flags for SAX parsing
    private transient boolean inSecurityService = false;
    private transient boolean inUser = false;
@@ -32,8 +29,9 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 
    private String type = "htpasswd";
    private String version = "1.0";
-   private String user = null;
-   private String passwd = null;
+   private String user;
+   private String passwd;
+   private String clientIp;
 
    public SecurityQos(Global glob)
    {
@@ -68,6 +66,15 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public String getPluginType() {
       return type;
    }
+
+   public void setClientIp (String ip){
+      this.clientIp = ip;
+   }
+
+   public String getClientIp(){
+       return this.clientIp;
+   }
+
 
    public void setUserId(String userId)
    {

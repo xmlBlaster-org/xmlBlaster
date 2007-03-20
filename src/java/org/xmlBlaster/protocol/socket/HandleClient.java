@@ -228,6 +228,8 @@ public class HandleClient extends SocketExecutor implements Runnable
             if (MethodName.CONNECT == receiver.getMethodName()) {
                // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
+               conQos.getSecurityQos().setClientIp (sock.getInetAddress().getHostAddress());
+               
                conQos.setAddressServer(this.driver.getAddressServer());
                setLoginName(conQos.getSessionName().getRelativeName());
                Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());

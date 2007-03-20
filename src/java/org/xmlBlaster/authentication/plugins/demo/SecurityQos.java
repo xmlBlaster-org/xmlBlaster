@@ -7,7 +7,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 /**
- * Helper class for Java clients. 
+ * Helper class for Java clients.
  * <p />
  * This class only generates a login() or init() qos xml string
  * typically of the form:
@@ -23,9 +23,6 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
  */
 public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 {
-   // helper flags for SAX parsing
-   private transient boolean inSecurityService = false;
-
    private String type = "gui";
    private String version = "1.0";
    private String user = "";
@@ -82,6 +79,14 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       return null;
    }
 
+   public void setClientIp (String ip){
+   }
+
+   public String getClientIp(){
+       return null;
+   }
+
+
    /**
     * Start element, event from SAX parser.
     * <p />
@@ -91,7 +96,6 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public void startElement(String uri, String localName, String name, Attributes attrs)
    {
       if (name.equalsIgnoreCase("securityService")) {
-         inSecurityService = true;
          if (attrs != null) {
             int len = attrs.getLength();
             int ii=0;
@@ -141,7 +145,6 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       }
 
       if (name.equalsIgnoreCase("securityService")) {
-         inSecurityService = false;
          character.setLength(0);
 
          return;

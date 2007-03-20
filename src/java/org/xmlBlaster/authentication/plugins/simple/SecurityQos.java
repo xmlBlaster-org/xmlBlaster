@@ -75,6 +75,14 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    {
       return user;
    }
+   
+   public void setClientIp (String ip){
+       
+   }
+   public String getClientIp(){
+       return null;
+   }
+
 
    /**
     * @param cred The password

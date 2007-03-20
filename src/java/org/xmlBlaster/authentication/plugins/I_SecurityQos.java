@@ -22,7 +22,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 public interface I_SecurityQos {
 
    /**
-    * Parse the given xml string which contains the userId and credentials. 
+    * Parse the given xml string which contains the userId and credentials.
     * Should be able to parse with or without surrounding &lt;security> tag
     */
    public void parse(String xml) throws XmlBlasterException;
@@ -39,13 +39,24 @@ public interface I_SecurityQos {
     */
    public String getUserId();
 
+   public void setClientIp (String ip);
+
+   /**
+    * Access the remote IP of the socket - the clients IP.
+    * <p />
+    * Currently only passed by the SOCKET protocol plugin, other plugins return null
+    * @return null if not known or something like "192.168.1.2"
+    *
+    */
+   public String getClientIp();
+
    /**
     * Set the credential (password etc.).
     * <p/>
     * @param String credential
     */
    public void setCredential(String cred);
-   
+
    /**
     * Access the credential (e.g. password)
     */
