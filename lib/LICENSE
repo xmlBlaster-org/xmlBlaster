@@ -239,7 +239,7 @@ only the SNMP subagent module jax.jar is GPL only!
    http://hsqldb.sourceforge.net/
    Used for persistence as the default (embedded) java database. You find the license 
    terms in hsqldb_lic.txt and hypersonic_lic.txt.
-   hsqldb_1_7_2_ALPHA_Q from 2003-09-23
+   HSQLDB 1.8.0.7 from September 2006
 
 29) batik SVG viewer
 ====================
