@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="**/MainSvc.java|**/corba/**|**/j2me/**|j2ee/**" kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/activation.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/backport-util-concurrent.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-codec.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-lang-2.0.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-logging.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/concurrent.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/connector.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/gnu-regexp.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/hsqldb.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/java_cup.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/javax.jms.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jax.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jaxen.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxremote.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxri.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jzlib.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mail.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/miniJacorb.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mx4j-impl.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/mx4j-tools.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/naming-common.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/naming-java.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/remotecons.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/servlet.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/tinySQL.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlrpc.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlunit.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xtdash.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/ant.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/ant/ant-contrib.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/batik.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/js.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxtools.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/jacorb.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
