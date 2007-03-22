@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="c++/|c/|dotnet/|http/|j2me/|javaclients/chat/|javaclients/contrib/|javaclients/corba/|javaclients/email/|javaclients/graphical/|javaclients/j2ee/|javaclients/jms/|javaclients/jsp/|javaclients/rmi/|javaclients/svg/|javaclients/xmlrpc/|perl/|php/|python/|queryXML/" kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/xmlBlaster"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
