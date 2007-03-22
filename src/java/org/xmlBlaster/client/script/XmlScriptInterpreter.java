@@ -8,7 +8,6 @@ package org.xmlBlaster.client.script;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.apache.log.util.LoggerListener;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
@@ -377,7 +376,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
       if (WAIT_TAG.equals(qName)) {
          String message = atts.getValue("message");
          if (message != null) {
-        	message = replaceVariables(message);
+                message = replaceVariables(message);
             System.out.println(message);
          }
          this.waitNumUpdates = 0;
@@ -408,7 +407,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
               }
               else {
                  try {
-               	  waitMutex.wait(delay);
+                  waitMutex.wait(delay);
                  }
                  catch (InterruptedException e) {
                  }
@@ -427,7 +426,7 @@ public abstract class XmlScriptInterpreter extends SaxHandlerBase {
          if (message == null) {
             message = "";
          }
-      	 message = replaceVariables(message);
+         message = replaceVariables(message);
          System.out.println(message);
          return;
       }
@@ -901,18 +900,18 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
     * @return
     * @throws XmlBlasterException
     */
-	public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+        public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       synchronized (this.waitMutex) {
          if (updateQos.isOk())
             this.updateCounter++;
          if (this.waitNumUpdates > 0 && this.updateCounter >= this.waitNumUpdates) {
-      		if (this.updateCounter == this.waitNumUpdates) log.info("Fire notify, " + this.updateCounter + " updates arrived");
-          	waitMutex.notify();
+                if (this.updateCounter == this.waitNumUpdates) log.info("Fire notify, " + this.updateCounter + " updates arrived");
+                waitMutex.notify();
          }
       }
       if (log.isLoggable(Level.FINE)) log.fine("Received #" + this.updateCounter);
-		return null;
-	}
+                return null;
+        }
    
    public static void main(String[] args) {
       try {
