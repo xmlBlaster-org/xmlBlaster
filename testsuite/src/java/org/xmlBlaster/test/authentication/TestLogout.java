@@ -6,19 +6,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.test.authentication;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
+
+import junit.framework.TestCase;
+
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.util.MsgUnit;
-
-import junit.framework.*;
 
 
 /**
@@ -50,7 +47,7 @@ public class TestLogout extends TestCase implements I_Callback
    }
 
    /**
-    * Connect to xmlBlaster. 
+    * Connect to xmlBlaster.
     */
    protected void setUp() {
       try {
