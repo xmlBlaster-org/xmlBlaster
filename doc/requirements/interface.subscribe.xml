@@ -65,7 +65,7 @@
    &lt;!-- Don't send me the content data on updates (notify only) (default: true) -->
    &lt;content>false&lt;/content>
    
-   &lt;!-- Ignore a second subscribe on same oid or XPATH (default: true) -->
+   &lt;!-- false: Ignore a second subscribe on same oid or XPATH (default: true) -->
    &lt;multiSubscribe>false&lt;/multiSubscribe>
 
    &lt;!-- Inhibit the delivery of messages to myself if i have published it (default: true) -->
