@@ -108,9 +108,11 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private JmxMBeanHandle mbeanHandle;
    /** To prevent noisy warnings */
    private boolean transientWarn;
-   
+   /** Can be optionally used by authorization frameworks */
+   private Object authorizationCache;
+
    private XmlBlasterException transportConnectFail;
-   
+
    /** Holding properties send by our remote client via the topic __sys__sessionProperties */
    private ClientPropertiesInfo remoteProperties;
 
@@ -128,7 +130,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private long startupTime;
 
    private ReentrantLock lock = new ReentrantLock();
-   
+
    /** this is used for administrative gets (queries on callback queue) */
    private volatile QueueQueryPlugin queueQueryPlugin;
 
@@ -163,7 +165,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       else {
          this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getInstanceId());
       }
-      this.contextNode = new ContextNode(ContextNode.SESSION_MARKER_TAG, ""+this.sessionName.getPublicSessionId(), 
+      this.contextNode = new ContextNode(ContextNode.SESSION_MARKER_TAG, ""+this.sessionName.getPublicSessionId(),
                                        subjectInfo.getContextNode());
       this.ME = this.instanceId + "-" + this.sessionName.getRelativeName();
 
@@ -215,7 +217,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * The unique name of this session instance. 
+    * The unique name of this session instance.
     * @return Never null, for example "/xmlBlaster/node/heron/client/joe/session/-2"
     */
    public final ContextNode getContextNode() {
@@ -232,7 +234,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * The address information got from the protocol plugin. 
+    * The address information got from the protocol plugin.
     * @return Can be null
     */
    public AddressServer getAddressServer() {
@@ -249,14 +251,14 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    */
 
    /**
-    * The protector prevents direct access to this sessionInfo instance. 
+    * The protector prevents direct access to this sessionInfo instance.
     */
    public final SessionInfoProtector getSessionInfoProtector() {
       return this.sessionInfoProtector;
    }
 
    /**
-    * This is a unique instance id per JVM (it is the pubSessionId if the client hasn't specified its own). 
+    * This is a unique instance id per JVM (it is the pubSessionId if the client hasn't specified its own).
     * <p>
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
@@ -267,7 +269,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * Access the synchronization object of this SessionInfo instance. 
+    * Access the synchronization object of this SessionInfo instance.
     */
    public ReentrantLock getLock() {
       return this.lock;
@@ -285,7 +287,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * This is the publicSessionId which is unique in the subject scope. 
+    * This is the publicSessionId which is unique in the subject scope.
     * <p />
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
@@ -320,7 +322,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          }
       }
    }
-   
+
    public void shutdown() {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": shutdown() of session");
       this.glob.unregisterMBean(this.mbeanHandle);
@@ -328,20 +330,20 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       try {
          this.isShutdown = true;
          removeExpiryTimer();
-         
+
          I_Queue sessionQueue = this.sessionQueue;
          if (sessionQueue != null) {
             sessionQueue.shutdown();
             //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
          }
-         
+
          if (this.msgErrorHandler != null)
             this.msgErrorHandler.shutdown();
-         
+
          DispatchManager dispatchManager = this.dispatchManager;
          if (dispatchManager != null)
             dispatchManager.shutdown();
-         
+
          this.subjectInfo = null;
          // this.securityCtx = null; We need it in finalize() getSecretSessionId()
          // this.connectQos = null;
@@ -579,8 +581,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * We register for queue size changes and notify the subject queue if 
-    * we are willing to accept messages again. 
+    * We register for queue size changes and notify the subject queue if
+    * we are willing to accept messages again.
     * Enforced by I_QueueSizeListener
     */
    public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
@@ -627,7 +629,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<SessionInfo id='").append(getId());
-      
+
       Timeout expiryTimer = this.expiryTimer;
       long timeToLife = (expiryTimer != null) ? expiryTimer.spanToTimeout(timerKey) : 0;
       sb.append("' timeout='").append(timeToLife).append("'>");
@@ -636,7 +638,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       if (props == null) props = new Properties();
       props.put(Constants.TOXML_NOSECURITY, ""+true);
       sb.append(this.connectQos.toXml(extraOffset+Constants.INDENT, props));
-      
+
       DispatchManager dispatchManager = this.dispatchManager;
       if (dispatchManager != null) {
          sb.append(dispatchManager.toXml(extraOffset+Constants.INDENT));
@@ -644,7 +646,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       else {
          sb.append(offset).append(Constants.INDENT).append("<DispatchManager id='NULL'/>");
       }
-      
+
       I_Queue sessionQueue = this.sessionQueue;
       if (sessionQueue != null) {
          sb.append(sessionQueue.toXml(extraOffset+Constants.INDENT));
@@ -674,7 +676,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       else {
          return "UNDEF";
       }
-      
+
    }
 
    public final String getLoginDate() {
@@ -760,7 +762,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       if (this.sessionQueue == null) return 0L;
       return this.sessionQueue.getMaxNumOfEntries();
    }
-   
+
    public long getPingRoundTripDelay() {
       return getDispatchStatistic().getPingRoundTripDelay();
    }
@@ -804,7 +806,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       if (ret.length() == 0) {
          ret = "Unsubscribe of '" + url + "' for client '" + getId() + "' did NOT match any subscription";
       }
-      
+
       return ret;
    }
 
@@ -881,12 +883,12 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     * @return the uniqueId used to identify this session as an  entry
     * in the queue where it is stored  (for persistent subscriptions).
     * If the session is not persistent it returns -1L.
-    * 
+    *
     */
    public final long getPersistenceUniqueId() {
       return this.connectQos.getPersistenceUniqueId();
    }
-   
+
    /**
     * Sets the uniqueId used to retrieve this session from the persistence
     * @param persistenceId
@@ -898,7 +900,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    /**
     * Sets the DispachManager belonging to this session to active or inactive.
     * It is initially active. Setting it to false temporarly inhibits dispatch of
-    * messages which are in the callback queue. Setting it to true starts the 
+    * messages which are in the callback queue. Setting it to true starts the
     * dispatch again.
     * @param dispatchActive
     */
@@ -907,7 +909,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          this.dispatchManager.setDispatcherActive(dispatcherActive);
       }
    }
-   
+
    public boolean getDispatcherActive() {
       if (this.dispatchManager != null) {
          return this.dispatchManager.isDispatcherActive();
@@ -917,10 +919,10 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
 
    public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException {
       return this.glob.peekMessages(this.sessionQueue, numOfEntries, "callback");
-   } 
+   }
 
    /**
-    * Peek messages from callback queue and dump them to a file, they are not removed. 
+    * Peek messages from callback queue and dump them to a file, they are not removed.
     * @param numOfEntries The number of messages to peek, taken from the front
     * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The file names of the dumped messages
@@ -949,12 +951,12 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          synchronized (this) {
             if (this.queueQueryPlugin == null) {
                this.queueQueryPlugin = new QueueQueryPlugin(this.glob);
-            } 
+            }
          }
       }
       return this.queueQueryPlugin.query(this.sessionQueue, query);
    }
-   
+
    /** JMX Enforced by ConnectQosDataMBean interface. */
    public final void setSessionTimeout(long timeout) {
       getConnectQos().setSessionTimeout(timeout);
@@ -965,7 +967,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
    }
 
-   
+
    /** JMX */
    public java.lang.String usage() {
       return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
@@ -983,7 +985,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public ClientPropertiesInfo getRemoteProperties() {
       return this.remoteProperties;
    }
-   
+
    /**
     * @return never null
     */
@@ -994,7 +996,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * Set porperties send by our client. 
+    * Set porperties send by our client.
     * @param remoteProperties The remoteProperties to set, pass null to reset.
     * The key is of type String and the value of type ClientProperty
     */
@@ -1006,8 +1008,8 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * Update porperties send by our client. 
-    * @param remoteProperties The remoteProperties to set, 
+    * Update porperties send by our client.
+    * @param remoteProperties The remoteProperties to set,
     * if a property exists its value is overwritten, passing null does nothing
     * The key is of type String and the value of type ClientProperty
     */
@@ -1026,7 +1028,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * Add a remote property. 
+    * Add a remote property.
     * Usually this is done by a publish of a client, but for
     * testing reasons we can to it here manually.
     * If the key exists, its value is overwritten
@@ -1038,11 +1040,11 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public synchronized ClientProperty addRemoteProperty(String key, String value) {
       if (this.remoteProperties == null)
          this.remoteProperties = new ClientPropertiesInfo(null);
-      ClientProperty old = (ClientProperty)this.remoteProperties.getClientPropertyMap().get(key); 
+      ClientProperty old = (ClientProperty)this.remoteProperties.getClientPropertyMap().get(key);
       this.remoteProperties.put(key, value);
       return old;
    }
-   
+
    public boolean isStalled() {
       return getDispatchStatistic().isStalled();
    }
@@ -1061,5 +1063,16 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
     */
    public void setTransportConnectFail(XmlBlasterException transportConnectFail) {
       this.transportConnectFail = transportConnectFail;
+   }
+
+   /**
+    * Can be optionally used by the current authorization plugin. 
+    */
+   public Object getAuthorizationCache() {
+      return authorizationCache;
+   }
+
+   public void setAuthorizationCache(Object authorizationCache) {
+      this.authorizationCache = authorizationCache;
    }
 }
