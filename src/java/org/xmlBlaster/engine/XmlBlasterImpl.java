@@ -81,7 +81,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       try {
          // authentication security check
          SessionInfo sessionInfo = authenticate.check(sessionId);
-         
+
          // import and authorize message
          MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                        new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
@@ -94,7 +94,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
 
          sessionInfo.getDispatchStatistic().incrNumSubscribe(1);
-         
+
          // export (encrypt) return value
          MsgUnitRaw in = new MsgUnitRaw(null, (byte[])null, ret);
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.SUBSCRIBE, in);
@@ -124,7 +124,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                        new MsgUnitRaw(xmlKey_literal, EMPTY_BYTEARR, qos_literal),
                                        MethodName.UNSUBSCRIBE);
-         
+
          UnSubscribeQosServer unSubscribeQosServer = new UnSubscribeQosServer(glob, (QueryQosData)msgUnit.getQosData());
 
          // Invoke xmlBlaster
@@ -161,7 +161,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
 
          MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitRaw, MethodName.PUBLISH);
-         
+
          String ret = requestBroker.publish(sessionInfo, msgUnit);
 
          sessionInfo.getDispatchStatistic().incrNumPublish(1);
@@ -210,7 +210,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    }
 
    /**
-    * Publish messages. 
+    * Publish messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
@@ -220,7 +220,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          publishArr(addressServer, sessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         log.severe("Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.getMessage());
+	    	MsgUnitRaw msgUnit = (msgUnitArr.length > 0) ? msgUnitArr[0] : null;
+	    	String context = "";
+	    	if (msgUnit != null) context = "key=" + msgUnit.getKey() + " qos=" + msgUnit.getQos();
+	      log.warning("Caught exception on publishOneway which can't be delivered back to client because of 'oneway' mode '" + context + "', message is lost: " + e.getMessage());
       }
    }
 
@@ -325,7 +328,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    }
 
    /**
-    * Check message via security plugin. 
+    * Check message via security plugin.
     * <p/>
     * <ul>
     *   <li>First we import the message using the interceptor</li>
@@ -340,7 +343,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     *                                or the message format has errors.<br />
     *            Throws "NotAuthorized" if client may not do the action with this message
     */
-   private MsgUnit importAndAuthorize(SessionInfo sessionInfo, AddressServer addressServer, 
+   private MsgUnit importAndAuthorize(SessionInfo sessionInfo, AddressServer addressServer,
                        MsgUnitRaw msgUnitRaw, MethodName action) throws XmlBlasterException {
       I_Session sessionSecCtx = sessionInfo.getSecuritySession();
       if (sessionSecCtx==null) { // assert
@@ -358,7 +361,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       // Currently we have misused used the clientProperty to transport this information
       if (qosData.getClientProperty(Constants.PERSISTENCE_ID) != null)
          qosData.isFromPersistenceRecovery(true);
-      
+
       // Check if server is ready (throws XmlBlasterException otherwise)
       this.availabilityChecker.checkServerIsReady(sessionInfo.getSessionName(), addressServer, msgUnit, action);
 
@@ -385,7 +388,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       /*
       msgUnitRaw = new MsgUnitRaw(
-               (msgUnit.getKey().size() > 0) ? sessionSecCtx.importMessage(msgUnit.getKey()) : msgUnit.getKey(), 
+               (msgUnit.getKey().size() > 0) ? sessionSecCtx.importMessage(msgUnit.getKey()) : msgUnit.getKey(),
                (msgUnit.getContent().length > 0) ? sessionSecCtx.importMessage(msgUnit.getContent()) : msgUnit.getContent(),
                (msgUnit.getQos().size() > 0) ? sessionSecCtx.importMessage(msgUnit.getQos()) : msgUnit.getQos());
       */
@@ -400,12 +403,12 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
                        "Subject '" + subjSecCtx.getName() + "' is not permitted to perform action '" + action +
                        "' on key '" + key + "'");
       }
-      
+
       return msgUnit;
    }
 
    /**
-    * ping xmlBlaster if everything is OK and if xmlBlaster is willing to accept requests. 
+    * ping xmlBlaster if everything is OK and if xmlBlaster is willing to accept requests.
     * @return "<qos><state id='OK'/></qos>" if we are ready, otherwise the current run level string
     * @see org.xmlBlaster.engine.AvailabilityChecker#getStatus(String)
     */
