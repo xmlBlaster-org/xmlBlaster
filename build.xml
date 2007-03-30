@@ -3378,7 +3378,7 @@ Version:
 
    sqlite 2.8.17
 
-   pthreads 2.7.0 (for ARM 2.8 with WINCE patch)
+   pthreads 2.8.0 (for ARM 2.8 with WINCE patch)
 
    zlib 1.2.3
    
@@ -3395,6 +3395,12 @@ See:
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
 
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.windowsCE.html
+
+
+
+Microsoft Visual C++ 2005 Redistributable Package (x86), needed to run VS8 applications:
+
+   http://www.microsoft.com/downloads/details.aspx?displaylang=en&amp;FamilyID=32bc1bee-a3f9-4c13-9c99-220b62a191ee
 
 
 ---
