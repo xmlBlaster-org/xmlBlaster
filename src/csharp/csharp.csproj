@@ -33,6 +33,11 @@
     <Compile Include="NativeC.cs" />
     <Compile Include="PInvokeCE.cs" />
     <Compile Include="Qos.cs" />
+    <Compile Include="service\PropTO.cs" />
+    <Compile Include="service\ServiceListTO.cs" />
+    <Compile Include="service\ServiceTO.cs" />
+    <Compile Include="util\FileLocator.cs" />
+    <Compile Include="util\Serialization.cs" />
     <Compile Include="XmlBlasterAccess.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
