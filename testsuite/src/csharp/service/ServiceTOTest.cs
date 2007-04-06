@@ -1,0 +1,153 @@
+/*----------------------------------------------------------------------------
+Name:      ServiceTOTest.cs
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Test cases for service XML markup
+Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
+Date:      04/2007
+See:       http://www.xmlblaster.org/
+-----------------------------------------------------------------------------*/
+using System;
+using System.Collections.Generic;
+using System.Text;
+using NUnit.Framework;
+using System.Reflection;
+using System.Collections;
+
+namespace org.xmlBlaster.contrib.service {
+   [TestFixture]
+   public class ServiceTOTest {
+
+      public ServiceTOTest() {
+      }
+
+      [SetUp]
+      public void Init() {
+      }
+
+      [TearDown]
+      public void Dispose() { /* ... */ }
+
+      /*
+       * using (XmlReader reader = XmlReader.Create("2books.xml")) {
+
+  // Move the reader to the second book node.
+  reader.MoveToContent(); 
+  reader.ReadToDescendant("book");
+  reader.Skip(); //Skip the first book.
+
+  // Parse the file starting with the second book node.
+  do {
+     switch (reader.NodeType) {
+        case XmlNodeType.Element:
+           Console.Write("<{0}", reader.Name);
+           while (reader.MoveToNextAttribute()) {
+               Console.Write(" {0}='{1}'", reader.Name, reader.Value);
+           }
+           Console.Write(">");
+           break;
+        case XmlNodeType.Text:
+           Console.Write(reader.Value);
+           break;
+        case XmlNodeType.EndElement:
+           Console.Write("</{0}>", reader.Name);
+           break;
+     }       
+  }  while (reader.Read());    
+
+}
+
+*/
+
+      [Test]
+      public void CheckToXml() {
+         ServiceListTO serviceList = new ServiceListTO();
+         ServiceTO service = new ServiceTO();
+         serviceList.addService(service);
+         service.addProp(new PropTO(PropTO.KEY_SERVICENAME, "buddy"));
+         string xml = serviceList.ToXml();
+         Console.WriteLine("CheckToXml: " + xml);
+
+         ServiceListTO serviceList2 = ServiceListTO.parse(xml);
+         Console.WriteLine("CheckToXml");
+      }
+
+      [Test]
+      public void CheckXmlParsing() {
+         {
+            string xml = "<?xml version='1.0' encoding='utf-8'?>\r\n<service>"
+               + "<prop key='serviceName'>track</prop>"
+               + "<prop key='queryType'>named</prop>"
+               + "<prop key='query'>myStandardTrackIdQuery('Summer')</prop>"
+               + "<prop key='resultMime'>application/service-buddy</prop>"
+               + "</service>";
+            ServiceTO service = ServiceTO.parse(xml);
+            Assert.IsNotNull(service);
+            Assert.AreEqual(4, service.getProps().Count);
+            Assert.AreEqual("track", service.getPropValue(PropTO.KEY_SERVICENAME));
+            Assert.AreEqual("named", service.getPropValue(PropTO.KEY_QUERYTYPE));
+            Assert.AreEqual("myStandardTrackIdQuery('Summer')", service.getPropValue(PropTO.KEY_QUERY));
+            Assert.AreEqual("application/service-buddy", service.getPropValue(PropTO.KEY_RESULTMIME));
+         }
+
+         {
+            string xml = "<?xml version='1.0' encoding='utf-8'?>\r\n"
+               + "<services><service>"
+               + "<prop key='serviceName'>track</prop>"
+               + "<prop key='queryType'>named</prop>"
+               + "<prop key='query'>myStandardTrackIdQuery('Summer')</prop>"
+               + "<prop key='resultMime'>application/watchee-service-buddy-</prop>"
+               + "</service></services>";
+            ServiceListTO serviceList = ServiceListTO.parse(xml);
+            Assert.IsNotNull(serviceList);
+            Assert.AreEqual(1, 1);
+         }
+         Console.WriteLine("CheckXmlParsing");
+      }
+
+      [Test]
+      public void CheckXmlSubtagsParsing() {
+         {
+            string xml = "<service>"
+               + "<prop key='serviceName'>track</prop>"
+               + "<prop key='result'><A><B>Hallo</B><C /></A></prop>"
+               + "</service>";
+            ServiceTO service = ServiceTO.parse(xml);
+            Assert.IsNotNull(service);
+            Assert.AreEqual(2, service.getProps().Count);
+            Assert.AreEqual("<A><B>Hallo</B><C /></A>", service.getPropValue(PropTO.KEY_RESULT));
+         }
+
+         {
+            string xml = "<service>"
+               + "<prop key='serviceName'>track</prop>"
+               + "<prop key='result'><![CDATA[<A><B>Hallo</B><C /></A>]]></prop>"
+               + "</service>";
+            ServiceTO service = ServiceTO.parse(xml);
+            Assert.IsNotNull(service);
+            Assert.AreEqual(2, service.getProps().Count);
+            Assert.AreEqual("<A><B>Hallo</B><C /></A>", service.getPropValue(PropTO.KEY_RESULT));
+         }
+
+         Console.WriteLine("CheckXmlSubtagsParsing");
+      }
+      
+      [Test]
+      public void CheckXmlBase64Parsing() {
+         {
+            string xml = "<service>"
+               + "<prop key='serviceName'>track</prop>"
+               + "<prop key='resultEncoding'>base64</prop>"
+               + "<prop key='result'>QmxhPEJsYUJsYQ==</prop>"
+               + "</service>";
+            ServiceTO service = ServiceTO.parse(xml);
+            Assert.IsNotNull(service);
+            Assert.AreEqual(3, service.getProps().Count);
+            string tmp = service.getPropValue(PropTO.KEY_RESULT);
+            Assert.AreEqual("Bla<BlaBla", service.getPropValue(PropTO.KEY_RESULT));
+         }
+
+         Console.WriteLine("CheckXmlBase64Parsing");
+      }
+   }
+}

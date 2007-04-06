@@ -46,6 +46,18 @@
     <Compile Include="..\..\..\src\csharp\Qos.cs">
       <Link>Qos.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\src\csharp\service\PropTO.cs">
+      <Link>service\PropTO.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\src\csharp\service\ServiceListTO.cs">
+      <Link>service\ServiceListTO.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\src\csharp\service\ServiceTO.cs">
+      <Link>service\ServiceTO.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\src\csharp\util\Serialization.cs">
+      <Link>util\Serialization.cs</Link>
+    </Compile>
     <Compile Include="..\..\..\src\csharp\XmlBlasterAccess.cs">
       <Link>XmlBlasterAccess.cs</Link>
     </Compile>
@@ -53,7 +65,11 @@
     <Compile Include="KeyTest.cs" />
     <Compile Include="NmeaTest.cs" />
     <Compile Include="QosTest.cs" />
+    <Compile Include="service\ServiceTOTest.cs" />
     <Compile Include="XmlBlasterAccessTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

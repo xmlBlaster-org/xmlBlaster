@@ -12,13 +12,24 @@ csc /unsafe /r:nunit.framework /t:library -debug+ -out:xmlBlasterClient.dll *.cs
 */
 using System;
 using org.xmlBlaster.client;
+using org.xmlBlaster.contrib.service;
+
 public class Start
 {
    static void Main(string[] argv)
    {
       Console.WriteLine("Startup");
-      testNmea();
+      //testNmea();
       //testXmlBlaster();
+      testXml();
+   }
+
+   private static void testXml() {
+      ServiceTOTest t = new ServiceTOTest();
+      //t.CheckToXml();
+      //t.CheckXmlParsing();
+      //t.CheckXmlSubtagsParsing();
+      t.CheckXmlBase64Parsing();
    }
 
    private static void testNmea()
