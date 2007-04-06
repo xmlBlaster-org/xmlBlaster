@@ -136,8 +136,8 @@ namespace org.xmlBlaster.contrib.service {
          List<PropTO> list = new List<PropTO>();
          bool found = reader.ReadToDescendant(PROP);
          if (found) {
-            bool queryIsBase64 = false;
-            bool resultIsBase64 = false;
+            string queryEncoding = null;
+            string resultEncoding = null;
             do {
                PropTO prop = new PropTO();
                reader.MoveToAttribute(KEY);
@@ -148,19 +148,39 @@ namespace org.xmlBlaster.contrib.service {
                 * The element can only contain simple content. That is, it cannot have child elements.
                 */
 
-               if (resultIsBase64 && PropTO.KEY_RESULT.Equals(prop.GetKey()) ||
-                  queryIsBase64 && PropTO.KEY_QUERY.Equals(prop.GetKey())) {
-                  prop.SetEncoding(VALUE_RESULTENCODING_BASE64);
+               if (resultEncoding != null && PropTO.KEY_RESULT.Equals(prop.GetKey())) {
+                  prop.SetEncoding(resultEncoding);
+               }
+               if (queryEncoding != null && PropTO.KEY_QUERY.Equals(prop.GetKey())) {
+                  prop.SetEncoding(queryEncoding);
                }
 
-               prop.SetValue(reader.ReadElementContentAsString());
+               if (resultEncoding == null && PropTO.KEY_RESULT.Equals(prop.GetKey()) ||
+                  queryEncoding == null && PropTO.KEY_QUERY.Equals(prop.GetKey())) {
+                  // Expect subtags like "<A><B>Hello</B></A>"
+                  string tmp = reader.ReadInnerXml();
+                  tmp = tmp.Trim();
+                  if (tmp.StartsWith("<![CDATA[")) { // strip CDATA token
+                     tmp = tmp.Substring("<![CDATA[".Length);
+                     if (tmp.EndsWith("]]>")) {
+                        tmp = tmp.Substring(0, tmp.Length - "]]>".Length);
+                     }
+                  }
+                  //XmlReader nestedReader = reader.ReadSubtree();
+                  //tmp = reader.ReadString(); is empty if contains tags
+                  //tmp = reader.Value; is empty if contains tags
+                  prop.SetValue(tmp);
+               }
+               else {
+                  prop.SetValue(reader.ReadElementContentAsString());
+               }
 
                // Check if base64 encoded (this tag is a previous sibling before the content prop)
                if (PropTO.KEY_ENCODING.Equals(prop.GetKey())) {
-                  queryIsBase64 = prop.getBoolValue();
+                  queryEncoding = prop.GetRawValue();
                }
                if (PropTO.KEY_RESULTENCODING.Equals(prop.GetKey())) {
-                  resultIsBase64 = prop.getBoolValue();
+                  resultEncoding = prop.GetRawValue();
                }
 
                list.Add(prop);
