@@ -37,30 +37,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\src\csharp\Key.cs">
-      <Link>Key.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\src\csharp\PInvokeCE.cs">
-      <Link>PInvokeCE.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\src\csharp\Qos.cs">
-      <Link>Qos.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\src\csharp\service\PropTO.cs">
-      <Link>service\PropTO.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\src\csharp\service\ServiceListTO.cs">
-      <Link>service\ServiceListTO.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\src\csharp\service\ServiceTO.cs">
-      <Link>service\ServiceTO.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\src\csharp\util\Serialization.cs">
-      <Link>util\Serialization.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\src\csharp\XmlBlasterAccess.cs">
-      <Link>XmlBlasterAccess.cs</Link>
-    </Compile>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="KeyTest.cs" />
     <Compile Include="NmeaTest.cs" />
@@ -69,10 +45,14 @@
     <Compile Include="XmlBlasterAccessTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
+    <ProjectReference Include="..\..\..\Projects\Csharp\VC8\xmlBlasterCsharp\xmlBlasterCsharp.csproj">
+      <Project>{A663CACD-F797-49FE-B136-DEDE17BC5667}</Project>
+      <Name>xmlBlasterCsharp</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="util\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

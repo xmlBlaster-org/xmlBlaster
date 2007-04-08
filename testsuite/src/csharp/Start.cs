@@ -19,8 +19,8 @@ public class Start
    static void Main(string[] argv)
    {
       Console.WriteLine("Startup");
-      //testNmea();
-      //testXmlBlaster();
+      testNmea();
+      testXmlBlaster();
       testXml();
    }
 

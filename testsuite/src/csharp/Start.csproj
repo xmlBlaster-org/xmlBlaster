@@ -36,6 +36,10 @@
     <Compile Include="Start.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Projects\Csharp\VC8\xmlBlasterCsharp\xmlBlasterCsharp.csproj">
+      <Project>{A663CACD-F797-49FE-B136-DEDE17BC5667}</Project>
+      <Name>xmlBlasterCsharp</Name>
+    </ProjectReference>
     <ProjectReference Include="xmlBlasterTest.csproj">
       <Project>{6764CE42-F5CE-472C-AF7F-0462683884A2}</Project>
       <Name>xmlBlasterTest</Name>
