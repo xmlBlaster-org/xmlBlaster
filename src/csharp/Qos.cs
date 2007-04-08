@@ -879,12 +879,12 @@ namespace org.xmlBlaster.client
       private readonly StatusQos statusQosData;
       //private readonly bool isFakedReturn;
 
-      internal SubscribeReturnQos(string xmlQos)
+      public SubscribeReturnQos(string xmlQos)
          : this(xmlQos, false)
       {
       }
 
-      internal SubscribeReturnQos(string xmlQos, bool isFakedReturn)
+      public SubscribeReturnQos(string xmlQos, bool isFakedReturn)
       {
          //this.isFakedReturn = isFakedReturn;
          this.statusQosData = new StatusQos(xmlQos);
@@ -918,7 +918,7 @@ namespace org.xmlBlaster.client
 
    public class UnSubscribeReturnQos : SubscribeReturnQos
    {
-      internal UnSubscribeReturnQos(string xmlQos)
+      public UnSubscribeReturnQos(string xmlQos)
          : base(xmlQos)
       {
       }
@@ -928,7 +928,7 @@ namespace org.xmlBlaster.client
    {
       private readonly StatusQos statusQosData;
 
-      internal EraseReturnQos(string xmlQos)
+      public EraseReturnQos(string xmlQos)
       {
          this.statusQosData = new StatusQos(xmlQos);
       }
@@ -958,7 +958,7 @@ namespace org.xmlBlaster.client
    {
       private readonly StatusQos statusQosData;
 
-      internal PublishReturnQos(string xmlQos)
+      public PublishReturnQos(string xmlQos)
       {
          this.statusQosData = new StatusQos(xmlQos);
       }
@@ -997,7 +997,7 @@ namespace org.xmlBlaster.client
 
    public class ConnectReturnQos : Qos
    {
-      internal ConnectReturnQos(string xmlQos)
+      public ConnectReturnQos(string xmlQos)
          : base(xmlQos)
       {
       }
