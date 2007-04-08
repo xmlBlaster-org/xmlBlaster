@@ -70,12 +70,12 @@ namespace org.xmlBlaster.contrib.service {
       }
 
       public static ServiceListTO parse(string xml) {
-         ServiceListTO service = org.xmlBlaster.client.util.Serialization.Deserialize<ServiceListTO>(xml);
+         ServiceListTO service = org.xmlBlaster.util.Serialization.Deserialize<ServiceListTO>(xml);
          return service;
       }
 
       public string ToXml() {
-         string xml = org.xmlBlaster.client.util.Serialization.Serialize<ServiceListTO>(this);
+         string xml = org.xmlBlaster.util.Serialization.Serialize<ServiceListTO>(this);
          return xml;
       }
    }
