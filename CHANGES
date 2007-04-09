@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16109 Added switch 
+            -xmlBlaster/jmx/support false
+          or
+            -xmlBlaster/jmx/createSecurityManager false
+	  to support embedded EJB3 jboss plugin without loosing JMX jconsole support
+
  o #16078 Update to HSQLDB 1.8.0.7 from September 2006
 
  o #16075 The SOCKET connection transports the client side IP address to the security plugins
