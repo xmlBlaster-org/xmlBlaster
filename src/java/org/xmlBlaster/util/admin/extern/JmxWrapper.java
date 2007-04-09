@@ -49,7 +49,7 @@ import java.util.Iterator;
 
 
 /**
- * JmxWrapper wraps the MBeanServer instance. 
+ * JmxWrapper wraps the MBeanServer instance.
  * Current supported adaptors are a HTTPAdaptor, the XmlBlasterAdaptor and the JDK1.5 jconsole adaptor.
  * <table>
  * <tr>
@@ -96,7 +96,7 @@ public class JmxWrapper
    private HtmlAdaptorServer html;
    private int useJmx;
    /**
-    * We hold an own map for mbeans registered to support renaming. 
+    * We hold an own map for mbeans registered to support renaming.
     * The key is the objectName.toString() and the value is the JmxMBeanHandle instance.
     */
    private Map mbeanMap = new HashMap();
@@ -108,9 +108,10 @@ public class JmxWrapper
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
    private static JmxWrapper theJmxWrapper;
+   private boolean createSecurityManager = true;
 
    /**
-    * Singleton to avoid that different Global instances create more than one JmxWrapper. 
+    * Singleton to avoid that different Global instances create more than one JmxWrapper.
     */
    public static JmxWrapper getInstance(Global glob) throws XmlBlasterException {
       if (theJmxWrapper == null) {
@@ -131,6 +132,28 @@ public class JmxWrapper
       this.glob = glob;
 
       this.ME = "JmxWrapper" + this.glob.getLogPrefixDashed();
+
+ 	/*
+ 	If having an embedded jboss EJB3 plugin you have two options:
+
+ 	1. Switch off our JMX support
+      java org.xmlBlaster.Main -xmlBlaster/jmx/support false
+
+ 	2. or initialize jboss directly in main() (you need to edit and recompile xmlBlaster)
+ 	      try { // JMX conflict with embedded jboss workaround
+ 			  ...
+            EJB3StandaloneBootstrap.scanClasspath("myproject/build"); // this creates the conflict
+ 			  ...
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+
+ 	   and then start with:
+        java org.xmlBlaster.Main -xmlBlaster/jmx/rmi true -xmlBlaster/jmx/rmi/user joe -xmlBlaster/jmx/rmi/password xyz
+        jconsole service:jmx:rmi:///jndi/rmi://127.0.0.2:1099/jmxrmi
+ 	*/
+      // Embedded jboss seems to has its own and if this is initialized first our XmlBlasterSecurityManager.createSecurityManager(glob); call fails because of xmlBlaster.policy problems
+      this.createSecurityManager = glob.getProperty().get("xmlBlaster/jmx/createSecurityManager", this.createSecurityManager);
 
 		boolean supportJmx = glob.getProperty().get("xmlBlaster/jmx/support", true);
 		if (!supportJmx) { // Embedded jboss can't handle it if we initialize JMS ourself
@@ -156,19 +179,19 @@ public class JmxWrapper
          try {
             // javap com.sun.management.UnixOperatingSystem
             ObjectName name = new ObjectName("java.lang:type=OperatingSystem");
-            Object obj = this.mbeanServer.getAttribute(name, "TotalPhysicalMemorySize"); 
+            Object obj = this.mbeanServer.getAttribute(name, "TotalPhysicalMemorySize");
             Global.totalPhysicalMemorySize = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
-            obj = this.mbeanServer.getAttribute(name, "CommittedVirtualMemorySize"); 
+            obj = this.mbeanServer.getAttribute(name, "CommittedVirtualMemorySize");
             //long committed = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
-            obj = this.mbeanServer.getAttribute(name, "MaxFileDescriptorCount"); 
+            obj = this.mbeanServer.getAttribute(name, "MaxFileDescriptorCount");
             Global.maxFileDescriptorCount = (obj instanceof Long) ? ((Long)obj).longValue() : 0;
 
-            
+
             name = new ObjectName("java.lang:type=Memory");
-            obj = this.mbeanServer.getAttribute(name, "HeapMemoryUsage"); 
+            obj = this.mbeanServer.getAttribute(name, "HeapMemoryUsage");
             if (obj instanceof javax.management.openmbean.CompositeDataSupport) {
                //java.lang.management.MemoryUsage.getMax()
-               javax.management.openmbean.CompositeDataSupport comp = 
+               javax.management.openmbean.CompositeDataSupport comp =
                  (javax.management.openmbean.CompositeDataSupport)obj;
                Long max = (Long)comp.get("max");
                Global.heapMemoryUsage = max.longValue();
@@ -185,34 +208,33 @@ public class JmxWrapper
    }
 
    /**
-    * Check if JMX is activated. 
+    * Check if JMX is activated.
     * @return true if JMX is in use
     */
    public boolean isActivated() {
       return (this.mbeanServer != null) && (this.useJmx != 0);
    }
-   
+
    /**
-    * Create the unique MBeanServer instance. 
+    * Create the unique MBeanServer instance.
     */
    public MBeanServer getMBeanServer() {
       if (this.mbeanServer == null) {
          synchronized (this) {
             if (this.mbeanServer == null) {
                try {
-                  
                   Class clazz = java.lang.Class.forName("java.lang.management.ManagementFactory");
                   if (clazz != null) {
                      // this.mbeanServer = ManagementFactory.getPlatformMBeanServer(); // new for JDK 1.5
                      java.lang.reflect.Method method = clazz.getMethod("getPlatformMBeanServer", new Class[0]);
-                     this.mbeanServer = (javax.management.MBeanServer)method.invoke(clazz, new Class[0]);
+                     this.mbeanServer = (javax.management.MBeanServer)method.invoke(clazz, (Object[])new Class[0]);
                   }
                }
                catch (Exception e) {
                   log.fine("java.lang.management.ManagementFactory is not available for JMX monitoring: " + e.toString());
                }
                if (this.mbeanServer == null) {
-                  // For JDK < 1.5 fall back to 
+                  // For JDK < 1.5 fall back to
                   //  JMX Remote API 1.0.1_03 Reference Implementation
                   //  JMX 1.2.1 Reference Implementation
                   //  Download from http://java.sun.com/products/JavaManagement/download.html
@@ -226,10 +248,10 @@ public class JmxWrapper
    }
 
    /**
-    * JMX property values may not contain a comma ','. 
+    * JMX property values may not contain a comma ','.
     * Here we replace commas with an underscore.
     * Even if we use quoted ObjectName values the comma is not allowed.
-    * <br /> 
+    * <br />
     * Additionally we replace '/' as these would break the admin telnet commands
     * syntax, it is nice to be able to use those interchangeable
     * @param value The value to verify
@@ -256,10 +278,10 @@ public class JmxWrapper
    }
 
    /**
-    * Initialize the MBean server and adaptors. 
+    * Initialize the MBean server and adaptors.
     */
    public synchronized void init() throws XmlBlasterException {
-      
+
       if (this.mbeanServer == null) return;
 
       boolean supportsJconsole = true;
@@ -279,7 +301,7 @@ public class JmxWrapper
       String pwd = System.getProperty("com.sun.management.jmxremote.password.file");
       //boolean isAuthenticated = !((ssl==null||"false".equals(ssl)) && (aut==null||"false".equals(aut)));
       boolean isAuthenticated = !(ssl==null||"false".equals(ssl)) || pwd!=null;
-      
+
       if (System.getProperty("com.sun.management.jmxremote.port") != null) {
          // For localhost or remote access with specific port
          // You have to configure authentication!
@@ -444,13 +466,13 @@ public class JmxWrapper
             else {
                this.html = new HtmlAdaptorServer(port);
             }
-            
+
             ObjectName html_name = new ObjectName("Adaptor:name=html,port="+port);
 
             ObjectInstance objectInstance = this.mbeanServer.registerMBean(this.html, html_name);
             JmxMBeanHandle handle = new JmxMBeanHandle(objectInstance, null, this.html);
             this.mbeanMap.put(html_name.toString(), handle);
-            
+
             if (loginName == null) {
                log.info("Registered JMX HTML adaptor on http://"+hostname+":"+port +
                         ". No authentication is configured with 'xmlBlaster/jmx/HtmlAdaptor/loginName=...'");
@@ -500,13 +522,14 @@ public class JmxWrapper
    }
 
    /**
-    * Start xmlBlaster security manager and RMI registry. 
+    * Start xmlBlaster security manager and RMI registry.
     * @param registryPort xmlBlaster/jmx/rmiregistry/port=1099
     * @param registryHost xmlBlaster/jmx/rmiregistry/hostname=loclhost
     */
    private synchronized void startRmiRegistry(String registryHost, int registryPort) throws XmlBlasterException {
 
-      XmlBlasterSecurityManager.createSecurityManager(glob);
+      if (this.createSecurityManager)
+	      XmlBlasterSecurityManager.createSecurityManager(glob);
 
       try {
          if (registryPort > 0) {
@@ -535,7 +558,7 @@ public class JmxWrapper
    }
 
    /**
-    * Reorganize the registration for a new parent node. 
+    * Reorganize the registration for a new parent node.
     * Newer variant
     * @param oldName The existing registry, is used to lookup all matching sub-entries.
     *        For example "org.xmlBlaster:nodeClass=node,node=clientSUB1"
@@ -572,15 +595,15 @@ public class JmxWrapper
             }
             // /node/heron/connection/joe/session/2
             ContextNode newRoot = ContextNode.valueOf(newRootName);
-            
+
             // /node/clientjoe1/service/Pop3Driver
             ContextNode current = ContextNode.valueOf(tmp.toString());
             if (current == null) continue;
-            
+
             // /node/clientjoe1
             ContextNode parent = current.getParent(oldRootClassname);
             if (parent == null) continue;
-            
+
             // service/Pop3Driver
             ContextNode[] childs = parent.getChildren();
             if (childs.length != 1) continue;
@@ -611,7 +634,7 @@ public class JmxWrapper
    }
 
    /**
-    * Reorganize the registration for a new parent node. 
+    * Reorganize the registration for a new parent node.
     * Can we set this to deprecated?
     * @param oldName The existing registry, is used to lookup all matching sub-entries.
     *        For example "org.xmlBlaster:nodeClass=node,node=clientSUB1"
@@ -662,7 +685,7 @@ public class JmxWrapper
          return count;
       }
    }
-   
+
    /**
     * Registers the specified mbean into the mbean server.
     * A typical registration string is
@@ -672,7 +695,7 @@ public class JmxWrapper
     * We have chosen this as it creates a nice hierarchy in the jconsole GUI tool.
     * @param contextNode The unique name for JMX observation
     *        Note: Instance names may not contain commas "," for example "joe,Smith" is not valid
-    * @param mbean the MBean object instance 
+    * @param mbean the MBean object instance
     *        If mbean implements MBeanRegistration:preRegister() we don't need the type, name
     * @return The JmxMBeanHandle with object name used to register or null on error
     *         Note: You may not take a clone of it as we may change attributes of this instance
@@ -681,14 +704,14 @@ public class JmxWrapper
    public synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean) {
            return registerMBean(contextNode, mbean, null);
    }
-   
+
    public static String getObjectNameLiteral(Global global, ContextNode contextNode) {
-      String hierarchy = (contextNode == null) ? 
+      String hierarchy = (contextNode == null) ?
             ("org.xmlBlaster:type=" + global.getId()) :
             contextNode.getAbsoluteName(ContextNode.SCHEMA_JMX);
       return hierarchy;
    }
-   
+
    private synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean, JmxMBeanHandle mbeanHandle) {
       if (this.mbeanServer == null) return null;
       if (useJmx == 0) return null;
@@ -728,7 +751,7 @@ public class JmxWrapper
          return null;
       }
    }
-   
+
    /**
     * Similat to invokeAction but the command does not need to start with
     * "/InvokeAction//", additionally the "set" feature is activated.
@@ -746,7 +769,7 @@ public class JmxWrapper
    }
 
    /**
-    * Invoke xmlBlaster core JMX bean operations and getter/setter. 
+    * Invoke xmlBlaster core JMX bean operations and getter/setter.
     * To invoke getter/seeter you need to start with<br />
     * <code>
     *  java  -Djmx.invoke.getters=set ... org.xmlBlaster.Main
@@ -760,9 +783,9 @@ public class JmxWrapper
     *  'org.xmlBlaster:nodeClass=node,node="heron",topicClass=topic,topic="watchDog"/action=usage'
     *  or
     *  'j org.xmlBlaster:nodeClass=node,node="heron",topicClass=topic,topic="watchDog"/action=peekHistoryMessages?p1+int=1
-    *  
+    *
     *  or much simpler (will return the usage() string):
-    *  
+    *
     *  org.xmlBlaster:nodeClass=node,node="heron"/action=usage
     */
    public Object invokeAction(final String args) {
@@ -830,7 +853,7 @@ didn't you have "state" as the name of the attribute?
       if (args.startsWith("/InvokeAction")) {
          callString = args.substring("/InvokeAction//".length());
       }
-      
+
       // check for actionName (method)
       int j = callString.indexOf("/action=", 1);
 
@@ -842,7 +865,7 @@ didn't you have "state" as the name of the attribute?
 //    Object element = mbeanMap.get(key);
 //    if (log.isLoggable(Level.FINE)) log.trace(ME, "key: " + key + " element: '" + element);
 // }
- 
+
       // scan for arguments, starting with '&' (i don't know who has introduced the double noting of action=...)
       int k = callString.indexOf("&"); // '/action=myNiceMethodName?action=myNiceMethodName&p1+java.lang.String=arg1&p2+java.lang.String=arg1'
       if (k == -1) k = callString.indexOf("?"); // '...action=myNiceMethodName?p1+java.lang.String=arg1&p2+java.lang.String=arg1'
@@ -851,10 +874,10 @@ didn't you have "state" as the name of the attribute?
 
       Object[] params = getParams(s, callString.substring(k+1));
       String[] signature = (String[]) s.toArray(new String[s.size()]);
-      
+
       ObjectName objectName = null;
       Object returnObject = null;
-      
+
       try {
          if (log.isLoggable(Level.FINE)) log.fine("get object: '" + callString.substring(0, j));
          objectName = new ObjectName(callString.substring(0, j));
@@ -864,12 +887,12 @@ didn't you have "state" as the name of the attribute?
              log.severe("Instance Not Found");
              return returnObject;
          }
-         
+
          if (log.isLoggable(Level.FINE)) log.fine("invoke: '" + action + "@" + objectName);
 
 //         params = new Object[]{"arg1"};
 //         signature = new String[]{"java.lang.String"};
-         
+
          returnObject = mbeanServer.invoke(objectName, action, params,
                signature);
       } catch (javax.management.ReflectionException e) {
@@ -906,7 +929,7 @@ didn't you have "state" as the name of the attribute?
 
 
    /**
-    * Unregisters the specified mbean from the mbean server. 
+    * Unregisters the specified mbean from the mbean server.
     * @param objectName The object you got from registerMBean() of type ObjectName,
     *                   if null nothing happens
     */
@@ -975,7 +998,7 @@ didn't you have "state" as the name of the attribute?
       // TODO: Implement complete shutdown
       //javax.management.MBeanServerFactory.releaseMBeanServer(this.mbeanServer);
    }
-   
+
    private final String getAction(final String s) {
       int i = s.indexOf("action=");
       if (i < 0)
