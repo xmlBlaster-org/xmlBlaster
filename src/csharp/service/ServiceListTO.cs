@@ -53,7 +53,7 @@ namespace org.xmlBlaster.contrib.service {
       }
 
       public void ReadXml(XmlReader reader) {
-         reader.ReadToFollowing(SERVICES);
+         //reader.ReadToFollowing(SERVICES);
          this.serviceTOs = ServiceTO.ReadSiblings(reader);
       }
 
