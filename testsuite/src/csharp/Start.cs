@@ -19,17 +19,18 @@ public class Start
    static void Main(string[] argv)
    {
       Console.WriteLine("Startup");
-      testNmea();
-      testXmlBlaster();
-      testXml();
+      //testNmea();
+      //testXmlBlaster();
+      testService();
    }
 
-   private static void testXml() {
+   private static void testService() {
       ServiceTOTest t = new ServiceTOTest();
-      //t.CheckToXml();
+      t.CheckToXml();
+      t.CheckToXmlParsing2();
       //t.CheckXmlParsing();
       //t.CheckXmlSubtagsParsing();
-      t.CheckXmlBase64Parsing();
+      //t.CheckXmlBase64Parsing();
    }
 
    private static void testNmea()

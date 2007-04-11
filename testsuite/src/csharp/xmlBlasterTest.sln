@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xmlBlasterTest", "xmlBlaste
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Start", "Start.csproj", "{75FA6433-9CC1-4627-ACC6-5322DB7C252B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xmlBlasterCsharp", "..\..\..\Projects\Csharp\VC8\xmlBlasterCsharp\xmlBlasterCsharp.csproj", "{A663CACD-F797-49FE-B136-DEDE17BC5667}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xmlBlasterClientCsharp", "..\..\..\Projects\Win32\VC8\xmlBlasterClientCsharp\xmlBlasterClientCsharp.csproj", "{49B20501-B243-4C46-AB58-985F23DCB424}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +21,10 @@ Global
 		{75FA6433-9CC1-4627-ACC6-5322DB7C252B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75FA6433-9CC1-4627-ACC6-5322DB7C252B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75FA6433-9CC1-4627-ACC6-5322DB7C252B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A663CACD-F797-49FE-B136-DEDE17BC5667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A663CACD-F797-49FE-B136-DEDE17BC5667}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A663CACD-F797-49FE-B136-DEDE17BC5667}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A663CACD-F797-49FE-B136-DEDE17BC5667}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49B20501-B243-4C46-AB58-985F23DCB424}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49B20501-B243-4C46-AB58-985F23DCB424}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49B20501-B243-4C46-AB58-985F23DCB424}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49B20501-B243-4C46-AB58-985F23DCB424}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

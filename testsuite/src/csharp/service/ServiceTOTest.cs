@@ -62,14 +62,43 @@ namespace org.xmlBlaster.contrib.service {
       [Test]
       public void CheckToXml() {
          ServiceListTO serviceList = new ServiceListTO();
-         ServiceTO service = new ServiceTO();
-         serviceList.addService(service);
-         service.addProp(new PropTO(PropTO.KEY_SERVICENAME, "buddy"));
+         {
+            ServiceTO service = new ServiceTO();
+            serviceList.addService(service);
+            service.addProp(new PropTO(PropTO.KEY_SERVICENAME, "buddy"));
+         } 
          string xml = serviceList.ToXml();
          Console.WriteLine("CheckToXml: " + xml);
 
          ServiceListTO serviceList2 = ServiceListTO.parse(xml);
+         Console.WriteLine(serviceList2.ToXml());
+         Assert.AreEqual(1, serviceList2.getServices().Count);
+         foreach (ServiceTO service in serviceList2.getServices()) {
+            Assert.AreEqual("buddy", service.getPropValue(PropTO.KEY_SERVICENAME));
+         }
          Console.WriteLine("CheckToXml");
+      }
+
+      [Test]
+      public void CheckToXmlParsing2() {
+         string xmlService =
+         "<services>" +
+           "<service>" +
+             "<prop key=\"serviceName\">buddy</prop>" +
+             "<prop key=\"query\">getBuddyList</prop>" +
+             "<prop key=\"resultMime\">application/watchee.service.buddy.buddylist</prop>" +
+             "<prop key=\"resultEncoding\">base64</prop>" +
+             "<prop key=\"result\">PGJ1ZGR5bGlzdCBsb2dpbk5hbWU9ImpvZUBteWNvbXAuaW5mbyIgdHlwZT0iYWxsIj4KICA8YnVkZHk+CiAgICA8bG9naW5OYW1lPmphY2tAc29tZS5vcmc8L2xvZ2luTmFtZT4KICAgIDxhbGlhcz5qYWNrPC9hbGlhcz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9ImdwcyIgZGVzY3JpcHRpb249IlNob3cgbXkgcG9zaXRpb24iLz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9InhzbXMiIGRlc2NyaXB0aW9uPSJTZW5kL1JlY2VpdmUgbWFpbHMiLz4KICA8L2J1ZGR5Pgo8L2J1ZGR5bGlzdD4=</prop>" +
+           "</service>" +
+         "</services>";
+         ServiceListTO serviceList = ServiceListTO.parse(xmlService);
+         Assert.AreEqual(1, serviceList.getServices().Count);
+         foreach (ServiceTO service in serviceList.getServices()) {
+            Assert.AreEqual(5, service.getProps().Count);
+            string resultMime = service.getPropValue(PropTO.KEY_RESULTMIME);
+            string xml = service.getPropValue(PropTO.KEY_RESULT);
+            Console.WriteLine("Handling resultMime=" + resultMime + " xml=" + xml);
+         }
       }
 
       [Test]

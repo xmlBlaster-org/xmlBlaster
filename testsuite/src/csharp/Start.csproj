@@ -36,9 +36,9 @@
     <Compile Include="Start.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Projects\Csharp\VC8\xmlBlasterCsharp\xmlBlasterCsharp.csproj">
-      <Project>{A663CACD-F797-49FE-B136-DEDE17BC5667}</Project>
-      <Name>xmlBlasterCsharp</Name>
+    <ProjectReference Include="..\..\..\Projects\Win32\VC8\xmlBlasterClientCsharp\xmlBlasterClientCsharp.csproj">
+      <Project>{49B20501-B243-4C46-AB58-985F23DCB424}</Project>
+      <Name>xmlBlasterClientCsharp</Name>
     </ProjectReference>
     <ProjectReference Include="xmlBlasterTest.csproj">
       <Project>{6764CE42-F5CE-472C-AF7F-0462683884A2}</Project>
