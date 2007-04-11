@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace org.xmlBlaster.util
 {
-   class FileLocator
+   public class FileLocator
    {
       public static string getFileAsString(string fileName)
       {

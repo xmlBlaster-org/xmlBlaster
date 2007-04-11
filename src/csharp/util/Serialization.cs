@@ -47,13 +47,23 @@ namespace org.xmlBlaster.util {
           */
       }
 
+      /**
+       * Convert a UTF-8 byte array to a UTF-16 string
+       * @param dBytes UTF-8 multibyte string from C (zero terminated)
+       * @return string to be used in C#
+       */
+      public static string UTF8ByteArrayToString(byte[] dBytes) {
+         string str;
+         str = System.Text.Encoding.UTF8.GetString(dBytes, 0, dBytes.Length);
+         return str;
+      }
+      /*
       public static String UTF8ByteArrayToString(Byte[] characters) {
-
          UTF8Encoding encoding = new UTF8Encoding();
-         String constructedString = encoding.GetString(characters);
+         String constructedString = encoding.GetString(characters); // not for CF 2?
          return (constructedString);
       }
-
+      */
       public static Byte[] StringToUTF8ByteArray(String pXmlString) {
          UTF8Encoding encoding = new UTF8Encoding();
          Byte[] byteArray = encoding.GetBytes(pXmlString);
