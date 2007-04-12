@@ -8,13 +8,29 @@ using System.Xml.Serialization;
 namespace org.xmlBlaster.util {
    public static class Serialization {
 
+      public static type Deserialize<type>(byte[] data) {
+         XmlSerializer xs = new XmlSerializer(typeof(type));
+         MemoryStream memoryStream = new MemoryStream(data);
+         /*
+         XmlWriterSettings settings = new XmlWriterSettings();
+         //settings.OmitXmlDeclaration = true;
+         //settings.ConformanceLevel = ConformanceLevel.Fragment;
+         //settings.CloseOutput = false;
+         //settings.OmitXmlDeclaration = true;
+         settings.Encoding = Encoding.UTF8;
+         XmlTextWriter xmlTextWriter = XmlWriter.Create(memoryStream, settings);
+         //XmlTextWriter xmlTextWriter = new XmlTextWriter(memoryStream, Encoding.UTF8);
+         */
+         return (type)xs.Deserialize(memoryStream);
+      }
+
       /// <summary>
       /// Parse UTF-8 xml string
       /// </summary>
       /// <typeparam name="type"></typeparam>
       /// <param name="data"></param>
       /// <returns></returns>
-      public static type Deserialize<type>(string data) {
+      public static type DeserializeStr<type>(string data) {
          XmlSerializer xs = new XmlSerializer(typeof(type));
          MemoryStream memoryStream = new MemoryStream(StringToUTF8ByteArray(data));
          XmlTextWriter xmlTextWriter = new XmlTextWriter(memoryStream, Encoding.UTF8);
@@ -31,7 +47,22 @@ namespace org.xmlBlaster.util {
       /// <typeparam name="type"></typeparam>
       /// <param name="data"></param>
       /// <returns></returns>
-      public static string Serialize<type>(type data) {
+      public static byte[] Serialize<type>(type data) {
+         MemoryStream memoryStream = new MemoryStream();
+         XmlSerializer xs = new XmlSerializer(data.GetType());
+         XmlWriterSettings settings = new XmlWriterSettings();
+         //settings.OmitXmlDeclaration = true;
+         //settings.ConformanceLevel = ConformanceLevel.Fragment;
+         //settings.CloseOutput = false;
+         //settings.OmitXmlDeclaration = true;
+         settings.Encoding = Encoding.UTF8;
+         XmlWriter xmlWriter = XmlWriter.Create(memoryStream, settings);
+         xs.Serialize(xmlWriter, data);
+         //memoryStream = (MemoryStream)xmlTextWriter.BaseStream;
+         return memoryStream.ToArray();
+      }
+
+      public static string SerializeStr<type>(type data) {
          MemoryStream memoryStream = new MemoryStream();
          XmlSerializer xs = new XmlSerializer(data.GetType(), "");
          XmlTextWriter xmlTextWriter = new XmlTextWriter(memoryStream, Encoding.UTF8);

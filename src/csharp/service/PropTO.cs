@@ -18,6 +18,10 @@ namespace org.xmlBlaster.contrib.service {
    [XmlRootAttribute("prop", IsNullable = false)]
    public class PropTO : IXmlSerializable {
 
+      public static readonly string ENCODING_BASE64 = "base64";
+
+      public static readonly string ENCODING_PLAIN = "";
+
       public static readonly string KEY_SERVICENAME = "serviceName";
 
       public static readonly string KEY_QUERYTYPE = "queryType";
@@ -25,6 +29,15 @@ namespace org.xmlBlaster.contrib.service {
       public static readonly string KEY_ENCODING = "encoding";
 
       public static readonly string KEY_QUERY = "query";
+
+      /** To send update data */
+      public static readonly string KEY_DATA = "data";
+
+      /** The encoding type of the data prop, "" or "base64" */
+      public static readonly string KEY_DATAENCODING = "dataEncoding";
+
+      public static readonly string VALUE_DATAENCODING_DEFAULT = ENCODING_PLAIN;
+
 
       public static readonly string KEY_MIME = "mime";
 
@@ -51,17 +64,13 @@ namespace org.xmlBlaster.contrib.service {
 
       public static readonly string VALUE_RESULTENCODING_PLAIN = "";
 
-      public static readonly string VALUE_RESULTENCODING_BASE64 = "base64";
-
-      public static readonly string VALUE_RESULTENCODING_DEFAULT = VALUE_RESULTENCODING_BASE64;
+      public static readonly string VALUE_RESULTENCODING_DEFAULT = ENCODING_BASE64;
 
       public static readonly string VALUE_RESULTMIME_PREFIX = "application/xmlBlaster.service";
 
       public static readonly string PROP = "prop"; // tag name
 
       public static readonly string KEY = "key"; // attribute name
-
-      public static readonly string ENCODING_BASE64 = "base64";
 
       protected string key;
 
@@ -86,7 +95,7 @@ namespace org.xmlBlaster.contrib.service {
          this.key = key;
       }
 
-      public string GetRawValue() {
+      public string GetValueRaw() {
          return this.value;
       }
 
@@ -96,7 +105,7 @@ namespace org.xmlBlaster.contrib.service {
       /// <returns>Never null</returns>
       public string GetValue() {
          if (this.value == null || this.value.Length < 1) return "";
-         if (!isBase64()) return this.value;
+         if (!isBase64Encoding()) return this.value;
 
          try {
             byte[] dBytes = System.Convert.FromBase64String(this.value);
@@ -108,14 +117,27 @@ namespace org.xmlBlaster.contrib.service {
             return "";
          }
       }
+      /**
+       * Returns the raw byte[] of base64 encoding data. If data was of type
+       * String it is returned as UTF-8 bytes.
+       *
+       * @return never null
+       */
+      public byte[] getValueBytes() {
+         if (this.value == null || this.value.Length < 1) return new byte[0];
+         if (isBase64Encoding()) {
+            return System.Convert.FromBase64String(this.value);
+         }
+         return System.Text.Encoding.UTF8.GetBytes(this.value);
+      }
 
       public void SetValue(string value) {
          this.value = value;
       }
 
-      public bool isBase64() {
+      public bool isBase64Encoding() {
          if (this.encoding == null) return false;
-         return (VALUE_RESULTENCODING_BASE64.Equals(this.encoding));
+         return (ENCODING_BASE64.Equals(this.encoding));
       }
 
       public void SetEncoding(string encoding) {
@@ -124,12 +146,12 @@ namespace org.xmlBlaster.contrib.service {
 
       public bool getBoolValue() {
          try {
-         return Boolean.Parse(this.value);
-            }
+            return Boolean.Parse(this.value);
+         }
          catch (System.FormatException e) {
-               System.Console.WriteLine("Is not a boolean '" + this.value + "' :" + e.ToString());
-               return false;
-            }
+            System.Console.WriteLine("Is not a boolean '" + this.value + "' :" + e.ToString());
+            return false;
+         }
       }
 
       public static List<PropTO> ReadSiblings(XmlReader reader) {
@@ -138,6 +160,7 @@ namespace org.xmlBlaster.contrib.service {
          if (found) {
             string queryEncoding = null;
             string resultEncoding = null;
+            string dataEncoding = null;
             do {
                PropTO prop = new PropTO();
                reader.MoveToAttribute(KEY);
@@ -154,9 +177,13 @@ namespace org.xmlBlaster.contrib.service {
                if (queryEncoding != null && PropTO.KEY_QUERY.Equals(prop.GetKey())) {
                   prop.SetEncoding(queryEncoding);
                }
+               if (dataEncoding != null && PropTO.KEY_DATA.Equals(prop.GetKey())) {
+                  prop.SetEncoding(dataEncoding);
+               }
 
                if (resultEncoding == null && PropTO.KEY_RESULT.Equals(prop.GetKey()) ||
-                  queryEncoding == null && PropTO.KEY_QUERY.Equals(prop.GetKey())) {
+                  queryEncoding == null && PropTO.KEY_QUERY.Equals(prop.GetKey()) ||
+                  dataEncoding == null && PropTO.KEY_DATA.Equals(prop.GetKey())) {
                   // Expect subtags like "<A><B>Hello</B></A>"
                   string tmp = reader.ReadInnerXml();
                   tmp = tmp.Trim();
@@ -177,10 +204,13 @@ namespace org.xmlBlaster.contrib.service {
 
                // Check if base64 encoded (this tag is a previous sibling before the content prop)
                if (PropTO.KEY_ENCODING.Equals(prop.GetKey())) {
-                  queryEncoding = prop.GetRawValue();
+                  queryEncoding = prop.GetValueRaw();
                }
                if (PropTO.KEY_RESULTENCODING.Equals(prop.GetKey())) {
-                  resultEncoding = prop.GetRawValue();
+                  resultEncoding = prop.GetValueRaw();
+               }
+               if (PropTO.KEY_DATAENCODING.Equals(prop.GetKey())) {
+                  dataEncoding = prop.GetValueRaw();
                }
 
                list.Add(prop);
@@ -196,7 +226,7 @@ namespace org.xmlBlaster.contrib.service {
       /// <returns>never null</returns>
       public byte[] GetBlobValue() {
          if (this.value == null || this.value.Length < 1) return new byte[0];
-         if (!isBase64()) return System.Text.Encoding.UTF8.GetBytes(this.value);
+         if (!isBase64Encoding()) return System.Text.Encoding.UTF8.GetBytes(this.value);
          try {
             return System.Convert.FromBase64String(this.value);
          }

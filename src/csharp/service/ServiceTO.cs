@@ -117,12 +117,12 @@ namespace org.xmlBlaster.contrib.service {
       }
 
       public static ServiceTO parse(string xml) {
-         ServiceTO service = org.xmlBlaster.util.Serialization.Deserialize<ServiceTO>(xml);
+         ServiceTO service = org.xmlBlaster.util.Serialization.DeserializeStr<ServiceTO>(xml);
          return service;
       }
 
       public string ToXml() {
-         string xml = org.xmlBlaster.util.Serialization.Serialize<ServiceTO>(this);
+         string xml = org.xmlBlaster.util.Serialization.SerializeStr<ServiceTO>(this);
          return xml;
       }
    }

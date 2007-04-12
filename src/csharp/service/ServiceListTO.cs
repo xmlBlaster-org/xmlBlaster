@@ -69,14 +69,16 @@ namespace org.xmlBlaster.contrib.service {
          return null;
       }
 
-      public static ServiceListTO parse(string xml) {
-         ServiceListTO service = org.xmlBlaster.util.Serialization.Deserialize<ServiceListTO>(xml);
-         return service;
+      /// <summary>
+      /// </summary>
+      /// <param name="prop">Of type PropTO.KEY_DATA or PropTO.KEY_RESULT</param>
+      /// <returns></returns>
+      public static ServiceListTO parse(byte[] bytes) {
+         return org.xmlBlaster.util.Serialization.Deserialize<ServiceListTO>(bytes);
       }
 
-      public string ToXml() {
-         string xml = org.xmlBlaster.util.Serialization.Serialize<ServiceListTO>(this);
-         return xml;
+      public byte[] ToXml() {
+         return org.xmlBlaster.util.Serialization.Serialize<ServiceListTO>(this);
       }
    }
 }
