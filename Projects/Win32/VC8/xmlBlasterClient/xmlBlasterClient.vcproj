@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="xmlBlasterClient"
 	ProjectGUID="{AC9B7052-1889-4A65-9B34-15C373742E33}"
 	RootNamespace="xmlBlasterClient"
@@ -123,7 +123,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="$(XMLBLASTER_HOME)/src/c;$(XMLBLASTER_HOME)/src/c++;$(zlib_include_dir);$(sqlite_include_dir);$(xerces_include_dir)"
-				PreprocessorDefinitions="COMPILE_SOCKET_PLUGIN=1;XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1;_WINDLL;LOG4CPLUS_BUILD_DLL=1;XMLBLASTER_PERSISTENT_QUEUE=1;XMLBLASTER_ZLIB=1;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;__WIN32__;-DOMNITHREAD;_OMNITHREAD_DLL=1;WIN32;_DEBUG;_USRDLL;_UNICODE"
+				PreprocessorDefinitions="COMPILE_SOCKET_PLUGIN=1;XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=1;_WINDLL;LOG4CPLUS_BUILD_DLL=1;XMLBLASTER_PERSISTENT_QUEUE=1;XMLBLASTER_ZLIB=1;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;__WIN32__;-DOMNITHREAD;_OMNITHREAD_DLL=1;WIN32;_USRDLL;_UNICODE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -141,11 +141,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="zdll.lib pthreadVC2.lib sqlite.lib xmlBlasterClientC.lib xerces-c_2.lib msvcrtd.lib"
+				AdditionalDependencies="zdll.lib pthreadVC2.lib sqlite.lib xmlBlasterClientC.lib xerces-c_2.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(zlib_lib_dir)&quot;;&quot;$(sqlite_lib_dir)&quot;;&quot;$(xerces_lib_dir)&quot;;&quot;$(XMLBLASTER_HOME)/src/c/socket&quot;;&quot;$(XMLBLASTER_HOME)/lib&quot;"
 				IgnoreDefaultLibraryNames=""
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
