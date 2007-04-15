@@ -77,8 +77,16 @@ namespace org.xmlBlaster.contrib.service {
          return org.xmlBlaster.util.Serialization.Deserialize<ServiceListTO>(bytes);
       }
 
+      public static ServiceListTO parseStr(string xml) {
+         return org.xmlBlaster.util.Serialization.DeserializeStr<ServiceListTO>(xml);
+      }
+
       public byte[] ToXml() {
          return org.xmlBlaster.util.Serialization.Serialize<ServiceListTO>(this);
+      }
+
+      public string ToXmlStr() {
+         return org.xmlBlaster.util.Serialization.SerializeStr<ServiceListTO>(this);
       }
    }
 }

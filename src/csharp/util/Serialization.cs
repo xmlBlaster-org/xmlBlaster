@@ -51,15 +51,36 @@ namespace org.xmlBlaster.util {
          MemoryStream memoryStream = new MemoryStream();
          XmlSerializer xs = new XmlSerializer(data.GetType());
          XmlWriterSettings settings = new XmlWriterSettings();
-         //settings.OmitXmlDeclaration = true;
+         settings.OmitXmlDeclaration = true;
          //settings.ConformanceLevel = ConformanceLevel.Fragment;
          //settings.CloseOutput = false;
-         //settings.OmitXmlDeclaration = true;
+         // Correct BOM is:
+         //  X'FEFF' big endian UTF-16
+         //  X'FFFE' little endian UTF-16
+         //  X'EFBBBF' UTF-8
+         // Windows CE: return X'FEFF' for UTF-8 which is wrong
+         // Win32: behaves correctly to X'EFBBBF' for UTF-8
          settings.Encoding = Encoding.UTF8;
          XmlWriter xmlWriter = XmlWriter.Create(memoryStream, settings);
          xs.Serialize(xmlWriter, data);
          //memoryStream = (MemoryStream)xmlTextWriter.BaseStream;
-         return memoryStream.ToArray();
+         byte[] bytes = memoryStream.ToArray();
+         if (bytes[0] == 0XEF && bytes[1] == 0XBB && bytes[2] == 0XBF) {
+            int len = bytes.Length;
+            byte[] tmp = new byte[len - 3];
+            for (int i = 3; i < len; i++)
+               tmp[i - 3] = bytes[i];
+            return tmp;
+         }
+         else if (bytes[0] == 0XFE && bytes[1] == 0XFF ||
+            bytes[0] == 0XFF && bytes[1] == 0XFE) {
+            int len = bytes.Length;
+            byte[] tmp = new byte[len - 2];
+            for (int i = 2; i < len; i++)
+               tmp[i - 2] = bytes[i];
+            return tmp;
+         }
+         return bytes;
       }
 
       public static string SerializeStr<type>(type data) {
