@@ -68,6 +68,7 @@ namespace org.xmlBlaster.util {
          if (bytes[0] == 0XEF && bytes[1] == 0XBB && bytes[2] == 0XBF) {
             int len = bytes.Length;
             byte[] tmp = new byte[len - 3];
+            //System.Array.Copy(bytes, 3, tmp, 0, tmp.Length);
             for (int i = 3; i < len; i++)
                tmp[i - 3] = bytes[i];
             return tmp;
