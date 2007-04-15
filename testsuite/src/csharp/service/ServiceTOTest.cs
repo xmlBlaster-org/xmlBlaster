@@ -66,15 +66,26 @@ namespace org.xmlBlaster.contrib.service {
             ServiceTO service = new ServiceTO();
             serviceList.addService(service);
             service.addProp(new PropTO(PropTO.KEY_SERVICENAME, "buddy"));
-         } 
-         string xml = serviceList.ToXml();
+         }
+         byte[] bytes = serviceList.ToXml();
+         string xml = serviceList.ToXmlStr();
          Console.WriteLine("CheckToXml: " + xml);
 
-         ServiceListTO serviceList2 = ServiceListTO.parse(xml);
-         Console.WriteLine(serviceList2.ToXml());
-         Assert.AreEqual(1, serviceList2.getServices().Count);
-         foreach (ServiceTO service in serviceList2.getServices()) {
-            Assert.AreEqual("buddy", service.getPropValue(PropTO.KEY_SERVICENAME));
+         {
+            ServiceListTO serviceList2 = ServiceListTO.parseStr(xml);
+            Console.WriteLine(serviceList2.ToXmlStr());
+            Assert.AreEqual(1, serviceList2.getServices().Count);
+            foreach (ServiceTO service in serviceList2.getServices()) {
+               Assert.AreEqual("buddy", service.getPropValue(PropTO.KEY_SERVICENAME));
+            }
+         }
+         {
+            ServiceListTO serviceList2 = ServiceListTO.parse(bytes);
+            Console.WriteLine(serviceList2.ToXmlStr());
+            Assert.AreEqual(1, serviceList2.getServices().Count);
+            foreach (ServiceTO service in serviceList2.getServices()) {
+               Assert.AreEqual("buddy", service.getPropValue(PropTO.KEY_SERVICENAME));
+            }
          }
          Console.WriteLine("CheckToXml");
       }
@@ -91,7 +102,7 @@ namespace org.xmlBlaster.contrib.service {
              "<prop key=\"result\">PGJ1ZGR5bGlzdCBsb2dpbk5hbWU9ImpvZUBteWNvbXAuaW5mbyIgdHlwZT0iYWxsIj4KICA8YnVkZHk+CiAgICA8bG9naW5OYW1lPmphY2tAc29tZS5vcmc8L2xvZ2luTmFtZT4KICAgIDxhbGlhcz5qYWNrPC9hbGlhcz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9ImdwcyIgZGVzY3JpcHRpb249IlNob3cgbXkgcG9zaXRpb24iLz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9InhzbXMiIGRlc2NyaXB0aW9uPSJTZW5kL1JlY2VpdmUgbWFpbHMiLz4KICA8L2J1ZGR5Pgo8L2J1ZGR5bGlzdD4=</prop>" +
            "</service>" +
          "</services>";
-         ServiceListTO serviceList = ServiceListTO.parse(xmlService);
+         ServiceListTO serviceList = ServiceListTO.parseStr(xmlService);
          Assert.AreEqual(1, serviceList.getServices().Count);
          foreach (ServiceTO service in serviceList.getServices()) {
             Assert.AreEqual(5, service.getProps().Count);
@@ -127,7 +138,7 @@ namespace org.xmlBlaster.contrib.service {
                + "<prop key='query'>myStandardTrackIdQuery('Summer')</prop>"
                + "<prop key='resultMime'>application/watchee-service-buddy-</prop>"
                + "</service></services>";
-            ServiceListTO serviceList = ServiceListTO.parse(xml);
+            ServiceListTO serviceList = ServiceListTO.parseStr(xml);
             Assert.IsNotNull(serviceList);
             Assert.AreEqual(1, 1);
          }
@@ -160,7 +171,7 @@ namespace org.xmlBlaster.contrib.service {
 
          Console.WriteLine("CheckXmlSubtagsParsing");
       }
-      
+
       [Test]
       public void CheckXmlBase64Parsing() {
          {
