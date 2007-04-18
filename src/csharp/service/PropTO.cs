@@ -18,6 +18,8 @@ namespace org.xmlBlaster.contrib.service {
    [XmlRootAttribute("prop", IsNullable = false)]
    public class PropTO : IXmlSerializable {
 
+      //private static NLog.Logger logger = NLog.LogManager.GetLogger("xmlBlaster");
+
       public static readonly string ENCODING_BASE64 = "base64";
 
       public static readonly string ENCODING_PLAIN = "";
@@ -94,9 +96,10 @@ namespace org.xmlBlaster.contrib.service {
       /// </summary>
       /// <param name="key"></param>
       /// <param name="value"></param>
-      public PropTO(string key, byte[] value) /*throws System.FormatException*/ {
+      public PropTO(string key, byte[] bytes) /*throws System.FormatException*/ {
          this.key = key;
-         this.value = System.Convert.ToBase64String(value);
+         this.value = System.Convert.ToBase64String(bytes);
+         //logger.Info("Converted '" + bytes.Length + "' to " + this.value);
          this.encoding = PropTO.ENCODING_BASE64; // transient setting
       }
 
@@ -263,7 +266,7 @@ namespace org.xmlBlaster.contrib.service {
          writer.WriteStartAttribute(KEY);
          writer.WriteValue(GetKey());
          writer.WriteEndAttribute();
-         writer.WriteRaw(GetValue());
+         writer.WriteRaw(GetValueRaw());
          writer.WriteEndElement();
       }
 
