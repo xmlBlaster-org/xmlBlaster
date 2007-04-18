@@ -90,6 +90,15 @@ namespace org.xmlBlaster.contrib.service {
          Console.WriteLine("CheckToXml");
       }
 
+            [Test]
+      public void CheckBase64() {
+         byte[] bytes = org.xmlBlaster.util.Serialization.StringToUTF8ByteArray("Hello");
+         PropTO prop = new PropTO(PropTO.KEY_DATA, bytes);
+         Assert.AreEqual("SGVsbG8=", prop.GetValueRaw());
+         Assert.AreEqual("Hello", prop.GetValue());
+      }
+
+
       [Test]
       public void CheckToXmlParsing2() {
          string xmlService =

@@ -26,6 +26,7 @@ public class Start
 
    private static void testService() {
       ServiceTOTest t = new ServiceTOTest();
+      t.CheckBase64();
       t.CheckToXml();
       t.CheckToXmlParsing2();
       //t.CheckXmlParsing();
