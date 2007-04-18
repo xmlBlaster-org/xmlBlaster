@@ -76,7 +76,7 @@ namespace org.xmlBlaster.contrib.service {
 
       protected string value = "";
 
-      // transient
+      // transient: the encoding is tranfered in another PropTO instance
       protected string encoding;
 
       public PropTO() {
@@ -85,6 +85,19 @@ namespace org.xmlBlaster.contrib.service {
       public PropTO(string key, string value) {
          this.key = key;
          this.value = value;
+      }
+
+      /// <summary>
+      /// The value will be send as BASE64 encoded. 
+      /// IMPORTANT: You have to set an additional property 
+      /// service.addProp(new PropTO(PropTO.KEY_DATAENCODING, PropTO.ENCODING_BASE64));
+      /// </summary>
+      /// <param name="key"></param>
+      /// <param name="value"></param>
+      public PropTO(string key, byte[] value) /*throws System.FormatException*/ {
+         this.key = key;
+         this.value = System.Convert.ToBase64String(value);
+         this.encoding = PropTO.ENCODING_BASE64; // transient setting
       }
 
       public string GetKey() {
