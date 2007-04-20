@@ -566,6 +566,16 @@ public class XmlNotPortable
     */
    public static int protectionNeeded(String value) {
       // TODO: Move to something like a XmlUtil class
+      /* Handle other special characters
+     private static final char[] NULL = "&#x0;".toCharArray();
+    private static final char[] AMP = "&amp;".toCharArray();
+    private static final char[] LT = "&lt;".toCharArray();
+    private static final char[] GT = "&gt;".toCharArray();
+    private static final char[] SLASH_R = "&#x0D;".toCharArray();
+    private static final char[] QUOT = "&quot;".toCharArray();
+    private static final char[] APOS = "&apos;".toCharArray();
+    private static final char[] CLOSE = "</".toCharArray();
+   */
       if (value == null) return 0;
       if (value.indexOf("]]>") >= 0)
          return 2;
