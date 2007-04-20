@@ -86,7 +86,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
    static MainGUI controlPanel = null;
 
    /**
-    * You need to call init() after construction. 
+    * You need to call init() after construction.
     * Currently used by XmlBlasterClassLoader
     */
     public Main() {
@@ -119,6 +119,15 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
     * @param args The command line parameters
     */
    public Main(String[] args) {
+      // The setting 'java -DxmlBlaster/initClassName=mypackage.MyClass ...' allows to load an initial class instance
+      String initClass = System.getProperty("xmlBlaster/initClassName", "");
+      if (initClass.length() > 0) {
+         try {
+			this.getClass().getClassLoader().loadClass(initClass).newInstance();
+	     } catch (Exception e) {
+            e.printStackTrace();
+         }
+      }
       init(new ServerScope(args));
    }
 
@@ -132,7 +141,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
     * @param utilGlob The environment for this server instance
     */
    public void init(org.xmlBlaster.util.Global utilGlob) {
-      org.xmlBlaster.engine.ServerScope gg = 
+      org.xmlBlaster.engine.ServerScope gg =
           new org.xmlBlaster.engine.ServerScope(utilGlob.getProperty().getProperties(), false);
       utilGlob.setId(gg.getId()); // Inherit backwards the cluster node id
       init(gg);
@@ -150,7 +159,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
    public final void init(ServerScope glob)
    {
       this.glob = glob;
-      
+
       this.ME = "Main" + glob.getLogPrefixDashed();
       //try { log.info(ME, glob.getDump()); } catch (Throwable e) { System.out.println(ME + ": " + e.toString()); e.printStackTrace(); }
 
@@ -177,7 +186,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
 
       this.panicErrorCodes = glob.getProperty().get("xmlBlaster/panicErrorCodes", this.panicErrorCodes);
       log.fine("Following errorCodes do an immediate exit: " + this.panicErrorCodes);
-      
+
       int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
       try {
          runlevelManager = glob.getRunlevelManager();
@@ -324,7 +333,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
                   // ObjectName = org.xmlBlaster:nodeClass=node,node="heron"
                   // j org.xmlBlaster:nodeClass=node,node="heron"/action=getFreeMemStr
                   // j org.xmlBlaster:nodeClass=node,node="heron"/action=usage?action=usage
-                  
+
                   // java  -Djmx.invoke.getters=set ... org.xmlBlaster.Main
                   // j org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning?action=getLastWarning
                   // j org.xmlBlaster:nodeClass=node,node="heron"/action=getLastWarning
@@ -509,9 +518,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
          System.exit(1);
       }
    }
-   
+
    /**
-   * You will be notified when the runtime exits. 
+   * You will be notified when the runtime exits.
    * @see I_SignalListener#shutdownHook()
    */
    public void shutdownHook() {
