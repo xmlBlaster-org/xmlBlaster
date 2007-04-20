@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16134 The setting 'java -DxmlBlaster/initClassName=mypackage.MyClass ...' allows to load
+          an initial class instance directly after Main(String[])
+
  o #16130 Extended SOCKET protocol plugin to immediately forward the EOF on client disconnect
           to support callback configurations with switched off pinging  (e.g. mobile phones with high cost GPRS/UMTS).
 
