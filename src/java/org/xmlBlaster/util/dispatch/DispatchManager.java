@@ -754,12 +754,20 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    public void lostClientConnection() {
       log.warning(ME+": Lost client connection");
+      // If SOCKET: the cb connection is lost as well and we can go to polling mode
+      pingCallbackServer(false);
+   }
+
+   public void pingCallbackServer(boolean sync) {
       DispatchConnection dispatchConnection = this.dispatchConnectionsHandler.getCurrentDispatchConnection();
       if (dispatchConnection != null) {
-         //dispatchConnection.timeout(null); // force a ping
-         // If SOCKET: the cb connection is lost as well and we can go to polling mode
-         // force a ping via another thread
-         this.glob.getPingTimer().addTimeoutListener(dispatchConnection, 0L, null);
+         if (sync) {
+            dispatchConnection.timeout(null); // force a ping
+         }
+         else {
+            // force a ping via another thread
+            this.glob.getPingTimer().addTimeoutListener(dispatchConnection, 0L, null);
+         }
       }
    }
 
