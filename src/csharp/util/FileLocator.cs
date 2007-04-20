@@ -24,41 +24,6 @@ namespace org.xmlBlaster.util
          return contents;
       }
 
-      public class FileContainer {
-         string directoy;
-         string fileName;
-
-         public FileContainer(string d, string f) {
-            this.directoy = d;
-            this.fileName = f;
-         }
-
-         public string FileName {
-            get { return fileName; }
-            set { fileName = value; }
-         }
-
-         byte[] xmlContent;
-
-         public byte[] GetXmlContent() {
-            if (xmlContent == null) {
-               string name = Path.Combine(this.directoy, this.fileName);
-               if (name != null)
-                  xmlContent = org.xmlBlaster.util.FileLocator.getFileAsBytes(name);
-            }
-            if (xmlContent == null) return new byte[0];
-            return xmlContent;
-         }
-
-         public string GetXmlContentUtf8Str() {
-            return org.xmlBlaster.util.Serialization.UTF8ByteArrayToString(GetXmlContent());
-         }
-
-         public type Deserialize<type>() {
-            return org.xmlBlaster.util.Serialization.Deserialize<type>(GetXmlContent());
-         }
-      }
-
       public static FileContainer[] GetFiles(string directory, string fileName) {
          string[] fileNames = Directory.GetFiles(directory, fileName);
          FileContainer[] fileContainers = new FileContainer[fileNames.Length];
@@ -222,5 +187,40 @@ namespace org.xmlBlaster.util
             fs.Close();
          }
       }
-   }
+   } // FileLocator
+
+   public class FileContainer {
+      string directoy;
+      string fileName;
+
+      public FileContainer(string d, string f) {
+         this.directoy = d;
+         this.fileName = f;
+      }
+
+      public string FileName {
+         get { return fileName; }
+         set { fileName = value; }
+      }
+
+      byte[] xmlContent;
+
+      public byte[] GetXmlContent() {
+         if (xmlContent == null) {
+            string name = Path.Combine(this.directoy, this.fileName);
+            if (name != null)
+               xmlContent = org.xmlBlaster.util.FileLocator.getFileAsBytes(name);
+         }
+         if (xmlContent == null) return new byte[0];
+         return xmlContent;
+      }
+
+      public string GetXmlContentUtf8Str() {
+         return org.xmlBlaster.util.Serialization.UTF8ByteArrayToString(GetXmlContent());
+      }
+
+      public type Deserialize<type>() {
+         return org.xmlBlaster.util.Serialization.Deserialize<type>(GetXmlContent());
+      }
+   } // FileContainer
 }
