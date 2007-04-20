@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16130 Extended SOCKET protocol plugin to immediately forward the EOF on client disconnect
+          to support callback configurations with switched off pinging  (e.g. mobile phones with high cost GPRS/UMTS).
+
  o #16109 Added switch 
             -xmlBlaster/jmx/support false
           or

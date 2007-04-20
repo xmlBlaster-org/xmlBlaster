@@ -21,6 +21,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -63,7 +64,7 @@ public class HandleClient extends SocketExecutor implements Runnable
 
    private boolean callCoreInSeparateThread=true;
    protected volatile static ExecutorService executorService;
-   
+
    protected boolean disconnectIsCalled = false;
 
    /**
@@ -76,7 +77,7 @@ public class HandleClient extends SocketExecutor implements Runnable
       this.sockUDP = sockUDP;
       this.authenticate = driver.getAuthenticate();
       this.ME = driver.getType()+"-HandleClient";
-      
+
       if (executorService == null) {
          synchronized (HandleClient.class) {
             if (executorService == null) {
@@ -89,7 +90,7 @@ public class HandleClient extends SocketExecutor implements Runnable
       super.setXmlBlasterCore(driver.getXmlBlaster());
 
       this.remoteSocketStr = this.sock.getInetAddress().toString() + ":" + this.sock.getPort();
-      
+
       // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
       // But we always block on input read() to receive update() messages.
       setSoTimeout(driver.getAddressServer().getEnv("SoTimeout", 0L).getValue()); // switch off
@@ -107,7 +108,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          this.sock.setSoLinger(false, 0); // false: default handling, kernel tries to send queued data after close() (the 0 is ignored)
 
       this.callCoreInSeparateThread = driver.getAddressServer().getEnv("callCoreInSeparateThread", callCoreInSeparateThread).getValue();
-      
+
       Thread t = new Thread(this, "XmlBlaster."+this.driver.getType() + (this.driver.isSSL()?".SSL":""));
       int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
@@ -159,7 +160,7 @@ public class HandleClient extends SocketExecutor implements Runnable
       }
       closeSocket();
    }
-   
+
    public String toString() {
       String ret = getType() + "-" + this.addressConfig.getName();
       if (loginName != null && loginName.length() > 0)
@@ -229,12 +230,12 @@ public class HandleClient extends SocketExecutor implements Runnable
                // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                conQos.getSecurityQos().setClientIp (sock.getInetAddress().getHostAddress());
-               
+
                conQos.setAddressServer(this.driver.getAddressServer());
                setLoginName(conQos.getSessionName().getRelativeName());
                Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
-               
+
                Socket socket = this.sock;
                if (socket == null) return;
 
@@ -311,7 +312,7 @@ public class HandleClient extends SocketExecutor implements Runnable
 
    /**
     * Flush the data to the socket.
-    * Overwrites SocketExecutor.sendMessage() 
+    * Overwrites SocketExecutor.sendMessage()
     */
    protected void sendMessage(byte[] msg, boolean udp) throws IOException {
       I_ProgressListener listener = this.progressListener;
@@ -321,7 +322,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
          else
             log.fine("The progress listener is null");
-         
+
          if (udp && this.sockUDP!=null && this.sock!=null) {
             DatagramPacket dp = new DatagramPacket(msg, msg.length, this.sock.getInetAddress(), this.sock.getPort());
             //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
@@ -333,7 +334,7 @@ public class HandleClient extends SocketExecutor implements Runnable
             int bytesRead = 0;
             synchronized (oStream) {
                while (bytesLeft > 0) {
-                  int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;  
+                  int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;
                   oStream.write(msg, bytesRead, toRead);
                   oStream.flush();
                   bytesRead += toRead;
@@ -371,7 +372,7 @@ public class HandleClient extends SocketExecutor implements Runnable
             try {
                // blocks until a message arrives
                final MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), driver.getPluginConfig())[0];
-               
+
                if (this.callCoreInSeparateThread) {
                   executorService.execute(new Runnable() {
                      public void run() {
@@ -395,6 +396,12 @@ public class HandleClient extends SocketExecutor implements Runnable
                }
                else {
                   log.warning("Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
+               }
+               I_Authenticate auth = this.authenticate;
+               if (auth != null) {
+                  // From the point of view of the incoming client connection we are dead
+                  // The callback dispatch framework may have another point of view (which is not of interest here)
+                  auth.connectionState(this.secretSessionId, ConnectionStateEnum.DEAD);
                }
                shutdown();
                break;

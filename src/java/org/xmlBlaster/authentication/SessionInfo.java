@@ -1050,6 +1050,18 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
+    * Can be called when client connection is lost (NOT the callback connection).
+    * Currently only detected by the SOCKET protocol plugin.
+    * Others can only detect lost clients with their callback protocol pings
+    */
+   public void lostClientConnection() {
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Protocol layer is notifying me about a lost connection");
+      DispatchManager dispatchManager = this.dispatchManager;
+      if (dispatchManager != null)
+         dispatchManager.lostClientConnection();
+   }
+
+   /**
     * If the connection failed the reason is stored here, like this
     * cleanup code knows what happened.
     * @return the transportConnectFail
@@ -1066,7 +1078,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    /**
-    * Can be optionally used by the current authorization plugin. 
+    * Can be optionally used by the current authorization plugin.
     */
    public Object getAuthorizationCache() {
       return authorizationCache;

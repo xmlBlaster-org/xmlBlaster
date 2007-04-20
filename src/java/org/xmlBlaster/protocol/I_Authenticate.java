@@ -14,6 +14,7 @@ import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 
 /**
@@ -60,13 +61,19 @@ public interface I_Authenticate
    public void disconnect(AddressServer addressServer, String sessionId, String qos_literal) throws XmlBlasterException;
 
    /**
-     * Ping to check if xmlBlaster is alive and willing to accept messages. 
+     * Ping to check if xmlBlaster is alive and willing to accept messages.
      * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
      */
    public String ping(AddressServer addressServer, String qos);
 
    /**
-    * Administrative access. 
+    * A protocol may inform the client is lost (currently only the SOCKET protocol plugin supports it)
+    * @param state ConnectionStateEnum.DEAD
+    */
+   public void connectionState(String secretSessionId, ConnectionStateEnum state);
+
+   /**
+    * Administrative access.
     * For security reasons the I_AdminSubject implementation is SubjectInfoProtector
     */
    public I_AdminSubject getSubjectInfoByName(SessionName sessionName)  throws XmlBlasterException;

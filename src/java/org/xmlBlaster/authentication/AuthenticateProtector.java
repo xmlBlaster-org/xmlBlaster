@@ -20,13 +20,14 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.AvailabilityChecker;
 
 
 /**
- * AuthenticateProtector encapsulates Authenticate.java for security reasons. 
+ * AuthenticateProtector encapsulates Authenticate.java for security reasons.
  */
 final public class AuthenticateProtector implements I_Authenticate
 {
@@ -122,7 +123,7 @@ final public class AuthenticateProtector implements I_Authenticate
    }
 
    /**
-    * Ping xmlBlaster if everything is OK, checks the availability. 
+    * Ping xmlBlaster if everything is OK, checks the availability.
     * @return "<qos><state id='OK'/></qos>" if we are ready, otherwise the current run level string
     * @see org.xmlBlaster.engine.AvailabilityChecker#getStatus(String)
     */
@@ -130,8 +131,12 @@ final public class AuthenticateProtector implements I_Authenticate
       return "<qos><state id='" + this.availabilityChecker.getStatus(qos) + "'/></qos>";
    }
 
+   public void connectionState(String secretSessionId, ConnectionStateEnum state) {
+      this.authenticate.connectionState(secretSessionId, state);
+   }
+
    /**
-    * Administrative access. 
+    * Administrative access.
     */
    public I_AdminSubject getSubjectInfoByName(SessionName sessionName) throws XmlBlasterException {
       SubjectInfo subjectInfo = this.authenticate.getSubjectInfoByName(sessionName);

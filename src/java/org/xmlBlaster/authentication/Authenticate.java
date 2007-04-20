@@ -22,6 +22,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -29,6 +30,7 @@ import org.xmlBlaster.engine.XmlBlasterImpl;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import java.util.*;
 
@@ -90,7 +92,7 @@ final public class Authenticate implements I_RunlevelListener
 
       if (log.isLoggable(Level.FINER)) log.finer("Entering constructor");
       /*this.encapsulator = */new AuthenticateProtector(glob, this); // my security layer (delegate)
-      
+
       glob.getRunlevelManager().addRunlevelListener(this);
 
       plgnLdr = new PluginManager(global);
@@ -216,7 +218,7 @@ final public class Authenticate implements I_RunlevelListener
          if (secretSessionId != null && secretSessionId.length() >= 2) {
             SessionInfo info = getSessionInfo(secretSessionId);
             if (info != null) {  // authentication succeeded
-               
+
                info.updateConnectQos(connectQos);
 
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
@@ -363,7 +365,7 @@ final public class Authenticate implements I_RunlevelListener
                                    returnLocked, sessionCtx.getSubject(), connectQos.getSubjectQueueProperty());
          try { // subjectInfo.getLock().release())
             if (subjectInfo.isAlive()) {
-               if (connectQos.getData().hasSubjectQueueProperty()) 
+               if (connectQos.getData().hasSubjectQueueProperty())
                   subjectInfo.setSubjectQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
             }
             // Check if client does a relogin and wants to destroy old sessions
@@ -500,7 +502,7 @@ final public class Authenticate implements I_RunlevelListener
          DisconnectQosServer disconnectQos = new DisconnectQosServer(glob, qos_literal);
 
          boolean forceShutdownEvenIfEntriesExist = false;
-         
+
          resetSessionInfo(sessionInfo, disconnectQos.deleteSubjectQueue(), forceShutdownEvenIfEntriesExist, true);
 
          if (disconnectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
@@ -583,7 +585,7 @@ final public class Authenticate implements I_RunlevelListener
    }
 
    /**
-    * Remove a SubjectInfo instance. 
+    * Remove a SubjectInfo instance.
     */
    void removeLoginName(SubjectInfo subjectInfo) {
       Object entry = null;
@@ -643,7 +645,7 @@ final public class Authenticate implements I_RunlevelListener
    }
 
    /**
-    * Access a sessionInfo with the unique secretSessionId. 
+    * Access a sessionInfo with the unique secretSessionId.
     * <p />
     * @return the SessionInfo object or null if not known
     */
@@ -692,7 +694,7 @@ final public class Authenticate implements I_RunlevelListener
 
 
    /**
-    * @param sessionInfo 
+    * @param sessionInfo
     * @param clearQueue Shall the message queue of the client be destroyed as well on last session logout?
     * @param forceShutdownEvenIfEntriesExist on last session
     * @param isDisconnecting true if this method is invoked while explicitly disconnecting a session, false
@@ -725,11 +727,11 @@ final public class Authenticate implements I_RunlevelListener
       //if (subjectInfo.isShutdown()) {
       //   subjectInfo = null; // Give GC a hint
       //}
-      
+
       // with positive sessionId avoid to clear session queue: Such a DisconnectQos flag is currently not existing
       if (isDisconnecting) sessionInfo.getSessionQueue().clear();
       sessionInfo.shutdown();
-      
+
       sessionInfo = null;
       log.info("loginNameSubjectInfoMap has " + getNumSubjects() +
                    " entries and sessionInfoMap has " + this.sessionInfoMap.size() + " entries");
@@ -879,7 +881,7 @@ final public class Authenticate implements I_RunlevelListener
    }
 
    /**
-    * Get a current snapshot of all known subjects. 
+    * Get a current snapshot of all known subjects.
     * @return The subjects known
     */
    public SubjectInfo[] getSubjectInfoArr() {
@@ -937,6 +939,21 @@ final public class Authenticate implements I_RunlevelListener
     */
    public boolean acceptWrongSenderAddress(SessionInfo sessionInfo) {
       return sessionInfo.acceptWrongSenderAddress();
+   }
+
+   /**
+    * Helper method where protocol layers may report a lost connection.
+    * @see I_Authenticate#connectionState(String, ConnectionStateEnum)
+    */
+   public void connectionState(String secretSessionId, ConnectionStateEnum state) {
+      if (state == ConnectionStateEnum.DEAD) {
+         SessionInfo sessionInfo = getSessionInfo(secretSessionId);
+         if (sessionInfo != null)
+            sessionInfo.lostClientConnection();
+      }
+      else {
+         log.warning("Ignoring unexpected connectionState notification + " + state.toString() + ", handling is not implemented");
+      }
    }
 
    /**

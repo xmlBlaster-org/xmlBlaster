@@ -21,12 +21,12 @@ import org.xmlBlaster.util.xbformat.I_ProgressListener;
 
 /**
  * Holding all necessary infos to establish a remote connection
- * and check this connection. 
+ * and check this connection.
  * <pre>
  *    State chart of a single connection:
  *
- *          +<--toAlive()----+                                  
- *          |                |                          
+ *          +<--toAlive()----+
+ *          |                |
  *    #########            ##########         ##########
  *   #         #          #          #       #          #
  *   #  ALIVE  #          # POLLING  #       #   DEAD   #
@@ -68,7 +68,7 @@ abstract public class DispatchConnection implements I_Timeout
    private int logInterval = 10;
 
    /**
-    * Flag if the remote server is reachable but is not willing to process our requests (standby mode). 
+    * Flag if the remote server is reachable but is not willing to process our requests (standby mode).
     * This flag is only evaluated in POLLING state
     */
    protected boolean serverAcceptsRequests = false;
@@ -76,9 +76,9 @@ abstract public class DispatchConnection implements I_Timeout
    protected long previousBytesWritten;
    protected long previousBytesRead;
    private boolean bypassPingOnActivity = true;
-   
+
    /**
-    * Our loadPlugin() and initialize() needs to be called next. 
+    * Our loadPlugin() and initialize() needs to be called next.
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
     * @param address The address i shall connect to
     */
@@ -89,7 +89,7 @@ abstract public class DispatchConnection implements I_Timeout
       this.glob = glob;
 
       this.logEveryMillis = glob.getProperty().get("dispatch/logRetryEveryMillis", 60000L); // every minute a log
-      if (log.isLoggable(Level.FINE)) 
+      if (log.isLoggable(Level.FINE))
          log.fine("dispatch/logRetryEveryMillis=" + this.logEveryMillis);
       this.connectionsHandler = connectionsHandler;
       this.myId = connectionsHandler.getDispatchManager().getQueue().getStorageId().getId() + " ";
@@ -97,7 +97,7 @@ abstract public class DispatchConnection implements I_Timeout
    }
 
    public void setAddress(AddressBase address)  throws XmlBlasterException {
-      if (log.isLoggable(Level.FINE)) 
+      if (log.isLoggable(Level.FINE))
          log.fine(ME +  "setAddress: configuration has changed (with same url) set to new address object");
       this.address = address;
    }
@@ -107,8 +107,8 @@ abstract public class DispatchConnection implements I_Timeout
     */
    abstract public String getName();
 
-   /** 
-    * Connects on protocol level to the server and tries a ping. 
+   /**
+    * Connects on protocol level to the server and tries a ping.
     * Needs to be called after construction
     * <p>
     * Calls connectLowLevel() which needs to be implemented by derived classes
@@ -183,14 +183,14 @@ abstract public class DispatchConnection implements I_Timeout
    abstract public void resetConnection();
 
    /**
-    * The derived class should create an instance of the protocol driver. 
+    * The derived class should create an instance of the protocol driver.
     */
    abstract public void loadPlugin() throws XmlBlasterException;
 
    /**
-    * Connect on protocol layer and try an initial low level ping. 
+    * Connect on protocol layer and try an initial low level ping.
     * @exception XmlBlasterException with ErrorCode.COMMUNICATION* if server is not reachable
-    *            or other exceptions on other errors 
+    *            or other exceptions on other errors
     */
    abstract public void connectLowlevel() throws XmlBlasterException;
 
@@ -198,26 +198,26 @@ abstract public class DispatchConnection implements I_Timeout
    abstract public String getDriverName();
 
    /**
-    * Send the messages. 
-    * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content. 
+    * Send the messages.
+    * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content.
     * msgArr[i].getReturnObj() transports the returned string array from the client which is decrypted
     * if necessary, for oneway updates it is null
     */
    abstract public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException;
 
    /**
-    * Should be overwritten by extending classes. 
+    * Should be overwritten by extending classes.
     */
    abstract public I_ProgressListener registerProgressListener(I_ProgressListener listener);
 
    /**
-    * Send the messages back to the client. 
+    * Send the messages back to the client.
     * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content
     * @return The returned string from the client which is decrypted if necessary, for oneway updates it is null
     */
    public void send(MsgQueueEntry[] msgArr) throws XmlBlasterException
    {
-      if (log.isLoggable(Level.FINER)) log.finer(ME + "send(msgArr.length=" + msgArr.length + ")"); 
+      if (log.isLoggable(Level.FINER)) log.finer(ME + "send(msgArr.length=" + msgArr.length + ")");
       if (msgArr == null || msgArr.length == 0) return; // assert
 
       if (isDead()) { // assert
@@ -253,7 +253,7 @@ abstract public class DispatchConnection implements I_Timeout
    }
 
    /**
-    * Does the real ping to the remote server instance. 
+    * Does the real ping to the remote server instance.
     * @param data QoS, never null
     * @return ping return QoS, never null
     * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
@@ -268,7 +268,7 @@ abstract public class DispatchConnection implements I_Timeout
    }
 
    /**
-    * Ping the xmlBlaster server or callback server of the client. 
+    * Ping the xmlBlaster server or callback server of the client.
     * Sets serverAcceptsRequests to false if the protocol reaches the remote server but this
     * is in standby mode.
     * @param byDispatchConnectionsHandler true if invoked by DispatchConnectionsHandler
@@ -281,22 +281,22 @@ abstract public class DispatchConnection implements I_Timeout
          log.severe(ME + "Protocol driver is in state DEAD, ping failed");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Protocol driver is in state DEAD, ping failed");
       }
-      
+
       data = (data==null)?"":data;
       boolean stalled = false;
-      DispatchStatistic stats = this.connectionsHandler.getDispatchStatistic(); 
+      DispatchStatistic stats = this.connectionsHandler.getDispatchStatistic();
       try {
-         if (log.isLoggable(Level.FINE)) 
+         if (log.isLoggable(Level.FINE))
             log.fine(ME + stats.toXml(""));
-         
+
          // check if an ongoing write operation on the same client
          if ((stats.ongoingWrite() || stats.ongoingRead()) && this.bypassPingOnActivity) {
-            if (log.isLoggable(Level.FINE)) 
+            if (log.isLoggable(Level.FINE))
                log.fine(ME + "AN ONGOING WRITE- OR READ OPERATION WHILE PINGING");
             long currentBytesWritten = stats.getOverallBytesWritten() + stats.getCurrBytesWritten();
             long currentBytesRead = stats.getOverallBytesRead() + stats.getCurrBytesRead();
             if (this.previousBytesWritten != currentBytesWritten || this.previousBytesRead != currentBytesRead) {
-               if (log.isLoggable(Level.FINE)) 
+               if (log.isLoggable(Level.FINE))
                   log.fine(ME + "there was an activity since last ping, previousWritten='" + this.previousBytesWritten + "' and currentWritten='" + currentBytesWritten + "' previousRead='" + this.previousBytesRead + "' currentRead='" + currentBytesRead + "'");
                this.previousBytesWritten = currentBytesWritten;
                this.previousBytesRead = currentBytesRead;
@@ -307,7 +307,7 @@ abstract public class DispatchConnection implements I_Timeout
             else {
                if (forcePingFailure()) {
                   if (log.isLoggable(Level.FINE)) {
-                     String debug = " currentBytesWritten='" + currentBytesWritten + "' currentBytesRead='" + currentBytesRead + "'"; 
+                     String debug = " currentBytesWritten='" + currentBytesWritten + "' currentBytesRead='" + currentBytesRead + "'";
                      log.fine(ME + "there was NO activity since last ping, throwing an exception" + debug);
                   }
                   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT,
@@ -318,7 +318,7 @@ abstract public class DispatchConnection implements I_Timeout
                         true);  /* We need to set serverSide==true ! */
                }
                else {
-                  String debug = " currentBytesWritten='" + currentBytesWritten + "' currentBytesRead='" + currentBytesRead + "'"; 
+                  String debug = " currentBytesWritten='" + currentBytesWritten + "' currentBytesRead='" + currentBytesRead + "'";
                   log.fine(ME + "there was NO activity since last ping, will set the connection to stalled. " + debug);
                   stalled = true;
                   return Constants.RET_OK;
@@ -328,7 +328,7 @@ abstract public class DispatchConnection implements I_Timeout
          stalled = false;
          this.previousBytesWritten = stats.getOverallBytesWritten() + stats.getCurrBytesWritten();
          this.previousBytesRead = stats.getOverallBytesRead() + stats.getCurrBytesRead();
-         
+
          long now = System.currentTimeMillis();
          String returnVal = doPing(data);
          this.connectionsHandler.getDispatchStatistic().setPingRoundTripDelay(System.currentTimeMillis() - now);
@@ -345,13 +345,13 @@ abstract public class DispatchConnection implements I_Timeout
                            true);  /* We need to set serverSide==true ! */
             }
          }
-         if (log.isLoggable(Level.FINE) && isAlive()) 
+         if (log.isLoggable(Level.FINE) && isAlive())
             log.fine(ME + "Success for ping('" + data + "'), return='" + returnVal + "'");
          handleTransition(byDispatchConnectionsHandler, null);
          return returnVal;
       }
       catch (Throwable e) { // the remote ping does not throw any XmlBlasterException, see xmlBlaster.idl
-         if (isAlive() && log.isLoggable(Level.FINE)) 
+         if (isAlive() && log.isLoggable(Level.FINE))
             log.fine(ME + "Exception from remote ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString() + ": " + e.toString());
          e = processResponseTimeoutException(stats, e);
          if (e == null)
@@ -364,9 +364,9 @@ abstract public class DispatchConnection implements I_Timeout
             stats.setStalled(stalled);
       }
    }
-   
+
    /**
-    * Returns true if it is an XmlBlasterException with error code COMMUNICATION_RESPONSETIMEOUT, false otherwise 
+    * Returns true if it is an XmlBlasterException with error code COMMUNICATION_RESPONSETIMEOUT, false otherwise
     * @param e
     * @return
     */
@@ -381,9 +381,9 @@ abstract public class DispatchConnection implements I_Timeout
       }
       return false;
    }
-   
+
    /**
-    * 
+    *
     * @param e the original Communication Exception
     * @return the original communication exception or null if it wants to force a 'stalled' in case a ping timeout occured
     */
@@ -395,17 +395,18 @@ abstract public class DispatchConnection implements I_Timeout
       }
       return e;
    }
-   
+
    /** On reconnect polling try to establish the connection */
    abstract protected void reconnect() throws XmlBlasterException;
 
    /**
-    * We are notified to do the next ping or reconnect polling. 
+    * We are notified to do the next ping or reconnect polling.
     * <p />
     * When connected, we ping<br />
     * When connection is lost, we do reconnect polling
     * @param userData You get bounced back your userData which you passed
     *                 with Timeout.addTimeoutListener()
+    *                 here it is "poll" or null
     */
    public final void timeout(Object userData) {
       this.timerKey = null;
@@ -416,7 +417,7 @@ abstract public class DispatchConnection implements I_Timeout
       boolean isPing = (userData == null);
 
       if (isPing) {
-         if (log.isLoggable(Level.FINE)) 
+         if (log.isLoggable(Level.FINE))
             log.fine(ME + " timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
          try {
             /*String result = */ping("", false);
@@ -437,7 +438,7 @@ abstract public class DispatchConnection implements I_Timeout
             reconnect(); // The ClientDispatchConnection may choose to ping only
             try {
                /*String result = */ping("", false);
-            } 
+            }
             catch (XmlBlasterException e) {
                if (isDead()) {
                   if (log.isLoggable(Level.FINE)) log.fine(ME + "We are shutdown already: " + e.toString());
@@ -480,7 +481,7 @@ abstract public class DispatchConnection implements I_Timeout
       XmlBlasterException ex = (throwable == null) ? null : ((throwable instanceof XmlBlasterException) ? (XmlBlasterException)throwable : null);
       ConnectionStateEnum oldState = this.state;
       this.serverAcceptsRequests = (ex == null) ? true : !ex.isErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY);
-      this.physicalConnectionOk = (ex == null || 
+      this.physicalConnectionOk = (ex == null ||
                                    glob.isServerSide() && !ex.isServerSide() ||
                                    !glob.isServerSide() && ex.isServerSide()) ? true : false;
       if (ex != null) {
@@ -541,7 +542,7 @@ abstract public class DispatchConnection implements I_Timeout
             }
             return;
          }
-      
+
          if (timerKey != null) {
             this.glob.getPingTimer().removeTimeoutListener(timerKey);
             timerKey = null;
@@ -611,17 +612,17 @@ abstract public class DispatchConnection implements I_Timeout
                    ", maxRetries=" + this.address.getRetries());
 
       connectionsHandler.toDead(this, ex);
-      
+
       if (byDispatchConnectionsHandler) {
          throw ex;
       }
-      else { 
+      else {
          // ping timer thread, no sense to throw an exception:
       }
    }
 
    /**
-    * Stop all remote connections. 
+    * Stop all remote connections.
     */
    public void shutdown() throws XmlBlasterException {
       this.state = ConnectionStateEnum.DEAD;
@@ -660,14 +661,14 @@ abstract public class DispatchConnection implements I_Timeout
     * @return internal state as an XML ASCII string
     */
    abstract public String toXml(String extraOffset);
-   
+
    /**
-    * 
+    *
     * @return true if the implementation has to throw an exception in case the ping is invoked when
     * there is an ongoing write or read operation on the same connection.
     * Normally it shall give false on the callback and true on the client side. The client side shall
-    * give true because otherwise if such a situation arizes it will never go in polling and no 
-    * reconnect will be triggered. 
+    * give true because otherwise if such a situation arizes it will never go in polling and no
+    * reconnect will be triggered.
     */
    abstract protected boolean forcePingFailure();
 }

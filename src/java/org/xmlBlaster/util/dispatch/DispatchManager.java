@@ -32,7 +32,7 @@ import java.util.HashSet;
 
 /**
  * Manages the sending of messages and commands and does error recovery
- * further we communicate with the dispatcher plugin if one is configured. 
+ * further we communicate with the dispatcher plugin if one is configured.
  * <p />
  * There is one instance of this class per queue and remote connection.
  * @author xmlBlaster@marcelruff.info
@@ -77,7 +77,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    private boolean dispatcherActive = true;
 
    private SessionName sessionName;
-   
+
    /**
     * @param msgQueue The message queue which i use (!!! TODO: this changes, we should pass it on every method where needed)
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
@@ -103,7 +103,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.dispatchConnectionsHandler = this.glob.createDispatchConnectionsHandler(this);
       this.connectionStatusListeners = new HashSet();
       if (connectionStatusListener != null) this.connectionStatusListeners.add(connectionStatusListener);
-      
+
       initDispatcherActive(addrArr);
 
       /*
@@ -134,13 +134,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public SessionName getSessionName() {
       return this.sessionName;
    }
-   
+
    public boolean isSyncMode() {
       return this.isSyncMode;
    }
 
    /**
-    * Set behavior of dispatch framework. 
+    * Set behavior of dispatch framework.
     * @param trySyncMode true: client side queue embedding, false: server side callback queue
     * defaults to false
     */
@@ -150,7 +150,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Reconfigure dispatcher with given properties. 
+    * Reconfigure dispatcher with given properties.
     *
     * Note that only a limited re-configuration is supported
     * @param addressArr The new configuration
@@ -170,14 +170,14 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /*
-    * Register yourself if you want to be informed about the remote connection status. 
+    * Register yourself if you want to be informed about the remote connection status.
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java)
     * @return true if we did not already contain the specified element.
     */
    public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
       return this.connectionStatusListeners.add(connectionStatusListener);
    }
-   
+
    public synchronized boolean addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener, boolean fireInitial) {
       if (connectionStatusListener == null) return true;
       boolean ret = this.connectionStatusListeners.add(connectionStatusListener);
@@ -192,7 +192,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       return ret;
    }
 
-   
+
    /**
     * Remove the given listener
     * @param connectionStatusListener
@@ -201,9 +201,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public synchronized boolean removeConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
       return this.connectionStatusListeners.remove(connectionStatusListener);
    }
-   
+
    public synchronized I_ConnectionStatusListener[] getConnectionStatusListeners() {
-      if (this.connectionStatusListeners.size() == 0) 
+      if (this.connectionStatusListeners.size() == 0)
          return new I_ConnectionStatusListener[0];
       return (I_ConnectionStatusListener[])this.connectionStatusListeners.toArray(new I_ConnectionStatusListener[this.connectionStatusListeners.size()]);
    }
@@ -232,7 +232,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
    /**
     * How many messages maximum shall the callback thread take in one bulk out of the
-    * callback queue and deliver in one bulk. 
+    * callback queue and deliver in one bulk.
     */
    public final int getBurstModeMaxEntries() {
       return this.burstModeMaxEntries;
@@ -240,14 +240,14 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
    /**
     * How many bytes maximum shall the callback thread take in one bulk out of the
-    * callback queue and deliver in one bulk. 
+    * callback queue and deliver in one bulk.
     */
    public final long getBurstModeMaxBytes() {
       return this.burstModeMaxBytes;
    }
 
    /**
-    * Get timestamp when we went to ALIVE state. 
+    * Get timestamp when we went to ALIVE state.
     * @return millis timestamp
     */
    public final long getAliveSinceTime() {
@@ -255,7 +255,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Get timestamp when we went to POLLING state. 
+    * Get timestamp when we went to POLLING state.
     * @return millis timestamp
     */
    public final long getPollingSinceTime() {
@@ -268,7 +268,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * but we don't know yet if it ever is able to connect
     */
    void toAlive(ConnectionStateEnum oldState) {
-      
+
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Switch from " + oldState + " to ALIVE");
 
       // Remember the current collectTime
@@ -341,7 +341,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME,
                   "Switch from " + oldState + " to DEAD, reason is not known");
       }
-      
+
       // 1. We allow a client to intercept and for example destroy all entries in the queue
       I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
       for (int i=0; i<listeners.length; i++) {
@@ -363,14 +363,14 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       getMsgErrorHandler().handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
       shutdown();
    }
-   
+
    /**
     * Called by DispatchWorker if an Exception occured in sync mode
     */
    void handleSyncWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
 
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Sync delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
-      
+
       XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,ME,null,throwable);
 
       if (xmlBlasterException.isUser()) {
@@ -489,7 +489,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * We register a QueuePutListener and all put() into the queue are
     * intercepted - our put() is called instead.
     * We then deliver this QueueEntry directly to the remote
-    * connection and return synchronously the returned value or the 
+    * connection and return synchronously the returned value or the
     * Exception if one is thrown.
     */
    public void switchToSyncMode() {
@@ -501,7 +501,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
          this.isSyncMode = true;
          log.info(ME+": Switched to synchronous message delivery");
-         
+
          if (this.timerKey != null)
             log.severe(ME+": Burst mode timer was activated and we switched to synchronous delivery" +
                           " - handling of this situation is not coded yet");
@@ -510,7 +510,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Switch back to asynchronous mode. 
+    * Switch back to asynchronous mode.
     * Our thread pool will take the messages out of the queue
     * and deliver them in asynchronous mode.
     */
@@ -544,12 +544,12 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          if (this.inAliveTransition) {
             // Do not allow other threads to put messages to queue during transition to alive
             synchronized (ALIVE_TRANSITION_MONITOR) {
-               // don't allow 
+               // don't allow
             }
          }
          return true; // Add entry to queue
       }
-      
+
       if (log.isLoggable(Level.FINE)) log.fine(ME+": putPre() - Got " + queueEntries.length + " QueueEntries to deliver synchronously ...");
       ArrayList entryList = new ArrayList(queueEntries.length);
       for (int ii=0; ii<queueEntries.length; ii++) {
@@ -653,14 +653,14 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Counts how often a new entry was added since the current worker thread was started. 
+    * Counts how often a new entry was added since the current worker thread was started.
     */
    public int getNotifyCounter() {
       return this.notifyCounter;
    }
 
    /**
-    * Give the callback worker thread a kick to deliver the messages. 
+    * Give the callback worker thread a kick to deliver the messages.
     * Throws no exception.
     */
    private void activateDispatchWorker() {
@@ -679,7 +679,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     */
    private boolean useBurstModeTimer() {
       if (collectTime <= 0L) return false;
-      
+
       // Messages are sent delayed on timeout (burst mode)
 
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Executing useBurstModeTimer() collectTime=" + collectTime + " dispatchWorkerIsActive=" + dispatchWorkerIsActive);
@@ -704,7 +704,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          }
       }
    }
-   
+
    /**
     * @param fromTimeout for logging only
     */
@@ -748,6 +748,22 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
+    * Can be called when client connection is lost (NOT the callback connection).
+    * Currently only detected by the SOCKET protocol plugin.
+    * Others can only detect lost clients with their callback protocol pings
+    */
+   public void lostClientConnection() {
+      log.warning(ME+": Lost client connection");
+      DispatchConnection dispatchConnection = this.dispatchConnectionsHandler.getCurrentDispatchConnection();
+      if (dispatchConnection != null) {
+         //dispatchConnection.timeout(null); // force a ping
+         // If SOCKET: the cb connection is lost as well and we can go to polling mode
+         // force a ping via another thread
+         this.glob.getPingTimer().addTimeoutListener(dispatchConnection, 0L, null);
+      }
+   }
+
+   /**
     * @param isPublisherThread We take care that the publisher thread, coming through putPost()
     *        does never too much work to return fast enough and avoid possible dead locks.
     * @return true is status is OK and we can try to send a message
@@ -782,7 +798,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       if (this.dispatchConnectionsHandler.isDead() && !isPublisherThread) {
          String text = "No recoverable remote connection available, giving up queue " + msgQueue.getStorageId() + ".";
          if (log.isLoggable(Level.FINE)) log.fine(ME+": "+text);
-         givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text)); 
+         givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text));
          return false;
       }
 
@@ -798,7 +814,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          return true;
       }
 
-      /* 
+      /*
        * The msgInterceptor plugin needs to have a chance to take care of this even in polling mode
        */
       if (this.dispatchConnectionsHandler.isPolling()) {
@@ -836,7 +852,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Switch on/off the sending of messages. 
+    * Switch on/off the sending of messages.
     */
    private void initDispatcherActive(AddressBase[] addrArr) {
       if (addrArr != null) {
@@ -973,7 +989,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
       return sb.toString();
    }
-   
+
    /**
     * Inhibits/activates the delivery of asynchronous dispatches of messages.
     * @param dispatcherActive
@@ -982,15 +998,15 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.dispatcherActive = dispatcherActive;
       if (this.dispatcherActive) notifyAboutNewEntry();
    }
-   
+
    /**
-    * 
-    * @return true if the dispacher is currently activated, i.e. if it is 
+    *
+    * @return true if the dispacher is currently activated, i.e. if it is
     * able to deliver asynchronousy messages from the callback queue.
     */
    public boolean isDispatcherActive() {
       return this.dispatcherActive;
    }
-   
-   
+
+
 }
