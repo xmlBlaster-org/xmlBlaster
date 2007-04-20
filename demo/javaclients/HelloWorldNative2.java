@@ -17,13 +17,14 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
 
 /**
- * This native client plugin is loaded by xmlBlaster on startup, 
- * it then connects to xmlBlaster and subscribes to a topic and publishes a message. 
+ * This native client plugin is loaded by xmlBlaster on startup,
+ * it then connects to xmlBlaster and subscribes to a topic and publishes a message.
  * <p />
  * You need to register this plugin to xmlBlasterPlugins.xml, for example:
  * <pre>
@@ -109,7 +110,9 @@ public class HelloWorldNative2 implements I_Plugin
       this.pluginInfo = pluginInfo;
       this.glob = glob.getClone(glob.getNativeConnectArgs()); // Sets  "-protocol LOCAL" etc.
 
-      this.glob.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
+      // "ServerNodeScope"
+      this.glob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
+
       this.loginName = glob.get("loginName", "NO_LOGIN_NAME_CONFIGURED", null, pluginInfo);
       this.topicName = glob.get("topicName", "NO_TOPIC_NAME_CONFIGURED", null, pluginInfo);
 
