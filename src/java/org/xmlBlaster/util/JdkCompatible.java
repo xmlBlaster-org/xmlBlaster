@@ -17,6 +17,9 @@ import java.util.Properties;
  */
 public class JdkCompatible
 {
+    private static final float majorJavaVersion = getMajorJavaVersion();
+    public static final float DEFAULT_JAVA_VERSION = 1.3f;
+
    /**
     * System.setProperty(String, String); is since JDK 1.2
     * This method supports JDK 1.1 as well
@@ -33,5 +36,56 @@ public class JdkCompatible
       }
    }
 
+   /**
+     * Parses the java version system property to determine the major java version,
+     * ie 1.x
+     *
+     * @return A float of the form 1.x
+     */
+    private static final float getMajorJavaVersion() {
+        try {
+            return Float.parseFloat(System.getProperty("java.specification.version"));
+        } catch ( NumberFormatException e ){
+            // Some JVMs may not conform to the x.y.z java.version format
+            return DEFAULT_JAVA_VERSION;
+        }
+    }
+
+    public static boolean is14() {
+        return majorJavaVersion >= 1.4f;
+    }
+
+    public static boolean is15() {
+        return majorJavaVersion >= 1.5f;
+    }
+
+    public static boolean is16() {
+        return majorJavaVersion >= 1.6f;
+    }
+
+    public static boolean isSun() {
+        return System.getProperty("java.vm.vendor").indexOf("Sun") != -1;
+    }
+
+    public static boolean isApple() {
+        return System.getProperty("java.vm.vendor").indexOf("Apple") != -1;
+    }
+
+    public static boolean isHPUX() {
+        return System.getProperty("java.vm.vendor").indexOf("Hewlett-Packard Company") != -1;
+    }
+
+    public static boolean isIBM() {
+    	return System.getProperty("java.vm.vendor").indexOf("IBM") != -1;
+    }
+
+    public static boolean isBlackdown() {
+        return System.getProperty("java.vm.vendor").indexOf("Blackdown") != -1;
+    }
+    
+    public static boolean isBEAWithUnsafeSupport() {
+        // This property should be "BEA Systems, Inc."
+        return System.getProperty("java.vm.vendor").indexOf("BEA") != -1;
+    }
 } // class JdkCompatible
 
