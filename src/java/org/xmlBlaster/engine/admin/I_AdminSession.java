@@ -13,7 +13,7 @@ import org.xmlBlaster.util.admin.I_AdminUsage;
 import org.xmlBlaster.util.qos.ConnectQosDataMBean;
 
 /**
- * Declares available methods of a session for administration. 
+ * Declares available methods of a session for administration.
  * <p />
  * SNMP or telnet tools can access only the here declared properties.<br />
  * This interface is implemented by SessionInfo.java, delivering the meat.
@@ -40,13 +40,13 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    /** Get the estimated date when the session expires if no refresh occures */
    public String getSessionTimeoutExpireDate();
    /**
-    * Get the date when last time a ALIVE state was reached. 
+    * Get the date when last time a ALIVE state was reached.
     * An alive client is reachable with its callback connection.
     * @return For example "2005-03-21 11:18:12.622"
     */
    public String getAliveSinceDate();
    /**
-    * Get the date when last time a POLLING state was reached. 
+    * Get the date when last time a POLLING state was reached.
     * A polling client is not reachable with its callback connection.
     * @return For example "2005-03-21 11:18:12.622"
     */
@@ -60,12 +60,12 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public String getLastCallbackException();
 
    /**
-    * Clear the last exception text. 
+    * Clear the last exception text.
     */
    public void clearLastCallbackException();
 
    /**
-    * Holds the total amount of exceptions since startup. 
+    * Holds the total amount of exceptions since startup.
     * @return The number of exceptions occurred
     */
    public int getNumCallbackExceptions();
@@ -95,7 +95,7 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    /* Overall bytes received since startup */
    /*public long getOverallBytesRead(); */
    /**
-    * The number of bytes read from the currently outgoing message or response. 
+    * The number of bytes read from the currently outgoing message or response.
     * Note: Currently only implemented by the SOCKET protocol driver
     * @return Number of bytes written
     */
@@ -116,30 +116,36 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public long getCbQueueNumMsgs();
    /** How many messages are max. allowed in this clients session callback queue */
    public long getCbQueueMaxMsgs();
-   
+
    /**
-    * Measures the round trip for the last ping() invocation in milli seconds.  
+    * Send a ping to the clients callback server.
+    * @return Returns the pingRoundTripDelay.
+    */
+   public String pingClientCallbackServer();
+
+   /**
+    * Measures the round trip for the last ping() invocation in milli seconds.
     * @return Returns the pingRoundTripDelay.
     */
    public long getPingRoundTripDelay();
 
    /**
     * Measures the round trip for the last remote method invocation in milli seconds.
-    * For example <code>update(), publish(), subscribe()</code>  
+    * For example <code>update(), publish(), subscribe()</code>
     * @return Returns the roundTripDelay.
     */
    public long getRoundTripDelay();
    /** Comma separated list of all subscribed topic oids of this login session */
    public String[] getSubscribedTopics();
    /**
-    * Invoke operation to unSubscribe one/many topics. 
+    * Invoke operation to unSubscribe one/many topics.
     * @param url The topic oid/xpath to unSubscribe (e.g. "Hello" or "xpath://key")
     * @param qos The qos XML string (e.g. "" or "<qos/>")
     * @return The status string
     */
    public String[] unSubscribe(String url, String qos) throws XmlBlasterException;
    /**
-    * Invoke operation to unSubscribe one topic by index listed. 
+    * Invoke operation to unSubscribe one topic by index listed.
     * @param index 0 will kill the first listed subscription, 1 the second and so forth
     * @param qos The qos XML string (e.g. "" or "<qos/>")
     * @return The status string
@@ -162,10 +168,10 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    /** Invoke operation to destroy the session (force logout) */
    public String killSession() throws XmlBlasterException;
    /**
-    * Activates/inhibits the dispatch of messages to this session. 
+    * Activates/inhibits the dispatch of messages to this session.
     * This is a very helpful operation as you can temporary stop sending
     * messages to a client, they are nicely queued and after activating again
-    * the messages are send. 
+    * the messages are send.
     * @param dispatcherActive true: callback messages are send to the client if connected
     *        false: messages are hold back
     */
@@ -179,13 +185,13 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     */
    public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException;
    /**
-    * Peek messages from callback queue and dump them to a file, they are not removed. 
+    * Peek messages from callback queue and dump them to a file, they are not removed.
     * @param numOfEntries The number of messages to peek, taken from the front
     * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The absolute file names dumped
     */
    public String[] peekCallbackMessagesToFile(int numOfEntries, String path) throws Exception;
-   
+
    /**
     *  Gets the entries in the callback queue according
     *  to what is specified in the querySpec
@@ -195,7 +201,7 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public MsgUnit[] getCallbackQueueEntries(String querySpec) throws XmlBlasterException;
 
    /**
-    * Removes all callback entries. 
+    * Removes all callback entries.
     * @return The number of entries erased
     */
    public long clearCallbackQueue();
@@ -208,9 +214,9 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @throws Exception if the underlying implementation gets an exception.
     */
    public long removeFromCallbackQueue(long numOfEntries) throws Exception;
-   
+
    /**
-    * Access all known remote properties kept in this session. 
+    * Access all known remote properties kept in this session.
     * The remote properties are client side settings send to the
     * server, they contain informations which, for example,
     * can be used by the EventPlugin to alert administrators.
@@ -225,15 +231,15 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @return A string describing success
     */
    public String clearRemotePropertiesStartingWith(String prefix);
-   
+
    /**
-    * Remove all remote properties from this session. 
+    * Remove all remote properties from this session.
     * @return Some receipt text
     */
    public String clearRemoteProperties();
 
    /**
-    * Add a remote property. 
+    * Add a remote property.
     * Usually this is done by a publish of a client, but for
     * testing reasons we can to it here manually.
     * If the key exists, its value is overwritten
@@ -243,14 +249,14 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html">The admin.events requirement</a>
     */
    public String addRemoteProperty(String key, String value);
-   
+
    // Used internally
    public ConnectQosServer getConnectQos();
-   
+
    /**
     * Returns true if the connection is currently stalled (detected in the dispatch statistics when pinging).
     * @return
     */
    public boolean isStalled();
-   
+
 }

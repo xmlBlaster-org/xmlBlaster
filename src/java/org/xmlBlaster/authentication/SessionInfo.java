@@ -763,6 +763,15 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       return this.sessionQueue.getMaxNumOfEntries();
    }
 
+   public String pingClientCallbackServer() {
+      DispatchManager dispatchManager = this.dispatchManager;
+      if (dispatchManager != null) {
+         dispatchManager.pingCallbackServer(true);
+         return "Ping done in " + getPingRoundTripDelay() + " millis, current state is " + dispatchManager.getDispatchConnectionsHandler().getState().toString();
+      }
+      return "No ping because of no callback";
+   }
+
    public long getPingRoundTripDelay() {
       return getDispatchStatistic().getPingRoundTripDelay();
    }

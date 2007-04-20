@@ -12,7 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
- * SessionInfoProtector protects SessionInfo.java from direct access by administrative tasks. 
+ * SessionInfoProtector protects SessionInfo.java from direct access by administrative tasks.
  * <p>
  * See javadoc of SessionInfo.java
  * </p>
@@ -121,7 +121,11 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public final long getCbQueueMaxMsgs() {
       return this.sessionInfo.getCbQueueMaxMsgs();
    }
-   
+
+   public String pingClientCallbackServer() {
+      return this.sessionInfo.pingClientCallbackServer();
+   }
+
    public long getPingRoundTripDelay() {
       return this.sessionInfo.getPingRoundTripDelay();
    }
@@ -182,15 +186,15 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public final String killSession() throws XmlBlasterException {
       return this.sessionInfo.killSession();
    }
-   
+
    public void setDispatcherActive(boolean dispatcherActive) {
       this.sessionInfo.setDispatcherActive(dispatcherActive);
    }
-   
+
    public boolean getDispatcherActive() {
       return this.sessionInfo.getDispatcherActive();
    }
-     
+
    public String[] peekCallbackMessages(int numOfEntries) throws XmlBlasterException {
       return this.sessionInfo.peekCallbackMessages(numOfEntries);
    }
@@ -236,7 +240,7 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public final boolean isPersistent() {
       return this.sessionInfo.getConnectQos().getData().isPersistent();
    }
-   
+
    public String[] getRemoteProperties() {
       ClientProperty[] cp = this.sessionInfo.getRemotePropertyArr();
       String[] arr = new String[cp.length];
@@ -244,7 +248,7 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
          arr[i] = cp[i].toXml("", "remoteProperty", true).trim();
       return arr;
    }
-   
+
    public String clearRemotePropertiesStartingWith(String prefix) {
       ClientPropertiesInfo info = this.sessionInfo.getRemoteProperties();
       if (info == null || prefix == null) return "No remote properties found, nothing to clear";
@@ -275,7 +279,7 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       else
          return "Replaced existing client property '" + old.toXml("", "remoteProperty").trim() + "'";
    }
-   
+
    /** JMX */
    public java.lang.String usage() {
       return this.sessionInfo.usage();
@@ -286,11 +290,11 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    }
    /* JMX dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {}
-   
+
    public ConnectQosServer getConnectQos() {
       return this.sessionInfo.getConnectQos();
    }
-   
+
    public boolean isStalled() {
       return this.sessionInfo.isStalled();
    }
