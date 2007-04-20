@@ -381,7 +381,7 @@ java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keyStore tes
                                                      -plugin/socket/keyStorePassword testtest
       </pre>
       <p>
-      and finally we start a client to test it:
+      and finally we start a client to test it (Note: Under real conditions never pass the 'testStore' file itself to the client, for more details read the next section about certificates):
       </p>
       <pre>
 java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/trustStore testStore
@@ -457,7 +457,7 @@ keytool -import -alias xmlBlaster -file xmlBlasterTrustStore.Cert -keystore test
       </p>
       <tt>
 keytool -list -v  -storepass testtest -keystore testStore.joe<br />
-keytool -list -v  -storepass testtest -keystore testStore
+keytool -list -v  -storepass testtest -keystore testStore<br />
 keytool -printcert -file xmlBlasterTrustStore.Cert
       </tt>
 
