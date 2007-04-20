@@ -40,7 +40,7 @@ public class XmlToDom
     */
    public XmlToDom(Global glob, String xmlKey_literal) throws XmlBlasterException
    {
-      this.glob = glob;
+      this.glob = (glob == null) ? Global.instance() : glob;
 
       create(xmlKey_literal);
    }
@@ -99,7 +99,7 @@ public class XmlToDom
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
+    * Fills the DOM tree, and assures that a valid <key oid=""> is used.
     */
    public final org.w3c.dom.Node getRootNode() throws XmlBlasterException
    {
@@ -109,7 +109,7 @@ public class XmlToDom
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid=""> is used. 
+    * Fills the DOM tree, and assures that a valid <key oid=""> is used.
     * <p>
     * The keyOid will be set properly if no error occurs
     * The rootNode will be set properly if no error occurs
@@ -130,6 +130,7 @@ public class XmlToDom
       //input.setEncoding("ISO-8859-2");
       //input.setSystemId("9999999999");
       final String ME = "DOMParser";
+      if (glob == null) glob = Global.instance();
       try {
          DocumentBuilderFactory dbf = glob.getDocumentBuilderFactory();
          DocumentBuilder db = dbf.newDocumentBuilder();
@@ -158,7 +159,7 @@ public class XmlToDom
 
 
    /**
-    * Dump DOM tree to XML ASCII String. 
+    * Dump DOM tree to XML ASCII String.
     * <p />
     * A header like "<?xml version="1.0" encoding="UTF-8"?>" is removed
     * @param offset indenting of tags with given blanks e.g. "   "
