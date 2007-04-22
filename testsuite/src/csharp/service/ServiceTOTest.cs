@@ -105,7 +105,7 @@ namespace org.xmlBlaster.contrib.service {
          "<services>" +
            "<service>" +
              "<prop key=\"serviceName\">buddy</prop>" +
-             "<prop key=\"query\">getBuddyList</prop>" +
+             "<prop key=\"task\">getBuddyList</prop>" +
              "<prop key=\"resultMime\">application/watchee.service.buddy.buddylist</prop>" +
              "<prop key=\"resultEncoding\">base64</prop>" +
              "<prop key=\"result\">PGJ1ZGR5bGlzdCBsb2dpbk5hbWU9ImpvZUBteWNvbXAuaW5mbyIgdHlwZT0iYWxsIj4KICA8YnVkZHk+CiAgICA8bG9naW5OYW1lPmphY2tAc29tZS5vcmc8L2xvZ2luTmFtZT4KICAgIDxhbGlhcz5qYWNrPC9hbGlhcz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9ImdwcyIgZGVzY3JpcHRpb249IlNob3cgbXkgcG9zaXRpb24iLz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9InhzbXMiIGRlc2NyaXB0aW9uPSJTZW5kL1JlY2VpdmUgbWFpbHMiLz4KICA8L2J1ZGR5Pgo8L2J1ZGR5bGlzdD4=</prop>" +
@@ -126,16 +126,16 @@ namespace org.xmlBlaster.contrib.service {
          {
             string xml = "<?xml version='1.0' encoding='utf-8'?>\r\n<service>"
                + "<prop key='serviceName'>track</prop>"
-               + "<prop key='queryType'>named</prop>"
-               + "<prop key='query'>myStandardTrackIdQuery('Summer')</prop>"
+               + "<prop key='taskType'>named</prop>"
+               + "<prop key='task'>myStandardTrackIdQuery('Summer')</prop>"
                + "<prop key='resultMime'>application/service-buddy</prop>"
                + "</service>";
             ServiceTO service = ServiceTO.parse(xml);
             Assert.IsNotNull(service);
             Assert.AreEqual(4, service.getProps().Count);
             Assert.AreEqual("track", service.getPropValue(PropTO.KEY_SERVICENAME));
-            Assert.AreEqual("named", service.getPropValue(PropTO.KEY_QUERYTYPE));
-            Assert.AreEqual("myStandardTrackIdQuery('Summer')", service.getPropValue(PropTO.KEY_QUERY));
+            Assert.AreEqual("named", service.getPropValue(PropTO.KEY_TASKTYPE));
+            Assert.AreEqual("myStandardTrackIdQuery('Summer')", service.getPropValue(PropTO.KEY_TASK));
             Assert.AreEqual("application/service-buddy", service.getPropValue(PropTO.KEY_RESULTMIME));
          }
 
@@ -143,8 +143,8 @@ namespace org.xmlBlaster.contrib.service {
             string xml = "<?xml version='1.0' encoding='utf-8'?>\r\n"
                + "<services><service>"
                + "<prop key='serviceName'>track</prop>"
-               + "<prop key='queryType'>named</prop>"
-               + "<prop key='query'>myStandardTrackIdQuery('Summer')</prop>"
+               + "<prop key='taskType'>named</prop>"
+               + "<prop key='task'>myStandardTrackIdQuery('Summer')</prop>"
                + "<prop key='resultMime'>application/watchee-service-buddy-</prop>"
                + "</service></services>";
             ServiceListTO serviceList = ServiceListTO.parseStr(xml);

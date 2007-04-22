@@ -26,11 +26,11 @@ namespace org.xmlBlaster.contrib.service {
 
       public static readonly string KEY_SERVICENAME = "serviceName";
 
-      public static readonly string KEY_QUERYTYPE = "queryType";
+      public static readonly string KEY_TASKTYPE = "taskType";
 
       public static readonly string KEY_ENCODING = "encoding";
 
-      public static readonly string KEY_QUERY = "query";
+      public static readonly string KEY_TASK = "task";
 
       /** To send update data */
       public static readonly string KEY_DATA = "data";
@@ -52,13 +52,13 @@ namespace org.xmlBlaster.contrib.service {
       /** Data from client will be bounced back, e.g. for requestId */
       public static readonly string KEY_BOUNCE = "bounce";
 
-      public static readonly string VALUE_QUERYTYPE_NAMED = "named";
+      public static readonly string VALUE_TASKTYPE_NAMED = "named";
 
-      public static readonly string VALUE_QUERYTYPE_EXACT = "exact";
+      public static readonly string VALUE_TASKTYPE_EXACT = "exact";
 
-      public static readonly string VALUE_QUERYTYPE_XPATH = "xpath";
+      public static readonly string VALUE_TASKTYPE_XPATH = "xpath";
 
-      public static readonly string VALUE_QUERYTYPE_UPDATE = "update";
+      public static readonly string VALUE_TASKTYPE_UPDATE = "update";
 
       public static readonly string VALUE_SERVICE_BUDDY = "buddy";
 
@@ -174,7 +174,7 @@ namespace org.xmlBlaster.contrib.service {
          List<PropTO> list = new List<PropTO>();
          bool found = reader.ReadToDescendant(PROP);
          if (found) {
-            string queryEncoding = null;
+            string taskEncoding = null;
             string resultEncoding = null;
             string dataEncoding = null;
             do {
@@ -190,15 +190,15 @@ namespace org.xmlBlaster.contrib.service {
                if (resultEncoding != null && PropTO.KEY_RESULT.Equals(prop.GetKey())) {
                   prop.SetEncoding(resultEncoding);
                }
-               if (queryEncoding != null && PropTO.KEY_QUERY.Equals(prop.GetKey())) {
-                  prop.SetEncoding(queryEncoding);
+               if (taskEncoding != null && PropTO.KEY_TASK.Equals(prop.GetKey())) {
+                  prop.SetEncoding(taskEncoding);
                }
                if (dataEncoding != null && PropTO.KEY_DATA.Equals(prop.GetKey())) {
                   prop.SetEncoding(dataEncoding);
                }
 
                if (resultEncoding == null && PropTO.KEY_RESULT.Equals(prop.GetKey()) ||
-                  queryEncoding == null && PropTO.KEY_QUERY.Equals(prop.GetKey()) ||
+                  taskEncoding == null && PropTO.KEY_TASK.Equals(prop.GetKey()) ||
                   dataEncoding == null && PropTO.KEY_DATA.Equals(prop.GetKey())) {
                   // Expect subtags like "<A><B>Hello</B></A>"
                   string tmp = reader.ReadInnerXml();
@@ -220,7 +220,7 @@ namespace org.xmlBlaster.contrib.service {
 
                // Check if base64 encoded (this tag is a previous sibling before the content prop)
                if (PropTO.KEY_ENCODING.Equals(prop.GetKey())) {
-                  queryEncoding = prop.GetValueRaw();
+                  taskEncoding = prop.GetValueRaw();
                }
                if (PropTO.KEY_RESULTENCODING.Equals(prop.GetKey())) {
                   resultEncoding = prop.GetValueRaw();

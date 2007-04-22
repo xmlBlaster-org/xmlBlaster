@@ -20,8 +20,8 @@ namespace org.xmlBlaster.contrib.service {
    ///   <service>
    ///    <prop key='serviceName'>buddy</prop>
    ///    <prop key='bounce'>myRequestId-5301785</prop>
-   ///    <prop key='queryType'>named</prop>
-   ///    <prop key='query'>getBuddyList</prop>
+   ///    <prop key='taskType'>named</prop>
+   ///    <prop key='task'>getBuddyList</prop>
    ///   </service>
    ///  </services>
    /// </summary>
