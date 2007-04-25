@@ -36,7 +36,7 @@ public interface ReplManagerPluginMBean {
     * @param cascadeSlaveSessionName The Name of the session of the dbWriter to be used for the cascaded replication. Can be null.
     * @param cascadedReplicationPrefix the prefix identifing the DbWatcher for the cascaded replication. Can be null.  
     */
-   String initiateReplication(String slaveSessionName, String replPrefix, String cascadeSlaveSessionName, String cascadeReplPrefix, String realInitialFilesLocation);
+   String initiateReplication(String slaveSessionName, String prefixWithVersion, String cascadeSlaveSessionName, String cascadeReplPrefix, String realInitialFilesLocation);
 
    /**
     * Recreates the triggers for the given replication source.
