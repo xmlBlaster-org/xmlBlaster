@@ -128,8 +128,8 @@ function refresh() {
    <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
    <xsl:param name="activeStatus" select="Attribute[@name='Active']/@value"/>
    <xsl:param name="connectedStatus" select="Attribute[@name='Connection']/@value"/>
-   <xsl:variable name="masterConnectStatus" select="Attribute[@name='MasterConnection']/@value"/>
    <xsl:param name="version" select="Attribute[@name='Version']/@value"/>
+   <xsl:variable name="masterConnectStatus" select="Attribute[@name='MasterConnection']/@value"/>
 
 <!--
    <xsl:param name="sessionName"/>
