@@ -308,7 +308,8 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          keepTransactionOpen = keepOpenProp.getBooleanValue();
          log.fine("Keep transaction open is '" + keepTransactionOpen + "'");
       }
-
+      if (!keepTransactionOpen)
+         this.exceptionInTransaction = false; // make sure we reset it here, otherwise it will not store anything anymore
       ClientProperty endOfTransition = description.getAttribute(ReplicationConstants.END_OF_TRANSITION);
       if (endOfTransition != null && endOfTransition.getBooleanValue()) {
          ClientProperty filenameProp =  description.getAttribute(ReplicationConstants.FILENAME_ATTR);
@@ -571,7 +572,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   if (!keepTransactionOpen) {
                      conn.commit();
                      needRollback = false;
+                     log.fine("Transaction has been committed");
                   }
+                  else
+                     log.fine("The transaction will still be kept open");
                }
                catch (SQLException ex) {
                   log.severe("store: an sql exception occured when trying to commit: " + ex.getMessage());
@@ -589,6 +593,8 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                      throw new Exception(ex);
                }
             }
+            else
+               log.warning("An exception occured in this transaction previously, not doing anything here (no storage will be done)");
          }
          catch (SQLException ex) {
             this.exceptionInTransaction = true;
@@ -615,6 +621,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                if (needRollback && !keepTransactionOpen) {
                   try {
                      conn.rollback();
+                     log.fine("Transaction rolled back");
                   }
                   catch (Throwable ex) {
                      log.severe("store: an exception occured when trying to rollback: " + ex.getMessage());
@@ -636,8 +643,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                }
                if (keepTransactionOpen) // we need to keep the connection
                   this.keptConnection = conn;
-               else
+               else {
                   conn = SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_NO, this.pool);
+                  this.exceptionInTransaction = false; // we make sure to clear this flag
+               }
             }
          }
       }
