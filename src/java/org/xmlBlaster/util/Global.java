@@ -2004,6 +2004,7 @@ public class Global implements Cloneable
          }
          String ret = (pluginConfig == null) ? defaultValue : pluginConfig.getParameters().getProperty(shortKey, defaultValue);
          String prefix = (pluginConfig == null) ? "" : pluginConfig.getPrefix();  // "plugin/" + getType() + "/"
+         ret = getProperty().get(shortKey, ret); // without prefix (global) is weaker than with specific prefix
          ret = getProperty().get(prefix + shortKey, ret);
          if (map != null)
             ret = map.getProperty(shortKey, ret);
