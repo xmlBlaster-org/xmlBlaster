@@ -200,8 +200,19 @@ public class InfoHelper {
                   dest.put(key, ((ClientProperty)obj).getStringValue());
                }
                else {
+                  log.warning("The object identified as '" + key + "' is of type '" + obj.getClass().getName() + "' and will be added as an object");
                   dest.putObject(key, obj);
                }
+            }
+            // add the objects here
+            iter = source.getObjectKeys().iterator();
+            while (iter.hasNext()) {
+               String key = ((String)iter.next()).trim();
+               Object obj = source.getObject(key);
+               Object destObj = dest.getObject(key); 
+               if (destObj != null && destObj != obj)
+                  log.warning("The object identified with '" + key + "' is already in the destination I_Info object");
+               dest.putObject(key, obj);
             }
          }
       }
