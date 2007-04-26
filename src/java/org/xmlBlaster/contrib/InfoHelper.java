@@ -200,7 +200,10 @@ public class InfoHelper {
                   dest.put(key, ((ClientProperty)obj).getStringValue());
                }
                else {
-                  log.warning("The object identified as '" + key + "' is of type '" + obj.getClass().getName() + "' and will be added as an object");
+                  if (obj != null)
+                     log.warning("The object identified as '" + key + "' is of type '" + obj.getClass().getName() + "' and will be added as an object");
+                  else
+                     log.warning("The object identified as '" + key + "' is null and is wether an instance of String nor of ClientProperty");
                   dest.putObject(key, obj);
                }
             }
