@@ -41,6 +41,7 @@ public class SpecificOracle extends SpecificDefault {
    private boolean wipeoutTables;
    private boolean wipeoutSynonyms; 
    private boolean wipeoutIndexes;
+   private boolean wipeoutExIfConnected;
 
    
    /**
@@ -56,6 +57,7 @@ public class SpecificOracle extends SpecificDefault {
       this.debug = this.info.getBoolean("replication.plsql.debug", false);
       this.debugFunction = this.info.get("replication.plsql.debugFunction", null);
 
+      this.wipeoutExIfConnected = this.info.getBoolean("replication.oracle.wipeoutExIfConnected", false);
       this.wipeoutTriggers = this.info.getBoolean("replication.oracle.wipeoutTriggers", true);
       this.wipeoutSequences = this.info.getBoolean("replication.oracle.wipeoutSequences", true);
       this.wipeoutFunctions = this.info.getBoolean("replication.oracle.wipeoutFunctions", true);
@@ -687,6 +689,40 @@ public class SpecificOracle extends SpecificDefault {
          catch (Throwable ex) { ex.printStackTrace(); }
       }
    }
+
+   /**
+    * Gets the number of connected users belonging to this schema.
+    * @param conn
+    * @param schema
+    * @return
+    * @throws Exception
+    */
+   private void checkSchemaConnections(Connection conn, String schema) throws Exception {
+      String testRequest = "select count(*) from V$SESSION where USERNAME='" + schema + "'";
+      Statement st = null;
+      try {
+         st = conn.createStatement();
+         ResultSet rs = st.executeQuery(testRequest);
+         if (rs.next()) {
+            int connectedUsers = rs.getInt(1);
+            if (connectedUsers != 0) {
+               String txt = "There are '" + connectedUsers + "' connected users to the schema '" + schema + 
+                            "' which we want to wipe out. Make sure to log out such users manually. To find out more execute \"" + 
+                            "select * from V$SESSION where USERNAME='" + schema + "'\"";
+               log.warning(txt);
+               if (this.wipeoutExIfConnected)
+                  throw new Exception(txt);
+            }
+         }
+         else {
+            log.warning("The statement '" + testRequest + "' did not return any result, can not determine the number of connected users");
+         }
+      }
+      finally {
+         if (st != null)
+            st.close(); // this also closes the result set
+      }
+   }
    
    private int wipeoutSchemaSingleSweep(String catalog, String schema, boolean[] objectsToWipeout) throws Exception {
       Connection conn = null;
@@ -695,6 +731,8 @@ public class SpecificOracle extends SpecificDefault {
          conn = this.dbPool.reserve();
          conn.setAutoCommit(true);
          
+         // test to see if there are users which are logged in (there should not)
+         checkSchemaConnections(conn, schema);
          try {  
             // TRIGGERS
             if (objectsToWipeout[WIPEOUT_TRIGGERS] && this.wipeoutTriggers) {
