@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="**/client/TestStreamMessages*|**/j2ee/**|**/jms/**|**/test/AllTests*|**/util/JndiDumper*" kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/xmlBlaster"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/xmlunit.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-codec.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
