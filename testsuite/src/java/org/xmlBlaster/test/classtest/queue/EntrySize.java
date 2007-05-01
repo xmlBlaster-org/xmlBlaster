@@ -1,25 +1,25 @@
 package org.xmlBlaster.test.classtest.queue;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.StopWatch;
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
-import org.xmlBlaster.engine.qos.PublishQosServer;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
+import org.xmlBlaster.engine.MsgUnitWrapper;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.qos.PublishQosServer;
+import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.queue.StorageId;
 
 /**
  * Helper to find out size of Queue entries. 
@@ -29,14 +29,11 @@ import org.xmlBlaster.client.key.SubscribeKey;
  * @see org.xmlBlaster.engine.MsgUnitWrapper
  */
 public class EntrySize {
-   private String ME = "EntrySize";
    protected ServerScope glob;
    private static Logger log = Logger.getLogger(EntrySize.class.getName());
-   private StopWatch stopWatch = new StopWatch();
 
    public EntrySize(ServerScope glob) {
       this.glob = glob;
-      this.ME = "EntrySize";
 
       String testcase = this.glob.getProperty().get("testcase", "subscribe");
       if ("update".equalsIgnoreCase(testcase)) {
@@ -253,7 +250,6 @@ public class EntrySize {
    public void subscribeEntry() {
       log.info("************ Starting subscribeEntry " + System.getProperty("java.vm.vendor") + ": " + System.getProperty("java.vm.version"));
       try {
-         SubscribeQos subscribeQos = new SubscribeQos(glob);
          StorageId storageId = new StorageId(Constants.RELATING_CLIENT, "subscribeEntry");
 
          int step = 1000;
@@ -335,7 +331,7 @@ public class EntrySize {
     */
    public static void main(String args[]) {
       ServerScope glob = new ServerScope(args);
-      EntrySize testSub = new EntrySize(glob);
+      new EntrySize(glob);
       //   long startTime = System.currentTimeMillis();
       //   long usedTime = System.currentTimeMillis() - startTime;
       //   testSub.log.info("time used for tests: " + usedTime/1000 + " seconds");
