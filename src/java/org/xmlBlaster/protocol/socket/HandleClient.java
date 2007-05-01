@@ -395,7 +395,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                      log.warning("Lost TCP connection from '" + remoteSocketStr + "': " + e.toString());
                }
                else {
-                  log.warning("Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
+                  log.warning(toString() + ": Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
                }
                I_Authenticate auth = this.authenticate;
                if (auth != null) {
