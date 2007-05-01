@@ -1,6 +1,7 @@
 // xmlBlaster/demo/javaclients/HelloWorldPublish.java
 package javaclients;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Random;
@@ -20,17 +21,20 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 /**
- * This client connects to xmlBlaster and publishes a configurable amount of messages. 
+ * This client connects to xmlBlaster and publishes a configurable amount of messages.
  * <p>
  * This is a nice client to experiment and play with xmlBlaster as there are many
  * command line options to specify the type and amount of messages published.
@@ -115,7 +119,7 @@ public class HelloWorldPublish
          int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
          boolean eraseForceDestroy = glob.getProperty().get("erase.forceDestroy", false);
          boolean connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
-         
+
          Map clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
          Map connectQosClientPropertyMap = glob.getProperty().get("connect/qos/clientProperty", (Map)null);
 
@@ -193,7 +197,7 @@ public class HelloWorldPublish
 
          // Handle lost server explicitly
          con.registerConnectionListener(new I_ConnectionStateListener() {
-               
+
                public void reachedAlive(ConnectionStateEnum oldState,
                                         I_XmlBlasterAccess connection) {
                   /*
@@ -218,7 +222,7 @@ public class HelloWorldPublish
                   System.exit(1);
                }
             });
-   
+
          // ConnectQos checks -session.name and -passwd from command line
          log.info("============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
@@ -233,7 +237,16 @@ public class HelloWorldPublish
             }
          }
          log.info("ConnectQos is " + qos.toXml());
-         ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
+         ConnectReturnQos crq = con.connect(qos, new I_Callback() {
+			public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+				try {
+					log.info("Received '" + updateKey.getOid() + "':" + new String(content, "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					log.severe("Update failed: " + e.toString());
+				}
+				return "";
+			}
+         });  // Login to xmlBlaster, register for updates
          log.info("Connect success as " + crq.toXml());
 
          org.xmlBlaster.util.StopWatch stopWatch = new org.xmlBlaster.util.StopWatch();
@@ -284,7 +297,7 @@ public class HelloWorldPublish
                //Example for a typed property:
                //pq.getData().addClientProperty("ALONG", (new Long(12)));
             }
-            
+
             if (i == 0) {
                TopicProperty topicProperty = new TopicProperty(glob);
                topicProperty.setDestroyDelay(destroyDelay);
@@ -300,7 +313,7 @@ public class HelloWorldPublish
                pq.setTopicProperty(topicProperty);
                log.info("Added TopicProperty on first publish: " + topicProperty.toXml());
             }
-            
+
             if (destination != null) {
                log.fine("Using destination: '" + destination + "'");
                Destination dest = new Destination(glob, new SessionName(glob, destination));
@@ -387,7 +400,7 @@ public class HelloWorldPublish
     */
    public static void main(String args[]) {
       Global glob = new Global();
-      
+
       if (glob.init(args) != 0) { // Get help with -help
          System.out.println(glob.usage());
          System.err.println("\nExample:");
