@@ -69,7 +69,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 
 /**
- * This is the default implementation of the java client side remote access to xmlBlaster. 
+ * This is the default implementation of the java client side remote access to xmlBlaster.
  * <p>
  * It hides a client side queue, the client side dispatcher framework for polling
  * or pinging the server and some more features.
@@ -111,7 +111,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private I_Callback updateListener;
    /** Is not null if the client wishes to be notified about connection state changes in fail safe operation */
    private I_ConnectionStateListener connectionListener;
-   /** Allow to cache updated messages for simulated synchronous access with get(). 
+   /** Allow to cache updated messages for simulated synchronous access with get().
     * Do behind a get() a subscribe to allow cached synchronous get() access */
    private SynchronousCache synchronousCache;
    private boolean disconnectInProgress;
@@ -129,9 +129,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private long startupTime;
 
    StreamingCallback streamingCb;
-   
+
    /**
-    * Create an xmlBlaster accessor. 
+    * Create an xmlBlaster accessor.
     * Please don't create directly but use the factory instead:
     * <pre>
     *   import org.xmlBlaster.util.Global;
@@ -157,7 +157,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Create an xmlBlaster accessor. 
+    * Create an xmlBlaster accessor.
     * Please don't create directly but use the factory instead:
     * <pre>
     *   final Global glob = new Global(args);
@@ -179,8 +179,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Called after a messages is send, but not for oneway messages. 
-    * Enforced by I_PostSendListener 
+    * Called after a messages is send, but not for oneway messages.
+    * Enforced by I_PostSendListener
     * @param msgQueueEntry, includes the returned QoS
     */
    public final void postSend(MsgQueueEntry msgQueueEntry) {
@@ -213,7 +213,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * The unique name of this session instance. 
+    * The unique name of this session instance.
     * @return Never null, for example "/xmlBlaster/node/heron/client/joe/session/-2"
     */
    public final ContextNode getContextNode() {
@@ -230,27 +230,27 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          registerConnectionListener(this.streamingCb);
       return connect(qos, this.streamingCb);
    }
-   
+
    /**
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
       if (!this.isValid)
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "connect");
-          
+
       synchronized (this) {
 
          if (this.startupTime == 0) {
             this.startupTime = System.currentTimeMillis();
          }
-         
+
          if (isConnected() || this.connectInProgress) {
             String text = "connect() rejected, you are connected already, please check your code";
             throw new XmlBlasterException(glob, ErrorCode.USER_CONNECT_MULTIPLE, ME, text);
          }
 
          this.connectInProgress = true;
-         
+
          try {
             this.connectQos = (qos==null) ? new ConnectQos(glob) : qos;
 
@@ -261,8 +261,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   this.updateBulkAck = true;
                }
             }
-            
-            
+
+
             // We need to set a unique ID for this client so that global.getId() is unique
             // which is used e.g. in the JDBC plugin
             SessionName sn = getSessionName();
@@ -283,7 +283,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             this.updateListener = updateListener;
 
             // TODO: This is done by ConnectQos already, isn't it?
-            initSecuritySettings(this.connectQos.getData().getClientPluginType(), 
+            initSecuritySettings(this.connectQos.getData().getClientPluginType(),
                                  this.connectQos.getData().getClientPluginVersion());
 
             this.ME = "XmlBlasterAccess-" + getId();
@@ -314,9 +314,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                                        this.connectQos.getAddresses(), sn);
 
                getDispatchStatistic(); // Force creation of dispatchStatistic as this syncs on 'this' and could deadlock if don later from a update()
-               
+
                this.dispatchManager.getDispatchConnectionsHandler().registerPostSendListener(this);
-               
+
                if (log.isLoggable(Level.FINE)) log.fine(getLogId()+"Switching to synchronous delivery mode ...");
                this.dispatchManager.trySyncMode(true);
 
@@ -430,7 +430,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
       else {
          log.warning(getLogId()+"Auto-refreshing session is not supported for session timeouts smaller " + MIN + " seconds");
-      
+
       }
    }
 
@@ -524,7 +524,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
       if (disconnectQos == null)
          disconnectQos = new DisconnectQos(glob);
-      
+
       if (!disconnectQos.getClearClientQueueProp().isModified()) {
          boolean clearClientQueue = true;
          if (this.connectQos != null) {
@@ -608,7 +608,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             this.dispatchManager = null;
          }
          if (this.clientQueue != null) {
-            this.clientQueue.shutdown(); // added to make hsqldb shutdown 
+            this.clientQueue.shutdown(); // added to make hsqldb shutdown
             this.clientQueue = null;
          }
       }
@@ -634,13 +634,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       this.updateListener = null;
 
       this.streamingCb = null;
-      
+
       super.glob.shutdown();
       return true;
    }
 
    /**
-    * Access the callback server. 
+    * Access the callback server.
     * @return null if no callback server is established
     */
    public I_CallbackServer getCbServer() {
@@ -657,7 +657,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Useful as a logging prefix. 
+    * Useful as a logging prefix.
     * @return For example "client/TheDesperate/-6: "
     */
    public String getLogId() {
@@ -666,7 +666,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * The public session ID of this login session. 
+    * The public session ID of this login session.
     */
    public SessionName getSessionName() {
       if (this.connectReturnQos != null)
@@ -679,7 +679,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    /**
     * Allows to set the node name for nicer logging.
-    * Typically used by cluster clients and not by ordinary clients 
+    * Typically used by cluster clients and not by ordinary clients
     * @param serverNodeId For example "/node/heron/instanceId/1233435" or "/node/heron"
     */
    public void setServerNodeId(String nodeId) {
@@ -689,7 +689,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       else
          this.serverNodeId = "/node/" + nodeId;
    }
-   
+
    /**
     * The cluster node id (name) to which we want to connect.
     * <p />
@@ -704,7 +704,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Set my identity. 
+    * Set my identity.
     * @param serverNodeId For example "/node/heron/instanceId/1233435" or "/node/heron"
     */
    private void setContextNodeId(String nodeId) {
@@ -738,7 +738,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       catch (XmlBlasterException e) {
          log.warning(getLogId()+"Ignoring problem during JMX session registration: " + e.toString());
       }
-      
+
       // parse new cluster node name ...
       ContextNode tmp = ContextNode.valueOf(nodeId);
       ContextNode tmpClusterContext = (tmp==null)?null:tmp.getParent(ContextNode.CLUSTER_MARKER_TAG);
@@ -764,9 +764,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       else {
          clusterContext.setInstanceName(newServerNodeInstanceName);
       }
-      
+
       this.glob.setScopeContextNode(this.contextNode);
-      
+
       try {
          // Query all "org.xmlBlaster:nodeClass=node,node=clientSUB1" + ",*" sub-nodes and replace the name by "heron"
          // For example our connectionQueue or our plugins like Pop3Driver
@@ -777,7 +777,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
          if (this.mbeanHandle == null && this.contextNode != null) {   // "org.xmlBlaster:nodeClass=node,node=heron"
             this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
-         }         
+         }
       }
       catch (XmlBlasterException e) {
           log.warning(getLogId()+"Ignoring problem during JMX registration: " + e.toString());
@@ -821,13 +821,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "subscribe");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       if (getSessionName().isPubSessionIdUser() &&
-    	  subscribeQos.getData().getMultiSubscribe()==false &&
-    	  !subscribeQos.getData().hasSubscriptionId()) {
-    	  // For failsave clients we generate on client side the subscriptionId
-    	  // In case of offline/clientSideQueued operation we guarantee like this a not changing
-    	  // subscriptionId and the client code can reliably use the subscriptionId for further dispatching
-    	  // of update() messages.
-    	  subscribeQos.getData().generateSubscriptionId(getSessionName(), subscribeKey.getData());
+          subscribeQos.getData().getMultiSubscribe()==false &&
+          !subscribeQos.getData().hasSubscriptionId()) {
+          // For failsave clients we generate on client side the subscriptionId
+          // In case of offline/clientSideQueued operation we guarantee like this a not changing
+          // subscriptionId and the client code can reliably use the subscriptionId for further dispatching
+          // of update() messages.
+          subscribeQos.getData().generateSubscriptionId(getSessionName(), subscribeKey.getData());
       }
       MsgQueueSubscribeEntry entry  = new MsgQueueSubscribeEntry(glob,
                                       this.clientQueue.getStorageId(), subscribeKey.getData(), subscribeQos.getData());
@@ -1050,7 +1050,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Call by DispatchManager on connection state transition. 
+    * Call by DispatchManager on connection state transition.
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
@@ -1112,7 +1112,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Call by DispatchManager on connection state transition. 
+    * Call by DispatchManager on connection state transition.
     * <p />
     * Enforced by interface I_ConnectionStatusListener
     */
@@ -1125,7 +1125,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Call by DispatchManager on connection state transition. 
+    * Call by DispatchManager on connection state transition.
     * <p>Enforced by interface I_ConnectionStatusListener</p>
     */
    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
@@ -1136,7 +1136,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Access the environment settings of this connection. 
+    * Access the environment settings of this connection.
     * <p>Enforced by interface I_XmlBlasterAccess</p>
     * @return The global handle (like a stack with local variables for this connection)
     */
@@ -1146,7 +1146,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    /**
     * <p>Enforced by interface I_ConnectionHandler</p>
-    * @return The queue used to store tailback messages. 
+    * @return The queue used to store tailback messages.
     */
    public I_Queue getQueue() {
       return this.clientQueue;
@@ -1162,7 +1162,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Get the connection state. 
+    * Get the connection state.
     * String version for JMX access.
     * @return "UNDEF", "ALIVE", "POLLING", "DEAD"
     */
@@ -1198,7 +1198,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Access the returned QoS of a connect() call. 
+    * Access the returned QoS of a connect() call.
     * <p>Enforced by interface I_XmlBlasterAccess</p>
     * @return Can be null if not connected
     */
@@ -1235,7 +1235,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.dispatchManager != null) {
             //this.dispatchManager.shutdown();
             //this.dispatchManager = null;
-         }   
+         }
       }
    }
 
@@ -1454,7 +1454,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    /**
     * Sets the DispachManager belonging to this session to active or inactive.
     * It is initially active. Setting it to false temporarly inhibits dispatch of
-    * messages which are in the callback queue. Setting it to true starts the 
+    * messages which are in the callback queue. Setting it to true starts the
     * dispatch again.
     * @param dispatchActive
     */
@@ -1463,7 +1463,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          this.dispatchManager.setDispatcherActive(dispatcherActive);
       }
    }
-   
+
    public synchronized  boolean getDispatcherActive() {
       if (this.dispatchManager != null) {
          return this.dispatchManager.isDispatcherActive();
@@ -1476,7 +1476,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          int ret = this.streamingCb.sendInitialQueueEntries();
          log.info("locally retrieved '" + ret + "' chunks");
       }
-      
+
       String command = getSessionName() + "/?dispatcherActive=" + activate;
       sendAdministrativeCommand(command);
       this.connectQos.getSessionCbQueueProperty().getCurrentCallbackAddress().setDispatcherActive(activate);
@@ -1495,7 +1495,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       boolean isGet = command.indexOf("get ") == 0 || command.indexOf("GET ") == 0;
       boolean isSet = command.indexOf("set ") == 0 || command.indexOf("SET ") == 0;
       String cmd = ((isGet || isSet)) ? command.substring(4) : command;
-      
+
       if (isSet || (!isGet && cmd.indexOf("=") != -1)) {
          String oid = "__cmd:" + cmd;
          PublishKey key = new PublishKey(glob, oid); // oid="__cmd:/client/joe/1/?dispatcherActive=false"
@@ -1562,10 +1562,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       catch (XmlBlasterException e) {
          throw new Exception(e.toString());
       }
-   } 
+   }
 
    /**
-    * Peek messages from client queue and dump them to a file, they are not removed. 
+    * Peek messages from client queue and dump them to a file, they are not removed.
     * @param numOfEntries The number of messages to peek, taken from the front
     * @param path The path to dump the messages to, it is automatically created if missing.
     * @return The file names of the dumped messages
@@ -1610,12 +1610,32 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       sb.append(new org.xmlBlaster.util.qos.address.CallbackAddress(glob).usage());
       sb.append(new org.xmlBlaster.util.qos.storage.CbQueueProperty(glob,null,null).usage());
       sb.append(new org.xmlBlaster.util.qos.storage.HistoryQueueProperty(glob,null).usage("Control the default size of the history queue for each topic (send with publish calls)"));
-      sb.append(org.xmlBlaster.client.protocol.socket.SocketConnection.usage());
-      sb.append(org.xmlBlaster.client.protocol.corba.CorbaConnection.usage());
-      sb.append(org.xmlBlaster.client.protocol.rmi.RmiConnection.usage());
-      sb.append(org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection.usage());
+      sb.append(getPluginUsage("org.xmlBlaster.client.protocol.socket.SocketConnection"));
+      sb.append(getPluginUsage("org.xmlBlaster.client.protocol.corba.CorbaConnection"));
+      sb.append(getPluginUsage("org.xmlBlaster.client.protocol.rmi.RmiConnection"));
+      sb.append(getPluginUsage("org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection"));
       //sb.append(org.xmlBlaster.util.Global.instance().usage()); // for Logger help
       return sb.toString();
+   }
+
+   /**
+    * Access plugin specific usage()
+    * @return if plugin is not in CLASSPATH return empty string
+    */
+   public static String getPluginUsage(String clazzName) {
+      try {
+         Class clazz = java.lang.Class.forName(clazzName);
+         if (clazz != null) {
+            Class[] paramCls = new Class[0];
+            Object[] params = new Object[0];
+            java.lang.reflect.Method method = clazz.getMethod("usage", paramCls);
+            String tmp = (String)method.invoke(clazz, params);
+            return tmp;
+         }
+      }
+      catch (Exception ex) { // java.lang.ClassNotFoundException:
+      }
+      return "";
    }
 
    /**
@@ -1733,7 +1753,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   new MsgUnit(glob, "<key oid='"+oid+"'/>", "Hi".getBytes(), "<qos><persistent>true</persistent></qos>"),
                new MsgUnit(glob, "<key oid='"+oid+"'/>", "Hi".getBytes(), "<qos><persistent>true</persistent></qos>"),
                   new MsgUnit(glob, "<key oid='"+oid+"'/>", "Hi".getBytes(), "<qos><persistent>true</persistent></qos>")
-               };   
+               };
                PublishReturnQos[] retArr = xmlBlasterAccess.publishArr(msgUnitArr);
                log.info("Successfully published " + retArr.length + " acknowledged messages");
                try { Thread.sleep(1000L); } catch( InterruptedException i) {} // wait for update
@@ -1799,7 +1819,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * The implementation which receives the callback messages. 
+    * The implementation which receives the callback messages.
     * @return Returns the updateListener or null if none was registered
     */
    public I_Callback getUpdateListener() {
@@ -1807,10 +1827,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Register a listener to receive the callback messages. 
+    * Register a listener to receive the callback messages.
     * <br />
     * Note: Usually you don't need to call this method directly
-    * as you should pass your callback listener with connect(). 
+    * as you should pass your callback listener with connect().
     * @param updateListener The updateListener to set.
     */
    public void setUpdateListener(I_Callback updateListener) {
@@ -1832,9 +1852,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public String getBuildJavaVersion() {
       return glob.getBuildJavaVersion();
    }
-   
+
    /**
-    * Create a temporay topic. 
+    * Create a temporay topic.
     * You need to erase it yourself when not needed anymore
     * @param topicProperty Can be null (the default is no DOM entry)
     * @return The details about the created, temporary topic
@@ -1853,7 +1873,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Created temporary topic " + prq.getKeyOid());
       return prq;
    }
-   
+
    public PublishReturnQos createTemporaryTopic(long destroyDelay, int historyMaxMsg) throws XmlBlasterException {
       PublishKey pk = new PublishKey(glob, "");
       PublishQos pq = new PublishQos(glob);
@@ -1873,7 +1893,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (log.isLoggable(Level.FINER)) log.finer(getLogId()+"Created temporary topic " + prq.getKeyOid());
       return prq;
    }
-   
+
    // TODO: add other properties, add documentation requirement
    //       Add own class to support multiple request/reply over same temporary topic
    /**
@@ -1887,16 +1907,16 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       // Create a temporary reply topic ...
       long destroyDelay = timeout+86400000; // on client crash, cleanup after one day; //long destroyDelay = -1;
       PublishReturnQos tempTopic = createTemporaryTopic(destroyDelay, maxEntries);
-      
+
       try {
          // Send the request ...
          // "__jms:JMSReplyTo"
          msgUnit.getQosData().addClientProperty(Constants.addJmsPrefix(Constants.JMS_REPLY_TO, log), tempTopic.getKeyOid()); // "__jms:JMSReplyTo"
          publish(msgUnit);
-         
+
          // Access the reply ...
          MsgUnit[] msgs = receive("topic/"+tempTopic.getKeyOid(), maxEntries, timeout, true);
-         
+
          return msgs;
       }
       finally {
@@ -1919,7 +1939,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             oid = "__cmd:"+oid+"/?callbackQueueEntries"; // "__cmd:client/joe/session/1/?callbackQueueEntries";
       else if (node.isOfClass(ContextNode.SUBJECT_MARKER_TAG))
             oid = "__cmd:"+oid+"/?subjectQueueEntries"; // "__cmd:client/joe/?subjectQueueEntries"
-      
+
       GetKey getKey = new GetKey(glob, oid);
       String qos = "<qos>" +
                    "<querySpec type='QueueQuery'>" +
