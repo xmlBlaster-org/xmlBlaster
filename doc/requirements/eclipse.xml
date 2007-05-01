@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='eclipse' type='NEW' prio='LOW' status="CLOSED">
+   <topic>Develop/debug xmlBlaster core with eclipse</topic>
+   <description>
+      <p class="celltitel">If you are using the eclipse IDE for development this is for you.</p>
+
+      <p>First of all you must set in <i>eclipse -> Windows -> Preferences -> Java -> Classpath Variable -> New:</i></p>
+      <pre class="BORDER">XMLBLASTER_HOME=[xmlBlaster root], e.g. to C:\xmlBlaster or /home/joe/xmlBlaster</pre>
+
+      <p>Now you are ready to import the eclipse project files for xmlBlaster server with
+      <i>File -> Import -> General -> Existing projects into Workspace -> Browse:</i> and choose</p>
+      <pre class="BORDER">xmlBlaster/src/java</pre>
+
+      <p>That's it, xmlBlaster should compile inside eclipse.</p>
+
+      <p class="celltitel">Starting org.xmlBlaster.Main in the eclipse debugger</p>
+      <p>First copy the configuration files to your home directory, here is a Linux/UNIX example</p>
+<pre class="BORDER">cp xmlBlaster/config/xmlBlaster.properties.template $HOME/xmlBlaster.properties
+cp xmlBlaster/config/xmlBlasterPlugins.xml.template $HOME/xmlBlasterPlugins.xml
+cp xmlBlaster/config/logging.properties $HOME/logging.properties</pre>
+      <p>Then remove the Corba plugin (as we haven't compiled it):<br />
+      Edit <i>$HOME/xmlBlasterPlugins.xml</i> and set the "IOR" CORBA plugin to create='false'.</p>
+
+      <p>Now you are ready to run xmlBlaster within the eclipse debugger.</p>
+
+
+
+      <p class="celltitel">Note about the CORBA protocol plugin</p>
+      <p>
+      The corba protocol plugin is not build with our delivered eclipse project files, as you need to create the CORBA stubs and skeletons initially.
+      </p>
+
+      <p>To add CORBA support invoke once <i>'build java-corba-idl'</i> on command line. Then remove the excludes filter for corba in the menu <i>Properties -> Java Build Path -> Source</i>.</p>
+
+      <p>Finally add</p>
+<pre class="BORDER">XMLBLASTER_HOME/lib/jacorb/avalon-framework-4.1.5.jar
+XMLBLASTER_HOME/lib/jacorb/jacorb.jar
+XMLBLASTER_HOME/lib/jacorb/logkit-1.2.jar</pre>
+      <p>to you project classpath</p>
+
+      <p>To configure JacOrb, you should copy the jacorb.properties file to you home directory:</p>
+      <pre class="BORDER">cp xmlBlaster/config/jacorb.properties $HOME/jacorb.properties</pre>
+
+
+      <p class="celltitel">Note about the SQL92 mime filter plugin</p>
+      <p>
+      The SQL 92 mime filter plugin is excluded by our eclipse project file, as you need to create initially a generated
+      <i>xmlBlaster/src/java/org/xmlBlaster/util/lexical/Sql92Parser.java</i>
+      from <i>xmlBlaster/src/java/org/xmlBlaster/util/lexical/Sql92Parser.cup</i> with a call to
+      <i>'build javaCup'</i>.</p>
+      <p>
+      So if you need the SQL92 filter do an initial <i>'build javaCup'</i> and remove the excludes <i>"**/mime/sql92/**"</i> and <i>"**/util/lexical/**"</i> filters in
+      the menu <i>Properties -> Java Build Path -> Source</i>.</p>
+
+
+      <p class="celltitel">Choosing the same output directory as our build.xml ant tasks</p>
+      <p>If this is desired go to <i>Properties -> Java Build Path -> Source -> Default output Folder (at bottom) -> Browse -> Creat New Folder -> Folder Name:</i></p>
+      <pre class="BORDER">out</pre>
+      <p>There click on <i>Advanced Button -> Link to Folder in the file system -> xmlBlaster/build.tmp/classes</i></p>
+
+
+
+
+      <p class="celltitel">C and C++ development</p>
+      <p>
+      You find exclipse project files in the directories
+      </p>
+      <pre class="BORDER">
+xmlBlaster/src/c/socket
+xmlBlaster/src/c++
+demo/c
+demo/c++</pre>
+
+      <p>We provide <i>.cdtproject .project .cdtbuild</i> to compile with eclipse >= 3.2 and CDT >= 3.1.0</p>
+
+      <p>Add to your environment:</p>
+<pre class="BORDER">
+export usr_lib_dir=/usr/lib
+export zlib_include_dir=/opt/zlib-bin/include
+export zlib_lib_dir=/opt/zlib-bin/lib
+export sqlite_include_dir=/opt/sqlite-bin/include
+export sqlite_lib_dir=/opt/sqlite-bin/lib
+export xerces_include_dir=/opt/xerces-c-src_2_7_0-bin/include
+export xerces_lib_dir=/opt/xerces-c-src_2_7_0-bin/lib
+</pre>
+      <p>to find the third party libraries.</p>
+      <p>Add the Project over the menu <i>File -> Import -> General -> Existing Projects into Workspace</i>
+      and add <i>xmlBlaster/src/c++</i> for <i>'Select root directory'</i> (tested with Linux).</p>
+
+      <p>Example C++ compilation with eclipse 3.2 and CDT 3.1.0 64 bit (all libs installed as RPM):</p>
+<pre class="BORDER">
+export usr_lib_dir=/usr/lib64
+export zlib_include_dir=/usr/include
+export zlib_lib_dir=/usr/lib64
+export sqlite_include_dir=/usr/include
+export sqlite_lib_dir=/usr/lib64
+export xerces_include_dir=/usr/include
+export xerces_lib_dir=/usr/lib64
+</pre>
+
+   </description>
+
+   <example lang="Java" type="HTML">
+      <h2 id="some">
+      </h2>
+      <p>
+      </p>
+   </example>
+
+   <configuration>
+   </configuration>
+   <todo type="HTML">
+   </todo>
+   <see type="INTERNET" label="eclipse homepage">http://www.eclipse.org</see>
+   <author>xmlBlaster@marcelruff.info</author>
+   <date>2007 04 30</date>
+   <revision></revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+
