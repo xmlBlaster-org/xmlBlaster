@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.qos;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -39,16 +40,18 @@ public final class PublishQosServer
 
    /**
     * Constructor which accepts parsed object. 
+ * @throws XmlBlasterException 
     */
-   public PublishQosServer(ServerScope glob, QosData msgQosData) {
+   public PublishQosServer(ServerScope glob, QosData msgQosData) throws XmlBlasterException {
       this(glob, (MsgQosData)msgQosData, false);
    }
 
    /**
     * Constructor which accepts parsed object.
     * @param fromPersistenceStore true if recovered from persistency
+ * @throws XmlBlasterException 
     */
-   public PublishQosServer(ServerScope glob, MsgQosData msgQosData, boolean fromPersistenceStore) {
+   public PublishQosServer(ServerScope glob, MsgQosData msgQosData, boolean fromPersistenceStore) throws XmlBlasterException {
       this.glob = glob;
       this.msgQosData = msgQosData;
       this.msgQosData.setFromPersistenceStore(fromPersistenceStore);
@@ -80,12 +83,16 @@ public final class PublishQosServer
    /**
     * Checks for relative destination names and completes them with
     * our cluster node id
+ * @throws XmlBlasterException 
     */
-   private void completeDestinations() {
+   private void completeDestinations() throws XmlBlasterException  {
       if (getNumDestinations() > 0) {
          Destination[] arr = getDestinationArr();
          for(int i=0; i<arr.length; i++) {
             SessionName sessionName = arr[i].getDestination();
+            if (sessionName == null) {
+            	throw new XmlBlasterException(this.glob, ErrorCode.USER_PUBLISH, "PublishQosServer", "Invalid destination address, please check your PtP PublishQos");
+            }
             if (sessionName.getNodeId() == null) {
                sessionName = new SessionName(glob, glob.getNodeId(), sessionName.getRelativeName());
                arr[i].setDestination(sessionName);
