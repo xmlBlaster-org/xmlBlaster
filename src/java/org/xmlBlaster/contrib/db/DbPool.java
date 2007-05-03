@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      TestResultSetToXmlConverter.java
+Name:      DbPool.java
 Project:   org.xmlBlasterProject:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -189,6 +189,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
       if (this.poolManager == null) throw new IllegalArgumentException("PoolManager is not initialized");
       synchronized(this.meetingPoint) {
          this.poolManager.erase(""+con);
+         log.fine("connections: busy='" + this.poolManager.getNumBusy() + "',idle=' " + this.poolManager.getNumIdle() + "' (after erase)");
       }
    }
 
