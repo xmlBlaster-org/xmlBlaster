@@ -33,24 +33,38 @@ import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 public class OracleByEventsScheduler implements I_AlertProducer {
    
    private class SchedulerRunner extends Thread {
-      
+      /* The minimum amount of ms to sleep after an exception (to avoid looping). Normally it will be 'alertScheduler.pollInterval' ms */
+      private final static long MIN_SLEEP_DELAY = 1000L;
+      /* The maximum amount of ms to sleep after an exception (to avoid looping). Normally it will be 'alertScheduler.pollInterval' ms  */
+      private final static long MAX_SLEEP_DELAY = 60000L;
       private boolean forceShutdown;
-      private long period;
+      private long pollIntervall;
       private I_ChangeDetector changeDetector;
       private I_Info info;
       private String event;
       
+      private final void sleepToAvoidLooping() throws InterruptedException {
+         if (this.pollIntervall < MIN_SLEEP_DELAY)
+            Thread.sleep(MIN_SLEEP_DELAY);
+         else {
+            if (this.pollIntervall > MAX_SLEEP_DELAY)
+               Thread.sleep(MAX_SLEEP_DELAY);
+            else
+               Thread.sleep(this.pollIntervall);
+         }
+      }
+      
       SchedulerRunner(I_Info info, I_ChangeDetector changeDetector) {
          super("OracleByEventsScheduler");
          setDaemon(true);
-         this.period = info.getLong("alertScheduler.pollInterval", 30000L);
+         this.pollIntervall = info.getLong("alertScheduler.pollInterval", 30000L);
          this.changeDetector = changeDetector;
          this.info = info;
          this.event = SpecificDefault.getReplPrefix(info) + "ITEMS";
-         if (this.period <= 0L) {
-            log.warning("OracleByEventsScheduler is switched off with alertScheduler.pollInterval=" + this.period);
+         if (this.pollIntervall <= 0L) {
+            log.warning("OracleByEventsScheduler is switched off with alertScheduler.pollInterval=" + this.pollIntervall);
          }
-         log.info("Starting timer with pollInterval=" + this.period + " ...");
+         log.info("Starting timer with pollInterval=" + this.pollIntervall + " ...");
       }
       
       public void doShutdown() {
@@ -70,17 +84,17 @@ public class OracleByEventsScheduler implements I_AlertProducer {
                   conn = pool.reserve();
                   conn.setAutoCommit(true);
                   if (log.isLoggable(Level.FINE)) 
-                     log.fine("Checking now Database again. pollInterval=" + this.period + " ...");
+                     log.fine("Checking now Database again. pollInterval=" + this.pollIntervall + " ...");
                   try {
                      OracleByEventsScheduler.registerEvent(conn, this.event);
                      this.changeDetector.checkAgain(null);
                      log.fine("scheduler: before blocking " + count);
-                     OracleByEventsScheduler.waitForEvent(conn, this.event, this.period);
+                     OracleByEventsScheduler.waitForEvent(conn, this.event, this.pollIntervall);
                      log.fine("scheduler: after blocking " + count);
                   }
                   catch (Throwable e) {
                      log.severe("Don't know how to handle error: " + e.toString()); 
-                     Thread.sleep(500L); // to avoid looping
+                     this.sleepToAvoidLooping();
                   }
                   count++;
                   if (count == Long.MAX_VALUE)
@@ -90,7 +104,7 @@ public class OracleByEventsScheduler implements I_AlertProducer {
                   log.severe("An exception occured when waiting for oracle scheduler: " + ex.getMessage());
                   ex.printStackTrace();
                   conn = SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_NO, pool);
-                  Thread.sleep(500L); // to avoid looping
+                  this.sleepToAvoidLooping();
                }
                finally {
                   conn = SpecificDefault.releaseIntoPool(conn, SpecificDefault.COMMIT_NO, pool);
