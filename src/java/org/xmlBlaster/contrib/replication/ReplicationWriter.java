@@ -571,11 +571,11 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                try {
                   if (!keepTransactionOpen) {
                      conn.commit();
-                     needRollback = false;
                      log.fine("Transaction has been committed");
                   }
                   else
                      log.fine("The transaction will still be kept open");
+                  needRollback = false;
                }
                catch (SQLException ex) {
                   log.severe("store: an sql exception occured when trying to commit: " + ex.getMessage());
