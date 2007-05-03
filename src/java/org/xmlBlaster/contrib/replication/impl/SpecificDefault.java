@@ -1347,6 +1347,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * @return always null.
     */
    public static Connection removeFromPool(Connection conn, boolean doRollback, I_DbPool pool) {
+      log.fine("Removing from Database pool of connection (rollback='" + doRollback + "')");
       if (conn == null)
          return null;
       if (doRollback) {
