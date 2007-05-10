@@ -4,7 +4,7 @@
 
 <requirement id='client.j2me' type='NEW' prio='LOW' status='CLOSED'>
    <topic>
-      XmlBlaster provides a tiny java client library for j2me MIDgets
+      XmlBlaster provides a tiny java client library for j2me MIDlets
    </topic>
    <description>
      <p>
