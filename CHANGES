@@ -1,6 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16164 C++ client library: Fixed generatedSubscriptionId to escape ' quote to prevent malformed QoS XML
+
  o #16145 added to get missing code to retrieve also props with no prefix (for example java.version) to Global 
 
  o #16134 The setting 'java -DxmlBlaster/initClassName=mypackage.MyClass ...' allows to load
