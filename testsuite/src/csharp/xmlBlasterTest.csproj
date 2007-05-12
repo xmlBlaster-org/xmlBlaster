@@ -42,6 +42,7 @@
     <Compile Include="NmeaTest.cs" />
     <Compile Include="QosTest.cs" />
     <Compile Include="service\ServiceTOTest.cs" />
+    <Compile Include="util\FileUtilTest.cs" />
     <Compile Include="XmlBlasterAccessTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -55,7 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="util\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
