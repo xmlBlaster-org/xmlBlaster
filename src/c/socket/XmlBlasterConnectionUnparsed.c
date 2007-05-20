@@ -137,6 +137,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    size_t hstbuflen=0;
 
    char serverHostName[256];
+   char errP[MAX_ERRNO_LEN];
 
 #if defined(_WINDOWS)
    WORD wVersionRequested;
@@ -160,6 +161,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
       return false; 
    }
 # endif
+   *errP = 0;
 
    if (xb->isInitialized) {
       return true;
@@ -255,7 +257,17 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    void freeaddrinfo(*res);
 # endif
    memset((char *)&hostbuf, 0, sizeof(struct hostent));
-   hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen);
+   hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen, errP);
+
+   if (*errP != 0) {
+      strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Lookup xmlBlaster failed, %s",
+               __FILE__, __LINE__, errP);
+      xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
+      *errP = 0;
+   }
+
    /* printf("gethostbyname error=%d\n", WSAGetLastError()); */
    if (hostP != 0) {
       portP = getservbyname(servTcpPort, "tcp");
@@ -284,7 +296,15 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
             memset(&localAddr, 0, sizeof(localAddr));
             localAddr.sin_family = AF_INET;
             if (localHostName) {
-               localHostP = gethostbyname_re(localHostName, &localHostbuf, &tmpLocalHostbuf, &localHostbuflen);
+               localHostP = gethostbyname_re(localHostName, &localHostbuf, &tmpLocalHostbuf, &localHostbuflen, errP);
+               if (*errP != 0) {
+                  strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+                  SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                           "[%.100s:%d] Lookup of local IP failed, %s",
+                           __FILE__, __LINE__, errP);
+                  xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
+                  *errP = 0;
+               }
                if (localHostP != 0) {
                   localAddr.sin_addr.s_addr = ((struct in_addr *)(localHostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
                   free(tmpLocalHostbuf);

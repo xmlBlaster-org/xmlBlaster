@@ -331,7 +331,9 @@ int gethostbyname_r (const char *name,
  * NOTE: If the return is not NULL you need to free(*tmphstbuf)
  * @author Caolan McNamara (2000) <caolan@skynet.ie> (with some leak fixes by Marcel)
  */
-Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen)
+Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,
+                                              char **tmphstbuf,size_t *hstbuflen,
+                                              char errP[MAX_ERRNO_LEN])
 {
 #if defined(_WINDOWS_FUTURE)
   /* See  http://www.hmug.org/man/3/getaddrinfo.html for an example */
@@ -484,23 +486,30 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
          /* Link Library: Ws2.lib. */
          struct hostent* remoteHost;
          unsigned int addr;
+         int err = 0;
+         const char *pp = 0;
          hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
          tmphstbuf = 0;
          hstbuflen = 0;
+         *errP = 0;
 
          /* If the user input is an alpha name for the host, use gethostbyname() */
          if (isalpha(host[0])) {   /* host address is a name */
            remoteHost = gethostbyname(host); /* Not thread safe */
+           pp = "gethostbyname";
          }
          else  { 
            /* If not, get host by addr (assume IPv4) e.g. "192.168.1.1" */
            addr = inet_addr(host);
            remoteHost = gethostbyaddr((char *) &addr, 4, AF_INET);
+           pp = "gethostbyaddr";
          }
-
-         if (WSAGetLastError() != 0) {
+         err = WSAGetLastError();
+         if (err != 0) {
             /*if (WSAGetLastError() == 11001)
                printf("Host %s not found\n", host);*/
+            printf("Host %s not found, WSAGetLastError=%d\n", host, err);
+            SNPRINTF(errP, MAX_ERRNO_LEN, "%s(%s) not found, WSAGetLastError=%d\n", pp, host, err);
             return 0;
          }
          return remoteHost;

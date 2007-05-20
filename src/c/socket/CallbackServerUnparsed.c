@@ -446,6 +446,7 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
    char *tmphstbuf=NULL;
    size_t hstbuflen=0;
    char serverHostName[256];
+   char errP[MAX_ERRNO_LEN];
    if (cb->hostCB == 0) {
       strcpyRealloc(&cb->hostCB, "localhost");
       if (gethostname(serverHostName, 125) == 0)
@@ -471,7 +472,18 @@ static bool createCallbackServer(CallbackServerUnparsed *cb)
     * Create the address we will be binding to.
     */
    serv_addr.sin_family = AF_INET;
-   hostP = gethostbyname_re(cb->hostCB, &hostbuf, &tmphstbuf, &hstbuflen);
+   *errP = 0;
+   hostP = gethostbyname_re(cb->hostCB, &hostbuf, &tmphstbuf, &hstbuflen, errP);
+
+   if (*errP != 0) {
+      char message[EXCEPTIONSTRUCT_MESSAGE_LEN];
+      SNPRINTF(message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Lookup xmlBlaster failed, %s",
+               __FILE__, __LINE__, errP);
+      cb->log(cb->logUserP, cb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, message);
+      *errP = 0;
+   }
+
    if (hostP != NULL) {
       serv_addr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /*inet_addr("192.168.1.2"); */
       free(tmphstbuf);

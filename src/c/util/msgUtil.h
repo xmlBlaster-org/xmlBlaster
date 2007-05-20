@@ -108,7 +108,7 @@ Dll_Export extern void freeMsgUnitArrInternal(MsgUnitArr *msgUnitArr);
 Dll_Export extern void freeQosArr(QosArr *qosArr);
 Dll_Export extern char *messageUnitToXml(MsgUnit *msg);
 Dll_Export extern char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen);
-Dll_Export extern struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen);
+Dll_Export extern struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen,char errP[MAX_ERRNO_LEN]);
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP
