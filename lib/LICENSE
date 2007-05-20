@@ -152,15 +152,16 @@ only the SNMP subagent module jax.jar is GPL only!
 
 15) cpptasks.jar & ant-contrib.jar
 =========================================================
-  cpptasks.jar to compile C and C++ code with ant, cpptasks CVS snapshot from May,02 2006
-    cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/ant-contrib login
-    cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/ant-contrib co -P cpptasks 
+  cpptasks.jar to compile C and C++ code with ant, cpptasks SVN snapshot from 2007-05-20
+    https://ant-contrib.svn.sourceforge.net/svnroot/ant-contrib/trunk/cpptasks
   See:  http://ant-contrib.sourceforge.net/cc.html
 
-  ant-contrib.jar 1.0b2 from 2005-02-03
+  ant-contrib.jar SVN snapshot from 2007-05-20
+  https://ant-contrib.svn.sourceforge.net/svnroot/ant-contrib
   ant supplement to compile C++ clients and shared library
   used in build.sh/build.bat for build.xml
   See http://sourceforge.net/projects/ant-contrib/
+  http://ant-contrib.sourceforge.net/tasks/tasks/index.html
 
 
 16) xerces.jar
