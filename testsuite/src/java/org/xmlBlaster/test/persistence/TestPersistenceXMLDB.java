@@ -7,23 +7,23 @@ Version:   $Id$
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.util.Global;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.util.MsgUnit;
-
-import org.xmlBlaster.util.EmbeddedXmlBlaster;
-
 import org.xmlBlaster.test.Util;
-import junit.framework.*;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
 
 
 /**
