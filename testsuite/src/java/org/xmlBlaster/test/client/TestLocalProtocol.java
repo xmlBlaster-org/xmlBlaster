@@ -18,28 +18,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.xmlBlaster.test.client;
+import java.util.HashMap;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.j2ee.util.GlobalUtil;
 import org.xmlBlaster.test.Util;
-
-
-import junit.framework.*;
-
-import java.util.HashMap;
+import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
 /**
  * Test that local (in vm) client protocol works.
  *
