@@ -48,7 +48,7 @@ import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 //Debug: ~/apache-tomcat-5.5.15/bin/catalina.sh jpda start
 
 /**
- * One browser session maps on exactly one xmlBlaster login session. 
+ * One browser session maps on exactly one xmlBlaster login session.
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
  */
 class BlasterInstance implements I_Callback {
@@ -84,13 +84,19 @@ class BlasterInstance implements I_Callback {
 	public String getGpsTopicId() {
 		// one publisher 'joe' -> 'gps.joe', many sessions 'joe/-1' 'joe/-2' may
 		// access it
-		return "gps." + this.xmlBlasterAccess.getSessionName().getLoginName();
+		if (xmlBlasterAccess != null && xmlBlasterAccess.isConnected()) {
+			return "device." + this.xmlBlasterAccess.getSessionName().getLoginName() + ".nmea";
+		}
+		return "";
 	}
 
 	public String getCbSessionId() {
-		return this.xmlBlasterAccess.getConnectQos()
+		if (xmlBlasterAccess != null && xmlBlasterAccess.isConnected()) {
+			return this.xmlBlasterAccess.getConnectQos()
 				.getSessionCbQueueProperty().getCallbackAddresses()[0]
 				.getSecretSessionId();
+		}
+		return "";
 	}
 
 	public void init(HttpServletRequest req, Properties props)
@@ -148,14 +154,14 @@ class BlasterInstance implements I_Callback {
 		this.updateQueue.put(queueEntry, I_Queue.IGNORE_PUT_INTERCEPTOR);
 	}
 
-	public boolean sendUpdates(Writer out) throws XmlBlasterException,
+	public int sendUpdates(Writer out) throws XmlBlasterException,
 			IOException {
 		//ArrayList entries = this.updateQueue.takeLowest(-1, -1, null, false);
 		//For now we max send one message
 		ArrayList entries = this.updateQueue.takeLowest(1, -1, null, false);
 		MsgUnit[] msgs = new MsgUnit[entries.size()];
 		if (msgs.length < 1)
-			return false;
+			return 0;
 		out.write("<xmlBlasterResponse>");
 		for (int i = 0; i < msgs.length; i++) {
 			MsgQueuePublishEntry entry = (MsgQueuePublishEntry) entries.get(i);
@@ -165,7 +171,7 @@ class BlasterInstance implements I_Callback {
 		}
 		out.write("</xmlBlasterResponse>");
 		this.updateQueue.clear();
-		return true;
+		return msgs.length;
 	}
 
 	public String update(String cbSessionId, UpdateKey updateKey,
@@ -185,6 +191,8 @@ class BlasterInstance implements I_Callback {
 	}
 
 	public String getStartupPos() {
+		if (getGpsTopicId().length() < 1)
+			return "";
 		return ""
 				+ "<xmlBlasterResponse>"
 				+ "<update>"
@@ -214,7 +222,7 @@ class BlasterInstance implements I_Callback {
 }
 
 /**
- * Detect when a servlet session dies (with tomcat typically after one hour). 
+ * Detect when a servlet session dies (with tomcat typically after one hour).
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
  */
 class SessionTimeoutListener implements HttpSessionBindingListener {
@@ -242,11 +250,11 @@ class SessionTimeoutListener implements HttpSessionBindingListener {
  * This servlet supports requests from a browser, it queries the topic given by
  * "gpsTopicId" configuration which needs to contain GPS coordinates (published
  * for example by a PDA).
- * 
+ *
  * <p>
  * Use xmlBlaster/demo/http/gps.html to display the coordinates in a map.
  * </p>
- * 
+ *
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
  */
 public class AjaxServlet extends HttpServlet {
@@ -256,7 +264,7 @@ public class AjaxServlet extends HttpServlet {
 			.getName());
 
 	private Properties props = new Properties();
-	
+
 	private int maxInactiveInterval = 60; // sec
 
 	/** key is the browser sessionId */
@@ -286,7 +294,7 @@ public class AjaxServlet extends HttpServlet {
 			throws ServletException, IOException {
 		String host = req.getRemoteAddr();
 		String ME = "AjaxServlet.doGet(" + host + "): ";
-		log.info("ENTERING DOGET ....");
+		//log.info("ENTERING DOGET ....");
 		boolean forceLoad = req.getParameter("forceLoad") != null;
 		if (forceLoad)
 			log(ME + "forceLoad=" + forceLoad);
@@ -327,14 +335,18 @@ public class AjaxServlet extends HttpServlet {
 			}
 
 			if (actionType.equals("updatePoll")) {
-				log(ME + " Return received update messages");
-				boolean foundPos = blasterInstance.sendUpdates(out);
-				if (!foundPos) {
+				int count = blasterInstance.sendUpdates(out);
+				if (count == 0) {
 					if (newBrowser || forceLoad) {
-						out.write(blasterInstance.getStartupPos());
-						log(ME + blasterInstance.getStartupPos());
+						String tmp = blasterInstance.getStartupPos();
+						if (tmp.length() > 0) {
+							out.write(tmp);
+							log(ME + tmp);
+						}
 					}
 				}
+				else
+					log(ME + " Sending " + count + " received update messages to browser");
 				return;
 			}
 
@@ -354,7 +366,8 @@ public class AjaxServlet extends HttpServlet {
 					+ e.toString());
 		} finally {
          PrintWriter backToBrowser = res.getWriter();
-         System.out.println("Sending now '" + out.getBuffer().toString() + "'");
+         if (out.getBuffer().length() > 0)
+        	 log.info("Sending now '" + out.getBuffer().toString() + "'");
          if (out.getBuffer().length() > 0)
             backToBrowser.write(out.getBuffer().toString());
          else
