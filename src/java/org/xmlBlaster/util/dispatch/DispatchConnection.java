@@ -468,6 +468,13 @@ abstract public class DispatchConnection implements I_Timeout
       }
    }
 
+   private boolean isAuthenticationException(XmlBlasterException ex) {
+	   ErrorCode code = ex.getErrorCode();
+	   if (code == null)
+		   return false;
+	   return code.isOfType(ErrorCode.USER_SECURITY_AUTHENTICATION);
+   }
+   
    /**
     * @param toReconnected If true if the connection is OK (it is a transition to reconnected)
     * @param byDispatchConnectionsHandler true if invoked by DispatchConnectionsHandler,
@@ -487,6 +494,15 @@ abstract public class DispatchConnection implements I_Timeout
                                    glob.isServerSide() && !ex.isServerSide() ||
                                    !glob.isServerSide() && ex.isServerSide()) ? true : false;
       if (ex != null) {
+    	  if (isAuthenticationException(ex)) {
+    	      connectionsHandler.toDead(this, ex);
+    	      if (byDispatchConnectionsHandler) {
+    	         throw ex;
+    	      }
+    	      else {
+    	         // ping timer thread, no sense to throw an exception:
+    	      }
+    	  }
          if (retry(ex)) {
             toReconnected = false;
          }

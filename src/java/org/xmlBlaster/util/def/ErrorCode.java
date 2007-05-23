@@ -430,6 +430,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_SECURITY_AUTHENTICATION = new ErrorCode("user.security.authentication",
+	         "Login to xmlBlaster failed due to some reason.",
+	         new ResourceInfo[] {
+	            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+	         }
+	      );
+
    public static final ErrorCode USER_SECURITY_AUTHENTICATION_ACCESSDENIED = new ErrorCode("user.security.authentication.accessDenied",
          "Login to xmlBlaster failed due to missing privileges.",
          new ResourceInfo[] {
@@ -619,7 +626,6 @@ public final class ErrorCode implements java.io.Serializable
          new ResourceInfo[] {
          }
       );
-   ////////// END ////////////////////////////////////////////////////////////////
 
 
    /**
@@ -642,6 +648,24 @@ public final class ErrorCode implements java.io.Serializable
       return "errorCode=" + this.errorCode + ": " + this.description;
    }
 
+   /**
+    * Returns 'true' if this error code is a 'child' of the error code
+    * specified in baseCode. It follows the name convention of the error
+    * code. For example USER_SECURITY_AUTHENTICATION_DENIED
+    * would be of type (as it is a subtype) of USER_SECURITY_AUTHENTICATION
+    * If one of the error codes code name is null, false is returned.
+    * @param baseCode the base ErrorCode to check against. If null, false is
+    * returned. 
+    * @return
+    */
+   public final boolean isOfType(ErrorCode baseCode) {
+	   if (baseCode == null)
+		   return false;
+	   String baseCodeTxt = baseCode.getErrorCode();
+	   if (this.errorCode == null || baseCodeTxt == null)
+		   return false;
+	   return this.errorCode.startsWith(baseCodeTxt);
+   }
    /**
     * Returns the errorCode string. 
     * @return never null
@@ -852,7 +876,6 @@ public final class ErrorCode implements java.io.Serializable
       return sb.toString();
    }
 
-   ///////////////
    /**
     * This code is a helper for serialization so that after
     * deserial the check
@@ -875,7 +898,6 @@ public final class ErrorCode implements java.io.Serializable
          return ErrorCode.toErrorCode(errorCode);
       }
    }
-   ///////////////END
 
    /**
     * Generate a requirement file for all error codes. 
