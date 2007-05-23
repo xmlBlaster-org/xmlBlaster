@@ -39,6 +39,35 @@
       <param-value>60000</param-value>
       <description>If now Ajax call arrives after 60 sec the session dies</description>
     </init-param>
+    <init-param>
+      <param-name>session.name</param-name>
+      <param-value>lkw4</param-value>
+      <description>The login name</description>
+    </init-param>
+    <init-param>
+      <param-name>password</param-name>
+      <param-value>secret</param-value>
+      <description>The password to use</description>
+    </init-param>
+    <init-param>
+      <param-name>plugin/socket/compress/type</param-name>
+      <param-value>zlib:stream</param-value>
+      <description>Compressed SOCKET communication</description>
+    </init-param>
+    <init-param>
+      <param-name>dispatch/connection/plugin/socket/hostname</param-name>
+      <param-value>192.168.1.20</param-value>
+      <description>IP where xmlBlaster is running if not on tomcats host (example for SOCKET protocol)</description>
+    </init-param>
+    <init-param>
+      <param-name>dispatch/connection/plugin/socket/port</param-name>
+      <param-value>7606</param-value>
+      <description>Port where xmlBlaster is running if not on default port (example for SOCKET protocol)</description>
+    </init-param>
+    <init-param>
+    	<param-name>queue/connection/defaultPlugin</param-name>
+    	<param-value>RAM,1.0</param-value>
+    </init-param>
   </servlet>
 
   <!-- Core servlets to support persistent http -->
