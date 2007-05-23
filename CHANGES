@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16178 fix: failsave + authentication errors now kill the connection 
+          (they went in polling before)
+
  o #16170 EmbeddedXmlBlaster: changed the way the global is created since the
           embedded would otherwise use the default xmlBlaster.properties
 
