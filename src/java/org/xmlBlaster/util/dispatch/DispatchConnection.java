@@ -451,6 +451,8 @@ abstract public class DispatchConnection implements I_Timeout
          }
          catch (Throwable e) {
             if (log.isLoggable(Level.FINE)) log.fine("Polling for remote connection failed:" + e.getMessage());
+            if (e instanceof NullPointerException)
+            	e.printStackTrace();
             if (logInterval > 0 && (retryCounter % logInterval) == 0)
                log.warning("No connection established, " + address.getLogId() + " still seems to be down after " + (retryCounter+1) + " connection retries.");
             try { handleTransition(false, e); } catch(XmlBlasterException e2) { e.printStackTrace(); log.severe("PANIC: " + e.toString()); }
