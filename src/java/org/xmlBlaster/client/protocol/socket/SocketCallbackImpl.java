@@ -26,10 +26,10 @@ import java.io.IOException;
 
 
 /**
- * Used for client to receive xmlBlaster callbacks over plain sockets. 
+ * Used for client to receive xmlBlaster callbacks over plain sockets.
  * <p />
  * One instance of this for each client, as a separate thread blocking
- * on the socket input stream waiting for messages from xmlBlaster. 
+ * on the socket input stream waiting for messages from xmlBlaster.
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.util.xbformat.MsgInfo
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
@@ -52,7 +52,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    boolean running = false;
 
    /**
-    * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
+    * Called by plugin loader which calls init(Global, PluginInfo) thereafter.
     * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
     */
    public SocketCallbackImpl() {
@@ -69,7 +69,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    }
 
    /**
-    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * This method is called by the PluginManager (enforced by I_Plugin).
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
@@ -100,7 +100,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
                   "Sorry, creation of SOCKET callback handler is not possible if client connection is not of type 'SOCKET'");
          }
-         
+
          this.sockCon.registerCbReceiver(this);
 
          try {
@@ -125,7 +125,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
             setSoTimeout(this.callbackAddress.getEnv("SoTimeout", 0L).getValue()); // switch off
             this.sock.setSoTimeout((int)this.soTimeout);
             if (log.isLoggable(Level.FINE)) log.fine(this.callbackAddress.getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
-   
+
             setSoLingerTimeout(this.callbackAddress.getEnv("SoLingerTimeout", soLingerTimeout).getValue());
             if (log.isLoggable(Level.FINE)) log.fine(this.callbackAddress.getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
             if (getSoLingerTimeout() >= 0L) {
@@ -168,7 +168,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    }
 
    /**
-    * Returns the protocol type. 
+    * Returns the protocol type.
     * @return The configured [type] in xmlBlaster.properties, defaults to "SOCKET"
     */
    public final String getCbProtocol()
@@ -177,7 +177,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    }
 
    /**
-    * Returns the callback address. 
+    * Returns the callback address.
     * <p />
     * This is no listen socket, as we need no callback server.
     * It is just the client side socket data of the established connection to xmlBlaster.
@@ -190,7 +190,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
       }
       return socketUrl.getUrl();
    }
-   
+
    /**
     * Starts the callback thread
     */
@@ -217,7 +217,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                t.setPriority(this.callbackAddress.getEnv("invokerThreadPrio", Thread.NORM_PRIORITY).getValue());
                t.start();
             }
-            else {                  
+            else {
                receiveReply(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
             }
             if (MethodName.DISCONNECT == receiver.getMethodName() && receiver.isResponse()) {
@@ -229,6 +229,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
             log.warning(e.toString());
          }
          catch(Throwable e) {
+        	if (e instanceof NullPointerException)
+        		e.printStackTrace();
             if (running == true) {
                if (e.toString().indexOf("javax.net.ssl") != -1) {
                   log.warning("Closing connection to server, please try debugging SSL with 'java -Djavax.net.debug=all ...': " + e.toString());
