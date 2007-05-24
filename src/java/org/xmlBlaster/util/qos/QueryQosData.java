@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.qos.AccessFilterQos;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 /**
- * Data container handling of query / access QoS. 
+ * Data container handling of query / access QoS.
  * <p>
  * This data holder is accessible through decorators, each of them allowing a specialized view on the data:
  * </p>
@@ -80,10 +81,10 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    private HistoryQos historyQos;
    private boolean containsHistoryQos;
 
-   /** true if query has to be 
+   /** true if query has to be
 
    /**
-    * Constructs the specialized quality of service object for query informations. 
+    * Constructs the specialized quality of service object for query informations.
     * E.g. for a subscribe() call
     * @param The factory which knows how to serialize and parse me
     */
@@ -92,7 +93,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Constructs the specialized quality of service object for query informations. 
+    * Constructs the specialized quality of service object for query informations.
     * E.g. for a subscribe() call
     * @param The factory which knows how to serialize and parse me
     */
@@ -130,8 +131,8 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * Do we want to have an initial update on subscribe if the message
-    * exists already? 
-    * Defaults to true. 
+    * exists already?
+    * Defaults to true.
     * @return true if initial update wanted
     *         false if only updates on new publishes are sent
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html">The engine.qos.subscribe.initialUpdate requirement</a>
@@ -141,7 +142,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to true. 
+    * Defaults to true.
     */
    public boolean getWantInitialUpdate() {
       return this.initialUpdate.getValue();
@@ -153,7 +154,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * Do we want the callback message delivered with update() or with updateOneway()?
-    * Defaults to false. 
+    * Defaults to false.
     * @return true if oneway callback wanted
     *         false to use update() with ACK return
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
@@ -163,7 +164,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to true. 
+    * Defaults to true.
     */
    public boolean getWantUpdateOneway() {
       return this.updateOneway.getValue();
@@ -175,7 +176,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * Set to true if you want an erase notification if the topic is explicitly erased.
-    * @param notify Defaults to true. 
+    * @param notify Defaults to true.
     */
    public void setWantNotify(boolean notify) {
       this.notify.setValue(notify);
@@ -183,7 +184,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * For erase(): Notify the subscribers on erase?
-    * Defaults to true. 
+    * Defaults to true.
     */
    public boolean getWantNotify() {
       return this.notify.getValue();
@@ -194,7 +195,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to true. 
+    * Defaults to true.
     * @param setWantLocal false Inhibit the dispatch of messages to myself if i have published it.
     */
    public void setWantLocal(boolean local) {
@@ -202,7 +203,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to true. 
+    * Defaults to true.
     * @return false Inhibit the dispatch of messages to myself if i have published it.
     */
    public boolean getWantLocal() {
@@ -214,7 +215,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to true. 
+    * Defaults to true.
     * @param meta false: Don't send me the meta information of a message key
     */
    public void setWantMeta(boolean meta) {
@@ -222,7 +223,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to true. 
+    * Defaults to true.
     * @return false: Don't send me the meta information of a message key
     */
    public boolean getWantMeta() {
@@ -234,7 +235,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to true. 
+    * Defaults to true.
     * If false, the update contains not the content (it is a notify of change only)
     * TODO: Implement in server!!!
     */
@@ -243,7 +244,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to true. 
+    * Defaults to true.
     */
    public boolean getWantContent() {
       return this.content.getValue();
@@ -254,7 +255,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Topic erase behavior with pending messages, defaults to false. 
+    * Topic erase behavior with pending messages, defaults to false.
     * @param forceDestroy
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">engine.message.lifecycle requirement</a>
     */
@@ -263,7 +264,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Defaults to false. 
+    * Defaults to false.
     * @return Topic erase behavior with pending messages
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">engine.message.lifecycle requirement</a>
     */
@@ -301,7 +302,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Return the subscribe filters or null if none is specified. 
+    * Return the subscribe filters or null if none is specified.
     */
    public AccessFilterQos[] getAccessFilterArr() {
       if (filterArr != null || filters == null || filters.size() < 1)
@@ -325,7 +326,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Return the subscribe filters or null if none is specified. 
+    * Return the subscribe filters or null if none is specified.
     */
    public QuerySpecQos[] getQuerySpecArr() {
       if (this.querySpecArr != null || this.queries == null || this.queries.size() < 1)
@@ -336,7 +337,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Set the QoS which describes the history query settings. 
+    * Set the QoS which describes the history query settings.
     */
    public void setHistoryQos(HistoryQos historyQos) {
       this.historyQos = historyQos;
@@ -344,7 +345,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Get the QoS which describes the history query settings. 
+    * Get the QoS which describes the history query settings.
     * @return never null
     */
    public HistoryQos getHistoryQos() {
@@ -362,14 +363,14 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Get the identifier (unique handle) for this subscription. 
+    * Get the identifier (unique handle) for this subscription.
     * @return The id or null if not specified by client.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.id.html">The engine.qos.subscribe.id requirement</a>
     */
    public String getSubscriptionId() {
       return this.subscriptionId;
    }
-   
+
    /**
     *
     * @return true if the client has forced a subscriptionId
@@ -379,7 +380,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * Force the identifier (unique handle) for this subscription. 
+    * Force the identifier (unique handle) for this subscription.
     * Usually you let the identifier be generated by xmlBlaster.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.id.html">The engine.qos.subscribe.id requirement</a>
     */
@@ -388,7 +389,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
    }
 
    /**
-    * A client side subscriptionId must start with "__subId:" followed by the relative session name. 
+    * A client side subscriptionId must start with "__subId:" followed by the relative session name.
     * <p>This us only useful for positive session Ids in fail save environments: if the
     * subscription is queued the faked subscriptionId will be used later by the server</p>
     * @param sessionName
@@ -405,9 +406,11 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
          // as a key in client code hashtable to dispatch update() messages
          // Note: multiSubscribe==false allows max one subscription on a topic, even it has
          // different mime query plugins (the latest wins)
+         String url = subscribeKey.getUrl();
+         url = ReplaceVariable.replaceAll(url, "'", "&apos;"); // to have valid xml (<subscribe id='bla'/>
          this.subscriptionId = Constants.SUBSCRIPTIONID_PREFIX +
                                sessionName.getRelativeName(true) + "-" +
-                               subscribeKey.getUrl();
+                               url;
       }
       else {
          this.subscriptionId = Constants.SUBSCRIPTIONID_PREFIX +
@@ -415,9 +418,9 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
                                new Timestamp().getTimestamp();
       }
 	   return this.subscriptionId;
-	   
+
    }
-   
+
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
@@ -449,7 +452,7 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
 
    /**
     * Returns a deep clone, you can change savely all basic or immutable types
-    * like boolean, String, int and also the ClientProperties and RouteInfo. 
+    * like boolean, String, int and also the ClientProperties and RouteInfo.
     */
    public Object clone() {
       return super.clone();
