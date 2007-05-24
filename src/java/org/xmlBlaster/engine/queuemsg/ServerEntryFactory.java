@@ -40,7 +40,7 @@ import java.io.IOException;
  * useful for example if you want to store such entries in persistent storage
  * like a database or a file system. It might however be used even for other
  * purposes.
- * @author laghi@swissinfo.org    
+ * @author laghi@swissinfo.org
  * @author xmlBlaster@marcelruff.info
  */
 public class ServerEntryFactory implements I_EntryFactory
@@ -93,8 +93,8 @@ public class ServerEntryFactory implements I_EntryFactory
          String txt = "Entry with data prio='" + priority + "' timestamp='" + timestamp + "' type='" + type + "' persitent='" + persistent + "' size='" + sizeInBytes + "' storageId='" + storageId + "' has a null stream";
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry: " + txt);
       }
-         
-      if (ENTRY_TYPE_UPDATE_REF.equals(type)) {
+
+      if (ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -132,7 +132,7 @@ public class ServerEntryFactory implements I_EntryFactory
             Timestamp updateEntryTimestamp = new Timestamp(timestamp);
             return new MsgQueueUpdateEntry(this.glob,
                                            PriorityEnum.toPriorityEnum(priority), storageId, updateEntryTimestamp,
-                                           keyOid, msgUnitWrapperUniqueId.longValue(), persistent, sizeInBytes, 
+                                           keyOid, msgUnitWrapperUniqueId.longValue(), persistent, sizeInBytes,
                                            receiver, subscriptionId, flag, redeliverCount.intValue(),
                                            qos, key, content);
          }
@@ -140,7 +140,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry", ex);
          }
       }
-      else if (ENTRY_TYPE_HISTORY_REF.equals(type)) {
+      else if (ENTRY_TYPE_HISTORY_REF.equalsIgnoreCase(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -159,7 +159,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueHistoryEntry", ex);
          }
       }
-      else if (ENTRY_TYPE_MSG_XML.equals(type)) {
+      else if (ENTRY_TYPE_MSG_XML.equalsIgnoreCase(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -184,7 +184,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgUnitWrapper", ex);
          }
       }
-      else if (ENTRY_TYPE_MSG_SERIAL.equals(type)) {
+      else if (ENTRY_TYPE_MSG_SERIAL.equalsIgnoreCase(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -206,7 +206,7 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
-      else if (ENTRY_TYPE_TOPIC_XML.equals(type)) {
+      else if (ENTRY_TYPE_TOPIC_XML.equalsIgnoreCase(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -227,7 +227,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
          }
       }
-      else if (ENTRY_TYPE_TOPIC_SERIAL.equals(type)) {
+      else if (ENTRY_TYPE_TOPIC_SERIAL.equalsIgnoreCase(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -245,7 +245,7 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
-      else if (ENTRY_TYPE_SESSION.equals(type)) {
+      else if (ENTRY_TYPE_SESSION.equalsIgnoreCase(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -261,7 +261,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
          }
       }
-      else if (ENTRY_TYPE_SUBSCRIBE.equals(type)) {
+      else if (ENTRY_TYPE_SUBSCRIBE.equalsIgnoreCase(type)) {
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -280,7 +280,7 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
-      else if (ENTRY_TYPE_DUMMY.equals(type)) {
+      else if (ENTRY_TYPE_DUMMY.equalsIgnoreCase(type)) {
          DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, persistent);
          //entry.setUniqueId(timestamp);
          return entry;
@@ -314,10 +314,10 @@ public class ServerEntryFactory implements I_EntryFactory
    }
 
    /**
-    * Measure performance for XML-ASCII versus java.io.Serializable persistence. 
-    * <pre> 
+    * Measure performance for XML-ASCII versus java.io.Serializable persistence.
+    * <pre>
     * java org.xmlBlaster.engine.queuemsg.ServerEntryFactory
-    * </pre> 
+    * </pre>
     */
    public static void main(String[] args) {
       ServerScope glob = new ServerScope(args);
@@ -360,7 +360,7 @@ public class ServerEntryFactory implements I_EntryFactory
                }
                elapsed = stopWatchToObj.elapsed();
                log.info("num toObj=" + numTransform + " elapsed=" + elapsed + stopWatchToObj.nice());
-       
+
                log.fine("SUCESS BEFORE: " + msgUnitWrapper.toXml());
                log.fine("SUCESS AFTER: " + newWrapper.toXml());
             }
