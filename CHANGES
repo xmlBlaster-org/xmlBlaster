@@ -1,6 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16182 QueryQosData.java: Escape subscriptionId if it contains apos to avoid invalid XML
+
+ o #16181 ServerEntryFactory.java: Changed to ignore case of type during persistence recovery
+
  o #16178 fix: failsave + authentication errors now kill the connection 
           (they went in polling before)
 
