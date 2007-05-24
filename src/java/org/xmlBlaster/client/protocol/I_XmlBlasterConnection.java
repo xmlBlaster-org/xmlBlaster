@@ -7,9 +7,8 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
