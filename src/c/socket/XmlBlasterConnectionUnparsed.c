@@ -258,155 +258,151 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 # endif
    memset((char *)&hostbuf, 0, sizeof(struct hostent));
    hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen, errP);
-
-   if (*errP != 0) {
-      strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-               "[%.100s:%d] Lookup xmlBlaster failed, %s",
-               __FILE__, __LINE__, errP);
-      xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
-      *errP = 0;
-   }
-
-   /* printf("gethostbyname error=%d\n", WSAGetLastError()); */
-   if (hostP != 0) {
-      portP = getservbyname(servTcpPort, "tcp");
-      xmlBlasterAddr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
-      free(tmphstbuf);
-      if (portP != 0)
-         xmlBlasterAddr.sin_port = (u_short)portP->s_port;
-      else {
-         xmlBlasterAddr.sin_port = htons((u_short)atoi(servTcpPort));
-      }
-      xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
-      if (xb->socketToXmlBlaster != -1) {
-         int ret=0;
-         const char *localHostName = xb->props->getString(xb->props, "plugin/socket/localHostname", 0);
-         int localPort = xb->props->getInt(xb->props, "plugin/socket/localPort", 0);
-         localHostName = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/localHostname", localHostName);
-         localPort = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/localPort", localPort);
-
-         /* Sometimes a user may whish to force the local host/port setting (e.g. for firewall tunneling
-            and on multi homed hosts */
-         if (localHostName != 0 || localPort > 0) {
-            struct sockaddr_in localAddr;
-            struct hostent localHostbuf, *localHostP = 0;
-            char *tmpLocalHostbuf=0;
-            size_t localHostbuflen=0;
-            memset(&localAddr, 0, sizeof(localAddr));
-            localAddr.sin_family = AF_INET;
-            if (localHostName) {
-               localHostP = gethostbyname_re(localHostName, &localHostbuf, &tmpLocalHostbuf, &localHostbuflen, errP);
-               if (*errP != 0) {
-                  strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-                  SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                           "[%.100s:%d] Lookup of local IP failed, %s",
-                           __FILE__, __LINE__, errP);
-                  xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
-                  *errP = 0;
-               }
-               if (localHostP != 0) {
-                  localAddr.sin_addr.s_addr = ((struct in_addr *)(localHostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
-                  free(tmpLocalHostbuf);
-               }
-            }
-            if (localPort > 0) {
-               localAddr.sin_port = htons((unsigned short)localPort);
-            }
-            if (bind(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
-               if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
-                  "Failed binding local port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
-                     localHostName, localPort);
-            }
-            else {
-               xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
-                  "Bound local port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
-                     localHostName, localPort);
-            }
-         }
-
-         /* int retval = fcntl(xb->socketToXmlBlaster, F_SETFL, O_NONBLOCK); */ /* Switch on none blocking mode: we then should use select() to be notified when the kernel succeeded with connect() */
-
-         if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
-            if (xb->logLevel>=XMLBLASTER_LOG_INFO) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Connected to xmlBlaster");
-            xb->useUdpForOneway = xb->props->getBool(xb->props, "plugin/socket/useUdpForOneway", xb->useUdpForOneway);
-            xb->useUdpForOneway = xb->props->getBool(xb->props, "dispatch/connection/plugin/socket/useUdpForOneway", xb->useUdpForOneway);
-
-            if (xb->useUdpForOneway) {
-               struct sockaddr_in localAddr;
-               socklen_t size = (socklen_t)sizeof(localAddr);
-               xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
-                  "Using UDP connection for oneway calls, see -dispatch/connection/plugin/socket/useUdpForOneway true");
-
-               xb->socketToXmlBlasterUdp = (int)socket(AF_INET, SOCK_DGRAM, 0);
-
-               if (xb->socketToXmlBlasterUdp != -1) {
-                  if (getsockname(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, &size) == -1) {
-                     if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
-                        "Can't determine the local socket host and port (in UDP), errno=%d", errno);
-                     return false;
-                  }
-
-                  if (bind(xb->socketToXmlBlasterUdp, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
-                     if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
-                        "Failed binding local port (in UDP) -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
-                        localHostName, localPort);
-                     return false;
-                  }
-                  if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
-                     "Bound local UDP port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
-                     localHostName, localPort);
-
-                  if ((ret=connect(xb->socketToXmlBlasterUdp, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) == -1) {
-                     char errnoStr[MAX_ERRNO_LEN];
-                     xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
-                     strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-                     SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                              "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP), ret=%d, %s",
-                              __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
-                     if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
-                     return false;
-                  }
-                  if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Connected to xmlBlaster with UDP");
-               } /* if (xb->socketToXmlBlasterUdp != -1) */
-               else {
-                  strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-                  SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                           "[%.100s:%d] Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP) errno=%d",
-                           __FILE__, __LINE__, serverHostName, servTcpPort, errno);
-                  return false;
-               }
-            } /* if (xb->useUdpForOneway) */
-
-         }
-         else { /* connect(...) == -1 */
-            char errnoStr[MAX_ERRNO_LEN];
-            xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
-            strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-            SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                     "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, ret=%d, %s",
-                     __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
-            if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
-            return false;
-         }
+   if (hostP == 0) {
+      if (*errP != 0) {
+         strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+            "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s: %s",
+                  __FILE__, __LINE__, serverHostName, servTcpPort, errP);
+         xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
+         *errP = 0;
       }
       else {
          strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-                  "[%.100s:%d] Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d",
+                  "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s, errno=%d",
                   __FILE__, __LINE__, serverHostName, servTcpPort, errno);
+         xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
+      }
+      return false;
+   }
+
+   portP = getservbyname(servTcpPort, "tcp");
+   xmlBlasterAddr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
+   free(tmphstbuf);
+   if (portP != 0)
+      xmlBlasterAddr.sin_port = (u_short)portP->s_port;
+   else {
+      xmlBlasterAddr.sin_port = htons((u_short)atoi(servTcpPort));
+   }
+   xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
+   if (xb->socketToXmlBlaster != -1) {
+      int ret=0;
+      const char *localHostName = xb->props->getString(xb->props, "plugin/socket/localHostname", 0);
+      int localPort = xb->props->getInt(xb->props, "plugin/socket/localPort", 0);
+      localHostName = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/localHostname", localHostName);
+      localPort = xb->props->getInt(xb->props, "dispatch/connection/plugin/socket/localPort", localPort);
+
+      /* Sometimes a user may whish to force the local host/port setting (e.g. for firewall tunneling
+         and on multi homed hosts */
+      if (localHostName != 0 || localPort > 0) {
+         struct sockaddr_in localAddr;
+         struct hostent localHostbuf, *localHostP = 0;
+         char *tmpLocalHostbuf=0;
+         size_t localHostbuflen=0;
+         memset(&localAddr, 0, sizeof(localAddr));
+         localAddr.sin_family = AF_INET;
+         if (localHostName) {
+            *errP = 0;
+            localHostP = gethostbyname_re(localHostName, &localHostbuf, &tmpLocalHostbuf, &localHostbuflen, errP);
+            if (*errP != 0) {
+               strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+               SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                        "[%.100s:%d] Lookup of local IP failed, %s",
+                        __FILE__, __LINE__, errP);
+               xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
+               *errP = 0;
+            }
+            if (localHostP != 0) {
+               localAddr.sin_addr.s_addr = ((struct in_addr *)(localHostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
+               free(tmpLocalHostbuf);
+            }
+         }
+         if (localPort > 0) {
+            localAddr.sin_port = htons((unsigned short)localPort);
+         }
+         if (bind(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
+            if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
+               "Failed binding local port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                  localHostName, localPort);
+         }
+         else {
+            xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
+               "Bound local port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                  localHostName, localPort);
+         }
+      }
+
+      /* int retval = fcntl(xb->socketToXmlBlaster, F_SETFL, O_NONBLOCK); */ /* Switch on none blocking mode: we then should use select() to be notified when the kernel succeeded with connect() */
+
+      if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
+         if (xb->logLevel>=XMLBLASTER_LOG_INFO) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Connected to xmlBlaster");
+         xb->useUdpForOneway = xb->props->getBool(xb->props, "plugin/socket/useUdpForOneway", xb->useUdpForOneway);
+         xb->useUdpForOneway = xb->props->getBool(xb->props, "dispatch/connection/plugin/socket/useUdpForOneway", xb->useUdpForOneway);
+
+         if (xb->useUdpForOneway) {
+            struct sockaddr_in localAddr;
+            socklen_t size = (socklen_t)sizeof(localAddr);
+            xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__,
+               "Using UDP connection for oneway calls, see -dispatch/connection/plugin/socket/useUdpForOneway true");
+
+            xb->socketToXmlBlasterUdp = (int)socket(AF_INET, SOCK_DGRAM, 0);
+
+            if (xb->socketToXmlBlasterUdp != -1) {
+               if (getsockname(xb->socketToXmlBlaster, (struct sockaddr *)&localAddr, &size) == -1) {
+                  if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
+                     "Can't determine the local socket host and port (in UDP), errno=%d", errno);
+                  return false;
+               }
+
+               if (bind(xb->socketToXmlBlasterUdp, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
+                  if (xb->logLevel>=XMLBLASTER_LOG_WARN) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__,
+                     "Failed binding local port (in UDP) -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                     localHostName, localPort);
+                  return false;
+               }
+               if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__,
+                  "Bound local UDP port -dispatch/connection/plugin/socket/localHostname %s -dispatch/connection/plugin/socket/localPort %d",
+                  localHostName, localPort);
+
+               if ((ret=connect(xb->socketToXmlBlasterUdp, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) == -1) {
+                  char errnoStr[MAX_ERRNO_LEN];
+                  xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
+                  strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+                  SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                           "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP), ret=%d, %s",
+                           __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
+                  if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
+                  return false;
+               }
+               if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Connected to xmlBlaster with UDP");
+            } /* if (xb->socketToXmlBlasterUdp != -1) */
+            else {
+               strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+               SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                        "[%.100s:%d] Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed (in UDP) errno=%d",
+                        __FILE__, __LINE__, serverHostName, servTcpPort, errno);
+               return false;
+            }
+         } /* if (xb->useUdpForOneway) */
+
+      }
+      else { /* connect(...) == -1 */
+         char errnoStr[MAX_ERRNO_LEN];
+         xb_strerror(errnoStr, MAX_ERRNO_LEN, errno);
+         strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                  "[%.100s:%d] Connecting to xmlBlaster -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed, ret=%d, %s",
+                  __FILE__, __LINE__, serverHostName, servTcpPort, ret, errnoStr);
+         if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
          return false;
       }
    }
    else {
-#     if defined(_WINDOWS)
-         errno = WSAGetLastError(); /* for error codes see http://msdn2.microsoft.com/en-us/library/ms740668.aspx */
-#     endif
       strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-               "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s, errno=%d",
+               "[%.100s:%d] Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d",
                __FILE__, __LINE__, serverHostName, servTcpPort, errno);
-      xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
       return false;
    }
    xb->isInitialized = true;

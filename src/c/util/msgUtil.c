@@ -326,6 +326,12 @@ int gethostbyname_r (const char *name,
 
 #endif /* defined(__FreeBSD__) || defined(__MacOSX__) */
 
+#if defined(WINCE)
+/* Ws2tcpip.h(550) : error C2632: 'int' followed by 'int' is illegal
+                     These errors are caused by redefinition in WinInet.h. */
+/*#include <Ws2tcpip.h>*/ /* for getaddrinfo() only */
+#endif
+
 /**
  * Thread safe host lookup. 
  * NOTE: If the return is not NULL you need to free(*tmphstbuf)
@@ -486,33 +492,52 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
          /* Link Library: Ws2.lib. */
          struct hostent* remoteHost;
          unsigned int addr;
-         int err = 0;
          const char *pp = 0;
          hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
          tmphstbuf = 0;
          hstbuflen = 0;
          *errP = 0;
+         WSASetLastError(0);
+
+#if Ws2tcpip_USE
+         { /* The future preferred way, not yet ready implemented */
+            /*host: Pointer to a NULL-terminated string containing a host (node) name or a numeric host address string. The numeric host address string is a dotted-decimal IPv4 address or an IPv6 hexadecimal address.*/
+            const char FAR* servname = 0; /* Pointer to a NULL-terminated string containing either a service name or port number. */
+            const struct addrinfo hints; /* Pointer to an addrinfo structure that provides hints about the type of socket the caller supports.  */
+            struct addrinfo FAR* FAR* res; /* out */
+            int errorReturn = 0; /* return: This function returns zero when successful. The return of a nonzero Windows Sockets error code indicates failure. */
+            memset((char *)&hints, 0, sizeof(struct addrinfo));
+            errorReturn = getaddrinfo(host, servname, &hints, res);
+         }
+#endif /*Ws2tcpip_USE*/
 
          /* If the user input is an alpha name for the host, use gethostbyname() */
          if (isalpha(host[0])) {   /* host address is a name */
-           remoteHost = gethostbyname(host); /* Not thread safe */
+           remoteHost = gethostbyname(host); /* Not thread safe, returns null on error (use WSAGetLastError() to retrieve reason) */
            pp = "gethostbyname";
          }
          else  { 
+           /* The gethostbyaddr function has been deprecated by the introduction of the getnameinfo function. */
            /* If not, get host by addr (assume IPv4) e.g. "192.168.1.1" */
            addr = inet_addr(host);
            remoteHost = gethostbyaddr((char *) &addr, 4, AF_INET);
+           /* If an error occurs, it returns a NULL pointer, and a specific error code can be retrieved by calling WSAGetLastError. */
            pp = "gethostbyaddr";
          }
-         err = WSAGetLastError();
-         if (err != 0) {
+         if (remoteHost == 0) {
+            int err = WSAGetLastError(); /* does not reset the error code, use WSASetLastError(0) to do it */
+            /* for error codes see http://msdn2.microsoft.com/en-us/library/ms740668.aspx */
             /*if (WSAGetLastError() == 11001)
                printf("Host %s not found\n", host);*/
-            printf("Host %s not found, WSAGetLastError=%d\n", host, err);
-            SNPRINTF(errP, MAX_ERRNO_LEN, "%s(%s) not found, WSAGetLastError=%d\n", pp, host, err);
+            /*printf("Host %s not found, WSAGetLastError=%d\n", host, err);*/
+            SNPRINTF(errP, MAX_ERRNO_LEN, "%s(%s) not found, WSAGetLastError=%d, see http://msdn2.microsoft.com/en-us/library/ms740668.aspx\n", pp, host, err);
+            WSASetLastError(0);
             return 0;
          }
-         return remoteHost;
+         else {
+            *errP = 0;
+            return remoteHost;
+         }
 #elif defined(_WINDOWS)
          /*Winsock2.h, Ws2_32.lib, Ws2_32.dll*/
          struct hostent* remoteHost;
