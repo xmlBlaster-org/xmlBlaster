@@ -280,6 +280,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             this.glob.resetInstanceId();
             this.connectQos.getData().setInstanceId(this.glob.getInstanceId());
 
+            if (connectQos.getData().getGlobal().isServerSide()) {
+               String text = "Your ConnectQos.getData() contains a ServerScope instead of a Global instance, this is not allowed";
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, text);
+            }
+
             this.updateListener = updateListener;
 
             // TODO: This is done by ConnectQos already, isn't it?
