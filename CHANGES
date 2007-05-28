@@ -1,6 +1,11 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16187 Fixed cluster client queue to have unique storageId
+          Use -xmlBlaster/cluster/useLegacyClientQueueName true forces old behavior
+
+ o #16185 Fixed using ServerScope in ConnectQos which used wrong ServerEntryFactor on client side
+
  o #16182 QueryQosData.java: Escape subscriptionId if it contains apos to avoid invalid XML
 
  o #16181 ServerEntryFactory.java: Changed to ignore case of type during persistence recovery
