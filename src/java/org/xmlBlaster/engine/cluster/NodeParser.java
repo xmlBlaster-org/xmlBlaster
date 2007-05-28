@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
  */
 
 /**
- * XML parsing cluster node specific messages. 
+ * XML parsing cluster node specific messages.
  * <p />
  * Example:
  * <pre>
@@ -108,7 +108,7 @@ public class NodeParser extends SaxHandlerBase
    private NodeStateInfo tmpState = null; // Helper variable
 
    private boolean inDisconnect = false; // parsing inside <disconnect>
-   
+
    private final SessionInfo sessionInfo;
 
 
@@ -206,7 +206,7 @@ public class NodeParser extends SaxHandlerBase
          if (name.equalsIgnoreCase("info") || name.equalsIgnoreCase("connect")) {
             if (inClusternode != 1) return;
             inConnect = true;
-            tmpNodeInfo = new NodeInfo(glob, tmpClusterNode.getNodeId());
+            tmpNodeInfo = new NodeInfo(tmpClusterNode.getRemoteGlob(), tmpClusterNode.getNodeId());
             if (tmpNodeInfo.startElement(uri, localName, name, character, attrs) == true)
                tmpClusterNode.setNodeInfo(tmpNodeInfo);
             else {
@@ -216,7 +216,7 @@ public class NodeParser extends SaxHandlerBase
             character.setLength(0);
             return;
          }
-         
+
          if (inClusternode == 1) {
             if (name.equals(MethodName.DISCONNECT.getMethodName())) {
                this.inDisconnect = true;
@@ -291,7 +291,7 @@ public class NodeParser extends SaxHandlerBase
          this.tmpNodeInfo.setDisconnectQos(new DisconnectQos(this.tmpNodeInfo.getRemoteGlob()));
          return;
       }
-      
+
       log.warning("endElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
    }
 
@@ -305,7 +305,7 @@ public class NodeParser extends SaxHandlerBase
 
       try {
          m.init(glob, null);
-         
+
          String xml =
             "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +
             "   <connect><qos>\n" +
@@ -347,7 +347,7 @@ public class NodeParser extends SaxHandlerBase
             NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml, null);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
- 
+
          xml =
             "<clusternode id='heron.mycomp.com'>\n" +
             "   <master stratum='1' refid='frodo' type='DomainPlugin' version='2.0' acceptDefault='false' acceptOtherDefault='true'>\n" +
@@ -359,8 +359,8 @@ public class NodeParser extends SaxHandlerBase
             "     <ram free='10657'/>\n" +
             "   </state>\n" +
             "</clusternode>\n";
-         
-         
+
+
          {
             System.out.println("\nFull Message from client ...");
             NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml, null);

@@ -32,7 +32,7 @@ import java.util.TreeMap;
 import java.util.Iterator;
 
 /**
- * This class holds the informations about an xmlBlaster server instance (=cluster node). 
+ * This class holds the informations about an xmlBlaster server instance (=cluster node).
  * <p />
  * It collects the node informations from NodeInfo.java, NodeDomainInfo.java and NodeStateInfo.java
  */
@@ -40,25 +40,25 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 {
    private final String ME;
    private final ServerScope fatherGlob;
-   /** 
+   /**
     * This util global instance is used for I_XmlBlasterAccess, it
     * uses the specific settings from NodeInfo to connect to the remote node
     */
    private final org.xmlBlaster.util.Global remoteGlob;
    private static Logger log = Logger.getLogger(ClusterNode.class.getName());
    private final SessionInfo sessionInfo;
-   
+
    private I_XmlBlasterAccess xmlBlasterConnection = null;
    private boolean available;
 
    /** Holds address and backup informations */
    private NodeInfo nodeInfo;
-   
+
    /** Holds performance informations for load balancing */
    private NodeStateInfo state;
-   
+
    /**
-    * Hold mapping informations to map a message to a master node. 
+    * Hold mapping informations to map a message to a master node.
     * The key is the query string -> to avoid duplicate identical queries
     * The value is an instance of NodeDomainInfo
     */
@@ -83,7 +83,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Convenience, delegates call to NodeInfo. 
+    * Convenience, delegates call to NodeInfo.
     * @return The unique name of the managed xmlBlaster instance e.g. "bilbo.mycompany.com"
     */
    public String getId(){
@@ -91,7 +91,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Convenience, delegates call to NodeInfo. 
+    * Convenience, delegates call to NodeInfo.
     * @return The unique name of the managed xmlBlaster instance
     */
    public NodeId getNodeId() {
@@ -99,7 +99,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Convenience, delegates call to NodeInfo. 
+    * Convenience, delegates call to NodeInfo.
     * @param The unique name of the managed xmlBlaster instance
     */
    public void setNodeId(NodeId nodeId) {
@@ -107,7 +107,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * On first invocation we connect to the other xmlBlaster cluster node. 
+    * On first invocation we connect to the other xmlBlaster cluster node.
     * <p />
     * The failsafe mode is switched on, you can configure it:
     * <ul>
@@ -130,7 +130,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          return null;
 
       if (this.xmlBlasterConnection == null) { // Login to other cluster node ...
- 
+
          this.xmlBlasterConnection = this.remoteGlob.getXmlBlasterAccess();
          this.xmlBlasterConnection.setServerNodeId(getId());
          this.xmlBlasterConnection.registerConnectionListener(this);
@@ -151,7 +151,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          }
          catch(XmlBlasterException e) {
             if (e.isInternal()) {
-               log.severe("Connecting to " + getId() + " is currently not possible: " + e.getMessage());
+               log.severe("Connecting to " + getId() + " is not possible: " + e.getMessage());
             }
             else {
                log.warning("Connecting to " + getId() + " is currently not possible: " + e.toString());
@@ -183,35 +183,35 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Access the current nodeInfo of the node. 
+    * Access the current nodeInfo of the node.
     */
    public NodeInfo getNodeInfo() {
       return nodeInfo;
    }
 
    /**
-    * Overwrite the current nodeInfo of the node. 
+    * Overwrite the current nodeInfo of the node.
     */
    public void setNodeInfo(NodeInfo nodeInfo) {
       this.nodeInfo = nodeInfo;
    }
 
    /**
-    * Access the current state of the node, like current CPU and memory informations. 
+    * Access the current state of the node, like current CPU and memory informations.
     */
    public NodeStateInfo getNodeStateInfo() {
       return state;
    }
 
    /**
-    * Access the current state of the node, like current CPU and memory informations. 
+    * Access the current state of the node, like current CPU and memory informations.
     */
    public void setNodeStateInfo(NodeStateInfo state) {
       this.state = state;
    }
 
    /**
-    * Access the filter rules to determine the master of a message. 
+    * Access the filter rules to determine the master of a message.
     * @return The map contains NodeDomainInfo objects, it is never null, please treat as read only.
     */
    public Map getDomainInfoMap() {
@@ -219,15 +219,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Set the filter rules to determine the master of a message. 
+    * Set the filter rules to determine the master of a message.
     */
    public void addDomainInfo(NodeDomainInfo domainInfo) {
-      // How to avoid duplicates? key = domainInfo.getQuery() does not help because of subtags 
+      // How to avoid duplicates? key = domainInfo.getQuery() does not help because of subtags
       this.domainInfoMap.put(""+domainInfo.getCount(), domainInfo);
    }
 
    /**
-    * Check if we have currently a functional connection to this node. 
+    * Check if we have currently a functional connection to this node.
     * <p />
     * Note: A call to this check does try to login if the connection
     *       was not initialized before. This is sometimes an unwanted behavior.
@@ -244,7 +244,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Check if we are currently polling for a connection to this node. 
+    * Check if we are currently polling for a connection to this node.
     * <p />
     * Note: A call to this check does try to login if the connection
     *       was not initialized before. This is sometimes an unwanted behavior.
@@ -261,7 +261,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Check if we currently have an open connection to this node. 
+    * Check if we currently have an open connection to this node.
     * @return Always true for the local node
     */
    public boolean isAlive() throws XmlBlasterException {
@@ -274,7 +274,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Is this node usable. 
+    * Is this node usable.
     * @return true if we are logged in or are polling for the node<br />
     *         false if the node should not be used
     */
@@ -285,7 +285,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Returns the current connection state to the node. 
+    * Returns the current connection state to the node.
     * @return 0 -> We are logged in<br />
     *         1 -> We are polling for this node<br />
     *         2 -> The node is not allowed to use<br />
@@ -303,7 +303,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Check if we have currently a functional connection to this node. 
+    * Check if we have currently a functional connection to this node.
     */
    public boolean isLocalNode() {
       return getId().equals(this.fatherGlob.getId());
@@ -317,7 +317,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * Needed for TreeSet and MapSet, implements Comparable. 
+    * Needed for TreeSet and MapSet, implements Comparable.
     */
    public int compareTo(Object obj)  {
       ClusterNode n = (ClusterNode)obj;
@@ -364,7 +364,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    /**
     * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
+    * delivering us a new asynchronous message.
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
@@ -414,7 +414,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       sb.append(offset).append("<clusternode id='").append(getId()).append("'>");
 
       sb.append(getNodeInfo().toXml(extraOffset + Constants.INDENT, props));
-      
+
       if (getDomainInfoMap() != null) {
          Iterator it = getDomainInfoMap().values().iterator();
          while (it.hasNext()) {
@@ -422,9 +422,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             sb.append(info.toXml(extraOffset + Constants.INDENT));
          }
       }
-      
+
       sb.append(getNodeStateInfo().toXml(extraOffset + Constants.INDENT));
-      
+
       sb.append(offset).append("</clusternode>");
 
       return sb.toString();
