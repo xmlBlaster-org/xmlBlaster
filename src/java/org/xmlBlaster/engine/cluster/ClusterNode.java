@@ -136,6 +136,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          this.xmlBlasterConnection.registerConnectionListener(this);
 
          ConnectQosData qos = getNodeInfo().getConnectQosData();
+         
+         // fixed to be unique since 1.5.2
+         boolean oldQueueNameBehavior = this.remoteGlob.getProperty().get("xmlBlaster/cluster/useLegacyClientQueueName", false);
+         if (!oldQueueNameBehavior)
+            this.xmlBlasterConnection.setStorageIdStr(getId()+qos.getSessionName().getRelativeName());
 
          try {
             Address addr = qos.getAddress();

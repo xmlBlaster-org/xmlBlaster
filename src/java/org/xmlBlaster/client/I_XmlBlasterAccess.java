@@ -286,6 +286,16 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     */
    SessionName getSessionName();
 
+   String getStorageIdStr();
+   
+   /**
+    * Allows to set a unique client side queue name (connection queue).
+    * Useful only if you code connects to multiple servers with the same login name.
+    * Use with very caution to be unique in complete database!
+    * @param prefix For example "toserver1"+sessionName.getRelativeName()
+    */
+   void setStorageIdStr(String prefix);
+
    /**
     * Allows to set the node name for nicer logging. 
     * Used for clustering.

@@ -129,6 +129,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private long startupTime;
 
    StreamingCallback streamingCb;
+   
+   private String storageIdPrefix;
 
    /**
     * Create an xmlBlaster accessor.
@@ -301,6 +303,12 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                if (getPublicSessionId() == 0 ) {
                   // having no public sessionId we need to generate a unique queue name
                   storageIdStr += System.currentTimeMillis()+Global.getCounter();
+               }
+               else {
+                  if (getStorageIdStr() != null && getStorageIdStr().length() > 0) {
+                     // client code forces a named client side storageId - dangerous if the name conflicts with server name in same DB
+                     storageIdStr = getStorageIdStr();
+                  }
                }
                StorageId queueId = new StorageId(Constants.RELATING_CLIENT, storageIdStr);
                this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
@@ -681,6 +689,21 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
       return null;
    }
+   
+   /**
+    * @see I_XmlBlasterAccess#getStorageIdStr()
+    */
+   public String getStorageIdStr() {
+      return this.storageIdPrefix;
+   }
+
+   /**
+    * @see I_XmlBlasterAccess#setStorageIdStr(String)
+    */
+   public void setStorageIdStr(String prefix) {
+      this.storageIdPrefix = Global.getStrippedString(prefix);   
+   }
+
 
    /**
     * Allows to set the node name for nicer logging.
