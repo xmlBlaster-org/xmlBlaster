@@ -299,7 +299,7 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
         </pre>
         the adaptor will return the raw XML string. This is very useful under development to see how to write your own xsl stylesheets. 
         </p>
-        <p>Urls to start with are (replace 'heron' in the last example with your cluster node id, here we have started xmlBlaster with -cluster.node.id heron):
+        <p>Urls to start with are (replace 'heron' in the examples with your cluster node id, here we have started xmlBlaster with -cluster.node.id heron):
           <ul>
           <li>http://localhost:9999/</li>
           <li>http://localhost:9999/mbean?objectname=org.xmlBlaster:nodeClass=node,*</li>
