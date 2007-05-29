@@ -20,6 +20,7 @@ public interface ReplSlaveMBean {
    void kill() throws Exception;
    String reInitiateReplication() throws Exception;
    String getReplPrefix();
+   String getReplPrefixGroup();
    String getVersion();
 
    /** These go to the backend (are invoked asynchronously to avoid blocking) */

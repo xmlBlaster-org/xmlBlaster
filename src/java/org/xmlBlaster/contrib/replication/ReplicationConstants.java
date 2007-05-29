@@ -86,7 +86,7 @@ public interface ReplicationConstants extends ContribConstants {
    
    // properties
     final static String REPL_PREFIX_KEY = "replication.prefix";
-   //  final static String REPLICATION_PREFIX = "replication.prefix";
+    final static String REPL_PREFIX_GROUP_KEY = "replication.prefixGroup";
     final static String REPLICATION_VERSION = "replication.version";
     final static String REPLICATION_FORCE_SENDING = "replication.forceSending";
     final static String REPLICATION_SEND_UNCHANGED_UPDATES = "replication.sendUnchangedUpdates";

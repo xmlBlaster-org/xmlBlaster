@@ -89,6 +89,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private String dbWatcherSessionName;
    private ReplManagerPlugin manager;
    private String replPrefix;
+   private String replPrefixGroup;
    private String cascadedReplSlave;
    private String cascadedReplPrefix;
    private long forcedCounter;  // counter used when forceSending is set to 'true'
@@ -184,6 +185,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          this.replPrefix = info.get("_replName", null);
          if (this.replPrefix == null) 
             throw new Exception("The replication name '_replName' has not been defined");
+         this.replPrefixGroup = info.get(REPL_PREFIX_GROUP_KEY, this.replPrefix);
          this.name = "replSlave" + this.replPrefix + slaveSessionId;
          this.dataTopic = info.get(DbWatcherConstants.MOM_TOPIC_NAME, "replication." + this.replPrefix);
          // only send status messages if it has been configured that way
@@ -899,6 +901,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    
    public String getReplPrefix() {
       return this.replPrefix;
+   }
+   
+   public String getReplPrefixGroup() {
+      return this.replPrefixGroup;
    }
    
    public String getVersion() {
