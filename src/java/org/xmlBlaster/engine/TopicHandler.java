@@ -290,8 +290,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (this.msgUnitCache == null) {
          String type = msgUnitStoreProperty.getType();
          String version = msgUnitStoreProperty.getVersion();
-         // TODO: Port to ContextNode syntax: "/node/heron/topic/hello" (similar to callback queue) instead of "msgUnitStore_heronHello" 
-         StorageId msgUnitStoreId = new StorageId("msgUnitStore", glob.getNodeId()+"/"+getUniqueKey());
+         // ContextNode syntax: "/node/heron/topic/hello" (similar to callback queue)
+         // instead of "msgUnitStore:heron_hello"
+         // This change would be nice but then existing entries on restart wouldn't be found
+         // This syntax is also used in RequestBroker:checkConsistency to reverse lookup the TopicHandler by a given I_Map
+         StorageId msgUnitStoreId = new StorageId(Constants.RELATING_MSGUNITSTORE, glob.getNodeId()+"/"+getUniqueKey());
          this.msgUnitCache = glob.getStoragePluginManager().getPlugin(type, version, msgUnitStoreId, msgUnitStoreProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
          if (this.msgUnitCache == null) {
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Can't load msgUnitStore persistence plugin [" + type + "][" + version + "]");
