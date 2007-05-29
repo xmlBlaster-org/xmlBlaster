@@ -144,8 +144,8 @@ function refresh() {
           <tr class="inner">
             <td colspan="2" class="normal" title="Click to get details on this replication">
               <xsl:element name="a">
-                 <xsl:attribute name="href">mbean?objectname=<xsl:value-of select="$objectName"/>&amp;template=destinationDetails</xsl:attribute>
-                 <xsl:call-template name="modifySessionName">
+                 <xsl:attribute name="href">mbean?objectname=<xsl:value-of select="$objectName"/>&amp;template=destinationDetails&amp;referer=destinationList&amp;sessionName=<xsl:call-template name="modifySessionName"><xsl:with-param name="content" select="$sessionName"/></xsl:call-template></xsl:attribute>
+                 <xsl:call-template name="modifySessionName">									   
                     <xsl:with-param name="content" select="$sessionName"/>
                  </xsl:call-template>
               </xsl:element>

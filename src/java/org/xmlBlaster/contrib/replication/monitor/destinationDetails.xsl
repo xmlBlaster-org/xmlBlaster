@@ -12,6 +12,8 @@
 <!-- the variables used in this document: -->
 
 <xsl:param name="request.referer"/>
+<xsl:param name="request.sessionName"/>
+<xsl:param name="replPrefixGroup" select="MBean/Attribute[@name='ReplPrefixGroup']/@value"/>
 
 <xsl:variable name="isUser" select="/*/@user"/>
 <xsl:variable name="isInitiator" select="/*/@initiator"/>
@@ -108,7 +110,7 @@ function dumpEntry() {
 <body>
   <center>
     <xsl:call-template name="header"/>
-    <div class="middle">Replication Details<br/>
+    <div class="middle">Replication Details (<xsl:value-of select="$replPrefixGroup"/>)<br/>
       <table width="650" align="center" class="external" summary="">
         <tr> 
           <td>
@@ -151,9 +153,7 @@ function dumpEntry() {
    <xsl:param name="beanName" select="$sessionName"/>
          <tr>
            <td colspan="4" class="normal" align="center" title="The name identifying this destination of the replication">
-             <xsl:call-template name="modifySessionName">
-               <xsl:with-param name="content" select="Attribute[@name='SessionName']/@value"/>
-             </xsl:call-template>
+             <xsl:value-of select='$request.sessionName'/>
            </td>
          </tr>
  
