@@ -112,7 +112,9 @@ public class DbWriter implements I_Update {
          String loginName = nameTokenizer.nextToken().trim();
          if (passwordTokenizer.hasMoreTokens())
             password = passwordTokenizer.nextToken().trim();
-         dbWriterList.add(createSingleDbWriter(masterInfo, loginName, password));
+         if (loginName != null && loginName.length() > 0) {
+            dbWriterList.add(createSingleDbWriter(masterInfo, loginName, password));
+         }
       }
       log.info("Created and configured '" + dbWriterList.size() + "' instances of DbWriter with mom.loginName='" + loginNames + "'");
       return dbWriterList;
