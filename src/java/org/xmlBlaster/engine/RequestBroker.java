@@ -2465,7 +2465,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport
           * 2. If a session is not logged in after a server restart we don't see the session but there may be callback queue entries
           */
          // Find the corresponding topic
+         // Syntax is "msgUnitStore:heron_hello" from TopicHandler.java:startupMsgstore
+
          String relating = map.getStorageId().getPrefix(); // Constants.RELATING_MSGUNITSTORE="msgUnitStore"
+         if (!Constants.RELATING_MSGUNITSTORE.equals(relating)) {
+            sb.append("\nSorry, only maps of type " + Constants.RELATING_MSGUNITSTORE + ": can be checked");
+            return sb.toString();
+         }
          String id = map.getStorageId().getPostfix(); // "/node/heron/topic/hello"
 
          if (reportFileName == null || reportFileName.equalsIgnoreCase("String")) {
@@ -2482,6 +2488,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
          
          sb.append("Checking storage '").append(id).append("' relating '").append(relating).append("'\n");
+         String pre = glob.getNodeId()+"/";
+         if (!id.startsWith(pre)) {
+            sb.append("\nSorry, internal problem, can't check the map as " + id + " is of unknown syntax");
+            return sb.toString();
+         }
+         String topicOid = id.substring(pre.length());
+         /* 
          ContextNode parent = ContextNode.valueOf(id); 
          if (parent == null) {
             sb.append("The corresponding topic is not found, relating=" + relating + " is strange.\n");
@@ -2497,6 +2510,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             topicOid = parent.getInstanceName();
             sb.append("Parsing msgUnitStore of topic '" + topicOid + "'\n");
          }
+         */
 
          final Map foundInHistoryQueue = new HashMap();
          final Map notFoundInHistoryQueue = new HashMap();
