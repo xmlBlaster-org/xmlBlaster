@@ -23,6 +23,7 @@
       <action do='LOAD' onStartupRunlevel='4' sequence='20' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
+      <!-- attribute id='port'>7607</attribute -->
       <attribute id='compress/type'></attribute>  <!-- Default: no compression for python,php,perl access -->
    </plugin>
 
