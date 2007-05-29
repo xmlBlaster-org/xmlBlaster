@@ -299,10 +299,35 @@ MC4J_Console_1.2b9   (start the GUI, choose 'Create Server Connection' -> 'J2SE 
         </pre>
         the adaptor will return the raw XML string. This is very useful under development to see how to write your own xsl stylesheets. 
         </p>
+        <p>Urls to start with are (replace 'heron' in the last example with your cluster node id, here we have started xmlBlaster with -cluster.node.id heron):
+          <ul>
+          <li>http://localhost:9999/</li>
+          <li>http://localhost:9999/mbean?objectname=org.xmlBlaster:nodeClass=node,*</li>
+          <li>http://localhost:9999/mbean?objectname=org.xmlBlaster:nodeClass=node,*&amp;attributes=false</li>
+          <li>http://localhost:9999/mbean?objectname=org.xmlBlaster:nodeClass=node,node=%22heron%22,clientClass=client,*</li>
+          <li>http://localhost:9999/mbean?objectname=org.xmlBlaster:nodeClass=node,node=%22heron%22,queueClass=queue,*</li>
+          <li>http://localhost:9999/mbean?objectname=org.xmlBlaster:queueClass=queue,*</li>
+          </ul>
+        </p>
+        <p>
+        All above queries return the 'raw' xml.
+        </p>
+        <p>
+        A trailing '*' returns the complete hierarchy below, a named final name returns the flat object.
+        A missing part in the upper hierarchy is interpreted as a '*' to get all the leaves.
+        </p>
+
+        <p>
+        The next step is to apply a XSL stylesheet for nicer formatting,
+        exampes are provided <i>xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor/*.xsl</i> (serverbydomain.xsl is the entry point for others like destinationDetails.xsl).
+        It is very helpful to have two plugins running, one for the raw xml output and the other to develop the xsl.
+        </p>
         <p>
         If you use the xsltProcessor but do not define your own stylesheets (here it would mean you erase the xsl in 
         <tt>${user.home}/xmlBlaster/src/java/org/xmlBlaster/contrib/replication/monitor</tt>, the default stylesheets of mx4j would be used.<br/>
         Invoking http://localhost:9999 would take the default invocation which is serverbydomain.<br/>
+        </p>
+        <p>
         Per default this request is processed by the own xslt processing. In our case we have specified an xsltProcessor, that 
         is we bypass the default behaviour. In other words we will process the generated xml by own xsl stylesheets. The location of these stylesheets
         is defined by the parameter <b>xsltPath</b>. The searching mechanism for this path is different from the one provided by default by the
