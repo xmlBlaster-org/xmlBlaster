@@ -1,5 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+  
+ 0 #16195 Fixed PersistenceCachePlugin.getAll(I_EntryFilter) which could lead to duplicate intercept calls
+
+ o #16193 Fixed topicId lookup in checkConsistency()
 
  o #16187 Fixed cluster client queue to have unique storageId
           Use -xmlBlaster/cluster/useLegacyClientQueueName true forces old behavior
