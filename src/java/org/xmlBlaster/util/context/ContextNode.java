@@ -525,7 +525,8 @@ public final class ContextNode
    }
 
    /**
-    * Parse the given string. 
+    * Parse the given string.
+    * NOTE: The returned ContextNode is a new instance and NOT the instance from inside a given Global 
     * @param url For example 
     *             "/xmlBlaster/node/heron/client/joe/session/2"
     * @return The lowest ContextNode instance, you can navigate upwards with getParent()
