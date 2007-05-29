@@ -11,6 +11,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
@@ -523,43 +525,42 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * as if we have swapped messages they won't fit to memory. 
     * @see I_Map#getAll()
     */
-   public I_MapEntry[] getAll(I_EntryFilter entryFilter) throws XmlBlasterException {
+   public I_MapEntry[] getAll(final I_EntryFilter entryFilter) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering getAll()");
       synchronized (this) {
          //log.error(ME, "getAll() DEBUG ONLY: numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries() + " persistentStore=" + this.persistentStore.getNumOfEntries());
-         //log.error(ME, "getAll() DEBUG ONLY: " + toXml(""));
-
-         /* !!!!
-           I'm not shure if this conditions is enough for all cases
-           so we do the save way if (true)
-           For topicStore this is OK 
-         */
-         //if (numSwapped() > 0 || this.persistentStore.getNumOfEntries() > this.transientStore.getNumOfEntries() ) {
-         if (true) {
-            java.util.Map map = new java.util.TreeMap(); // To suppress same entry twice and to be sorted (sorted is not yet specified to be necessary)
-
-            I_MapEntry[] ramEntries = this.transientStore.getAll(entryFilter);
-            for(int i=0; i<ramEntries.length; i++) {
-               map.put(new Long(ramEntries[i].getUniqueId()), ramEntries[i]);
-            }
-            //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries());
-
-            if (this.persistentStore != null) {
-               I_MapEntry[] persistEntries = this.persistentStore.getAll(entryFilter);
-               if (persistEntries != null) {
-                  for(int i=0; i<persistEntries.length; i++) {
-                     if (persistEntries[i] == null) continue;
-                     map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
-                  }
+         java.util.Map map = new java.util.TreeMap(); // To suppress same entry twice and to be sorted (sorted is not yet specified to be necessary)
+         
+         I_MapEntry[] ramEntries = null;
+         if (entryFilter != null) {
+            ramEntries = this.transientStore.getAll(new I_EntryFilter() {
+               public I_Entry intercept(I_Entry entry, I_Storage storage) {
+                  if (entry.isPersistent())
+                        return null; // take the one from persistent store
+                  return entryFilter.intercept(entry, storage);
                }
-               //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " persistentStore=" + this.persistentStore.getNumOfEntries());
-            }
-
-            return (I_MapEntry[])map.values().toArray(new I_MapEntry[map.size()]);
+            });
          }
          else {
-            return this.transientStore.getAll(entryFilter);
+            ramEntries = this.transientStore.getAll(null);
          }
+         for(int i=0; i<ramEntries.length; i++) {
+            map.put(new Long(ramEntries[i].getUniqueId()), ramEntries[i]);
+         }
+         //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries());
+
+         if (this.persistentStore != null) {
+            I_MapEntry[] persistEntries = this.persistentStore.getAll(entryFilter);
+            if (persistEntries != null) {
+               for(int i=0; i<persistEntries.length; i++) {
+                  if (persistEntries[i] == null) continue;
+                  map.put(new Long(persistEntries[i].getUniqueId()), persistEntries[i]);
+               }
+            }
+            //log.error(ME, "getAll() DEBUG ONLY: map.size=" + map.size() + " numSwapped=" + numSwapped() + " persistentStore=" + this.persistentStore.getNumOfEntries());
+         }
+
+         return (I_MapEntry[])map.values().toArray(new I_MapEntry[map.size()]);
       }
    }
 
