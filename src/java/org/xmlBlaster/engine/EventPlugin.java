@@ -23,6 +23,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.StringPairTokenizer;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -442,7 +443,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
       this.eventTypes = this.eventTypes.trim();
 
-      StringBuffer destLogStr = new StringBuffer();
+      StringBuffer destLogStr = new StringBuffer(1024);
 
       // Sending the events with email?
       this.smtpDestinationConfiguration = this.glob.get("destination.smtp", "", null,
@@ -732,20 +733,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String eventType, String errorCode) {
       // Change to be configurable with ${amdincommands} replacements
       RequestBroker r = g.getRequestBroker();
-      StringBuffer buf = new StringBuffer(4096);
+      XmlBuffer buf = new XmlBuffer(10000);
       //buf.append("\n").append("<xmlBlaster>"); // Root tag not added, so we easily can collect different nodes to a big xml dump
-      buf.append("\n ").append("<node id='").append(g.getId()).append("'>");
+      buf.append("\n ").append("<node id='").appendEscaped(g.getId()).append("'>");
       if (summary != null)
-      buf.append("\n  ").append("<_summary>").append(summary).append("</_summary>");
+      buf.append("\n  ").append("<_summary>").appendEscaped(summary).append("</_summary>");
       if (description != null)
-      buf.append("\n  ").append("<_description>").append(description).append("</_description>");
+      buf.append("\n  ").append("<_description>").appendEscaped(description).append("</_description>");
       if (eventType != null)
       buf.append("\n  ").append("<_eventType>").append(eventType).append("</_eventType>");
       if (errorCode != null)
          buf.append("\n  ").append("<_errorCode>").append(errorCode).append("</_errorCode>");
       buf.append("\n  ").append("<uptime>").append(r.getUptime()).append("</uptime>");
       buf.append("\n  ").append("<runlevel>").append(g.getRunlevelManager().getCurrentRunlevel()).append("</runlevel>");
-      buf.append("\n  ").append("<instanceId>").append(g.getInstanceId()).append("</instanceId>");
+      buf.append("\n  ").append("<instanceId>").appendEscaped(g.getInstanceId()).append("</instanceId>");
       buf.append("\n  ").append("<version>").append(g.getVersion()).append("</version>");
       buf.append("\n  ").append("<revisionNumber>").append(g.getRevisionNumber()).append("</revisionNumber>");
       buf.append("\n  ").append("<freeMem>").append(r.getFreeMem()).append("</freeMem>");
@@ -754,12 +755,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       buf.append("\n  ").append("<usedMem>").append(r.getUsedMem()).append("</usedMem>");
       buf.append("\n  ").append("<serverTimestamp>").append(new java.sql.Timestamp(new java.util.Date().getTime()).toString()).append("</serverTimestamp>");
       buf.append("\n  ").append("<numClients>").append(r.getNumClients()).append("</numClients>");
-      buf.append("\n  ").append("<clientList>").append(r.getClientList()).append("</clientList>");
+      buf.append("\n  ").append("<clientList>").appendEscaped(r.getClientList()).append("</clientList>");
       SubjectInfo[] clients = r.getAuthenticate().getSubjectInfoArr();
       for (int c=0; c<clients.length; c++) {
          SubjectInfo subjectInfo = clients[c];
          if (subjectInfo.getLoginName().startsWith("__")) continue;// Ignore internal sessions
-         buf.append("\n  ").append("<client id='").append(subjectInfo.getLoginName()).append("'>");
+         buf.append("\n  ").append("<client id='").appendEscaped(subjectInfo.getLoginName()).append("'>");
          SessionInfo[] sessions = subjectInfo.getSessions();
          for (int s=0; s<sessions.length; s++) {
             SessionInfo sessionInfo = sessions[s];
@@ -773,7 +774,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          buf.append("\n  ").append("</client>");
       }
       buf.append("\n  ").append("<numTopics>").append(r.getNumTopics()).append("</numTopics>");
-      buf.append("\n  ").append("<topicList>").append(r.getTopicList()).append("</topicList>");
+      buf.append("\n  ").append("<topicList>").appendEscaped(r.getTopicList()).append("</topicList>");
       buf.append("\n  ").append("<numGet>").append(r.getNumGet()).append("</numGet>");
       buf.append("\n  ").append("<numPublish>").append(r.getNumPublish()).append("</numPublish>");
       buf.append("\n  ").append("<numUpdate>").append(r.getNumUpdate()).append("</numUpdate>");
@@ -786,7 +787,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       buf.append("\n  ").append("<lastError><![CDATA[").append(error).append("]]></lastError>");
       XmlBlasterException e = new XmlBlasterException(g,
             ErrorCode.COMMUNICATION_NOCONNECTION, ME, "");
-      buf.append("\n  ").append("<versionInfo><![CDATA[").append(e.getVersionInfo()).append("]]></versionInfo>");
+      buf.append("\n  ").append("<versionInfo><![CDATA[").appendEscaped(e.getVersionInfo()).append("]]></versionInfo>");
       buf.append("\n  ").append("<see>").append("http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html").append("</see>");
       buf.append("\n ").append("</node>");
       //buf.append("\n").append("</xmlBlaster>");
@@ -1421,7 +1422,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * JMX
     */
    public String sendTestEmail() {
-      sendEmail("Test email", "Hello world :-)", "testEvent", null, true);
+      sendEmail("Test email", "Hello world :-) &<>?", "testEvent", null, true);
       synchronized(this.smtpDestinationMonitor) {
          if (this.smtpDestinationHelper != null)
             return "Send email from '" + this.smtpDestinationHelper.from + "' to '" + this.smtpDestinationHelper.to + "'";
