@@ -34,9 +34,9 @@
         <li>Possibility to intermix different database versions and vendors</li>
         <li>Performance tuning for specific vendors (for example for initial update)</li>
         <li>Highly Compressed communication</li>
-	<li>Encrypted and secure replication</li>
-	<li>Unlimited number of sinks</li>
-	<li>Efficient and reliable even on unreliable networks</li>
+        <li>Encrypted and secure replication</li>
+        <li>Unlimited number of sinks</li>
+        <li>Efficient and reliable even on unreliable networks</li>
       </ul>
     </p>
     <p>
@@ -63,22 +63,22 @@
     <h2>Prepare, build and start the server</h2><br/>
        <ul>
          <li>To avoid messy and strange behaviours make sure you don't have any old configuration around. Consider that as cleaning up the
-	 kitchen before starting to cook a good meal, and believe me, this meal is really good! <br/>
-	 You can clean up by changing to your home directory and delete <tt>xmlBlaster.properties</tt> and <tt>xmlBlasterPlugins.xml</tt>
-	 </li>
-	 <li>Delete old peristent queues. These normally reside in your <tt>${HOME}/tmp</tt> directory. It normally suffices to 
-	     delete all <tt>xmlBlaster*</tt> and <tt>client*</tt> files.
-	 </li>										
-	 <li>open the ${HOME}/xmlBlasterPlugins.xml file and uncomment the <b>MX4JAdaptorPlugin</b>, this way it will become active.
-	 </li>
-	 <li>Go to your ${XMLBLASTER_HOME} Directory and set the environment (in unixes with <tt>. .bashrc</tt>).</li>
-	 <li>Start the xmlBlaster with JMX enabled: 
-	     <pre>
+         kitchen before starting to cook a good meal, and believe me, this meal is really good! <br/>
+         You can clean up by changing to your home directory and delete <tt>xmlBlaster.properties</tt> and <tt>xmlBlasterPlugins.xml</tt>
+         </li>
+         <li>Delete old peristent queues. These normally reside in your <tt>${HOME}/tmp</tt> directory. It normally suffices to 
+             delete all <tt>xmlBlaster*</tt> and <tt>client*</tt> files.
+         </li>                                                                          
+         <li>open the ${HOME}/xmlBlasterPlugins.xml file and uncomment the <b>MX4JAdaptorPlugin</b>, this way it will become active.
+         </li>
+         <li>Go to your ${XMLBLASTER_HOME} Directory and set the environment (in unixes with <tt>. .bashrc</tt>).</li>
+         <li>Start the xmlBlaster with JMX enabled: 
+             <pre>
 
       java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true
 
-	     </pre>
-	 </li>
+             </pre>
+         </li>
        </ul>
     </p>
 
@@ -91,55 +91,55 @@
       <li>Add this directory and the jar file to the CLASSPATH (unixes: <tt>export CLASSPATH=.:ojdbc14.jar:${CLASSPATH}</tt>).</li>
       <li>Edit the first three lines of the files in the current directory <tt>readerDemo1.properties</tt> and <tt>writerDemo1.properties</tt>
           to make them correspond to your database. The settings are currently pointing to an oracle database on the localhost on the default
-	  port with a SID=TEST, and a user (or schema) XMLBLASTER</li>
+          port with a SID=TEST, and a user (or schema) XMLBLASTER</li>
       <li>Now you will start the client. The client is composed by a master (the reader of the database or source), and a slave (which is the
           destination of the Replication). Internally xmlBlaster uses here a DbWatcher and a DbWriter. Invoke:
-	  <pre>
+          <pre>
 
  java javaclients.contrib.replication.ReplDemo -master readerDemo1.properties -slave writerDemo1.properties -interactive true
 
-	  </pre>
-	  You will see the client starts and both the reader and the writer connect to the xmlBlaster. At the end you will see the
-	  text <b>REPLICATION AGENT IS NOW READY</b> and a prompt appears. If you press <tt>ENTER</tt>, then a new line appears.
-	  On the line you could now execute SQL Statements. The prompt tells you on which Database instance the SQL Statement will be executed.
-	  Here you see <b>master</b> telling you the statements will be executed on the master and therefore will be replicated. If you would 
-	  have started only the slave, the prompt <b>slave</b> would have appeared. Of course for the sake of simplicity we are using one single
-	  database here.
+          </pre>
+          You will see the client starts and both the reader and the writer connect to the xmlBlaster. At the end you will see the
+          text <b>REPLICATION AGENT IS NOW READY</b> and a prompt appears. If you press <tt>ENTER</tt>, then a new line appears.
+          On the line you could now execute SQL Statements. The prompt tells you on which Database instance the SQL Statement will be executed.
+          Here you see <b>master</b> telling you the statements will be executed on the master and therefore will be replicated. If you would 
+          have started only the slave, the prompt <b>slave</b> would have appeared. Of course for the sake of simplicity we are using one single
+          database here.
        </li>
        <li>In the configuration file you defined the tables to be replicated:
           <pre>
 
   table.${db.user}.DEMO_USERS=trigger=DEMO_USERS_TRG
 
-	  </pre>
-       	  Meaning <b>DEMO_USERS</b> and <b>DEMO_ACCOUNTS</b> will be replicated, of course if and only if they exist. You also
-	  can see the trigger name used to detect changes on the <b>DEMO_USERS</b> will be called <b>DEMO_USERS_TRG</b>. Not choosing anything 
-	  here would let the application decide a name for it. 
-<!--	  
-	  In the second line you also have actions and sequence defined. <b>actions</b> is a list of 
-	  actions on which the trigger will fire. Here IDU stands for <tt>I(nsert), D(elete) and U(pdate)</tt>. These are the only three actions allowed.
-	  IDU is the default. <b>sequence</b> is the sequence number on which the Table will be replicated. This is important if you have foreign keys,
-	  then the referenced tables must be replicated first. Unspecified sequences will be processed before any specified. Internally, the
-	  sequence among all unspecified ones is determined by the application (this is currently undefined but plugins will allow control). 
+          </pre>
+          Meaning <b>DEMO_USERS</b> and <b>DEMO_ACCOUNTS</b> will be replicated, of course if and only if they exist. You also
+          can see the trigger name used to detect changes on the <b>DEMO_USERS</b> will be called <b>DEMO_USERS_TRG</b>. Not choosing anything 
+          here would let the application decide a name for it. 
+<!--      
+          In the second line you also have actions and sequence defined. <b>actions</b> is a list of 
+          actions on which the trigger will fire. Here IDU stands for <tt>I(nsert), D(elete) and U(pdate)</tt>. These are the only three actions allowed.
+          IDU is the default. <b>sequence</b> is the sequence number on which the Table will be replicated. This is important if you have foreign keys,
+          then the referenced tables must be replicated first. Unspecified sequences will be processed before any specified. Internally, the
+          sequence among all unspecified ones is determined by the application (this is currently undefined but plugins will allow control). 
 -->
 
-	</li>
+        </li>
         <li>Now you can add the table <b>DEMO_USERS</b> by typing on the command line of the started client:
-	<pre>
+        <pre>
 
-  create table demo_users (account varchar2(100), name varchar2(100), firstname varchar2(100), primary key(account))
-	
-	</pre>
-	   When completed press <tt>ENTER</tt>.
-	</li>
-	<li>Once the table has been created it is time to populate it with some data:
-	   <pre>
+  create table demo_users (account varchar(100) not null, name varchar(100), firstname varchar(100), primary key(account))
+        
+        </pre>
+           When completed press <tt>ENTER</tt>.
+        </li>
+        <li>Once the table has been created it is time to populate it with some data:
+           <pre>
 
   insert into demo_users values ('account1', 'Topo', 'Gigio')
   insert into demo_users values ('account2', 'Mister', 'Bean')
 
-	   </pre>
-	</li>
+           </pre>
+        </li>
 
     </ul>
     </p>
