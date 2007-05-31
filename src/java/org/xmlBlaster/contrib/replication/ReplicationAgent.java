@@ -45,7 +45,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * property or in {@link #createTest(I_Info, Map)} and
  * {@link #setUpDbPool(I_Info)}
  * </p>
- * 
+ *
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class ReplicationAgent {
@@ -53,15 +53,15 @@ public class ReplicationAgent {
 
    private I_Info readerInfo;
    private I_Info writerInfo;
-   
+
    private DbWatcher dbWatcher;
    private DbWriter dbWriter;
    private static String replPrefix = "repl_";
-   
+
    public class OwnGlobalInfo extends GlobalInfo {
-      
+
       private final static boolean ON_SERVER = false;
-      
+
       public OwnGlobalInfo(Global global, I_Info additionalInfo) throws Exception {
          super(global, additionalInfo, ON_SERVER);
       }
@@ -72,25 +72,25 @@ public class ReplicationAgent {
 
       protected void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
       }
-      
+
    }
-   
+
    private GlobalInfo createOwnGlobalInfo(Global global, I_Info additionalInfo) throws Exception {
       return new OwnGlobalInfo(global, additionalInfo);
    }
-   
-   
+
+
    /**
     * Keys are the info objects and values are maps containing the used properties as key/value pairs.
     */
    public static void main(String[] args) {
       try {
          // I_Info cfgInfo = new PropertiesInfo(new Properties());
-         
+
          ReplicationAgent agent = new ReplicationAgent();
          Global global = new Global(args);
          GlobalInfo cfgInfo = agent.createOwnGlobalInfo(global, null);
-         
+
          cfgInfo.putObject("usedPropsMap", new HashMap());
          if (agent.displayHelpAndCheck(args, cfgInfo)) {
             System.exit(-1);
@@ -111,13 +111,13 @@ public class ReplicationAgent {
                   Thread.sleep(5000L);
                }
                catch (Exception ex) {
-                  
+
                }
             }
          }
          agent.shutdown();
 
-      } 
+      }
       catch (Throwable ex) {
          log.severe("An exception occured when starting '" + ex.getMessage() + "'");
          ex.printStackTrace();
@@ -140,32 +140,32 @@ public class ReplicationAgent {
 
    /**
     * Helper method to fill the properties. If an entry is found in the system properties it is left as is.
-    * 
-    * @param info
+    *
+    * @param info readerInfo or writerInfo
     * @param key
     * @param val
     */
    private static void setProp(Map usedPropsMap, I_Info info, String key, String val) {
-      String tmp = info.get(key, null);
+      String tmp = info.get(key, null); // prefilled by xmlBlaster.properties
       if (tmp == null)
          info.put(key, val);
-      Map map = (Map)usedPropsMap.get(info); 
+      Map map = (Map)usedPropsMap.get(info);
       if (map == null) {
          map = new TreeMap();
          usedPropsMap.put(info, map);
       }
-      String val1 = info.get(key, null);
-      if (val1 != null)
-         map.put(key, val1);
+      if (tmp != null)
+         map.put(key, tmp);
    }
 
    private static void setupProperties(Map map, I_Info readerInfo, I_Info writerInfo) {
       // we hardcode the first ...
       if (readerInfo != null) {
          replPrefix = SpecificDefault.getReplPrefix(readerInfo);
-         readerInfo.put("jdbc.drivers", "org.hsqldb.jdbcDriver:" +
+         setProp(map, readerInfo, "jdbc.drivers", "org.hsqldb.jdbcDriver:" +
                "oracle.jdbc.driver.OracleDriver:" +
-               "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
+               "com.ibm.db2.jcc.DB2Driver:" +
+               "com.microsoft.jdbc.sqlserver.SQLServerDriver:" +
                "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
                "org.postgresql.Driver");
          setProp(map, readerInfo, "db.url", "jdbc:postgresql:test//localhost");
@@ -182,13 +182,14 @@ public class ReplicationAgent {
          setProp(map, readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");
          setProp(map, readerInfo, "replication.doBootstrap", "true");
       }
-      
+
       // and here for the dbWriter ...
       // ---- Database settings -----
       if (writerInfo != null) {
-         writerInfo.put("jdbc.drivers", "org.hsqldb.jdbcDriver:" +
+         setProp(map, writerInfo, "jdbc.drivers", "org.hsqldb.jdbcDriver:" +
                "oracle.jdbc.driver.OracleDriver:" +
-               "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
+               "com.ibm.db2.jcc.DB2Driver:" +
+               "com.microsoft.jdbc.sqlserver.SQLServerDriver:" +
                "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
                "org.postgresql.Driver");
          setProp(map, writerInfo, "db.url", "jdbc:postgresql:test//localhost");
@@ -219,7 +220,7 @@ public class ReplicationAgent {
       cfgInfo.putObject("writerInfo", writerInfo);
       setupProperties(usedPropsMap, readerInfo, writerInfo);
    }
-   
+
    private static InputStream getFileFromClasspath(String filename) throws IOException {
       Class clazz = ReplicationAgent.class;
       Enumeration enm = clazz.getClassLoader().getResources(filename);
@@ -232,21 +233,21 @@ public class ReplicationAgent {
                + url.getFile() + "' please check that the correct one has been loaded (see info above)"
             );
          }
-         return clazz.getClassLoader().getResourceAsStream(filename); 
+         return clazz.getClassLoader().getResourceAsStream(filename);
       }
       else {
          ClassLoader cl = clazz.getClassLoader();
          StringBuffer buf = new StringBuffer();
          if (cl instanceof URLClassLoader) {
             URL[] urls = ((URLClassLoader)cl).getURLs();
-            for (int i=0; i < urls.length; i++) 
+            for (int i=0; i < urls.length; i++)
                buf.append(urls[i].toString()).append("\n");
          }
          throw new IOException("init: no file found with the name '" + filename + "' : " + (buf.length() > 0 ? " classpath: " + buf.toString() : ""));
       }
    }
-   
-   
+
+
    /**
     * Configure database access.
     */
@@ -279,12 +280,12 @@ public class ReplicationAgent {
       cfgInfo.putObject("readerInfo", readerInfo);
       cfgInfo.putObject("writerInfo", writerInfo);
    }
-      
-    
+
+
    /**
     * Initializes the necessary stuff (encapsulated DbWatcher and DbWriter) and starts the DbWriter.
     * Note that the DbWatcher is only started if used, i.e. if the readerInfo is not null.
-    * 
+    *
     * @param readerInfo
     * @param writerInfo
     * @throws Exception
@@ -303,7 +304,7 @@ public class ReplicationAgent {
       }
       this.dbWatcher = initializeDbWatcher(this.readerInfo, this.dbWriter);
    }
-   
+
 
    private static DbWatcher initializeDbWatcher(I_Info readerInfo, DbWriter dbWriter) throws Exception {
       DbWatcher dbWatcher = null;
@@ -313,7 +314,7 @@ public class ReplicationAgent {
             GlobalInfo.setStrippedHostname(readerInfo, GlobalInfo.UPPER_CASE);
             dbWatcher = new DbWatcher();
             dbWatcher.init(readerInfo);
-            
+
             I_DbSpecific dbSpecific = null;
             if (readerInfo != null) {
                if (readerInfo.getBoolean("replication.doBootstrap", false)) {
@@ -364,7 +365,7 @@ public class ReplicationAgent {
          catch (Exception ex) {
             ex.printStackTrace();
          }
-      }      
+      }
    }
 
    public void shutdown() {
@@ -390,19 +391,19 @@ public class ReplicationAgent {
          Object val = map.get(keys[i]);
          buf.append(keys[i]);
          int nmax = 35;
-         for (int j = keys[i].length(); j < nmax; j++) 
+         for (int j = keys[i].length(); j < nmax; j++)
             buf.append(' ');
          buf.append(": ").append(val).append("\n");
       }
       return buf.toString();
    }
-   
-   
+
+
    private boolean displayHelpAndCheck(String[] args, GlobalInfo cfgInfo) throws Exception {
       String masterFilename = null;
       String slaveFilename = null;
       String isInteractiveTxt = "false";
-      
+
       boolean needsHelp = false;
       if(args.length == 0)
          needsHelp = true;
@@ -452,7 +453,7 @@ public class ReplicationAgent {
          System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master -slave");
          System.out.println("\nwhere in the first case it will act as a master, the second as a slave and the third as both master and slave");
          System.out.println("The fourth will act as a master with the default properties, and so the fifth.");
-         
+
          System.out.println("You could have several instances of slaves running but only one master instance on the same topic.");
          System.out.println("The 'interactive' flag is false per default.");
          System.out.println("\n");
@@ -474,8 +475,8 @@ public class ReplicationAgent {
       cfgInfo.put("interactive", isInteractiveTxt);
       return ret;
    }
-   
-   
+
+
    public final void process() throws Exception {
       InputStreamReader isr = new InputStreamReader(System.in);
       BufferedReader br = new BufferedReader(isr);
@@ -485,14 +486,14 @@ public class ReplicationAgent {
          info = this.writerInfo;
       if (info == null)
          return;
-      
+
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       Connection conn = null;
-      
+
       String prompt = "master>";
       if (this.readerInfo == null)
-         prompt = "slave>"; 
-      
+         prompt = "slave>";
+
       System.out.println(prompt + "make your sql statement");
       System.out.print(prompt);
       String line = null;
@@ -503,11 +504,11 @@ public class ReplicationAgent {
             continue;
          }
          line = line.trim();
-         if (line.equalsIgnoreCase("q") || 
+         if (line.equalsIgnoreCase("q") ||
                line.equalsIgnoreCase("quit") ||
                line.equalsIgnoreCase("exit") ||
                line.equalsIgnoreCase("stop") ||
-               line.equalsIgnoreCase("finish")) 
+               line.equalsIgnoreCase("finish"))
             break;
 
          try {
@@ -528,7 +529,7 @@ public class ReplicationAgent {
                rs.close();
             }
             st.close();
-         } 
+         }
          catch (Exception ex) {
             ex.printStackTrace();
             conn = SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_NO, pool);
@@ -539,13 +540,13 @@ public class ReplicationAgent {
          System.out.println(prompt + "make your sql statement");
          System.out.print(prompt);
       }
-   
+
    }
 
    public void registerForUpdates(I_Update registeredForUpdates) {
       if (this.dbWriter != null)
          this.dbWriter.registerForUpdates(registeredForUpdates);
    }
-   
+
 
 }
