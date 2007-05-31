@@ -229,12 +229,16 @@ class PreparedQuery {
          log.warning("close: exception when closing statement: " + ex.toString());
       }
 
-     if (this.conn != null) {
-        boolean finalSuccess = !this.isException;
-        this.pool.releaseConnection(conn, finalSuccess);
-     }
-     this.conn = null;
-     this.isClosed = true;
+      try {
+         if (this.conn != null) {
+            boolean finalSuccess = !this.isException;
+            this.pool.releaseConnection(conn, finalSuccess);
+         }
+      }
+      finally {
+         this.conn = null;
+         this.isClosed = true;
+      }
    }
 
 
@@ -245,7 +249,8 @@ class PreparedQuery {
       try {
          if (!this.isClosed) close(SUCCESS);
       }
-      catch(Exception ex) {
+      catch(Throwable ex) {
+         ex.printStackTrace();
       }
    }
 
