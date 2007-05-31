@@ -1140,6 +1140,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             buf.append(",");
          buf.append(getColumnStatement(cols[i]));
          if (cols[i].isPrimaryKey()) {
+            buf.append(" NOT NULL");
             if (hasPkAlready)
                pkBuf.append(",");
             pkBuf.append(cols[i].getColName());
