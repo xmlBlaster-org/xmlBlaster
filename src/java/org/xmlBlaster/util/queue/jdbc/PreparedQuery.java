@@ -206,6 +206,7 @@ class PreparedQuery {
             }
             catch (Throwable ex) {
                log.warning("close: exception when closing statement: " + ex.toString());
+               ex.printStackTrace();
             }
             try {
                this.conn.setAutoCommit(true);
@@ -217,6 +218,7 @@ class PreparedQuery {
       }
       catch(Throwable e) {
          log.warning("close: exception in first phase when setAutoCommit(true): " + e.toString());
+         e.printStackTrace();
       }
 
       try {
