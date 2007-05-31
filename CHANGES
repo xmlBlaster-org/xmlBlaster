@@ -1,6 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16207 Fixed replication loading of specific jdbc.drivers from specific properties files
+
  o #16203 Fixed admin.event plugin to escape illegal XML entities like '&' in send notification
   
  o #16195 Fixed PersistenceCachePlugin.getAll(I_EntryFilter) which could lead to duplicate intercept calls
