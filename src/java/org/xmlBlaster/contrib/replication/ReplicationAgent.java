@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
@@ -18,7 +19,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.GlobalInfo;
@@ -45,79 +45,85 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * property or in {@link #createTest(I_Info, Map)} and
  * {@link #setUpDbPool(I_Info)}
  * </p>
- *
+ * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class ReplicationAgent {
+   
    private static Logger log = Logger.getLogger(ReplicationAgent.class.getName());
 
-   private I_Info readerInfo;
-   private I_Info writerInfo;
-
+   // private I_Info readerInfo;
+   // private I_Info writerInfo;
+   
    private DbWatcher dbWatcher;
    private DbWriter dbWriter;
-   private static String replPrefix = "repl_";
+   // private static String replPrefix = "repl_";
 
    public class OwnGlobalInfo extends GlobalInfo {
-
+      
       private final static boolean ON_SERVER = false;
-
-      public OwnGlobalInfo(Global global, I_Info additionalInfo) throws Exception {
+      
+      public OwnGlobalInfo(Global global, I_Info additionalInfo, String infoId) throws Exception {
          super(global, additionalInfo, ON_SERVER);
+         put(ID, infoId);
       }
 
-      public OwnGlobalInfo(GlobalInfo globalInfo, I_Info additionalInfo) throws Exception {
+      public OwnGlobalInfo(GlobalInfo globalInfo, I_Info additionalInfo, String infoId) throws Exception {
          super(globalInfo, additionalInfo, ON_SERVER);
+         put(ID, infoId);
       }
 
       protected void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
       }
-
+      
    }
-
-   private GlobalInfo createOwnGlobalInfo(Global global, I_Info additionalInfo) throws Exception {
-      return new OwnGlobalInfo(global, additionalInfo);
+   
+   private GlobalInfo createOwnGlobalInfo(Global global, I_Info additionalInfo, String infoId) throws Exception {
+      return new OwnGlobalInfo(global, additionalInfo, infoId);
    }
-
-
+   
+   
+   
    /**
     * Keys are the info objects and values are maps containing the used properties as key/value pairs.
     */
    public static void main(String[] args) {
       try {
          // I_Info cfgInfo = new PropertiesInfo(new Properties());
-
+         
          ReplicationAgent agent = new ReplicationAgent();
          Global global = new Global(args);
-         GlobalInfo cfgInfo = agent.createOwnGlobalInfo(global, null);
-
-         cfgInfo.putObject("usedPropsMap", new HashMap());
-         if (agent.displayHelpAndCheck(args, cfgInfo)) {
+         GlobalInfo cfgInfo = agent.createOwnGlobalInfo(global, null, "configuration");
+         
+         agent.fillInfoWithCommandLine(args, cfgInfo);
+         
+         I_Info readerInfo = agent.createReaderInfo(cfgInfo);
+         I_Info writerInfo = agent.createWriterInfo(cfgInfo);
+         
+         if (ReplicationAgent.needsHelp(args)) {
+            agent.displayHelp(readerInfo, writerInfo);
             System.exit(-1);
          }
-         agent.cfgSetup(cfgInfo);
-         I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
-         I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
 
          boolean isInteractive = cfgInfo.getBoolean("interactive", false);
          agent.init(readerInfo, writerInfo);
 
          log.info("REPLICATION AGENT IS NOW READY");
          if (isInteractive)
-            agent.process();
+            agent.process(readerInfo, writerInfo);
          else {
             while (true) {
                try {
                   Thread.sleep(5000L);
                }
                catch (Exception ex) {
-
+                  
                }
             }
          }
          agent.shutdown();
 
-      }
+      } 
       catch (Throwable ex) {
          log.severe("An exception occured when starting '" + ex.getMessage() + "'");
          ex.printStackTrace();
@@ -138,89 +144,106 @@ public class ReplicationAgent {
    public ReplicationAgent() {
    }
 
-   /**
-    * Helper method to fill the properties. If an entry is found in the system properties it is left as is.
-    *
-    * @param info readerInfo or writerInfo
-    * @param key
-    * @param val
-    */
-   private static void setProp(Map usedPropsMap, I_Info info, String key, String val) {
-      String tmp = info.get(key, null); // prefilled by xmlBlaster.properties
-      if (tmp == null)
-         info.put(key, val);
-      Map map = (Map)usedPropsMap.get(info);
-      if (map == null) {
-         map = new TreeMap();
-         usedPropsMap.put(info, map);
-      }
-      if (tmp != null)
-         map.put(key, tmp);
+   private static final Map getCommonDefaultMap(I_Info subInfo) {
+      String driversDefault = "org.hsqldb.jdbcDriver:" +
+      "oracle.jdbc.driver.OracleDriver:" +
+      "com.microsoft.jdbc.sqlserver.SQLServerDriver:" + 
+      "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
+      "org.postgresql.Driver";
+      if (subInfo != null)
+         driversDefault = subInfo.get("JdbcDriver.drivers", driversDefault);
+      Map defaultMap = new HashMap();
+      defaultMap.put("jdbc.drivers", driversDefault);
+      defaultMap.put("db.url", "jdbc:postgresql:test//localhost");
+      defaultMap.put("db.user", "postgres");
+      defaultMap.put("db.password", "");
+      return defaultMap;
+   }
+   
+   
+   private static final Map getReaderDefaultMap(I_Info readerInfo) {
+      Map defaultMap = getCommonDefaultMap(readerInfo);
+      String prefix = readerInfo.get("replication.prefix", "repl_");
+      defaultMap.put("mom.loginName", "DbWatcherPlugin.testPoll/1");
+      defaultMap.put("mom.topicName", "trans_key");
+      defaultMap.put("alertScheduler.pollInterval", "2000");
+      defaultMap.put("changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
+      defaultMap.put("changeDetector.detectStatement", "SELECT MAX(repl_key) from " + prefix + "items");
+      defaultMap.put("db.queryMeatStatement", "SELECT * FROM " + prefix + "items ORDER BY repl_key");
+      defaultMap.put("converter.addMeta", "false");
+      defaultMap.put("converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
+      defaultMap.put("alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");
+      defaultMap.put("replication.doBootstrap", "true");
+      return defaultMap;
    }
 
-   private static void setupProperties(Map map, I_Info readerInfo, I_Info writerInfo) {
-      // we hardcode the first ...
-      if (readerInfo != null) {
-         replPrefix = SpecificDefault.getReplPrefix(readerInfo);
-         setProp(map, readerInfo, "jdbc.drivers", "org.hsqldb.jdbcDriver:" +
-               "oracle.jdbc.driver.OracleDriver:" +
-               "com.ibm.db2.jcc.DB2Driver:" +
-               "com.microsoft.jdbc.sqlserver.SQLServerDriver:" +
-               "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
-               "org.postgresql.Driver");
-         setProp(map, readerInfo, "db.url", "jdbc:postgresql:test//localhost");
-         setProp(map, readerInfo, "db.user", "postgres");
-         setProp(map, readerInfo, "db.password", "");
-         setProp(map, readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1");
-         setProp(map, readerInfo, "mom.topicName", "trans_key");
-         setProp(map, readerInfo, "alertScheduler.pollInterval", "2000");
-         setProp(map, readerInfo, "changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector");
-         setProp(map, readerInfo, "changeDetector.detectStatement", "SELECT MAX(repl_key) from " + replPrefix + "items");
-         setProp(map, readerInfo, "db.queryMeatStatement", "SELECT * FROM " + replPrefix + "items ORDER BY repl_key");
-         setProp(map, readerInfo, "converter.addMeta", "false");
-         setProp(map, readerInfo, "converter.class", "org.xmlBlaster.contrib.replication.ReplicationConverter");
-         setProp(map, readerInfo, "alertProducer.class", "org.xmlBlaster.contrib.replication.ReplicationScheduler");
-         setProp(map, readerInfo, "replication.doBootstrap", "true");
-      }
-
-      // and here for the dbWriter ...
-      // ---- Database settings -----
-      if (writerInfo != null) {
-         setProp(map, writerInfo, "jdbc.drivers", "org.hsqldb.jdbcDriver:" +
-               "oracle.jdbc.driver.OracleDriver:" +
-               "com.ibm.db2.jcc.DB2Driver:" +
-               "com.microsoft.jdbc.sqlserver.SQLServerDriver:" +
-               "com.microsoft.sqlserver.jdbc.SQLServerDriver:" +
-               "org.postgresql.Driver");
-         setProp(map, writerInfo, "db.url", "jdbc:postgresql:test//localhost");
-         setProp(map, writerInfo, "db.user", "postgres");
-         setProp(map, writerInfo, "db.password", "");
-         setProp(map, writerInfo, "mom.loginName", "DbWriter/1");
-         setProp(map, writerInfo, "replication.mapper.tables", "test1=test1_replica,test2=test2_replica,test3=test3_replica");
-         // String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='trans_key'/>");
-         // setProp(map, writerInfo, "mom.subscribeKey", subscribeKey);
-         // setProp(map, writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>");
-         setProp(map, writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
-         // these are pure xmlBlaster specific properties
-         setProp(map, writerInfo, "dispatch/callback/retries", "-1");
-         setProp(map, writerInfo, "dispatch/callback/delay", "10000");
-         setProp(map, writerInfo, "dispatch/connection/retries", "-1");
-         setProp(map, writerInfo, "dispatch/connection/delay", "10000");
-         // setProp(map, writerInfo, "queue/callback/maxEntries", "10000");
-      }
+   private static final Map getWriterDefaultMap(I_Info writerInfo) {
+      Map defaultMap = getCommonDefaultMap(writerInfo);
+      defaultMap.put("mom.loginName", "DbWriter/1");
+      defaultMap.put("replication.mapper.tables", "test1=test1_replica,test2=test2_replica,test3=test3_replica");
+      defaultMap.put("dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter");
+      defaultMap.put("dispatch/callback/retries", "-1");
+      defaultMap.put("dispatch/callback/delay", "10000");
+      defaultMap.put("dispatch/connection/retries", "-1");
+      defaultMap.put("dispatch/connection/delay", "10000");
+      return defaultMap;
    }
 
-   private void initProperties(GlobalInfo cfgInfo) throws Exception {
-      Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
-      I_Info readerInfo = new OwnGlobalInfo(cfgInfo, null);
-      I_Info writerInfo = new OwnGlobalInfo(cfgInfo, null);
-      usedPropsMap.put(readerInfo, new TreeMap());
-      usedPropsMap.put(writerInfo, new TreeMap());
-      cfgInfo.putObject("readerInfo", readerInfo);
-      cfgInfo.putObject("writerInfo", writerInfo);
-      setupProperties(usedPropsMap, readerInfo, writerInfo);
+   private final static void showSubHelp(I_Info info, Map defaultMap, PrintStream out) {
+      String[] keys = (String[])defaultMap.keySet().toArray(new String[defaultMap.size()]);
+      out.println("" + keys.length + " default properties displayed: ");
+      for (int i=0; i < keys.length; i++) {
+         String value = info.get(keys[i], "");
+         out.println("  " + keys[i] + "=" + value);
+      }
    }
+   
+   private I_Info createReaderInfo(GlobalInfo cfgInfo) throws Exception {
+      String masterFilename = cfgInfo.get("masterFilename", null);
+      if (masterFilename == null)
+         return null;
+      Properties props = new Properties();
+      if (!masterFilename.equalsIgnoreCase("default")) {
+         InputStream is = getFileFromClasspath(masterFilename);
+         props.load(is);
+         is.close();
+      }
+      I_Info readerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props), "reader");
+      Map defaultMap = getReaderDefaultMap(readerInfo);
+      
+      String[] keys = (String[])defaultMap.keySet().toArray(new String[defaultMap.size()]);
+      for (int i=0; i < keys.length; i++) {
+         if (readerInfo.get(keys[i], null) == null)
+            readerInfo.put(keys[i], (String)defaultMap.get(keys[i]));
+      }
+      return readerInfo;
+   }
+   
+   
+   public I_Info createWriterInfo(GlobalInfo cfgInfo) throws Exception {
+      String slaveFilename = cfgInfo.get("slaveFilename", null);
 
+      if (slaveFilename == null)
+         return null;
+
+      Properties props = new Properties();
+      if (!slaveFilename.equalsIgnoreCase("default")) {
+         InputStream is = getFileFromClasspath(slaveFilename);
+         props.load(is);
+         is.close();
+      }
+      I_Info writerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props), "writer");
+      
+      Map defaultMap = getWriterDefaultMap(writerInfo);
+      String[] keys = (String[])defaultMap.keySet().toArray(new String[defaultMap.size()]);
+      for (int i=0; i < keys.length; i++) {
+         if (writerInfo.get(keys[i], null) == null)
+            writerInfo.put(keys[i], (String)defaultMap.get(keys[i]));
+      }
+      return writerInfo;
+      
+   }
+   
    private static InputStream getFileFromClasspath(String filename) throws IOException {
       Class clazz = ReplicationAgent.class;
       Enumeration enm = clazz.getClassLoader().getResources(filename);
@@ -233,59 +256,25 @@ public class ReplicationAgent {
                + url.getFile() + "' please check that the correct one has been loaded (see info above)"
             );
          }
-         return clazz.getClassLoader().getResourceAsStream(filename);
+         return clazz.getClassLoader().getResourceAsStream(filename); 
       }
       else {
          ClassLoader cl = clazz.getClassLoader();
          StringBuffer buf = new StringBuffer();
          if (cl instanceof URLClassLoader) {
             URL[] urls = ((URLClassLoader)cl).getURLs();
-            for (int i=0; i < urls.length; i++)
+            for (int i=0; i < urls.length; i++) 
                buf.append(urls[i].toString()).append("\n");
          }
          throw new IOException("init: no file found with the name '" + filename + "' : " + (buf.length() > 0 ? " classpath: " + buf.toString() : ""));
       }
    }
-
-
-   /**
-    * Configure database access.
-    */
-   public void cfgSetup(GlobalInfo cfgInfo) throws Exception {
-      String masterFilename = cfgInfo.get("masterFilename", null);
-      String slaveFilename = cfgInfo.get("slaveFilename", null);
-      Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
-      I_Info readerInfo = null;
-      I_Info writerInfo = null;
-      if (masterFilename != null) {
-         Properties props = new Properties();
-         if (!masterFilename.equalsIgnoreCase("default")) {
-            InputStream is = getFileFromClasspath(masterFilename);
-            props.load(is);
-            is.close();
-         }
-         readerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props));
-      }
-      if (slaveFilename != null) {
-         Properties props = new Properties();
-         if (!slaveFilename.equalsIgnoreCase("default")) {
-            System.out.println("slave is initializing");
-            InputStream is = getFileFromClasspath(slaveFilename);
-            props.load(is);
-            is.close();
-         }
-         writerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props));
-      }
-      setupProperties(usedPropsMap, readerInfo, writerInfo);
-      cfgInfo.putObject("readerInfo", readerInfo);
-      cfgInfo.putObject("writerInfo", writerInfo);
-   }
-
-
+   
+   
    /**
     * Initializes the necessary stuff (encapsulated DbWatcher and DbWriter) and starts the DbWriter.
     * Note that the DbWatcher is only started if used, i.e. if the readerInfo is not null.
-    *
+    * 
     * @param readerInfo
     * @param writerInfo
     * @throws Exception
@@ -294,17 +283,15 @@ public class ReplicationAgent {
       // check if the info objects are really different (they must never be the same instance !!!)
       if (readerInfo != null && writerInfo != null && readerInfo == writerInfo)
          throw new Exception("ReplicationAgent.init: the info objects are the same instance. This will lead to problems. Check your code and make sure they are separate instances");
-      this.readerInfo = readerInfo;
-      this.writerInfo = writerInfo;
-      if (this.writerInfo != null) {
+      if (writerInfo != null) {
          log.info("setUp: Instantiating DbWriter");
-         GlobalInfo.setStrippedHostname(this.writerInfo, GlobalInfo.UPPER_CASE);
+         GlobalInfo.setStrippedHostname(writerInfo, GlobalInfo.UPPER_CASE);
          this.dbWriter = new DbWriter();
-         this.dbWriter.init(this.writerInfo);
+         this.dbWriter.init(writerInfo);
       }
-      this.dbWatcher = initializeDbWatcher(this.readerInfo, this.dbWriter);
+      this.dbWatcher = initializeDbWatcher(readerInfo, this.dbWriter);
    }
-
+   
 
    private static DbWatcher initializeDbWatcher(I_Info readerInfo, DbWriter dbWriter) throws Exception {
       DbWatcher dbWatcher = null;
@@ -314,7 +301,7 @@ public class ReplicationAgent {
             GlobalInfo.setStrippedHostname(readerInfo, GlobalInfo.UPPER_CASE);
             dbWatcher = new DbWatcher();
             dbWatcher.init(readerInfo);
-
+            
             I_DbSpecific dbSpecific = null;
             if (readerInfo != null) {
                if (readerInfo.getBoolean("replication.doBootstrap", false)) {
@@ -357,7 +344,7 @@ public class ReplicationAgent {
    }
 
    private final void shutdownDbWatcher() throws Exception {
-      if (this.readerInfo != null) {
+      if (this.dbWatcher != null) {
          try {
             this.dbWatcher.shutdown();
             this.dbWatcher = null;
@@ -365,7 +352,7 @@ public class ReplicationAgent {
          catch (Exception ex) {
             ex.printStackTrace();
          }
-      }
+      }      
    }
 
    public void shutdown() {
@@ -377,123 +364,104 @@ public class ReplicationAgent {
          ex.printStackTrace();
       }
       finally {
-         this.dbWriter.shutdown();
-         this.dbWriter = null;
+         if (this.dbWriter != null) {
+            this.dbWriter.shutdown();
+            this.dbWriter = null;
+         }
       }
    }
 
-   private static String displayProperties(Map usedPropsMap, I_Info info) {
-      Map map = (Map)usedPropsMap.get(info);
-      int length = map.size();
-      String[] keys = (String[])map.keySet().toArray(new String[length]);
-      StringBuffer buf = new StringBuffer(4096);
-      for (int i=0; i < keys.length; i++) {
-         Object val = map.get(keys[i]);
-         buf.append(keys[i]);
-         int nmax = 35;
-         for (int j = keys[i].length(); j < nmax; j++)
-            buf.append(' ');
-         buf.append(": ").append(val).append("\n");
+   private static boolean needsHelp(String[] args) {
+      for (int i=0; i < args.length; i++) {
+         if ( args[i].equalsIgnoreCase("-h") ||
+               args[i].equalsIgnoreCase("-help") ||
+               args[i].equalsIgnoreCase("--h") ||
+               args[i].equalsIgnoreCase("--help") ||
+               args[i].equalsIgnoreCase("?")) {
+            return true; 
+         }
       }
-      return buf.toString();
+      return false;
    }
-
-
-   private boolean displayHelpAndCheck(String[] args, GlobalInfo cfgInfo) throws Exception {
+   
+   private void fillInfoWithCommandLine(String[] args, GlobalInfo cfgInfo) {
       String masterFilename = null;
       String slaveFilename = null;
       String isInteractiveTxt = "false";
-
-      boolean needsHelp = false;
-      if(args.length == 0)
-         needsHelp = true;
-      else {
-         for (int i=0; i < args.length; i++) {
-            if ( args[i].equalsIgnoreCase("-h") ||
-                  args[i].equalsIgnoreCase("-help") ||
-                  args[i].equalsIgnoreCase("--h") ||
-                  args[i].equalsIgnoreCase("--help") ||
-                  args[i].equalsIgnoreCase("?")) {
-               needsHelp = true;
-               break;
+      
+      for (int i=0; i < args.length; i++) {
+         if (args[i].equalsIgnoreCase("-master")) {
+            if (i == (args.length-1) || args[i+1].startsWith("-")) {
+               masterFilename = "default";
             }
-            if (args[i].equalsIgnoreCase("-master")) {
-               if (i == (args.length-1) || args[i+1].startsWith("-")) {
-                  masterFilename = "default";
-               }
-               else
-                  masterFilename = args[i+1];
-            }
-            if (args[i].equalsIgnoreCase("-slave")) {
-               if (i == (args.length-1) || args[i+1].startsWith("-")) {
-                  slaveFilename = "default";
-               }
-               else
-                  slaveFilename = args[i+1];
-            }
-            if (args[i].equalsIgnoreCase("-interactive")) {
-               if (i < (args.length-1))
-                  isInteractiveTxt = args[i+1];
-            }
+            else
+               masterFilename = args[i+1];
          }
-      }
-      boolean ret = false;
-      if (needsHelp) {
-         initProperties(cfgInfo);
-         I_Info readerInfo = (I_Info)cfgInfo.getObject("readerInfo");
-         I_Info writerInfo = (I_Info)cfgInfo.getObject("writerInfo");
-         Map usedPropsMap = (Map)cfgInfo.getObject("usedPropsMap");
-         System.out.println("usage: java org.xmlBlaster.contrib.replication.ReplicationAgent [-master masterPropertiesFilename] [-slave slavePropertiesFilename] [-interactive true/false]");
-         System.out.println("for example :");
-         System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master master.properties");
-         System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -slave slave.properties");
-         System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master master.properties -slave slave.properties");
-         System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master default -interactive true");
-         System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master");
-         System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master -slave");
-         System.out.println("\nwhere in the first case it will act as a master, the second as a slave and the third as both master and slave");
-         System.out.println("The fourth will act as a master with the default properties, and so the fifth.");
-
-         System.out.println("You could have several instances of slaves running but only one master instance on the same topic.");
-         System.out.println("The 'interactive' flag is false per default.");
-         System.out.println("\n");
-         System.out.println("The content of the property files follows the java properties syntax");
-         System.out.println("For the master the configuration parameters are (here displayed with the associated default values)");
-         System.out.println("===========================================================================================");
-         System.out.println(displayProperties(usedPropsMap, readerInfo));
-         System.out.println("\nFor the slave the configuration parameters are (here displayed with the associated default values) ");
-         System.out.println("===========================================================================================");
-         System.out.println(displayProperties(usedPropsMap, writerInfo));
-         System.out.println("\nif you want the default configuration parameters but only a few exceptions, you don't need to specify");
-         System.out.println("file names for the properties. You can set these with the JVM arguments as for example:");
-         System.out.println("java -Dmom.loginName=dummyName org.xmlBlaster.contrib.replication.ReplicationAgent -master -slave");
-         System.out.println("\n");
-         ret = true;
+         if (args[i].equalsIgnoreCase("-slave")) {
+            if (i == (args.length-1) || args[i+1].startsWith("-")) {
+               slaveFilename = "default";
+            }
+            else
+               slaveFilename = args[i+1];
+         }
+         if (args[i].equalsIgnoreCase("-interactive")) {
+            if (i < (args.length-1))
+               isInteractiveTxt = args[i+1];
+         }
       }
       cfgInfo.put("masterFilename", masterFilename);
       cfgInfo.put("slaveFilename", slaveFilename);
       cfgInfo.put("interactive", isInteractiveTxt);
-      return ret;
+      
    }
 
-
-   public final void process() throws Exception {
+   private void displayHelp(I_Info readerInfo, I_Info writerInfo) throws Exception {
+      System.out.println("usage: java org.xmlBlaster.contrib.replication.ReplicationAgent [-master masterPropertiesFilename] [-slave slavePropertiesFilename] [-interactive true/false]");
+      System.out.println("for example :");
+      System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master master.properties");
+      System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -slave slave.properties");
+      System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master master.properties -slave slave.properties");
+      System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master default -interactive true");
+      System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master");
+      System.out.println("   java org.xmlBlaster.contrib.replication.ReplicationAgent -master -slave");
+      System.out.println("\nwhere in the first case it will act as a master, the second as a slave and the third as both master and slave");
+      System.out.println("The fourth will act as a master with the default properties, and so the fifth.");
+      if (readerInfo != null) {
+         Map defaultMap = getReaderDefaultMap(readerInfo);
+         showSubHelp(readerInfo, defaultMap, System.out);
+      }
+      System.out.println("You could have several instances of slaves running but only one master instance on the same topic.");
+      System.out.println("The 'interactive' flag is false per default.");
+      System.out.println("\n");
+      System.out.println("The content of the property files follows the java properties syntax");
+      System.out.println("\nif you want the default configuration parameters but only a few exceptions, you don't need to specify");
+      System.out.println("file names for the properties. You can set these with the JVM arguments as for example:");
+      System.out.println("java -Dmom.loginName=dummyName org.xmlBlaster.contrib.replication.ReplicationAgent -master -slave");
+      System.out.println("\n");
+      if (writerInfo != null) {
+         Map defaultMap = getWriterDefaultMap(readerInfo);
+         showSubHelp(writerInfo, defaultMap, System.out);
+      }
+   }
+   
+   
+   public final void process(I_Info readerInfo, I_Info writerInfo) throws Exception {
       InputStreamReader isr = new InputStreamReader(System.in);
       BufferedReader br = new BufferedReader(isr);
 
-      I_Info info = this.readerInfo;
+      I_Info info = readerInfo;
       if (info == null)
-         info = this.writerInfo;
+         info = writerInfo;
       if (info == null)
          return;
-
+      
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       Connection conn = null;
-
+      
       String prompt = "master>";
-      if (this.readerInfo == null)
-         prompt = "slave>";
-
+      if (readerInfo == null)
+         prompt = "slave>"; 
+      
       System.out.println(prompt + "make your sql statement");
       System.out.print(prompt);
       String line = null;
@@ -504,11 +472,11 @@ public class ReplicationAgent {
             continue;
          }
          line = line.trim();
-         if (line.equalsIgnoreCase("q") ||
+         if (line.equalsIgnoreCase("q") || 
                line.equalsIgnoreCase("quit") ||
                line.equalsIgnoreCase("exit") ||
                line.equalsIgnoreCase("stop") ||
-               line.equalsIgnoreCase("finish"))
+               line.equalsIgnoreCase("finish")) 
             break;
 
          try {
@@ -529,7 +497,7 @@ public class ReplicationAgent {
                rs.close();
             }
             st.close();
-         }
+         } 
          catch (Exception ex) {
             ex.printStackTrace();
             conn = SpecificDefault.removeFromPool(conn, SpecificDefault.ROLLBACK_NO, pool);
@@ -540,13 +508,13 @@ public class ReplicationAgent {
          System.out.println(prompt + "make your sql statement");
          System.out.print(prompt);
       }
-
+   
    }
 
    public void registerForUpdates(I_Update registeredForUpdates) {
       if (this.dbWriter != null)
          this.dbWriter.registerForUpdates(registeredForUpdates);
    }
-
+   
 
 }
