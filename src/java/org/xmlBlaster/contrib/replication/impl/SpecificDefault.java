@@ -925,7 +925,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
 
-   public final void forceTableChangeCheck() throws Exception {
+   public void forceTableChangeCheck() throws Exception {
       Connection conn = null;
       CallableStatement st = null;
       try {

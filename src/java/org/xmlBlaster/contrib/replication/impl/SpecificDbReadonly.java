@@ -17,13 +17,16 @@ public class SpecificDbReadonly extends SpecificDefault {
       super.init(info);
    }
    
-   public void checkTriggerConsistency(boolean doFix) {
+   public final void checkTriggerConsistency(boolean doFix) {
    }
    
-   public void bootstrap(Connection conn, boolean doWarn, boolean force) {
+   public final void bootstrap(Connection conn, boolean doWarn, boolean force) {
    }
 
    public final void cleanup(Connection conn, boolean doWarn) {
+   }
+   
+   public final void forceTableChangeCheck() {
    }
 
    protected boolean sequenceExists(Connection conn, String sequenceName)
