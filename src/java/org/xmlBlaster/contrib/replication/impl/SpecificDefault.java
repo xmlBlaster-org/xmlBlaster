@@ -133,6 +133,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    private boolean isInMaster;
    
    private Set cancelledUpdates = new HashSet();
+   
+   private boolean isDbWriteable = true;
       
    class Replacer implements I_ReplaceVariable {
 
@@ -632,26 +634,31 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       this.dbPool = DbWatcher.getDbPool(this.info);
       this.dbMetaHelper = new DbMetaHelper(this.dbPool);
       this.rowsPerMessage = this.info.getInt("replication.maxRowsOnCreate", 250);
-      Connection conn = this.dbPool.reserve();
-      try { // just to check that the configuration  is OK (better soon than later)
-         TableToWatchInfo.getTablesToWatch(conn, this.info);
-      }
-      catch (Exception ex) {
-         log.severe("The syntax of one of the 'tables' attributes in the configuration is wrong. " + ex.getMessage());
-         throw ex;
-      }
-      finally {
-         if (conn != null)
-            this.dbPool.release(conn);
+      
+      if (this.isDbWriteable) {
+         Connection conn = this.dbPool.reserve();
+         try { // just to check that the configuration  is OK (better soon than later)
+            TableToWatchInfo.getTablesToWatch(conn, this.info);
+         }
+         catch (Exception ex) {
+            log.severe("The syntax of one of the 'tables' attributes in the configuration is wrong. " + ex.getMessage());
+            throw ex;
+         }
+         finally {
+            if (conn != null)
+               this.dbPool.release(conn);
+         }
       }
       
-      // do a bootstrapping if needed !!!!!
-      boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
-      if (needsPublisher) {
-         this.isInMaster = true;
-         this.bootstrapWarnings = this.info.getBoolean("replication.bootstrapWarnings", false);
-         doBootstrapIfNeeded();
+      if (this.isDbWriteable) {
+         boolean needsPublisher = this.info.getBoolean(NEEDS_PUBLISHER_KEY, true);
+         if (needsPublisher) {
+            this.isInMaster = true;
+            this.bootstrapWarnings = this.info.getBoolean("replication.bootstrapWarnings", false);
+            doBootstrapIfNeeded();
+         }
       }
+
       this.initCount++;
    }
 
