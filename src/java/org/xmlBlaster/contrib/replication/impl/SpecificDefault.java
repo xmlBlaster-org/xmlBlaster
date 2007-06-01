@@ -134,7 +134,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    
    private Set cancelledUpdates = new HashSet();
    
-   private boolean isDbWriteable = true;
+   protected boolean isDbWriteable = true;
       
    class Replacer implements I_ReplaceVariable {
 
@@ -363,7 +363,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * @return 
     * @throws Exception
     */
-   public final int checkSequenceForCreation(String creationRequest) throws Exception {
+   public int checkSequenceForCreation(String creationRequest) throws Exception {
       String tmp = getObjectName("CREATE SEQUENCE", creationRequest);
       if (tmp == null)
          return -1;
@@ -555,7 +555,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * @see I_DbSpecific#bootstrap(Connection).
     * In case of an exception you need to cleanup the connection yourself.
     */
-   public final void bootstrap(Connection conn, boolean doWarn, boolean force)
+   public void bootstrap(Connection conn, boolean doWarn, boolean force)
          throws Exception {
       updateFromFile(conn, "bootstrap", "replication.bootstrapFile",
             "org/xmlBlaster/contrib/replication/setup/postgres/bootstrap.sql",
@@ -566,7 +566,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * @see I_DbSpecific#cleanup(Connection). In case of an exception you need to cleanup
     * the connection yourself.
     */
-   public final void cleanup(Connection conn, boolean doWarn) throws Exception {
+   public void cleanup(Connection conn, boolean doWarn) throws Exception {
       /*
        * This cleans up the triggers on the own schema by oracle. It is needed
        * since if there is an 'unclean' zombie trigger, then no operation is 
