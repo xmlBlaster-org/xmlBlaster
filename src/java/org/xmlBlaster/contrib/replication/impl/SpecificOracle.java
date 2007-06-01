@@ -42,7 +42,7 @@ public class SpecificOracle extends SpecificDefault {
    private boolean wipeoutSynonyms; 
    private boolean wipeoutIndexes;
    private boolean wipeoutExIfConnected;
-
+   private boolean createDropAlterDetection;
    
    /**
     * Not doing anything.
@@ -67,6 +67,9 @@ public class SpecificOracle extends SpecificDefault {
       this.wipeoutTables = this.info.getBoolean("replication.oracle.wipeoutTables", true);
       this.wipeoutSynonyms = this.info.getBoolean("replication.oracle.wipeoutSynonyms", true);
       this.wipeoutIndexes = this.info.getBoolean("replication.oracle.wipeoutIndexes", true);
+      this.createDropAlterDetection = this.info.getBoolean("replication.createDropAlterDetection", true);
+      
+      
    }
    
    /**
@@ -85,8 +88,9 @@ public class SpecificOracle extends SpecificDefault {
       Replacer tmpReplacer = new Replacer(this.info, map);
       boolean doWarn = true;
       boolean force = true; // overwrites existing ones
-      updateFromFile(conn, "createDropAlter", "replication.createDropAlterFile",
-            "org/xmlBlaster/contrib/replication/setup/oracle/createDropAlter.sql", doWarn, force, tmpReplacer);
+      if (this.createDropAlterDetection)
+         updateFromFile(conn, "createDropAlter", "replication.createDropAlterFile",
+               "org/xmlBlaster/contrib/replication/setup/oracle/createDropAlter.sql", doWarn, force, tmpReplacer);
    }
 
    /**
