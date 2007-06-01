@@ -124,7 +124,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
 
    protected Replacer replacer;
 
-   private InitialUpdater initialUpdater;
+   protected InitialUpdater initialUpdater;
 
    private boolean bootstrapWarnings;
    
@@ -1163,7 +1163,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    /**
     * If force is true, it deletes first all entries from the Tables table (kind of reset).
     */
-   public final void addTriggersIfNeeded(boolean force, String[] destinations, boolean forceSend) throws Exception {
+   public void addTriggersIfNeeded(boolean force, String[] destinations, boolean forceSend) throws Exception {
       if (force) {
          try {
             this.dbPool.update("DELETE FROM " + this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES"));
@@ -1192,7 +1192,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * 
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#initiateUpdate(java.lang.String)
     */
-   public final void initiateUpdate(String topic, String replManagerAddress, String[] slaveNames, String requestedVersion, String initialFilesLocation) throws Exception {
+   public void initiateUpdate(String topic, String replManagerAddress, String[] slaveNames, String requestedVersion, String initialFilesLocation) throws Exception {
       
       log.info("initial replication for destinations='" + replManagerAddress + "' and slaves='" + toString(slaveNames) + "' and location '" + initialFilesLocation + "'");
       Connection conn = null;

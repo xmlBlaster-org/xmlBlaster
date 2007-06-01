@@ -1,8 +1,12 @@
 package org.xmlBlaster.contrib.replication.impl;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
@@ -17,6 +21,9 @@ public class SpecificDbReadonly extends SpecificDefault {
       super.init(info);
    }
    
+   public void addTriggersIfNeeded(boolean force, String[] destinations, boolean forceSend) {
+   }
+
    public final void checkTriggerConsistency(boolean doFix) {
    }
    
@@ -27,6 +34,14 @@ public class SpecificDbReadonly extends SpecificDefault {
    }
    
    public final void forceTableChangeCheck() {
+   }
+   
+   public final void initiateUpdate(String topic, String replManagerAddress, String[] slaveNames, String requestedVersion, String initialFilesLocation) throws Exception {
+      // TODO:
+      long minKey = 0; // this.incrementReplKey(conn);
+      long maxKey = 1; // this.incrementReplKey(conn); 
+      String filename = null;
+      this.initialUpdater.sendInitialDataResponse(slaveNames, filename, replManagerAddress, minKey, maxKey, requestedVersion, this.replVersion, initialFilesLocation);
    }
 
    protected boolean sequenceExists(Connection conn, String sequenceName)
