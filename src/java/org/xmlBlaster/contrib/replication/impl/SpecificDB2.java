@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.Types;
 import java.util.Map;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
@@ -189,7 +190,7 @@ public class SpecificDB2 extends SpecificDefault {
    /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#getContentFromGuid(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
     */
-   public String getContentFromGuid(String guid, String catalog, String schema, String table) throws Exception {
+   public String getContentFromGuid(String guid, String catalog, String schema, String table, I_AttributeTransformer transformer) throws Exception {
       if (true)
          throw new IllegalStateException("not implemented");
       return null;

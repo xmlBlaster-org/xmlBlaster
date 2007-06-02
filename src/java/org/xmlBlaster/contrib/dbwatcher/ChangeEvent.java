@@ -15,6 +15,7 @@ import java.util.HashMap;
  */
 public final class ChangeEvent extends EventObject {
    private static final long serialVersionUID = -2797657105273724009L;
+   private boolean resultSetIsReplItem = true; 
    private String groupColName;
    private String groupColValue;
    private String xml;
@@ -120,4 +121,12 @@ public final class ChangeEvent extends EventObject {
       if (this.xml != null) buf.append("\n").append(this.xml);
       return buf.toString();
    }
+
+public boolean isResultSetIsReplItem() {
+   return resultSetIsReplItem;
+}
+
+public void setResultSetIsReplItem(boolean resultSetIsReplItem) {
+   this.resultSetIsReplItem = resultSetIsReplItem;
+}
 }

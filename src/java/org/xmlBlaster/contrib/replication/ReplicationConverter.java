@@ -148,13 +148,14 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.replPrefix = SpecificDefault.getReplPrefix(this.info);
       boolean forceCreationAndInit = true;
       this.dbSpecific = getDbSpecific(info, forceCreationAndInit);
+      this.dbSpecific.setAttributeTransformer(this.transformer);
       final boolean doFix = true;
       this.dbSpecific.checkTriggerConsistency(doFix);
       this.sendInitialTableContent = this.info.getBoolean("replication.sendInitialTableContent", true);
       // this.persistentMap = new PersistentMap(CONTRIB_PERSISTENT_MAP);
       // this.persistentMap = new Info(CONTRIB_PERSISTENT_MAP);
       this.dbPool = DbWatcher.getDbPool(this.info);
-      this.persistentInfo = new DbInfo(this.dbPool, "replication", this.info);
+      this.persistentInfo = new DbInfo(DbWatcher.getDbInfoPool(this.info), "replication", this.info);
 
       // we now recreate the triggers if the version has changed
       String oldVersionName = this.dbSpecific.getName() + ".previousVersion";
@@ -247,6 +248,13 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    public void addInfo(ResultSet rs, int what) throws Exception {
       if (rs == null)
          throw new IllegalArgumentException("ReplicationConverter: Given ResultSet is null");
+      
+      if (!this.event.isResultSetIsReplItem()) {
+         while (rs.next()) {
+            this.sqlInfo.fillOneRowWithObjects(rs, this.transformer);
+         }
+         return;
+      }
 
       ResultSetMetaData meta = rs.getMetaData();
       int numberOfColumns = meta.getColumnCount();
@@ -329,7 +337,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          if (guid == null)
             log.severe("could not operate since no guid and no newContent on UPDATE or INSERT");
          else
-            newContent = this.dbSpecific.getContentFromGuid(guid, catalog, schema, tableName);
+            newContent = this.dbSpecific.getContentFromGuid(guid, catalog, schema, tableName, this.transformer);
       }
       
       String version = rs.getString(11);

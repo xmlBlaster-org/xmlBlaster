@@ -8,6 +8,8 @@ package org.xmlBlaster.contrib.replication.impl;
 
 import java.sql.Connection;
 import java.sql.Types;
+
+import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
@@ -203,7 +205,7 @@ public class SpecificPostgres extends SpecificDefault {
    /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#getContentFromGuid(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
     */
-   public String getContentFromGuid(String guid, String catalog, String schema, String table) throws Exception {
+   public String getContentFromGuid(String guid, String catalog, String schema, String table, I_AttributeTransformer transformer) throws Exception {
       throw new Exception("SpecificPostgres.getContentFromGuid is not implemented yet for table='" + table + "' and guid='" + guid + "'");
    }
    

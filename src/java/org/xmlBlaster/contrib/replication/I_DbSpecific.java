@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.util.Map;
 
 import org.xmlBlaster.contrib.I_ContribPlugin;
+import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 
@@ -246,10 +247,11 @@ public interface I_DbSpecific extends I_ContribPlugin {
     * @param catalog can be null
     * @param schema can be null
     * @param table must be defined (can not be null).
+    * @param transformer An optional plugin
     * @return the String containing the serialized entry.
     * @throws Exception
     */
-   String getContentFromGuid(String guid, String catalog, String schema, String table) throws Exception;
+   String getContentFromGuid(String guid, String catalog, String schema, String table, I_AttributeTransformer transformer) throws Exception;
    
    String getName();
 
@@ -307,4 +309,5 @@ public interface I_DbSpecific extends I_ContribPlugin {
     */
    void clearCancelUpdate(String replSlave);
    
+   void setAttributeTransformer(I_AttributeTransformer transformer);
 }

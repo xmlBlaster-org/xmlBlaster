@@ -66,6 +66,8 @@ public class DbStorage {
    
    private void createTableIfNeeded(String tableName) throws Exception {
       if (!tableExists(tableName)) {
+         // TODO: Add schema as Oracle finds the same named table in another schema
+         // and make tableName configurable 'xmlBlaster.DBINFO'
          String sql = "CREATE TABLE " + tableName + " (context VARCHAR(255), key VARCHAR(255), value VARCHAR(255), type VARCHAR(16), encoding VARCHAR(16), PRIMARY KEY (context, key))";
          log.info("Going to create the table with the statement '" + sql + "'");
          this.pool.update(sql);

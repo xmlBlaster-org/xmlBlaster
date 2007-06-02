@@ -34,6 +34,7 @@ import org.xmlBlaster.contrib.db.DbMetaHelper;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
+import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwatcher.convert.ResultSetToXmlConverter;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
@@ -47,60 +48,6 @@ import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 
 public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ {
-
-   class ResultHandler implements I_ResultCb {
-
-      private int rowsPerMessage;
-      private InitialUpdater initialUpdater;
-      private SqlInfo sqlInfo;
-      private long newReplKey;
-      private String destination;
-      
-      public ResultHandler(InitialUpdater initialUpdater, SqlInfo sqlInfo, long newReplKey, int rowsPerMessage, String destination) {
-         this.initialUpdater = initialUpdater;
-         this.sqlInfo = sqlInfo;
-         this.newReplKey = newReplKey;
-         this.rowsPerMessage = rowsPerMessage;
-         this.destination = destination;
-      }
-      
-      /**
-       * @see I_ResultCb#init(ResultSet)
-       */
-      public final void result(ResultSet rs) throws Exception {
-         try {
-            // TODO clear the columns since not really used anymore ...
-            int msgCount = 1; // since 0 was the create, the first must be 1
-            int internalCount = 0;
-            while (rs != null && rs.next()) {
-               // this.dbUpdateInfo.fillOneRowWithStringEntries(rs, null);
-               this.sqlInfo.fillOneRowWithObjects(rs, null);
-               internalCount++;
-               log.fine("processing before publishing *" + internalCount + "' of '" + this.rowsPerMessage + "'");
-               if (internalCount == this.rowsPerMessage) {
-                  internalCount = 0;
-                  // publish
-                  log.fine("result: going to publish msg '" + msgCount + "' and internal count '" + internalCount + "'");
-                  if (this.destination != null && cancelledUpdates.contains(this.destination)) {
-                     cancelledUpdates.remove(this.destination);
-                     log.info("The ongoing initial update for destination '" + this.destination + "' has been cancelled");
-                     return;
-                  }
-                  this.initialUpdater.publishCreate(msgCount++, this.sqlInfo, this.newReplKey, this.destination);
-                  this.sqlInfo.getRows().clear(); // clear since re-using the same dbUpdateInfo
-               }
-            } // end while
-            if (this.sqlInfo.getRows().size() > 0) {
-               log.fine("result: going to publish last msg '" + msgCount + "' and internal count '" + internalCount + "'");
-               this.initialUpdater.publishCreate(msgCount, this.sqlInfo, this.newReplKey, this.destination);
-            }
-         } catch (Exception e) {
-            e.printStackTrace();
-            log.severe("Can't publish change event meat for CREATE");
-         }
-      }
-   }
-   
    public final static boolean ROLLBACK_YES = true;
    public final static boolean ROLLBACK_NO = false;
    public final static boolean COMMIT_YES = true;
@@ -125,6 +72,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    protected Replacer replacer;
 
    protected InitialUpdater initialUpdater;
+   
+   protected I_AttributeTransformer transformer;
 
    private boolean bootstrapWarnings;
    
@@ -902,7 +851,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             if (schema != null)
                table = schema + "." + table;
             String sql = new String("SELECT * FROM " + table);
-            I_ResultCb resultHandler = new ResultHandler(this.initialUpdater, sqlInfo, newReplKey, this.rowsPerMessage, destination); 
+            I_ResultCb resultHandler = new RsToSqlInfo(this.initialUpdater, sqlInfo, this.cancelledUpdates, this.transformer, newReplKey, this.rowsPerMessage, destination); 
             this.dbPool.select(conn, sql, autoCommit, resultHandler);
          }
          conn.commit();
@@ -1519,4 +1468,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
 
+   public void setAttributeTransformer(I_AttributeTransformer transformer) {
+      this.transformer = transformer;
+   }
 }

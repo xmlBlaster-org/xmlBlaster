@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
@@ -104,7 +105,7 @@ public class SpecificDbReadonly extends SpecificDefault {
    }
 
    public String getContentFromGuid(String guid, String catalog, String schema,
-         String table) throws Exception {
+         String table, I_AttributeTransformer transformer) throws Exception {
       // TODO Auto-generated method stub
       return null;
    }

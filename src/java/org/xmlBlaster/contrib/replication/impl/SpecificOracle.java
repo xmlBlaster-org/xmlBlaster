@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
+import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
@@ -879,7 +880,7 @@ public class SpecificOracle extends SpecificDefault {
    /**
     * @see org.xmlBlaster.contrib.replication.I_DbSpecific#getContentFromGuid(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
     */
-   public String getContentFromGuid(String guid, String catalog, String schema, String table) throws Exception {
+   public String getContentFromGuid(String guid, String catalog, String schema, String table, I_AttributeTransformer transformer) throws Exception {
       // throw new Exception("SpecificOracle.getContentFromGuid is not implemented yet for table='" + table + "' and guid='" + guid + "'");
       SqlInfo obj = new SqlInfo(this.info);
       Connection conn = null;
@@ -895,7 +896,7 @@ public class SpecificOracle extends SpecificDefault {
          String sql = "select * from " + completeTable + " WHERE rowid=CHARTOROWID('" + guid + "')";
          ResultSet rs = st.executeQuery(sql);
          if (rs.next()) {
-            obj.fillOneRowWithObjects(rs, null);
+            obj.fillOneRowWithObjects(rs, transformer);
             SqlRow row = (SqlRow)obj.getRows().get(0);
             rs.close();
             return row.toXml("", false);
