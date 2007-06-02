@@ -1,12 +1,11 @@
 package org.xmlBlaster.contrib.replication.impl;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.I_Info;
-import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.TableToWatchInfo;
@@ -16,9 +15,13 @@ import org.xmlBlaster.contrib.replication.TableToWatchInfo;
  */
 public class SpecificDbReadonly extends SpecificDefault {
 
+   private long replKey;
+   private final static Logger log = Logger.getLogger(SpecificDbReadonly.class.getName());
+   
    public synchronized void init(I_Info info) throws Exception {
       super.isDbWriteable = false;
       super.init(info);
+      this.replKey = System.currentTimeMillis(); // HACK ,, TODO make this persistent
    }
    
    public void addTriggersIfNeeded(boolean force, String[] destinations, boolean forceSend) {
@@ -37,11 +40,38 @@ public class SpecificDbReadonly extends SpecificDefault {
    }
    
    public final void initiateUpdate(String topic, String replManagerAddress, String[] slaveNames, String requestedVersion, String initialFilesLocation) throws Exception {
-      // TODO:
-      long minKey = 0; // this.incrementReplKey(conn);
-      long maxKey = 1; // this.incrementReplKey(conn); 
-      String filename = null;
-      this.initialUpdater.sendInitialDataResponse(slaveNames, filename, replManagerAddress, minKey, maxKey, requestedVersion, this.replVersion, initialFilesLocation);
+      long minKey = incrementReplKey(null);
+      long maxKey = incrementReplKey(null); 
+      Connection  conn = this.dbPool.reserve();
+      TableToWatchInfo[] tablesToSend = null;
+      try {
+         tablesToSend = TableToWatchInfo.getTablesToWatch(conn, this.info);   
+         this.dbPool.release(conn);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         this.dbPool.erase(conn);
+      }
+      if (tablesToSend != null) {
+         this.initialUpdater.sendInitialDataResponseOnly(slaveNames, replManagerAddress, minKey, maxKey);
+         for (int i=0; i < tablesToSend.length; i++) {
+            final boolean sendInitialContents = true;
+            String catalog = tablesToSend[i].getCatalog();
+            String schema = tablesToSend[i].getSchema();
+            String table = tablesToSend[i].getTable();
+            Map attrs = new HashMap(); // TODO ADD THE CORRECT ATTRIBUTES HERE !!!!!
+            try {
+               readNewTable(catalog, schema, table, attrs, sendInitialContents);
+            }
+            catch (Exception ex) {
+               // ex.printStackTrace();
+               log.severe("Could not send initial data for table '" + table + "'");
+            }
+         }
+         this.initialUpdater.sendEndOfTransitionMessage(slaveNames);
+      }
+      else
+         log.severe("Could not send initial data due to an error when retrieving the lit of tables to replicate");
    }
 
    protected boolean sequenceExists(Connection conn, String sequenceName)
@@ -96,4 +126,10 @@ public class SpecificDbReadonly extends SpecificDefault {
       // TODO Auto-generated method stub
       return 0;
    }
+
+   public long incrementReplKey(Connection conn) throws Exception {
+      this.replKey++;
+      return this.replKey;
+   }
+   
 }

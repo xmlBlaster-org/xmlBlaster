@@ -792,7 +792,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * @see I_DbSpecific#incrementReplKey(Connection)
     * 
     */
-   public final long incrementReplKey(Connection conn) throws Exception {
+   public long incrementReplKey(Connection conn) throws Exception {
       if (conn == null)
          throw new Exception(
                "SpecificDefault.incrementReplKey: the DB connection is null");
@@ -870,18 +870,20 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          // check if function and trigger are necessary (they are only if the
          // table has to be replicated.
          // it does not need this if the table only needs an initial synchronization. 
-         TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, this.replPrefix + "tables", catalog, schema, table, null);
-         
-         if (tableToWatch != null) {
-            boolean addTrigger = tableToWatch.isReplicate();
-            if (addTrigger) { // create the function and trigger here
-               addTrigger(conn, tableToWatch, sqlInfo);
+         if (this.isDbWriteable) {
+            TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, this.replPrefix + "tables", catalog, schema, table, null);
+            
+            if (tableToWatch != null) {
+               boolean addTrigger = tableToWatch.isReplicate();
+               if (addTrigger) { // create the function and trigger here
+                  addTrigger(conn, tableToWatch, sqlInfo);
+               }
+               else
+                  log.info("trigger will not be added since entry '" + tableToWatch.toXml() + "' will not be replicated");
             }
-            else
-               log.info("trigger will not be added since entry '" + tableToWatch.toXml() + "' will not be replicated");
-         }
-         else {
-            log.info("table to watch '" + table + "' not found");
+            else {
+               log.info("table to watch '" + table + "' not found");
+            }
          }
          conn.commit(); // just to make oracle happy for the next set transaction
          conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);

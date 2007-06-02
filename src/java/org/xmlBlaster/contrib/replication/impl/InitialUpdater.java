@@ -513,8 +513,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @param maxKey
     * @throws Exception
     */
-   public final void sendInitialDataResponse(String[] slaveSessionNames, String filename, String replManagerAddress, long minKey, long maxKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws Exception {
-      sendInitialFile(slaveSessionNames, filename, minKey, requestedVersion, currentVersion, initialFilesLocation);
+   public final void sendInitialDataResponseOnly(String[] slaveSessionNames, String replManagerAddress, long minKey, long maxKey) throws Exception {
       HashMap attrs = new HashMap();
       attrs.put("_destination", replManagerAddress);
       attrs.put("_command", "INITIAL_DATA_RESPONSE");
@@ -525,6 +524,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
       else
          log.warning("request for sending initial response can not be done since no publisher configured");
+   }
+   
+   public final void sendInitialDataResponse(String[] slaveSessionNames, String filename, String replManagerAddress, long minKey, long maxKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws Exception {
+      sendInitialFile(slaveSessionNames, filename, minKey, requestedVersion, currentVersion, initialFilesLocation);
+      sendInitialDataResponseOnly(slaveSessionNames, replManagerAddress, minKey, maxKey);
    }
    
    
@@ -636,6 +640,25 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          endMsg.setStringProperty(INITIAL_FILES_LOCATION, initialFilesLocation);
          producer.send(endMsg);
       }
+      sendEndOfTransitionMessage(session, initialFilesLocation, shortFilename, dumpId, producer);
+   }
+
+   /**
+    * This method is used where the end of transition message has to be sent separately (for example for read-only applications without triggers)
+    * @param slaveSessionNames
+    * @throws JMSException
+    */
+   public void sendEndOfTransitionMessage(String[] slaveSessionNames) throws JMSException {
+      XBSession session = this.publisher.getJmsSession();
+      XBDestination dest = new XBDestination(this.initialDataTopic, SpecificDefault.toString(slaveSessionNames));
+      XBMessageProducer producer = new XBMessageProducer(session, dest);
+      producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
+      producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+      String dumpId = "" + new Timestamp().getTimestamp();
+      sendEndOfTransitionMessage(session, null, null, dumpId, producer);
+   }
+   
+   private void sendEndOfTransitionMessage(XBSession session, String initialFilesLocation, String shortFilename, String dumpId, XBMessageProducer producer) throws JMSException {
       TextMessage  endMsg = session.createTextMessage();
       SqlInfo sqlInfo = new SqlInfo(this.info);
       SqlDescription description = new SqlDescription(this.info);
