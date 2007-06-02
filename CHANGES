@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16222 Replaction: Added readonly variant on source database with classical DbWatcher approach
+          Added configurable 'dbinfo.url' to force another database for DBINFO table
+
  o #16207 Fixed replication loading of specific jdbc.drivers from specific properties files
 
  o #16203 Fixed admin.event plugin to escape illegal XML entities like '&' in send notification
