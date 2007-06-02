@@ -40,7 +40,7 @@ public class DbInfo implements I_Info, DbInfoMBean {
    /**
     * @param clientPropertyMap Can be null
     */
-   public DbInfo(I_DbPool pool, String id) throws Exception {
+   public DbInfo(I_DbPool pool, String id, I_Info info) throws Exception {
       this.storage = new DbStorage(pool, TABLE_NAME, id);
       this.helper = new InfoHelper(this);
       this.objects = new HashMap();
@@ -49,8 +49,7 @@ public class DbInfo implements I_Info, DbInfoMBean {
       // to add this to JMX
       if (pool instanceof DbPool) {
          String jmxName = I_Info.JMX_PREFIX + "dbInfo";
-         I_Info cfgInfo = ((DbPool)pool).getInfo();
-         cfgInfo.putObject(jmxName, this);
+         info.putObject(jmxName, this);
          log.info("Added object '" + jmxName + "' to I_Info to be added as an MBean");
       }
    }   

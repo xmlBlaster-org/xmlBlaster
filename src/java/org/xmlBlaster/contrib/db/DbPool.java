@@ -417,7 +417,11 @@ public class DbPool implements I_DbPool, I_PoolManager {
       destroy();
    }
 
-   public I_Info getInfo() {
+   /**
+    * may be empty and just contains db.* properties
+    * @return
+    */
+   private I_Info getInfo() {
       return this.info;
    }
    

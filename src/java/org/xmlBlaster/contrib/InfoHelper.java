@@ -87,6 +87,10 @@ public class InfoHelper {
    }
    
    
+   public static Map getPropertiesStartingWith(String prefix, I_Info info, DbMetaHelper dbHelper) {
+      return getPropertiesStartingWith(prefix, info, dbHelper, null);
+   }
+   
    /**
     * Returns the subset of properties found in the I_Info object starting 
     * with the specified prefix. 
@@ -96,11 +100,13 @@ public class InfoHelper {
     * @param dbHelper the DbMetaHelper used to determine if the key and value have
     * to be moved to uppercase/lowcase or left untouched. Can be null, in which case it
     * is ignored.
-    * 
+    * @param newPrefix if not null, the map returned has the properties starting with the new prefix. So for
+    * example if you specify prefix='db.' and have a property called 'db.url', and the newPrefix is called 'dbinfo.'
+    * you will get 'dbinfo.url' in the return map as key.
     * @return the subset of properties found. The keys are stripped from their
     * prefix. The returned keys are returned in alphabetical order.
     */
-   public static Map getPropertiesStartingWith(String prefix, I_Info info, DbMetaHelper dbHelper) {
+   public static Map getPropertiesStartingWith(String prefix, I_Info info, DbMetaHelper dbHelper, String newPrefix) {
       synchronized (info) {
          Iterator iter = info.getKeys().iterator();
          TreeMap map = new TreeMap();
@@ -115,7 +121,10 @@ public class InfoHelper {
                   val = dbHelper.getIdentifier(val);
                }
                log.fine("found and adding key='" + key + "' value='" + val + "' on map for prefix='" + prefix + "'");
-               map.put(key, val);
+               if (newPrefix != null)
+                  map.put(newPrefix + key, val);
+               else
+                  map.put(key, val);
             }
          }
          return map;
@@ -166,6 +175,7 @@ public class InfoHelper {
             while (iter.hasNext()) {
                String key = ((String)iter.next()).trim();
                Object obj = map.get(key);
+               
                if (obj instanceof String) {
                   info.put(key, (String)obj);
                }

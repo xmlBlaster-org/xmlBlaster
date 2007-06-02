@@ -12,11 +12,14 @@ import java.io.BufferedOutputStream;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Map;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.sql.Connection;
 
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.InfoHelper;
+import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
@@ -128,6 +131,28 @@ public class DbWatcher implements I_ChangeListener {
          dbPool.init(info);
          return dbPool;
       }
+   }
+   
+   /**
+    * We scan for dbinfo.* properties and replace it with db.* in a second info object to use for the configuration 
+    * of the DbPool. Defaults to getDbPool if no 'dbinfo.url' is specified in the configuration. 
+    * @param info
+    * @return
+    * @throws Exception
+    */
+   public static I_DbPool getDbInfoPool(I_Info info) throws Exception {
+      I_Info infoForDbInfo = (I_Info)info.getObject("infoForDbInfo"); 
+      if (infoForDbInfo == null) {
+         Map dbInfoMap = InfoHelper.getPropertiesStartingWith("dbinfo.", info, null, "db.");
+         if (dbInfoMap.containsKey("db.url")) {
+            infoForDbInfo = new PropertiesInfo(new Properties());
+            InfoHelper.fillInfoWithEntriesFromMap(infoForDbInfo, dbInfoMap);
+            info.putObject("infoForDbInfo", infoForDbInfo);
+         }
+      }
+      if (infoForDbInfo != null)
+         return getDbPool(infoForDbInfo);
+      return getDbPool(info);
    }
    
    /**

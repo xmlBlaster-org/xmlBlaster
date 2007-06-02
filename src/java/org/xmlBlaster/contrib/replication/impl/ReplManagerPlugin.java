@@ -305,7 +305,7 @@ public class ReplManagerPlugin extends GlobalInfo
     * @return
     * @throws Exception
     */
-   private I_DbPool getDbPool() throws Exception {
+   private I_DbPool initializePersistentInfo() throws Exception {
       QueuePluginManager pluginManager = new QueuePluginManager(this.global);
       PluginInfo queuePluginInfo = new PluginInfo(this.global, pluginManager, "JDBC", "1.0");
       Properties prop = (Properties)queuePluginInfo.getParameters();
@@ -329,6 +329,7 @@ public class ReplManagerPlugin extends GlobalInfo
          log.warning("the property 'password' was not set");
       I_DbPool pool = new DbPool();
       pool.init(tmpInfo);
+      this.persistentInfo = new DbInfo(pool, "replication", tmpInfo);
       return pool;
    }
    
@@ -452,8 +453,7 @@ public class ReplManagerPlugin extends GlobalInfo
                this.global.getContextNode());
          this.mbeanHandle = this.global.registerMBean(contextNode, this);
          
-         this.pool = getDbPool();
-         this.persistentInfo = new DbInfo(this.pool, "replication");
+         this.pool = initializePersistentInfo();
          
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          ConnectQos connectQos = new ConnectQos(this.global, this.user, this.password);

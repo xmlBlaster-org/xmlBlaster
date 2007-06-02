@@ -155,7 +155,7 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
          String id = this.info.get(I_Info.ID, null);
          if (id == null)
             log.severe("No 'id' has been defined for this detector. Can not use persistent data");
-         this.persistentInfo = new DbInfo(this.dbPool, id);
+         this.persistentInfo = new DbInfo(this.dbPool, id, this.info);
          String timestamp = this.persistentInfo.get(LAST_TIMESTAMP_KEY, null);
          log.warning("The time id='" + id + "' name='" + LAST_TIMESTAMP_KEY + "' has not been found. Will take current system time");
          if (timestamp != null)
