@@ -154,6 +154,7 @@
 
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html#mx4j -->
    <!-- Comment out the xsltProcessor attribute to receive the raw xml for debugging -->
+   <!-- Start  java org.xmlBlaster.Main -xmlBlaster/jmx/HtmlAdaptor true -->
    <plugin create='false' id='MX4JAdaptorPlugin' className='org.xmlBlaster.contrib.jmx.MX4JAdaptor'>
       <attribute id="xsltProcessor">XSLTProcessor</attribute>
       <attribute id="host">localhost</attribute>
