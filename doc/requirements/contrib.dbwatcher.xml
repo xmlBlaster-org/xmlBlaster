@@ -680,6 +680,13 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
    <pre>alter table [xxx].[polter] add polterTS rowversion</pre>
    </example>
 
+
+   <example lang="any" type="HTML">
+   <p>Sequence diagram showing the usage sequence of the plugins:</p>
+   <a href="DbWatcherSequence.png" target="zoom"><img src="DbWatcherSequence.png" width="900"/></a>
+   </example>
+
+
    <configuration where="server">
       <p>
          The plugin is configured in the <tt>xmlBlasterPlugins.xml</tt> configuration file.
