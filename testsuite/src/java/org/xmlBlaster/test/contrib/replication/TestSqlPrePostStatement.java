@@ -33,7 +33,7 @@ import org.xmlBlaster.contrib.replication.TableToWatchInfo;
  * property or in {@link #createTest(I_Info, Map)} and
  * {@link #setUpDbPool(I_Info)}
  * </p>
- * 
+ *
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class TestSqlPrePostStatement extends XMLTestCase {
@@ -61,7 +61,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
          test.setUp();
          test.testPerformAllOperationsOnTable();
          test.tearDown();
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          fail();
@@ -78,7 +78,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
 
    /**
     * Constructor for TestSqlPrePostStatement.
-    * 
+    *
     * @param arg0
     */
    public TestSqlPrePostStatement(String arg0) {
@@ -88,7 +88,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
 
    /**
     * Helper method to fill the properties. If an entry is found in the system properties it is left as is.
-    * 
+    *
     * @param info
     * @param key
     * @param val
@@ -99,7 +99,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
          info.put(key, val);
    }
 
-   
+
    /**
     * This method is invoked directly by setUp.
     * @param readerInfo The info object for the reader (the dbWatcher).
@@ -161,8 +161,8 @@ public class TestSqlPrePostStatement extends XMLTestCase {
       assertTrue("The dbSpecific for the writer must not be null", dbSpecific != null);
       return dbSpecific;
    }
-   
-   
+
+
    /**
     * Configure database access.
     * @see TestCase#setUp()
@@ -175,7 +175,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
       boolean extraUser = false;
       this.replPrefix = setupProperties(this.readerInfo, this.writerInfo, extraUser);
       extraUser = true; // to make it easy to recognize by the session name
-      
+
       // we use the writerInfo since this will not instantiate an publisher
       I_Info tmpInfo =  new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
       setupProperties(null, tmpInfo, extraUser);
@@ -183,10 +183,10 @@ public class TestSqlPrePostStatement extends XMLTestCase {
       I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(tmpInfo, forceCreationAndInit);
       I_DbPool pool = (I_DbPool)tmpInfo.getObject("db.pool");
 
-      DbInfo persistentInfo = new DbInfo(pool, "replication");
+      DbInfo persistentInfo = new DbInfo(pool, "replication", tmpInfo);
       String name = readerInfo.get("replication.prefix", "repl_") + ".oldReplKey";
       persistentInfo.put(name, "0");
-      
+
       Connection conn = null;
       try {
          conn = pool.reserve();
@@ -231,7 +231,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
          if (conn != null && pool != null)
             pool.release(conn);
       }
-      
+
       log.info("setUp: Instantiating");
       this.agent = new ReplicationAgent();
       this.agent.init(this.readerInfo, this.writerInfo);
@@ -250,10 +250,10 @@ public class TestSqlPrePostStatement extends XMLTestCase {
 
    /**
     * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
-    * 
+    *
     */
    public final void testPerformAllOperationsOnTable() {
-      
+
       log.info("Start testPerformAllOperationsOnTable");
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
@@ -274,7 +274,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
          }
-         
+
          {
             try {
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), age INTEGER, PRIMARY KEY(name))";
@@ -317,7 +317,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
                long count = rs.getLong(1);
                rs.close();
                st.close();
-               
+
                sql = "INSERT INTO " + this.tableName + " VALUES ('first', 44)";
                pool.update(sql);
                Thread.sleep(this.sleepDelay);
@@ -356,7 +356,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      
+
          {
             try {
                sql = "DROP TABLE " + this.tableName;
@@ -387,21 +387,21 @@ public class TestSqlPrePostStatement extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
       log.info("SUCCESS");
    }
-   
-   
+
+
    /**
     * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
-    * 
+    *
     */
    public final void probeMultithreading() {
-      
+
       log.info("Start testMultithreading");
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
@@ -422,7 +422,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
          }
-         
+
          {
             try {
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), age INTEGER, PRIMARY KEY(name))";
@@ -454,7 +454,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
          }
 
          {
-            
+
             Connection conn1 = null;
             Connection conn2 = null;
             Statement st1 = null;
@@ -464,14 +464,14 @@ public class TestSqlPrePostStatement extends XMLTestCase {
                conn2 = pool.reserve();
                //conn1.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
                //conn2.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-               
+
                conn1.clearWarnings();
                conn2.clearWarnings();
                conn1.setAutoCommit(false);
                conn2.setAutoCommit(false);
                st1 = conn1.createStatement();
                st2 = conn2.createStatement();
-               
+
                sql = "INSERT INTO " + this.tableName + " VALUES ('first', 1)";
                pool.update(sql);
                sql = "UPDATE " + this.tableName + " SET age=2 WHERE name='first'";
@@ -483,13 +483,13 @@ public class TestSqlPrePostStatement extends XMLTestCase {
                conn2.commit();
                conn2.setAutoCommit(false);
                st2.close();
-               
+
                conn1.commit();
                conn1.setAutoCommit(false);
                st1.close();
-               
+
                // Should be 2 since conn1 commits last
-               
+
                Thread.sleep(this.sleepDelay);
                conn = pool.reserve();
                Statement st = conn.createStatement();
@@ -523,7 +523,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
                   conn2.close();
             }
          }
-      
+
          {
             try {
                sql = "UPDATE " + this.tableName + " SET age=33 WHERE name='first'";
@@ -587,7 +587,7 @@ public class TestSqlPrePostStatement extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      
+
          {
             try {
                sql = "ALTER TABLE " + this.tableName + " ADD (city VARCHAR(30))";
@@ -648,13 +648,13 @@ public class TestSqlPrePostStatement extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
       log.info("SUCCESS");
    }
-   
-   
+
+
 }

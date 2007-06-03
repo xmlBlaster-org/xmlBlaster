@@ -39,7 +39,7 @@ import java.util.Set;
  * Tests the synchronous part of the replication, i.e. that an action as CREATE,
  * DROP, ALTER, INSERT, DELETE, UPDATE are written in the repl_items table.
  * Nothing else is tested here.
- * 
+ *
  * <p>
  * To run most of the tests you need to have a database (for example Postgres).
  * Does not need xmlBlaster running.
@@ -55,7 +55,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
    private SpecificHelper specificHelper;
    private String tableName = "TEST_SYNCPART";
    private String replPrefix = "repl_";
-   
+
    /**
     * Start the test.
     * <pre>
@@ -74,15 +74,15 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
          test.setUp();
          test.testTimestampFormat();
          test.tearDown();
-         
+
          test.setUp();
          test.testPerformAllOperationsOnTable();
          test.tearDown();
-         
+
          test.setUp();
          test.testTableWithLongs();
          test.tearDown();
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          fail();
@@ -99,7 +99,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
 
    /**
     * Constructor for TestSyncParts.
-    * 
+    *
     * @param arg0
     */
    public TestSyncPart(String arg0) {
@@ -176,12 +176,12 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       }
    }
 
-   
+
    /**
-    * 
+    *
     */
    public final void testPerformAllOperationsOnTable() {
-      
+
       log.info("Start testPerformAllOperationsOnTable");
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
@@ -199,7 +199,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                Statement st = conn.createStatement();
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing creation of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
-               
+
                String transKey = rs.getString(2);
                // String dbId = rs.getString(3);
                String tableName = rs.getString(4);
@@ -232,7 +232,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
          }
 
          this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), null, true);
-         
+
          {
             try {
                sql = "INSERT INTO " + this.tableName + " VALUES ('first', 44)";
@@ -266,7 +266,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                   this.pool.release(conn);
             }
          }
-      
+
          {
             try {
                sql = "UPDATE " + this.tableName + " SET age=33 WHERE name='first'";
@@ -341,7 +341,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                   this.pool.release(conn);
             }
          }
-      
+
          {
             try {
                sql = "ALTER TABLE " + this.tableName + " ADD (city VARCHAR(30))";
@@ -398,7 +398,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                   this.pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
@@ -408,10 +408,10 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
 
 
    /**
-    * 
+    *
     */
    public final void testTableWithLongs() {
-      
+
       log.info("Start testTableWithLongs");
       I_DbPool pool = (I_DbPool)info.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
@@ -429,7 +429,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                Statement st = conn.createStatement();
                ResultSet rs = st.executeQuery("SELECT * from " + this.replPrefix + "items");
                assertEquals("Testing creation of table '" + this.tableName + "' checking that the operation generated an entry in " + this.replPrefix + "items", true, rs.next());
-               
+
                String transKey = rs.getString(2);
                String tableName = rs.getString(4);
                String dbAction = rs.getString(6);
@@ -449,7 +449,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
          }
 
          this.dbSpecific.readNewTable(null, this.specificHelper.getOwnSchema(this.pool), this.dbHelper.getIdentifier(this.tableName), null, true);
-         
+
          {
             try {
                sql = "INSERT INTO " + this.tableName + " VALUES ('first', 'some very long text here')";
@@ -470,8 +470,8 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                String dbCatalog = rs.getString(7);
                String dbSchema = rs.getString(8);
                assertTrue("The guid can not be null", guid != null);
-               
-               String contentTxt = this.dbSpecific.getContentFromGuid(guid, dbCatalog, dbSchema, tableName); 
+
+               String contentTxt = this.dbSpecific.getContentFromGuid(guid, dbCatalog, dbSchema, tableName, null);
 
                assertEquals("Testing the content of the action", "INSERT", dbAction);
                assertNotNull("Testing that the transaction is not null", transKey);
@@ -489,7 +489,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                   this.pool.release(conn);
             }
          }
-      
+
          {
             try {
                sql = "UPDATE " + this.tableName + " SET comments='some very long text here' WHERE name='first'";
@@ -507,8 +507,8 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                String guid = rs.getString(5);
                String dbCatalog = rs.getString(7);
                String dbSchema = rs.getString(8);
-               String contentTxt = this.dbSpecific.getContentFromGuid(guid, dbCatalog, dbSchema, tableName);
-               
+               String contentTxt = this.dbSpecific.getContentFromGuid(guid, dbCatalog, dbSchema, tableName, null);
+
                InputStream oldContent = rs.getAsciiStream(10);
                oldContent.read(tmp);
                String oldContentTxt = new String(tmp);
@@ -591,7 +591,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                   this.pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
@@ -599,10 +599,10 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       log.info("SUCCESS");
    }
 
-   
-   
+
+
    /**
-    * 
+    *
     */
    public final void testDateFormat() {
       log.info("Start testDifferentFormats");
@@ -641,7 +641,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
             System.out.println("Date diff: " + (date1.getTime() - date.getTime()));
             rs.close();
             st1.close();
-           
+
             Thread.sleep(500L);
             Statement st2 = conn.createStatement();
             rs = st2.executeQuery("SELECT * from " + this.replPrefix + "items ORDER BY repl_key");
@@ -662,7 +662,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
             if (conn != null)
                this.pool.release(conn);
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
@@ -670,7 +670,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       log.info("SUCCESS");
    }
    /**
-    * 
+    *
     */
    public final void testTimestampFormat() {
       log.info("Start testDifferentFormats");
@@ -699,7 +699,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                long millis = ts.getTime();
                long nanos = ts.getNanos();
                System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
-               
+
             }
             catch (IllegalArgumentException e) {
                assertTrue("An exception should not occur when parsing '" + txt + "'", false);
@@ -710,7 +710,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                long millis = ts.getTime();
                long nanos = ts.getNanos();
                System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
-               
+
             }
             catch (IllegalArgumentException e) {
                assertTrue("An exception should not occur when parsing '" + txt + "'", false);
@@ -721,7 +721,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                long millis = ts.getTime();
                long nanos = ts.getNanos();
                System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
-               
+
             }
             catch (IllegalArgumentException e) {
                assertTrue("An exception should not occur when parsing '" + txt + "'", false);
@@ -732,7 +732,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                long millis = ts.getTime();
                long nanos = ts.getNanos();
                System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
-               
+
             }
             catch (IllegalArgumentException e) {
                assertTrue("An exception should not occur when parsing '" + txt + "'", false);
@@ -743,7 +743,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                long millis = ts.getTime();
                long nanos = ts.getNanos();
                System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
-               
+
             }
             catch (IllegalArgumentException e) {
                assertTrue("An exception should not occur when parsing '" + txt + "'", false);
@@ -754,12 +754,12 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
                long millis = ts.getTime();
                long nanos = ts.getNanos();
                System.out.println("'" + txt + "' gave millis='" + millis + "' and nanos='" + nanos + "'");
-               
+
             }
             catch (IllegalArgumentException e) {
                assertTrue("An exception should not occur when parsing '" + txt + "'", false);
             }
-            
+
             DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             long time = format.parse(txt).getTime();
             Timestamp date = new Timestamp(time);
@@ -779,7 +779,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
             System.out.println("Date diff: " + (date1.getTime() - date.getTime()));
             rs.close();
             st1.close();
-           
+
             Thread.sleep(500L);
             Statement st2 = conn.createStatement();
             rs = st2.executeQuery("SELECT * from " + this.replPrefix + "items ORDER BY repl_key");
@@ -800,7 +800,7 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
             if (conn != null)
                this.pool.release(conn);
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
@@ -808,10 +808,10 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
       log.info("SUCCESS");
    }
 
-   
-   
-   
-   
+
+
+
+
    /**
     * @see org.xmlBlaster.contrib.I_ContribPlugin#getUsedPropertyKeys()
     */
@@ -833,13 +833,13 @@ public class TestSyncPart extends XMLTestCase implements I_ChangePublisher {
 
    public void shutdown() {
    }
-   
+
    /**
     * @see org.xmlBlaster.contrib.I_ChangePublisher#getJmsSession()
     */
    public XBSession getJmsSession() {
       return null;
    }
-   
-   
+
+
 }

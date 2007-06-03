@@ -43,7 +43,7 @@ import org.xmlBlaster.util.Global;
  * property or in {@link #createTest(I_Info, Map)} and
  * {@link #setUpDbPool(I_Info)}
  * </p>
- * 
+ *
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class TestReplication extends XMLTestCase {
@@ -59,7 +59,7 @@ public class TestReplication extends XMLTestCase {
    private String replPrefix = "repl_";
    private long sleepDelay;
    private MsgInterceptor interceptor;
-   
+
    /**
     * Start the test.
     * <pre>
@@ -90,12 +90,12 @@ public class TestReplication extends XMLTestCase {
          test.setUp();
          test.testPerformAllOperationsOnTable();
          test.tearDown();
-         
+
          // test.setUp();
          // test.testMultiTransaction();
          // test.tearDown();
 
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          fail();
@@ -113,7 +113,7 @@ public class TestReplication extends XMLTestCase {
 
    /**
     * Constructor for TestReplication.
-    * 
+    *
     * @param arg0
     */
    public TestReplication(String arg0) {
@@ -124,7 +124,7 @@ public class TestReplication extends XMLTestCase {
 
    /**
     * Helper method to fill the properties. If an entry is found in the system properties it is left as is.
-    * 
+    *
     * @param info
     * @param key
     * @param val
@@ -135,7 +135,7 @@ public class TestReplication extends XMLTestCase {
          info.put(key, val);
    }
 
-   
+
    /**
     * This method is invoked directly by setUp.
     * @param readerInfo The info object for the reader (the dbWatcher).
@@ -201,8 +201,8 @@ public class TestReplication extends XMLTestCase {
       assertTrue("The dbSpecific for the writer must not be null", dbSpecific != null);
       return dbSpecific;
    }
-   
-   
+
+
    /**
     * Configure database access.
     * @see TestCase#setUp()
@@ -215,7 +215,7 @@ public class TestReplication extends XMLTestCase {
       boolean extraUser = false;
       this.replPrefix = setupProperties(this.readerInfo, this.writerInfo, extraUser);
       extraUser = true; // to make it easy to recognize by the session name
-      
+
       // we use the writerInfo since this will not instantiate an publisher
       I_Info tmpInfo =  new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
       setupProperties(null, tmpInfo, extraUser);
@@ -223,10 +223,10 @@ public class TestReplication extends XMLTestCase {
       I_DbSpecific dbSpecific = ReplicationConverter.getDbSpecific(tmpInfo, forceCreationAndInit);
       I_DbPool pool = (I_DbPool)tmpInfo.getObject("db.pool");
 
-      DbInfo persistentInfo = new DbInfo(pool, "replication");
+      DbInfo persistentInfo = new DbInfo(pool, "replication", tmpInfo);
       String name = readerInfo.get("replication.prefix", "repl_") + ".oldReplKey";
       persistentInfo.put(name, "0");
-      
+
       Connection conn = null;
       try {
          this.dbHelper = new DbMetaHelper(pool);
@@ -268,7 +268,7 @@ public class TestReplication extends XMLTestCase {
          if (conn != null && pool != null)
             pool.release(conn);
       }
-      
+
       log.info("setUp: Instantiating");
       this.agent = new ReplicationAgent();
       this.agent.init(this.readerInfo, this.writerInfo);
@@ -289,9 +289,9 @@ public class TestReplication extends XMLTestCase {
    }
 
    /**
-    * 
+    *
     * If the table does not exist we expect a null ResultSet
-    * 
+    *
     * @throws Exception Any type is possible
     */
    public final void testCreateAndInsert() throws Exception {
@@ -325,7 +325,7 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing that the tables have been cleaned up correctly. An exception shall not occur here", false);
          }
-         
+
          try {
             ResultSet rs = conn.getMetaData().getTables(null, this.specificHelper.getOwnSchema(pool), this.dbHelper.getIdentifier(this.tableName2), null);
             assertFalse("Testing if the tables have been cleaned up. The table '" + tableName2 + "' is still here", rs.next()); // should be empty
@@ -335,7 +335,7 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing that the tables have been cleaned up correctly. An exception shall not occur here", false);
          }
-         
+
          try {
             boolean force = false;
             String destination = null;
@@ -351,7 +351,7 @@ public class TestReplication extends XMLTestCase {
          this.interceptor.clear();
          String sql = "CREATE TABLE " + tableName + "(name VARCHAR(20), city VARCHAR(15), PRIMARY KEY (name))";
          pool.update(sql);
-         
+
          sql = "INSERT INTO " + tableName + " (name, city) VALUES ('michele', 'caslano')";
          pool.update(sql);
 
@@ -369,18 +369,18 @@ public class TestReplication extends XMLTestCase {
 
          assertTrue("the copy of the table has not been created", isThere);
          rs.close();
-         
+
          // and a new content must be there ...
          Statement st = conn.createStatement();
          rs = st.executeQuery("SELECT * FROM " + this.tableName2);
          isThere = rs.next();
          log.info("the entry in the replicated table is " + (isThere ? "" : "not ") + "there");
-         
+
          assertTrue("the copy of the table has not been created", isThere);
          rs.close();
          st.close();
-         
-      } 
+
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
@@ -388,13 +388,13 @@ public class TestReplication extends XMLTestCase {
       log.info("SUCCESS");
    }
 
-   
+
    /**
     * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
-    * 
+    *
     */
    public final void testPerformAllOperationsOnTable() {
-      
+
       log.info("Start testPerformAllOperationsOnTable");
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
@@ -415,7 +415,7 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
          }
-         
+
          {
             try {
                this.interceptor.clear();
@@ -481,7 +481,7 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      
+
          {
             try {
                this.interceptor.clear();
@@ -547,7 +547,7 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      
+
          {
             try {
                this.interceptor.clear();
@@ -610,18 +610,18 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
       log.info("SUCCESS");
    }
-   
-   
+
+
    /**
     * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
-    * 
+    *
     */
    public final void testNullEntriesOnTable() {
       log.info("Start testNullEntriesOnTable");
@@ -644,7 +644,7 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
          }
-         
+
          {
             try { // we explicitly choose a table witout pk (to test searches)
                this.interceptor.clear();
@@ -712,7 +712,7 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      
+
          {
             try {
                this.interceptor.clear();
@@ -811,18 +811,18 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
       log.info("SUCCESS");
    }
-   
-   
+
+
    /**
     * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
-    * 
+    *
     */
    public final void testUntrimmedSpaces() {
       log.info("Start testUntrimmedSpaces");
@@ -845,12 +845,12 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
          }
-         
+
          {
             try { // we explicitly choose a table without pk (to test searches)
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(30), age INTEGER, address VARCHAR(30))";
                pool.update(sql);
-               
+
                // Thread.sleep(this.sleepDelay);
                this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
@@ -914,7 +914,7 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      
+
          {
             try {
                this.interceptor.clear();
@@ -1013,14 +1013,14 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
       log.info("SUCCESS");
    }
-   
+
    private class Pusher extends Thread {
 
       private int sweeps;
@@ -1031,7 +1031,7 @@ public class TestReplication extends XMLTestCase {
          this.blob = blob;
          this.os = os;
       }
-      
+
       public void run() {
          try {
             Random random = new Random();
@@ -1046,10 +1046,10 @@ public class TestReplication extends XMLTestCase {
          }
       }
    }
-   
+
    /**
     * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
-    * 
+    *
     */
    public final void testBigBlobs() {
       log.info("Start testBigBlobs");
@@ -1072,7 +1072,7 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
          }
-         
+
          {
             try { // we explicitly choose a table without pk (to test searches)
                this.interceptor.clear();
@@ -1113,21 +1113,21 @@ public class TestReplication extends XMLTestCase {
                ps.setString(1, "someName");
                byte[] blob = new byte[4096];
                int sweeps = 10240; // 40 MB
-               
+
                int length = blob.length * sweeps;
                PipedInputStream pi = new PipedInputStream();
                PipedOutputStream po = new PipedOutputStream(pi);
                ps.setBinaryStream(2, pi, length);
-               
+
                Pusher pusher = new Pusher(sweeps, blob, po);
                pusher.start();
                ps.execute();
                ps.close();
                pusher.join();
                ps = null;
-               
+
                this.interceptor.waitOnUpdate(1000*this.sleepDelay, 1);
-               
+
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -1136,7 +1136,7 @@ public class TestReplication extends XMLTestCase {
                   rs.next();
                   String name = rs.getString(1);
                   assertEquals("comparing the name", "someName", name);
-                  
+
                   InputStream is = rs.getBinaryStream(2);
                   byte[] buf = new byte[1000];
                   int val;
@@ -1194,20 +1194,20 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
       log.info("SUCCESS");
    }
-   
+
    /**
     * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
-    * 
+    *
     */
    public final void probeMultithreading() {
-      
+
       log.info("Start testMultithreading");
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
@@ -1228,7 +1228,7 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
             assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
          }
-         
+
          {
             try {
                this.interceptor.clear();
@@ -1261,7 +1261,7 @@ public class TestReplication extends XMLTestCase {
          }
 
          {
-            
+
             Connection conn1 = null;
             Connection conn2 = null;
             Statement st1 = null;
@@ -1278,7 +1278,7 @@ public class TestReplication extends XMLTestCase {
                conn2.setAutoCommit(false);
                st1 = conn1.createStatement();
                st2 = conn2.createStatement();
-               
+
                sql = "INSERT INTO " + this.tableName + " VALUES ('first', 1)";
                pool.update(sql);
                sql = "UPDATE " + this.tableName + " SET age=2 WHERE name='first'";
@@ -1290,11 +1290,11 @@ public class TestReplication extends XMLTestCase {
                conn2.commit();
                conn2.setAutoCommit(false);
                st2.close();
-               
+
                conn1.commit();
                conn1.setAutoCommit(false);
                st1.close();
-               
+
                // Should be 2 since conn1 commits last
                this.interceptor.waitOnUpdate(this.sleepDelay, 2);
                conn = pool.reserve();
@@ -1329,7 +1329,7 @@ public class TestReplication extends XMLTestCase {
                   conn2.close();
             }
          }
-      
+
          {
             try {
                this.interceptor.clear();
@@ -1395,7 +1395,7 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      
+
          {
             try {
                this.interceptor.clear();
@@ -1458,13 +1458,13 @@ public class TestReplication extends XMLTestCase {
                   pool.release(conn);
             }
          }
-      } 
+      }
       catch (Exception ex) {
          ex.printStackTrace();
          assertTrue("an exception should not occur " + ex.getMessage(), false);
       }
       log.info("SUCCESS");
    }
-   
-   
+
+
 }
