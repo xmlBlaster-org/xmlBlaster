@@ -395,7 +395,7 @@ queue/callback/maxEntries = ${queue/callback/maxEntriesCache}
 persistence/msgUnitStore/maxEntriesCache = 10000
 persistence/msgUnitStore/maxEntries = 100000000
 persistence/msgUnitStore/maxBytesCache = 2097152
-persistence/msgUnitStore/maxBytes = 2147483647
+persistence/msgUnitStore/maxBytes = 2200147483647
 
 # Tail back queue on client side (contains the real data of all message types)
 queue/connection/maxEntriesCache = 1000
