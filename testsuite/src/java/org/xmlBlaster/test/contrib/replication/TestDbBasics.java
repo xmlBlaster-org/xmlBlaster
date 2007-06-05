@@ -696,6 +696,19 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
       log.info("SUCCESS");
    }
 
+   private String extractBase64Part(String txt) {
+      String sep = "encoding=\"base64\">";
+      int pos = txt.indexOf(sep);
+      if (pos < 0)
+         return null;
+      pos += sep.length();
+      txt = txt.substring(pos);
+      sep = "</col>";
+      pos = txt.indexOf(sep);
+      if (pos < 0)
+         return null;
+      return txt.substring(0, pos);
+   }
    
    /**
     * This method makes some calls to system functions.
@@ -749,6 +762,36 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
             st.close();
             log.fine("The return value of the query '" + sql + "' is '" + new String(buf) + "'");
             assertEquals(sql, "<col name=\"test\" encoding=\"base64\">cHJvdmE=</col>", new String(buf));
+            String tmp = extractBase64Part(new String(buf));
+            byte[] ret = org.xmlBlaster.util.Base64.decode(tmp);
+            String returnName = new String(ret);
+            assertEquals("The returned (decoded) String is checked", "prova", returnName);
+            
+         }
+         {  
+            // col2xml_base64(?, ?) CONTENTS BIGGER THAN 4 kB 
+            sql = "{? = call " + this.replPrefix + "test_blob(?,?,?,?)}"; // name text, content text)
+            CallableStatement st = conn.prepareCall(sql);
+            st.setString(2, "COL2XML_BASE64");
+            int nmax = 256;
+            byte[] blob = new byte[nmax];
+            for (int i=0; i < nmax; i++)
+               blob[i] = (byte)i;
+            st.setBytes(3, blob);
+            st.setString(4, "test");
+            st.setLong(5, (long)nmax); // loop multiple times to simulate big contents
+            st.registerOutParameter(1, Types.CLOB);
+            ResultSet rs = st.executeQuery();
+            Clob clob = st.getClob(1);
+            long len = clob.length();
+            byte[] buf = new byte[(int)len];
+            clob.getAsciiStream().read(buf);
+            rs.close();
+            st.close();
+            String tmp = extractBase64Part(new String(buf));
+            byte[] ret = org.xmlBlaster.util.Base64.decode(tmp);
+            assertEquals("Comparison of lenght of input blob with output blob", nmax * nmax, ret.length);
+            log.fine("success");
          }
          // now testing the " + this.replPrefix + "needs_prot for the three cases ...
          { // needs no protection needs_prot(?)
