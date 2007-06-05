@@ -73,7 +73,7 @@ public class EmbeddedXmlBlaster
 
    public static EmbeddedXmlBlaster startXmlBlaster(String[] args, String clusterNodeId)
    {
-	  Global glob = new Global(args); 
+      Global glob = new Global(args); 
       // Global glob = Global.instance().getClone(args);
       glob.setId(clusterNodeId);
       String[] args2 = {
