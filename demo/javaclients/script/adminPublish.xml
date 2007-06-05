@@ -1,0 +1,25 @@
+<!--
+   This example sends an administrative message: a reconfiguration for the topic properties.
+
+   java javaclients.script.XmlScript -requestFile adminPublish.xml
+-->
+
+<xmlBlaster>
+
+  <connect/>
+  <publish>
+     <key oid="Hello"><airport /></key><content></content>
+     <qos>
+        <priority>9</priority>
+        <administrative/>
+        <topic readonly='false' destroyDelay='-1' createDomEntry='true'>
+          <persistence relating='msgUnitStore' type='CACHE' version='1.0'
+                 maxEntriesCache='40' maxEntries='400' maxBytesCache='4000' maxBytes='40000' onOverflow='deadMessage'/>
+          <queue relating='history' type='CACHE' version='1.0'
+                 maxEntriesCache='1000' maxEntries='1000' maxBytesCache='100000' maxBytes='100000' onOverflow='exception'/>
+        </topic>
+     </qos>
+  </publish>
+  <disconnect />
+</xmlBlaster>
+
