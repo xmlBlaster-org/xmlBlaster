@@ -7,6 +7,8 @@ package org.xmlBlaster.engine.runlevel;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.AttributeSaxFactory;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
@@ -38,14 +40,18 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
    private XmlBlasterException ex;
 
    private RunLevelActionSaxFactory actionFactory;
+   private boolean inAction = false;
+
+   private AttributeSaxFactory attributeFactory;
+   /*
    private String attributeKey;
    private StringBuffer attributeValue;
-   private boolean inAction = false;
    private boolean inAttribute = false;
    private boolean wrappedInCDATA = false; // for example: <attribute id='publishQos'><![CDATA[ bla ]]></attribute>
    private boolean embeddedCDATA = false;  // for example: <attribute id='publishQos'><qos><![CDATA[<expiration lifeTime='4000'/>]]></qos></attribute>
    private int subTagCounter;
-
+   */
+   
    /**
     * Can be used as singleton. 
     */
@@ -55,6 +61,7 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
       this.glob = glob;
 
       this.actionFactory = new RunLevelActionSaxFactory(this.glob);
+      this.attributeFactory = new AttributeSaxFactory(this.glob, null);
    }
 
    /**
@@ -63,9 +70,9 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
    public void reset() {
       this.ex = null; // reset the exeptions
       this.pluginConfig = new PluginConfig(glob);
+      this.attributeFactory.reset(this.pluginConfig);
       this.inAction = false;
       this.isPlugin = false;
-      this.wrappedInCDATA = false;
    }
 
    /**
@@ -152,46 +159,19 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          }
          return;
       }
-      if ("attribute".equalsIgnoreCase(name)) {
-         this.inAttribute = true;
-         this.wrappedInCDATA = false;
-         this.attributeKey = attrs.getValue("id");
-         this.attributeValue = new StringBuffer(1024);
-         if (this.attributeKey == null || this.attributeKey.length() < 1)
-            this.ex = new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".startElement",  "the attributes in the <plugin> tag must have an non-empty 'id' attribute");
-         return;
-      }
-
-      if (this.inAttribute) {
-         this.subTagCounter++;
-         this.attributeValue.append("<").append(name);
-         for (int i=0; i<attrs.getLength(); i++) {
-            String qName = attrs.getQName(i);
-            String val = attrs.getValue(i);
-            this.attributeValue.append(" ").append(qName).append("='").append(val).append("'");
-         }
-         this.attributeValue.append(">");
-      }
-      else {
-         log.warning("startElement: unknown tag '" + name + "'");
-      }
+      if ("attribute".equalsIgnoreCase(name) || this.attributeFactory.isInAttribute())
+         this.attributeFactory.startElement(uri, localName, name, attrs);
    }
 
    public void startCDATA() {
-      if (log.isLoggable(Level.FINER)) log.finer("startCDATA");
-      this.wrappedInCDATA = true;
-      if (this.subTagCounter > 0) {
-         this.attributeValue.append("<![CDATA[");
-         this.embeddedCDATA = true;
-      }
+      this.attributeFactory.startCDATA();
    }
 
    /**
     * The characters to be filled
     */
    public void characters(char[] ch, int start, int length) {
-      if (this.attributeValue != null)
-         this.attributeValue.append(ch, start, length);
+      this.attributeFactory.characters(ch, start, length);
    }
 
 
@@ -210,42 +190,8 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          }
          return;
       }
-      if ("attribute".equalsIgnoreCase(name)) {
-         this.inAttribute = false;
-         this.subTagCounter = 0;
-         if (this.attributeKey != null && this.attributeValue != null) {
-            String val = this.attributeValue.toString();
-
-            /*if (val.startsWith("<![CDATA[")) {*/  //if (this.wrappedInCDATA) {
-            if (false) { // currently bypassed since we don't want to strip &lt;![CDATA[ 
-               // Strip CDATA if ampersand '&lt;![CDATA[' was used instead of '<![CDATA[':
-               int pos = val.indexOf("<![CDATA[");
-               if (pos >= 0) {
-                  val = val.substring(pos+9);
-               }
-               pos = val.lastIndexOf("]]>");
-               if (pos >= 0) {
-                  val = val.substring(0, pos);
-               }
-            }
-            this.pluginConfig.addAttribute(this.attributeKey, val);
-            if (this.wrappedInCDATA) {
-               this.pluginConfig.wrapAttributeInCDATA(this.attributeKey);
-               this.wrappedInCDATA = false;
-            }
-         }
-         this.attributeKey = null;
-         this.attributeValue = null;
-         return;
-      }   
-      if (this.inAttribute) {
-         if (this.embeddedCDATA) {
-            this.attributeValue.append("]]>");
-            this.embeddedCDATA = false;
-         }
-         this.attributeValue.append("</"+name+">");
-         this.subTagCounter--;
-      }
+      if ("attribute".equalsIgnoreCase(name) || this.attributeFactory.isInAttribute())
+         this.attributeFactory.endElement(uri, localName, name);
    }
 
    /**

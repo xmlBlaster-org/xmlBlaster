@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_AttributeUser;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
@@ -36,7 +37,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *
  * </pre>
  */
-public class PluginConfig implements PluginConfigMBean
+public class PluginConfig implements PluginConfigMBean, I_AttributeUser
 {
    private final Global glob;
    private static Logger log = Logger.getLogger(PluginConfig.class.getName());
