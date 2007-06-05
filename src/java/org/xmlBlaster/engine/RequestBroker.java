@@ -47,7 +47,6 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
@@ -1091,6 +1090,18 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       if (this.topicStore != null) {
          if (log.isLoggable(Level.FINE)) log.fine("Removing persisting topicEntry");
          return this.topicStore.remove(topicEntry);
+      }
+      return 0;
+   }
+
+   /**
+    * Remove the persistent TopicHandler entry.
+    * @return the number of elements erased.
+    */
+   public final int changePersistentTopicHandler(TopicEntry topicEntry) throws XmlBlasterException {
+      if (this.topicStore != null) {
+         if (log.isLoggable(Level.FINE)) log.fine("Changing persisting topicEntry");
+         this.topicStore.change(topicEntry, null);
       }
       return 0;
    }

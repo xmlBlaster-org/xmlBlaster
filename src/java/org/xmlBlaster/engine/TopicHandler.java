@@ -53,6 +53,7 @@ import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.engine.distributor.I_MsgDistributor;
@@ -460,6 +461,63 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return false;
    }
 
+   private final boolean allowedToReconfigureTopic(MsgQosData msgQosData) {
+      if (this.topicProperty == null)
+         return true;
+      TopicProperty topicProps = msgQosData.getTopicProperty();
+      if (topicProps == null)
+         return false;
+      MsgUnitStoreProperty msgUnitStoreProps = topicProps.getMsgUnitStoreProperty();
+      if (msgUnitStoreProps == null)
+         return false;
+      HistoryQueueProperty historyProps = topicProps.getHistoryQueueProperty();
+      
+      MsgUnitStoreProperty currentMsgUnitStoreProps = this.topicProperty.getMsgUnitStoreProperty();
+      long currentMaxBytes = currentMsgUnitStoreProps.getMaxBytes();
+      long currentMaxBytesCache = currentMsgUnitStoreProps.getMaxBytesCache();
+      long currentMaxEntries = currentMsgUnitStoreProps.getMaxEntries();
+      long currentMaxEntriesCache = currentMsgUnitStoreProps.getMaxEntriesCache();
+      if (currentMaxBytes > msgUnitStoreProps.getMaxBytes()) {
+         log.warning("msgUnitStore: 'currentMaxBytes='" + currentMaxBytes + "' > than proposed: '" + msgUnitStoreProps.getMaxBytes() + "' not reconfiguring topic '" + this.id + "'");
+         return false;
+      }
+      if (currentMaxBytesCache > msgUnitStoreProps.getMaxBytesCache()) {
+         log.warning("msgUnitStore: 'currentMaxBytesCache='" + currentMaxBytesCache + "' > than proposed: '" + msgUnitStoreProps.getMaxBytesCache() + "' not reconfiguring topic '" + this.id + "'");
+         return false;
+      }
+      if (currentMaxEntries > msgUnitStoreProps.getMaxEntries()) {
+         log.warning("msgUnitStore: 'currentMaxEntries='" + currentMaxEntries + "' > than proposed: '" + msgUnitStoreProps.getMaxEntries() + "' not reconfiguring topic '" + this.id + "'");
+         return false;
+      }
+      if (currentMaxEntriesCache > msgUnitStoreProps.getMaxEntriesCache()) {
+         log.warning("msgUnitStore: 'currentMaxEntriesCache='" + currentMaxEntriesCache + "' > than proposed: '" + msgUnitStoreProps.getMaxEntriesCache() + "' not reconfiguring topic '" + this.id + "'");
+         return false;
+      }
+      
+      HistoryQueueProperty currentHistoryProps = this.topicProperty.getHistoryQueueProperty();
+      currentMaxBytes = currentHistoryProps.getMaxBytes();
+      currentMaxBytesCache = currentHistoryProps.getMaxBytesCache();
+      currentMaxEntries = currentHistoryProps.getMaxEntries();
+      currentMaxEntriesCache = currentHistoryProps.getMaxEntriesCache();
+      if (currentMaxBytes > historyProps.getMaxBytes()) {
+         log.warning("history: 'currentMaxBytes='" + currentMaxBytes + "' > than proposed: '" + historyProps.getMaxBytes() + "' not reconfiguring topic '" + this.id + "'");
+         return false;
+      }
+      if (currentMaxBytesCache > historyProps.getMaxBytesCache()) {
+         log.warning("history: 'currentMaxBytesCache='" + currentMaxBytesCache + "' > than proposed: '" + historyProps.getMaxBytesCache() + "' not reconfiguring topic '" + this.id + "'");
+         return false;
+      }
+      if (currentMaxEntries > historyProps.getMaxEntries()) {
+         log.warning("history: 'currentMaxEntries='" + currentMaxEntries + "' > than proposed: '" + historyProps.getMaxEntries() + "' not reconfiguring topic '" + this.id + "'");
+         return false;
+      }
+      if (currentMaxEntriesCache > historyProps.getMaxEntriesCache()) {
+         log.warning("history: 'currentMaxEntriesCache='" + currentMaxEntriesCache + "' > than proposed: '" + historyProps.getMaxEntriesCache() + "' not reconfiguring topic '" + this.id + "'");
+         return false;
+      }
+      return true;
+   }
+   
    /**
     * A new publish event (PubSub or PtP) arrives. 
     * <br />
@@ -515,10 +573,19 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
 
       if (msgQosData.isAdministrative()) {
-         if (!isUnconfigured() && !isSoftErased())
-            log.warning(ME+": Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the reconfiguration request");
-         else
+         if ( isUnconfigured() || isSoftErased() || allowedToReconfigureTopic(msgQosData)) {
             administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
+            if (!msgQosData.isFromPersistenceStore()) {
+               msgQosData.setAdministrative(true);
+               msgQosData.setRcvTimestamp(this.topicEntry.getMsgQosData().getRcvTimestamp());
+               msgQosData.setPersistent(true);
+               this.topicEntry.setMsgUnit(msgUnit);
+               this.requestBroker.changePersistentTopicHandler(this.topicEntry);
+            }
+         }
+         else {
+            log.warning(ME+": Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the reconfiguration request");
+         }
          if (this.handlerIsNewCreated) {
             this.handlerIsNewCreated = false;
             // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)

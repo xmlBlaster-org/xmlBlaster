@@ -42,7 +42,7 @@ import org.xmlBlaster.util.queue.I_Entry;
  * SessionPersistencePlugin provides the persistent storage for both sessions
  * and subscriptions. 
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 
