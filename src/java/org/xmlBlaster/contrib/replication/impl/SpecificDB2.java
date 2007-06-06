@@ -120,13 +120,21 @@ public class SpecificDB2 extends SpecificDefault {
       String type = colInfoDescription.getType();
       int precision = colInfoDescription.getPrecision();
       int sqlType = colInfoDescription.getSqlType();
+      int charLength = colInfoDescription.getCharLength();
+      // <colname table='T_PHYS_SERVER' schema='SR_UTILITY' type='NUMBER'
+      //  precision='10' nullable='1' sqlType='3' colSize='10' radix='10'
+      //  charLength='22' pos='3' label='RAM' typeName='NUMBER' datatype='DECIMAL'>
+      //  RAM</colname>
       if (sqlType == Types.CHAR || sqlType == Types.VARCHAR) {
          buf.append("VARCHAR").append("(").append(precision).append(")");
       }
-      else if (sqlType == Types.OTHER) {
+      else if (sqlType == Types.OTHER) {       /* OTHER=1111 */
          if (type.equalsIgnoreCase("NCHAR")) { // two bytes per character
             buf.append(type);
             if (precision > 0) buf.append("(").append(precision).append(")");
+         }
+         else if (type.toUpperCase().startsWith("NVARCHAR")) { /* Oracle:NVARCHAR2=1111 */
+            buf.append("VARCHAR").append("(").append(charLength).append(")");
          }
          else {
             buf.append(type);
@@ -137,7 +145,7 @@ public class SpecificDB2 extends SpecificDefault {
       }
       else if (sqlType == Types.DECIMAL) {
          int scale = colInfoDescription.getScale();
-         buf.append(type);
+         buf.append("NUMERIC");
          if (precision > 0) {
             buf.append("(").append(precision);
             if (scale > 0) buf.append(",").append(scale);
