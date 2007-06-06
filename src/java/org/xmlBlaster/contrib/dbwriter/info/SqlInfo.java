@@ -519,7 +519,8 @@ public class SqlInfo implements ReplicationConstants {
          return new ClientProperty(name, null, null, "" + time.getTime());
       }
       else {
-         throw new Exception("The object '" + name + "' of type '" + val.getClass().getName() + "' can not be processed since this type is not implemented");
+         return new ClientProperty(name, null, null, rs.getString(pos)); // e.g. oracle.sql.TIMESTAMP containing a byte[]
+         //throw new Exception("The object '" + name + "' of type '" + val.getClass().getName() + "' can not be processed since this type is not implemented");
       }
    }
    
