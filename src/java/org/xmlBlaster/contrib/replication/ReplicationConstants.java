@@ -81,8 +81,9 @@ public interface ReplicationConstants extends ContribConstants {
     final static String KEEP_TRANSACTION_OPEN = "_keepTransactionOpen";
     
     final static String REPL_PREFIX_DEFAULT = "REPL_";
-    final static String TRANSACTION_SEQ = "_TRANS_SEQ";
     final static String MESSAGE_SEQ = "_MESSAGE_SEQ";
+    /** The number of transactions contained in the message. This is used on the client properties */
+    final static String NUM_OF_TRANSACTIONS = "_NUM_OF_TRANSACTIONS";
    
    // properties
     final static String REPL_PREFIX_KEY = "replication.prefix";

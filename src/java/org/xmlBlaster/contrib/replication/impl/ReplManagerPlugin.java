@@ -1526,17 +1526,24 @@ public class ReplManagerPlugin extends GlobalInfo
       log.fine("invoked");
    }
 
+   /**
+    * Is only invoked when it is configured as a MimePlugin (to count messages containing 
+    * several transactions).
+    * MimePublishPlugin[ReplManagerPlugin][1.0]=\
+    * org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin    
+    */
    public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException {
       String topicName = msgUnit.getKeyOid();
       log.fine("topic='" + topicName + "'");
       String replPrefix = (String)this.topicToPrefixMap.get(topicName);
       if (replPrefix == null)
          return null;
-      QosData qosData = msgUnit.getQosData();
-      long transactionSeq = qosData.getClientProperty(TRANSACTION_SEQ, 0L);
-      long messageSeq = qosData.getClientProperty(MESSAGE_SEQ, 0L);
       Counter counter = (Counter)this.counterMap.get(replPrefix);
       if (counter != null) {
+         QosData qosData = msgUnit.getQosData();
+         long messageSeq = qosData.getClientProperty(MESSAGE_SEQ, 0L);
+         long numOfTransactions = qosData.getClientProperty(NUM_OF_TRANSACTIONS, 1L);
+         long transactionSeq = counter.trans + numOfTransactions;
          if (messageSeq > 0L)
             counter.msg = messageSeq;
          if (transactionSeq > 0L)
@@ -1546,24 +1553,18 @@ public class ReplManagerPlugin extends GlobalInfo
             this.persistentInfo.put(name, "0 " + transactionSeq + " " + messageSeq);
          }
       }
+      else
+         log.warning("The counter for replication '" + replPrefix + "' is null can not update it");
       return null;
    }
 
-   public long calculateQueueEntries(String replPrefix, long transSeq, long msgSeq, long queueEntries) {
-      if (queueEntries == 0L)
-         return 0L;
+   public long getCurrentTransactionCount(String replPrefix) {
       Counter counter = (Counter)this.counterMap.get(replPrefix);
       if (counter == null)
-         return queueEntries;
+         return -1L;
       if (counter.msg == 0L || counter.trans == 0L)
-         return queueEntries;
-      long delta = counter.msg - msgSeq - queueEntries; // these are ptp messages
-      long ret = counter.trans - transSeq + delta;
-      if (ret < 0L) // it could be temporarly negative 
-         ret = 0L;
-      if (ret < queueEntries)
-         ret = queueEntries;
-      return ret;
+         return 0;
+      return counter.trans;
    }
 
    private static long parseLong(String val, long def) {

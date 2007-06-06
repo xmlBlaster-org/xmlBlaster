@@ -574,7 +574,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                   log.finest("Processing entry '" + txt + "' for client '"  + this.name + "'");
                }
                MsgUnit msgUnit = entry.getMsgUnit();
-               long tmpCounter = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, 0L);
+               long tmpCounter = this.tmpTransSeq + msgUnit.getQosData().getClientProperty(ReplicationConstants.NUM_OF_TRANSACTIONS, 1L);
+               //long tmpCounter = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, 0L);
                if (tmpCounter != 0L)
                   this.tmpTransSeq = tmpCounter;
                this.tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
@@ -956,6 +957,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    }
 
    public synchronized void checkStatus() {
+      if (this.replPrefix == null)
+         return;
       log.finest("invoked for '" + this.sessionName + "'");
       I_AdminSession session = null;
       try {
@@ -986,7 +989,17 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             this.messageSeq = this.tmpMsgSeq2;
             this.tmpMsgSeq2 = 0;
          }
-         this.queueEntries = this.manager.calculateQueueEntries(this.replPrefix, this.transactionSeq, this.messageSeq, session.getCbQueueNumMsgs());
+         
+         // this.messageSeq, 
+         long transactionCountBeforeQueue = this.manager.getCurrentTransactionCount(this.replPrefix);
+         if (session.getCbQueueNumMsgs() == 0) {
+            this.transactionSeq = transactionCountBeforeQueue;
+            this.tmpTransSeq = this.transactionSeq;
+            this.queueEntries = 0;
+         }
+         else {
+            this.queueEntries = transactionCountBeforeQueue - this.transactionSeq; 
+         }
          // this.queueEntries = this.manager.calculateQueueEntries(this.replPrefix, this.tmpTransSeq, this.tmpMsgSeq, session.getCbQueueNumMsgs());
       }
       catch (Exception ex) {

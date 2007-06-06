@@ -177,7 +177,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       this.transSeqPropertyName = this.dbSpecific.getName() + ".transactionSequence";
       this.messageSeqPropertyName = this.dbSpecific.getName() + ".messageSequence";
       this.transSeq = this.persistentInfo.getLong(this.transSeqPropertyName, 0L);
-      this.info.put(TRANSACTION_SEQ, "" + this.transSeq);
       this.messageSeq = this.persistentInfo.getLong(this.messageSeqPropertyName, 0L);
       this.info.put(MESSAGE_SEQ, "" + this.messageSeq);
       this.sendUnchangedUpdates = this.info.getBoolean(REPLICATION_SEND_UNCHANGED_UPDATES, true);
@@ -457,11 +456,12 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          }
       }
       if (doSend) { // we put it in the attribute map not in the message itself
-         this.transSeq += this.allTransactions.size();
+         int numOfTransactions = this.allTransactions.size(); 
+         this.transSeq += numOfTransactions;
          this.messageSeq++;
-         this.event.getAttributeMap().put(TRANSACTION_SEQ, "" + (this.transSeq));
          this.persistentInfo.put(this.transSeqPropertyName, "" + this.transSeq);
-         this.event.getAttributeMap().put(MESSAGE_SEQ, "" + (this.messageSeq));
+         this.event.getAttributeMap().put(NUM_OF_TRANSACTIONS, "" + numOfTransactions);
+         this.event.getAttributeMap().put(MESSAGE_SEQ, "" + this.messageSeq);
          
          this.persistentInfo.put(this.messageSeqPropertyName, "" + this.messageSeq);
          this.persistentInfo.put(this.oldReplKeyPropertyName, "" + this.oldReplKey);
