@@ -1,6 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
  
+ o #16241 Replication: Added Oracle -> DB2 replication support
+
  o #16235 Replication: fixed msg counting when sending multiple transactions in one message
  
  o #16233 added reconfiguration of topic properties possible by re-sending an administrative
@@ -11,7 +13,7 @@ The "#99999" numbers are Subversion revision numbers.
  o #16230 Parsing of xmlBlasterPlugins.xml has been modified to allow re-use of same attribute
           parser
 
- o #16222 Replaction: Added readonly variant on source database with classical DbWatcher approach
+ o #16222 Replication: Added readonly variant on source database with classical DbWatcher approach
           Added configurable 'dbinfo.url' to force another database for DBINFO table
 
  o #16207 Fixed replication loading of specific jdbc.drivers from specific properties files
