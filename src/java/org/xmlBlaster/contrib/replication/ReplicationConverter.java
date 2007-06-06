@@ -249,9 +249,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          throw new IllegalArgumentException("ReplicationConverter: Given ResultSet is null");
       
       if (!this.event.isResultSetIsReplItem()) {
-         while (rs.next()) {
             this.sqlInfo.fillOneRowWithObjects(rs, this.transformer);
-         }
          return;
       }
 
