@@ -380,7 +380,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
              this.global.getProperty().set(prefix + key, value);
           }
           catch (Exception e) {
-             log.warning(e.toString());
+             log.warning(e.toString() + ": Ignoring setting " + key + "=" + value);
           }
        }
     }
