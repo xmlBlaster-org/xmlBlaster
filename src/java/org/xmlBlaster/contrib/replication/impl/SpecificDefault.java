@@ -1160,7 +1160,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          // the result must be sent as a high prio message to the real destination
          boolean forceFlag = false;
          boolean isRequestingCurrentVersion = false;
-         log.info("current replication version is *" + this.replVersion + "' and requested version is '" + requestedVersion + "'");
+         log.info("current replication version is '" + this.replVersion + "' and requested version is '" + requestedVersion + "'");
          if (this.replVersion.equalsIgnoreCase(requestedVersion))
             isRequestingCurrentVersion = true;
          boolean forceSend = !isRequestingCurrentVersion;
