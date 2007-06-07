@@ -7,7 +7,6 @@ package org.xmlBlaster.test.contrib.dbwriter;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.xml.sax.InputSource;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.Info;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
@@ -18,7 +17,7 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.io.FileReader;
+import java.io.InputStream;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.List;
@@ -237,16 +236,18 @@ public class TestRecordParsing extends XMLTestCase {
       SqlInfoParser parser = new SqlInfoParser(this.info);
       
       String xmlFileName = System.getProperty("xmlFileName",null);
-      InputSource is = null;
+      InputStream is = null;
       if (xmlFileName == null) {
-         new InputSource(new ByteArrayInputStream(xml.getBytes()));
+         is = new ByteArrayInputStream(xml.getBytes());
       }
       else {
-         String isChar = System.getProperty("isChar", "false");
-         if ("true".equals(isChar))
-            is = new InputSource(new FileReader(xmlFileName));
-         else
-            is = new InputSource(new FileInputStream(xmlFileName));
+         // String isChar = System.getProperty("isChar", "false");
+         // if ("true".equals(isChar))
+         //    is = new InputSource(new FileReader(xmlFileName));
+         // else
+         // is = new InputSource(new FileInputStream(xmlFileName));
+         is = new FileInputStream(xmlFileName);
+         
       }
       String charSet = System.getProperty("charSet", null);
       SqlInfo record = parser.parse(is, charSet);
