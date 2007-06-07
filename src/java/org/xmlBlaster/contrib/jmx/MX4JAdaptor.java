@@ -61,6 +61,7 @@ public class MX4JAdaptor extends GlobalInfo {
    private ObjectName name;
    private Map roles;
    private String authMethod;
+   private HttpAdaptor adaptor;
    
    public class ContribXsltProcessor extends XSLTProcessor {
       
@@ -301,7 +302,7 @@ public class MX4JAdaptor extends GlobalInfo {
       this.roles = new HashMap();
    }
    
-   private final void instantiateAdaptor(Global global) throws Exception {
+   private final HttpAdaptor instantiateAdaptor(Global global) throws Exception {
       
       int port = getInt("port", 9999);
       String host = get("host", "0.0.0.0");
@@ -381,11 +382,13 @@ public class MX4JAdaptor extends GlobalInfo {
       
       adapter.start();
       log.info("The adaptor '" + adaptorName + "' is running. You can access it at 'http://" + host + ":" + port + "'");
+      return adapter;
    }
 
    private final void stopAdaptor() throws Exception {
       MBeanServer server = this.global.getJmxWrapper().getMBeanServer();
       server.unregisterMBean(this.name);
+      this.adaptor.stop();
    }
    
    /**
@@ -394,7 +397,7 @@ public class MX4JAdaptor extends GlobalInfo {
    protected void doInit(Global global, PluginInfo pluginInfo)
          throws XmlBlasterException {
       try {
-         instantiateAdaptor(this.global);
+         this.adaptor = instantiateAdaptor(this.global);
       }
       catch (Throwable e) {
          e.printStackTrace();
