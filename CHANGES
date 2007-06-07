@@ -1,5 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+
+ o #16243 Replication:
+          Added configurable XSL transformation on DbWriter side, e.g. 'dbWriter.xslTransformerName=mydbtrans.xsl'
+          Added readOnly flag when using SpecificReadonly
  
  o #16241 Replication: Added Oracle -> DB2 replication support
 
