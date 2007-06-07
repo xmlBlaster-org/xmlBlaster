@@ -133,4 +133,7 @@ public class SpecificDbReadonly extends SpecificDefault {
       return this.replKey;
    }
    
+   public boolean isDatasourceReadonly() {
+      return true;
+   }
 }

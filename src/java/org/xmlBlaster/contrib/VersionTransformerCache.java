@@ -43,6 +43,10 @@ public class VersionTransformerCache {
       this.transformers = new HashMap();
       this.checkedTransformers = new HashSet();
    }
+   
+   public void verifyTransformerName(String xslFile) {
+      // TODO: check on startup if XSL file exists
+   }
 
    /**
     * 
@@ -164,6 +168,23 @@ public class VersionTransformerCache {
          StreamResult resultStream = new StreamResult(baos);
          transformer.transform(xmlStreamSource, resultStream);
          return baos.toByteArray();
+      }
+   }
+   
+   public InputStream doXSLTransformation(String filename, InputStream in,
+                  ClassLoader cl) throws Exception {
+      // TODO: Add a cache!
+      Transformer transformer = newTransformer(filename, cl);
+      if (transformer == null) {
+         log.warning("Transformer for file '" + filename + "' not found");
+         return in;
+      } else {
+         StreamSource xmlStreamSource = new StreamSource(in);
+         ByteArrayOutputStream baos = new ByteArrayOutputStream(2048);
+         StreamResult resultStream = new StreamResult(baos);
+         transformer.transform(xmlStreamSource, resultStream);
+         ByteArrayInputStream bin = new ByteArrayInputStream(baos.toByteArray());
+         return bin;
       }
    }
    

@@ -1471,4 +1471,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    public void setAttributeTransformer(I_AttributeTransformer transformer) {
       this.transformer = transformer;
    }
+   
+   public boolean isDatasourceReadonly() {
+      return false;
+   }
 }

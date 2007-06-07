@@ -310,4 +310,6 @@ public interface I_DbSpecific extends I_ContribPlugin {
    void clearCancelUpdate(String replSlave);
    
    void setAttributeTransformer(I_AttributeTransformer transformer);
+   
+   boolean isDatasourceReadonly();
 }

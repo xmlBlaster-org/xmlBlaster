@@ -7,6 +7,7 @@ package org.xmlBlaster.contrib.dbwriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -16,10 +17,12 @@ import org.xml.sax.InputSource;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.MomEventEngine;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
-import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
+import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
+import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 
 
@@ -29,6 +32,10 @@ import org.xmlBlaster.util.XmlBlasterException;
 public class SqlInfoParser extends XmlParserBase implements I_Parser {
    
    public final static String ATTR_TAG = "attr";
+   
+   /** Is only use if a "dbWriter.xslTransformerName" is configured */
+   private String xslTransformerName;
+   private VersionTransformerCache transformerCache;
    
    private SqlInfo updateRecord;
    
@@ -54,8 +61,7 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
       try {
          I_Info info = new PropertiesInfo(System.getProperties());
          SqlInfoParser parser = new SqlInfoParser(info);
-         InputSource is = new InputSource(new FileInputStream(args[0]));
-         SqlInfo sqlInfo = parser.readObject(is);
+         SqlInfo sqlInfo = parser.readObject(new FileInputStream(args[0]), null);
          System.out.println("Number of rows: " + sqlInfo.getRowCount());
       }
       catch (Exception ex) {
@@ -75,6 +81,11 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
    
    public void init(I_Info info) throws Exception {
       this.info = info;
+      this.xslTransformerName = this.info.get("dbWriter.xslTransformerName", (String)null);
+      if (this.xslTransformerName != null && this.xslTransformerName.length() > 0) {
+         this.transformerCache = new VersionTransformerCache();
+         this.transformerCache.verifyTransformerName(this.xslTransformerName);
+      }
    }
 
    /**
@@ -86,18 +97,15 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
 
    public void shutdown() throws Exception {
    }
-
+   
+   /** @see SaxHandlerBase#parse(String) */
    public SqlInfo parse(String data) throws Exception {
-      InputSource is = new InputSource(new ByteArrayInputStream(data.getBytes()));
-      return readObject(is);
+      return readObject(new ByteArrayInputStream(data.getBytes()), null);
    }
 
-   public SqlInfo parse(InputSource is, String encoding) throws Exception {
+   public SqlInfo parse(InputStream is, String encoding) throws Exception {
       clearCharacter();
-      if (encoding != null)
-         is.setEncoding(encoding); // this only has an effect if the input source contains an InputStream an not
-                                   // a character stream (Reader)
-      return readObject(is);
+      return readObject(is, encoding);
    }
 
    /**
@@ -105,10 +113,24 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
     * Parsing of update() and publish() QoS is supported here.
     * @param the XML based ASCII string
     */
-   public synchronized SqlInfo readObject(InputSource is) throws XmlBlasterException {
+   public synchronized SqlInfo readObject(InputStream is, String encoding) throws Exception {
+      if (this.transformerCache != null) {
+         try {
+            is = this.transformerCache.doXSLTransformation(this.xslTransformerName, is, null);
+         }
+         catch (Exception ex) {
+            log.warning("Can't XSL transform " + this.xslTransformerName + ": " + ex.toString());
+            throw new Exception("Can't XSL transform " + this.xslTransformerName + ": " + ex.toString());
+         }
+      }
+      
+      InputSource inputSource = new InputSource(is);
+      if (encoding != null)
+         inputSource.setEncoding(encoding); // this only has an effect if the input source contains an InputStream an not
+                                   // a character stream (Reader)
       try {
          this.updateRecord = new SqlInfo(this.info);
-         init(is);      // use SAX parser to parse it (is slow)
+         init(inputSource);      // use SAX parser to parse it (is slow)
          return this.updateRecord;
       }
       catch (XmlBlasterException ex) {

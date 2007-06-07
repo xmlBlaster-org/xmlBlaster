@@ -240,19 +240,17 @@ public class DbWriter implements I_Update {
          ClientProperty initialDumpAsXml = (ClientProperty)attrMap.get(ReplicationConstants.INITIAL_DUMP_AS_XML);
          ClientProperty endOfTransition = (ClientProperty)attrMap.get(ReplicationConstants.END_OF_TRANSITION);
          
-         if (dumpProp != null && initialDumpAsXml == null) {
+         if (dumpProp != null && initialDumpAsXml == null) { // initial dump (xml)
             this.writer.update(topic, is, attrMap);
          }
-         else if (endToRemoteProp != null) {
+         else if (endToRemoteProp != null) { // initial dump, binary
             this.writer.update(topic, is, attrMap);
          }
-         else if (endOfTransition != null) {
+         else if (endOfTransition != null) { // initial dum, binary, ready to import from file system (last file part arrived)
             this.writer.update(topic, is, attrMap);
          }
-         else {
-            InputSource inputSource = new InputSource(is);
-            // inputSource.setEncoding(encoding)
-            SqlInfo updateInfo = this.parser.parse(inputSource, this.charSet);
+         else { // replication xml, build an SqlInfo from XML
+            SqlInfo updateInfo = this.parser.parse(is, this.charSet);
             if (updateInfo == null) {
                log.warning("The entry was not for us");
                return;

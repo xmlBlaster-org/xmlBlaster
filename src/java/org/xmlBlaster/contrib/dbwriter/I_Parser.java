@@ -6,10 +6,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.contrib.dbwriter;
 
-import org.xml.sax.InputSource;
+import java.io.InputStream;
+
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 
+/**
+ * Parse SqlInfo
+ */
 public interface I_Parser extends I_ContribPlugin {
 
    /**
@@ -19,6 +23,6 @@ public interface I_Parser extends I_ContribPlugin {
     * @return
     * @throws Exception
     */
-   SqlInfo parse(InputSource data, String encoding) throws Exception;
+   SqlInfo parse(InputStream data, String encoding) throws Exception;
    
 }

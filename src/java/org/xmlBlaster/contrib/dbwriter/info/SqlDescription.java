@@ -596,7 +596,7 @@ public class SqlDescription {
 
          String xmlLiteral = OLD_PREFIX + prop.getStringValue() + OLD_POSTFIX;
          ByteArrayInputStream bais = new ByteArrayInputStream(xmlLiteral.getBytes());
-         SqlInfo sqlInfo = parserForOld.parse(new InputSource(bais), this.charSet);
+         SqlInfo sqlInfo = parserForOld.parse(bais, this.charSet);
          if (sqlInfo.getRowCount() < 1)
             throw new Exception("The string '" + xmlLiteral + "' did not contain any row for '" + newRow.toXml("") + "'");
          
