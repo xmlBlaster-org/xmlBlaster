@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import java.sql.Connection;
@@ -249,7 +250,10 @@ class PreparedQuery {
     */
    public void finalize() {
       try {
-         if (!this.isClosed) close(SUCCESS);
+         if (!this.isClosed) {
+            log.severe("Closing in finalize: there must be a close() leak: " + XmlBlasterException.createVersionInfo() + ": " + ThreadLister.getAllStackTraces());
+            close(SUCCESS);
+         }
       }
       catch(Throwable ex) {
          ex.printStackTrace();
