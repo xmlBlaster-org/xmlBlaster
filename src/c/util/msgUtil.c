@@ -542,6 +542,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
          /*Winsock2.h, Ws2_32.lib, Ws2_32.dll*/
          struct hostent* remoteHost;
          unsigned int addr;
+         const char *pp = 0;
          hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
          tmphstbuf = 0;
          hstbuflen = 0;
