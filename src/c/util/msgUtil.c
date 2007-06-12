@@ -545,6 +545,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
          hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
          tmphstbuf = 0;
          hstbuflen = 0;
+         WSASetLastError(0);
 
          /* If the user input is an alpha name for the host, use gethostbyname() */
          if (isalpha(host[0])) {   /* host address is a name */
