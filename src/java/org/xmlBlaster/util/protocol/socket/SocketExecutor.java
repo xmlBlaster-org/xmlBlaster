@@ -58,8 +58,8 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
     *  Set to true if a XmlScript is send.If scripts used over socket we need to terminate each script with a null byte
     */
    private boolean isNullTerminated;
-   
-   private final static int MAX_CHUNKSIZE_DEFAULT = 50 * 1024; 
+
+   private final static int MAX_CHUNKSIZE_DEFAULT = 50 * 1024;
    protected int maxChunkSize = MAX_CHUNKSIZE_DEFAULT;
 
    protected boolean running = true;
@@ -105,9 +105,9 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       super.setLoginName(loginName);
       this.loginName = loginName;
    }
-   
+
    /**
-    * Which parser to use. 
+    * Which parser to use.
     * The SOCKET protocol uses as a default setting the XbfParser
     * @return The class name of the parser, "org.xmlBlaster.util.xbformat.XbfParser"
     */
@@ -185,10 +185,10 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       }
    }
 
-   
+
    /**
-    * Flush the data to the socket. 
-    * Overwrite this in your derived class to send UDP 
+    * Flush the data to the socket.
+    * Overwrite this in your derived class to send UDP
     */
    protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
       I_ProgressListener listener = this.progressListener;
@@ -200,12 +200,14 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
          }
          else
             log.fine("The progress listener is null");
-         
+
          int bytesLeft = msg.length;
          int bytesRead = 0;
+         if (oStream == null)
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "sendMessage() invocation ignored, we are shutdown.");
          synchronized (oStream) {
             while (bytesLeft > 0) {
-               int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;  
+               int toRead = bytesLeft > this.maxChunkSize ? this.maxChunkSize : bytesLeft;
                oStream.write(msg, bytesRead, toRead);
                oStream.flush();
                bytesRead += toRead;
@@ -222,7 +224,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
          if (listener != null) {
             listener.progressWrite("", msg.length, msg.length);
          }
-         
+
       }
       catch (IOException ex) {
          if (listener != null) {
@@ -239,9 +241,9 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
          throw ex;
       }
    }
-   
-   
-   
+
+
+
    public String getVersion() {
       return "1.0";
    }
