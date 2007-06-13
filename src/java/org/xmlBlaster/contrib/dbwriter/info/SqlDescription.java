@@ -743,8 +743,10 @@ public class SqlDescription {
          sql = "INSERT INTO " + getCompleteTableName() + insertSt;
          st = conn.prepareStatement(sql);
 
-         for (int i=0; i < entries.size(); i++)
+         for (int i=0; i < entries.size(); i++) {
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
+            //log.info("Writing " + (ClientProperty)entries.get(i));
+         }
          
          ret = st.executeUpdate();
          
@@ -996,7 +998,8 @@ public class SqlDescription {
          }
          String newData = buf.toString();
          reader.close();
-         SqlInfoParser parser = new SqlInfoParser(info);
+         SqlInfoParser parser = new SqlInfoParser();
+         parser.init(info);
          SqlInfo oldInfo = parser.parse(oldData);
          SqlInfo newInfo = parser.parse(newData);
          String ret = SqlDescription.getDifferences(oldInfo.getDescription(), newInfo.getDescription());
