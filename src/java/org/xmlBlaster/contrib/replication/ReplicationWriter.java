@@ -244,12 +244,12 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
     * @param originalCatalog
     * @param originalSchema
     * @param originalTable
-    * @param row
+    * @param row if null, nothing is changed
     * @return
     * @throws Exception
     */
    private final int modifyColumnsIfNecessary(String originalCatalog, String originalSchema, String originalTable, SqlRow row) throws Exception {
-      if (this.mapper == null)
+      if (this.mapper == null || row == null)
          return 0;
       String[] cols = row.getColumnNames();
       Map colsToChange = new HashMap();
@@ -396,7 +396,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
 
                if (command.equalsIgnoreCase(REPLICATION_CMD)) {
                   for (int i=0; i < rows.size(); i++) {
-                     SqlRow row = (SqlRow)rows.get(i);
+                     SqlRow row = ((SqlRow)rows.get(i)).cloneRow();
                      // TODO consistency check
                      action = getStringAttribute(ACTION_ATTR, row, description);
 
@@ -416,7 +416,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                      log.fine("store: " + row.toXml(""));
                      SqlDescription desc = getTableDescription(catalog, schema, table, conn);
                      boolean process = true;
-                     if (this.prePostStatement != null)
+                     if (this.prePostStatement != null) // row is the modified column name
                         process = this.prePostStatement.preStatement(action, conn, dbInfo, desc, row);
                      if (process) {
                         if (action.equalsIgnoreCase(INSERT_ACTION)) {
@@ -427,6 +427,15 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                         }
                         else if (action.equalsIgnoreCase(DELETE_ACTION)) {
                            desc.delete(conn, row);
+                        }
+                        else { // TODO implement this possibility too 
+                           if (action.equalsIgnoreCase(CREATE_ACTION) || 
+                               action.equalsIgnoreCase(ALTER_ACTION) || 
+                               action.equalsIgnoreCase(DROP_ACTION)) {
+                              throw new Exception("The execution of action='" + action + "' inside a multi-operation transaction is not implemented");
+                           }
+                           else // we don't throw an exception here to be backwards compatible. In future we can throw one
+                              log.severe("The action='" + action + "' is not recognized as an SQL operation and will therefore not be executed");
                         }
                         if (this.prePostStatement != null)
                            this.prePostStatement.postStatement(action, conn, dbInfo, desc, row);
@@ -446,38 +455,51 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                         if (schema != null && schema.length() > 1)
                            completeTableName = schema + "." + table;
 
-                        if (tableExistsAlready) {
-                           if (!this.overwriteTables) {
-                              throw new Exception("ReplicationStorer.store: the table '" + completeTableName + "' exists already and 'replication.overwriteTables' is set to 'false'");
-                           }
-                           else {
-                              if (this.recreateTables) {
-                                 log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
-                                 Statement st = conn.createStatement();
-                                 st.executeUpdate("DROP TABLE " + completeTableName);
-                                 st.close();
+                        boolean process = true;
+                        SqlDescription desc = getTableDescription(catalog, schema, table, conn);
+                        if (this.prePostStatement != null) {
+                           final SqlRow currentRow = null;
+                           process = this.prePostStatement.preStatement(action, conn, dbInfo, desc, currentRow);
+                        }
+                        
+                        if (process) {
+                           if (tableExistsAlready) {
+                              if (!this.overwriteTables) {
+                                 throw new Exception("ReplicationStorer.store: the table '" + completeTableName + "' exists already and 'replication.overwriteTables' is set to 'false'");
                               }
                               else {
-                                 log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true' and 'replication.recreateTables' is set to false. Will only delete contents of table but keep the old structure");
-                                 invokeCreate = false;
+                                 if (this.recreateTables) {
+                                    log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true': will drop the table and recreate it");
+                                    Statement st = conn.createStatement();
+                                    st.executeUpdate("DROP TABLE " + completeTableName);
+                                    st.close();
+                                 }
+                                 else {
+                                    log.warning("store: the table '" + completeTableName + "' exists already. 'replication.overwriteTables' is set to 'true' and 'replication.recreateTables' is set to false. Will only delete contents of table but keep the old structure");
+                                    invokeCreate = false;
+                                 }
                               }
                            }
-                        }
-                        String sql = null;
-                        if (invokeCreate) {
-                           sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
-                           log.info("CREATE STATEMENT: '" + sql + "'");
-                        }
-                        else {
-                           sql = "DELETE FROM " + completeTableName;
-                           log.info("CLEANING UP TABLE '" + completeTableName + "'");
-                        }
-                        Statement st = conn.createStatement();
-                        try {
-                           st.executeUpdate(sql);
-                        }
-                        finally {
-                           st.close();
+                           String sql = null;
+                           if (invokeCreate) {
+                              sql = this.dbSpecific.getCreateTableStatement(description, this.mapper);
+                              log.info("CREATE STATEMENT: '" + sql + "'");
+                           }
+                           else {
+                              sql = "DELETE FROM " + completeTableName;
+                              log.info("CLEANING UP TABLE '" + completeTableName + "'");
+                           }
+                           Statement st = conn.createStatement();
+                           try {
+                              st.executeUpdate(sql);
+                           }
+                           finally {
+                              st.close();
+                           }
+                           if (this.prePostStatement != null) {
+                              final SqlRow currentRow = null;
+                              this.prePostStatement.postStatement(action, conn, dbInfo, desc, currentRow);
+                           }
                         }
                      }
                      else
@@ -485,23 +507,35 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   }
                   else if (action.equalsIgnoreCase(DROP_ACTION)) {
                      if (this.doDrop) {
-                        completeTableName = table;
-                        if (schema != null && schema.length() > 1)
-                           completeTableName = schema + "." + table;
-                        String sql = "DROP TABLE " + completeTableName;
-                        Statement st = conn.createStatement();
-                        try {
-                           st.executeUpdate(sql);
+                        boolean process = true;
+                        SqlDescription desc = getTableDescription(catalog, schema, table, conn);
+                        if (this.prePostStatement != null) {
+                           final SqlRow currentRow = null;
+                           process = this.prePostStatement.preStatement(action, conn, dbInfo, desc, currentRow);
                         }
-                        catch (SQLException e) {
-                           // this is currently only working on oracle: TODO make it work for other DB too.
-                           if (e.getMessage().indexOf("does not exist") > -1)
-                              log.warning("table '" + completeTableName + "' was not found and could therefore not be dropped. Continuing anyway");
-                           else
-                              throw e;
-                        }
-                        finally {
-                           st.close();
+                        if (process) {
+                           completeTableName = table;
+                           if (schema != null && schema.length() > 1)
+                              completeTableName = schema + "." + table;
+                           String sql = "DROP TABLE " + completeTableName;
+                           Statement st = conn.createStatement();
+                           try {
+                              st.executeUpdate(sql);
+                           }
+                           catch (SQLException e) {
+                              // this is currently only working on oracle: TODO make it work for other DB too.
+                              if (e.getMessage().indexOf("does not exist") > -1)
+                                 log.warning("table '" + completeTableName + "' was not found and could therefore not be dropped. Continuing anyway");
+                              else
+                                 throw e;
+                           }
+                           finally {
+                              st.close();
+                           }
+                           if (this.prePostStatement != null) {
+                              final SqlRow currentRow = null;
+                              this.prePostStatement.postStatement(action, conn, dbInfo, desc, currentRow);
+                           }
                         }
                      }
                      else
@@ -509,7 +543,19 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                   }
                   else if (action.equalsIgnoreCase(ALTER_ACTION)) {
                      if (this.doAlter) {
-                        log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+                        boolean process = true;
+                        SqlDescription desc = getTableDescription(catalog, schema, table, conn);
+                        if (this.prePostStatement != null) {
+                           final SqlRow currentRow = null;
+                           process = this.prePostStatement.preStatement(action, conn, dbInfo, desc, currentRow);
+                        }
+                        if (process) {
+                           log.severe("store: operation '" + action + "' invoked but not implemented yet '" + description.toXml(""));
+                           if (this.prePostStatement != null) {
+                              final SqlRow currentRow = null;
+                              this.prePostStatement.postStatement(action, conn, dbInfo, desc, currentRow);
+                           }
+                        }
                      }
                      else
                         log.fine("ALTER is disabled for this writer");
@@ -696,8 +742,8 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       SqlInfo sqlInfo = getTableDescriptionFromCache(catalog, schema, tableName);
       if (sqlInfo == null) {
          sqlInfo = new SqlInfo(this.info);
-         sqlInfo.fillMetadata(conn, catalog, schema, tableName, null, null);
-         addToSqlInfoCache(sqlInfo);
+         if (sqlInfo.fillMetadata(conn, catalog, schema, tableName, null, null))
+            addToSqlInfoCache(sqlInfo);
       }
       return sqlInfo.getDescription();
    }

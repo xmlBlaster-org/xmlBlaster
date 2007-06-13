@@ -59,6 +59,7 @@ public class SqlInfo implements ReplicationConstants {
 
    /**
     * Fills the object with the metadata. By Oracle it seems that the colName is not returned (returns null). In such a case the method returns false.
+    * If the table has not been found on the database, a false is returned, true otherwise.
     * 
     * @param conn
     * @param catalog
@@ -66,9 +67,10 @@ public class SqlInfo implements ReplicationConstants {
     * @param table
     * @param queryRs
     * @param transformer
+    * @return true if the entry has been found on the database, false otherwise
     * @throws Exception
     */
-   public void fillMetadata(Connection conn, String catalog, String schema, String table, ResultSet queryRs, I_AttributeTransformer transformer) throws Exception {
+   public boolean fillMetadata(Connection conn, String catalog, String schema, String table, ResultSet queryRs, I_AttributeTransformer transformer) throws Exception {
       try {
          DatabaseMetaData meta = conn.getMetaData();
          ResultSet rs = null;
@@ -77,7 +79,11 @@ public class SqlInfo implements ReplicationConstants {
             if (this.description == null)
                this.description = new SqlDescription(this.info);
             this.description.setIdentity(table);
-            while (rs.next()) {
+            this.description.setAttribute(ReplicationConstants.TABLE_NAME_ATTR, table);
+            this.description.setAttribute(ReplicationConstants.CATALOG_ATTR, catalog);
+            this.description.setAttribute(ReplicationConstants.SCHEMA_ATTR, schema);
+
+            while (rs != null && rs.next()) {
                String tmpCat = rs.getString(1);
                if (catalog == null)
                   catalog = tmpCat;
@@ -124,7 +130,11 @@ public class SqlInfo implements ReplicationConstants {
             if (schema != null)
                completeTableName = schema + "." + table;
             rs = st.executeQuery("SELECT * from " + completeTableName);
+            if (rs == null)
+               return false;
             ResultSetMetaData rsMeta = rs.getMetaData();
+            if (rsMeta == null)
+               return false;
             int colCount = rsMeta.getColumnCount();
             if (colCount != this.description.getNumOfColumns()) {
                if (this.description.getNumOfColumns() != 0)
@@ -258,6 +268,7 @@ public class SqlInfo implements ReplicationConstants {
                }
             }
          }
+         return true;
       }
       finally {
          if (this.description != null)

@@ -51,9 +51,42 @@ public class SqlRow {
       this.attributeKeys = new ArrayList();
       this.columnKeys = new ArrayList();
       this.position = position;
-      this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
+      if (info != null)
+         this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
    }
 
+   private static final void addCopyOfAttributesAndColumns(SqlRow source, SqlRow dest) {
+      String[] names = source.getAttributeNames();
+      if (names != null && names.length > 0) {
+         for (int i=0; i < names.length; i++) {
+            ClientProperty prop = source.getAttribute(names[i]);
+            ClientProperty newProp = new ClientProperty(prop.getName(), prop.getType(), prop.getEncoding());
+            newProp.setValueRaw(prop.getValueRaw());
+            dest.setAttribute(newProp);
+         }
+      }
+      names = source.getColumnNames();
+      if (names != null && names.length > 0) {
+         for (int i=0; i < names.length; i++) {
+            ClientProperty prop = source.getColumn(names[i]);
+            ClientProperty newProp = new ClientProperty(prop.getName(), prop.getType(), prop.getEncoding());
+            newProp.setValueRaw(prop.getValueRaw());
+            dest.setColumn(newProp);
+         }
+      }
+   }
+   
+   public synchronized SqlRow cloneRow() {
+      SqlRow clone = new SqlRow(null, position);
+      addCopyOfAttributesAndColumns(this, clone);
+      clone.caseSensitive = this.caseSensitive;
+      clone.colsRawContent = this.colsRawContent;
+      return clone;
+   }
+
+   protected Object clone() {
+      return cloneRow();
+   }
 
    public String[] getAttributeNames() {
       return (String[])this.attributeKeys.toArray(new String[this.attributeKeys.size()]);
