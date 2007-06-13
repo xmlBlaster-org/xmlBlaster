@@ -1,5 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+ 
+ o #16256 Replication:
+           writer now uses and passes a cloned row (SqlInfo does not change). 
+           Invocation of I_PrePostStatement even for CREATE, ALTER and DROP.
+           Added Attributes for descriptions created by metadata.
 
  o #16243 Replication:
           Added configurable XSL transformation on DbWriter side, e.g. 'dbWriter.xslTransformerName=mydbtrans.xsl'
