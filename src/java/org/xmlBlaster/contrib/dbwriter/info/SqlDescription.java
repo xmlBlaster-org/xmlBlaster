@@ -503,6 +503,20 @@ public class SqlDescription {
          }
          st.setString(pos, val);
       }
+      else if (sqlType == Types.CHAR) {
+         if (isNull) {
+            st.setNull(pos, Types.CHAR);
+            return;
+         }
+         String val = prop.getStringValue();
+         log.fine("Handling insert column=" + colName + " as CHAR (type=" + sqlType + ", count=" + pos + ") '" + val + "'");
+         // if too log cut the end
+         if (col.getCharLength() > 0 && col.getCharLength() < val.length()) {
+            log.warning("The entry on column='" + colName + "' is too long: " + val.length() + " but should be max " + col.getCharLength() + ". Will cut the end");
+            val = val.substring(0, col.getCharLength());
+         }
+         st.setString(pos, val);
+      }
       else if (sqlType == Types.BLOB) {
          if (isNull) {
             st.setNull(pos, Types.BLOB);
@@ -743,10 +757,13 @@ public class SqlDescription {
          sql = "INSERT INTO " + getCompleteTableName() + insertSt;
          st = conn.prepareStatement(sql);
 
+         //StringBuffer buf = new StringBuffer(512);
          for (int i=0; i < entries.size(); i++) {
             insertIntoStatement(st, i+1, (ClientProperty)entries.get(i));
-            //log.info("Writing " + (ClientProperty)entries.get(i));
+            //if (i>0) buf.append(", ");
+            //buf.append((ClientProperty)entries.get(i));
          }
+         //log.info("Writing: " + buf.toString());
          
          ret = st.executeUpdate();
          
