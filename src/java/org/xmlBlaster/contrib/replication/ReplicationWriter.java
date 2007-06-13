@@ -260,7 +260,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          if (cols[i].equalsIgnoreCase(newCol))
             continue;
          colsToChange.put(cols[i], newCol);
-         log.info("Renaming '" + cols[i] + "' to '" + newCol + "'");
+         log.fine("Renaming '" + cols[i] + "' to '" + newCol + "'");
       }
       if (colsToChange.size() < 1)
          return 0;
