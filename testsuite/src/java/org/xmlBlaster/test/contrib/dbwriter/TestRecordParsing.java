@@ -150,7 +150,8 @@ public class TestRecordParsing extends XMLTestCase {
       "</sql>\n";
 
       
-      SqlInfoParser parser = new SqlInfoParser(this.info);
+      SqlInfoParser parser = new SqlInfoParser();
+      parser.init(this.info);
       SqlInfo record = parser.parse(xml);
 
       SqlDescription description = record.getDescription();
@@ -233,7 +234,8 @@ public class TestRecordParsing extends XMLTestCase {
       "</sql>\n";
 
       
-      SqlInfoParser parser = new SqlInfoParser(this.info);
+      SqlInfoParser parser = new SqlInfoParser();
+      parser.init(this.info);
       
       String xmlFileName = System.getProperty("xmlFileName",null);
       InputStream is = null;
@@ -323,7 +325,8 @@ public class TestRecordParsing extends XMLTestCase {
                    "  </row>\n" +
 		           "</sql>\n";
       
-      SqlInfoParser parser = new SqlInfoParser(this.info);
+      SqlInfoParser parser = new SqlInfoParser();
+      parser.init(this.info);
       SqlInfo record = parser.parse(xml);
       log.info(record.toXml(""));
       

@@ -212,7 +212,8 @@ public class TestDbSpecific extends XMLTestCase implements I_ChangePublisher {
          if (doCheck) {
             checked = true;
             // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
-            SqlInfoParser parser = new SqlInfoParser(info);
+            SqlInfoParser parser = new SqlInfoParser();
+            parser.init(info);
             SqlInfo dbUpdateInfo = parser.parse(msg);
             String createStatement = dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
             log.fine("=============================================");

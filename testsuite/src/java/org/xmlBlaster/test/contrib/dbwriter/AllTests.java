@@ -18,6 +18,7 @@ public class AllTests {
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster contrib.dbwriter plugin tests");
       suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.dbwriter.TestRecordParsing.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.dbwriter.TestInfoObjects.class));
       //suite.addTest(TestTimestamp.suite());
       return suite;
    }

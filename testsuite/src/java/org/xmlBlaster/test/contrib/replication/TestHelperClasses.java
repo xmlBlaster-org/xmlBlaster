@@ -903,7 +903,8 @@ public class TestHelperClasses extends XMLTestCase {
          String xml = sql.toXml(""); 
          log.info(xml);
          
-         SqlInfoParser parser = new SqlInfoParser(info);
+         SqlInfoParser parser = new SqlInfoParser();
+         parser.init(info);
          
          sql = parser.parse(xml);
          

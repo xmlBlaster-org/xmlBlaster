@@ -213,7 +213,8 @@ public class TestReplicationWriter extends XMLTestCase {
          }
          
          // first check parsing (if an assert occurs here it means there is a discrepancy between toXml and parse
-         SqlInfoParser parser = new SqlInfoParser(info);
+         SqlInfoParser parser = new SqlInfoParser();
+         parser.init(info);
 
          SqlInfo dbUpdateInfo = parser.parse(message);
          String sql = this.dbSpecific.getCreateTableStatement(dbUpdateInfo.getDescription(), null);
@@ -545,7 +546,8 @@ public class TestReplicationWriter extends XMLTestCase {
                   ClientProperty oldRowProp = new ClientProperty(ReplicationConstants.OLD_CONTENT_ATTR, null, null, row.toXml("", false));
                   row.setAttribute(oldRowProp);
                   try {
-                     I_Parser parser = new SqlInfoParser(this.info);
+                     I_Parser parser = new SqlInfoParser();
+                     parser.init(this.info);
                      int ret = desc.update(conn, row, parser);
                      if (ret != 1)
                         throw new Exception("the number of updated entries is wrong '" + ret + "' but should be 1");
