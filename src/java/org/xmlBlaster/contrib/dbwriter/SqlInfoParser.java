@@ -48,8 +48,11 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
    private I_Info info; 
    boolean caseSensitive;
 
+   /** Please call init() */
    public SqlInfoParser() throws Exception {
-      this(null);
+      super(null,  SqlInfo.SQL_TAG);
+      super.addAllowedTag(SqlRow.COL_TAG);
+      super.addAllowedTag(ATTR_TAG);
    }
 
    public static void main(String[] args) {
@@ -60,23 +63,14 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
       
       try {
          I_Info info = new PropertiesInfo(System.getProperties());
-         SqlInfoParser parser = new SqlInfoParser(info);
+         SqlInfoParser parser = new SqlInfoParser();
+         parser.init(info);
          SqlInfo sqlInfo = parser.readObject(new FileInputStream(args[0]), null);
          System.out.println("Number of rows: " + sqlInfo.getRowCount());
       }
       catch (Exception ex) {
          ex.printStackTrace();
       }
-   }
-   
-   /**
-    * Can be used as singleton.
-    */
-   public SqlInfoParser(I_Info info) throws Exception {
-      super(null,  SqlInfo.SQL_TAG);
-      super.addAllowedTag(SqlRow.COL_TAG);
-      super.addAllowedTag(ATTR_TAG);
-      init(info);
    }
    
    public void init(I_Info info) throws Exception {
