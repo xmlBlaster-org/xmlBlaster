@@ -152,6 +152,8 @@ public class PropertiesInfo implements I_Info {
    * @see org.xmlBlaster.contrib.I_Info#putObject(java.lang.String, Object)
    */
    public Object putObject(String key, Object o) {
+      if (o == null)
+         return this.objects.remove(key);
       return this.objects.put(key, o);
    }
    

@@ -218,6 +218,8 @@ public class DbInfo implements I_Info, DbInfoMBean {
    * @see org.xmlBlaster.contrib.I_Info#putObject(java.lang.String, Object)
    */
    public synchronized Object putObject(String key, Object o) {
+      if (o == null)
+         return this.objects.remove(key);
       return this.objects.put(key, o);
    }
 
