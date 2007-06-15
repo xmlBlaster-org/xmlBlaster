@@ -36,6 +36,7 @@ import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.dbwriter.I_Parser;
+import org.xmlBlaster.contrib.replication.I_Mapper;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.impl.SearchableConfig;
 import org.xmlBlaster.util.def.Constants;
@@ -585,6 +586,59 @@ public class SqlDescription {
             type == Types.VARBINARY);
    }
 
+   private static String getVal(SqlDescription description, String key) {
+      ClientProperty prop = description.getAttribute(key);
+      if (prop == null)
+         return null;
+      return prop.getStringValue();
+   }
+   
+   private static void setVal(SqlDescription description, String key, String val) {
+      ClientProperty prop = description.getAttribute(key);
+      if (prop == null)
+         return;
+      prop.setValue(val);
+   }
+   
+   private static void processMapping(SqlInfo sqlInfo, I_Mapper mapper) throws Exception {
+      SqlDescription description = sqlInfo.getDescription();
+      // String originalTable = sqlInfo.getDescription().getIdentity();
+      String originalCatalog = getVal(description, ReplicationConstants.CATALOG_ATTR);
+      String originalSchema = getVal(description, ReplicationConstants.SCHEMA_ATTR);
+      String originalTable = getVal(description, ReplicationConstants.TABLE_NAME_ATTR);
+      
+      String catalog = mapper.getMappedCatalog(originalCatalog, originalSchema, originalTable, null, originalCatalog);
+      String schema = mapper.getMappedSchema(originalCatalog, originalSchema, originalTable, null, originalSchema);
+      String table =  mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null, null);
+      
+      if (catalog != null) {
+         setVal(description, ReplicationConstants.CATALOG_ATTR, catalog);
+      }
+         
+      if (schema != null) {
+         setVal(description, ReplicationConstants.SCHEMA_ATTR, schema);
+      }
+         
+      if (table != null) {
+         setVal(description, ReplicationConstants.TABLE_NAME_ATTR, table);
+         description.setIdentity(table);
+      }
+
+      List rows = sqlInfo.getRows();
+      if (rows != null) {
+         for (int i=0; i < rows.size(); i++) {
+            SqlRow row = (SqlRow)rows.get(i);
+            String[] colNames = row.getColumnNames();
+            for (int j=0; j < colNames.length; j++) {
+               String colName = colNames[i];
+               String newName =  mapper.getMappedTable(originalCatalog, originalSchema, originalTable, colName, colName);
+               if (!colName.equals(newName))
+                  row.renameColumn(colName, newName);
+            }
+         }
+      }
+   }
+   
    /**
     * Returns the number of entries updated
     * @param conn
@@ -611,6 +665,9 @@ public class SqlDescription {
          String xmlLiteral = OLD_PREFIX + prop.getStringValue() + OLD_POSTFIX;
          ByteArrayInputStream bais = new ByteArrayInputStream(xmlLiteral.getBytes());
          SqlInfo sqlInfo = parserForOld.parse(bais, this.charSet);
+         
+         // CONVERT
+         
          if (sqlInfo.getRowCount() < 1)
             throw new Exception("The string '" + xmlLiteral + "' did not contain any row for '" + newRow.toXml("") + "'");
          

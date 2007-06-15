@@ -57,6 +57,10 @@ public class SqlInfo implements ReplicationConstants {
       this.rows = new ArrayList();
    }
 
+   public boolean fillMetadata(Connection conn, String catalog, String schema, String table, ResultSet queryRs) throws Exception {
+      return fillMetadata(conn, catalog, schema, table, queryRs);
+   }
+   
    /**
     * Fills the object with the metadata. By Oracle it seems that the colName is not returned (returns null). In such a case the method returns false.
     * If the table has not been found on the database, a false is returned, true otherwise.
@@ -74,6 +78,7 @@ public class SqlInfo implements ReplicationConstants {
       try {
          DatabaseMetaData meta = conn.getMetaData();
          ResultSet rs = null;
+         boolean tableExists = false;
          try {
             rs = meta.getColumns(catalog, schema, table, null);
             if (this.description == null)
@@ -84,6 +89,7 @@ public class SqlInfo implements ReplicationConstants {
             this.description.setAttribute(ReplicationConstants.SCHEMA_ATTR, schema);
 
             while (rs != null && rs.next()) {
+               tableExists = true;
                String tmpCat = rs.getString(1);
                if (catalog == null)
                   catalog = tmpCat;
@@ -119,6 +125,9 @@ public class SqlInfo implements ReplicationConstants {
                rs.close();
             rs = null;
          }
+         if (!tableExists)
+            return false; 
+            
          // retrieve additional information about columns
          Statement st = null;
          String completeTableName = null;
