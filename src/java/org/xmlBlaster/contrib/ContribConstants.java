@@ -14,5 +14,6 @@ public interface ContribConstants {
 
    final static String FILENAME_ATTR = "_filename"; // used for xml initial update dump
    final static String TIMESTAMP_ATTR = "_timestamp"; // used for xml initial update dump
+   final static String TOPIC_NAME = "_topicName"; // used for xml initial update dump
    
 }
