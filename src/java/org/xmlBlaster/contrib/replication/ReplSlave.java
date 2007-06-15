@@ -38,8 +38,10 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
@@ -104,17 +106,13 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    private long queueEntries;
    private boolean connected;
    private String sessionName = "";
-   private long transactionSeq;
+   private long[] transactionSeq;
+   private long messageSeq;
+   private long transactionSeqVisible;
    /** These properties are used to transport the information from the check to the postCheck method. */
-   private long tmpTransSeq;
-   private long tmpTransSeq2;
-   private long tmpReplKey;
    private int tmpStatus;
    private String lastMessageKey;
    private long maxChunkSize = 1024L*1024; // TODO make this configurable
-   private long tmpMsgSeq;
-   private long tmpMsgSeq2;
-   private long messageSeq;
    private String masterConn = CONN_DISCONNECTED;
    
    /** we don't want to sync the check method because the jmx will synchronize on the object too */
@@ -123,6 +121,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    /** The queue associated to this slave. It is associated on first invocation of check */
    private I_Queue queue;
    private boolean stalled;
+   /** used for monitoring: to know how many entries are ptp (normally initial updates) */
+   private long ptpQueueEntries;
+   private String initialDataTopic;
    
    public ReplSlave(Global global, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.forcedCounter = 0L;
@@ -212,14 +213,28 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          setDispatcher(this.persistentInfo.getBoolean(this.slaveSessionId + ".dispatcher", false), doPersist);
 
          this.oldReplKeyPropertyName = this.slaveSessionId + ".oldReplData";
+         
+         this.transactionSeq = new long[PriorityEnum.MAX_PRIORITY.getInt()+1]; // 10 priorities [0..9]
+         
          long[] replData = ReplManagerPlugin.readOldReplData(this.persistentInfo, this.oldReplKeyPropertyName);
-         this.tmpReplKey = replData[0];
-         this.tmpTransSeq = replData[1];
-         this.tmpMsgSeq = replData[2];
-         this.maxReplKey = this.tmpReplKey;
-         this.minReplKey = replData[3]; 
-         this.transactionSeq = tmpTransSeq;
-         this.messageSeq = tmpMsgSeq;
+         if (replData.length < 5) { // Old Style: REMOVE THIS LATER !!!!
+            this.maxReplKey = replData[0];
+            this.minReplKey = replData[3];
+            for (int i=0; i < this.transactionSeq.length; i++)
+               this.transactionSeq[i] = replData[1];
+            this.transactionSeqVisible = this.transactionSeq[5];
+            this.messageSeq = replData[2];
+            this.ptpQueueEntries = 0L;
+         }
+         else { // NEW STYLE
+            this.maxReplKey = replData[0];
+            this.minReplKey = replData[1];
+            this.messageSeq = replData[2];
+            this.ptpQueueEntries = replData[3];
+            for (int i=0; i < this.transactionSeq.length; i++)
+               this.transactionSeq[i] = replData[i+4];
+            this.transactionSeqVisible = this.transactionSeq[5];
+         }
          
          this.srcVersion = info.get(REPLICATION_VERSION, "0.0");
          this.ownVersion = info.get(REPL_VERSION, null);
@@ -235,6 +250,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             this.doTransform = true;
 
          this.initialFilesLocation = info.get(ReplicationConstants.INITIAL_FILES_LOCATION, null);
+         this.initialDataTopic = info.get("replication.initialDataTopic", "replication.initialData");
          this.initialized = true;
       }
    }
@@ -263,12 +279,30 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
-   private final void setMaxReplKey(long replKey, long transKey, long msgKey, long minReplKey) {
-      boolean doStore = this.maxReplKey != replKey || this.minReplKey != minReplKey || this.transactionSeq != transKey || msgKey != this.messageSeq;
-      this.maxReplKey = replKey;
-      this.minReplKey = minReplKey;
-      if (doStore)
-         this.persistentInfo.put(this.oldReplKeyPropertyName, "" + replKey + " " + transKey + " " + msgKey + " " + minReplKey);
+   /**
+    * Note that the transKey shall not be the transactionSeq instance otherwise it will never detect a change
+    * @param replKey
+    * @param transKey
+    * @param msgKey
+    * @param minReplKey
+    */
+   private final void setMaxReplKey(long replKey, long[] transKey, long msgKey, long minReplKey, long ptpQueueEntries) {
+      if (replKey > this.maxReplKey)
+         this.maxReplKey = replKey;
+      if (minReplKey > this.minReplKey)
+         this.minReplKey = minReplKey;
+      if (msgKey > this.messageSeq)
+         this.messageSeq = msgKey;
+      this.ptpQueueEntries = ptpQueueEntries;
+      long[] data = new long[this.transactionSeq.length+4];
+      data[0] = replKey;
+      data[1] = minReplKey;
+      data[2] = msgKey;
+      data[3] = ptpQueueEntries;
+      for (int i=0; i < transKey.length; i++)
+         data[i+4] = transKey[i];
+      ReplManagerPlugin.storeReplData(this.persistentInfo, this.oldReplKeyPropertyName, data);
+
       String client = "client/";
       if (this.slaveSessionId == null)
          return;
@@ -281,7 +315,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          if (engineGlob == null)
             log.warning("Can not write status since no engine global found");
          else {
-            log.info("setting property '" + key + "' to '" + getMaxReplKey());
+            log.finest("setting property '" + key + "' to '" + getMaxReplKey());
             engineGlob.getProperty().getProperties().setProperty(key, String.valueOf(getMaxReplKey()));
          }
       }
@@ -338,8 +372,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       if (!this.initialized)
          throw new Exception("prepareForRequest: '" + this.name + "' has not been initialized properly or is already shutdown, check your logs");
       log.info("prepareForRequest");
-      I_AdminSession session = getSession();
-      long clearedMsg = session.clearCallbackQueue();
+      long clearedMsg = clearQueueSync();
       log.info("clearing of callback queue before initiating: '" + clearedMsg + "' where removed since obsolete");
 
       if (this.statusTopic != null)
@@ -347,6 +380,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       final boolean doPersist = true;
       doPause(doPersist); // stop the dispatcher
       
+      I_AdminSession session = getSession();
       // first unsubscribe (in case it did already an initial update previously, this is needed to remove the subscription
       // (and thereby its outdate subscription qos from persistence). On a back replication, i.e. where you have more than
       // one sources you don't want to do this.
@@ -540,6 +574,31 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
+   /*
+   private void calculateCounters(MsgQueueEntry[] entries) throws XmlBlasterException {
+      if (entries.length > 0) {
+         for (int i=entries.length-1; i > -1; i--) {
+            ReferenceEntry entry = (ReferenceEntry)entries[i];
+            if (log.isLoggable(Level.FINEST)) {
+               String txt = new String(decompressQueueEntryContent(entry));
+               log.finest("Processing entry '" + txt + "' for client '"  + this.name + "'");
+            }
+            MsgUnit msgUnit = entry.getMsgUnit();
+            long tmpCounter = this.tmpTransSeq + msgUnit.getQosData().getClientProperty(ReplicationConstants.NUM_OF_TRANSACTIONS, 1L);
+            //long tmpCounter = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, 0L);
+            if (tmpCounter != 0L)
+               this.tmpTransSeq = tmpCounter;
+            this.tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+            tmpCounter = msgUnit.getQosData().getClientProperty(ReplicationConstants.MESSAGE_SEQ, 0L);
+            if (tmpCounter != 0L)
+               this.tmpMsgSeq =  tmpCounter;
+            if (this.tmpReplKey > -1L) {
+               break; // the other messages will have lower numbers (if any) so we break for performance.
+            }
+         }      
+      }
+   }
+   */
    
    /**
     * 
@@ -566,35 +625,13 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          // if (entries != null && entries.size() > 1)
          //    log.severe("the entries are '" + entries.size() + "' but we currently only can process one single entry at a time");
          
-         if (entries.size() > 0) {
-            for (int i=entries.size()-1; i > -1; i--) {
-               ReferenceEntry entry = (ReferenceEntry)entries.get(i);
-               if (log.isLoggable(Level.FINEST)) {
-                  String txt = new String(decompressQueueEntryContent(entry));
-                  log.finest("Processing entry '" + txt + "' for client '"  + this.name + "'");
-               }
-               MsgUnit msgUnit = entry.getMsgUnit();
-               long tmpCounter = this.tmpTransSeq + msgUnit.getQosData().getClientProperty(ReplicationConstants.NUM_OF_TRANSACTIONS, 1L);
-               //long tmpCounter = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, 0L);
-               if (tmpCounter != 0L)
-                  this.tmpTransSeq = tmpCounter;
-               this.tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
-               tmpCounter = msgUnit.getQosData().getClientProperty(ReplicationConstants.MESSAGE_SEQ, 0L);
-               if (tmpCounter != 0L)
-                  this.tmpMsgSeq =  tmpCounter;
-               if (this.tmpReplKey > -1L) {
-                  break; // the other messages will have lower numbers (if any) so we break for performance.
-               }
-            }      
-         }
-         
          // check if already processed ... and at the same time do the versioning transformation (if needed)
          for (int i=entries.size()-1; i > -1; i--) {
             ReferenceEntry entry = (ReferenceEntry)entries.get(i);
             MsgUnit msgUnit = entry.getMsgUnit();
             ClientProperty alreadyProcessed = msgUnit.getQosData().getClientProperty(ReplicationConstants.ALREADY_PROCESSED_ATTR);
             if (alreadyProcessed != null) {
-               log.info("Received entry for client '" + this.slaveSessionId + "' which was already processed. Will remove it");
+               log.warning("Received entry for client '" + this.slaveSessionId + "' which was already processed. Will remove it");
                queue.removeRandom(entry);
                entries.remove(i);
             }
@@ -643,18 +680,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             
             if (endMsg != null) {
                log.info("Received msg marking the end of the initial for client '" + this.slaveSessionId + "' update: '" + this.name + "' going into NORMAL operations");
-               // entries.remove(i);
-               // initiate a cascaded replication (if configured that way)
-               if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
-                  log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'. Was entry '" + i + "' of a set of '" + entries.size() + "'");
-                  this.manager.initiateReplicationNonMBean(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
-               }
-               else {
-                  log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
-               }
-               setStatus(STATUS_NORMAL);
-               // queue.removeRandom(entry); // we dont remove it anymore since cleanup on client is now done on this message
-               // continue; 
+               startCascadedAndChangeStatus();
             }
             byte[] content = msgUnit.getContent();
             if (content != null)
@@ -693,16 +719,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                log.info("repl adding the entry for client '" + this.slaveSessionId + "' ");
                doTransform(msgUnit);
                ret.add(entry);
+               /* TODO TEMPORARLY REMOVED FOR TESTING: also test no initial dump and manual transfer
                if (replKey > this.maxReplKey || this.forceSending) {
                   log.info("entry with replKey='" + replKey + "' is higher than maxReplKey)='" + this.maxReplKey + "' switching to normal operation again for client '" + this.slaveSessionId + "' ");
-                  setStatus(STATUS_NORMAL);
-                  // this.tmpStatus = STATUS_NORMAL;
-                  // initiate a cascaded replication (if so configured)
-                  if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
-                     log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
-                     this.manager.initiateReplication(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
-                  }
+                  startCascadedAndChangeStatus();
                }
+               */
             }
             else { // such messages have been already from the initial update. (obsolete messages are removed)
                log.info("removing entry with replKey='" + replKey + "' since older than minEntry='" + this.minReplKey + "' for client '" + this.slaveSessionId + "' ");
@@ -722,6 +744,18 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          return ret;
       }
    }
+
+   private final void startCascadedAndChangeStatus() throws Exception {
+      if (this.cascadedReplPrefix != null && this.cascadedReplSlave != null && this.cascadedReplPrefix.trim().length() > 0 && this.cascadedReplSlave.trim().length() > 0) {
+         log.info("initiating the cascaded replication with replication.prefix='" + this.cascadedReplPrefix + "' for slave='" + this.cascadedReplSlave + "'");
+         this.manager.initiateReplicationNonMBean(this.cascadedReplSlave, this.cascadedReplPrefix, null, null, null);
+      }
+      else {
+         log.info("will not cascade initiation of any further replication for '" + this.name + "' since no cascading defined");
+      }
+      setStatus(STATUS_NORMAL);
+   }
+   
    
    /**
     * @return Returns the sqlResponse.
@@ -869,18 +903,26 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
+   private long clearQueueSync() {
+      long ret = 0L;
+      try {
+         ret = getSession().clearCallbackQueue();
+         transactionSeq = (long[])manager.getCurrentTransactionCount(replPrefix).clone();
+         ptpQueueEntries = 0L;
+         setMaxReplKey(maxReplKey, transactionSeq, messageSeq, minReplKey, ptpQueueEntries);
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+      }
+      return ret;
+   }
    
    public void clearQueue() throws Exception {
       setStatus(STATUS_INCONSISTENT);
       log.warning("has been invoked");
       (new Thread() {
          public void run() {
-            try {
-               getSession().clearCallbackQueue();
-            }
-            catch (Exception ex) {
-               ex.printStackTrace();
-            }
+            clearQueueSync();
          }
       }).start();
    }
@@ -912,10 +954,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       return this.ownVersion;
    }
 
-   
-   
-   
-   
    /**
     * Convenience method enforced by the MBean which returns true if the dispatcher of
     * the slave session is active, false otherwise.
@@ -969,6 +1007,32 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          ex.printStackTrace();
       }
       
+      try {
+         // this.messageSeq, 
+         long[] transactionCountBeforeQueue = this.manager.getCurrentTransactionCount(this.replPrefix);
+
+         if (this.queueEntries != 0 && session != null && session.getCbQueueNumMsgs() == 0) {
+            log.warning("Detected wrong number of queue entries: correcting");
+            this.ptpQueueEntries = 0L;
+            this.transactionSeq = (long[])transactionCountBeforeQueue.clone();
+         }
+
+         long pubSubQueueEntries = 0L;
+         long maxTransSeq = transactionCountBeforeQueue[0];
+         for (int i=0; i < this.transactionSeq.length; i++) {
+            pubSubQueueEntries += (transactionCountBeforeQueue[i] - this.transactionSeq[i]);
+            if (maxTransSeq < transactionCountBeforeQueue[i])
+               maxTransSeq = transactionCountBeforeQueue[i];
+         }
+         this.queueEntries = pubSubQueueEntries + this.ptpQueueEntries;
+         this.transactionSeqVisible = maxTransSeq - pubSubQueueEntries;
+      }
+      catch (Exception ex) {
+         log.severe("an exception occured when retieving the number of queue entries for '" + this.sessionName + "':" + ex.getMessage());
+         ex.printStackTrace();
+         this.queueEntries = -1L;
+      }
+      
       // isActive
       try {
          this.dispatcherActive = session.getDispatcherActive();
@@ -977,35 +1041,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          log.severe("an exception occured when retieving the status of the dispatcher for '" + this.sessionName + "':" + ex.getMessage());
          ex.printStackTrace();
          this.dispatcherActive = false;
-      }
-      
-      // getQueueEntries
-      try {
-         if (this.tmpTransSeq2 != 0) {
-            this.transactionSeq = this.tmpTransSeq2;
-            this.tmpTransSeq2 = 0;
-         }
-         if (this.tmpMsgSeq2 != 0) {
-            this.messageSeq = this.tmpMsgSeq2;
-            this.tmpMsgSeq2 = 0;
-         }
-         
-         // this.messageSeq, 
-         long transactionCountBeforeQueue = this.manager.getCurrentTransactionCount(this.replPrefix);
-         if (session.getCbQueueNumMsgs() == 0) {
-            this.transactionSeq = transactionCountBeforeQueue;
-            this.tmpTransSeq = this.transactionSeq;
-            this.queueEntries = 0;
-         }
-         else {
-            this.queueEntries = transactionCountBeforeQueue - this.transactionSeq; 
-         }
-         // this.queueEntries = this.manager.calculateQueueEntries(this.replPrefix, this.tmpTransSeq, this.tmpMsgSeq, session.getCbQueueNumMsgs());
-      }
-      catch (Exception ex) {
-         log.severe("an exception occured when retieving the number of queue entries for '" + this.sessionName + "':" + ex.getMessage());
-         ex.printStackTrace();
-         this.queueEntries = -1L;
       }
       
       try {
@@ -1071,17 +1106,51 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    }
    
    public synchronized void postCheck(MsgQueueEntry[] processedEntries) throws Exception {
-      if (this.tmpTransSeq != 0)
-        this.tmpTransSeq2 = this.tmpTransSeq;
-      if (this.tmpMsgSeq != 0)
-         this.tmpMsgSeq2 = this.tmpMsgSeq;
-      setMaxReplKey(this.tmpReplKey, this.tmpTransSeq, this.tmpMsgSeq, this.minReplKey);
+      // calculateCounters(processedEntries);
+      long msgSeq = 0L;
+      long tmpReplKey = -1L;
+
+      if (processedEntries.length > 0) {
+         for (int i=0; i < processedEntries.length; i++) {
+            ReferenceEntry entry = (ReferenceEntry)processedEntries[i];
+            if (log.isLoggable(Level.FINEST)) {
+               String txt = new String(decompressQueueEntryContent(entry));
+               log.finest("Processing entry '" + txt + "' for client '"  + this.name + "'");
+            }
+            MsgUnit msgUnit = entry.getMsgUnit();
+
+            long numOfTransactions = msgUnit.getQosData().getClientProperty(ReplicationConstants.NUM_OF_TRANSACTIONS, 1L);
+            if (numOfTransactions > 0L) {
+               long tmpTransactionSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, -1L);
+               int prio = ((MsgQosData)msgUnit.getQosData()).getPriority().getInt();
+               final boolean absoluteCount = false;
+               if (tmpTransactionSeq != -1L && absoluteCount) { // in case the ReplManagerPlugin is not configured as a MimePlugin
+                  this.transactionSeq[prio] = tmpTransactionSeq;
+               }
+               else {
+                  if (tmpTransactionSeq > this.transactionSeq[5]) // Hack to be removed later (needs always MIME Plugin) TODO 
+                     this.transactionSeq[prio] += numOfTransactions;
+               }
+               msgSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.MESSAGE_SEQ, 0L);
+               tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
+            }
+            else { // check if an initial data
+               if (numOfTransactions < 0L) {
+                  String topicName = msgUnit.getKeyData().getOid();
+                  if (this.initialDataTopic != null && this.initialDataTopic.equalsIgnoreCase(topicName)) {
+                     this.ptpQueueEntries += numOfTransactions; // negative number so it will decrement
+                  }
+               }
+            }
+         }      
+      }
+      setMaxReplKey(tmpReplKey, this.transactionSeq, msgSeq, this.minReplKey, this.ptpQueueEntries);
       if (this.tmpStatus > -1)
          setStatus(this.tmpStatus);
    }
 
    public long getTransactionSeq() {
-      return this.transactionSeq;
+      return this.transactionSeqVisible;
    }
    
    public static byte[] decompressQueueEntryContent(ReferenceEntry entry) {
@@ -1240,5 +1309,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          return CONN_DISCONNECTED;
       return cascadedSlave.getMasterConnection();
    }
+   
+   public synchronized void incrementPtPEntries(long numOfTransactions) {
+      this.ptpQueueEntries += numOfTransactions;
+      // we want to store it
+      setMaxReplKey(this.maxReplKey, this.transactionSeq, this.messageSeq, this.minReplKey, this.ptpQueueEntries);
+   }
+
    
 }

@@ -82,6 +82,7 @@ public interface ReplicationConstants extends ContribConstants {
     
     final static String REPL_PREFIX_DEFAULT = "REPL_";
     final static String MESSAGE_SEQ = "_MESSAGE_SEQ";
+    final static String TRANSACTION_SEQ = "_TRANSACTION_SEQ"; // added by the ReplManagerPlugin for the ReplSlave
     /** The number of transactions contained in the message. This is used on the client properties */
     final static String NUM_OF_TRANSACTIONS = "_NUM_OF_TRANSACTIONS";
    

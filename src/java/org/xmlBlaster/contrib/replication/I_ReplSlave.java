@@ -102,4 +102,10 @@ public interface I_ReplSlave extends I_ContribPlugin {
    
    boolean setDispatcher(boolean status, boolean doPersist) throws Exception;
    
+   /**
+    * Increments the amount of entries in the ptp counter queue
+    * @param numOfTransactions
+    */
+   void incrementPtPEntries(long numOfTransactions);
+
 }

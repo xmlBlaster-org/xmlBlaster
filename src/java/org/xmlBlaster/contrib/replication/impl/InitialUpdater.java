@@ -9,9 +9,7 @@ package org.xmlBlaster.contrib.replication.impl;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -31,6 +29,7 @@ import javax.jms.TextMessage;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.contrib.ContribConstants;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
@@ -257,6 +256,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
       log.fine("replication.path='" + this.initialCmdPath + "'");
       this.initialCmd = this.info.get("replication.initialCmd", null);
+      if (this.initialCmd != null && this.initialCmd.trim().length() < 1) // if emtpy
+         this.initialCmd = null;
       this.initialCmdPre = info.get("replication.initialCmdPre", null);
       this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
       // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
@@ -352,6 +353,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       if (destination != null)
          map.put("_destination", destination);
       // and later put the part number inside
+      map.put(ContribConstants.TOPIC_NAME, this.initialDataTopic);
+
       if (this.publisher == null) {
          log.warning("SpecificDefaut.publishCreate publisher is null, can not publish. Check your configuration");
          return null;
@@ -504,7 +507,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    }
 
    /**
-    * 
+    * Sending this message will reactivate the Dispatcher of the associated slave
     * @param topic
     * @param filename
     * @param replManagerAddress
@@ -526,19 +529,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          log.warning("request for sending initial response can not be done since no publisher configured");
    }
    
-   public final void sendInitialDataResponse(String[] slaveSessionNames, String filename, String replManagerAddress, long minKey, long maxKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws Exception {
-      sendInitialFile(slaveSessionNames, filename, minKey, requestedVersion, currentVersion, initialFilesLocation);
-      sendInitialDataResponseOnly(slaveSessionNames, replManagerAddress, minKey, maxKey);
-   }
-   
-   
-   /**
-    * Sends/publishes the initial file as a high priority message.
-    * @param filename the name of the file to publish. Can be null, if null, no file is sent, only the status change message is sent.
-    * @throws FileNotFoundException
-    * @throws IOException
-    */
-   private void sendInitialFile(String[] slaveSessionNames, String shortFilename, long minKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws FileNotFoundException, IOException, JMSException  {
+   public final void sendInitialDataResponse(String[] slaveSessionNames, String shortFilename, String replManagerAddress, long minKey, long maxKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws Exception {
       // in this case they are just decorators around I_ChangePublisher
       if (this.publisher == null) {
          if (shortFilename == null)
@@ -569,6 +560,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          FileInputStream fis = new FileInputStream(file);
          
          XBStreamingMessage msg = session.createStreamingMessage(this);
+         msg.setIntProperty(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE, this.initialDumpMaxSize);
          msg.setStringProperty(FILENAME_ATTR, shortFilename);
          msg.setLongProperty(REPL_KEY_ATTR, minKey);
          msg.setStringProperty(DUMP_ACTION, "true");
@@ -640,9 +632,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          endMsg.setStringProperty(INITIAL_FILES_LOCATION, initialFilesLocation);
          producer.send(endMsg);
       }
+      sendInitialDataResponseOnly(slaveSessionNames, replManagerAddress, minKey, maxKey);
       sendEndOfTransitionMessage(session, initialFilesLocation, shortFilename, dumpId, producer);
    }
-
+   
+   
    /**
     * This method is used where the end of transition message has to be sent separately (for example for read-only applications without triggers)
     * @param slaveSessionNames

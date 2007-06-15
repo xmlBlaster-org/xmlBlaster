@@ -277,7 +277,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       try {
          conn = this.dbPool.reserve();
          conn.setAutoCommit(true);
-         ResultSet rs = conn.getMetaData().getTables(null, null, name, null);
+         ResultSet rs = conn.getMetaData().getTables(null, getOwnSchema(), name, null);
          boolean exists = rs.next();
          rs.close();
          if (exists) {
@@ -611,6 +611,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       this.initCount++;
    }
 
+   protected String getOwnSchema() {
+      return null;
+   }
+   
    /**
     * Checks the consistency of the triggers. If an entry is found in the TABLES table, and the 
     * table does not exist, nothing is done.

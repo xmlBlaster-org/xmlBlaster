@@ -54,7 +54,8 @@ public class SpecificOracle extends SpecificDefault {
 
    public void init(I_Info info) throws Exception {
       super.init(info);
-      this.ownSchema = this.info.get("db.user", null);
+      this.ownSchema = this.dbMetaHelper.getIdentifier(this.info.get("db.user", null));
+      
       this.debug = this.info.getBoolean("replication.plsql.debug", false);
       this.debugFunction = this.info.get("replication.plsql.debugFunction", null);
 
@@ -69,8 +70,6 @@ public class SpecificOracle extends SpecificDefault {
       this.wipeoutSynonyms = this.info.getBoolean("replication.oracle.wipeoutSynonyms", true);
       this.wipeoutIndexes = this.info.getBoolean("replication.oracle.wipeoutIndexes", true);
       this.createDropAlterDetection = this.info.getBoolean("replication.createDropAlterDetection", true);
-      
-      
    }
    
    /**
@@ -1008,6 +1007,10 @@ public class SpecificOracle extends SpecificDefault {
          if (st != null)
             st.close();
       }
+   }
+   
+   public String getOwnSchema() {
+      return this.ownSchema;
    }
    
 }
