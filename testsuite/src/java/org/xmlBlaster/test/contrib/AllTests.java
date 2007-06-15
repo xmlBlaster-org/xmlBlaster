@@ -15,6 +15,8 @@ public class AllTests {
    }
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster contrib plugin tests");
+      suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.TestUtils.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.contrib.TestInfo.class));
       suite.addTest(org.xmlBlaster.test.contrib.db.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.contrib.dbwatcher.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.contrib.dbwriter.AllTests.suite());
