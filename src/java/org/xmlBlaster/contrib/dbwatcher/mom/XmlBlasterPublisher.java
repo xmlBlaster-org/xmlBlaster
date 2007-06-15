@@ -39,6 +39,7 @@ import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
+import org.xmlBlaster.contrib.ContribConstants;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
@@ -448,8 +449,12 @@ public class XmlBlasterPublisher implements
       if (log.isLoggable(Level.FINER)) 
          log.finer("Topic '" + pk + "' is published: " + out);
       try {
-         if (destination != null)
+         String oid = (String)attrMap.remove(ContribConstants.TOPIC_NAME); // consume it since only used to inform this method
+         if (destination != null) {
             pk = this.adminKey;
+         }
+         if (oid != null)
+            pk = "<key oid='" + oid + "'/>";
          MsgUnit msgUnit = new MsgUnit(pk, out, this.publishQos);
          String tmp = msgUnit.getKeyData().getContentMime();
          // FIXME pass this in the map and set only if explicitly set in the map
