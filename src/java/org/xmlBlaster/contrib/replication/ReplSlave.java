@@ -1010,9 +1010,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       try {
          // this.messageSeq, 
          long[] transactionCountBeforeQueue = this.manager.getCurrentTransactionCount(this.replPrefix);
-
+         // check if the numbers in the queue are correct and fix it
          if (this.queueEntries != 0 && session != null && session.getCbQueueNumMsgs() == 0) {
-            log.warning("Detected wrong number of queue entries: correcting");
+            log.warning("Detected wrong number of queue entries: correcting: ptp entries='" + this.ptpQueueEntries + "' total='" + this.queueEntries + "'");
             this.ptpQueueEntries = 0L;
             this.transactionSeq = (long[])transactionCountBeforeQueue.clone();
          }
