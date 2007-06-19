@@ -48,7 +48,7 @@ public class XmlKeyDom implements I_MergeDomNode
 {
    final private static String ME = "XmlKeyDom";
 
-   private final ServerScope glob;
+   private final ServerScope serverScope;
    private static Logger log = Logger.getLogger(XmlKeyDom.class.getName());
    protected Document xmlKeyDoc = null;
    protected String encoding = Constants.UTF8_ENCODING; // Before xmlBlaster 1.3: "ISO-8859-1";
@@ -61,8 +61,8 @@ public class XmlKeyDom implements I_MergeDomNode
    protected XmlKeyDom(RequestBroker requestBroker) throws XmlBlasterException
    {
       this.requestBroker = requestBroker;
-      this.glob = this.requestBroker.getGlobal();
-      this.encoding = this.glob.getProperty().get("xmlBlaster/topicDom/encoding", encoding);
+      this.serverScope = this.requestBroker.getServerScope();
+      this.encoding = this.serverScope.getProperty().get("xmlBlaster/topicDom/encoding", encoding);
 
       // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
       String xml = "<?xml version='1.0' encoding='"+this.encoding+"' ?>\n" +
@@ -71,7 +71,7 @@ public class XmlKeyDom implements I_MergeDomNode
       org.xml.sax.InputSource input = new org.xml.sax.InputSource(reader);
 
       try {
-         DocumentBuilderFactory dbf = requestBroker.getGlobal().getDocumentBuilderFactory();
+         DocumentBuilderFactory dbf = requestBroker.getServerScope().getDocumentBuilderFactory();
          //dbf.setNamespaceAware(true);
          //dbf.setCoalescing(true);
          //dbf.setValidating(false);
@@ -80,7 +80,7 @@ public class XmlKeyDom implements I_MergeDomNode
          xmlKeyDoc = db.parse(input);
       } catch (Exception e) {
          log.severe("Problems when building DOM tree from your XmlKey: " + e.toString());
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, "Problems when building DOM tree from your XmlKey: " + e.toString());
+         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_ILLEGALSTATE, ME, "Problems when building DOM tree from your XmlKey: " + e.toString());
       }
    }
 
@@ -115,7 +115,7 @@ public class XmlKeyDom implements I_MergeDomNode
 
       if (xpathQuery == null || xpathQuery.length() < 1) {
          log.warning("Sorry, can't access message, you supplied an empty XPATH query '" + xpathQuery + "', please check your query string");
-         throw new XmlBlasterException(this.glob, ErrorCode.USER_QUERY_INVALID, ME,
+         throw new XmlBlasterException(this.serverScope, ErrorCode.USER_QUERY_INVALID, ME,
           "Sorry, can't access message, you supplied an empty XPATH query '" + xpathQuery + "', please check your query string");
       }
 
@@ -126,7 +126,7 @@ public class XmlKeyDom implements I_MergeDomNode
          if (log.isLoggable(Level.FINE)) log.fine("Node iter done");
       } catch (XmlBlasterException e) {
          log.warning("Sorry, can't access, query syntax is wrong for '" + xpathQuery + "' : " + e.getMessage());
-         throw new XmlBlasterException(this.glob, ErrorCode.USER_QUERY_INVALID, ME, "Sorry, can't access, query syntax of '" + xpathQuery + "' is wrong", e);
+         throw new XmlBlasterException(this.serverScope, ErrorCode.USER_QUERY_INVALID, ME, "Sorry, can't access, query syntax of '" + xpathQuery + "' is wrong", e);
       }
       int n = 0;
       boolean wantsAll = false;
@@ -153,7 +153,7 @@ public class XmlKeyDom implements I_MergeDomNode
          } catch (Exception e) {
             e.printStackTrace();
             log.severe(e.getMessage());
-            XmlBlasterException.convert(glob, ME, "XPath DOM lookup problems", e);
+            XmlBlasterException.convert(serverScope, ME, "XPath DOM lookup problems", e);
          }
       }
 
@@ -176,7 +176,7 @@ public class XmlKeyDom implements I_MergeDomNode
    {
       if (node == null) {
          log.warning("no parent node found");
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".NoParentNode", "no parent node found");
+         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".NoParentNode", "no parent node found");
       }
 
       String nodeName = node.getNodeName();
@@ -184,14 +184,14 @@ public class XmlKeyDom implements I_MergeDomNode
 
       if ("xmlBlaster".equals(nodeName) && (node.getParentNode() == null || "#document".equals(node.getParentNode().getNodeName()))) {       // ERROR: the root node, must be specially handled
          log.warning("<xmlBlaster> node not allowed");
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "<xmlBlaster> node not allowed");
+         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_UNKNOWN, ME, "<xmlBlaster> node not allowed");
       }
 
       // check if we have found the <documentRoot><xmlBlaster><key oid=''> element
       boolean foundKey = false;
       if (nodeName.equalsIgnoreCase("key")) {
          org.w3c.dom.Node parent = node.getParentNode();
-         if (parent == null) throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".InvalidDom", "DOM tree is invalid");
+         if (parent == null) throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_ILLEGALSTATE, ME+".InvalidDom", "DOM tree is invalid");
          //if (parent.getNodeName().equals("xmlBlaster"))
          if (parent.getParentNode().getParentNode() == null)
             foundKey = true;
@@ -216,7 +216,7 @@ public class XmlKeyDom implements I_MergeDomNode
       }
 
       log.warning("Internal getKeyOid() error");
-      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal getKeyOid() error");
+      throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal getKeyOid() error");
    }
 
 

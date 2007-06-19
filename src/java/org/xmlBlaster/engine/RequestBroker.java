@@ -356,10 +356,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
    /**
-    * Access the global handle.
-    * @return The Global instance of this xmlBlaster server
+    * Access the ServerScope handle.
+    * @return The ServerScope instance of this xmlBlaster server
     */
-   public final ServerScope getGlobal() {
+   public final ServerScope getServerScope() {
       return this.glob;
    }
 

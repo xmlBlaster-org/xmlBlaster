@@ -88,7 +88,7 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_ChangeCallback
 {
    private String ME = "TopicHandler";
-   private final ServerScope glob;
+   private final ServerScope serverScope;
    private static Logger log = Logger.getLogger(TopicHandler.class.getName());
    private final ContextNode contextNode;
 
@@ -103,7 +103,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    private TopicEntry topicEntry; // persistence storage entry
 
    // Default is that a single client can subscribe the same message multiple times
-   // private boolean allowMultiSubscriptionPerClient = glob.getProperty().get("Engine.allowMultiSubscriptionPerClient", true);
+   // private boolean allowMultiSubscriptionPerClient = serverScope.getProperty().get("Engine.allowMultiSubscriptionPerClient", true);
 
    private I_MsgDistributor distributor;
 
@@ -192,27 +192,27 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     * @param a MsgUnitWrapper containing the CORBA MsgUnit data container
     */
    public TopicHandler(RequestBroker requestBroker, SessionInfo publisherSessionInfo, String uniqueKey) throws XmlBlasterException {
-      this.glob = requestBroker.getGlobal();
+      this.serverScope = requestBroker.getServerScope();
       if (uniqueKey == null)
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters");
+         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters");
 
       this.uniqueKey = uniqueKey;
 
-      this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + this.uniqueKey;
-      this.ME = this.glob.getLogPrefix() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + this.uniqueKey;
+      this.id = this.serverScope.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + this.uniqueKey;
+      this.ME = this.serverScope.getLogPrefix() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + this.uniqueKey;
 
       // JMX does not allow commas ','
-      String instanceName = this.glob.validateJmxValue(this.uniqueKey);
-      this.contextNode = new ContextNode(ContextNode.TOPIC_MARKER_TAG, instanceName, this.glob.getContextNode());
+      String instanceName = this.serverScope.validateJmxValue(this.uniqueKey);
+      this.contextNode = new ContextNode(ContextNode.TOPIC_MARKER_TAG, instanceName, this.serverScope.getContextNode());
 
       this.requestBroker = requestBroker;
-      this.destroyTimer = this.glob.getTopicTimer();
+      this.destroyTimer = this.serverScope.getTopicTimer();
       // this.msgErrorHandler = new MsgTopicErrorHandler(this.glob, this);
 
       toUnconfigured();
       
       // JMX register "topic/hello"
-      this.mbeanHandle = this.glob.registerMBean(this.contextNode, this);
+      this.mbeanHandle = this.serverScope.registerMBean(this.contextNode, this);
 
       if (publisherSessionInfo == null) {
          if (log.isLoggable(Level.FINER)) log.fine(ME+": Creating new TopicHandler '" + uniqueKey + "' because of subscription.");
@@ -295,10 +295,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          // instead of "msgUnitStore:heron_hello"
          // This change would be nice but then existing entries on restart wouldn't be found
          // This syntax is also used in RequestBroker:checkConsistency to reverse lookup the TopicHandler by a given I_Map
-         StorageId msgUnitStoreId = new StorageId(Constants.RELATING_MSGUNITSTORE, glob.getNodeId()+"/"+getUniqueKey());
-         this.msgUnitCache = glob.getStoragePluginManager().getPlugin(type, version, msgUnitStoreId, msgUnitStoreProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
+         StorageId msgUnitStoreId = new StorageId(Constants.RELATING_MSGUNITSTORE, serverScope.getNodeId()+"/"+getUniqueKey());
+         this.msgUnitCache = serverScope.getStoragePluginManager().getPlugin(type, version, msgUnitStoreId, msgUnitStoreProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
          if (this.msgUnitCache == null) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Can't load msgUnitStore persistence plugin [" + type + "][" + version + "]");
+            throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_UNKNOWN, ME, "Can't load msgUnitStore persistence plugin [" + type + "][" + version + "]");
          }
       }
       else {
@@ -334,8 +334,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (prop.getMaxEntries() > 0L) {
             String type = prop.getType();
             String version = prop.getVersion();
-            StorageId queueId = new StorageId(queueName, glob.getNodeId()+"/"+getUniqueKey());
-            queue = glob.getQueuePluginManager().getPlugin(type, version, queueId, prop);
+            StorageId queueId = new StorageId(queueName, serverScope.getNodeId()+"/"+getUniqueKey());
+            queue = serverScope.getQueuePluginManager().getPlugin(type, version, queueId, prop);
             queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
          }
          else {
@@ -405,10 +405,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    public final XmlKey getXmlKey() throws XmlBlasterException {
       if (this.msgKeyData == null) { // isUnconfigured()) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, getId(), "In state '" + getStateStr() + "' no XmlKey object is available");
+         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_UNKNOWN, getId(), "In state '" + getStateStr() + "' no XmlKey object is available");
       }
       if (this.xmlKey == null) {  // expensive DOM parse
-         this.xmlKey = new XmlKey(glob, this.msgKeyData);
+         this.xmlKey = new XmlKey(serverScope, this.msgKeyData);
       }
       return this.xmlKey;
    }
@@ -426,14 +426,14 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                log.severe(ME+": Can't create useful TopicEntry in state=" + getStateStr() + " no QoS is available");
                return null;
             }
-            MsgQosData msgQosData = new MsgQosData(glob, MethodName.PUBLISH);
+            MsgQosData msgQosData = new MsgQosData(serverScope, MethodName.PUBLISH);
             msgQosData.setTopicProperty(this.topicProperty);
             msgQosData.setAdministrative(true);
             msgQosData.touchRcvTimestamp();
             msgQosData.setPersistent(true);
             msgQosData.setSender(creatorSessionName);
             MsgUnit msgUnit = new MsgUnit(this.msgKeyData, null, msgQosData);
-            this.topicEntry = new TopicEntry(glob, msgUnit);
+            this.topicEntry = new TopicEntry(serverScope, msgUnit);
             isNew = true;
             if (log.isLoggable(Level.FINE)) log.fine(ME+": Created persistent topicEntry '" + this.topicEntry.getUniqueId() + "'"); //: " + this.topicEntry.toXml());
          }
@@ -537,11 +537,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       PublishReturnQos publishReturnQos = null;
       MsgQosData msgQosData = null;
 
-      StatusQosData qos = new StatusQosData(glob, MethodName.PUBLISH);
+      StatusQosData qos = new StatusQosData(serverScope, MethodName.PUBLISH);
       qos.setKeyOid(this.uniqueKey);
       qos.setState(Constants.STATE_OK);
       qos.setRcvTimestamp(publishQosServer.getRcvTimestamp());
-      publishReturnQos = new PublishReturnQos(glob, qos);
+      publishReturnQos = new PublishReturnQos(serverScope, qos);
 
       MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
       msgQosData = (MsgQosData)msgUnit.getQosData();
@@ -589,7 +589,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (this.handlerIsNewCreated) {
             this.handlerIsNewCreated = false;
             // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
-            glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
+            serverScope.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
          }
          if (msgQosData.isFromPersistenceStore()) {
             log.info(ME+": Topic is successfully recovered from persistency to state " + getStateStr() +
@@ -612,7 +612,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
       if (this.handlerIsNewCreated) {
          // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
-         glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
+         serverScope.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
          this.handlerIsNewCreated = false;
       }
 
@@ -628,11 +628,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          if (!isInvisiblePtp) {  // readonly is only checked for Pub/Sub?
             if (this.topicProperty.isReadonly() && hasHistoryEntries()) {
                log.warning(ME+": Sorry, published message '" + msgKeyData.getOid() + "' rejected, topic is readonly.");
-               throw new XmlBlasterException(glob, ErrorCode.USER_PUBLISH_READONLY, ME, "Sorry, published message '" + msgKeyData.getOid() + "' rejected, topic is readonly.");
+               throw new XmlBlasterException(serverScope, ErrorCode.USER_PUBLISH_READONLY, ME, "Sorry, published message '" + msgKeyData.getOid() + "' rejected, topic is readonly.");
             }
          }
 
-         msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
+         msgUnitWrapper = new MsgUnitWrapper(serverScope, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
          
          if (!isAlive()) {
              toAlive();
@@ -679,7 +679,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                }
    
                try { // increments reference counter += 1
-                  this.historyQueue.put(new MsgQueueHistoryEntry(glob, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
+                  this.historyQueue.put(new MsgQueueHistoryEntry(serverScope, msgUnitWrapper, this.historyQueue.getStorageId()), I_Queue.USE_PUT_INTERCEPTOR);
                }
                catch (XmlBlasterException e) {
                   log.severe(ME+": History queue put() problem: " + e.getMessage());
@@ -690,7 +690,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   if (numHist > 1L && numHist > this.historyQueue.getMaxNumOfEntries()) {
                      ArrayList entryList = this.historyQueue.takeLowest(1, -1L, null, false);
                      if (entryList.size() != 1) {
-                        throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
+                        throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_UNKNOWN, ME,
                               "Can't remove expected entry, entryList.size()=" + entryList.size() + ": " + this.historyQueue.toXml(""));
                      }
                      MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)entryList.get(0);
@@ -733,7 +733,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       catch (Throwable e) {
          log.severe(ME+": "+e.toString());
          e.printStackTrace();
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, "TopicHandler", "", e);
+         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_UNKNOWN, "TopicHandler", "", e);
       }
       finally {
          if (msgUnitWrapper != null) {
@@ -800,7 +800,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             if (!forceQueing && destinationClient==null) {
                String tmp = ME+": Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
                log.warning(tmp);
-               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
+               throw new XmlBlasterException(serverScope, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
                    " Client is not logged in and <destination forceQueuing='true'> is not set");
             }
             if (log.isLoggable(Level.FINE)) log.fine(ME+": Queuing PtP message '" + cacheEntry.getLogId() + "' for subject destination [" + destination.getDestination() + "], forceQueing="+forceQueing);
@@ -809,7 +809,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             final boolean returnLocked = true;
             destinationClient = authenticate.getOrCreateSubjectInfoByName(destination.getDestination(), returnLocked, null, null);
             try {
-               MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(glob, cacheEntry,
+               MsgQueueUpdateEntry msgEntrySubject = new MsgQueueUpdateEntry(serverScope, cacheEntry,
                         destinationClient.getSubjectQueue().getStorageId(), destination.getDestination(),
                         Constants.SUBSCRIPTIONID_PtP, false);
                destinationClient.queueMessage(msgEntrySubject);
@@ -831,7 +831,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   if (!receiverSessionInfo.getConnectQos().isPtpAllowed() &&
                       !Constants.EVENT_OID_ERASEDTOPIC.equals(cacheEntry.getKeyOid())) { // no spam, case 2
                      if (log.isLoggable(Level.FINE)) log.fine(ME+": Rejecting PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "], isPtpAllowed=false");
-                     throw new XmlBlasterException(glob, ErrorCode.USER_PTP_DENIED, ME,
+                     throw new XmlBlasterException(serverScope, ErrorCode.USER_PTP_DENIED, ME,
                            receiverSessionInfo.getId() + " does not accept PtP messages '" + cacheEntry.getLogId() +
                            "' is rejected");
                   }
@@ -845,26 +845,26 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             if (receiverSessionInfo == null && !forceQueing) {
                String tmp = ME+": Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
                log.warning(tmp);
-               throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
+               throw new XmlBlasterException(serverScope, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
                      " Client is not logged in and <destination forceQueuing='true'> is not set");
             }
 
             // Row 1 in table 
             if (receiverSessionInfo == null) { // We create a faked session without password check
                if (log.isLoggable(Level.FINE)) log.fine(ME+": Working on PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "] which does not exist, forceQueuing=true, we create a dummy session");
-               ConnectQos connectQos = new ConnectQos(glob);
+               ConnectQos connectQos = new ConnectQos(serverScope);
                connectQos.setSessionName(destinationSessionName);
                connectQos.setUserId(destinationSessionName.getLoginName());
-               ConnectQosServer connectQosServer = new ConnectQosServer(glob, connectQos.getData());
+               ConnectQosServer connectQosServer = new ConnectQosServer(serverScope, connectQos.getData());
                connectQosServer.bypassCredentialCheck(true);
-               long sessionTimeout = glob.getProperty().get("session.ptp.defaultTimeout", -1L);
+               long sessionTimeout = serverScope.getProperty().get("session.ptp.defaultTimeout", -1L);
                connectQosServer.getSessionQos().setSessionTimeout(sessionTimeout);  // Or use message timeout?
                for (int i=0; ; i++) {
                   if (i>=20) {
                      String tmp = "Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the message is rejected.";
                      String status = "destinationIsSession='" + destinationIsSession + "'" +
                                      " forceQueing='" + forceQueing + "' wantsPtP='" + wantsPtP +"'";  
-                     throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, tmp +
+                     throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, tmp +
                         "the combination '" + status + "' is not handled");
                   }
                   if (i>0) { try { Thread.sleep(1L); } catch( InterruptedException ie) {}}
@@ -882,7 +882,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             } 
 
             if (log.isLoggable(Level.FINE)) log.fine(ME+": Queuing PtP message '" + cacheEntry.getLogId() + "' for destination [" + destination.getDestination() + "]");
-            MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob,
+            MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(serverScope,
                      cacheEntry,
                      receiverSessionInfo.getSessionQueue().getStorageId(),
                      destination.getDestination(),
@@ -1186,7 +1186,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    private final void invokeCallbackAndHandleFailure(SessionInfo publisherSessionInfo, MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
          Thread.dumpStack();
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
+         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Going to update dependent clients for " + msgUnitWrapper.getKeyOid() + ", subscriberMap.size() = " + getNumSubscribers());
 
@@ -1279,7 +1279,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                if (log.isLoggable(Level.FINE)) log.fine(ME+": "+reason);
                if (handleException) {
                   MsgQueueEntry[] entries = {
-                       new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+                       new MsgQueueUpdateEntry(serverScope, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
                                    sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
                                    sub.getSubscribeQosServer().getWantUpdateOneway()) };
                   requestBroker.deadMessage(entries, null, reason);
@@ -1291,13 +1291,13 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                // 3. This error handling is wrong as we handle a subscribe and not a publish:
                /*
                MsgQueueEntry entry =
-                    new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+                    new MsgQueueUpdateEntry(serverScope, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
                                 sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
                                 sub.getSubscribeQosServer().getWantUpdateOneway());
-               publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, e));
+               publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(serverScope, entry, null, e));
                */
                //retCount++;
-               throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME , "checkFilter: " + reason);
+               throw new XmlBlasterException(this.serverScope, ErrorCode.INTERNAL_UNKNOWN, ME , "checkFilter: " + reason);
             }
          }
       } // if filterQos
@@ -1352,7 +1352,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                        ((this.historyQueue != null) ? this.historyQueue.toXml("") : ""));
          Thread.dumpStack();
          return 0;
-         //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
+         //throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "MsgUnitWrapper is null");
       }
 
       try {
@@ -1385,7 +1385,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                                sub.getSessionInfo().getId() + " failed: " + e.toString());
             try {
                MsgQueueEntry[] entries = {
-                     new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
+                     new MsgQueueUpdateEntry(serverScope, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
                                  sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId(),
                                  sub.getSubscribeQosServer().getWantUpdateOneway()) };
                String reason = e.toString();
@@ -1485,7 +1485,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       SubscriptionInfo[] subscriptionInfoArr = getSubscriptionInfoArr();
       for(int i=0; i<subscriptionInfoArr.length; i++) {
          try {
-            glob.getRequestBroker().fireUnSubscribeEvent(subscriptionInfoArr[i]);
+            serverScope.getRequestBroker().fireUnSubscribeEvent(subscriptionInfoArr[i]);
          }
          catch (XmlBlasterException e) {
             log.severe(ME+": Problems in clearSubscriber: " + e.getMessage());
@@ -1629,7 +1629,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             return this.historyQueue.clear();
          }
          else {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+            throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
                   "Erasing of specific history entries is not yet implemented, you can only erase all of them");
          }
       //}
@@ -1765,7 +1765,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       TopicProperty topicProperty = this.topicProperty;
       if (!onAdministrativeCreate) {
          if (topicProperty == null) {
-            EraseQosServer eraseQos = new EraseQosServer(glob, "<qos/>");
+            EraseQosServer eraseQos = new EraseQosServer(serverScope, "<qos/>");
             eraseQos.setForceDestroy(true);
             notifyList = toDead(this.creatorSessionName, null, eraseQos);
             return notifyList; // ALIVE -> UNREFERENCED
@@ -1855,7 +1855,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
       this.dyingInProgress = true;
 
-      this.glob.unregisterMBean(this.mbeanHandle);
+      this.serverScope.unregisterMBean(this.mbeanHandle);
 
       try {
          shutdownMsgDistributorPlugin();
@@ -1947,7 +1947,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       }
 
       try {
-         this.glob.getTopicAccessor().erase(getUniqueKey());
+         this.serverScope.getTopicAccessor().erase(getUniqueKey());
       }
       catch (Throwable e) {
          log.severe(ME+": "+getStateStr() + "->" + "DEAD: Ignoring problems during clearing the TopicAccessor: " + e.getMessage());
@@ -2013,7 +2013,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    private void notifySubscribersAboutErase(ArrayList msgSet) {
       if (msgSet == null) return;
-      SessionInfo publisherSessionInfo = glob.getRequestBroker().getInternalSessionInfo();
+      SessionInfo publisherSessionInfo = serverScope.getRequestBroker().getInternalSessionInfo();
 
       Iterator it = msgSet.iterator();
       while (it.hasNext()) {
@@ -2050,14 +2050,14 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                // Approach 1: Send erase notify with same topic oid
                // This was used until 0.91+
                // Problem was that it triggered this dieing topic into ALIVE again
-               org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
+               org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(serverScope,
                                                          getUniqueKey(), "text/plain", "1.0");
-               org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
+               org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(serverScope);
                pq.setState(Constants.STATE_ERASED);
                pq.setVolatile(true);
                pq.setSender(sessionName);
                MsgUnit msgUnit = new MsgUnit(pk, getId(), pq); // content contains the global name?
-               PublishQosServer ps = new PublishQosServer(glob, pq.getData());
+               PublishQosServer ps = new PublishQosServer(serverScope, pq.getData());
             */
 
                // Approach 2: Send PtP message with a dedicated topic
@@ -2072,9 +2072,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                      continue;
                   }
 
-                  org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
+                  org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(serverScope,
                                                             Constants.EVENT_OID_ERASEDTOPIC/*+":"+getUniqueKey()*/, "text/plain", "1.0");
-                  org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
+                  org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(serverScope);
                   pq.setState(Constants.STATE_ERASED);
                   pq.setVolatile(true);
                   pq.setSender(sessionName);
@@ -2089,10 +2089,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                   if (eraseQos != null) // To have all attributes for cluster slaves getting forwarded the erase
                      pq.addClientProperty("__eraseQos", eraseQos.toXml());
                   if (i==0) {
-                     TopicProperty topicProperty = new TopicProperty(glob);
+                     TopicProperty topicProperty = new TopicProperty(serverScope);
                      //topicProperty.setDestroyDelay(destroyDelay);
                      topicProperty.setCreateDomEntry(false);
-                     org.xmlBlaster.util.qos.storage.HistoryQueueProperty prop = new org.xmlBlaster.util.qos.storage.HistoryQueueProperty(this.glob, null);
+                     org.xmlBlaster.util.qos.storage.HistoryQueueProperty prop = new org.xmlBlaster.util.qos.storage.HistoryQueueProperty(this.serverScope, null);
                      prop.setMaxEntriesCache(0);
                      prop.setMaxEntries(0);
                      topicProperty.setHistoryQueueProperty(prop);
@@ -2107,9 +2107,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                // Approach 3: Shuffle it directly into the callback queues
                // Here the topic is not touched anymore but the msgUnitStore must remain alive
                // The problem with this approach is that the msgUnitCache may be destroyed before the callback is delivered
-               org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
+               org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(serverScope,
                                                          getUniqueKey(), "text/plain", "1.0");
-               org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
+               org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(serverScope);
                pq.setState(Constants.STATE_ERASED);
                pq.setVolatile(true);
                pq.setSender(sessionName);
@@ -2119,7 +2119,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
                StorageId storageId = this.msgUnitCache.getStorageId();
                int initialCounter = 1;
                try {
-                  msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
+                  msgUnitWrapper = new MsgUnitWrapper(serverScope, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
                   SubscriptionInfo[] arr = getSubscriptionInfoArr();
                   for(int i=0; i<arr.length; i++) {
                      SubscriptionInfo sub = arr[i];
@@ -2168,7 +2168,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    final void eraseRequest(SessionInfo sessionInfo, QueryKeyData eraseKey, EraseQosServer eraseQos) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering fireEraseEvent forceDestroy=" + eraseQos.getForceDestroy());
-      eraseQos = (eraseQos==null) ? new EraseQosServer(glob, new QueryQosData(glob, MethodName.ERASE)) : eraseQos;
+      eraseQos = (eraseQos==null) ? new EraseQosServer(serverScope, new QueryQosData(serverScope, MethodName.ERASE)) : eraseQos;
       ArrayList notifyList = null;
       try {
          if (isAlive() || isUnconfigured()) {
@@ -2208,7 +2208,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Timeout after destroy delay occurred - destroying topic now ...");
       String oid = (String)userData;
 
-      TopicHandler topicHandler = this.glob.getTopicAccessor().access(oid); // get a lock!
+      TopicHandler topicHandler = this.serverScope.getTopicAccessor().access(oid); // get a lock!
       if (topicHandler == null) return;
       ArrayList notifyList;
       try {
@@ -2216,7 +2216,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          notifyList = timeout();
       }
       finally {
-         this.glob.getTopicAccessor().release(topicHandler);
+         this.serverScope.getTopicAccessor().release(topicHandler);
       }
       if (notifyList != null) notifySubscribersAboutErase(notifyList); // must be outside the synchronize
    }
@@ -2366,9 +2366,9 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
     */
    public MsgUnit[] getHistoryQueueEntries(String querySpec) throws XmlBlasterException {
       if (this.queueQueryPlugin == null) {
-         this.queueQueryPlugin = new QueueQueryPlugin(this.glob);
+         this.queueQueryPlugin = new QueueQueryPlugin(this.serverScope);
       }
-      this.glob.getTopicAccessor().release(this); // In case we were locked and now block forever!
+      this.serverScope.getTopicAccessor().release(this); // In case we were locked and now block forever!
       return this.queueQueryPlugin.query(this.historyQueue, querySpec);
    }
 
@@ -2382,7 +2382,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       if (this.distributor != null) return;
       String typeVersion = this.topicProperty.getMsgDistributor();
       // if (typeVersion == null) return; // no plugin has been configured for this topic
-      this.distributor = this.glob.getMsgDistributorPluginManager().getPlugin(typeVersion, this);
+      this.distributor = this.serverScope.getMsgDistributorPluginManager().getPlugin(typeVersion, this);
       this.subscriptionListener = this.distributor; 
       if (this.subscriptionListener != null) {
          SubscriptionInfo[] subs = getSubscriptionInfoArr();
@@ -2459,7 +2459,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          return new String[] { "This topic has currently no subscriber" };
 
       SessionInfo sessionInfo = null;
-      SessionName wanted = new SessionName(glob, sessionName);
+      SessionName wanted = new SessionName(serverScope, sessionName);
       for (int i=0; i<infoArr.length; i++) {
          SessionName tmp = infoArr[i].getSessionInfo().getSessionName();
          if (wanted.equalsRelative(tmp) || wanted.equalsAbsolute(tmp)) {
@@ -2478,20 +2478,20 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    /** private helper to unSubscribe */
    private String[] unSubscribe(SessionInfo sessionInfo, String qos) throws XmlBlasterException {
       String sessionName = sessionInfo.getSessionName().getAbsoluteName();
-      UnSubscribeKey uk = new UnSubscribeKey(glob, uniqueKey);
+      UnSubscribeKey uk = new UnSubscribeKey(serverScope, uniqueKey);
       UnSubscribeQos uq;
       if (qos == null || qos.length() == 0 || qos.equalsIgnoreCase("String"))
-         uq = new UnSubscribeQos(glob);
+         uq = new UnSubscribeQos(serverScope);
       else
-         uq = new UnSubscribeQos(glob, glob.getQueryQosFactory().readObject(qos));
-      UnSubscribeQosServer uqs = new UnSubscribeQosServer(glob, uq.getData());
-      String[] ret = glob.getRequestBroker().unSubscribe(sessionInfo, uk.getData(), uqs);
+         uq = new UnSubscribeQos(serverScope, serverScope.getQueryQosFactory().readObject(qos));
+      UnSubscribeQosServer uqs = new UnSubscribeQosServer(serverScope, uq.getData());
+      String[] ret = serverScope.getRequestBroker().unSubscribe(sessionInfo, uk.getData(), uqs);
 
       if (ret.length == 0)
          return new String[] { "Unsubscribe of client '" + sessionName + "' failed, the reason is not known" };
 
       for (int i=0; i<ret.length; i++) {
-         UnSubscribeReturnQos tmp = new UnSubscribeReturnQos(glob, ret[i]);
+         UnSubscribeReturnQos tmp = new UnSubscribeReturnQos(serverScope, ret[i]);
          ret[i] = "Unsubscribe '" + sessionName + "' state is " + tmp.getState();
          if (tmp.getStateInfo() != null)
             ret[i] += " " + tmp.getStateInfo();
@@ -2523,12 +2523,12 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    public String[] peekHistoryMessages(int numOfEntries) throws XmlBlasterException {
-      return this.glob.peekMessages(this.historyQueue, numOfEntries, "history");
+      return this.serverScope.peekMessages(this.historyQueue, numOfEntries, "history");
    } 
 
    public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws Exception {
       try {
-         return this.glob.peekQueueMessagesToFile(this.historyQueue, numOfEntries, path, "history");
+         return this.serverScope.peekQueueMessagesToFile(this.historyQueue, numOfEntries, path, "history");
       }
       catch (XmlBlasterException e) {
          throw new Exception(e.toString());
@@ -2537,18 +2537,18 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
 
    /** JMX */
    public final String eraseTopic() throws XmlBlasterException {
-      EraseKey ek = new EraseKey(glob, uniqueKey);
-      EraseQos eq = new EraseQos(glob);
+      EraseKey ek = new EraseKey(serverScope, uniqueKey);
+      EraseQos eq = new EraseQos(serverScope);
       String[] eraseArr = this.requestBroker.erase(
                     this.requestBroker.getInternalSessionInfo(),
                     ek.getData(),
-                    new EraseQosServer(this.glob, eq.getData()));
+                    new EraseQosServer(this.serverScope, eq.getData()));
       if (eraseArr.length == 1) {
          log.info(ME+": Erased topic '" + getId() + "' due to administrative request");
          return "Erased topic '" + getId() + "'";
       }
       else {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
+         throw new XmlBlasterException(serverScope, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
                    "Erasing of topic '" + getId() + "' due to administrative request failed");
       }
    }

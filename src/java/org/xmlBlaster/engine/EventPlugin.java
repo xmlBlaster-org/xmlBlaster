@@ -5,6 +5,9 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import gnu.regexp.RE;
+import gnu.regexp.REException;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -42,6 +45,9 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.I_QueueSizeListener;
+import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
@@ -166,7 +172,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
 public class EventPlugin extends NotificationBroadcasterSupport implements
       I_Plugin, EventPluginMBean, I_ClientListener, I_RunlevelListener,
       I_LogListener, I_SubscriptionListener, I_TopicListener,
-      I_ConnectionStatusListener, I_RemotePropertiesListener, Comparable {
+      I_ConnectionStatusListener, I_RemotePropertiesListener, Comparable, I_QueueSizeListener {
    private final static String ME = EventPlugin.class.getName();
 
    private static Logger log = Logger.getLogger(EventPlugin.class.getName());
@@ -616,6 +622,36 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                    }, initialInterval, event);
                }
             }
+            else if (isQueueEvent(event)) {
+               log.fine("Not Implemented yet");
+               // client/*/session/[publicSessionId]/queue/callback/event/threshold.90%
+               // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
+               // topic/[topicId]/queue/history/event/threshold.90%
+               // */queue/*/event/threshold*
+
+               String end = "/event/threshold.";
+               int index = event.lastIndexOf(end);
+               String value = event.substring(index + end.length());
+
+               String tmp = event.substring(0, index);
+               end = "/queue/";
+               index = tmp.lastIndexOf(end);
+               String type = tmp.substring(index + end.length());
+               
+               tmp = tmp.substring(0, index);
+               // sessionId or topicId or subjectId
+               end = "/";
+               index = tmp.lastIndexOf(end);
+               String id2 = tmp.substring(index + end.length());
+               tmp = tmp.substring(0, index);
+               String id1 = null;
+               index = tmp.lastIndexOf(end);
+               if (index > -1)
+                  id2 = event.substring(0, index);
+               
+               QueuePluginManager queuePluginManager = this.requestBroker.getServerScope().getQueuePluginManager();
+               
+            }
             else {
                log.warning("Ignoring unknown '" + event
                      + "' from eventTypes='" + eventTypes + "'");
@@ -629,6 +665,21 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
+   public static boolean isQueueEvent(String txt) {
+      return matchesRegex(".*/queue/.*/event/threshold.*", txt);
+   }
+   
+   private static boolean matchesRegex(String pattern, String txt) {
+      try {
+         RE regex = new RE(pattern, RE.REG_ICASE);
+         return regex.isMatch(txt);
+      }
+      catch (REException ex) {
+         ex.printStackTrace();
+         return false;
+      }
+   }
+   
    /**
     * Called when a client sends his remote properties, for example client side errors.
     * eventType == client/* /session/* /event/remoteProperties 
@@ -1960,10 +2011,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       this.publishDestinationConfiguration = publishDestinationConfiguration;
    }
 
-   /* java org.xmlBlaster.engine.EventPlugin
-   public static void main(String[] args) {
-      org.xmlBlaster.engine.Global g = new org.xmlBlaster.engine.Global();
-      System.out.println(EventPlugin.createStatusDump(g));
+   /**
+    * Enforced by I_QueueSizeListener
+    * @param queue
+    * @param numEntries
+    * @param numBytes
+    * @param isShutdown
+    */
+   public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
+      log.finest("invoked");
    }
-   */
+
 }
