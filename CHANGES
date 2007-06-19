@@ -1,7 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+ 
+ o #16273 Added events for queue thresholds (subject- callback and history queues)
 
- O #16263 Contrib: changed I_Info.putObject implementations when passing null they now
+ o #16263 Contrib: changed I_Info.putObject implementations when passing null they now
           remove the entry as specified in javadoc
 
  o #16256 Replication:
