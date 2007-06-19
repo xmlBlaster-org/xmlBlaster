@@ -108,6 +108,8 @@ public abstract class QueuePropertyBase implements Cloneable
    /** To allow debugging the queue (experimental) */
    protected PropBoolean debug = new PropBoolean(false);
 
+   private boolean embedded;
+   
    /**
     * @param glob The global handle containing env informations
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
@@ -808,6 +810,13 @@ public abstract class QueuePropertyBase implements Cloneable
       this.debug.setValue(debug);
    }
 
+   public void setEmbedded(boolean embedded) {
+      this.embedded = embedded;
+   }
+   
+   public boolean isEmbedded() {
+      return this.embedded;
+   }
 }
 
 

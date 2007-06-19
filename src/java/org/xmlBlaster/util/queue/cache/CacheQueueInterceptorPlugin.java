@@ -280,7 +280,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             log.severe(ME+"Cache queue configured with transientQueue=CACHE, to prevent recursion we set it to 'RAM,1.0'");
             defaultTransient = "RAM,1.0";
          }
-         this.transientQueue = pluginManager.getPlugin(defaultTransient, uniqueQueueId, createRamCopy(queuePropertyBase));
+         QueuePropertyBase ramProps = createRamCopy(queuePropertyBase);
+         ramProps.setEmbedded(true);
+         this.transientQueue = pluginManager.getPlugin(defaultTransient, uniqueQueueId, ramProps);
          //log.error(ME, "Debug only: " + this.transientQueue.toXml(""));
          
          try {
@@ -289,7 +291,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                log.severe(ME+"Cache queue configured with persistentQueue=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
                defaultPersistent = "JDBC,1.0";
             }
+            boolean oldEmbedded = queuePropertyBase.isEmbedded(); // since a CACHE could be inside a CACHE
+            queuePropertyBase.setEmbedded(true);
             this.persistentQueue = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
+            queuePropertyBase.setEmbedded(oldEmbedded); // since it is not a clone we make sure to reset it to its original
 
             this.isConnected = true;
             // to be notified about reconnections / disconnections

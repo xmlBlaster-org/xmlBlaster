@@ -19,6 +19,7 @@ import javax.mail.internet.InternetAddress;
 import javax.management.NotificationBroadcasterSupport;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_EventDispatcher;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -45,8 +46,6 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.ClientEvent;
@@ -172,7 +171,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
 public class EventPlugin extends NotificationBroadcasterSupport implements
       I_Plugin, EventPluginMBean, I_ClientListener, I_RunlevelListener,
       I_LogListener, I_SubscriptionListener, I_TopicListener,
-      I_ConnectionStatusListener, I_RemotePropertiesListener, Comparable, I_QueueSizeListener {
+      I_ConnectionStatusListener, I_RemotePropertiesListener, I_EventDispatcher, Comparable {
    private final static String ME = EventPlugin.class.getName();
 
    private static Logger log = Logger.getLogger(EventPlugin.class.getName());
@@ -510,7 +509,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * Find out which events to listen. 
     * @param eventTypes A commas seperated list of supported events, e.g. <code>logging/severe/*,logging/warning/*</code>
     */
-   public void registerEventTypes(String eventTypes) throws XmlBlasterException {
+   private void registerEventTypes(String eventTypes) throws XmlBlasterException {
       String[] eventTypeArr = StringPairTokenizer.parseLine(eventTypes);
       for (int i = 0; i < eventTypeArr.length; i++) {
          String event = eventTypeArr[i].trim();
@@ -572,7 +571,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   this.callbackSessionStateSet.add(sessionName.getRelativeName());
                }
             }
+            else if (isQueueEvent(event)) {
+               QueuePluginManager queuePluginManager = this.requestBroker.getServerScope().getQueuePluginManager();
+               queuePluginManager.registerEvent(this, event);
+            }
             else if (event.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP)) {
+               // REGEX: "client/.*/session/.*/event/.*"
                // "client/joe/session/1/event/connect", "client/*/session/*/event/disconnect"
                // "client/joe/session/1/event/subscribe"
                log.fine("Register login/logout event = " + event);
@@ -622,36 +626,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                    }, initialInterval, event);
                }
             }
-            else if (isQueueEvent(event)) {
-               log.fine("Not Implemented yet");
-               // client/*/session/[publicSessionId]/queue/callback/event/threshold.90%
-               // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
-               // topic/[topicId]/queue/history/event/threshold.90%
-               // */queue/*/event/threshold*
-
-               String end = "/event/threshold.";
-               int index = event.lastIndexOf(end);
-               String value = event.substring(index + end.length());
-
-               String tmp = event.substring(0, index);
-               end = "/queue/";
-               index = tmp.lastIndexOf(end);
-               String type = tmp.substring(index + end.length());
-               
-               tmp = tmp.substring(0, index);
-               // sessionId or topicId or subjectId
-               end = "/";
-               index = tmp.lastIndexOf(end);
-               String id2 = tmp.substring(index + end.length());
-               tmp = tmp.substring(0, index);
-               String id1 = null;
-               index = tmp.lastIndexOf(end);
-               if (index > -1)
-                  id2 = event.substring(0, index);
-               
-               QueuePluginManager queuePluginManager = this.requestBroker.getServerScope().getQueuePluginManager();
-               
-            }
             else {
                log.warning("Ignoring unknown '" + event
                      + "' from eventTypes='" + eventTypes + "'");
@@ -663,6 +637,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      + "' from eventTypes='" + eventTypes + "' because of " + e.toString());
          }
       }
+      // after the loop (we know we have finished
+      QueuePluginManager queuePluginManager = this.requestBroker.getServerScope().getQueuePluginManager();
+      queuePluginManager.registerFinished();
+
    }
 
    public static boolean isQueueEvent(String txt) {
@@ -1259,6 +1237,35 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
+   
+   
+   /**
+    * Enforced by I_EventDispatcher
+    * @param summary
+    * @param description
+    * @param eventType
+    */public void dispatchEvent(String summary, String description, String eventType) {
+      try {
+         if (this.smtpDestinationHelper != null) {
+            sendEmail(summary, description, eventType, null, false);
+         }
+   
+         if (this.publishDestinationHelper != null) {
+            try {
+               sendMessage(summary, description, eventType, null, null);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         if (this.jmxDestinationHelper != null) {
+            sendJmxNotification(summary, description, eventType, null, false);
+         }
+      } catch (Throwable e) {
+         e.printStackTrace();
+      }
+   }
+   
    /* (non-Javadoc)
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionAdded(org.xmlBlaster.authentication.ClientEvent)
     */
@@ -2009,17 +2016,6 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    public void setPublishDestinationConfiguration(
          String publishDestinationConfiguration) {
       this.publishDestinationConfiguration = publishDestinationConfiguration;
-   }
-
-   /**
-    * Enforced by I_QueueSizeListener
-    * @param queue
-    * @param numEntries
-    * @param numBytes
-    * @param isShutdown
-    */
-   public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
-      log.finest("invoked");
    }
 
 }
