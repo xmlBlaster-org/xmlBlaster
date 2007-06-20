@@ -91,9 +91,41 @@
  <tr><td>client/*/session/*/event/remoteProperties</td><td>Captures event when the remote properties of a client change (all clients, triggered when a client publishes a message to topic <code>__sys__remoteProperties</code>)</td></tr>
  <tr><td>lowMemoryDetection</td><td>This is not directly supported. Note however that on JDK >= 1.5 the LowMemoryDetector does a logging/severe if the memory consumption of the JVM reaches 90% (see -xmlBlaster/jmx/memoryThresholdFactor setting). Please use 'logging/severe/*' to detect this.</td></tr>
  <tr><td>heartbeat.360000</td><td>Sends a heartbeat notification every given milli seconds. Setting <code>heartbeat</code> without millis specified defaults to one notification per day (86400000 millis).</td></tr>
- <tr><td>client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%</td><td>TODO</td></tr>
- <tr><td>client/[subjectId]/queue/subject/event/threshold.90%</td><td>TODO</td></tr>
- <tr><td>topic/[topicId]/queue/history/event/threshold.90%</td><td>TODO</td></tr>
+ <tr>
+    <td>client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%</td>
+    <td>
+        Sends an event when the specified threshold for the given queue is reached. After the first event, additional
+    	increasing of the queue will only result in an event if the queue has first decreased under the threshold again.
+        Only the main queues send events, i.e. if you have configured a CACHE having a RAM queue as its transient queue
+        and a JDBC queue as its persistence, then only the CACHE queue itself will send an event. This can be sent for
+        all types of destination (email, message, jmx ...).
+        This behaviour is for all queue events (also topic and subject). 
+    
+        As subjectId and publicSessionId you can either pass a specific value or a '*' (star) as  wildcard. 
+        Specific values are always stronger than wildcards. A wildcard on the publicSessionId and a specific 
+        value on subjectId are stronger than the opposite. As a threshold you can either specify an absolute 
+        value or a percentage (values higher than the max value of the queue result in a warning and the 
+        threshold is set to the max value of the queue (100%).
+    </td>
+ </tr>
+ <tr>
+    <td>client/[subjectId]/queue/subject/event/threshold.90%</td>
+    <td>The behaviour described for the callback queues is also valid here.
+        As subjectId you can either pass a specific value or a '*' (star) as  wildcard. 
+        Specific values are always stronger than wildcards. As a threshold you can either specify an absolute 
+        value or a percentage (values higher than the max value of the queue result in a warning and the 
+        threshold is set to the max value of the queue (100%).
+    </td>
+ </tr>
+ <tr>
+    <td>topic/[topicId]/queue/history/event/threshold.90%</td>
+    <td>The behaviour described for the callback queues is also valid here.
+        As topicId you can either pass a specific value or a '*' (star) as  wildcard. 
+        Specific values are always stronger than wildcards. As a threshold you can either specify an absolute 
+        value or a percentage (values higher than the max value of the queue result in a warning and the 
+        threshold is set to the max value of the queue (100%).
+    </td>
+ </tr>
  </table>
 
 
