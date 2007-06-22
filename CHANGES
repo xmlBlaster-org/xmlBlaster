@@ -1,5 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+
+ o #16280 Replication:
+          Bugfix in SqlRow.java to prevent double base64 encoded client properties for renamed columns
  
  o #16273 Added events for queue thresholds (subject- callback and history queues)
 
