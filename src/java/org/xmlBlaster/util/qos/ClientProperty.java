@@ -68,6 +68,7 @@ public final class ClientProperty extends EncodableData
     * @param name  The unique property key
     * @param type The data type of the value
     * @param encoding null or Constants.ENCODING_BASE64="base64"
+    * @param value The original value (not yet encoded!)
     */
    public ClientProperty(String name, String type, String encoding, String value) {
       super("clientProperty", name, type, encoding, value);
