@@ -45,33 +45,31 @@ public class EventPluginTest extends TestCase implements I_Callback {
       try {
          String filename = System.getProperty("user.home") + "/tmp/xmlBlasterPluginsTest.xml";
          FileWriter file = new FileWriter(filename);
-         file.append("<xmlBlaster>\n");
-         file.append("<plugin create='true' id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>\n");
-         file.append("   <action do='LOAD' onStartupRunlevel='4' sequence='20' \n");
-         file.append("           onFail='resource.configuration.pluginFailed'/>\n");
-         file.append("   <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   \n");
-         file.append("   <attribute id='port'>" + port + "</attribute>\n");
-         file.append("   <attribute id='compress/type'></attribute>\n");
-         file.append("</plugin>\n");
-         file.append("<plugin create='true' id='coreEvents' className='org.xmlBlaster.engine.EventPlugin'>\n");
-         file.append("   <action do='LOAD' onStartupRunlevel='8' sequence='4'/>\n");
-         file.append("   <action do='STOP' onShutdownRunlevel='7' sequence='4'/>\n");
-         file.append("   <attribute id='eventTypes'>\n");
-         file.append(eventTypes);
-         file.append("   </attribute>\n");
-         file.append("   <attribute id='destination.publish'>\n");
-         file.append("      publish.content=$_{xml}\n");
-         file.append("   </attribute>\n");
-         file.append("</plugin>\n");
-         file.append("</xmlBlaster>\n");
+         file.write("<xmlBlaster>\n");
+         file.write("<plugin create='true' id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>\n");
+         file.write("   <action do='LOAD' onStartupRunlevel='4' sequence='20' \n");
+         file.write("           onFail='resource.configuration.pluginFailed'/>\n");
+         file.write("   <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   \n");
+         file.write("   <attribute id='port'>" + port + "</attribute>\n");
+         file.write("   <attribute id='compress/type'></attribute>\n");
+         file.write("</plugin>\n");
+         file.write("<plugin create='true' id='coreEvents' className='org.xmlBlaster.engine.EventPlugin'>\n");
+         file.write("   <action do='LOAD' onStartupRunlevel='8' sequence='4'/>\n");
+         file.write("   <action do='STOP' onShutdownRunlevel='7' sequence='4'/>\n");
+         file.write("   <attribute id='eventTypes'>\n");
+         file.write(eventTypes);
+         file.write("   </attribute>\n");
+         file.write("   <attribute id='destination.publish'>\n");
+         file.write("      publish.content=$_{xml}\n");
+         file.write("   </attribute>\n");
+         file.write("</plugin>\n");
+         file.write("</xmlBlaster>\n");
          file.close();
       }
       catch (Exception ex) {
          ex.printStackTrace();
          fail(ex.getMessage());
       }
-      
-      
    }
    
    private void startServer() {
@@ -134,7 +132,7 @@ public class EventPluginTest extends TestCase implements I_Callback {
       log.info("***EventPluginTest: testTimeout [SUCCESS]");
    }
    
-   public void testQueueEvents() {
+   public void testQueueEventsWithoutWildcards() {
       try {
          String userName = "eventTester";
          String topicName = "eventTest";
@@ -143,6 +141,89 @@ public class EventPluginTest extends TestCase implements I_Callback {
          String eventTypes = "client/eventTester/session/1/queue/callback/event/threshold.70%,";
          eventTypes +="client/" + userName + "/session/" + sessionId + "/queue/callback/event/threshold.70%,";
          eventTypes +="topic/" + topicName + "/queue/history/event/threshold.4";
+         writePluginsFile(port, eventTypes);
+         startServer();
+         String[] args = new String[] {
+               "-dispatch/connection/plugin/socket/port", port,
+               "-dispatch/connection/retries", "-1",
+               "-dispatch/callback/retries", "-1"
+               };
+         {
+            Global global = new Global(args);
+            ConnectQos qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
+            I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
+            conn.connect(qos, this);
+            SubscribeKey subKey = new SubscribeKey(global, topicName);
+            SubscribeQos subQos = new SubscribeQos(global);
+            conn.subscribe(subKey, subQos);
+            conn.leaveServer(null);
+         }
+
+         {
+            Global secondGlobal = new Global(args);
+            ConnectQos qos = new ConnectQos(secondGlobal, "tester/1", "secret");
+            I_XmlBlasterAccess conn2 = secondGlobal.getXmlBlasterAccess();
+            conn2.connect(qos, this.msgInterceptor);
+            SubscribeKey subKey = new SubscribeKey(secondGlobal, "__sys__Event");
+            SubscribeQos subQos = new SubscribeQos(secondGlobal);
+            conn2.subscribe(subKey, subQos);
+         }
+         
+         this.msgInterceptor.clear();
+
+         {
+            // publish now
+            Global global = new Global(args);
+            ConnectQos qos = new ConnectQos(global, "testPublisher/1", "secret");
+            I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
+            conn.connect(qos, this);
+            PublishKey pubKey = new PublishKey(global, topicName);
+            PublishQos pubQos = new PublishQos(global);
+            for (int i=0; i < 5; i++) {
+               String content = "This is test " + i;
+               conn.publish(new MsgUnit(pubKey, content.getBytes(), pubQos));
+            }
+            
+            int ret = this.msgInterceptor.waitOnUpdate(1000L, 1);
+            assertEquals("We expected one message for the excess of the history queue", 1, ret);
+            this.msgInterceptor.clear();
+            for (int i=5; i < 8; i++) {
+               String content = "This is test " + i;
+               conn.publish(new MsgUnit(pubKey, content.getBytes(), pubQos));
+            }
+            ret = this.msgInterceptor.waitOnUpdate(1000L, 1);
+            assertEquals("We expected one message for the excess of the callback queue", 1, ret);
+            this.msgInterceptor.clear();
+            conn.disconnect(new DisconnectQos(global));
+         }
+
+         {
+            Global global = new Global(args);
+            ConnectQos qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
+            I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
+            conn.connect(qos, this);
+            Thread.sleep(1000L);
+            conn.disconnect(new DisconnectQos(global));
+         }
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         fail(ex.getMessage());
+      }
+      finally {
+         stopServer();
+      }
+   }
+
+   public void testQueueEventsWithWildcards() {
+      try {
+         String userName = "eventTester";
+         String topicName = "eventTest";
+         String sessionId = "1";
+         String port = "7617";
+         String eventTypes = "";
+         eventTypes +="client/*/session/*/queue/callback/event/threshold.70%,";
+         eventTypes +="topic/*/queue/history/event/threshold.4";
          writePluginsFile(port, eventTypes);
          startServer();
          String[] args = new String[] {
@@ -241,7 +322,11 @@ public class EventPluginTest extends TestCase implements I_Callback {
          test.tearDown();
 
          test.setUp();
-         test.testQueueEvents();
+         test.testQueueEventsWithWildcards();
+         test.tearDown();
+         
+         test.setUp();
+         test.testQueueEventsWithoutWildcards();
          test.tearDown();
          
       }
