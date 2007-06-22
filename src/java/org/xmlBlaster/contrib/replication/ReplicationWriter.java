@@ -397,6 +397,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                if (command.equalsIgnoreCase(REPLICATION_CMD)) {
                   for (int i=0; i < rows.size(); i++) {
                      SqlRow row = ((SqlRow)rows.get(i)).cloneRow();
+
                      // TODO consistency check
                      action = getStringAttribute(ACTION_ATTR, row, description);
 
@@ -409,11 +410,12 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
                      table = this.mapper.getMappedTable(originalCatalog, originalSchema, originalTable, null, originalTable);
 
                      if (action == null)
-                        throw new Exception(ME + ".store: row with no action invoked '" + row.toXml(""));
+                        throw new Exception(ME + ".store: row with no action invoked '" + row.toXml("", true, false, true));
                      int count = modifyColumnsIfNecessary(originalCatalog, originalSchema, originalTable, row);
-                     if (count != 0)
-                        log.fine("modified '" + count  + "' entries");
-                     log.fine("store: " + row.toXml(""));
+                     if (count != 0) {
+                        if (log.isLoggable(Level.FINE)) log.fine("modified '" + count  + "' entries");
+                     }
+                     if (log.isLoggable(Level.FINE)) log.fine("store: " + row.toXml("", true, true, true));
                      SqlDescription desc = getTableDescription(catalog, schema, table, conn);
                      boolean process = true;
                      if (this.prePostStatement != null) // row is the modified column name

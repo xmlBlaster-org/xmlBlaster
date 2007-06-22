@@ -632,14 +632,14 @@ public class SqlInfo implements ReplicationConstants {
    }
 
    public String toXml(String extraOffset) {
-      return toXml(extraOffset, false);
+      return toXml(extraOffset, false, false);
    }
    
    public String toString() {
-      return toXml("", true);
+      return toXml("", true, true);
    }
    
-   private final String toXml(String extraOffset, boolean doTruncate) {
+   private final String toXml(String extraOffset, boolean doTruncate, boolean forceReadable) {
       String charSet = info.get("charSet", "UTF-8");
       final boolean withRowTag = true; // used for row.toXml()
       StringBuffer sb = new StringBuffer(4096);
@@ -656,7 +656,7 @@ public class SqlInfo implements ReplicationConstants {
       Iterator iter = this.rows.iterator();
       while (iter.hasNext()) {
          SqlRow recordRow = (SqlRow)iter.next();
-         sb.append(recordRow.toXml(extraOffset + "  ", withRowTag, doTruncate));
+         sb.append(recordRow.toXml(extraOffset + "  ", withRowTag, doTruncate, forceReadable));
          if (doTruncate && sb.length() > MAX_BUF_SIZE) {
             sb.append(" ... (total num of rows=").append(this.rows.size()).append(")");
             return sb.toString();

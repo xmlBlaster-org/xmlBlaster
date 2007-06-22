@@ -185,7 +185,9 @@ public class SqlRow {
          ClientProperty oldEntry = (ClientProperty)map.remove(oldName);
          if (oldEntry == null)
             throw new Exception("The renaming of '" + oldName + "' to '" + newName + "' failed because the old entry was not found in the map");
-         ClientProperty newProp = new ClientProperty(newName, oldEntry.getType(), oldEntry.getEncoding(), oldEntry.getValueRaw());
+         //ClientProperty newProp = new ClientProperty(newName, oldEntry.getType(), oldEntry.getEncoding(), oldEntry.getValueRaw());
+         ClientProperty newProp = new ClientProperty(newName, oldEntry.getType(), oldEntry.getEncoding());
+         newProp.setValueRaw(oldEntry.getValueRaw());
          map.put(newName, newProp);
          list.add(newName);
       }
@@ -301,10 +303,10 @@ public class SqlRow {
    }
 
    public String toXml(String extraOffset, boolean withRowTag) {
-      return toXml(extraOffset, withRowTag, false);
+      return toXml(extraOffset, withRowTag, false, false);
    }
    
-   final String toXml(String extraOffset, boolean withRowTag, boolean doTruncate) {
+   public final String toXml(String extraOffset, boolean withRowTag, boolean doTruncate, boolean forceReadable) {
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
@@ -322,7 +324,7 @@ public class SqlRow {
          while (iter.hasNext()) {
             Object key = iter.next();
             ClientProperty prop = (ClientProperty)this.columns.get(key);
-            sb.append(prop.toXml(extraOffset + "  ", COL_TAG));
+            sb.append(prop.toXml(extraOffset + "  ", COL_TAG, forceReadable));
             if (doTruncate && sb.length() > SqlInfo.MAX_BUF_SIZE) {
                sb.append(" ...");
                return sb.toString();
