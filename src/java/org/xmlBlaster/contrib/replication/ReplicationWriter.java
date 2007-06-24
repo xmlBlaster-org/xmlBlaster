@@ -374,10 +374,14 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       if (schema != null && schema.length() > 1)
          completeTableName = schema + "." + table;
       
-      // log.info(ME + ".store invoked for cmd='" + command + "' and identity ='" + identity + "'");
-      log.info("store invoked for \n" + dbInfo.toString());
+      if (log.isLoggable(Level.FINE)) 
+         log.fine("store invoked for \n" + dbInfo.toString());
+      else
+         log.info(ME + ".store invoked for cmd='" + command + "' and table ='" + completeTableName + "'");
+      
       if (this.nirvanaClient)
          return;
+      
       if (isAllowedCommand(command)) {
          Connection conn = this.keptConnection; // in case in the middle of a transaction !!
          if (conn == null)

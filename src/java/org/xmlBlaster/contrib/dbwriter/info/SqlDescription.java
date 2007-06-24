@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import org.xml.sax.InputSource;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.dbwriter.SqlInfoParser;
@@ -80,6 +79,7 @@ public class SqlDescription {
    private Map attributes;
    private List attributeKeys;
    private boolean caseSensitive;
+   private boolean quoteColumnNames;
    private boolean pk;
    private boolean pkKnown;
    private boolean schemaKnown;
@@ -168,6 +168,7 @@ public class SqlDescription {
       this.attributes = new HashMap();
       this.attributeKeys = new ArrayList();
       this.caseSensitive = info.getBoolean(DbWriter.CASE_SENSITIVE_KEY, false);
+      this.quoteColumnNames = info.getBoolean(DbWriter.QUOTE_COLUMN_NAMES_KEY, false);
       this.charSet = info.get("charSet", null);
       this.info = info;
       try {
@@ -351,7 +352,10 @@ public class SqlDescription {
                buf1.append(", ");
                buf2.append(", ");
             }
-            buf1.append(colNames[i]).append(" ");
+            if (this.quoteColumnNames)
+               buf1.append("\"").append(colNames[i]).append("\" ");
+            else
+               buf1.append(colNames[i]).append(" ");
             buf2.append("? ");
          }
       }
@@ -716,7 +720,7 @@ public class SqlDescription {
          return st.executeUpdate();
       }
       catch (Throwable ex) {
-         log.severe(" Entry '" + newRow.toXml("") + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+         log.severe(" Entry '" + newRow.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
          if (ex instanceof Exception)
             throw (Exception)ex;
          else
@@ -782,7 +786,7 @@ public class SqlDescription {
          return st.executeUpdate();
       }
       catch (Throwable ex) {
-         log.severe(" Entry '" + row.toXml("") + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+         log.severe(" Entry '" + row.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
          if (ex instanceof Exception)
             throw (Exception)ex;
          else
@@ -829,16 +833,16 @@ public class SqlDescription {
       catch (SQLException ex) {
          // unique constraint for Oracle: TODO implement also for other DB
          if (ex.getMessage().indexOf("ORA-00001") > -1) {
-            log.severe("Entry '" + row.toXml("") + "' exists already. Will ignore it an continue");
+            log.severe("Entry '" + row.toXml("", true, false, true) + "' exists already. Will ignore it an continue");
             return 0;
          }
          else {
-            log.severe(" Entry '" + row.toXml("") + "' caused an exception. Statement was *" + sql + "': " + ex.getMessage());
+            log.severe(" Entry '" + row.toXml("", true, false, true) + "' caused an exception. Statement was *" + sql + "': " + ex.getMessage());
             throw ex;
          }
       }
       catch (Throwable ex) {
-         log.severe(" Entry '" + row.toXml("") + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
+         log.severe(" Entry '" + row.toXml("", true, false, true) + "' caused a (throwable) exception. Statement was '" + sql + "': " + ex.getMessage());
          if (ex instanceof Exception)
             throw (Exception)ex;
          else

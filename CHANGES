@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16283 Replication:
+          Added property 'dbWriter.quoteColumnNames=false', set to true for DB2 host sinks (e.g. "COMMENT")
+
  o #16280 Replication:
           Bugfix in SqlRow.java to prevent double base64 encoded client properties for renamed columns
  

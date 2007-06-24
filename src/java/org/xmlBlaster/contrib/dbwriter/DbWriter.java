@@ -14,7 +14,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.xml.sax.InputSource;
 import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
@@ -37,6 +36,11 @@ public class DbWriter implements I_Update {
    private static Logger log = Logger.getLogger(DbWriter.class.getName());
    public final static String DB_POOL_KEY = "db.pool";
    public final static String CASE_SENSITIVE_KEY = "dbWriter.caseSensitive";
+   /** dbWriter.quoteColumnNames=true: Add quotes around the column names like "COMMENT" instead
+    * of COMMENT, this is e.g. needed for DB2 sinks running on a host (OS390).
+    * Defaults to false.
+    */
+   public final static String QUOTE_COLUMN_NAMES_KEY = "dbWriter.quoteColumnNames";
    private I_Info info;
    private I_ChangePublisher eventEngine;
    private I_Parser parser;
