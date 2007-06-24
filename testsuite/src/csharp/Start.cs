@@ -1,14 +1,14 @@
 /*
 gacutil -l | grep -i unit
 
-gmcs /unsafe /r:nunit.framework /define:"XMLBLASTER_MONO" -debug+ -out:Start.exe *.cs ../../../src/csharp/XmlBlasterAccess.cs ../../../src/csharp/Key.cs ../../../src/csharp/Qos.cs
+gmcs /unsafe /r:nunit.framework /define:"XMLBLASTER_MONO" -debug+ -out:Start.exe *.cs service/*.cs ../../../src/csharp/XmlBlasterAccess.cs ../../../src/csharp/Key.cs ../../../src/csharp/Qos.cs ../../../src/csharp/service/*.cs  ../../../src/csharp/util/*.cs
 mono Start.exe
 
-gmcs /unsafe /r:nunit.framework /t:library /define:"XMLBLASTER_MONO" -debug+ -out:xmlBlasterClient.dll *.cs ../../../src/csharp/XmlBlasterAccess.cs ../../../src/csharp/Key.cs ../../../src/csharp/Qos.cs
+gmcs /unsafe /r:nunit.framework /t:library /define:"XMLBLASTER_MONO" -debug+ -out:xmlBlasterClient.dll *.cs service/*.cs ../../../src/csharp/XmlBlasterAccess.cs ../../../src/csharp/Key.cs ../../../src/csharp/Qos.cs ../../../src/csharp/service/*.cs  ../../../src/csharp/util/*.cs
 mono nunit-console.exe xmlBlasterClient.dll
 
 gacutil -l
-csc /unsafe /r:nunit.framework /t:library -debug+ -out:xmlBlasterClient.dll *.cs ..\..\..\src\csharp\XmlBlasterAccess.cs ..\..\..\src\csharp\Key.cs ..\..\..\src\csharp\Qos.cs
+csc /unsafe /r:nunit.framework /t:library -debug+ -out:xmlBlasterClient.dll *.cs ..\..\..\src\csharp\XmlBlasterAccess.cs ..\..\..\src\csharp\Key.cs ..\..\..\src\csharp\Qos.cs ..\..\..\src\csharp\service\*.cs  ..\..\..\src\csharp\util\*.cs
 */
 using System;
 using System.IO;
@@ -24,7 +24,11 @@ public class Start {
       //testSer.name = "Jack";
       //testSer.age = 23;
 
+#if XMLBLASTER_MONO
+      string path = @"/tmp";
+#else
       string path = @"C:\tmp\in";
+#endif
       string name = Path.Combine(path, "2007-04-20T12-10-44.xml");
       FileLocator.writeBinaryFile(name, Serialization.Serialize<TestSer>(testSer));
 

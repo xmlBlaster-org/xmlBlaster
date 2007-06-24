@@ -11,3 +11,7 @@ Open in the Nunit GUI
 Note: Some test require a running xmlBlaster server on localhost
 
 
+Linux/Mono:
+   See header of Start.cs
+
+

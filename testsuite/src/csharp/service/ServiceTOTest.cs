@@ -192,7 +192,7 @@ namespace org.xmlBlaster.contrib.service {
             ServiceTO service = ServiceTO.parse(xml);
             Assert.IsNotNull(service);
             Assert.AreEqual(3, service.getProps().Count);
-            string tmp = service.getPropValue(PropTO.KEY_RESULT);
+            //string tmp = service.getPropValue(PropTO.KEY_RESULT);
             Assert.AreEqual("Bla<BlaBla", service.getPropValue(PropTO.KEY_RESULT));
          }
 

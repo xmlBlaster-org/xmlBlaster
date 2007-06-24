@@ -119,11 +119,13 @@ namespace org.xmlBlaster.client
          return -1;
       }
 
+      /*
       static void Main(string[] argv)
       {
          NmeaTest n = new NmeaTest();
          n.CheckSerialInput();
       }
+      */
    }
 
 }
