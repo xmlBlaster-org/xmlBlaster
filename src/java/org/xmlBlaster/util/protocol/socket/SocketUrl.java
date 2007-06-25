@@ -201,7 +201,8 @@ public class SocketUrl
          String txt = "The hostname [" + this.hostname + "] of url '" + getUrl() + "' is invalid, check your '-plugin/socket/" +
                        (isLocal ? "localHostname" : "hostname") + " <ip>' setting: " + e.toString();
          log.warning(txt);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, txt);
+         // throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, txt);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, txt);
       }
    }
 
