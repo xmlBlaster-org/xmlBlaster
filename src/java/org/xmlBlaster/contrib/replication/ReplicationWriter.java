@@ -709,6 +709,9 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
 
    private final String getKey(String catalog, String schema, String tableName) {
       StringBuffer buf = new StringBuffer(256);
+      catalog = (catalog == null) ? "" : catalog.trim();
+      schema = (schema == null) ? "" : schema.trim();
+      tableName = (tableName == null) ? "" : tableName.trim();
       buf.append(catalog).append(".").append(schema).append(".").append(tableName);
       return buf.toString();
    }
