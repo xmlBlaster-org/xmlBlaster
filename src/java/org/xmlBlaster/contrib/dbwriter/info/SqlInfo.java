@@ -51,10 +51,14 @@ public class SqlInfo implements ReplicationConstants {
    private List rows;
    
    private I_Info info;
-
+   
+   /** This information can be very expensive on DB2 hosts (3 minutes / table) */
+   private boolean queryImportedKeys;
+   
    public SqlInfo(I_Info info) {
       this.info = info;
       this.rows = new ArrayList();
+      this.queryImportedKeys = this.info.getBoolean("dbWriter.queryImportedKeys", true);
    }
 
    public boolean fillMetadata(Connection conn, String catalog, String schema, String table, ResultSet queryRs) throws Exception {
@@ -233,27 +237,29 @@ public class SqlInfo implements ReplicationConstants {
             rs = null;
          }
 
-         rs = meta.getImportedKeys(catalog, schema, table);
-         try {
-            while (rs.next()) {
-               colName = rs.getString(8);
-               SqlColumn col = description.getColumn(colName);
-               if (col != null) {
-                  col.setFkCatalog(rs.getString(1));
-                  col.setFkSchema(rs.getString(2));
-                  col.setFkTable(rs.getString(3));
-                  col.setFkCol(rs.getString(4));
-                  col.setFkSeq(rs.getString(9));
-                  col.setFkUpdRule(rs.getString(10));
-                  col.setFkDelRule(rs.getString(11));
-                  col.setFkDef(rs.getString(14));
+         if (this.queryImportedKeys) {
+            rs = meta.getImportedKeys(catalog, schema, table);
+            try {
+               while (rs.next()) {
+                  colName = rs.getString(8);
+                  SqlColumn col = description.getColumn(colName);
+                  if (col != null) {
+                     col.setFkCatalog(rs.getString(1));
+                     col.setFkSchema(rs.getString(2));
+                     col.setFkTable(rs.getString(3));
+                     col.setFkCol(rs.getString(4));
+                     col.setFkSeq(rs.getString(9));
+                     col.setFkUpdRule(rs.getString(10));
+                     col.setFkDelRule(rs.getString(11));
+                     col.setFkDef(rs.getString(14));
+                  }
                }
             }
-         }
-         finally {
-            if (rs != null)
-               rs.close();
-            rs = null;
+            finally {
+               if (rs != null)
+                  rs.close();
+               rs = null;
+            }
          }
 
          // String version = "0.0";
