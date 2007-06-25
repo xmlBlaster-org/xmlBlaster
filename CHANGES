@@ -1,6 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16264 SocketUrl: changed the Exception to be a communication for cases where the host is temporarly 
+          unavailable. If you have a positive SessionId it will go in polling (as opposed to before where 
+          it went to dead)
+
  o #16283 Replication:
           Added property 'dbWriter.quoteColumnNames=false', set to true for DB2 host sinks (e.g. "COMMENT")
 
