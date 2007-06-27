@@ -422,10 +422,17 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello
     callback server is not responding on pings anymore.
     </p>
     <p>
+    With <i>-persistentSubscribe true</i> the subscription is persistently saved on the server,
+    so after a subscriber or a server crash (or both crash) the subscription is still there and no messages are left out.
+    </p>
+    <p>
     The other important setting is <i>-session.name joeSubscriber/5</i>, we have not only passed
     a subjectId (loginName) <i>joeSubscriber</i> but also forced to use the publicSessionId <i>5</i>.
     This way we can always reconnect to the session <i>joeSubscriber/5</i> as long as this session
     is still alive.
+    </p>
+    <p>
+    The publisher will queue messages during the server is not available in a persistent client side queue.
     </p>
    </example>
 
