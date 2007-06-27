@@ -407,7 +407,7 @@ java javaclients.HelloWorldPublish -interactive true -numPublish 10 -oid Hello
 // Start a subscriber in interactive mode (more options are written out to play with):
 
 java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello
-                                     -dispatch/callback/retries -1
+                               -dispatch/callback/retries -1  -persistentSubscribe true
 
 // - Now you can kill 'HelloWorldSubscribe' (without unSubscribe/disconnect)
 // - Publish some messages with the still running 'HelloWorldPublish'
