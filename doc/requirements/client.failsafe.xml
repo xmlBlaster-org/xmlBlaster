@@ -402,7 +402,7 @@ java org.xmlBlaster.Main
 // Start a publisher in interactive mode (more options are written out to play with):
 
 java javaclients.HelloWorldPublish -interactive true -numPublish 10 -oid Hello
-                                   -persistent true
+                                   -persistent true -session.name publisher/1 
 
 // Start a subscriber in interactive mode (more options are written out to play with):
 
