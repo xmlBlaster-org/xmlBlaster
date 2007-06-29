@@ -7,6 +7,7 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -206,6 +207,11 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       }
       else {
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Session lasts forever, requested expiry timer was 0");
+      }
+
+      // "__remoteProperties"
+      if (this.connectQos.getData().getClientProperty(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, false)) {
+    	  mergeRemoteProperties(this.connectQos.getData().getClientProperties());
       }
 
       // JMX register "client/joe/1"
@@ -515,6 +521,11 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       if (this.connectQos.getData().isPersistent()) // otherwise persistent sessions could be made transient
          newConnectQos.getData().setPersistent(true); // and would never be deleted from persistence.
       this.connectQos = newConnectQos; // Replaces ConnectQosServer settings like bypassCredentialCheck
+
+      // "__remoteProperties"
+      if (newConnectQos.getData().getClientProperty(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, false)) {
+    	  mergeRemoteProperties(newConnectQos.getData().getClientProperties());
+      }
    }
 
    /**
@@ -1025,12 +1036,19 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public synchronized void mergeRemoteProperties(Map map) {
       if (map == null || map.size() == 0) return;
       if (this.remoteProperties == null) {
+          this.remoteProperties = new ClientPropertiesInfo(new HashMap());
+    	  /*// Changed 2007-06-29 marcel: we now take a clone
          this.remoteProperties = new ClientPropertiesInfo(map);
+         // remove, is only a hint:
+         this.remoteProperties.put(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, (ClientProperty)null);
          return;
+         */
       }
       Iterator it = map.keySet().iterator();
       while (it.hasNext()) {
          String key = (String)it.next();
+         if (Constants.CLIENTPROPERTY_REMOTEPROPERTIES.equals(key))
+         	continue; // Remove, is only a flag
          Object value = map.get(key);
          this.remoteProperties.put(key, (ClientProperty)value);
       }

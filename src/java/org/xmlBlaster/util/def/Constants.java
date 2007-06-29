@@ -14,14 +14,14 @@ import org.xmlBlaster.jms.XBConnectionMetaData;
  * Holding some Constants
  * See xmlBlaster/src/c++/util/Constants.h
  * <p>
- * Probably we should change the code to use the 
+ * Probably we should change the code to use the
  * <a href="http://developer.java.sun.com/developer/JDCTechTips/2001/tt0807.html">enum pattern</a>
  * for some of the constants in this class
  * </p>
  */
 public class Constants {
    public static final String UTF8_ENCODING="UTF-8";
-   
+
    public static final String DEFAULT_SECURITYPLUGIN_TYPE = "htpasswd";
    public static final String DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
 
@@ -51,7 +51,7 @@ public class Constants {
 
    // Used to lookup in global.getObjectEntry(OBJECT_ENTRY_ServerScope)
    public final static String  OBJECT_ENTRY_ServerScope = "ServerNodeScope";
-      
+
    /**
     * The SOCKET protocol can support zlib compression with streaming compression
     * A partial flush means that all data will be output,
@@ -70,7 +70,7 @@ public class Constants {
 
    /**
     * The native authentication instance of the xmlBlaster server is available
-    * under this key in Global.instance().getProperties(). 
+    * under this key in Global.instance().getProperties().
     * <pre>
     * </pre>
     */
@@ -90,7 +90,7 @@ public class Constants {
    public static final int XMLBLASTER_PORT = 3412;
 
    /**
-    * The xmlBlaster SNMP node 11662 registered at IANA. 
+    * The xmlBlaster SNMP node 11662 registered at IANA.
     * <p />
     * XmlBlaster has a registered SNMP number under iso.org.dod.internet.private.enterprise (1.3.6.1.4.1),
     * our tree leaf is 1.3.6.1.4.1.11662<br />
@@ -100,7 +100,7 @@ public class Constants {
    public static final int XMLBLASTER_SNMP = 11662;
 
    /**
-    * The xmlBlaster SNMP node 1.3.6.1.4.1.11662 as registered at IANA. 
+    * The xmlBlaster SNMP node 1.3.6.1.4.1.11662 as registered at IANA.
     * <br />
     * Returns a long array containing the SNMP hierarchy to xmlBlaster
     */
@@ -117,23 +117,29 @@ public class Constants {
    /** ConnectQos transports in its QoS clientProperty an optional flag to suppress cb ping */
    public final static String CLIENTPROPERTY_INITIAL_CALLBACK_PING = "__initialCallbackPing";
 
+   /**
+    * If this clientProperty is send with ConnectQos the clientProperties are
+    * copied to the SessionInfo.remoteProperty map (which are manipulatable by jconsole and EventPlugin)
+    */
+   public final static String CLIENTPROPERTY_REMOTEPROPERTIES = "__remoteProperties";
+
    /* C-client if queued on client side: "<qos><state id='OK' info='QUEUED'/></qos>" */
-      
+
    public final static String STATE_WARN = "WARNING";
    public final static String RET_WARN = "<qos><state id='" + Constants.STATE_WARN + "'/></qos>";
 
    /** The returned message status if message is stale (that is old but not erased yet) */
    //public final static String STATE_STALE = "STALE"; // needs to be implemented as another message timer TODO!!!
    //public final static String RET_STALE = "<qos><state id='" + Constants.STATE_STALE + "'/></qos>";
-   
+
    /** The returned message status if message timeout occurred (but not erased) */
    public final static String STATE_TIMEOUT = "TIMEOUT";
    public final static String RET_TIMEOUT = "<qos><state id='" + Constants.STATE_TIMEOUT + "'/></qos>";
-   
+
    /** The returned message status if message is expired (timeout occurred and is erased) */
    public final static String STATE_EXPIRED = "EXPIRED";
    public final static String RET_EXPIRED = "<qos><state id='" + Constants.STATE_EXPIRED + "'/></qos>";
-   
+
    /** The returned message status if message is explicitly erased by a call to erase() */
    public final static String STATE_ERASED = "ERASED";
    public final static String RET_ERASED = "<qos><state id='" + Constants.STATE_ERASED + "'/></qos>";
@@ -142,7 +148,7 @@ public class Constants {
    public final static String STATE_FORWARD_ERROR = "FORWARD_ERROR";
    public final static String RET_FORWARD_ERROR = "<qos><state id='" + Constants.STATE_FORWARD_ERROR + "'/></qos>";
 
-   /** Additional info for state. 
+   /** Additional info for state.
        The returned message status if message couldn't be forwarded to the master cluster node but
        is in the tail back queue to be delivered on reconnect or on client side message
        recording.
@@ -251,36 +257,36 @@ public class Constants {
    public static final String TOXML_FORCEREADABLE = "forceReadable";
    public static final String TOXML_ENCLOSINGTAG = "enclosingTag";
    public static final String TOXML_MAXCONTENTLEN = "maxContentLen";
-   
+
    /** Stuff used for Streaming */
-   
-   /** This is the key of a client property telling the number of 
+
+   /** This is the key of a client property telling the number of
     * this chunk in the sequence. The value itself is a long.
     */
    // public final static String CHUNK_SEQ_NUM = "__CHUNK_SEQ_NUM";
    // public final static String CHUNK_SEQ_NUM = XBConnectionMetaData.JMSX_GROUP_SEQ;
-   
+
    /** If this exists it is always set to boolean 'true' */
    // public final static String CHUNK_EOF = "__CHUNK_EOF";
    // public final static String CHUNK_EOF = XBConnectionMetaData.JMSX_GROUP_EOF;
-   
-   /** If set, an exception occured in this chunk. It contains the 
+
+   /** If set, an exception occured in this chunk. It contains the
     * exception. It is used to perform clean up in case of exceptions.
     */
    // public final static String CHUNK_EXCEPTION = "__CHUNK_EXCEPTION";
    // public final static String CHUNK_EXCEPTION = XBConnectionMetaData.JMSX_GROUP_EX;
-   
-   /** This is the same for all chunks in a message. It shall be a 
+
+   /** This is the same for all chunks in a message. It shall be a
     * globally unique Identifier. */
    // public final static String STREAM_ID = "__STREAM_ID";
    // public final static String STREAM_ID = XBConnectionMetaData.JMSX_GROUP_ID;
 
    public final static String JMS_PREFIX = "__jms:";
-   
-   public final static String JMS_REPLY_TO = "__jms:JMSReplyTo";  
+
+   public final static String JMS_REPLY_TO = "__jms:JMSReplyTo";
 
    public final static String UPDATE_BULK_ACK = "__updateBulkAck";
-   
+
    /** Mimetypes */
    // see @apache/mime.conf or so
 
@@ -288,7 +294,7 @@ public class Constants {
     * Hypertext Markup Language
     */
    public final static String MIME_HTML = "text/html";
-   
+
    /**
     * Cascading Style Sheet
     */
@@ -304,7 +310,7 @@ public class Constants {
     * See http://www.rfc-editor.org/rfc/rfc3023.txt
     */
    public final static String MIME_XML = "text/xml";
-   
+
    /**
     * Joint Photographic Experts Group
     */
@@ -314,16 +320,16 @@ public class Constants {
     * Portable Network Graphics Format Image
     */
    public final static String MIME_PNG = "image/png";
-   
+
    /**
     * GIF Image
     */
    public final static String MIME_GIF = "image/gif";
-   
+
    /**
     * Adds to the key a prefix JMS_PREFIX if and only if the key is one of the JMSX properties
     * defined by the XmlBlaster. It does not add anything if it already starts with JMS_PREFIX.
-    * 
+    *
     * @param key
     * @param log
     * @return
@@ -337,8 +343,8 @@ public class Constants {
          key = JMS_PREFIX + key;
       return key;
    }
-   
-   
-   
+
+
+
 }
 
