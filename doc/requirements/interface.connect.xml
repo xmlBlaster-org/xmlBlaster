@@ -230,6 +230,29 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     </p>
    </td>
    </tr>
+   <tr>
+   <td>clientProperty</td>
+   <td>
+    <p id="remoteProperty">
+    Optional clientProperties can be added to the ConnectQos to send other configuration informations to xmlBlaster.
+    Currently none are predefined.
+    </p>
+    <p>
+    It is possible to send <b>remoteProperties</b> on login with the ConnectQos clientProperties.
+    If you add an additional clientProperty<br />
+     <code>&lt;clientProperty name='__remoteProperties'>true&lt;/clientProperty></code>
+     <br /> to the ConnectQos, all
+    other clientProperties are copied to the remoteProperties map.
+    <br />
+    The remoteProperties are useful for observing the remote status of connected clients.
+    Clients can publish their status to xmlBlaster and this status can be observed by the EventPlugin framework.
+    For example a client can choose to send its error logging to xmlBlaster or other fatal situations
+    like low memory or lost database connections.
+    The remoteProperties are available with JMX, so you can easily observe or manipulate them with the jconsole.
+    For a description on how to publish further remoteProperties please see the <a href="admin.events.html#remoteProperty" target="others">admin.events</a> requirement.
+    </p>
+   </td>
+   </tr>
    </table>
    </example>
 

@@ -95,7 +95,7 @@
     <td>client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%</td>
     <td>
         Sends an event when the specified threshold for the given queue is reached. After the first event, additional
-    	increasing of the queue will only result in an event if the queue has first decreased under the threshold again.
+        increasing of the queue will only result in an event if the queue has first decreased under the threshold again.
         Only the main queues send events, i.e. if you have configured a CACHE having a RAM queue as its transient queue
         and a JDBC queue as its persistence, then only the CACHE queue itself will send an event. This can be sent for
         all types of destination (email, message, jmx ...).
@@ -417,6 +417,7 @@
       <p>Clients can publish their status to xmlBlaster and this status can be observed by the EventPlugin framework.
       For example a client can choose to send its error logging to xmlBlaster or other fatal situations
       like low memory or lost database connections.
+      The remoteProperties are available with JMX, so you can easily observe or manipulate them with the jconsole.
       </p>
       <p>
       To do this the steps are as follows:
@@ -498,6 +499,10 @@
   ...
 &lt;/node>
       </pre>
+
+      <p>It is possible to send remoteProperties on login with the ConnectQos clientProperties, see the
+      <a href="interface.connect.html#remoteProperty" target="others">interface.connect</a> requirement.
+      </p>
    </example>
 
 
