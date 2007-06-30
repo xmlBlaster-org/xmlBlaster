@@ -1,10 +1,25 @@
 Created-By: xmlBlaster.org maintainers
 Main-Class: org.xmlBlaster.Main
-Class-Path: 
+Class-Path: xmlrpc.jar junit.jar omquery.jar 
+ jacorb/jacorb.jar jacorb/idl.jar jacorb/logkit-1.2.jar 
+ jacorb/avalon-framework-4.1.5.jar 
+ xtdash.jar servlet.jar connector.jar 
  concurrent.jar 
  backport-util-concurrent.jar 
+ gnu-regexp.jar jzlib.jar 
  remotecons.jar 
- omquery.jar 
- commons-codec.jar 
+ demo.jar testsuite.jar xmlunit.jar 
+ tinySQL.jar jhotdraw.jar 
+ jax.jar 
+ jaas.jar jta-spec1_0_1.jar jms.jar ejb2.0.jar 
+ mail.jar activation.jar 
+ batik/batik.jar js.jar 
+ jaxen.jar 
+ postgresql.jar 
+ jmxtools.jar jmxri.jar 
+ hsqldb.jar 
+ java_cup.jar 
+ mx4j-impl.jar mx4j-tools.jar 
+ commons-codec.jar commons-logging.jar 
  commons-lang-2.0.jar
 
