@@ -36,7 +36,6 @@ import org.xmlBlaster.util.qos.ConnectQosData;
     &lt;plugin create='true' id='FileWriter'
            className='org.xmlBlaster.contrib.filewriter.Receiver'>
       &lt;attribute id='mom.topicName'>fileWriterTopic&lt;/attribute>
-      &lt;!-- attribute id='mom.loginName'>FileWriter/1&lt;/attribute>
       &lt;attribute id='connectQos'>&lt;![CDATA[
 	   &lt;qos>
 	      &lt;securityService type='htpasswd' version='1.0'>
