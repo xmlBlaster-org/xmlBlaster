@@ -335,6 +335,28 @@
       <action do='STOP' onShutdownRunlevel='5' sequence='6'/>
    </plugin>
 
+   <!-- See xmlBlaster/src/java/org/xmlBlaster/contrib/filewriter/Receiver.java -->
+   <plugin create='false' id='FileWriter' 
+           className='org.xmlBlaster.contrib.filewriter.Receiver'>
+      <attribute id='mom.topicName'>file.writer</attribute>
+      <!-- attribute id='mom.loginName'>FileWriter/1</attribute> -->
+      <attribute id='connectQos'><![CDATA[
+	   <qos>
+	      <securityService type='htpasswd' version='1.0'>
+	        <user>FileWriter</user>
+	        <passwd>secret</passwd>
+	      </securityService>
+	      <session name='client/FileWriter/session/1' timeout='0' maxSessions='1'
+	                  clearSessions='true' reconnectSameClientOnly='false'/>
+	   </qos>
+	   ]]>
+      </attribute>
+      <attribute id='directoryName'>${user.home}${file.separator}J2meTestResults</attribute>
+      <action do='LOAD' onStartupRunlevel='6' sequence='6'
+                 onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='5' sequence='6'/>
+   </plugin>
+
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.http.html -->
    <plugin create='true' id='HtmlMonitorPlugin.default' className='org.xmlBlaster.contrib.htmlmonitor.HtmlMonitorPlugin'>
       <attribute id='documentRoot'>${user.home}${file.separator}html</attribute>
