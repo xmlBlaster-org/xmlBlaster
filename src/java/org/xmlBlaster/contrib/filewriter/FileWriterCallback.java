@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 Name:      FileWriterCallback.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org, see xmlBlaster-LICENSE filep
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.contrib.filewriter;
@@ -25,11 +25,11 @@ import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * FileWriterCallback stores messages to the file system.
- * 
+ *
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class FileWriterCallback implements I_Update, ContribConstants {
-   
+
    private static Logger log = Logger.getLogger(FileWriterCallback.class.getName());
    private final static int BUF_SIZE = 300000;
    private String dirName;
@@ -40,13 +40,13 @@ public class FileWriterCallback implements I_Update, ContribConstants {
    private File tmpDirectory;
    /** if true it cleans up the chunks after processing, otherwise it leaves them. */
    private boolean keepDumpFiles;
-   
+
    /**
     * Creates a callback
     * @param dirName The name of the directory where to store the files.
     * @param tmpDirName the name of the directory where to store the temporary files.
     * @param lockExtention The extention to use to lock the reading of the file. This is used if the
-    * entries have to be retrieved by the filepoller. Until such a file exists, the entry is not 
+    * entries have to be retrieved by the filepoller. Until such a file exists, the entry is not
     * processed by the file poller.
     * @param overwrite if set to true it will overwrite existing files.
     * @throws Exception
@@ -68,9 +68,9 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       if (!this.directory.isDirectory())
          throw new Exception("'" + dirName + "' is not a directory, can not use it to store files");
       this.tmpDirName = tmpDirName;
-      
+
       this.tmpDirectory = new File(this.tmpDirName);
-      
+
       if (this.tmpDirectory == null)
          throw new Exception("The created temporary directory '" + tmpDirName + "' resulted in a null File object");
       if (!this.tmpDirectory.exists()) {
@@ -86,7 +86,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       this.keepDumpFiles = keepDumpFiles;
    }
 
-   
+
    private static void storeChunk(File tmpDir, String fileName, long chunkNumber, char sep, boolean overwrite, InputStream is) throws Exception {
       fileName = fileName + sep + chunkNumber;
       File file = new File(tmpDir, fileName);
@@ -105,7 +105,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       }
       try {
          log.info("storing file '" + fileName + "' on directory '" + tmpDir.getName() + "' and chunk number '" + chunkNumber + "'");
-         
+
          FileOutputStream fos = new FileOutputStream(file);
          int ret = 0;
          byte[] buf = new byte[BUF_SIZE];
@@ -122,9 +122,9 @@ public class FileWriterCallback implements I_Update, ContribConstants {
 
    /**
     * Returns the number used as the postfix of this file. If there is no such number, -1 is
-    * returned. If the content is null or empty, an exception is thrown. If there is a postfix 
+    * returned. If the content is null or empty, an exception is thrown. If there is a postfix
     * but it is not a number, a -1 is returned.
-    * 
+    *
     * @param filename the filename to check.
     * @param prefix the prefix of the filename (the part before the number)
     * @return a long specifying the postfix number of the file.
@@ -147,7 +147,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       }
       return -1L;
    }
-   
+
    /**
     * The filename prefix for which to retrieve all chunks.
     * @param fileName
@@ -160,7 +160,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       String prefix = fileName + sep;
       String expression = prefix + '*';
       File[] files = this.tmpDirectory.listFiles(new FilenameFilter(expression, false));
-      
+
       if (files.length > 0) {
          TreeMap map = new TreeMap();
          for (int i=0; i < files.length; i++) {
@@ -184,7 +184,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
 
    /**
     * Puts all chunks stored in separate files together in one single one.
-    * 
+    *
     * @param fileName The name of the complete (destination) file.
     * @param expectedChunks The number of expected chunks. If the number of chunks found is
     * bigger, the exceeding ones are ignored and a warning is written to the logs. If the number
@@ -234,7 +234,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
                else
                   throw new Exception("Too few chunks belonging to '" + fileName + "' are found. They are '" + files.length + "' but should be '" + expectedChunks + "'");
             }
-            numChunks = files.length > expectedChunks ? expectedChunks : files.length; 
+            numChunks = files.length > expectedChunks ? expectedChunks : files.length;
          }
          // put all chunks together in one single file
          int bufSize = BUF_SIZE;
@@ -252,7 +252,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
                }
                fis.close();
             }
-            
+
             if (is != null) {
                int ret = 0;
                while ( (ret=is.read(buf)) > -1) {
@@ -282,13 +282,13 @@ public class FileWriterCallback implements I_Update, ContribConstants {
             else
                throw new Exception(ex);
          }
-         
+
          // clean up all chunks since complete file created
          if (!isCompleteMsg && !this.keepDumpFiles) {
             for (int i=0; i < files.length; i++)
                deleteFile(files[i]);
          }
-         
+
          if (lock != null) {
             boolean deleted = lock.delete();
             if (!deleted)
@@ -326,20 +326,20 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          log.warning("The file '" + file.getName() + "' could not be deleted since it does not exist");
       return false;
    }
-   
-   
+
+
    public void update(String topic, InputStream is, Map attrMap) throws Exception {
       String fileName = null;
       boolean isLastMsg = true;
       String exMsg = null;
       long chunkCount = 0L;
-     
+
       if (attrMap != null) {
-         ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR); 
+         ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR);
          if (prop != null)
-            fileName = prop.getStringValue(); 
+            fileName = prop.getStringValue();
          if (fileName == null) {
-            prop = (ClientProperty)attrMap.get(TIMESTAMP_ATTR); 
+            prop = (ClientProperty)attrMap.get(TIMESTAMP_ATTR);
             if (prop != null) {
                String timestamp = prop.getStringValue();
                fileName = "xbl" + timestamp + ".msg";
@@ -390,12 +390,12 @@ public class FileWriterCallback implements I_Update, ContribConstants {
    public void updateOLD(String topic, byte[] content, Map attrMap) throws Exception {
       String fileName = null;
       if (attrMap != null) {
-         ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR); 
+         ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR);
          if (prop != null)
-            fileName = prop.getStringValue(); 
+            fileName = prop.getStringValue();
       }
       if (fileName == null) {
-         ClientProperty prop = (ClientProperty)attrMap.get(TIMESTAMP_ATTR); 
+         ClientProperty prop = (ClientProperty)attrMap.get(TIMESTAMP_ATTR);
          if (prop != null) {
             String timestamp = prop.getStringValue();
             fileName = "xbl" + timestamp + ".msg";
@@ -408,7 +408,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       boolean isLastMsg = false;
       String exMsg = null;
       long chunkCount = 0L;
-      ClientProperty prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_SEQ, attrMap); 
+      ClientProperty prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_SEQ, attrMap);
       if (prop != null) {
          chunkCount = prop.getLongValue();
          prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EOF, attrMap);
@@ -419,7 +419,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
                exMsg = prop.getStringValue();
          }
       }
-      
+
       File file = new File(this.directory, fileName);
       if (file == null)
          throw new Exception("the file for '" + fileName + "' was null");
@@ -439,7 +439,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          }
 
          log.info("storing file '" + fileName + "' on directory '" + this.directory + "', size: " + content.length + " bytes msgNr.='" + chunkCount + "' isLastMsg='" + isLastMsg + "'");
-         
+
          if (exMsg == null) {
             boolean doAppend = !(chunkCount == 0L);
             FileOutputStream fos = new FileOutputStream(file, doAppend);
@@ -450,7 +450,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
             log.severe("An exception occured '" + exMsg + "' will delete the file and interrupt initial update");
             file.delete();
          }
-         
+
          if (lock != null && (isLastMsg || exMsg != null)) {
             boolean deleted = lock.delete();
             if (!deleted)
@@ -461,5 +461,5 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          throw new Exception("update: an exception occured when storing the file '" + fileName + "'", ex);
       }
    }
-   
+
 }
