@@ -59,7 +59,7 @@
       <Link>PInvokeCE.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\src\csharp\Qos.cs">
-      <Link>Qos.cs</Link>
+      <Link>util\Qos.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\src\csharp\service\PropTO.cs">
       <Link>service\PropTO.cs</Link>
