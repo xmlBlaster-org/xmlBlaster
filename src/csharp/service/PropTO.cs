@@ -70,6 +70,8 @@ namespace org.xmlBlaster.contrib.service {
 
       public static readonly string VALUE_RESULTMIME_PREFIX = "application/xmlBlaster.service";
 
+      public static readonly string VALUE_RESULTMIME_EXCEPTION = "application/watchee.service.exception";
+
       public static readonly string PROP = "prop"; // tag name
 
       public static readonly string KEY = "key"; // attribute name

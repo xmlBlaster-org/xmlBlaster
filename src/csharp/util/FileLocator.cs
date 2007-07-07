@@ -198,6 +198,12 @@ namespace org.xmlBlaster.util
          this.fileName = f;
       }
 
+       public string Directory
+       {
+           get { return directoy; }
+           set { directoy = value; }
+       }
+
       public string FileName {
          get { return fileName; }
          set { fileName = value; }
