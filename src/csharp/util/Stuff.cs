@@ -3,30 +3,29 @@ using System.Collections;
 using System.Text;
 using System.IO;
 using System.Reflection;
+using System.Globalization;
 
-namespace org.xmlBlaster.util
-{
+namespace org.xmlBlaster.util {
    ///
    /// @author mr@marcelruff.info 2007 http://www.xmlBlaster.org
    ///
-   class Stuff
-   {
+   public class Stuff {
       /// <summary>
       /// Converts a DateTime to an ISO 8601 datetime string with timezone indicator
       /// See http://en.wikipedia.org/wiki/ISO_8601#Time_zones for info
+      /// The result is of type "yyyy'-'MM'-'dd HH':'mm':'ss'Z'"
       /// </summary>
       /// <param name="DateTimeToConvert">The DateTime to be converted</param>
-      /// <returns>2007-01-01T14:26:20Z</returns>
+      /// <returns>2007-01-01 14:26:20Z</returns>
       public static string ToIsoDateTimeString(DateTime dateTimeToConvert) {
-         return dateTimeToConvert.ToUniversalTime().ToString("s");
-         /*
-         TimeSpan timeSpan = TimeZone.CurrentTimeZone.GetUtcOffset(dateTimeToConvert);
-
-         if (timeSpan.TotalMilliseconds == 0)
-            dateTimeToConvert = dateTimeToConvert.ToUniversalTime();
-
-         return dateTimeToConvert.ToString("o");
-          */
+         DateTime utc = dateTimeToConvert.ToUniversalTime();
+         // "s" creates "2007-01-01T14:26:20": Note the missing 'Z' which means it is local time
+         // "u" creates "2007-01-01 14:26:20Z": Note the valid ' ' instead of 'T' and correct UTC ending
+         string isoUtc = utc.ToString("u");
+         //if (!isoUtc.EndsWith("Z"))
+         //   isoUtc += "Z";
+         //isoUtc.Replace(' ', 'T');
+         return isoUtc;
       }
 
       /// <summary>
@@ -34,76 +33,60 @@ namespace org.xmlBlaster.util
       /// <param name="dateTimeIso8601">2007-01-01T14:26:20Z</param>
       /// <returns></returns>
       public static DateTime FromIsoDateTimeString(string dateTimeIso8601) {
-         return DateTime.TryParse(sDate, "s", null);
+         //DateTime newDate = DateTime.TryParse(dateTimeIso8601, "u", null);
+         return DateTime.Parse(dateTimeIso8601, CultureInfo.InvariantCulture);
       }
 
-      /*
-       * If you want round-trip guaranteed to a data file in text format, then
-use DateTime.ToString("s"). The "s" format conforms to ISO 8601, and
-what's more, it's character-by-character sortable in proper order.
-Alternatively, use the "u" or "U" formats, which are similarly sortable
-but slightly different.
-       * 
-      // Get the current date & time
-DateTime today = DateTime.Now;
+      public readonly static string AMP = "&amp;";
+      public readonly static string LT = "&lt;";
+      public readonly static string GT = "&gt;";
+      public readonly static string QUOT = "&quot;";
+      public readonly static string APOS = "&apos;";
 
-// Convert into a string using the ISO8601 format
-string sDate = today.ToString("s");
+      public readonly static string SLASH_R = "&#x0D;";
+      public readonly static string NULL = "&#x0;";
 
-// Convert the string interpretation of the date back into DateTime format
-DateTime newDate = DateTime.TryParse(sDate, "s", null);
-
-Since the "s" format string is culture independent (same goes for "u" btw)
-you don't need to worry about the culture
-      */
-      private static const char[] AMP = "&amp;".ToCharArray();
-    private static const char[] LT = "&lt;".ToCharArray();
-    private static const char[] GT = "&gt;".ToCharArray();
-    private static const char[] QUOT = "&quot;".ToCharArray();
-    private static const char[] APOS = "&apos;".ToCharArray();
-
-    private static const char[] SLASH_R = "&#x0D;".ToCharArray();
-    private static const char[] NULL = "&#x0;".ToCharArray();
-
-    /**
-     * Escape predefined xml entities (&, <, >, ', ").
-     * Additionally the '\0' is escaped.
-     * @param text
-     * @return The escaped text is appended to the given StringBuffer.
-     */
-    public static string EscapeXml(String text) {
-        if (text == null) return;
-        int length = text.length();
-        string ret = "";
-        for (int i = 0; i < length; i++) {
-            char c = text.charAt(i);
+      /**
+       * Escape predefined xml entities (&, <, >, ', ").
+       * Additionally the '\0' is escaped.
+       * @param text
+       * @return The escaped text is appended to the given StringBuffer.
+       */
+      public static string EscapeXml(String text) {
+         string ret = "";
+         if (text == null) return ret;
+         int length = text.Length;
+         for (int i = 0; i < length; i++) {
+            char c = text[i];
             switch (c) {
-                case '\0':
-                    ret += NULL;
-                    break;
-                case '&':
-                    ret += AMP;
-                    break;
-                case '<':
-                    ret += LT;
-                    break;
-                case '>':
-                    ret += GT;
-                    break;
-                case '"':
-                    ret += QUOT;
-                    break;
-                case '\'':
-                    ret += APOS;
-                    break;
-                case '\r':
-                    ret += SLASH_R;
-                    break;
-                default:
-                    ret += c;
+               case '\0':
+                  ret += NULL;
+                  break;
+               case '&':
+                  ret += AMP;
+                  break;
+               case '<':
+                  ret += LT;
+                  break;
+               case '>':
+                  ret += GT;
+                  break;
+               case '"':
+                  ret += QUOT;
+                  break;
+               case '\'':
+                  ret += APOS;
+                  break;
+               case '\r':
+                  ret += SLASH_R;
+                  break;
+               default:
+                  ret += c;
+                  break;
             }
-        }
-     }
+         }
+         return ret;
+      }
 
       public static string ToClientPropertiesXml(Hashtable h, bool addNewline) {
          string nl = (addNewline) ? "\n" : "";
@@ -120,6 +103,7 @@ you don't need to worry about the culture
          return xml;
       }
 
+#if XMLBLASTER_WINCE
       struct SYSTEMTIME {
           public void LoadDateTime(DateTime dateTime) {
               this.Year = (UInt16)dateTime.Year;
@@ -215,5 +199,6 @@ you don't need to worry about the culture
              return machineName;
         }
         */
+#endif // XMLBLASTER_WINCE
    }
 }
