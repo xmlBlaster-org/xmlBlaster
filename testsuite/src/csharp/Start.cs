@@ -12,6 +12,7 @@ csc /unsafe /r:nunit.framework /t:library -debug+ -out:xmlBlasterClient.dll *.cs
 */
 using System;
 using System.IO;
+using System.Collections;
 using org.xmlBlaster.client;
 using org.xmlBlaster.util;
 using org.xmlBlaster.contrib.service;
@@ -19,6 +20,8 @@ using org.xmlBlaster.contrib.service;
 public class Start {
    static void Main(string[] argv) {
       Console.WriteLine("Startup");
+
+      testStuff();
 
       TestSer testSer = new TestSer("William", 54);
       //testSer.name = "Jack";
@@ -53,6 +56,21 @@ public class Start {
       public override string ToString() {
          return "name=" + this.name + " age=" + this.age;
       }
+   }
+
+   private static void testStuff() {
+      DateTime now = DateTime.Now;
+      string nowUtc = Stuff.ToIsoDateTimeString(now);
+      Console.WriteLine("Now UTC is: " + nowUtc);
+      DateTime again = Stuff.FromIsoDateTimeString(nowUtc);
+      Console.WriteLine("--->" + Stuff.ToIsoDateTimeString(again));
+
+
+      Hashtable h = new Hashtable();
+      //h.Add("key1", "value1");
+      h.Add("key<", "<&>!§");
+      string xml = Stuff.ToClientPropertiesXml(h, true);
+      Console.WriteLine(xml);
    }
 
    private static void testService() {
