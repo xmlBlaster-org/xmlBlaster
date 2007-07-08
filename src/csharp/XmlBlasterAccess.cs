@@ -196,6 +196,10 @@ namespace org.xmlBlaster.client
 
    public class XmlBlasterException : ApplicationException
    {
+      // TODO: ErrorCodes
+      public static readonly string INTERNAL_ILLEGALSTATE = "internal.illegalState";
+      public static readonly string INTERNAL_UNKNOWN = "internal.unknown";
+      
       private bool remote;
       public bool Remote
       {

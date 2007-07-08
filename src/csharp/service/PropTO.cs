@@ -60,17 +60,21 @@ namespace org.xmlBlaster.contrib.service {
 
       public static readonly string VALUE_TASKTYPE_UPDATE = "update";
 
-      public static readonly string VALUE_SERVICE_BUDDY = "buddy";
+      // is specific for each service use case
+      //public static readonly string VALUE_SERVICE_BUDDY = "buddy";
 
-      public static readonly string VALUE_SERVICE_TRACK = "track";
+      // is specific for each service use case
+      //public static readonly string VALUE_SERVICE_TRACK = "track";
 
       public static readonly string VALUE_RESULTENCODING_PLAIN = "";
 
       public static readonly string VALUE_RESULTENCODING_DEFAULT = ENCODING_BASE64;
 
-      public static readonly string VALUE_RESULTMIME_PREFIX = "application/xmlBlaster.service";
+      // is specific for each service use case
+      //public static readonly string VALUE_RESULTMIME_PREFIX = "application/xmlBlaster.service";
 
-      public static readonly string VALUE_RESULTMIME_EXCEPTION = "application/watchee.service.exception";
+      // is specific for each service use case
+      //public static readonly string VALUE_RESULTMIME_EXCEPTION = "application/xmlBlaster.service.exception";
 
       public static readonly string PROP = "prop"; // tag name
 

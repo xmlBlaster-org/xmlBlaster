@@ -4,6 +4,8 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using System.Globalization;
+using System.Runtime.InteropServices;
+using org.xmlBlaster.client; // for XmlBlasterException TODO: move to util
 
 namespace org.xmlBlaster.util {
    ///
@@ -125,14 +127,19 @@ namespace org.xmlBlaster.util {
          info[CLIENTPROPERTY_REMOTEPROPERTIES] = "true";
          info["version.OS"] = System.Environment.OSVersion.ToString();
          info["version.net"] = System.Environment.Version.ToString();
-         //info["version.xmlBlasterC#"] = xb.GetVersion();
-         info["info.OEM"] = GetOemInfo();
-         //info["logical.drive"] = Info.GetLogicalDrives();
-         //info["machine.name"] = Info.MachineName;
-         info["platform.name"] = GetPlatformName();
+         try {
+            //info["version.xmlBlasterC#"] = xb.GetVersion();
+            info["info.OEM"] = GetOemInfo();
+            //info["logical.drive"] = Info.GetLogicalDrives();
+            //info["machine.name"] = Info.MachineName;
+            info["platform.name"] = GetPlatformName();
+         }
+         catch (Exception) {
+         }
       }
 
-#if XMLBLASTER_WINCE
+#if (WINCE || Smartphone || PocketPC || WindowsCE || CF1)
+//#if XMLBLASTER_WINCE (was not activated, why? see PInvoke.cs)
       struct SYSTEMTIME {
           public void LoadDateTime(DateTime dateTime) {
               this.Year = (UInt16)dateTime.Year;
@@ -156,7 +163,7 @@ namespace org.xmlBlaster.util {
       [DllImport("Coredll.dll", EntryPoint = "SetSystemTime")]
       private static extern bool SetSystemTime(ref SYSTEMTIME st);
 
-      public void UpdateSystemTime(DateTime serverTime) {
+      public bool UpdateSystemTime(DateTime serverTime) {
           serverTime = serverTime.ToUniversalTime();
           SYSTEMTIME sysTime = new SYSTEMTIME();
           sysTime.LoadDateTime(serverTime);
@@ -175,7 +182,8 @@ namespace org.xmlBlaster.util {
                int SystemParametersInfoAction_GetPlatformType = 257;
                int SystemParametersInfoFlags_None = 0;
                if (!SystemParametersInfo(SystemParametersInfoAction_GetPlatformType, buffer.Length, buffer, SystemParametersInfoFlags_None)) {
-                  throw new Win32Exception(Marshal.GetLastWin32Error(), "Retrieving platform name failed");
+                  int err = Marshal.GetLastWin32Error();
+                  throw new XmlBlasterException(XmlBlasterException.INTERNAL_UNKNOWN, "Retrieving platform name failed: " + err);
                }
                string platformname = System.Text.Encoding.Unicode.GetString(buffer, 0, buffer.Length);
                return platformname.Substring(0, platformname.IndexOf("\0")); // trim trailing null
@@ -189,8 +197,9 @@ namespace org.xmlBlaster.util {
              int SystemParametersInfoAction_GetOemInfo = 258;
              int SystemParametersInfoFlags_None = 0;
              if (!SystemParametersInfo(SystemParametersInfoAction_GetOemInfo, buffer.Length, buffer, SystemParametersInfoFlags_None)) {
-                 throw new Win32Exception(Marshal.GetLastWin32Error(), "Retrieving OEM info failed");
-             }
+                int err = Marshal.GetLastWin32Error();
+                throw new XmlBlasterException(XmlBlasterException.INTERNAL_UNKNOWN, "Retrieving OEM info failed: " + err);
+             } 
              string oeminfo = System.Text.Encoding.Unicode.GetString(buffer, 0, buffer.Length);
              return oeminfo.Substring(0, oeminfo.IndexOf("\0"));
         }
