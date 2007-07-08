@@ -19,7 +19,7 @@ namespace org.xmlBlaster.util {
       /// </summary>
       /// <param name="DateTimeToConvert">The DateTime to be converted</param>
       /// <returns>2007-01-01 14:26:20Z</returns>
-      public static string ToIsoDateTimeString(DateTime dateTimeToConvert) {
+      public static string ToUtcIsoDateTimeString(DateTime dateTimeToConvert) {
          DateTime utc = dateTimeToConvert.ToUniversalTime();
          // "s" creates "2007-01-01T14:26:20": Note the missing 'Z' which means it is local time
          // "u" creates "2007-01-01 14:26:20Z": Note the valid ' ' instead of 'T' and correct UTC ending
@@ -29,12 +29,31 @@ namespace org.xmlBlaster.util {
          //isoUtc.Replace(' ', 'T');
          return isoUtc;
       }
-
+      /*
+      /// <summary>
+      /// 
+      /// </summary>
+      /// <param name="nanos">Elapsed since 1970</param>
+      /// <returns></returns>
+      public DateTime NanosToDateTime(string nanos) {
+         long nanos = 0;
+         try {
+            nanos = long.Parse(nanos);
+         }
+         catch (Exception) {
+            return null;
+         }
+         long millis = nanos / 1000 / 1000;
+         DateTime. How??
+      }
+      */
       /// <summary>
       /// </summary>
       /// <param name="dateTimeIso8601">2007-01-01T14:26:20Z</param>
-      /// <returns></returns>
-      public static DateTime FromIsoDateTimeString(string dateTimeIso8601) {
+      /// <returns>If dateTimeIso8601 == null we return the current time</returns>
+      public static DateTime UtcDateTimeFromIsoString(string dateTimeIso8601) {
+         if (dateTimeIso8601 == null || dateTimeIso8601.Trim() == "") 
+            return DateTime.UtcNow;
          //DateTime newDate = DateTime.TryParse(dateTimeIso8601, "u", null);
          return DateTime.Parse(dateTimeIso8601, CultureInfo.InvariantCulture);
       }
@@ -163,7 +182,7 @@ namespace org.xmlBlaster.util {
       [DllImport("Coredll.dll", EntryPoint = "SetSystemTime")]
       private static extern bool SetSystemTime(ref SYSTEMTIME st);
 
-      public bool UpdateSystemTime(DateTime serverTime) {
+      public static bool UpdateSystemTime(DateTime serverTime) {
           serverTime = serverTime.ToUniversalTime();
           SYSTEMTIME sysTime = new SYSTEMTIME();
           sysTime.LoadDateTime(serverTime);
