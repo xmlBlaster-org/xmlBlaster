@@ -88,6 +88,13 @@ namespace org.xmlBlaster.util {
          return ret;
       }
 
+      /// <summary>
+      /// Creates an XML string with <clientProperty name='key'>value</clientProperty>
+      /// format which can be used e.g. for the ConnectQos. 
+      /// </summary>
+      /// <param name="h"></param>
+      /// <param name="addNewline"></param>
+      /// <returns></returns>
       public static string ToClientPropertiesXml(Hashtable h, bool addNewline) {
          string nl = (addNewline) ? "\n" : "";
          string xml = "";
@@ -101,6 +108,28 @@ namespace org.xmlBlaster.util {
             xml += ("</clientProperty>");
          }
          return xml;
+      }
+
+      /**
+       * If this clientProperty is send with ConnectQos the clientProperties are
+       * copied to the SessionInfo.remoteProperty map (which are manipulatable by jconsole and EventPlugin)
+       */
+      public static readonly String CLIENTPROPERTY_REMOTEPROPERTIES = "__remoteProperties";
+
+      /// <summary>
+      /// Adds some environment information to the Hashtable
+      /// </summary>
+      /// <param name="info">"version.OS", "version.net" and more</param>
+      public static void GetInfoProperties(Hashtable info) {
+         if (info == null) return;
+         info[CLIENTPROPERTY_REMOTEPROPERTIES] = "true";
+         info["version.OS"] = System.Environment.OSVersion.ToString();
+         info["version.net"] = System.Environment.Version.ToString();
+         //info["version.xmlBlasterC#"] = xb.GetVersion();
+         info["info.OEM"] = GetOemInfo();
+         //info["logical.drive"] = Info.GetLogicalDrives();
+         //info["machine.name"] = Info.MachineName;
+         info["platform.name"] = GetPlatformName();
       }
 
 #if XMLBLASTER_WINCE
@@ -199,6 +228,13 @@ namespace org.xmlBlaster.util {
              return machineName;
         }
         */
-#endif // XMLBLASTER_WINCE
+#else // !XMLBLASTER_WINCE
+      public static string GetPlatformName() {
+         return ""; // TODO
+      }
+      public static string GetOemInfo() {
+         return ""; // TODO
+      }
+#endif
    }
 }
