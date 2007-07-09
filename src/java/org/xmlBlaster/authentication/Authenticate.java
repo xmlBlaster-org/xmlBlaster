@@ -18,6 +18,7 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -225,6 +226,7 @@ final public class Authenticate implements I_RunlevelListener
                returnQos.getSessionQos().setSecretSessionId(secretSessionId);
                returnQos.getSessionQos().setSessionName(info.getSessionName());
                returnQos.setReconnected(true);
+               returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMPSTR, IsoDateParser.getCurrentUTCTimestampNanos());
                log.info("Reconnected with given secretSessionId.");
                return returnQos;
             }
@@ -269,6 +271,7 @@ final public class Authenticate implements I_RunlevelListener
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
                returnQos.getSessionQos().setSessionName(info.getSessionName());
                returnQos.setReconnected(true);
+               returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMPSTR, IsoDateParser.getCurrentUTCTimestampNanos());
                log.info("Reconnected with given publicSessionId to '" + info.getSessionName() + "'.");
                return returnQos;
             }
@@ -420,6 +423,8 @@ final public class Authenticate implements I_RunlevelListener
          ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, connectQos.getData());
          returnQos.getSessionQos().setSecretSessionId(secretSessionId); // securityInfo is not coded yet !
          returnQos.getSessionQos().setSessionName(sessionInfo.getSessionName());
+         returnQos.getData().addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMPSTR, IsoDateParser.getCurrentUTCTimestampNanos());
+
 
          // Now some nice logging ...
          StringBuffer sb = new StringBuffer(256);

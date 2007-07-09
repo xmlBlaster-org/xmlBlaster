@@ -236,6 +236,9 @@ public class Constants {
    /** The plugin xml markup send to RunlevelManager '__plugin.jarName' */
    public final static String CLIENTPROPERTY_PLUGIN_JARNAME = INTERNAL_OID_PREFIX_FOR_CORE + "plugin.jarName";
 
+   /** ConnectReturnQos their QoS clientProperty the rcvTimestampStr in '__rcvTimestampStr' */
+   public final static String CLIENTPROPERTY_RCVTIMESTAMPSTR = INTERNAL_OID_PREFIX_FOR_CORE + "rcvTimestampStr";
+
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";
 
