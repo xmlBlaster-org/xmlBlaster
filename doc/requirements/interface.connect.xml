@@ -230,6 +230,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     </p>
    </td>
    </tr>
+
    <tr>
    <td>clientProperty</td>
    <td>
@@ -253,6 +254,20 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     </p>
    </td>
    </tr>
+
+   <tr>
+   <td>clientProperty response</td>
+   <td>
+    <p id="clientPropertyResponse">
+    The ConnectReturnQos delivers you a client property with the server side timestamp,
+    this can be useful for mobile devices to set the time. The format is ISO 8601 compliant
+    and delivers the UTC time.
+    Expect the precision to be in milliseconds or nanoseconds like "2007-07-09 10:35:43.946Z" or "2007-07-09 10:36:38.180000005Z":
+    </p>
+    <pre>&lt;clientProperty name='__rcvTimestampStr'>2007-07-09 10:53:29.340000001Z&lt;/clientProperty></pre>
+   </td>
+   </tr>
+
    </table>
    </example>
 
