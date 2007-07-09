@@ -15,20 +15,74 @@ namespace org.xmlBlaster.util {
       /// <summary>
       /// Converts a DateTime to an ISO 8601 datetime string with timezone indicator
       /// See http://en.wikipedia.org/wiki/ISO_8601#Time_zones for info
-      /// The result is of type "yyyy'-'MM'-'dd HH':'mm':'ss'Z'"
+      /// The result is of type "yyyy'-'MM'-'dd HH':'mm':'ss'.'FFF'Z'"
       /// </summary>
       /// <param name="DateTimeToConvert">The DateTime to be converted</param>
-      /// <returns>2007-01-01 14:26:20Z</returns>
+      /// <returns>e.g. "2007-07-09 07:10:18.906Z"</returns>
       public static string ToUtcIsoDateTimeString(DateTime dateTimeToConvert) {
          DateTime utc = dateTimeToConvert.ToUniversalTime();
          // "s" creates "2007-01-01T14:26:20": Note the missing 'Z' which means it is local time
          // "u" creates "2007-01-01 14:26:20Z": Note the valid ' ' instead of 'T' and correct UTC ending
-         string isoUtc = utc.ToString("u");
+         //string isoUtc = utc.ToString("u");
+         //see ms-help://MS.VSCC.v80/MS.MSDN.v80/MS.NETDEVFX.v20.en/cpref8/html/T_System_Globalization_DateTimeFormatInfo.htm
+         string isoUtc = utc.ToString("yyyy'-'MM'-'dd HH':'mm':'ss'.'FFF'Z'");
          //if (!isoUtc.EndsWith("Z"))
          //   isoUtc += "Z";
          //isoUtc.Replace(' ', 'T');
          return isoUtc;
       }
+
+      /// <summary>
+      /// The UNIX epoch, midnight, January 1, 1970 UTC
+      /// </summary>
+      public static readonly DateTime StartOfEpochUtc = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+      //public static readonly DateTime StartOfEpochUtc = new DateTime(1970, 1, 1, 0, 0, 0).ToUniversalTime();
+
+      /// <summary>
+      /// Get the elapsed UTC! milliseconds since 1970 for the given time,
+      /// is compatible to Javas System.currentTimeMillis()
+      /// See the bug http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1421898&SiteID=1
+      /// .net returns different values for different local times!
+      /// This method corrects it to UTC.
+      /// </summary>
+      /// <param name="dateTime">E.g. DateTime.UtcNow</param>
+      /// <returns>
+      /// The difference, measured in milliseconds, between
+      /// the given time and midnight, January 1, 1970 UTC.
+      /// </returns>
+      public static long ToUtcMillisecondsEpoch(DateTime dateTime) {
+         // TimeSpan.TicksPerMillisecond == 10000
+         return ((dateTime.ToUniversalTime() - StartOfEpochUtc).Ticks / TimeSpan.TicksPerMillisecond);
+         //return ((dateTime - StartOfEpoch).Ticks / 10000);
+         //TimeSpan span = DateTime.UtcNow-StartOfEpoch;
+         //return TimeSpan.TicksPerMillisecond;
+      }
+
+      /// <summary>
+      /// UTC millis (similar to java)
+      /// </summary>
+      /// <returns>
+      /// The difference, measured in milliseconds, between
+      /// the current UTC time and midnight, January 1, 1970 UTC.
+      /// </returns>
+      public static long GetCurrentUtcMillisecondsEpoch() {
+         return ((DateTime.UtcNow - StartOfEpochUtc).Ticks / TimeSpan.TicksPerMillisecond);
+      }
+
+      /// <summary>
+      /// Get the DateTime from a java System.currentTimeMillis()
+      /// </summary>
+      /// <param name="milliEpoch">
+      /// The difference, measured in milliseconds, between
+      /// the given time and midnight, January 1, 1970 UTC.
+      /// </param>
+      /// <returns>
+      /// UTC
+      /// </returns>
+      public static DateTime DateTimeFromUtcMillisecondsEpoch(long milliEpoch) {
+         return new DateTime(StartOfEpochUtc.Ticks + (milliEpoch * 10000), DateTimeKind.Utc);
+      }
+
       /*
       /// <summary>
       /// 
