@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 /*
- * ISO 8601 date time formatting. 
+ * ISO 8601 date time formatting.
  * http://www.w3.org/TR/NOTE-datetime
  * http://en.wikipedia.org/wiki/ISO_8601
  * http://www.probabilityof.com/ISO8601.shtml
@@ -34,14 +34,14 @@ import java.util.TimeZone;
  */
 
 /**
- * Date parser for ISO 8601 format 
+ * Date parser for ISO 8601 format
  * http://www.w3.org/TR/1998/NOTE-datetime-19980827
  * @version $Revision: 1.5 $
  * @author  Beno�t Mah� (bmahe@w3.org)
  * @author  Yves Lafon (ylafon@w3.org)
  */
 public class IsoDateParser {
-   
+
    public final static SimpleDateFormat utcFmt;
    public final static SimpleDateFormat utcFmtT;
    static {
@@ -53,13 +53,31 @@ public class IsoDateParser {
       utcFmtT.setTimeZone(TimeZone.getTimeZone("GMT"));
       //Calendar utcCal = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
    }
-   
+
    /**
     * @return The ISO 8601 UTC-time string, precision is currently millis (three fraction digits)
     * "2006-02-21 14:05:51.703Z"
     */
    public static String getCurrentUTCTimestamp() {
       return getUTCTimestamp(new Date());
+   }
+
+   /**
+    * Returns currently milli precission or an increment counter if called more than once per milli.
+    * @return e.g. "2007-07-09 10:35:43.946Z" or "2007-07-09 10:36:38.180000005Z"
+    */
+   public static String getCurrentUTCTimestampNanos() {
+		//Timestamp ts = new Timestamp(1183977398180000005L); // org.xmlBlaster.util.Timestamp
+		Timestamp ts = new Timestamp();
+		String tmp = getUTCTimestamp(ts.getMillis());
+		int i = tmp.indexOf(".");
+		if (i<0) return tmp;
+		if ((ts.getNanosOnly() % 1000) > 0) {
+			tmp = tmp.substring(0,i);
+			tmp += "."+ts.getNanosOnly();
+			tmp += "Z";
+		}
+	    return tmp;
    }
 
    public static String getUTCTimestamp(Date date) {
@@ -71,7 +89,7 @@ public class IsoDateParser {
    public static String getUTCTimestamp(long millis) {
       return IsoDateParser.getUTCTimestamp(new Date(millis));
    }
-   
+
    /**
     * @return The ISO 8601 UTC-time string, precision is currently millis (three fraction digits)
     * "2006-02-21T14:05:51.703Z"
@@ -85,7 +103,7 @@ public class IsoDateParser {
          return utcFmtT.format(date)+"Z";
       }
    }
-   
+
    /**
     * @param utc "2001-02-03 04:05:06.7"
    public static Date getParseUTC(String utc) {
@@ -99,7 +117,7 @@ public class IsoDateParser {
    }
     */
 
-    private static boolean check(StringTokenizer st, String token) 
+    private static boolean check(StringTokenizer st, String token)
    throws IllegalArgumentException
     {
    try {
@@ -113,7 +131,7 @@ public class IsoDateParser {
    }
     }
 
-    private static Calendar getCalendar(String isodate) 
+    private static Calendar getCalendar(String isodate)
     	throws IllegalArgumentException
     {
    // YYYY-MM-DDThh:mm:ss.sTZD
@@ -248,8 +266,8 @@ public class IsoDateParser {
      * @return a Date instance
      * @exception IllegalArgumentException if the date is not valid
      */
-    public static Date parse(String isodate) 
-    	throws IllegalArgumentException 
+    public static Date parse(String isodate)
+    	throws IllegalArgumentException
     {
    Calendar calendar = getCalendar(isodate);
    return calendar.getTime();
@@ -263,7 +281,7 @@ public class IsoDateParser {
     }
 
     /**
-     * Generate a ISO 8601 date 
+     * Generate a ISO 8601 date
      * @param date a Date instance
      * @return a string representing the date in the ISO 8601 format
      */
@@ -289,7 +307,7 @@ public class IsoDateParser {
     }
 
     /**
-     * Generate a ISO 8601 date 
+     * Generate a ISO 8601 date
      * @param date a Date instance
      * @return a string representing the date in the ISO 8601 format
      */
@@ -364,6 +382,6 @@ public class IsoDateParser {
    test("1997");
    test(new Date());
     }
-    
+
 }
 
