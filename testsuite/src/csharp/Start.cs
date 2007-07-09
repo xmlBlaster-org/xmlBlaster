@@ -59,11 +59,26 @@ public class Start {
    }
 
    private static void testStuff() {
+      //Stuff.ToUtcMillisecondsEpoch(DateTime dateTime)
+      //Stuff.GetCurrentUtcMillisecondsEpoch()
+      //Stuff.DateTimeFromUtcMillisecondsEpoch(long milliEpoch)
+      long millis = Stuff.GetCurrentUtcMillisecondsEpoch();
+      Console.WriteLine("Current millis=" + millis);
+
+      // From Java: millis=1183965018906 gmt=9 Jul 2007 07:10:18 GMT iso=2007-07-09 07:10:18.906Z local=09.07.2007 09:10:18
+      long utcMillis = 1183965018906L;
+      DateTime dateTimeUtc = Stuff.DateTimeFromUtcMillisecondsEpoch(utcMillis);
+      long newUtcMillis = Stuff.ToUtcMillisecondsEpoch(dateTimeUtc);
+      Console.WriteLine("dateTimeUtc=" + Stuff.ToUtcIsoDateTimeString(dateTimeUtc)
+         + " utcMillis=" + utcMillis + " newUtcMillis=" + newUtcMillis);
+
+
+
       DateTime now = DateTime.Now;
-      string nowUtc = Stuff.ToIsoDateTimeString(now);
+      string nowUtc = Stuff.ToUtcIsoDateTimeString(now);
       Console.WriteLine("Now UTC is: " + nowUtc);
-      DateTime again = Stuff.FromIsoDateTimeString(nowUtc);
-      Console.WriteLine("--->" + Stuff.ToIsoDateTimeString(again));
+      DateTime again = Stuff.UtcDateTimeFromIsoString(nowUtc);
+      Console.WriteLine("--->" + Stuff.ToUtcIsoDateTimeString(again));
 
 
       Hashtable h = new Hashtable();

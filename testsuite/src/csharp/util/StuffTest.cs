@@ -18,9 +18,33 @@ namespace org.xmlBlaster.client.util {
       [Test]
       public void CheckIsoDates() {
          string str = "2007-01-01 12:46:01Z";
-         DateTime dt = Stuff.FromIsoDateTimeString(str);
-         string newStr = Stuff.ToIsoDateTimeString(dt);
+         DateTime dt = Stuff.UtcDateTimeFromIsoString(str);
+         string newStr = Stuff.ToUtcIsoDateTimeString(dt);
          Assert.AreEqual(str, newStr);
+      }
+      [Test]
+      public void CheckEpochMillis() {
+         //Stuff.ToUtcMillisecondsEpoch(DateTime dateTime)
+         //Stuff.GetCurrentUtcMillisecondsEpoch()
+         //Stuff.DateTimeFromUtcMillisecondsEpoch(long milliEpoch)
+         
+         // From Java:
+         // millis=1183965018906
+         // gmt=     9 Jul 2007 07:10:18
+         // GMT iso= 2007-07-09 07:10:18.906Z
+         ///local=   09.07.2007 09:10:18
+         long utcMillis = 1183965018906L;
+         DateTime dateTimeUtc = Stuff.DateTimeFromUtcMillisecondsEpoch(utcMillis);
+         long newUtcMillis = Stuff.ToUtcMillisecondsEpoch(dateTimeUtc);
+         string isoUtcStr= Stuff.ToUtcIsoDateTimeString(dateTimeUtc);
+         Console.WriteLine("dateTimeUtc=" + isoUtcStr
+            + " utcMillis=" + utcMillis + " newUtcMillis=" + newUtcMillis);
+         Assert.AreEqual(utcMillis, newUtcMillis);
+         // TODO: The millis are missing!!!! Assert.AreEqual("2007-07-09 07:10:18.906Z", newUtcMillis);
+         Assert.AreEqual("2007-07-09 07:10:18.906Z", isoUtcStr);
+
+         long millis = Stuff.GetCurrentUtcMillisecondsEpoch();
+         Console.WriteLine("Current millis=" + millis);
       }
       [Test]
       public void CheckClientProperties() {
