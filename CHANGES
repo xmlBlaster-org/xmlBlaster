@@ -1,6 +1,11 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16309 Added server timestamp (ISO, UTC, nano precision) to ConnectReturnQos:
+          <clientProperty name='__rcvTimestampStr'>2007-07-09 10:36:38.189000005Z</clientProperty>
+
+ o #16307 Extended C# client library for java like System.currentTimeMillis handling with C# DateTime
+
  o #16292 ClientProperties of ConnectQos can now be copied to remoteProperties, see
           See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html#remoteProperty
 
