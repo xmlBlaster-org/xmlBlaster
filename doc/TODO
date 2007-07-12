@@ -94,6 +94,19 @@ o queue/history/maxEntriesCache=1 can't be reconfigured.
 
 o Add I_Map change() to testsuite
 
+o Reference counter in separate column
+
+o Separate table for queueName (1:N relation)
+
+o Check if dataId is uniqueue or necessary a compund key with queueName
+
+o Create index for priority
+
+o Blob is of form Xbf (or XML)
+
+o Collect all sql statements during a typical operation and tune (limit 1) etc
+
+
 
 PERFORMANCE
 -----------
