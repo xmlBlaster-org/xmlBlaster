@@ -1,6 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16312 C client library avoids DNS lookup if raw ip4 address given
+
  o #16309 Added server timestamp (ISO, UTC, nano precision) to ConnectReturnQos:
           <clientProperty name='__rcvTimestampStr'>2007-07-09 10:36:38.189000005Z</clientProperty>
 
