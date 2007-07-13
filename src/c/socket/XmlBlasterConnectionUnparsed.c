@@ -11,6 +11,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h> /* isalpha() */
 #if defined(WINCE)
 #  if defined(XB_USE_PTHREADS)
 #     include <pthreads/pthread.h>
@@ -255,39 +256,39 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
    void freeaddrinfo(*res);
 # endif
-	if (isalpha(serverHostName[0]) || !strchr(serverHostName,':') ) { /* look for dns name or ipv6 */
-	   char *tmphstbuf=0;
-	   memset((char *)&hostbuf, 0, sizeof(struct hostent));
-	   hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen, errP);
-	   if (hostP == 0) {
-	      if (*errP != 0) {
-	         strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-	         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-	            "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s: %s",
-	                  __FILE__, __LINE__, serverHostName, servTcpPort, errP);
-	         xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
-	         *errP = 0;
-	      }
-	      else {
-	         strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-	         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-	                  "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s, errno=%d",
-	                  __FILE__, __LINE__, serverHostName, servTcpPort, errno);
-	         xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
-	      }
-	      return false;
-	   }
-	   xmlBlasterAddr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
-	   free(tmphstbuf);
-	}
-	else {
-		/* use ip4 addr directly to avoid dns lookup */
-	   xmlBlasterAddr.sin_addr.s_addr = inet_addr(serverHostName);
-	}
+        if (isalpha(serverHostName[0]) || !strchr(serverHostName,':') ) { /* look for dns name or ipv6 */
+           char *tmphstbuf=0;
+           memset((char *)&hostbuf, 0, sizeof(struct hostent));
+           hostP = gethostbyname_re(serverHostName, &hostbuf, &tmphstbuf, &hstbuflen, errP);
+           if (hostP == 0) {
+              if (*errP != 0) {
+                 strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+                 SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                    "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s: %s",
+                          __FILE__, __LINE__, serverHostName, servTcpPort, errP);
+                 xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
+                 *errP = 0;
+              }
+              else {
+                 strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+                 SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                          "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s, errno=%d",
+                          __FILE__, __LINE__, serverHostName, servTcpPort, errno);
+                 xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_WARN, __FILE__, exception->message);
+              }
+              return false;
+           }
+           xmlBlasterAddr.sin_addr.s_addr = ((struct in_addr *)(hostP->h_addr))->s_addr; /* inet_addr("192.168.1.2"); */
+           free(tmphstbuf);
+        }
+        else {
+                /* use ip4 addr directly to avoid dns lookup */
+           xmlBlasterAddr.sin_addr.s_addr = inet_addr(serverHostName);
+        }
 
    portP = getservbyname(servTcpPort, "tcp");
    if (portP != 0)
-		xmlBlasterAddr.sin_port = (u_short)portP->s_port;
+                xmlBlasterAddr.sin_port = (u_short)portP->s_port;
    else
       xmlBlasterAddr.sin_port = htons((u_short)atoi(servTcpPort));
 
