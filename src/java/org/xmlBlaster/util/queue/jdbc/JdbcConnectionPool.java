@@ -1043,6 +1043,13 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       return this.nestedBracketsSupported;
    }
 
+   /**
+    * @return the url
+    */
+   public String getUrl() {
+      return (this.url==null) ? "" : this.url;
+   }
+
 }
 
 

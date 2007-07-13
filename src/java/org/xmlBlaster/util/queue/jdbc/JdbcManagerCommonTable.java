@@ -88,11 +88,21 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String byteSizeColName;
    private String dataIdColName;
    private String keyAttr;
+   
+   private boolean isPostgres;
+   private boolean isOracle;
+   private boolean isDB2;
+   private boolean isFirebird;
+   private boolean isMicrosoftSQLServer;
+   private boolean isHSQLDatabaseEngine;
+   private boolean isMySql;
+   private boolean isLdbc;
+   private boolean isSQLite;
 
   // private final String managerName;
    private final I_Storage storage;
 
-   PreparedStatement pingPrepared = null;
+   private PreparedStatement pingPrepared = null;
 
    /**
     * Counts the queues using this manager.
@@ -103,7 +113,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * tells wether the used database supports batch updates or not.
     */
     private boolean supportsBatch = true;
-
+    
     /** forces the desactivation of batch mode when adding entries */
     private boolean enableBatchMode = true;
 
@@ -228,6 +238,17 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       
       this.enableBatchMode = this.pool.isBatchModeEnabled();
 
+      this.isPostgres = this.pool.getUrl().startsWith("jdbc:postgresql:");
+      this.isOracle = this.pool.getUrl().startsWith("jdbc:oracle:");
+      this.isDB2 = this.pool.getUrl().startsWith("jdbc:db2:");
+      this.isFirebird = this.pool.getUrl().startsWith("jdbc:firebirdsql:");
+      this.isMicrosoftSQLServer = this.pool.getUrl().startsWith("jdbc:microsoft:sqlserver:") // 2000
+         || this.pool.getUrl().startsWith("jdbc:sqlserver:"); // 2005
+      this.isHSQLDatabaseEngine = this.pool.getUrl().startsWith("jdbc:hsqldb:");
+      this.isMySql = this.pool.getUrl().startsWith("jdbc:mysql:");
+      this.isLdbc = this.pool.getUrl().startsWith("jdbc:ldbc:");
+      this.isSQLite = this.pool.getUrl().startsWith("jdbc:sqlite:");
+
       this.pool.registerManager(this);
    }
 
@@ -273,8 +294,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
          // conn.isClosed();
 
-         if (log.isLoggable(Level.FINE)) log.fine("Trying ping ...");
-         conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
+         if (this.pingPrepared == null) {
+            synchronized (this) {
+               if (this.pingPrepared == null) {
+                  this.pingPrepared = conn.prepareStatement("select min("+this.dataIdColName+") from " + this.entriesTableName);
+               }
+            }
+         }
+         this.pingPrepared.executeQuery();
+
+         // Until v1.5.1+: Did not work with MSSQLServer
+         //if (log.isLoggable(Level.FINE)) log.fine("Trying ping ...");
+         //conn.getMetaData().getTables("xyx", "xyz", "xyz", null);
 
          /*
          if (false) {  // Postgres: 1 millis   Oracle: 2 millis
@@ -1997,9 +2028,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * gets the first numOfEntries of the queue.
     * If there are not so many entries in the queue, all elements in the queue
     * are returned.
-    *
-    * @param numOfEntries the maximum number of elements to retrieve
-    *
+    * <p>
+    * Is public for testsuite only.
+    * @param numOfEntries Access num entries, if -1 access all entries currently found
+    * @param numOfBytes is the maximum size in bytes of the array to return, -1 is unlimited .
     */
    public ArrayList getEntries(StorageId storageId, int numOfEntries, long numOfBytes, I_EntryFilter entryFilter)
       throws XmlBlasterException {
@@ -2010,8 +2042,51 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
          return new ArrayList();
       }
-
-      String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
+      
+      // "SELECT * from " + this.entriesTableName + " where queueName='" + queueName
+      // + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
+      String req = null;
+      if (numOfEntries == 1) {
+         //SELECT * from xb_entries where dataId=(select min(dataId) from XB_ENTRIES where queueName='topicStore_heron');
+         String sub = "select min("+this.dataIdColName+") from " + this.entriesTableName + " where queueName='"+queueName+"'";
+         req = "SELECT * from " + this.entriesTableName + " where " + this.dataIdColName + "=("+sub+")";
+      }
+      else if (numOfEntries == 0) {
+         req = "select max("+this.dataIdColName+") from " + this.entriesTableName; // do a ping
+      }
+      else if (numOfEntries == -1/* && numOfBytes == -1*/) {
+         req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
+      }
+      else {
+         // numOfEntries > 1, see http://www.swissql.com/sqlone-console-review.pdf
+         // see statement.setFetchSize(1); -> PreparedQuery(pool, req, numOfEntries);
+         // SQLServer: select top 1 queuename from xb_entries where queueName like '%'
+         // Postgres;  SELECT * from xb_entries limit 1
+         if (isPostgres() || isMySql()) {
+            req = "SELECT * from " + this.entriesTableName + " where queueName='" 
+            + queueName + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC limit " + numOfEntries;
+         }
+         else if (isOracle()) {
+            req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName
+            + "' AND rownum <=" + numOfEntries + " ORDER BY prio DESC, " + this.dataIdColName + " ASC";
+         }
+         else if (isDB2()) {
+            req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName
+            + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC FETCH FIRST " + numOfEntries + " ROWS ONLY";
+         }
+         else if (isMicrosoftSQLServer()) {
+            req = "SELECT TOP " + numOfEntries + " * from " + this.entriesTableName + " where queueName='" + queueName
+            + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
+         }
+         else if (isHSQLDatabaseEngine()) {
+            req = "SELECT TOP " + numOfEntries + " * from " + this.entriesTableName + " where queueName='" + queueName
+            + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
+         }
+         else {
+            req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName
+                + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
+         }
+      }
       if (log.isLoggable(Level.FINE)) 
          log.fine("Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
       PreparedQuery query = null;
@@ -2020,6 +2095,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          query = new PreparedQuery(pool, req, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false, entryFilter);
          if (log.isLoggable(Level.FINE)) log.fine("Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
+         //log.info(req + " Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
          return ret;
       }
       catch (XmlBlasterException ex) {
@@ -2534,5 +2610,68 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (this.queueCounter == 0) {
          shutdown();
       }
+   }
+
+   /**
+    * @return the isDb2
+    */
+   public boolean isDB2() {
+      return this.isDB2;
+   }
+
+   /**
+    * @return the isHsqlDb
+    */
+   public boolean isHSQLDatabaseEngine() {
+      return this.isHSQLDatabaseEngine;
+   }
+
+   /**
+    * @return the isMsSqlServer
+    */
+   public boolean isMicrosoftSQLServer() {
+      return this.isMicrosoftSQLServer;
+   }
+
+   /**
+    * @return the isMySql
+    */
+   public boolean isMySql() {
+      return this.isMySql;
+   }
+
+   /**
+    * @return the isOracle
+    */
+   public boolean isOracle() {
+      return this.isOracle;
+   }
+
+   /**
+    * @return the isPostgres
+    */
+   public boolean isPostgres() {
+      return this.isPostgres;
+   }
+
+   /**
+    * @return the firebird
+    */
+   public boolean isFirebird() {
+      return this.isFirebird;
+   }
+
+   /**
+    * @return the isLdbc
+    */
+   public boolean isLdbc() {
+      return this.isLdbc;
+   }
+
+   /**
+    * @return the isSQLite
+    */
+   public boolean isSQLite() {
+      return this.isSQLite;
    }
 }

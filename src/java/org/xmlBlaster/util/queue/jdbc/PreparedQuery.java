@@ -59,7 +59,7 @@ class PreparedQuery {
          this.st = conn.createStatement();
          this.st.setQueryTimeout(this.pool.getQueryTimeout());
 
-//         if (fetchSize > -1) this.st.setFetchSize(fetchSize);
+         if (fetchSize > -1) this.st.setFetchSize(fetchSize);
          this.rs = this.st.executeQuery(request);
       }
       catch (XmlBlasterException ex) {
