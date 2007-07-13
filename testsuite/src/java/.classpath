@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="**/client/TestStreamMessages*|**/j2ee/**|**/jms/**|**/test/AllTests*|**/util/JndiDumper*" kind="src" path=""/>
+	<classpathentry excluding="**/client/TestStreamMessages*|**/j2ee/**|**/jms/**|**/jmx/**|**/test/AllTests*|**/util/JndiDumper*|org/xmlBlaster/test/classtest/AllTests.java|org/xmlBlaster/test/classtest/Sql92SelectorTest.java|org/xmlBlaster/test/qos/AllTests.java|org/xmlBlaster/test/qos/TestCorbaThreads.java|org/xmlBlaster/test/stress/AllTests.java|org/xmlBlaster/test/stress/MassiveSubTest.java|org/xmlBlaster/test/stress/MassiveSubTestOne.java" kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/xmlBlaster"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/junit.jar"/>
