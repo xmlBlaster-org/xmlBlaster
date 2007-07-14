@@ -7,6 +7,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queue.BlockingQueueWrapper;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
@@ -110,6 +111,36 @@ public class I_QueueTest extends TestCase {
                  };
 */
 
+   public class QueuePutter extends Thread {
+      
+      private I_Queue queue;
+      private long delay;
+      private int numOfEntries;
+      private boolean ignoreInterceptor;
+      
+      public QueuePutter(I_Queue queue, long delay, int numOfEntries, boolean ignoreInterceptor) {
+         this.queue = queue;
+         this.delay = delay;
+         this.numOfEntries = numOfEntries;
+         this.ignoreInterceptor = ignoreInterceptor;
+      }
+      
+      public void run() {
+         try {
+            for (int i=0; i < this.numOfEntries; i++) {
+               Thread.sleep(this.delay);
+               DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
+               this.queue.put(queueEntry, this.ignoreInterceptor);
+            }
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
+      }
+      
+   }
+   
+   
    public I_QueueTest(String name, int currImpl, Global glob) {
       super(name);
 //      this.queue = IMPL[currImpl];
@@ -473,7 +504,7 @@ public class I_QueueTest extends TestCase {
    }
 
 
-//------------------------------------
+// ------------------------------------
    public void testPeekMsg() {
 
       String queueType = "unknown";
@@ -485,6 +516,72 @@ public class I_QueueTest extends TestCase {
          queue.clear();
          assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
          peekMsg(this.queue);
+      }
+      catch (XmlBlasterException ex) {
+         log.severe("Exception when testing peekMsg probably due to failed initialization of the queue " + queueType);
+      }
+
+   }
+
+
+// ------------------------------------
+   public void testPeekMsgBlocking() {
+
+      String queueType = "unknown";
+      try {
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         queueType = this.queue.toString();
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/peekMsg");
+         this.queue.initialize(queueId, prop);
+         queue.clear();
+         assertEquals(ME + "wrong size before starting ", 0, queue.getNumOfEntries());
+         
+         // fill the queue:
+         DummyEntry[] queueEntries = {
+               new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+               new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
+               new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true)
+                              };
+         queue.put(queueEntries, false);
+         BlockingQueueWrapper wrapper = new BlockingQueueWrapper(200L);
+         wrapper.init(queue);
+         int numOfEntries = 2;
+         ArrayList ret = wrapper.blockingPeek(numOfEntries, 1000L);
+         assertEquals("Wrong number of entries found", 2, ret.size());
+         queue.remove(2, -1L);
+         numOfEntries = 2;
+         ret = wrapper.blockingPeek(numOfEntries, 1000L);
+         assertEquals("Wrong number of entries found", 1, ret.size());
+         queue.clear();
+         ret = wrapper.blockingPeek(numOfEntries, 1000L);
+         assertEquals("Wrong number of entries found", 0, ret.size());
+         
+         // and now making asynchronous putting with events
+         numOfEntries = 3;
+         long delay = 500L;
+         boolean inhibitEvents = false;
+         QueuePutter putter = new QueuePutter(this.queue, delay, numOfEntries, inhibitEvents);
+         putter.start();
+         long t0 = System.currentTimeMillis();
+         ret = wrapper.blockingPeek(numOfEntries, 10000L);
+         assertEquals("Wrong number of entries when blocking with events", numOfEntries, ret.size());
+         long delta = System.currentTimeMillis() - t0;
+         log.info("The blocking request with events took '" + delta + "' milliseconds");
+         assertTrue("The method was blocking too long (did probably not wake up correctly", delta < 7000L);
+         queue.clear();
+         // and now making asynchronous putting without events (polling should detect it)
+         numOfEntries = 3;
+         delay = 500L;
+         inhibitEvents = true;
+         putter = new QueuePutter(this.queue, delay, numOfEntries, inhibitEvents);
+         putter.start();
+         t0 = System.currentTimeMillis();
+         ret = wrapper.blockingPeek(numOfEntries, 10000L);
+         assertEquals("Wrong number of entries when blocking with events", numOfEntries, ret.size());
+         delta = System.currentTimeMillis() - t0;
+         log.info("The blocking request without events took '" + delta + "' milliseconds");
+         assertTrue("The method was blocking too long (did probably not wake up correctly", delta < 7000L);
+         queue.clear();
       }
       catch (XmlBlasterException ex) {
          log.severe("Exception when testing peekMsg probably due to failed initialization of the queue " + queueType);
@@ -1699,6 +1796,10 @@ public class I_QueueTest extends TestCase {
          testSub.tearDown();
          */
          
+         testSub.setUp();
+         testSub.testPeekMsgBlocking();
+         testSub.tearDown();
+
          testSub.setUp();
          testSub.testConfig();
          testSub.tearDown();
