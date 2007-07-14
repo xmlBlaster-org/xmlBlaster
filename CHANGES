@@ -1,5 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+ 
+ o #16323 Added BlockingQueueWrapper: a wrapper around I_Queue to invoke blocking peeks
+
  o #16315 Fixed JDBC ping for MSSQLServer
           Fixed performance bottleneck when RAM part of CacheQueue is full
 
