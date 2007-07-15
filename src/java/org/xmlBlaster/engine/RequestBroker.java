@@ -18,6 +18,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.Timestamp;
@@ -2722,5 +2723,18 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       
       return sb.toString();
    }
+ 
+   public String dumpAllStacks() {
+	   return ThreadLister.getAllStackTraces();
+   }
    
+   public String dumpAllStacksToFile(String file) {
+	   try {
+		FileLocator.writeFile(file, ThreadLister.getAllStackTraces());
+		   return file + " dumped";
+	} catch (XmlBlasterException e) {
+		e.printStackTrace();
+	   return file + " not created: " + e.toString();
+	}
+   }
 }

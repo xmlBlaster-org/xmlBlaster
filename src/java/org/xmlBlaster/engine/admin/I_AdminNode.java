@@ -363,4 +363,7 @@ public interface I_AdminNode extends I_AdminUsage {
     * @return A short status report
     */
    String checkConsistency(String fixIt, String reportFileName);
+   
+   String dumpAllStacks();
+   String dumpAllStacksToFile(String file);
 }
