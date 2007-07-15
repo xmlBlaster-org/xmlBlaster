@@ -38,6 +38,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueSizeListener;
+import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
@@ -769,9 +770,33 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
       return this.sessionQueue.getNumOfEntries();
    }
 
+   public final long getCbQueueNumMsgsCache() {
+      I_Queue sq = this.sessionQueue;
+      if (sq == null) return 0L;
+      if (sq instanceof CacheQueueInterceptorPlugin) {
+         CacheQueueInterceptorPlugin cq = (CacheQueueInterceptorPlugin)sq;
+         I_Queue tq = cq.getTransientQueue();
+         if (tq != null) return tq.getNumOfEntries();
+         return 0L;
+      }
+      return -1L;
+   }
+   
    public final long getCbQueueMaxMsgs() {
       if (this.sessionQueue == null) return 0L;
       return this.sessionQueue.getMaxNumOfEntries();
+   }
+
+   public final long getCbQueueMaxMsgsCache() {
+      I_Queue sq = this.sessionQueue;
+      if (sq == null) return 0L;
+      if (sq instanceof CacheQueueInterceptorPlugin) {
+    	  CacheQueueInterceptorPlugin cq = (CacheQueueInterceptorPlugin)sq;
+    	  I_Queue tq = cq.getTransientQueue();
+    	  if (tq != null) return tq.getMaxNumOfEntries();
+    	  return 0L;
+      }
+      return -1L;
    }
 
    public String pingClientCallbackServer() {

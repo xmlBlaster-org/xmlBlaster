@@ -118,8 +118,16 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getCbQueueNumMsgs();
    }
 
+   public final long getCbQueueNumMsgsCache() {
+	      return this.sessionInfo.getCbQueueNumMsgsCache();
+	   }
+
    public final long getCbQueueMaxMsgs() {
       return this.sessionInfo.getCbQueueMaxMsgs();
+   }
+   
+   public final long getCbQueueMaxMsgsCache() {
+      return this.sessionInfo.getCbQueueMaxMsgsCache();
    }
 
    public String pingClientCallbackServer() {

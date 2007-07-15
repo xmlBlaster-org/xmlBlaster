@@ -114,8 +114,16 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public long getOverallBytesWritten();
    /** How many messages are in this clients session callback queue */
    public long getCbQueueNumMsgs();
+   /** How many messages are in this clients session callback queue and are cached
+    * @return -1 if no cach queue is used
+    */
+   public long getCbQueueNumMsgsCache();
    /** How many messages are max. allowed in this clients session callback queue */
    public long getCbQueueMaxMsgs();
+   /** How many messages are max. allowed in the cache of the callback queue,
+    * @return is -1 if no cache queue implementation is used
+    */
+   public long getCbQueueMaxMsgsCache();
 
    /**
     * Send a ping to the clients callback server.
