@@ -104,6 +104,8 @@ public class ThreadLister {
    }
 
    public static String getAllStackTraces() {
+	  String NL = System.getProperty("line.separator");
+	  if (NL == null) NL = "\n";
       try {
          Class[] paramCls = new Class[0];
          Object[] params = new Object[0];
@@ -117,14 +119,14 @@ public class ThreadLister {
             Map.Entry entry = (Map.Entry)iter.next();
             Thread key = (Thread)entry.getKey();
             StackTraceElement[] elements = (StackTraceElement[])entry.getValue();
-            buf.append(key.getName()).append("\n"); // append(" state=").append(key.getState()).append("\n");
+            buf.append(key.getName()).append(NL); // append(" state=").append(key.getState()).append(NL);
             for (int i=0; i < elements.length; i++) {
                buf.append("  ").append(elements[i].getClassName()).append(".").append(elements[i].getMethodName());
                if (elements[i].getLineNumber()> 0)
                   buf.append(": ").append(elements[i].getFileName()).append("#").append(elements[i].getLineNumber());
-               buf.append("\n");
+               buf.append(NL);
             }
-            buf.append("\n");
+            buf.append(NL);
          }
          return buf.toString();
       }
