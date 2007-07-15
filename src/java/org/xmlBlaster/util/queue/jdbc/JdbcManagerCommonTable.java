@@ -2078,15 +2078,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          else if (isMicrosoftSQLServer()) {
         	if (true) {
-        		final int MAX_NUM = 6;
-        		if (numOfEntries > MAX_NUM) {
+        		if (numOfEntries > 10000 && numOfEntries != 100000) {
         			synchronized (this) {
             			if (countDumps < 20) {
-            				log.info("numOfEntries=" + numOfEntries + ThreadLister.getAllStackTraces());
+            				log.info("numOfEntries=" + numOfEntries + "\r\n" + ThreadLister.getAllStackTraces());
             				countDumps++;
             			}
 					}
-        			numOfEntries = MAX_NUM;
         		}
         	}
             req = "SELECT TOP " + numOfEntries + " * from " + this.entriesTableName + " where queueName='" + queueName
