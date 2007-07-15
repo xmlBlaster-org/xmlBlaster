@@ -2082,7 +2082,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
         		if (numOfEntries > MAX_NUM) {
         			synchronized (this) {
             			if (countDumps < 20) {
-            				log.info("numOfEntries=" + numOfEntries + ThreadLister.listAllThreads());
+            				log.info("numOfEntries=" + numOfEntries + ThreadLister.getAllStackTraces());
             				countDumps++;
             			}
 					}
