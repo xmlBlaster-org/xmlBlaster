@@ -9,6 +9,7 @@ package org.xmlBlaster.util.queue.jdbc;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
@@ -2023,6 +2024,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
    }
 
+   private int countDumps = 0;
 
    /**
     * gets the first numOfEntries of the queue.
@@ -2075,6 +2077,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC FETCH FIRST " + numOfEntries + " ROWS ONLY";
          }
          else if (isMicrosoftSQLServer()) {
+        	if (true) {
+        		final int MAX_NUM = 6;
+        		if (numOfEntries > MAX_NUM) {
+        			synchronized (this) {
+            			if (countDumps < 20) {
+            				log.info("numOfEntries=" + numOfEntries + ThreadLister.listAllThreads());
+            				countDumps++;
+            			}
+					}
+        			numOfEntries = MAX_NUM;
+        		}
+        	}
             req = "SELECT TOP " + numOfEntries + " * from " + this.entriesTableName + " where queueName='" + queueName
             + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
          }
