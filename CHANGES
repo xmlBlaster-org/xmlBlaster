@@ -1,5 +1,10 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
+
+ o #16332 fixed excessive CPU Usage due to short loops for logs in Execute (native cmd line invoker)
+
+ o #16331 fixed hole which could generate a meat not found in postHandleNextMessages. Would only
+          happen when using the I_MsgDispatchInterceptor plugin.
  
  o #16323 Added BlockingQueueWrapper: a wrapper around I_Queue to invoke blocking peeks
 
