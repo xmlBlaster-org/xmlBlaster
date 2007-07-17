@@ -376,8 +376,6 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       
       if (log.isLoggable(Level.FINE)) 
          log.fine("store invoked for \n" + dbInfo.toString());
-      else
-         log.info(ME + ".store invoked for cmd='" + command + "' and table ='" + completeTableName + "'");
       
       if (this.nirvanaClient)
          return;

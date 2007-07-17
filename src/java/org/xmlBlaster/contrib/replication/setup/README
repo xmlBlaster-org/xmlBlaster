@@ -2,3 +2,35 @@ Here an example on how to start a standalone DbWriter
 
 java org.xmlBlaster.contrib.dbwriter.DbWriterExample
 
+
+ 
+SELECT column FROM table
+ORDER BY RAND()
+LIMIT 1
+ 
+Select a random row with PostgreSQL:
+ 
+SELECT column FROM table
+ORDER BY RANDOM()
+LIMIT 1
+ 
+Select a random row with Microsoft SQL Server:
+ 
+SELECT TOP 1 column FROM table
+ORDER BY NEWID()
+ 
+Select a random row with IBM DB2
+ 
+SELECT column FROM table
+ORDER BY RAND()
+FETCH FIRST 1 ROWS ONLY
+ 
+Thanks Tim
+Select a random record with Oracle:
+ 
+SELECT column FROM
+( SELECT column FROM table
+ORDER BY dbms_random.value )
+WHERE rownum = 1
+
+
