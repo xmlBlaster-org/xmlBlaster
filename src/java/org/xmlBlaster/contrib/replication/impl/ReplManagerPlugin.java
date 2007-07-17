@@ -80,7 +80,6 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueuePluginManager;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -1425,7 +1424,7 @@ public class ReplManagerPlugin extends GlobalInfo
    /**
     * Does cleanup, particularly it sets the status and counters. 
     */
-   public void postHandleNextMessages(DispatchManager dispatchManager, MsgQueueEntry[] processedEntries) throws XmlBlasterException {
+   public void postHandleNextMessages(DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException {
       if (!this.initialized) {
          synchronized(this) {
             if (!this.initialized) {

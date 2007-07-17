@@ -19,8 +19,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import mx4j.log.Log;
-
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
@@ -47,7 +45,6 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.util.xbformat.XmlScriptParser;
 
@@ -1033,12 +1030,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          // this.messageSeq, 
          long[] transactionCountBeforeQueue = this.manager.getCurrentTransactionCount(this.replPrefix);
          // check if the numbers in the queue are correct and fix it
-         if (this.queueEntries != 0 && session != null && session.getCbQueueNumMsgs() == 0) {
-            log.warning("Detected wrong number of queue entries: correcting: ptp entries='" + this.ptpQueueEntries + "' total='" + this.queueEntries + "'");
-            this.ptpQueueEntries = 0L;
-            this.transactionSeq = (long[])transactionCountBeforeQueue.clone();
-         }
-
          long pubSubQueueEntries = 0L;
          long maxTransSeq = transactionCountBeforeQueue[0];
          for (int i=0; i < this.transactionSeq.length; i++) {
@@ -1048,6 +1039,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          }
          this.queueEntries = pubSubQueueEntries + this.ptpQueueEntries;
          this.transactionSeqVisible = maxTransSeq - pubSubQueueEntries;
+
+         if (this.queueEntries != 0 && session != null && session.getCbQueueNumMsgs() == 0) {
+            log.warning("Detected wrong number of queue entries: correcting: ptp entries='" + this.ptpQueueEntries + "' total='" + this.queueEntries + "'");
+            this.ptpQueueEntries = 0L;
+            this.transactionSeq = (long[])transactionCountBeforeQueue.clone();
+         }
       }
       catch (Exception ex) {
          log.severe("an exception occured when retieving the number of queue entries for '" + this.sessionName + "':" + ex.getMessage());
@@ -1127,20 +1124,19 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
-   public void postCheck(MsgQueueEntry[] processedEntries) throws Exception {
+   public void postCheck(MsgUnit[] processedMsgUnits) throws Exception {
       initTransactionSequenceIfNeeded("postCheck has been invoked before init");
+      if (processedMsgUnits == null) {
+         log.severe("The processed Message Units are null");
+         return;
+      }
       synchronized(this) {
          long msgSeq = 0L;
          long tmpReplKey = -1L;
 
-         if (processedEntries.length > 0) {
-            for (int i=0; i < processedEntries.length; i++) {
-               ReferenceEntry entry = (ReferenceEntry)processedEntries[i];
-               if (log.isLoggable(Level.FINEST)) {
-                  String txt = new String(decompressQueueEntryContent(entry));
-                  log.finest("Processing entry '" + txt + "' for client '"  + this.name + "'");
-               }
-               MsgUnit msgUnit = entry.getMsgUnit();
+         if (processedMsgUnits.length > 0) {
+            for (int i=0; i < processedMsgUnits.length; i++) {
+               MsgUnit msgUnit = processedMsgUnits[i];
 
                long numOfTransactions = msgUnit.getQosData().getClientProperty(ReplicationConstants.NUM_OF_TRANSACTIONS, 1L);
                if (numOfTransactions > 0L) {
