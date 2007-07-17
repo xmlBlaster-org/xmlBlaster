@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.property.I_PropertyChangeListener;
 import org.xmlBlaster.util.property.PropertyChangeEvent;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
@@ -592,7 +593,7 @@ public final class PriorizedDispatchPlugin implements I_MsgDispatchInterceptor, 
    /**
     * Not doing anything in this method since no cleanup needed.
     */
-   public void postHandleNextMessages(DispatchManager dispatchManager, MsgQueueEntry[] processedEntries) throws XmlBlasterException {
+   public void postHandleNextMessages(DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException {
    }
 
    /**

@@ -6,10 +6,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.dispatch.plugins;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import java.util.ArrayList;
 
@@ -99,7 +99,7 @@ public interface I_MsgDispatchInterceptor extends I_ConnectionStatusListener
     * @param processedEntries The entries which have been previously processed.
     * @throws XmlBlasterException
     */
-   public void postHandleNextMessages(DispatchManager dispatchManager, MsgQueueEntry[] processedEntries) throws XmlBlasterException;
+   public void postHandleNextMessages(DispatchManager dispatchManager, MsgUnit[] processedEntries) throws XmlBlasterException;
    
    /**
     * Deregister the given dispatchManager

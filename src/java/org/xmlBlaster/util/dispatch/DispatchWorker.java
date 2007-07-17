@@ -7,6 +7,8 @@ package org.xmlBlaster.util.dispatch;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -14,6 +16,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 
 import java.util.ArrayList;
@@ -176,6 +179,14 @@ public final class DispatchWorker implements Runnable
          // messages are successfully sent, remove them now from queue (sort of a commit()):
          // We remove filtered/destroyed messages as well (which doen't show up in entryListChecked)
          MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
+         MsgUnit[] msgUnits = null;
+         if (msgInterceptor != null) { // we need to do this before removal since the msgUnits are weak references and would be deleted by gc
+            msgUnits = new MsgUnit[entries.length];
+            for (int i=0; i < msgUnits.length; i++) {
+               ReferenceEntry entry = (ReferenceEntry)entries[i];
+               msgUnits[i] = entry.getMsgUnit();
+            }
+         }
          this.msgQueue.removeRandom(entries);
          /*(currently only done in sync invocation)
          ArrayList defaultEntries = sendAsyncResponseEvent(entryList);
@@ -185,7 +196,7 @@ public final class DispatchWorker implements Runnable
          }
          */
          if (msgInterceptor != null) {
-            msgInterceptor.postHandleNextMessages(dispatchManager, entries);
+            msgInterceptor.postHandleNextMessages(dispatchManager, msgUnits);
          }
          if (log.isLoggable(Level.FINE)) log.fine("Commit of successful sending of " + entryList.size() + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + ((MsgQueueEntry)entryList.get(0)).getLogId() + "'");
       }
