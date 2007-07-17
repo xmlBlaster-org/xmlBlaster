@@ -220,6 +220,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private boolean collectInitialUpdates;
    private boolean initialDumpAsXml;
    private int initialDumpMaxSize = 1048576;
+   private long initialCmdSleepDelay = 10L;
    
    /**
     * Not doing anything.
@@ -282,6 +283,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       subscriptionMap.put("ptp", "true");
       if (this.publisher != null)
          this.publisher.registerAlertListener(this, subscriptionMap);
+      
+      this.initialCmdSleepDelay = this.info.getLong("replication.initialCmd.sleepDelay", 10L);
+      
       // rewrite the default behaviour of the timestamp detector to detect even UPDATES (deletes are also updates)
       /*
       boolean detectUpdates = this.info.getBoolean("detector.detectUpdates", false);
@@ -683,7 +687,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          // if (Execute.isWindows()) cmd = "cmd " + cmd;
          String[] args = ReplaceVariable.toArray(cmd, " ");
          log.info("running for '" + SpecificDefault.toString(slaveNames) + "' for cmd '" + cmd + "'");
-         Execute execute = new Execute(args, null);
+         Execute execute = new Execute(args, null, this.initialCmdSleepDelay);
          synchronized (this) {
             if (slaveNames != null) {
                for (int i=0; i < slaveNames.length; i++) {
