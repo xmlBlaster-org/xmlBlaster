@@ -53,13 +53,18 @@ public class Execute {
    private StringBuffer stderr = new StringBuffer();
 
    private int exitValue;
-
+   private long sleepDelay = 10L; // tests showed that without sleep delay the CPU went to 100% and it took a long time.
+   
+   public  Execute(String[] commandArr, String[] envArr) {
+      this(commandArr, envArr, 10L);
+   }
    /**
     * Construct an instance which can execute a program with the given parameters.
     */
-   public Execute(String[] commandArr, String[] envArr) {
+   public Execute(String[] commandArr, String[] envArr, long sleepDelay) {
       this.commandArr = commandArr;
       this.envArr = envArr;
+      this.sleepDelay = sleepDelay;
       if (this.commandArr == null || this.commandArr.length < 1) {
          throw new IllegalArgumentException("Please provide the process to start");
       }
@@ -104,23 +109,25 @@ public class Execute {
          // get command's output stream and collect it in stdout
          InputStream istr = process.getInputStream();
          BufferedReader ibr = new BufferedReader(new InputStreamReader(istr), BUFFERED_READER_SIZE);
-         stdoutThread = new OutputThread(this, ibr, stdout);
+         stdoutThread = new OutputThread(this, ibr, stdout, this.sleepDelay);
          stdoutThread.start();
 
          // get command's stderr stream and collect it in stderr
          InputStream estr = process.getErrorStream();
          BufferedReader ebr = new BufferedReader(new InputStreamReader(estr), BUFFERED_READER_SIZE);
-         stderrThread = new OutputThread(this, ebr, stderr);
+         stderrThread = new OutputThread(this, ebr, stderr, this.sleepDelay);
          stderrThread.start();
 
          // Wait for the threads to be up and running (HACK, NOT THREAD SAFE!, needs to be resolved)
-         while (true) {
-            if (this.stdoutThread.isReady() && this.stderrThread.isReady())
-               break;
-         }
+         try {
+            while (true) {
+               if (this.stdoutThread.isReady() && this.stderrThread.isReady())
+                  break;
+               if (this.sleepDelay > 0L)
+                  Thread.sleep(this.sleepDelay);
+            }
 
          // wait for command to terminate
-         try {
             process.waitFor();
          }
          catch (InterruptedException e) {
@@ -194,12 +201,15 @@ public class Execute {
       private StringBuffer result;
       private boolean isReady = false;
       private boolean stopIt = false;
-
+      private long sleepDelay = 0L;
+      
       /**
+       * If the delay is less than 1 no delay is done
        */
-      OutputThread(Execute boss, BufferedReader br, StringBuffer result) {
+      OutputThread(Execute boss, BufferedReader br, StringBuffer result, long sleepDelay) {
          this.br = br;
          this.result = result;
+         this.sleepDelay = sleepDelay;
       }
 
       public void run() {
@@ -223,12 +233,17 @@ public class Execute {
                }
                if (stopIt)
                   break;
+               if (this.sleepDelay > 0L)
+                  Thread.sleep(this.sleepDelay);
             }
             br.close();
             log.fine("End reading lines from process.");
          }
          catch (IOException e) {
             log.severe("Could not read process output: " + e.toString());
+         }
+         catch (InterruptedException e) {
+            log.severe("Interruption. Could not read process output: " + e.toString());
          }
       }
 
@@ -249,7 +264,9 @@ public class Execute {
    {
 //    String[] commandArr = { args[0] };
 //    String[] envArr = new String[0];
-      Execute execute = new Execute(args, null);
+      String tmp = System.getProperty("execute.sleepDelay", "0L");
+      long sleepDelay = Long.parseLong(tmp.trim());
+      Execute execute = new Execute(args, null, sleepDelay);
       execute.run();
       System.out.println("Stdout of " + args[0] + " is:\n" + execute.getStdout());
       System.out.println("Stderr of " + args[0] + " is:\n" + execute.getStderr());
