@@ -100,6 +100,21 @@ java javaclients.script.XmlScript -session.name joe -prepareForPublish true -req
    instead of the original sender. To allow sending a faked sender address
    in the QoS you can start xmlBlaster with this option:</p>
    <tt>java org.xmlBlaster.Main -xmlBlaster/acceptWrongSenderAddress/joe true</tt>.
+   <p>
+   It is possible to set this setting on cluster node level or on client session level using JMX,
+   for example using the jconsole.
+   Setting it on cluster node level allows ALL clients of this server instance to publish messages
+   with a faked sender name, so use this with caution.
+   </p>
+   <p>
+   You could use a well known client in fail save mode and publish a first dummy message and than
+   set acceptWrongSenderAddress to true for this login session:
+   </p>
+   <p><tt>
+java javaclients.script.XmlScript -session.name client/deadMessagePublisher/session/1 -dispatch/callback/retries -1 -prepareForPublish true -requestFile 2007-06-12_18_21_30_521.xml
+   </tt></p>
+   <p>Later send messages of <tt>client/deadMessagePublisher/session/1</tt> are allowed to contain a different publisher address.
+   </p>
    </example>
 
    <configuration where="server">
