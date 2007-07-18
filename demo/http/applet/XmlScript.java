@@ -14,8 +14,8 @@ import java.awt.TextField;
 import java.awt.Button;
 
 /**
- * An example applet which connects to xmlBlaster using xml scripting and a persistent http tunnel for callbacks. 
- *
+ * An example applet which connects to xmlBlaster using xml scripting and a persistent http tunnel for callbacks.
+ * <p>Is used with AppletServlet.java running inside tomcat 5</p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html">client.script requirement</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.java.applet.html">
@@ -70,7 +70,7 @@ public class XmlScript extends Applet implements I_CallbackRaw, ActionListener
       add(this.textArea);
       repaint();
    }
- 
+
    /** Event-handler called on button click */
    public void actionPerformed(ActionEvent ev) {
       String command = ev.getActionCommand();
@@ -123,11 +123,11 @@ public class XmlScript extends Applet implements I_CallbackRaw, ActionListener
          e.printStackTrace();
       }
    }
- 
+
    private void print(String text) {
       if (this.runAsApplet)
          this.textArea.append("XmlScript: " + text + "\n");
-      else    
+      else
          System.out.println("SystemInfo: " + text + "\n");
    }
 
@@ -148,7 +148,7 @@ public class XmlScript extends Applet implements I_CallbackRaw, ActionListener
    }
 
    /**
-    * Here you receive the callback messages from xmlBlaster. 
+    * Here you receive the callback messages from xmlBlaster.
     */
    public String update(String cbSessionId, Hashtable updateKey, byte[] content, Hashtable updateQos) throws Exception {
       print("Asynchronous update arrived: key=" + updateKey.get("/key/@oid") + ", status=" + updateQos.get("/qos/state/@id") + ":");
@@ -158,12 +158,12 @@ public class XmlScript extends Applet implements I_CallbackRaw, ActionListener
       //repaint();
       return "<qos/>";
    }
-   
-   /** java http.applet.XmlScript */ 
+
+   /** java http.applet.XmlScript */
    public static void main(String[] args) {
       XmlScript appl = new XmlScript();
       Hashtable properties = new Hashtable();
-      if (args.length < 1) 
+      if (args.length < 1)
          properties.put("xmlBlaster/servletUrl", "http://localhost:8080/xmlBlaster/AppletServlet");
       else properties.put("xmlBlaster/servletUrl", args[0]);
       //properties.put("xmlBlaster/loginName", "tester");
