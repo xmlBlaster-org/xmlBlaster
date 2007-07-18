@@ -83,8 +83,8 @@
       &lt;key oid='__cmd:client/joe/session/1/?callbackQueueEntries' queryType='EXACT'>
       &lt;/key>
       &lt;qos>
-        &lt;querySpec type='QueueQuery'>
-          maxEntries=3&amp;maxSize=-1&amp;consumable=false&amp;waitingDelay=0
+        &lt;querySpec type='QueueQuery'>&lt;![CDATA[
+          maxEntries=3&amp;maxSize=-1&amp;consumable=false&amp;waitingDelay=0]]&gt;
         &lt;/querySpec>
       &lt;/qos>
     &lt;/get>
