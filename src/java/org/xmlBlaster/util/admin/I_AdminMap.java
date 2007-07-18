@@ -59,31 +59,65 @@ public interface I_AdminMap extends I_AdminPlugin {
     */
    public long getNumOfPersistentEntries();
    /**
-    * returns the maximum number of elements for this cache store
-    * @return int the maximum number of elements in the queue
+    * returns the maximum number of elements for this store
+    * @return int the maximum number of elements in the storage
     */
    public long getMaxNumOfEntries();
    /**
-    * Returns the amount of bytes currently in the queue
+    * returns the maximum number of cached elements for this store
+    * @return int the maximum number of elements in the storage
+    */
+   public long getMaxNumOfEntriesCache();
+   /**
+    * Increase the max number of entries persistently. 
+    * @param max
+    * @return
+    */
+   public String setMaxNumOfEntries(long max);
+   /**
+    * Increase the max number of entries of the cached part persistently. 
+    * @param max
+    * @return
+    */
+   public String setMaxNumOfEntriesCache(long max);
+   /**
+    * Returns the amount of bytes currently in the storage
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
-    * @return The number of elements currently in the queue
+    * @return The number of elements currently in the storage
     */
    public long getNumOfBytes();
    /**
-    * Returns the amount of bytes used by the persistent entries in the queue
+    * Returns the amount of bytes used by the persistent entries in the storage
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
-    * @return int the number of elements currently in the queue
+    * @return int the number of elements currently in the storage
     */
    public long getNumOfPersistentBytes();
    /**
-    * returns the capacity (maximum bytes) for this queue
-    * @return int the maximum number of elements in the queue
+    * returns the capacity (maximum bytes) for this storage
+    * @return int the maximum number of elements in the storage
     */
    public long getMaxNumOfBytes();
+   /**
+    * returns the cache capacity (maximum bytes) for this storage
+    * @return int the maximum number of elements in the storage
+    */
+   public long getMaxNumOfBytesCache();
+   /**
+    * Increase the max number of bytes persistently. 
+    * @param max
+    * @return
+    */
+   public String setMaxNumOfBytes(long max);
+   /**
+    * Increase the max number of bytes of the cached part persistently. 
+    * @param max
+    * @return
+    */
+   public String setMaxNumOfBytesCache(long max);
    /**
     * Removes all the transient entries (the ones which have the flag 'persistent'
     * set to false.

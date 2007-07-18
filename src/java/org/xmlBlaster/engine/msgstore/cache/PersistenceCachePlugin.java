@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.admin.I_AdminMap;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -17,6 +19,7 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
@@ -658,6 +661,13 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    }
 
    /**
+    * @see I_Map#getMaxNumOfEntriesCache()
+    */
+   public long getMaxNumOfEntriesCache() {
+      return this.transientStore.getMaxNumOfEntries();
+   }
+
+   /**
     * @see I_Map#getNumOfBytes()
     */
    public long getNumOfBytes() {
@@ -683,11 +693,129 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    }
 
    /**
+    * @see I_AdminMap#setMaxNumOfBytes(long)
+    */
+   public String setMaxNumOfBytes(long max) {
+      return setMaxNum(true, false, max);
+   }
+   
+   /**
+    * @see I_AdminMap#setMaxNumOfBytesCache(long)
+    */
+   public String setMaxNumOfBytesCache(long max) {
+      return setMaxNum(true, true, max);
+   }
+   
+   /**
+    * @see I_AdminMap#setMaxNumOfEntries(long)
+    */
+   public String setMaxNumOfEntries(long max) {
+      return setMaxNum(false, false, max);
+   }
+   
+   /**
+    * @see I_AdminMap#setMaxNumOfEntriesCache(long)
+    */
+   public String setMaxNumOfEntriesCache(long max) {
+      return setMaxNum(false, true, max);
+   }
+   
+   private String setMaxNum(boolean setBytes, boolean setCache, long max) {
+      String loc;
+      if (setBytes) {
+         loc = (setCache) ? "NumOfBytesCache" : "NumOfBytes";
+      }
+      else {
+         loc = (setCache) ? "NumOfEntriesCache" : "NumOfEntries";
+      }
+      I_Map pm = this.persistentStore;
+      if (pm == null)
+         return getStorageId() + ": No persistence store found, setMax"+loc+"(" + max + ") ignored";
+
+      Object obj = pm.getProperties();
+      if (!(obj instanceof QueuePropertyBase))
+         return getStorageId() + ": Configuration does not support setMax"+loc+"(" + max + "), ignored request";
+      QueuePropertyBase property = (QueuePropertyBase)obj;
+      long oldMax = 0;
+      if (setBytes) {
+         if (setCache)
+            oldMax = property.getMaxBytesCache();
+         else
+            oldMax = property.getMaxBytes();
+      }
+      else { // maxEntries
+         if (setCache)
+            oldMax = property.getMaxEntriesCache();
+         else
+            oldMax = property.getMaxEntries();
+      }
+
+      log.info(getStorageId() + ": Change request of max"+loc+"=" + oldMax + ", to " + max + " ...");
+
+      if (max < oldMax)
+         return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", decreasing setMax"+loc+"(" + max + ") is not supported";
+      else if (max == oldMax)
+         return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", changing to setMax"+loc+"(" + max + ") are identical";
+
+      property = (QueuePropertyBase)property.clone();
+      if (setBytes) {
+         if (setCache)
+            property.setMaxBytesCache(max);
+         else
+            property.setMaxBytes(max);
+      }
+      else { // maxEntries
+         if (setCache)
+            property.setMaxEntriesCache(max);
+         else
+            property.setMaxEntries(max);
+      }
+      String tmpRet = getStorageId() + ": Successfully increased max"+loc+"=" + oldMax + " to " + max + ". This is a NOT persistent change and is lost on restart when the configuration of existing msgUnits are recovered from harddisk";
+      
+      // persistent change
+      try {
+         // Find out my topic name:
+         String tmp = this.storageId.getPostfix();
+         ContextNode ctx = ContextNode.valueOf(tmp);
+         String oid = ctx.getInstanceName(); 
+         if (oid != null) {
+            org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob, oid);
+            org.xmlBlaster.client.qos.PublishQos pq = new org.xmlBlaster.client.qos.PublishQos(glob);
+            pq.getData().setAdministrative(true);
+            pq.setPriority(PriorityEnum.MAX_PRIORITY);
+            pq.getData().getTopicProperty().setMsgUnitStoreProperty((MsgUnitStoreProperty)property);
+            org.xmlBlaster.util.MsgUnit msgUnit = new org.xmlBlaster.util.MsgUnit(pk, "", pq);
+            this.glob.getRequestBroker().publish(this.glob.getInternalSessionInfo(), msgUnit);
+            String resultStr = getStorageId() + ": Persistenty increased max"+loc+"=" + oldMax + " to " + max + ".";
+            log.info(resultStr);
+            return resultStr;
+         }
+         else {
+            String resultStr = tmpRet + "\nPersistent change failed as we couldn't determine the topic oid";
+            log.severe(resultStr);
+            return resultStr;
+         }
+      }
+      catch (XmlBlasterException e) {
+         String resultStr = tmpRet + "\n" + e.toString();
+         log.warning(resultStr);
+         return resultStr;
+      }
+   }
+   
+   /**
     * @see I_Map#getMaxNumOfBytes()
     */
    public long getMaxNumOfBytes() {
       if (this.persistentStore != null && this.isConnected)
          return this.persistentStore.getMaxNumOfBytes();
+      return this.transientStore.getMaxNumOfBytes();
+   }
+
+   /**
+    * @see I_Map#getMaxNumOfBytesCache()
+    */
+   public long getMaxNumOfBytesCache() {
       return this.transientStore.getMaxNumOfBytes();
    }
 
