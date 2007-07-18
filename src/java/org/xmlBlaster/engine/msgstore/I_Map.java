@@ -101,15 +101,6 @@ public interface I_Map extends I_Storage, I_StorageProblemNotifier
    long clear() throws XmlBlasterException;
 
    /**
-    * Returns the number of elements in this queue.
-    * If the implementation of this interface is not able to return the correct
-    * number of entries (for example if the implementation must make a remote
-    * call to a DB which is temporary not available) it will return -1.
-    * @return int the number of elements
-    */
-   long getNumOfEntries();
-
-   /**
     * Returns the number of elements having the persistent flag set in this queue.
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
@@ -117,15 +108,6 @@ public interface I_Map extends I_Storage, I_StorageProblemNotifier
     * @return int the number of elements currently in the queue
     */
    long getNumOfPersistentEntries();
-
-   /**
-    * Returns the amount of bytes currently in the queue
-    * If the implementation of this interface is not able to return the correct
-    * number of entries (for example if the implementation must make a remote
-    * call to a DB which is temporarly not available) it will return -1.
-    * @return The number of elements currently in the queue
-    */
-   long getNumOfBytes();
 
    /**
     * Returns the amount of bytes used by the persistent entries in the queue
@@ -146,11 +128,6 @@ public interface I_Map extends I_Storage, I_StorageProblemNotifier
     * Shutdown the implementation, sync with data store, free resources
     */
    void shutdown();
-
-   /**
-    * Performs what has to be done when the Map Plugin shuts down.
-    */
-   boolean isShutdown();
 
    /**
     * destroys all the resources associated to this queue. This means that all

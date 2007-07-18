@@ -56,7 +56,7 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
    
    public synchronized void shutdown() {
       if (this.isRegistered)
-         this.queue.removeQueueSizeListener(this);
+         this.queue.removeStorageSizeListener(this);
       this.queue = null;
       
    }
@@ -110,7 +110,7 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
          this.waiting = true;
          if (!this.isRegistered) {
             this.isRegistered = true;
-            this.queue.addQueueSizeListener(this);
+            this.queue.addStorageSizeListener(this);
          }
 
          long endTime = System.currentTimeMillis() + timeout;

@@ -319,15 +319,6 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
    long removeWithPriority(long numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException;
 
    /**
-    * Returns the number of elements in this queue.
-    * If the implementation of this interface is not able to return the correct
-    * number of entries (for example if the implementation must make a remote
-    * call to a DB which is temporarly not available) it will return -1.
-    * @return int the number of elements currently in the queue
-    */
-   long getNumOfEntries();
-
-   /**
     * Returns the number of elements having the persistent flag set in this queue.
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
@@ -335,15 +326,6 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return int the number of elements currently in the queue
     */
    long getNumOfPersistentEntries();
-
-   /**
-    * Returns the amount of bytes currently in the queue. 
-    * If the implementation of this interface is not able to return the correct
-    * number of entries (for example if the implementation must make a remote
-    * call to a DB which is temporarly not available) it will return -1.
-    * @return The amount of bytes currently in the queue
-    */
-   long getNumOfBytes();
 
    /**
     * Returns the amount of bytes used by the persistent entries in the queue
@@ -435,44 +417,6 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
 //   public void destroy() throws XmlBlasterException;
 
    /**
-    * performs what has to be done when the Queue Plugin shuts down.
-    */
-   public boolean isShutdown();
-
-
-   /**
-    * Adds a queue size listener to the queue. 
-    * Every time the number of queue entries changes we will fire a
-    * changed() event.
-    * <p />
-    * The changed() invocation is guaranteed to NOT be in any Queue specific synchronize
-    * <p />
-    * You can use this for example to add a threshold warning system.
-    * @param listener the listener to be added, adding the same listener multiple times will only remember one and fire once
-    * @exception IllegalArgumentException if you pass null
-    */
-   public void addQueueSizeListener(I_StorageSizeListener listener);
-   
-   /**
-    * Removes the specified listener from the queue.
-    * 
-    * @param listener the listener to be removed. Currently only one.
-    *        If you pass null, all queueSizeListeners are removed.
-    * @exception IllegalArgumentException if the listener was not found
-    */
-   public void removeQueueSizeListener(I_StorageSizeListener listener);
-   
-   /**
-    * Checks wether the specified listener is registered.
-    * @param listener the listener to check against. If you pass null
-    *        it checks if at least one listener exists.
-    * @return true if the specified listener exists, false otherwise. If
-    *         you passed null in the argument list it returns true if a
-    *         listener exists.
-    */
-   public boolean hasQueueSizeListener(I_StorageSizeListener listener);
-   
-   /**
     * @return a human readable usage help string
     */
    public String usage();
@@ -492,4 +436,5 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @return Number of entries dumped
     */
    public long embeddedObjectsToXml(OutputStream out, Properties props) throws Exception;
+   
 }

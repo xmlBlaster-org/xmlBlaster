@@ -159,7 +159,7 @@ public class QueueQueryPlugin implements I_Query, I_StorageSizeListener {
                synchronized (this.waitingThreads) {
                   this.waitingThreads.add(wq);
                }
-               queue.addQueueSizeListener(this);
+               queue.addStorageSizeListener(this);
                boolean timedOut = false;
                try {
                   if (waitingDelay < 0L)
@@ -180,7 +180,7 @@ public class QueueQueryPlugin implements I_Query, I_StorageSizeListener {
                   synchronized (this.waitingThreads) {
                      this.waitingThreads.remove(wq);
                   }
-                  queue.removeQueueSizeListener(this);
+                  queue.removeStorageSizeListener(this);
                   if (log.isLoggable(Level.FINE)) log.fine("query: removed myself as a QueueSizeListener");
                }
                catch (Throwable ex) {

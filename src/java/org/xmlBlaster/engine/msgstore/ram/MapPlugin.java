@@ -11,8 +11,10 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 // import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.queue.I_EntryFilter;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -53,6 +55,8 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    private long persistentSizeInBytes;
    private long numOfPersistentEntries;
    private PluginInfo pluginInfo;
+   private ArrayList storageSizeListeners;
+   private Object storageSizeListenersSync = new Object();
 
    /**
     * Is called after the instance is created.
@@ -291,6 +295,8 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
          this.sizeInBytes = 0L;
          this.persistentSizeInBytes = 0L;
          this.numOfPersistentEntries = 0L;
+         if (this.storageSizeListeners != null) 
+            invokeStorageSizeListener();
          return ret;
       }
    }
@@ -468,6 +474,61 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    public long embeddedObjectsToXml(OutputStream out, Properties props) {
       log.warning("Sorry, dumping transient entries is not implemented");
       return 0;
+   }
+
+
+   /**
+    * @see I_Queue#addStorageSizeListener(I_StorageSizeListener)
+    */
+   public void addStorageSizeListener(I_StorageSizeListener listener) {
+      if (listener == null) 
+         throw new IllegalArgumentException(ME + ": addStorageSizeListener(null) is not allowed");
+      synchronized(this.storageSizeListenersSync) {
+         if (this.storageSizeListeners == null)
+            this.storageSizeListeners = new ArrayList();
+         this.storageSizeListeners.add(listener);
+      }
+   }
+   
+   /**
+    * @see I_Queue#removeStorageSizeListener(I_StorageSizeListener)
+    */
+   public void removeStorageSizeListener(I_StorageSizeListener listener) {
+      synchronized(this.storageSizeListenersSync) {
+         if (listener == null) this.storageSizeListeners = null;
+         else {
+            if (!this.storageSizeListeners.remove(listener))
+               log.warning("removeStorageSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
+            if (this.storageSizeListeners.size() == 0) this.storageSizeListeners = null;
+         }
+      }
+   }
+   
+   private final void invokeStorageSizeListener() {
+      if (this.storageSizeListeners != null) {
+         I_StorageSizeListener[] listeners = null;
+         synchronized(this.storageSizeListenersSync) {
+             listeners = (I_StorageSizeListener[])this.storageSizeListeners.toArray(new I_StorageSizeListener[this.storageSizeListeners.size()]);
+         }
+         for (int i=0; i < listeners.length; i++) {
+            try {
+               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes(), isShutdown());
+            }
+            catch (NullPointerException e) {
+               if (log.isLoggable(Level.FINE)) log.fine("invokeStorageSizeListener() call is not possible as another thread has removed storageSizeListeners, this is OK to prevent a synchronize.");
+            }
+         }
+      }
+   }
+
+   /**
+    * @see I_Queue#hasStorageSizeListener(I_StorageSizeListener)
+    */
+   public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
+      if (listener == null)
+         return this.storageSizeListeners != null;
+      else
+         return this.storageSizeListeners.contains(listener);
    }
 
    /**

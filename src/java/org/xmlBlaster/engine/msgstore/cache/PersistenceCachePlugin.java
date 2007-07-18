@@ -14,10 +14,13 @@ import org.xmlBlaster.util.admin.I_AdminMap;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Storage;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -62,6 +65,13 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
    /** My JMX registration */
    private Object mbeanHandle;
+
+   private StorageSizeListenerHelper storageSizeListenerHelper;
+
+   public PersistenceCachePlugin() {
+      this.storageSizeListenerHelper = new StorageSizeListenerHelper(this);
+   }
+   
 
    /*
     * this boolean is set only under the time a recovery after having reconnected
@@ -1091,5 +1101,27 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       out.close();
       return "Dumped " + count + " entries to '" + to_file.getAbsolutePath() + "'";
    }
+
+   /**
+    * @see I_Queue#addStorageSizeListener(I_StorageSizeListener)
+    */
+   public void addStorageSizeListener(I_StorageSizeListener listener) {
+      this.storageSizeListenerHelper.addStorageSizeListener(listener);
+   }
+   
+   /**
+    * @see I_Queue#removeStorageSizeListener(I_StorageSizeListener)
+    */
+   public void removeStorageSizeListener(I_StorageSizeListener listener) {
+      this.storageSizeListenerHelper.removeStorageSizeListener(listener);
+   }
+   
+   /**
+    * @see I_Queue#hasStorageSizeListener(I_StorageSizeListener)
+    */
+   public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
+      return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
+   }
+
 
 }

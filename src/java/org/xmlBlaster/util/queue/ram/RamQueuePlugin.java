@@ -22,6 +22,7 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
@@ -58,9 +59,12 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    private long sizeInBytes = 0L;
    private long persistentSizeInBytes = 0L;
    private long numOfPersistentEntries = 0L;
-   private PluginInfo pluginInfo = null;
-   private ArrayList queueSizeListeners;
-   private Object queueSizeListenersSync = new Object();
+   private PluginInfo pluginInfo;
+   private StorageSizeListenerHelper storageSizeListenerHelper;
+   
+   public RamQueuePlugin() {
+      this.storageSizeListenerHelper = new StorageSizeListenerHelper(this);
+   }
    
    /**
     * Is called after the instance is created.
@@ -188,8 +192,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          size = this.storage.size();
       }
 
-      invokeQueueSizeListener();
-      this.removeQueueSizeListener(null);
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
+      this.removeStorageSizeListener(null);
 
       if (size > 0) {
          String reason = "Shutting down RAM queue which contains " + size + " messages";
@@ -239,7 +243,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          }
       }
 
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -288,8 +292,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          }
       }
       
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
-      return size;
+     this.storageSizeListenerHelper.invokeStorageSizeListener();
+     return size;
    }
 
 
@@ -536,7 +540,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             ((I_Entry)entriesToRemove.get(i)).removed(this.storageId);
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -599,7 +603,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          }
       }
       
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -691,7 +695,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          }
       }
       
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -748,7 +752,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          }
       }
 
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       if (this.putListener != null && !ignorePutInterceptor) {
          this.putListener.putPost(entry);
       }
@@ -808,7 +812,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          }
       }
 
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       if (this.putListener != null && !ignorePutInterceptor) {
          this.putListener.putPost(msgArr);
       }
@@ -917,57 +921,24 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    /**
-    * @see I_Queue#addQueueSizeListener(I_StorageSizeListener)
+    * @see I_Queue#addStorageSizeListener(I_StorageSizeListener)
     */
-   public void addQueueSizeListener(I_StorageSizeListener listener) {
-      if (listener == null) 
-         throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
-      synchronized(this.queueSizeListenersSync) {
-         if (this.queueSizeListeners == null)
-            this.queueSizeListeners = new ArrayList();
-         this.queueSizeListeners.add(listener);
-      }
+   public void addStorageSizeListener(I_StorageSizeListener listener) {
+      this.storageSizeListenerHelper.addStorageSizeListener(listener);
    }
    
    /**
-    * @see I_Queue#removeQueueSizeListener(I_StorageSizeListener)
+    * @see I_Queue#removeStorageSizeListener(I_StorageSizeListener)
     */
-   public void removeQueueSizeListener(I_StorageSizeListener listener) {
-      synchronized(this.queueSizeListenersSync) {
-         if (listener == null) this.queueSizeListeners = null;
-         else {
-            if (!this.queueSizeListeners.remove(listener))
-               log.warning("removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
-            if (this.queueSizeListeners.size() == 0) this.queueSizeListeners = null;
-         }
-      }
+   public void removeStorageSizeListener(I_StorageSizeListener listener) {
+      this.storageSizeListenerHelper.removeStorageSizeListener(listener);
    }
    
-   private final void invokeQueueSizeListener() {
-      if (this.queueSizeListeners != null) {
-         I_StorageSizeListener[] listeners = null;
-         synchronized(this.queueSizeListenersSync) {
-             listeners = (I_StorageSizeListener[])this.queueSizeListeners.toArray(new I_StorageSizeListener[this.queueSizeListeners.size()]);
-         }
-         for (int i=0; i < listeners.length; i++) {
-            try {
-               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes(), isShutdown());
-            }
-            catch (NullPointerException e) {
-               if (log.isLoggable(Level.FINE)) log.fine("invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
-            }
-         }
-      }
-   }
-
    /**
-    * @see I_Queue#hasQueueSizeListener(I_StorageSizeListener)
+    * @see I_Queue#hasStorageSizeListener(I_StorageSizeListener)
     */
-   public boolean hasQueueSizeListener(I_StorageSizeListener listener) {
-      if (listener == null)
-         return this.queueSizeListeners != null;
-      else
-         return this.queueSizeListeners.contains(listener);
+   public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
+      return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
    }
 
    /**

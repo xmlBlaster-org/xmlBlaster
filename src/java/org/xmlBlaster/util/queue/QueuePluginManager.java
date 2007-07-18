@@ -155,39 +155,39 @@ public class QueuePluginManager extends PluginManagerBase implements I_StorageSi
       return defaultPluginNames[0][1];
    }
 
-   private EventHelper getMatchingEvent(EventHelper helper, I_Queue queue) throws XmlBlasterException {
+   private EventHelper getMatchingEvent(EventHelper helper, I_Storage storage) throws XmlBlasterException {
       if (helper == null || this.events == null)
          return null;
 
       synchronized(this.events) {
          EventHelper event = (EventHelper)this.events.get(helper.getKey());
          if (event != null)
-            return event.getCopy(queue);
+            return event.getCopy(storage);
          EventHelper tmp = new EventHelper(null, helper.getType(), helper.getId2(), "*", "0");
          event = (EventHelper)this.events.get(tmp.getKey());
          if (event != null)
-            return event.getCopy(queue);
+            return event.getCopy(storage);
          tmp = new EventHelper(null, helper.getType(), "*", helper.getId2(), "0");
          event = (EventHelper)this.events.get(tmp.getKey());
          if (event != null)
-            return event.getCopy(queue);
+            return event.getCopy(storage);
          tmp = new EventHelper(null, helper.getType(), "*", "*", "0");
          event = (EventHelper)this.events.get(tmp.getKey());
          if (event != null)
-            return event.getCopy(queue);
+            return event.getCopy(storage);
       }
       return null;
    }
 
-   private void registerListener(I_Queue queue, EventHelper helper) throws XmlBlasterException {
+   private void registerListener(I_Storage storage, EventHelper helper) throws XmlBlasterException {
       if (this.processedEvents != null) {
          synchronized(this.processedEvents) {
-            if (this.processedEvents.containsKey(queue))
+            if (this.processedEvents.containsKey(storage))
                return;
-            helper = getMatchingEvent(helper, queue);
+            helper = getMatchingEvent(helper, storage);
             if (helper != null) {
-               this.processedEvents.put(queue, helper);
-               queue.addQueueSizeListener(this);
+               this.processedEvents.put(storage, helper);
+               ((I_Queue)storage).addStorageSizeListener(this);
             }
          }
       }
@@ -195,7 +195,7 @@ public class QueuePluginManager extends PluginManagerBase implements I_StorageSi
          if (this.unprocessedEvents == null)
             this.unprocessedEvents = new HashMap();
          synchronized(this.unprocessedEvents) {
-            this.unprocessedEvents.put(queue, helper);
+            this.unprocessedEvents.put(storage, helper);
          }
       }
    }
@@ -307,7 +307,4 @@ public class QueuePluginManager extends PluginManagerBase implements I_StorageSi
          }
       }
    }
-
-   
-   
 }

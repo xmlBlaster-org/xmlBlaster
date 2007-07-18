@@ -1314,7 +1314,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
       }
       invokeQueueSizeListener();
-      removeQueueSizeListener(null);
+      removeStorageSizeListener(null);
    }
 
    public boolean isShutdown() {
@@ -1415,9 +1415,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    /**
-    * @see I_Queue#addQueueSizeListener(I_StorageSizeListener)
+    * @see I_Queue#addStorageSizeListener(I_StorageSizeListener)
     */
-   public void addQueueSizeListener(I_StorageSizeListener listener) {
+   public void addStorageSizeListener(I_StorageSizeListener listener) {
       if (listener == null) 
          throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
       synchronized(this.queueSizeListenersSync) {
@@ -1428,9 +1428,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
    
    /**
-    * @see I_Queue#removeQueueSizeListener(I_StorageSizeListener)
+    * @see I_Queue#removeStorageSizeListener(I_StorageSizeListener)
     */
-   public void removeQueueSizeListener(I_StorageSizeListener listener) {
+   public void removeStorageSizeListener(I_StorageSizeListener listener) {
       synchronized(this.queueSizeListenersSync) {
          if (listener == null) this.queueSizeListeners = null;
          else {
@@ -1462,9 +1462,9 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    /**
-    * @see I_Queue#hasQueueSizeListener(I_StorageSizeListener)
+    * @see I_Queue#hasStorageSizeListener(I_StorageSizeListener)
     */
-   public boolean hasQueueSizeListener(I_StorageSizeListener listener) {
+   public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
       if (listener == null)
          return this.queueSizeListeners != null;
       else

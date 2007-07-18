@@ -185,7 +185,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Creating callback queue type=" + type + " version=" + version);
       this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
       this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
-      this.sessionQueue.addQueueSizeListener(this);
+      this.sessionQueue.addStorageSizeListener(this);
 
       CallbackAddress[] cba = this.connectQos.getSessionCbQueueProperty().getCallbackAddresses();
       if (cba.length > 0) {
