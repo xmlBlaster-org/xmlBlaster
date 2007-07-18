@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16359,16360 acceptWrongSenderAddress is now configurable using JMX/jconsole
+          see file:///home/xmlblast/xmlBlaster/doc/requirements/admin.errorHandling.html why you could need this
+
  o #16339 Added jconsole/JMX support to increase on a running system the maxNumOfEntries and maxNumOfBytes
           of a map (msgUnitStore), the changes are persistently and durable after a xmlBlaster re-start.
 
