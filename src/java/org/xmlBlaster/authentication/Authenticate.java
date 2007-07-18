@@ -79,6 +79,8 @@ final public class Authenticate implements I_RunlevelListener
 
    /** The singleton handle for this xmlBlaster server */
    private final I_XmlBlaster xmlBlasterImpl;
+   
+   private boolean acceptWrongSenderAddress;
 
    // My security delegate layer which is exposed to the protocol plugins
    //private final AuthenticateProtector encapsulator;
@@ -99,6 +101,9 @@ final public class Authenticate implements I_RunlevelListener
       plgnLdr = new PluginManager(global);
       plgnLdr.init(this);
       xmlBlasterImpl = new XmlBlasterImpl(this);
+      
+      // TODO: Decide by authorizer, see SessionInfo.java with specific setting
+      this.acceptWrongSenderAddress = glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress", false);
    }
 
    /**
@@ -942,14 +947,6 @@ final public class Authenticate implements I_RunlevelListener
    }
 
    /**
-    * Authorization check (TODO: generic approach)
-    * @return true: We accept wrong sender address in PublishQos.getSender() (not myself)
-    */
-   public boolean acceptWrongSenderAddress(SessionInfo sessionInfo) {
-      return sessionInfo.acceptWrongSenderAddress();
-   }
-
-   /**
     * Helper method where protocol layers may report a lost connection.
     * @see I_Authenticate#connectionState(String, ConnectionStateEnum)
     */
@@ -1077,4 +1074,29 @@ final public class Authenticate implements I_RunlevelListener
       return getSubjectList();
    }
 
+   /**
+    * Authorization check (TODO: generic approach)
+    * @param sessionInfo can be null to get the general setting
+    * @return true: We accept wrong sender address in PublishQos.getSender() (not myself)
+    */
+   public boolean isAcceptWrongSenderAddress(SessionInfo sessionInfo) {
+      if (this.acceptWrongSenderAddress)
+         return this.acceptWrongSenderAddress;
+      if (sessionInfo != null)
+         return sessionInfo.isAcceptWrongSenderAddress();
+      return this.acceptWrongSenderAddress;
+   }
+
+   /**
+    * @param acceptWrongSenderAddress the acceptWrongSenderAddress to set
+    */
+   public void setAcceptWrongSenderAddress(boolean acceptWrongSenderAddress) {
+      boolean old = this.acceptWrongSenderAddress;
+      this.acceptWrongSenderAddress = acceptWrongSenderAddress;
+      String tmp = "Changed acceptWrongSenderAddress from " + old + " to " + this.acceptWrongSenderAddress + ".";
+      if (this.acceptWrongSenderAddress == true)
+         log.warning(tmp + " Caution: All clients can now publish messages using anothers login name as sender");
+      else
+         log.info(tmp + " Faking anothers publisher address is not possible, but specific clients may allow it");
+   }
 }

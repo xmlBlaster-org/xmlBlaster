@@ -118,6 +118,8 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    /** Holding properties send by our remote client via the topic __sys__sessionProperties */
    private ClientPropertiesInfo remoteProperties;
+   
+   private boolean acceptWrongSenderAddress;
 
    /**
     * All MsgUnit which shall be delivered to the current session of the client
@@ -216,6 +218,10 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
     	  mergeRemoteProperties(this.connectQos.getData().getClientProperties());
       }
 
+      // TODO: Decide by authorizer
+      // see Authenticate.java boolean may = glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress", false);
+      this.acceptWrongSenderAddress = glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress/"+getSessionName().getLoginName(), false);
+
       // JMX register "client/joe/1"
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this.sessionInfoProtector);
    }
@@ -233,12 +239,27 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    }
 
    /**
-    * Configure server with '-xmlBlaster/acceptWrongSenderAddress true' or "-xmlBlaster/acceptWrongSenderAddress/joe true".
+    * Configure server with '-xmlBlaster/acceptWrongSenderAddress true' 
+    * or "-xmlBlaster/acceptWrongSenderAddress/joe true".
+    * Is available using JMX.
     * @return true: We accept wrong sender address in PublishQos.getSender() (not myself)
     */
-   public boolean acceptWrongSenderAddress() {
-      boolean may = glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress", false); // TODO: Decide by authorizer
-      return glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress/"+getSessionName().getLoginName(), may);
+   public boolean isAcceptWrongSenderAddress() {
+      return this.acceptWrongSenderAddress;
+   }
+
+   /**
+    * @param acceptWrongSenderAddress the acceptWrongSenderAddress to set
+    */
+   public void setAcceptWrongSenderAddress(boolean acceptWrongSenderAddress) {
+      boolean old = this.acceptWrongSenderAddress;
+      this.acceptWrongSenderAddress = acceptWrongSenderAddress;
+      String tmp = ME + "Changed acceptWrongSenderAddress from " + old + " to " + this.acceptWrongSenderAddress + ".";
+      //if (glob.getAuthenticate().iscceptWrongSenderAddress()
+      if (this.acceptWrongSenderAddress == true)
+         log.warning(tmp + " Caution: This client can now publish messages using anothers login name as sender");
+      else
+         log.info(tmp + " Faking anothers publisher address is not possible");
    }
 
    /**

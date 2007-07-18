@@ -306,4 +306,12 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    public boolean isStalled() {
       return this.sessionInfo.isStalled();
    }
+   
+   public boolean isAcceptWrongSenderAddress() {
+      return this.sessionInfo.isAcceptWrongSenderAddress();
+   }
+
+   public void setAcceptWrongSenderAddress(boolean acceptWrongSenderAddress) {
+      this.sessionInfo.setAcceptWrongSenderAddress(acceptWrongSenderAddress);
+   }
 }
