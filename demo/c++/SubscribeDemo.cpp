@@ -248,13 +248,16 @@ public:
       SubscribeKey *sk = 0;
       string qStr = "";
       try {
+         sk = new SubscribeKey(global_);
          if (oid.length() > 0) {
-            sk = new SubscribeKey(global_, oid);
+            //sk = new SubscribeKey(global_, oid);
             qStr = oid;
+            sk->setOid(oid);
          }
          else if (xpath.length() > 0) {
-            sk = new SubscribeKey(global_, xpath, Constants::XPATH);
+            //sk = new SubscribeKey(global_, xpath, Constants::XPATH);
             qStr = xpath;
+            sk->setQueryString(xpath);
          }
          if (domain.length() > 0) {  // cluster routing information
             if (sk == 0) sk = new SubscribeKey(global_, "", Constants::D_O_M_A_I_N);
