@@ -267,4 +267,14 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
     */
    public boolean isStalled();
 
+   /**
+    * Configure server with '-xmlBlaster/acceptWrongSenderAddress true' or "-xmlBlaster/acceptWrongSenderAddress/joe true".
+    * @return true: We accept wrong sender address in PublishQos.getSender() (not myself)
+    */
+   public boolean isAcceptWrongSenderAddress();
+
+   /**
+    * @param acceptWrongSenderAddress the acceptWrongSenderAddress to set
+    */
+   public void setAcceptWrongSenderAddress(boolean acceptWrongSenderAddress);
 }

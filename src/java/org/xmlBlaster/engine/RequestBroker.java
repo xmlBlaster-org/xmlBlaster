@@ -2730,11 +2730,22 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    
    public String dumpAllStacksToFile(String file) {
 	   try {
-		FileLocator.writeFile(file, ThreadLister.getAllStackTraces());
+	      FileLocator.writeFile(file, ThreadLister.getAllStackTraces());
 		   return file + " dumped";
-	} catch (XmlBlasterException e) {
-		e.printStackTrace();
-	   return file + " not created: " + e.toString();
-	}
+   	} catch (XmlBlasterException e) {
+   		e.printStackTrace();
+   	   return file + " not created: " + e.toString();
+   	}
+   }
+   
+   public boolean isAcceptWrongSenderAddress() {
+      return this.authenticate.isAcceptWrongSenderAddress(null);
+   }
+   
+   /**
+    * @param acceptWrongSenderAddress the acceptWrongSenderAddress to set
+    */
+   public void setAcceptWrongSenderAddress(boolean acceptWrongSenderAddress) {
+      this.authenticate.setAcceptWrongSenderAddress(acceptWrongSenderAddress);
    }
 }
