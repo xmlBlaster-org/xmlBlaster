@@ -9,7 +9,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queue.BlockingQueueWrapper;
 import org.xmlBlaster.util.queue.I_Entry;
-import org.xmlBlaster.util.queue.I_QueueSizeListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
@@ -52,7 +53,7 @@ import org.xmlBlaster.util.queue.QueuePluginManager;
 public class I_QueueTest extends TestCase {
 
 
-   class QueueSizeListener  implements I_QueueSizeListener {
+   class QueueSizeListener  implements I_StorageSizeListener {
 
       private long lastNumEntries = 0L, 
                    lastNumBytes = 0L,
@@ -80,7 +81,7 @@ public class I_QueueTest extends TestCase {
          this.count = 0;
       }
       
-      public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
+      public void changed(I_Storage storage, long numEntries, long numBytes, boolean isShutdown) {
          this.lastIncrementEntries = numEntries - this.lastNumEntries;
          this.lastIncrementBytes = numBytes - this.lastNumBytes;
          this.lastNumEntries = numEntries;
