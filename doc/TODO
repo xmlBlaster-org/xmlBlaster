@@ -113,6 +113,8 @@ o Collect all sql statements during a typical operation and tune (limit 1) etc
 o Refill cache only when cache is half filled and not on every item
   needsLoading=true is true in case of one entry fits into cache (in none swapping mode?)
 
+o Column 'sizeInBytes' for numOfBytes of the object to calculate / limit easily the number of bytes to load to cache
+
 
 
 PERFORMANCE
