@@ -72,6 +72,10 @@ public class HelloWorldGet
          boolean content = glob.getProperty().get("content", true);
          boolean saveToFile = glob.getProperty().get("saveToFile", false);
          boolean disconnect = glob.getProperty().get("disconnect", true);
+         String queryOid = glob.getProperty().get("query.oid", (String)null);
+         int queryMaxEntries = glob.getProperty().get("query.maxEntries", 1);
+         long queryTimeout = glob.getProperty().get("query.timeout", 0L);
+         boolean queryConsumable = glob.getProperty().get("query.consumable", true);
 
          if (oid.length() < 1 && xpath.length() < 1) {
             log.warning("No -oid or -xpath given, we subscribe to oid='Hello'.");
@@ -90,6 +94,14 @@ public class HelloWorldGet
          log.info("   -filter.type        " + filterType);
          log.info("   -filter.version     " + filterVersion);
          log.info("   -filter.query       " + filterQuery);
+         
+         //            "topic/hello" to access a history queue,
+         //            "client/joe" to access a subject queue or
+         //            "client/joe/session/1"
+         log.info("   -query.oid          " + queryOid);
+         log.info("   -query.maxEntries   " + queryMaxEntries);
+         log.info("   -query.timeout      " + queryTimeout);
+         log.info("   -query.consumable   " + queryConsumable);
          log.info("   -saveToFile         " + saveToFile);
          log.info("For more info please read:");
          log.info("   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html");
@@ -102,31 +114,43 @@ public class HelloWorldGet
          log.info("ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster
          log.info("Connect success as " + crq.toXml());
-
-         GetKey gk = (oid.length() > 0) ? new GetKey(glob, oid) : new GetKey(glob, xpath, Constants.XPATH);
-         if (domain != null) gk.setDomain(domain);
-         GetQos gq = new GetQos(glob);
-         gq.setWantContent(content);
          
-         HistoryQos historyQos = new HistoryQos(glob);
-         historyQos.setNumEntries(historyNumUpdates);
-         historyQos.setNewestFirst(historyNewestFirst);
-         gq.setHistoryQos(historyQos);
+         MsgUnit[] msgs = null;
+         if (queryOid != null) {
+            // http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html
+            if (interactive) {
+               log.info("Hit a key to get '" + queryOid + "' maxEntries=" + queryMaxEntries + " timeout=" + queryTimeout + " consumable=" + queryConsumable);
+               try { System.in.read(); } catch(java.io.IOException e) {}
+            }
+            msgs = con.receive(queryOid, queryMaxEntries, queryTimeout, queryConsumable);
+         }
+         else {
+            GetKey gk = (oid.length() > 0) ? new GetKey(glob, oid) : new GetKey(glob, xpath, Constants.XPATH);
+            if (domain != null) gk.setDomain(domain);
+            GetQos gq = new GetQos(glob);
+            gq.setWantContent(content);
+            
+            HistoryQos historyQos = new HistoryQos(glob);
+            historyQos.setNumEntries(historyNumUpdates);
+            historyQos.setNewestFirst(historyNewestFirst);
+            gq.setHistoryQos(historyQos);
+   
+            if (filterQuery.length() > 0) {
+               AccessFilterQos filter = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
+               gq.addAccessFilter(filter);
+            }
 
-         if (filterQuery.length() > 0) {
-            AccessFilterQos filter = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
-            gq.addAccessFilter(filter);
+            log.info("GetKey=\n" + gk.toXml());
+            log.info("GetQos=\n" + gq.toXml());
+
+            if (interactive) {
+               log.info("Hit a key to get '" + ((oid.length() > 0) ? oid : xpath) + "'");
+               try { System.in.read(); } catch(java.io.IOException e) {}
+            }
+
+            msgs = con.get(gk.toXml(), gq.toXml());
          }
 
-         log.info("GetKey=\n" + gk.toXml());
-         log.info("GetQos=\n" + gq.toXml());
-
-         if (interactive) {
-            log.info("Hit a key to get '" + ((oid.length() > 0) ? oid : xpath) + "'");
-            try { System.in.read(); } catch(java.io.IOException e) {}
-         }
-
-         MsgUnit[] msgs = con.get(gk.toXml(), gq.toXml());
          for(int imsg=0; imsg<msgs.length; imsg++) {
             GetReturnKey grk = new GetReturnKey(glob, msgs[imsg].getKey());
             GetReturnQos grq = new GetReturnQos(glob, msgs[imsg].getQos());
