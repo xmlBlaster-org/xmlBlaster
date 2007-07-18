@@ -94,7 +94,7 @@ public class ServerEntryFactory implements I_EntryFactory
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry: " + txt);
       }
 
-      if (ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(type)) {
+      if (ENTRY_TYPE_UPDATE_REF.equalsIgnoreCase(type)) { // still used
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -140,7 +140,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueUpdateEntry", ex);
          }
       }
-      else if (ENTRY_TYPE_HISTORY_REF.equalsIgnoreCase(type)) {
+      else if (ENTRY_TYPE_HISTORY_REF.equalsIgnoreCase(type)) { // still used
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -159,7 +159,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgQueueHistoryEntry", ex);
          }
       }
-      else if (ENTRY_TYPE_MSG_XML.equalsIgnoreCase(type)) {
+      else if (ENTRY_TYPE_MSG_XML.equalsIgnoreCase(type)) { // still used
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -184,7 +184,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-MsgUnitWrapper", ex);
          }
       }
-      else if (ENTRY_TYPE_MSG_SERIAL.equalsIgnoreCase(type)) {
+      else if (ENTRY_TYPE_MSG_SERIAL.equalsIgnoreCase(type)) {  // probably unused (not found in my tests)
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -206,7 +206,7 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
-      else if (ENTRY_TYPE_TOPIC_XML.equalsIgnoreCase(type)) {
+      else if (ENTRY_TYPE_TOPIC_XML.equalsIgnoreCase(type)) { // still used
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -227,7 +227,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
          }
       }
-      else if (ENTRY_TYPE_TOPIC_SERIAL.equalsIgnoreCase(type)) {
+      else if (ENTRY_TYPE_TOPIC_SERIAL.equalsIgnoreCase(type)) { // probably unused (not found in my tests)
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -245,7 +245,7 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
-      else if (ENTRY_TYPE_SESSION.equalsIgnoreCase(type)) {
+      else if (ENTRY_TYPE_SESSION.equalsIgnoreCase(type)) {  // still used
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -261,7 +261,7 @@ public class ServerEntryFactory implements I_EntryFactory
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "createEntry-TopicEntry", ex);
          }
       }
-      else if (ENTRY_TYPE_SUBSCRIBE.equalsIgnoreCase(type)) {
+      else if (ENTRY_TYPE_SUBSCRIBE.equalsIgnoreCase(type)) {  // still used
          try {
             ObjectInputStream objStream = new ObjectInputStream(is);
             Object[] obj = (Object[])objStream.readObject();
@@ -280,7 +280,7 @@ public class ServerEntryFactory implements I_EntryFactory
          }
       }
 
-      else if (ENTRY_TYPE_DUMMY.equalsIgnoreCase(type)) {
+      else if (ENTRY_TYPE_DUMMY.equalsIgnoreCase(type)) { // still used (for testing)
          DummyEntry entry = new DummyEntry(glob, PriorityEnum.toPriorityEnum(priority), new Timestamp(timestamp), storageId, sizeInBytes, persistent);
          //entry.setUniqueId(timestamp);
          return entry;
