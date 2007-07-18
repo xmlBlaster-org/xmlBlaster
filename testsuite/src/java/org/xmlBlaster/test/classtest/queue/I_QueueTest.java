@@ -309,8 +309,8 @@ public class I_QueueTest extends TestCase {
          ArrayList list = new ArrayList();
 
          //========== Test 2: put(I_QueueEntry)
-         this.queue.removeQueueSizeListener(null);
-         this.queue.addQueueSizeListener(this.queueSizeListener);
+         this.queue.removeStorageSizeListener(null);
+         this.queue.addStorageSizeListener(this.queueSizeListener);
          this.queueSizeListener.clear();
 
          for (int ii=0; ii<numLoop; ii++) {
@@ -350,8 +350,8 @@ public class I_QueueTest extends TestCase {
          }
 
          
-         //this.queue.removeQueueSizeListener(null);
-         //this.queue.addQueueSizeListener(this.queueSizeListener);
+         //this.queue.removeStorageSizeListener(null);
+         //this.queue.addStorageSizeListener(this.queueSizeListener);
          //this.queueSizeListener.clear();
 
          entryList = queue.takeLowest(1, -1L, null, false);
@@ -455,8 +455,8 @@ public class I_QueueTest extends TestCase {
          int numLoop = 10;
          ArrayList list = new ArrayList();
 
-         this.queue.removeQueueSizeListener(null);
-         this.queue.addQueueSizeListener(this.queueSizeListener);
+         this.queue.removeStorageSizeListener(null);
+         this.queue.addStorageSizeListener(this.queueSizeListener);
          this.queueSizeListener.clear();
 
          for (int ii=0; ii<numLoop; ii++) {
@@ -816,8 +816,8 @@ public class I_QueueTest extends TestCase {
                          new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
                          new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue.getStorageId(), true)
                                         };
-            this.queue.removeQueueSizeListener(null);
-            this.queue.addQueueSizeListener(this.queueSizeListener);
+            this.queue.removeStorageSizeListener(null);
+            this.queue.addStorageSizeListener(this.queueSizeListener);
             this.queueSizeListener.clear();
                                         
             queue.put(queueEntries, false);
@@ -859,8 +859,8 @@ public class I_QueueTest extends TestCase {
                          new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
                          new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue.getStorageId(), true)
                                         };
-            this.queue.removeQueueSizeListener(null);
-            this.queue.addQueueSizeListener(this.queueSizeListener);
+            this.queue.removeStorageSizeListener(null);
+            this.queue.addStorageSizeListener(this.queueSizeListener);
             this.queueSizeListener.clear();
                                         
             queue.put(queueEntries, false);
@@ -911,8 +911,8 @@ public class I_QueueTest extends TestCase {
       try {
          //========== Test 1: remove 1 from 1
          {
-            this.queue.removeQueueSizeListener(null);
-            this.queue.addQueueSizeListener(this.queueSizeListener);
+            this.queue.removeStorageSizeListener(null);
+            this.queue.addStorageSizeListener(this.queueSizeListener);
             this.queueSizeListener.clear();
 
             //MsgUnit msgUnit = new MsgUnit("<key/>", "bla".getBytes(), "<qos/>");
@@ -1126,8 +1126,8 @@ public class I_QueueTest extends TestCase {
             int entriesLeft = imax;
 
 
-            this.queue.removeQueueSizeListener(null);
-            this.queue.addQueueSizeListener(this.queueSizeListener);
+            this.queue.removeStorageSizeListener(null);
+            this.queue.addStorageSizeListener(this.queueSizeListener);
             this.queueSizeListener.clear();
 
             DummyEntry[] entries = new DummyEntry[imax];
