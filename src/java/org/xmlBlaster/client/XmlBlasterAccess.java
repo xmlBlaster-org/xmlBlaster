@@ -1961,6 +1961,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please supply a valid oid to receive()");
 
       ContextNode node = ContextNode.valueOf(oid);
+      if (node == null) {
+         throw new IllegalArgumentException("Can't parse '" + oid + "' to a ContextNode");
+      }
+      if (node.isOfClass(ContextNode.SESSION_MARKER_TAG))
+         node = node.getParent();
+      if (node == null) {
+         throw new IllegalArgumentException("Can't parse '" + oid + "' to a ContextNode");
+      }
       if (node.isOfClass(ContextNode.TOPIC_MARKER_TAG))
          oid = "__cmd:"+oid+"/?historyQueueEntries"; // "__cmd:topic/hello/?historyQueueEntries"
       else if (node.isOfClass(ContextNode.SUBJECT_MARKER_TAG) && node.getChild(ContextNode.SESSION_MARKER_TAG, null) != null)
