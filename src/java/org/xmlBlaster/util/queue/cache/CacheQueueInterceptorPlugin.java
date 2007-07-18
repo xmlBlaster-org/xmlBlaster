@@ -107,10 +107,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          String reason = queueName + " queue overflow, " + queue.getNumOfBytes() +
                          " bytes are in queue, try increasing '" + 
-                         this.property.getPropName(maxBytes) + "' on client login.";
+                         this.property.getPropName(maxBytes) + "' on client login: " + extraTxt;
          if (log.isLoggable(Level.FINE)) log.fine(ME+ reason + this.toXml(""));
          if (ifFullThrowException)
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, reason);
       }
       return spaceLeft;
    }
@@ -130,7 +130,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          String reason = queueName + " queue overflow, " + queue.getNumOfEntries() +
                          " entries are in queue, try increasing '" + 
-                         this.property.getPropName(maxEntries) + "' on client login.";
+                         this.property.getPropName(maxEntries) + "' on client login: " + extraTxt;
          if (log.isLoggable(Level.FINE)) log.fine(ME+ reason + this.toXml(""));
          if (ifFullThrowException)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
