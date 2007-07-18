@@ -1,0 +1,60 @@
+<!--
+   Publish 4 messages to a clients callback queue, than access the callback queue with a command.
+
+   Usage: java javaclients.script.XmlScript -requestFile queueQuery.xml
+
+   See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html
+-->
+
+<xmlBlaster>
+
+   <connect>
+     <qos>
+       <securityService type="htpasswd" version="1.0">
+         <user>tester</user><passwd>tester</passwd>
+       </securityService>
+       <session name='tester/1' />
+     </qos>
+   </connect>
+
+   <publish>
+      <key oid="test"/>
+      <content>Test message 1</content>
+      <qos><destination forceQueuing='true'>client/joe/session/1</destination></qos>
+   </publish>
+
+   <publish>
+      <key oid="test"/>
+      <content>Test message 2</content>
+      <qos><destination>client/joe/session/1</destination></qos>
+   </publish>
+
+   <publish>
+      <key oid="test"/>
+      <content>Test message 3</content>
+      <qos><destination>client/joe/session/1</destination></qos>
+   </publish>
+
+   <publish>
+      <key oid="test"/>
+      <content>Test message 4</content>
+      <qos><destination>client/joe/session/1</destination></qos>
+   </publish>
+
+    <input message="Published four messages, hit a key to access three of them # "/>
+
+    <get>
+      <key oid='__cmd:client/joe/session/1/?callbackQueueEntries' queryType='EXACT'>
+      </key>
+      <qos>
+        <querySpec type='QueueQuery'><![CDATA[
+          maxEntries=3&maxSize=-1&consumable=false&waitingDelay=0]]>
+        </querySpec>
+      </qos>
+    </get>
+
+    <input message="Hit a key to disconnect # "/>
+
+    <disconnect />
+
+</xmlBlaster>
