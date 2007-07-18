@@ -35,9 +35,10 @@ import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_QueueSizeListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.DispatchManager;
@@ -80,7 +81,7 @@ import org.xmlBlaster.util.ReentrantLock;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html">The engine.qos.login requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class SessionInfo implements I_Timeout, I_QueueSizeListener
+public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 {
    private String ME = "SessionInfo";
    private final ContextNode contextNode;
@@ -595,9 +596,9 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    /**
     * We register for queue size changes and notify the subject queue if
     * we are willing to accept messages again.
-    * Enforced by I_QueueSizeListener
+    * Enforced by I_StorageSizeListener
     */
-   public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
+   public void changed(I_Storage storage, long numEntries, long numBytes, boolean isShutdown) {
       if (isShutdown) return;
       SubjectInfo subjectInfo = getSubjectInfo();
       boolean hasSubjectEntries = (subjectInfo == null) ? false : subjectInfo.getSubjectQueue().getNumOfEntries() > 0;

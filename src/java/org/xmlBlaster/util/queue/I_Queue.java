@@ -151,12 +151,6 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
       throws XmlBlasterException;
 
    /**
-    * Returns the unique ID of this queue. 
-    * @return For example "history_heronhello"
-    */
-   StorageId getStorageId();
-
-   /**
     * Takes an entry out of the queue. The ordering is first priority and secondly timestamp.
     * This method blocks until one entry is found
     * @return I_QueueEntry the least element with respect to the given ordering
@@ -343,12 +337,6 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
    long getNumOfPersistentEntries();
 
    /**
-    * Returns the maximum number of elements for this queue
-    * @return The maximum number of elements in the queue
-    */
-   long getMaxNumOfEntries();
-
-   /**
     * Returns the amount of bytes currently in the queue. 
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
@@ -463,7 +451,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     * @param listener the listener to be added, adding the same listener multiple times will only remember one and fire once
     * @exception IllegalArgumentException if you pass null
     */
-   public void addQueueSizeListener(I_QueueSizeListener listener);
+   public void addQueueSizeListener(I_StorageSizeListener listener);
    
    /**
     * Removes the specified listener from the queue.
@@ -472,7 +460,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     *        If you pass null, all queueSizeListeners are removed.
     * @exception IllegalArgumentException if the listener was not found
     */
-   public void removeQueueSizeListener(I_QueueSizeListener listener);
+   public void removeQueueSizeListener(I_StorageSizeListener listener);
    
    /**
     * Checks wether the specified listener is registered.
@@ -482,7 +470,7 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
     *         you passed null in the argument list it returns true if a
     *         listener exists.
     */
-   public boolean hasQueueSizeListener(I_QueueSizeListener listener);
+   public boolean hasQueueSizeListener(I_StorageSizeListener listener);
    
    /**
     * @return a human readable usage help string

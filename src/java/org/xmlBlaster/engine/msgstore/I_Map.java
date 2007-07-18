@@ -34,11 +34,6 @@ public interface I_Map extends I_Storage, I_StorageProblemNotifier
       throws XmlBlasterException;
 
    /**
-    * Returns the unique ID of this cache
-    */
-   StorageId getStorageId();
-
-   /**
     * Allows to overwrite properties which where passed on initialize()
     * The properties which support hot configuration are depending on the used implementation
     */
@@ -122,12 +117,6 @@ public interface I_Map extends I_Storage, I_StorageProblemNotifier
     * @return int the number of elements currently in the queue
     */
    long getNumOfPersistentEntries();
-
-   /**
-    * returns the maximum number of elements for this cache
-    * @return int the maximum number of elements in the queue
-    */
-   long getMaxNumOfEntries();
 
    /**
     * Returns the amount of bytes currently in the queue

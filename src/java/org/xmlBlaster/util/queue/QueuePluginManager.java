@@ -33,115 +33,11 @@ import org.xmlBlaster.util.def.ErrorCode;
  * String defaultPersistent = glob.getProperty().get("queue.cache.persistentQueue", "JDBC,1.0");
  * I_Queue queue = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
  * </pre>
- * @author <a href="mailto:laghi@swissinfo.com">Michele Laghi</a>.
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>.
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.queue.html" target="others">engine.queue</a>
  */
-public class QueuePluginManager extends PluginManagerBase implements I_QueueSizeListener {
-   
-   public class EventHelper {
-      private String eventType;
-      private String type;
-      private String id1;
-      private String id2;
-      long value;
-      private String key;
-      private boolean procent;
-      private boolean alreadyAlarmed;
-      
-      private EventHelper() {
-         
-      }
-      
-      public EventHelper(String eventType, String type, String id1, String id2, String val) throws XmlBlasterException {
-         if (id2 == null)
-            id2 = "";
-         this.eventType = eventType;
-         this.type = type;
-         this.id1 = id1;
-         this.id2 = id2;
-         this.key = type + "/" + id1 + "/" + id2;
-         int pos = val.lastIndexOf('%');
-         if (pos > -1) {
-            this.procent = true;
-            val = val.substring(0, pos);
-         }
-         try {
-           this.value = Long.parseLong(val); 
-         }
-         catch (Throwable ex) {
-            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, "EventHelper", "could not parse treshold string '" + val + "' to a long", ex);
-         }
-      }
-
-      protected Object clone() {
-         EventHelper helper = new EventHelper();
-         helper.type = this.type;
-         helper.id1 = this.id1;
-         helper.id2 = this.id2;
-         helper.key = this.key;
-         helper.value = this.value;
-         helper.procent = this.procent;
-         helper.eventType = this.eventType;
-         return helper;
-      }
-      
-      public EventHelper getCopy(I_Queue queue) {
-         EventHelper ret = (EventHelper)clone();
-         long maxValue = 1L;
-         if (queue != null)
-            maxValue = queue.getMaxNumOfEntries();
-         if (maxValue < 0L)
-            maxValue = 1L;
-         if (ret.procent)
-            ret.value = (long)(0.01 * ret.value * maxValue);
-         if (ret.value > maxValue) {
-            log.warning("The treshold for queue '" + queue.getStorageId().getId() + "' was set to '" + ret.value + "' which is bigger than the maximum value '" + maxValue + "'. will set it to the maximum value");
-            ret.value = maxValue;
-         }
-         return ret;
-      }
-      
-      public boolean shallTrigger(long numEntries) {
-         if (numEntries < this.value) {
-            if (this.alreadyAlarmed) 
-               this.alreadyAlarmed = false; // clear flag since treshold not reached anymore
-            return false;
-         }
-         else {
-            if (this.alreadyAlarmed)
-               return false;
-            this.alreadyAlarmed = true;
-            return true;
-         }
-      }
-      
-      public String getKey() {
-         return this.key;
-      }
-
-      public String getId1() {
-         return id1;
-      }
-
-      public String getId2() {
-         return id2;
-      }
-
-      public String getType() {
-         return type;
-      }
-
-      public long getValue() {
-         return value;
-      }
-      
-      public String getEventType() {
-         return this.eventType;
-      }
-      
-   }
-   
+public class QueuePluginManager extends PluginManagerBase implements I_StorageSizeListener {
    
    // private final String ME;
    private final Global glob;
@@ -385,20 +281,20 @@ public class QueuePluginManager extends PluginManagerBase implements I_QueueSize
    }
    
    /**
-    * Enforced by I_QueueSizeListener
+    * Enforced by I_StorageSizeListener
     * @param queue
     * @param numEntries
     * @param numBytes
     * @param isShutdown
     */
-   public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
+   public void changed(I_Storage storage, long numEntries, long numBytes, boolean isShutdown) {
       if (this.processedEvents == null)
          return;
-      EventHelper helper = (EventHelper)this.processedEvents.get(queue);
+      EventHelper helper = (EventHelper)this.processedEvents.get(storage);
       if (helper == null)
          return;
       if (!isShutdown && helper.shallTrigger(numEntries)) {
-         String txt = "The queue '" + queue.getStorageId().getId() + "' has reached its treshold: '" + numEntries + "' of max '" + queue.getMaxNumOfEntries() + "' (message sent only once)";
+         String txt = "The queue '" + storage.getStorageId().getId() + "' has reached its treshold: '" + numEntries + "' of max '" + storage.getMaxNumOfEntries() + "' (message sent only once)";
          if (this.eventDispatcher != null) {
             String summary = "[" + new java.sql.Timestamp(System.currentTimeMillis()).toString()
              + " " + Thread.currentThread().getName()

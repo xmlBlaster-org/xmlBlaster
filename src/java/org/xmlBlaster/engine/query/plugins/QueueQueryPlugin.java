@@ -25,7 +25,8 @@ import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.I_QueueSizeListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 import edu.emory.mathcs.backport.java.util.concurrent.CountDownLatch;
@@ -37,7 +38,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">The engine.qos.queryspec.QueueQuery requirement</a>
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
+public class QueueQueryPlugin implements I_Query, I_StorageSizeListener {
    
    /** Helper container */
    class WaitingQuery {
@@ -224,9 +225,9 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
 
    /**
     * We register for queue size changes and our blocking thread returns if we are done.  
-    * Enforced by I_QueueSizeListener
+    * Enforced by I_StorageSizeListener
     */
-   public void changed(I_Queue queue, long numEntries, long numBytes, boolean isShutdown) {
+   public void changed(I_Storage storage, long numEntries, long numBytes, boolean isShutdown) {
       if (log.isLoggable(Level.FINER)) log.finer("changed numEntries='" + numEntries + "' numBytes='" + numBytes + "'");
       WaitingQuery[] queries = getWaitingQueries();
       for (int i=0; i<queries.length; i++) {

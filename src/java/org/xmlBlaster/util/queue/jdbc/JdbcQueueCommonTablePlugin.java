@@ -11,7 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.queue.I_EntryFilter;
-import org.xmlBlaster.util.queue.I_QueueSizeListener;
+import org.xmlBlaster.util.queue.I_StorageSizeListener;
 import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -1317,9 +1317,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    }
 
    /**
-    * @see I_Queue#addQueueSizeListener(I_QueueSizeListener)
+    * @see I_Queue#addQueueSizeListener(I_StorageSizeListener)
     */
-   public void addQueueSizeListener(I_QueueSizeListener listener) {
+   public void addQueueSizeListener(I_StorageSizeListener listener) {
       if (listener == null) 
          throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
       synchronized(this.queueSizeListenersSync) {
@@ -1330,9 +1330,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    }
    
    /**
-    * @see I_Queue#removeQueueSizeListener(I_QueueSizeListener)
+    * @see I_Queue#removeQueueSizeListener(I_StorageSizeListener)
     */
-   public void removeQueueSizeListener(I_QueueSizeListener listener) {
+   public void removeQueueSizeListener(I_StorageSizeListener listener) {
       synchronized(this.queueSizeListenersSync) {
          if (listener == null) this.queueSizeListeners = null;
          else {
@@ -1345,9 +1345,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    
    private final void invokeQueueSizeListener() {
       if (this.queueSizeListeners != null) {
-         I_QueueSizeListener[] listeners = null;
+         I_StorageSizeListener[] listeners = null;
          synchronized(this.queueSizeListenersSync) {
-             listeners = (I_QueueSizeListener[])this.queueSizeListeners.toArray(new I_QueueSizeListener[this.queueSizeListeners.size()]);
+             listeners = (I_StorageSizeListener[])this.queueSizeListeners.toArray(new I_StorageSizeListener[this.queueSizeListeners.size()]);
          }
          for (int i=0; i < listeners.length; i++) {
             try {
@@ -1361,9 +1361,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    }
 
    /**
-    * @see I_Queue#hasQueueSizeListener(I_QueueSizeListener)
+    * @see I_Queue#hasQueueSizeListener(I_StorageSizeListener)
     */
-   public boolean hasQueueSizeListener(I_QueueSizeListener listener) {
+   public boolean hasQueueSizeListener(I_StorageSizeListener listener) {
       if (listener == null)
          return this.queueSizeListeners != null;
       else {

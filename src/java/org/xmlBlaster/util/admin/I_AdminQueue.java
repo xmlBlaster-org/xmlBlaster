@@ -188,9 +188,9 @@ public interface I_AdminQueue extends I_AdminPlugin {
     */
    public boolean isShutdown();
 
-   //public void addQueueSizeListener(org.xmlBlaster.util.queue.I_QueueSizeListener);
-   //public void removeQueueSizeListener(org.xmlBlaster.util.queue.I_QueueSizeListener);
-   //public boolean hasQueueSizeListener(org.xmlBlaster.util.queue.I_QueueSizeListener);
+   //public void addQueueSizeListener(org.xmlBlaster.util.queue.I_StorageSizeListener);
+   //public void removeQueueSizeListener(org.xmlBlaster.util.queue.I_StorageSizeListener);
+   //public boolean hasQueueSizeListener(org.xmlBlaster.util.queue.I_StorageSizeListener);
 
    /**
     * Dump state to XML string. 
