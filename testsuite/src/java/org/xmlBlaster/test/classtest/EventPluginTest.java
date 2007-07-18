@@ -234,6 +234,8 @@ public class EventPluginTest extends TestCase implements I_Callback {
          {
             Global global = new Global(args);
             ConnectQos qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
+            qos.getSessionCbQueueProperty().setMaxEntries(10L);
+            qos.getSessionCbQueueProperty().setMaxEntriesCache(10L);
             I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
             conn.connect(qos, this);
             SubscribeKey subKey = new SubscribeKey(global, topicName);
