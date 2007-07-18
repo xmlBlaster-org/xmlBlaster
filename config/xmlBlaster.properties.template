@@ -390,6 +390,8 @@ queue/history/maxEntries = ${queue/history/maxEntriesCache}
 # How big is a callback queue for each client (holds references only)
 queue/callback/maxEntriesCache = 1000
 queue/callback/maxEntries = ${queue/callback/maxEntriesCache}
+queue/callback/maxBytesCache = 200555666
+queue/callback/maxBytes = 4147483647
 
 # How big is the topic cache for messages of same oid (here your message content occupies the memory)
 persistence/msgUnitStore/maxEntriesCache = 10000
@@ -415,7 +417,7 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
                    sun.jdbc.odbc.JdbcOdbcDriver:\
                    ORG.as220.tinySQL.dbfFileDriver:\
                    oracle.jdbc.driver.OracleDriver:\
-		   com.ibm.db2.jcc.DB2Driver:\
+                   com.ibm.db2.jcc.DB2Driver:\
                    com.microsoft.jdbc.sqlserver.SQLServerDriver:\
                    com.microsoft.sqlserver.jdbc.SQLServerDriver:\
                    com.mysql.jdbc.Driver:\
