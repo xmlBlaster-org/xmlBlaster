@@ -54,6 +54,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 
@@ -575,6 +576,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                QueuePluginManager queuePluginManager = this.requestBroker.getServerScope().getQueuePluginManager();
                queuePluginManager.registerEvent(this, event);
             }
+            else if (isPersistenceEvent(event)) {
+               StoragePluginManager storagePluginManager = this.requestBroker.getServerScope().getStoragePluginManager();
+               storagePluginManager.registerEvent(this, event);
+            }
             else if (event.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP)) {
                // REGEX: "client/.*/session/.*/event/.*"
                // "client/joe/session/1/event/connect", "client/*/session/*/event/disconnect"
@@ -638,13 +643,20 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
       }
       // after the loop (we know we have finished
+
+      StoragePluginManager storagePluginManager = this.requestBroker.getServerScope().getStoragePluginManager();
+      storagePluginManager.registerFinished();
+
       QueuePluginManager queuePluginManager = this.requestBroker.getServerScope().getQueuePluginManager();
       queuePluginManager.registerFinished();
-
    }
 
    public static boolean isQueueEvent(String txt) {
       return matchesRegex(".*/queue/.*/event/threshold.*", txt);
+   }
+   
+   public static boolean isPersistenceEvent(String txt) {
+      return matchesRegex(".*/persistence/.*/event/threshold.*", txt);
    }
    
    private static boolean matchesRegex(String pattern, String txt) {

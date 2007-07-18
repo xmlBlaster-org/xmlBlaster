@@ -20,6 +20,7 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.def.Constants;
@@ -65,9 +66,14 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
 
    private boolean debug = false;
 
-   private ArrayList queueSizeListeners;
-   private Object queueSizeListenersSync = new Object();
    private int entryCounter;
+
+   private StorageSizeListenerHelper storageSizeListenerHelper;
+   
+   public JdbcQueueCommonTablePlugin() {
+      this.storageSizeListenerHelper = new StorageSizeListenerHelper(this);
+   }
+   
 
    public boolean isTransient() {
       return false;
@@ -367,8 +373,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             throw ex;
          }
       }
-      if (ret && this.queueSizeListeners != null) invokeQueueSizeListener();
-
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -427,7 +432,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.putListener != null && !ignorePutInterceptor) {
          this.putListener.putPost(queueEntries);
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
    }
 
 
@@ -490,7 +495,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             resetCounters();
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -531,7 +536,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             throw ex;
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       if (ret == null) return null;
       return ret.list;
    }
@@ -626,7 +631,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             throw ex;
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -655,7 +660,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             throw ex;
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       if (ret == null) return 0;
       return (int)ret.countEntries;
    }
@@ -687,7 +692,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             throw ex;
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       if (ret == null) return 0L;
       return ret.countEntries;
    }
@@ -743,7 +748,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentEntries -= currentPersistentEntries;
          }
       }
-      if (this.queueSizeListeners != null && ret > 0) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -802,7 +807,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             throw ex;
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return tmp;
    }
 
@@ -838,7 +843,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             throw ex;
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -1087,7 +1092,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.numOfBytes = 0L;
          this.numOfPersistentEntries = 0L;
          this.numOfPersistentBytes = 0L;
-         if (this.queueSizeListeners != null) invokeQueueSizeListener();
+         this.storageSizeListenerHelper.invokeStorageSizeListener();
          return ret.countEntries;
       }
       catch (XmlBlasterException ex) {
@@ -1113,7 +1118,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.isDown = true;
       }
       
-      invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       this.removeStorageSizeListener(null);
       
       synchronized (this) {
@@ -1316,61 +1321,26 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       }
    }
 
+
    /**
     * @see I_Queue#addStorageSizeListener(I_StorageSizeListener)
     */
    public void addStorageSizeListener(I_StorageSizeListener listener) {
-      if (listener == null) 
-         throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
-      synchronized(this.queueSizeListenersSync) {
-         if (this.queueSizeListeners == null)
-            this.queueSizeListeners = new ArrayList();
-         this.queueSizeListeners.add(listener);
-      }
+      this.storageSizeListenerHelper.addStorageSizeListener(listener);
    }
    
    /**
     * @see I_Queue#removeStorageSizeListener(I_StorageSizeListener)
     */
    public void removeStorageSizeListener(I_StorageSizeListener listener) {
-      synchronized(this.queueSizeListenersSync) {
-         if (listener == null) this.queueSizeListeners = null;
-         else {
-            if (!this.queueSizeListeners.remove(listener))
-               log.warning("removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
-            if (this.queueSizeListeners.size() == 0) this.queueSizeListeners = null;
-         }
-      }
+      this.storageSizeListenerHelper.removeStorageSizeListener(listener);
    }
    
-   private final void invokeQueueSizeListener() {
-      if (this.queueSizeListeners != null) {
-         I_StorageSizeListener[] listeners = null;
-         synchronized(this.queueSizeListenersSync) {
-             listeners = (I_StorageSizeListener[])this.queueSizeListeners.toArray(new I_StorageSizeListener[this.queueSizeListeners.size()]);
-         }
-         for (int i=0; i < listeners.length; i++) {
-            try {
-               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes(), isShutdown());
-            }
-            catch (NullPointerException e) {
-               if (log.isLoggable(Level.FINE)) log.fine("invokeQueueSizeListener() call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
-            }
-         }
-      }
-   }
-
    /**
     * @see I_Queue#hasStorageSizeListener(I_StorageSizeListener)
     */
    public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
-      if (listener == null)
-         return this.queueSizeListeners != null;
-      else {
-         synchronized(this.queueSizeListenersSync) {
-            return this.queueSizeListeners.contains(listener);
-         }
-      }
+      return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
    }
 
    /**

@@ -19,6 +19,7 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.def.Constants;
@@ -64,9 +65,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    //private CacheControlParam controlParam;
    private PluginInfo pluginInfo;
 
-   private ArrayList queueSizeListeners;
-   private Object queueSizeListenersSync = new Object();
-   
    /** this is the sync between the peaks and the swapping: no peak should be allowed while swapping */
    private Object peekSync = new Object();
 
@@ -75,6 +73,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    
    private long maxFetchSize = Long.MAX_VALUE;
 
+   private StorageSizeListenerHelper storageSizeListenerHelper;
+   
+   public CacheQueueInterceptorPlugin() {
+      this.storageSizeListenerHelper = new StorageSizeListenerHelper(this);
+   }
+   
    public boolean isTransient() {
       return this.transientQueue.isTransient() && this.persistentQueue.isTransient();
    }
@@ -573,7 +577,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                ex.printStackTrace();
             }
       }
-      if (this.queueSizeListeners != null) this.invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       if ((this.putListener != null) && (!ignorePutInterceptor)) {
          this.putListener.putPost(queueEntries);
       }
@@ -689,7 +693,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                for(int i=0; i<list.size(); i++) ((I_Entry)list.get(i)).removed(this.queueId);
             }
          }
-         if (this.queueSizeListeners != null) invokeQueueSizeListener();                  
+         this.storageSizeListenerHelper.invokeStorageSizeListener();
       }
       return list;
    }
@@ -860,7 +864,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                   entries[i].removed(this.queueId);
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();                  
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -1010,7 +1014,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             }
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();                  
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -1117,7 +1121,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             }
          }
       }
-      if (this.queueSizeListeners != null) invokeQueueSizeListener();                  
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       long ret = 0L;
       for (int i=0; i < tmp.length; i++) if (tmp[i]) ret++;
       return ret;
@@ -1313,7 +1317,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             ex.printStackTrace();
          }
       }
-      invokeQueueSizeListener();
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       removeStorageSizeListener(null);
    }
 
@@ -1418,58 +1422,23 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see I_Queue#addStorageSizeListener(I_StorageSizeListener)
     */
    public void addStorageSizeListener(I_StorageSizeListener listener) {
-      if (listener == null) 
-         throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
-      synchronized(this.queueSizeListenersSync) {
-         if (this.queueSizeListeners == null)
-            this.queueSizeListeners = new ArrayList();
-         this.queueSizeListeners.add(listener);
-      }
+      this.storageSizeListenerHelper.addStorageSizeListener(listener);
    }
    
    /**
     * @see I_Queue#removeStorageSizeListener(I_StorageSizeListener)
     */
    public void removeStorageSizeListener(I_StorageSizeListener listener) {
-      synchronized(this.queueSizeListenersSync) {
-         if (listener == null) this.queueSizeListeners = null;
-         else {
-            ArrayList list = this.queueSizeListeners;
-            if (list != null) {
-               if (!list.remove(listener))
-                  log.warning(ME+"removeQueueSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
-               if (list.size() == 0) this.queueSizeListeners = null;
-            }
-         }
-      }
+      this.storageSizeListenerHelper.removeStorageSizeListener(listener);
    }
    
-   private final void invokeQueueSizeListener() {
-      if (this.queueSizeListeners != null) {
-         I_StorageSizeListener[] listeners = null;
-         synchronized(this.queueSizeListenersSync) {
-             listeners = (I_StorageSizeListener[])this.queueSizeListeners.toArray(new I_StorageSizeListener[this.queueSizeListeners.size()]);
-         }
-         for (int i=0; i < listeners.length; i++) {
-            try {
-               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes(), isShutdown());
-            }
-            catch (NullPointerException e) {
-               if (log.isLoggable(Level.FINE)) log.fine(ME+"Call is not possible as another thread has removed queueSizeListeners, this is OK to prevent a synchronize.");
-            }
-         }
-      }
-   }
-
    /**
     * @see I_Queue#hasStorageSizeListener(I_StorageSizeListener)
     */
    public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
-      if (listener == null)
-         return this.queueSizeListeners != null;
-      else
-         return this.queueSizeListeners.contains(listener);
+      return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
    }
+
 
    /**
     * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)

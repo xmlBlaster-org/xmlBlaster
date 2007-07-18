@@ -15,6 +15,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -55,9 +56,13 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    private long persistentSizeInBytes;
    private long numOfPersistentEntries;
    private PluginInfo pluginInfo;
-   private ArrayList storageSizeListeners;
-   private Object storageSizeListenersSync = new Object();
 
+   private StorageSizeListenerHelper storageSizeListenerHelper;
+   
+   public MapPlugin() {
+      this.storageSizeListenerHelper = new StorageSizeListenerHelper(this);
+   }
+   
    /**
     * Is called after the instance is created.
     * @see org.xmlBlaster.engine.msgstore.I_Map#initialize(StorageId, Object)
@@ -179,13 +184,14 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       }
 
       String key = entry.getUniqueIdStr();
+      int ret = 0;
       synchronized (this.storage) {
          Object old = this.storage.put(key, entry);
 
          if (old != null) { // I_Map#put(I_MapEntry) spec says that the old entry is not updated!
             this.storage.put(key, old);
             touch((I_MapEntry)old);
-            return 0;
+            ret = 0;
             /*
             this.sizeInBytes -= old.getSizeInBytes();
             if (old.isPersistent()) {
@@ -194,17 +200,21 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
             }
             */
          }
-         entry.setSortTimestamp(new Timestamp());
-         this.lruSet.add(entry);
-         
-         entry.setStored(true);
-         this.sizeInBytes += entry.getSizeInBytes();
-         if (entry.isPersistent()) {
-            this.numOfPersistentEntries++;
-            this.persistentSizeInBytes += entry.getSizeInBytes();
+         else {
+            entry.setSortTimestamp(new Timestamp());
+            this.lruSet.add(entry);
+            
+            entry.setStored(true);
+            this.sizeInBytes += entry.getSizeInBytes();
+            if (entry.isPersistent()) {
+               this.numOfPersistentEntries++;
+               this.persistentSizeInBytes += entry.getSizeInBytes();
+            }
+            ret = (old != null) ? 0 : 1;
          }
-         return (old != null) ? 0 : 1;
       }
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
+      return ret;
    }
 
    /**
@@ -213,20 +223,25 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
       if (mapEntry == null) return 0;
       if (log.isLoggable(Level.FINER)) log.finer("remove(" + mapEntry.getLogId() + ")");
-      synchronized (this.storage) {
-         if (mapEntry.getSortTimestamp() != null)
-            this.lruSet.remove(mapEntry);
-         I_MapEntry entry = (I_MapEntry)this.storage.remove(mapEntry.getUniqueIdStr());
-         if (entry == null)
-            return 0;
+      try {
+         synchronized (this.storage) {
+            if (mapEntry.getSortTimestamp() != null)
+               this.lruSet.remove(mapEntry);
+            I_MapEntry entry = (I_MapEntry)this.storage.remove(mapEntry.getUniqueIdStr());
+            if (entry == null)
+               return 0;
 
-         if (entry.isPersistent()) {
-            this.numOfPersistentEntries--;
-            this.persistentSizeInBytes -= entry.getSizeInBytes();
+            if (entry.isPersistent()) {
+               this.numOfPersistentEntries--;
+               this.persistentSizeInBytes -= entry.getSizeInBytes();
+            }
+            entry.setStored(false);
+            this.sizeInBytes -= entry.getSizeInBytes();
+            return 1;
          }
-         entry.setStored(false);
-         this.sizeInBytes -= entry.getSizeInBytes();
-         return 1;
+      }
+      finally { // since it should be outside the sync
+         this.storageSizeListenerHelper.invokeStorageSizeListener();
       }
    }
 
@@ -235,13 +250,14 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     */
    public int remove(final long uniqueId) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("remove(" + uniqueId + ")");
+      int ret = 0;
       synchronized (this.storage) {
          I_MapEntry mapEntry = get(uniqueId);
-         if (mapEntry == null) {
-            return 0;
-         }
-         return remove(mapEntry);
+         if (mapEntry != null)
+            ret = remove(mapEntry);
       }
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
+      return ret;
    }
 
    /**
@@ -255,28 +271,33 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     * @see I_Map#removeOldest()
     */
    public I_MapEntry removeOldest() throws XmlBlasterException {
-      synchronized (this.storage) {
-         I_MapEntry oldest = null;
-         Iterator it = this.lruSet.iterator();
-         if (it.hasNext()) {
-            oldest = (I_MapEntry)it.next();
-         }
-         if (oldest != null) {
-            remove(oldest);
-            return oldest;
-         }
-
-         if (this.storage.size() > 0) {
-            log.severe("LRU set has no entries, we remove an arbitrary entry from RAM map");
-            it = this.storage.values().iterator();
+      try {
+         synchronized (this.storage) {
+            I_MapEntry oldest = null;
+            Iterator it = this.lruSet.iterator();
             if (it.hasNext()) {
-               I_MapEntry entry = (I_MapEntry)it.next();
-               remove(entry);
-               return entry;
+               oldest = (I_MapEntry)it.next();
             }
-         }
+            if (oldest != null) {
+               remove(oldest);
+               return oldest;
+            }
 
-         return null;
+            if (this.storage.size() > 0) {
+               log.severe("LRU set has no entries, we remove an arbitrary entry from RAM map");
+               it = this.storage.values().iterator();
+               if (it.hasNext()) {
+                  I_MapEntry entry = (I_MapEntry)it.next();
+                  remove(entry);
+                  return entry;
+               }
+            }
+
+            return null;
+         }
+      }
+      finally {
+         this.storageSizeListenerHelper.invokeStorageSizeListener();
       }
    }
 
@@ -295,8 +316,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
          this.sizeInBytes = 0L;
          this.persistentSizeInBytes = 0L;
          this.numOfPersistentEntries = 0L;
-         if (this.storageSizeListeners != null) 
-            invokeStorageSizeListener();
+         this.storageSizeListenerHelper.invokeStorageSizeListener();
          return ret;
       }
    }
@@ -359,7 +379,8 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
          isShutdown = true;
       }
       if (log.isLoggable(Level.FINER)) log.finer("shutdown() of RAM map " + this.getStorageId());
-
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
+      removeStorageSizeListener(null);
    }
 
    public final boolean isShutdown() {
@@ -476,59 +497,25 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       return 0;
    }
 
-
    /**
     * @see I_Queue#addStorageSizeListener(I_StorageSizeListener)
     */
    public void addStorageSizeListener(I_StorageSizeListener listener) {
-      if (listener == null) 
-         throw new IllegalArgumentException(ME + ": addStorageSizeListener(null) is not allowed");
-      synchronized(this.storageSizeListenersSync) {
-         if (this.storageSizeListeners == null)
-            this.storageSizeListeners = new ArrayList();
-         this.storageSizeListeners.add(listener);
-      }
+      this.storageSizeListenerHelper.addStorageSizeListener(listener);
    }
    
    /**
     * @see I_Queue#removeStorageSizeListener(I_StorageSizeListener)
     */
    public void removeStorageSizeListener(I_StorageSizeListener listener) {
-      synchronized(this.storageSizeListenersSync) {
-         if (listener == null) this.storageSizeListeners = null;
-         else {
-            if (!this.storageSizeListeners.remove(listener))
-               log.warning("removeStorageSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
-            if (this.storageSizeListeners.size() == 0) this.storageSizeListeners = null;
-         }
-      }
+      this.storageSizeListenerHelper.removeStorageSizeListener(listener);
    }
    
-   private final void invokeStorageSizeListener() {
-      if (this.storageSizeListeners != null) {
-         I_StorageSizeListener[] listeners = null;
-         synchronized(this.storageSizeListenersSync) {
-             listeners = (I_StorageSizeListener[])this.storageSizeListeners.toArray(new I_StorageSizeListener[this.storageSizeListeners.size()]);
-         }
-         for (int i=0; i < listeners.length; i++) {
-            try {
-               listeners[i].changed(this, this.getNumOfEntries(), this.getNumOfBytes(), isShutdown());
-            }
-            catch (NullPointerException e) {
-               if (log.isLoggable(Level.FINE)) log.fine("invokeStorageSizeListener() call is not possible as another thread has removed storageSizeListeners, this is OK to prevent a synchronize.");
-            }
-         }
-      }
-   }
-
    /**
     * @see I_Queue#hasStorageSizeListener(I_StorageSizeListener)
     */
    public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
-      if (listener == null)
-         return this.storageSizeListeners != null;
-      else
-         return this.storageSizeListeners.contains(listener);
+      return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
    }
 
    /**

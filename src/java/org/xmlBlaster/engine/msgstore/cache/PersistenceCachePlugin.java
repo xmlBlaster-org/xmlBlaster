@@ -177,7 +177,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             log.severe("Cache storage configured with transientMap=CACHE, to prevent recursion we set it to 'RAM,1.0'");
             defaultTransient = "RAM,1.0";
          }
-         this.transientStore = pluginManager.getPlugin(defaultTransient, uniqueQueueId, createRamCopy(queuePropertyBase));
+         
+         QueuePropertyBase ramProps = createRamCopy(queuePropertyBase);
+         ramProps.setEmbedded(true);
+         
+         this.transientStore = pluginManager.getPlugin(defaultTransient, uniqueQueueId, ramProps);
          if (log.isLoggable(Level.FINE)) log.fine("Created transient part:" + this.transientStore.toXml(""));
          
          try {
@@ -186,7 +190,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                log.severe("Cache storage configured with persistentMap=CACHE, to prevent recursion we set it to 'JDBC,1.0'");
                defaultPersistent = "JDBC,1.0";
             }
+
+            boolean oldEmbedded = queuePropertyBase.isEmbedded(); // since a CACHE could be inside a CACHE
+            queuePropertyBase.setEmbedded(true);
             this.persistentStore = pluginManager.getPlugin(defaultPersistent, uniqueQueueId, queuePropertyBase);
+            queuePropertyBase.setEmbedded(oldEmbedded); // since it is not a clone we make sure to reset it to its original
 
             this.isConnected = true;
             // to be notified about reconnections / disconnections
@@ -380,6 +388,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          numTransientPut = this.transientStore.put(mapEntry);
       } // sync(this)
 
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       if (numPersistentPut>0 || numTransientPut>0) {
          return 1;
       }
@@ -580,7 +589,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    /**
     * @see I_Map#remove(I_MapEntry)
     */
-   public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
+   private int removeNoNotify(final I_MapEntry mapEntry) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("remove(" + mapEntry.getLogId() + ")");
       synchronized (this) {
          // search in RAM storage
@@ -595,17 +604,27 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    }
 
    /**
+    * @see I_Map#remove(I_MapEntry)
+    */
+   public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
+      int ret = removeNoNotify(mapEntry);
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
+      return ret;
+   }
+
+   /**
     * @see I_Map#remove(long)
     */
    public int remove(final long uniqueId) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("remove(" + uniqueId + ")");
+      int ret = 0;
       synchronized (this) {
          I_MapEntry mapEntry = get(uniqueId);
-         if (mapEntry == null) {
-            return 0;
-         }
-         return remove(mapEntry);
+         if (mapEntry != null)
+            ret = removeNoNotify(mapEntry);
       }
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
+      return ret;
    }
 
    /**
@@ -861,7 +880,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
       //this.numOfBytes = 0L;
       //this.numOfEntries = 0L;
-
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
       return ret;
    }
 
@@ -888,6 +907,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       catch (Exception ex) {
          log.severe("could not unregister listener. Cause: " + ex.toString());
       }
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
+      removeStorageSizeListener(null);
    }
 
    public boolean isShutdown() {
@@ -1122,6 +1143,5 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
       return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
    }
-
 
 }

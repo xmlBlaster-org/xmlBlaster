@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.queue;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
@@ -17,6 +16,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 
 /**
@@ -38,6 +38,79 @@ import org.xmlBlaster.util.def.ErrorCode;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.queue.html" target="others">engine.queue</a>
  */
 public class QueuePluginManager extends PluginManagerBase implements I_StorageSizeListener {
+
+   public class QueueEventHandler extends StorageEventHandler {
+
+      private Global global;
+      public QueueEventHandler(I_StorageSizeListener listener, Global global) {
+         super(listener);
+         this.global = global;
+      }
+      
+      public void registerEvent(I_EventDispatcher dispatcher, String event) throws XmlBlasterException {
+         // client/*/session/[publicSessionId]/queue/callback/event/threshold.90%
+         // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
+         // topic/[topicId]/queue/history/event/threshold.90%
+         // */queue/*/event/threshold*
+
+         String end = "/event/threshold.";
+         int index = event.lastIndexOf(end);
+         String value = event.substring(index + end.length());
+
+         String tmp = event.substring(0, index);
+         end = "/queue/";
+         index = tmp.lastIndexOf(end);
+         String type = tmp.substring(index + end.length());
+         String id1 = null;
+         String id2 = null;
+         if (Constants.RELATING_HISTORY.equals(type)) { // we need only the topicId
+            // topic/[topicId]/queue/history/event/threshold.90%
+            tmp = tmp.substring(0, index);
+            // sessionId or topicId or subjectId
+            end = "/";
+            index = tmp.lastIndexOf(end);
+            id1 = tmp.substring(index + end.length());
+            id2 = "";
+         }
+         else if (Constants.RELATING_CALLBACK.equals(type)) {
+            // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
+            tmp = tmp.substring(0, index);
+            // sessionId or topicId or subjectId
+            end = "/";
+            index = tmp.lastIndexOf(end);
+            id2 = tmp.substring(index + end.length());
+            tmp = tmp.substring(0, index);
+            index = tmp.lastIndexOf(end);
+            if (index > -1)
+               tmp = tmp.substring(0, index);
+            index = tmp.lastIndexOf(end);
+            if (index > -1)
+               id1 = tmp.substring(index+1);
+            else
+               id1 = tmp;
+         }
+         else if (Constants.RELATING_SUBJECT.equals(type)) {
+            // client/[subjectId]/queue/subject/event/threshold.66
+            tmp = tmp.substring(0, index);
+            end = "/";
+            index = tmp.lastIndexOf(end);
+            id1 = tmp.substring(index + end.length());
+            id2 = "";
+         }
+         else {
+            throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "QueuePluginManager.registerEvent", "event '" + event + "' is not supported");
+         }
+         
+         if (this.events == null)
+            this.events = new HashMap();
+         if (this.eventDispatcher == null)
+            this.eventDispatcher = dispatcher;
+         EventHelper helper = new EventHelper(event, type, id1, id2, value);
+         synchronized(this.events) {
+            this.events.put(helper.getKey(), helper);
+         }
+      }
+   }
    
    // private final String ME;
    private final Global glob;
@@ -47,15 +120,12 @@ public class QueuePluginManager extends PluginManagerBase implements I_StorageSi
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.util.queue.ram.RamQueuePlugin"},
                                                           {"JDBC", "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin"},
                                                           {"CACHE", "org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin"} };
-   private Map events;
-   private Map unprocessedEvents; // needed in case the EventPlugin is instantiated after the first queue
-   private Map processedEvents;
-   private I_EventDispatcher eventDispatcher;
+   private StorageEventHandler storageEventHandler;
    
    public QueuePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-
+      this.storageEventHandler = new QueueEventHandler(this, glob);
       // this.ME = "QueuePluginManager" + this.glob.getLogPrefixDashed();
       if (log.isLoggable(Level.FINER)) log.finer("Constructor QueuePluginManager");
    }
@@ -91,44 +161,12 @@ public class QueuePluginManager extends PluginManagerBase implements I_StorageSi
       plugin.initialize(storageId, props);
 
       if (!props.isEmbedded()) {
-         EventHelper helper = generateEventHelper(storageId);
-         registerListener(plugin, helper);
+         EventHelper helper = this.storageEventHandler.generateEventHelper(storageId);
+         this.storageEventHandler.registerListener(plugin, helper);
       }
       return plugin;
    }
 
-   private EventHelper generateEventHelper(StorageId storageId) throws XmlBlasterException {
-      String type = storageId.getPrefix();
-      String postfix = storageId.getPostfix();
-      if ("history".equals(type) || "subject".equals(type)) {
-         int pos = postfix.lastIndexOf('/');
-         if (pos > -1) {
-            String id = postfix.substring(pos+1);
-            return new EventHelper(null, type, id, "", "0"); // fake
-         }
-         else
-            return null; 
-      }
-      else if ("callback".equals(type)) {
-         int pos = postfix.lastIndexOf('/');
-         if (pos > -1) {
-            String sessionId = postfix.substring(pos+1);
-            String tmp = postfix.substring(0, pos);
-            pos = tmp.lastIndexOf('/');
-            String subjectId = tmp.substring(pos+1);
-            if (pos > -1) {
-               return new EventHelper(null, type, subjectId, sessionId, "0"); // fake
-            }
-            else
-               return null;
-         }
-         else
-            return null;
-      }
-      else
-         return null;
-   }
-   
    /**
     * Enforced by PluginManagerBase. 
     * @return The name of the property in xmlBlaster.property "QueuePlugin"
@@ -155,156 +193,19 @@ public class QueuePluginManager extends PluginManagerBase implements I_StorageSi
       return defaultPluginNames[0][1];
    }
 
-   private EventHelper getMatchingEvent(EventHelper helper, I_Storage storage) throws XmlBlasterException {
-      if (helper == null || this.events == null)
-         return null;
-
-      synchronized(this.events) {
-         EventHelper event = (EventHelper)this.events.get(helper.getKey());
-         if (event != null)
-            return event.getCopy(storage);
-         EventHelper tmp = new EventHelper(null, helper.getType(), helper.getId2(), "*", "0");
-         event = (EventHelper)this.events.get(tmp.getKey());
-         if (event != null)
-            return event.getCopy(storage);
-         tmp = new EventHelper(null, helper.getType(), "*", helper.getId2(), "0");
-         event = (EventHelper)this.events.get(tmp.getKey());
-         if (event != null)
-            return event.getCopy(storage);
-         tmp = new EventHelper(null, helper.getType(), "*", "*", "0");
-         event = (EventHelper)this.events.get(tmp.getKey());
-         if (event != null)
-            return event.getCopy(storage);
-      }
-      return null;
-   }
-
-   private void registerListener(I_Storage storage, EventHelper helper) throws XmlBlasterException {
-      if (this.processedEvents != null) {
-         synchronized(this.processedEvents) {
-            if (this.processedEvents.containsKey(storage))
-               return;
-            helper = getMatchingEvent(helper, storage);
-            if (helper != null) {
-               this.processedEvents.put(storage, helper);
-               ((I_Queue)storage).addStorageSizeListener(this);
-            }
-         }
-      }
-      else {
-         if (this.unprocessedEvents == null)
-            this.unprocessedEvents = new HashMap();
-         synchronized(this.unprocessedEvents) {
-            this.unprocessedEvents.put(storage, helper);
-         }
-      }
-   }
-   
    public void registerEvent(I_EventDispatcher dispatcher, String event) throws XmlBlasterException {
-      // client/*/session/[publicSessionId]/queue/callback/event/threshold.90%
-      // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
-      // topic/[topicId]/queue/history/event/threshold.90%
-      // */queue/*/event/threshold*
-
-      String end = "/event/threshold.";
-      int index = event.lastIndexOf(end);
-      String value = event.substring(index + end.length());
-
-      String tmp = event.substring(0, index);
-      end = "/queue/";
-      index = tmp.lastIndexOf(end);
-      String type = tmp.substring(index + end.length());
-      String id1 = null;
-      String id2 = null;
-      if ("history".equals(type)) { // we need only the topicId
-         // topic/[topicId]/queue/history/event/threshold.90%
-         tmp = tmp.substring(0, index);
-         // sessionId or topicId or subjectId
-         end = "/";
-         index = tmp.lastIndexOf(end);
-         id1 = tmp.substring(index + end.length());
-         id2 = "";
-      }
-      else if ("callback".equals(type)) {
-         // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
-         tmp = tmp.substring(0, index);
-         // sessionId or topicId or subjectId
-         end = "/";
-         index = tmp.lastIndexOf(end);
-         id2 = tmp.substring(index + end.length());
-         tmp = tmp.substring(0, index);
-         index = tmp.lastIndexOf(end);
-         if (index > -1)
-            tmp = tmp.substring(0, index);
-         index = tmp.lastIndexOf(end);
-         if (index > -1)
-            id1 = tmp.substring(index+1);
-         else
-            id1 = tmp;
-      }
-      else if ("subject".equals(type)) {
-         // client/[subjectId]/queue/subject/event/threshold.66
-         tmp = tmp.substring(0, index);
-         end = "/";
-         index = tmp.lastIndexOf(end);
-         id1 = tmp.substring(index + end.length());
-         id2 = "";
-      }
-      else {
-         throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, "QueuePluginManager.registerEvent", "event '" + event + "' is not supported");
-      }
-      
-      if (this.events == null)
-         this.events = new HashMap();
-      if (this.eventDispatcher == null)
-         this.eventDispatcher = dispatcher;
-      EventHelper helper = new EventHelper(event, type, id1, id2, value);
-      synchronized(this.events) {
-         this.events.put(helper.getKey(), helper);
-      }
+      this.storageEventHandler.registerEvent(dispatcher, event);
    }
 
    public void registerFinished() throws XmlBlasterException {
-      if (this.unprocessedEvents != null) {
-         synchronized (this.unprocessedEvents) {
-            I_Queue[] keys = (I_Queue[])this.unprocessedEvents.keySet().toArray(new I_Queue[this.unprocessedEvents.size()]);
-            this.processedEvents = new HashMap();
-            synchronized(this.processedEvents) {
-               for (int i=0; i < keys.length; i++) {
-                  I_Queue queue = keys[i];
-                  EventHelper tmpHelper = (EventHelper)this.unprocessedEvents.remove(queue);
-                  registerListener(queue, tmpHelper);
-               }
-            }
-         }
-      }
+      this.storageEventHandler.registerFinished();
    }
-   
+
    /**
     * Enforced by I_StorageSizeListener
-    * @param queue
-    * @param numEntries
-    * @param numBytes
-    * @param isShutdown
     */
    public void changed(I_Storage storage, long numEntries, long numBytes, boolean isShutdown) {
-      if (this.processedEvents == null)
-         return;
-      EventHelper helper = (EventHelper)this.processedEvents.get(storage);
-      if (helper == null)
-         return;
-      if (!isShutdown && helper.shallTrigger(numEntries)) {
-         String txt = "The queue '" + storage.getStorageId().getId() + "' has reached its treshold: '" + numEntries + "' of max '" + storage.getMaxNumOfEntries() + "' (message sent only once)";
-         if (this.eventDispatcher != null) {
-            String summary = "[" + new java.sql.Timestamp(System.currentTimeMillis()).toString()
-             + " " + Thread.currentThread().getName()
-             + " " + QueuePluginManager.class.getName() + "]";
-
-
-            String description = txt;
-            String eventType = helper.getEventType();
-            this.eventDispatcher.dispatchEvent(summary, description, eventType);
-         }
-      }
+      this.storageEventHandler.changed(storage, numEntries, numBytes, isShutdown);
    }
+   
 }

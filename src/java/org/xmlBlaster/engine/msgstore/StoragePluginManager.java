@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.msgstore;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
@@ -17,10 +16,12 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.EventHelper;
 import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.I_StorageSizeListener;
+import org.xmlBlaster.util.queue.StorageEventHandler;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 
 /**
@@ -53,7 +54,61 @@ import org.xmlBlaster.util.def.ErrorCode;
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html" target="others">engine.message.lifecycle</a>
  */
 public class StoragePluginManager extends PluginManagerBase implements I_StorageSizeListener {
-   private final String ME;
+
+   public class MapEventHandler extends StorageEventHandler {
+      private ServerScope serverScope;
+      public MapEventHandler(I_StorageSizeListener listener, ServerScope serverScope) {
+         super(listener);
+         this.serverScope = serverScope;
+      }
+      
+      public void registerEvent(I_EventDispatcher dispatcher, String event) throws XmlBlasterException {
+         // threshold is for entries only (not bytes nor cachedEntries)
+         
+         // topic/[topicId]/persistence/msgUnitStore/event/threshold.90%
+
+         // map/topicStore/event/threshold.90%
+         // map/session/event/threshold.80
+         // map/subscribe/event/threshold.99%
+         
+         // */persistence/*/event/threshold*
+
+         String end = "/event/threshold.";
+         int index = event.lastIndexOf(end);
+         String value = event.substring(index + end.length());
+
+         String tmp = event.substring(0, index);
+         end = "/persistence/";
+         index = tmp.lastIndexOf(end);
+         String type = tmp.substring(index + end.length());
+         String id1 = null;
+         String id2 = null;
+         // TODO THE OTHER MAPS SUCH AS topicStore, session + subscribe
+         if (Constants.RELATING_MSGUNITSTORE.equals(type)) { // we need only the topicId
+            // topic/[topicId]/persistence/msgUnitStore/event/threshold.90%
+            // 
+            tmp = tmp.substring(0, index);
+            // topicId
+            end = "/";
+            index = tmp.lastIndexOf(end);
+            id1 = tmp.substring(index + end.length());
+            id2 = "";
+         }
+         else {
+            throw new XmlBlasterException(this.serverScope, ErrorCode.USER_CONFIGURATION, "StoragePluginManager.registerEvent", "event '" + event + "' is not supported");
+         }
+         
+         if (this.events == null)
+            this.events = new HashMap();
+         if (this.eventDispatcher == null)
+            this.eventDispatcher = dispatcher;
+         EventHelper helper = new EventHelper(event, type, id1, id2, value);
+         synchronized(this.events) {
+            this.events.put(helper.getKey(), helper);
+         }
+      }
+   }
+   
    private final ServerScope glob;
    private static Logger log = Logger.getLogger(StoragePluginManager.class.getName());
    private final String pluginEnvClass = "persistence"; // Used for env lookup like "persistence/topicStore/StoragePlugin[JDBC][1.0]=..."
@@ -62,16 +117,12 @@ public class StoragePluginManager extends PluginManagerBase implements I_Storage
                                                           {"CACHE", "org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin"} };
    public static final String pluginPropertyName = "StoragePlugin";
 
-   private Map events;
-   private Map unprocessedEvents; // needed in case the EventPlugin is instantiated after the first queue
-   private Map processedEvents;
-   private I_EventDispatcher eventDispatcher;
+   private StorageEventHandler storageEventHandler;
    
    public StoragePluginManager(ServerScope glob) {
       super(glob);
       this.glob = glob;
-
-      this.ME = "StoragePluginManager" + this.glob.getLogPrefixDashed();
+      this.storageEventHandler = new MapEventHandler(this, glob);
       //this.glob.addObjectEntry("org.xmlBlaster.engine.msgstore.StoragePluginManager", this);
       if (log.isLoggable(Level.FINER)) log.finer("Constructor StoragePluginManager");
    }
@@ -107,9 +158,14 @@ public class StoragePluginManager extends PluginManagerBase implements I_Storage
       I_Map plugin = (I_Map)super.instantiatePlugin(pluginInfo, false);
       plugin.initialize(storageId, props);
 
+      if (!props.isEmbedded()) {
+         EventHelper helper = this.storageEventHandler.generateEventHelper(storageId);
+         this.storageEventHandler.registerListener(plugin, helper);
+      }
       return plugin;
    }
 
+   
    /**
     * Enforced by PluginManagerBase. 
     * @return The name of the property in xmlBlaster.property "StoragePlugin"
@@ -136,44 +192,14 @@ public class StoragePluginManager extends PluginManagerBase implements I_Storage
       return defaultPluginNames[0][1];
    }
    
-   
    public void registerEvent(I_EventDispatcher dispatcher, String event) throws XmlBlasterException {
-      // topic/[topicId]/persistence/msgUnitStore/event/threshold.90%
-      // */persistence/*/event/threshold*
-
-      String end = "/event/threshold.";
-      int index = event.lastIndexOf(end);
-      String value = event.substring(index + end.length());
-
-      String tmp = event.substring(0, index);
-      end = "/persistence/";
-      index = tmp.lastIndexOf(end);
-      String type = tmp.substring(index + end.length());
-      String id1 = null;
-      String id2 = null;
-      if ("msgUnitStore".equals(type)) { // we need only the topicId
-         // topic/[topicId]/persistence/msgUnitStore/event/threshold.90%
-         tmp = tmp.substring(0, index);
-         // topicId
-         end = "/";
-         index = tmp.lastIndexOf(end);
-         id1 = tmp.substring(index + end.length());
-         id2 = "";
-      }
-      else {
-         throw new XmlBlasterException(this.glob, ErrorCode.USER_CONFIGURATION, "StoragePluginManager.registerEvent", "event '" + event + "' is not supported");
-      }
-      
-      if (this.events == null)
-         this.events = new HashMap();
-      if (this.eventDispatcher == null)
-         this.eventDispatcher = dispatcher;
-      EventHelper helper = new EventHelper(event, type, id1, id2, value);
-      synchronized(this.events) {
-         this.events.put(helper.getKey(), helper);
-      }
+      this.storageEventHandler.registerEvent(dispatcher, event);
    }
-   
+
+   public void registerFinished() throws XmlBlasterException {
+      this.storageEventHandler.registerFinished();
+   }
+
    /**
     * Enforced by I_StorageSizeListener
     * @param queue
@@ -182,24 +208,7 @@ public class StoragePluginManager extends PluginManagerBase implements I_Storage
     * @param isShutdown
     */
    public void changed(I_Storage storage, long numEntries, long numBytes, boolean isShutdown) {
-      if (this.processedEvents == null)
-         return;
-      EventHelper helper = (EventHelper)this.processedEvents.get(storage);
-      if (helper == null)
-         return;
-      if (!isShutdown && helper.shallTrigger(numEntries)) {
-         String txt = "The storage '" + storage.getStorageId().getId() + "' has reached its treshold: '" + numEntries + "' of max '" + storage.getMaxNumOfEntries() + "' (message sent only once)";
-         if (this.eventDispatcher != null) {
-            String summary = "[" + new java.sql.Timestamp(System.currentTimeMillis()).toString()
-             + " " + Thread.currentThread().getName()
-             + " " + StoragePluginManager.class.getName() + "]";
-
-
-            String description = txt;
-            String eventType = helper.getEventType();
-            this.eventDispatcher.dispatchEvent(summary, description, eventType);
-         }
-      }
+      this.storageEventHandler.changed(storage, numEntries, numBytes, isShutdown);
    }
    
    

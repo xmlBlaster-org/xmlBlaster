@@ -45,9 +45,12 @@ public class StorageSizeListenerHelper {
       synchronized(this.storageSizeListenersSync) {
          if (listener == null) this.storageSizeListeners = null;
          else {
+            if ((this.storageSizeListeners) == null)
+               return;
             if (!this.storageSizeListeners.remove(listener))
                log.warning("removeStorageSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
-            if (this.storageSizeListeners.size() == 0) this.storageSizeListeners = null;
+            if (this.storageSizeListeners.size() == 0) 
+               this.storageSizeListeners = null;
          }
       }
    }
@@ -75,8 +78,12 @@ public class StorageSizeListenerHelper {
    public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
       if (listener == null)
          return this.storageSizeListeners != null;
-      else
-         return this.storageSizeListeners.contains(listener);
+      else {
+         synchronized(this.storageSizeListenersSync) {
+            if (this.storageSizeListeners == null) return false;
+            return this.storageSizeListeners.contains(listener);
+         }
+      }
    }
 
    

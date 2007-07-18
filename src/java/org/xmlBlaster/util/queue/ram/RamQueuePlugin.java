@@ -291,7 +291,6 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             }
          }
       }
-      
      this.storageSizeListenerHelper.invokeStorageSizeListener();
      return size;
    }
@@ -419,7 +418,9 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     */
    public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
       long ret = 0L;
-      if (limitEntry == null) return ret;
+      if (limitEntry == null) 
+         return ret;
+      
       synchronized (this) {
          SortedSet set = this.storage.headSet(limitEntry);
          ret = set.size();
@@ -427,8 +428,10 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
          if (inclusive) {
             if (this.storage.remove(limitEntry)) ret++;
          }
-         return ret;
       }
+      this.storageSizeListenerHelper.invokeStorageSizeListener();
+      
+      return ret;
    }
 
    /**
