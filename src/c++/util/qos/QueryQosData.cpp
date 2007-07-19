@@ -47,6 +47,9 @@ void QueryQosData::init()
    initialUpdate_  = true;
    updateOneway_   = false;
    notify_         = true;
+   maxEntries_     = -10;
+   consumable_     = false;
+   timeout_        = 0;
 }
 
 void QueryQosData::copy(const QueryQosData& data) 
@@ -61,6 +64,9 @@ void QueryQosData::copy(const QueryQosData& data)
    initialUpdate_  = data.initialUpdate_;
    updateOneway_   = data.updateOneway_;
    notify_         = data.notify_;
+   maxEntries_     = data.maxEntries_;
+   consumable_     = data.consumable_;
+   timeout_        = data.timeout_;
 }
 
 
@@ -80,7 +86,10 @@ QueryQosData::QueryQosData(Global& global)
       updateOneway_(false),
       notify_(true),
       filters_(),
-      historyQos_(global)
+      historyQos_(global), 
+      maxEntries_(-10),
+      consumable_(false),
+      timeout_(0L)
 {
    ME = "QueryQosData";
 }
@@ -234,6 +243,12 @@ HistoryQos QueryQosData::getHistoryQos() const
    return historyQos_;
 }
 
+void QueryQosData::setQueryQos(int maxEntries, long timeout, bool consumable) {
+    maxEntries_ = maxEntries;
+    timeout_ = timeout;
+    consumable_ = consumable;
+}
+
 /**
  * Get the identifier (unique handle) for this subscription. 
  * @return The id or null if not specified by client.
@@ -286,6 +301,19 @@ string QueryQosData::toXml(const string& extraOffset) const
       ret += (*iter).toXml(extraOffset + Constants::INDENT);
       iter++;
    }
+   
+   if (maxEntries_ != -10) {
+      ret += offset + 
+             "<querySpec type='QueueQuery'>" +
+                   "maxEntries="+
+                   lexical_cast<std::string>(maxEntries_)+
+                   "&amp;maxSize=-1&amp;consumable="+
+                   lexical_cast<std::string>(consumable_)+
+                   "&amp;waitingDelay="+
+                   lexical_cast<std::string>(timeout_)+
+             "</querySpec>";
+   }
+   
    ret += historyQos_.toXml(extraOffset + Constants::INDENT);
         bool clearText = false;
    ret += dumpClientProperties(extraOffset + Constants::INDENT, clearText);

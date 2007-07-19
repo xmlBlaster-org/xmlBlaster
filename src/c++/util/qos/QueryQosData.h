@@ -76,6 +76,11 @@ class Dll_Export QueryQosData : public QosData
    /** Query history messages */
    org::xmlBlaster::util::qos::HistoryQos historyQos_;
 
+   /** QueryQos settings */   
+   int maxEntries_;
+   bool consumable_;
+   long timeout_;
+
    void init();
 
    void copy(const QueryQosData& data);
@@ -173,6 +178,8 @@ public:
     * Set the QoS which describes the history query settings. 
     */
    void setHistoryQos(const org::xmlBlaster::util::qos::HistoryQos& historyQos);
+   
+   void setQueryQos(int maxEntries, long timeout, bool consumable);
 
    /**
     * Get the QoS which describes the history query settings. 

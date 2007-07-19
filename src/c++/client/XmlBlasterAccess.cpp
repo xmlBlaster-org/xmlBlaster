@@ -456,6 +456,34 @@ vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
    return connection_->get(key, qos);
 }
 
+vector<MessageUnit> XmlBlasterAccess::receive(string oid, int maxEntries, long timeout, bool consumable) {
+   if (!isConnected()) {
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::receive", "you are not connected to the xmlBlaster");
+   }
+   if (log_.call()) log_.call(ME, "receive");
+   
+    //topic/hello          to access a history queue,
+    //client/joe           to access a subject queue or
+    //client/joe/session/1 
+   if (oid.find("topic") != string::npos)
+      oid = "__cmd:"+oid+"/?historyQueueEntries"; // "__cmd:topic/hello/?historyQueueEntries"
+   else if (oid.find("session") != string::npos)
+      oid = "__cmd:"+oid+"/?callbackQueueEntries"; // "__cmd:client/joe/session/1/?callbackQueueEntries";
+   else if (oid.find("subject") != string::npos)
+      oid = "__cmd:"+oid+"/?subjectQueueEntries"; // "__cmd:client/joe/?subjectQueueEntries"
+   else
+      throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::receive", "Can't parse '" + oid + "'");
+
+   GetKey getKey(global_, oid);
+   QueryQosData data(global_);
+   data.setQueryQos(maxEntries, timeout, consumable);
+   GetQos getQos(global_, data);
+   vector<MessageUnit> msgs = get(getKey, getQos);
+   if (log_.trace()) log_.trace(ME, string("receive - got '") + lexical_cast<std::string>(msgs.size()) + "'");
+   return msgs;
+}
+
+
 vector<UnSubscribeReturnQos>
 XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {

@@ -283,6 +283,39 @@ public:
 //   std::vector<org::xmlBlaster::util::MessageUnit> get(const std::string&  xmlKey, const std::string& qos);
    std::vector<org::xmlBlaster::util::MessageUnit> get(const org::xmlBlaster::client::key::GetKey& key, const org::xmlBlaster::client::qos::GetQos& qos);
 
+   /**
+    * This method synchronously accesses maxEntries messages from any xmlBlaster server side queue.
+    * <p>
+    * This is a convenience method which uses get() with a specific Qos.
+    * <p>Important note:<br />
+    * Currently you shouldn't use unlimited timeout==-1 as this could
+    * lead to a server side thread leak on client disconnect.
+    * As a workaround please use a loop and a timeout of for example 60000
+    * and just ignore returned arrays of length 0.
+    * </p>
+    * @param oid The identifier like 
+    *            "topic/hello" to access a history queue,
+    *            "client/joe" to access a subject queue or
+    *            "client/joe/session/1"
+    *            to access a callback queue.
+    *            The string must follow the formatting rule of ContextNode.java
+    * @param maxEntries The maximum number of entries to retrieve
+    * @param timeout The time to wait until return. 
+    *                If you choose a negative value it will block until the maxEntries
+    *                has been reached.
+    *                If the value is '0' (i.e. zero) it will not wait and will correspond to a non-blocking get.
+    *                If the value is positive it will block until the specified amount in milliseconds
+    *                has elapsed or when the maxEntries has been reached (whichever comes first). 
+    * @param consumable  Expressed with 'true' or 'false'.
+    *                    If true the entries returned are deleted from the queue
+    * @return An array of messages, is never null but may be an array of length=0 if no message is delivered
+    * @see org.xmlBlaster.util.context.ContextNode
+    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">engine.qos.queryspec.QueueQuery requirement</a>
+    * @see javax.jms.MessageConsumer#receive
+    */
+   std::vector<org::xmlBlaster::util::MessageUnit> receive(std::string oid, int maxEntries, long timeout, bool consumable);
+
+
    // org::xmlBlaster::client::qos::UnSubscribeReturnQos[]
 //   std::vector<std::string> unSubscribe(const std::string&  xmlKey, const std::string&  qos);
    std::vector<org::xmlBlaster::client::qos::UnSubscribeReturnQos> unSubscribe(const org::xmlBlaster::client::key::UnSubscribeKey& key, const org::xmlBlaster::client::qos::UnSubscribeQos& qos);
