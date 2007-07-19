@@ -106,7 +106,7 @@ void QueuePropertyFactory::startElement(const string &name, const AttributeMap& 
       else if (tmpName.compare("maxEntriesCache") == 0) {
             prop_.setMaxEntriesCache(XmlHandlerBase::getLongValue(tmpValue));
       }
-      else if (tmpName.compare("maxEntriesBytes") == 0) {
+      else if (tmpName.compare("maxBytes") == 0) {
             prop_.setMaxBytes(XmlHandlerBase::getLongValue(tmpValue));
       }
       else if (tmpName.compare("maxBytesCache") == 0) {
