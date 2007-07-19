@@ -119,6 +119,7 @@ namespace log4cplus {
             typedef void                difference_type;
             typedef void                pointer;
             typedef void                reference;
+            typedef std::forward_iterator_tag iterator_category;
 
             explicit string_append_iterator(_Container& __x) : container(&__x) {}
             string_append_iterator<_Container>&

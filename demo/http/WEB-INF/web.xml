@@ -76,31 +76,6 @@
     <description>Persistent HTTP connection demo servlet</description>
     <servlet-class>org.xmlBlaster.protocol.http.BlasterHttpProxyServlet</servlet-class>
     <init-param>
-      <param-name>info</param-name>
-      <param-value>true</param-value>
-      <description>dumps messages</description>
-    </init-param>
-    <init-param>
-      <param-name>trace</param-name>
-      <param-value>false</param-value>
-      <description>sets the log level to trace</description>
-    </init-param>
-    <init-param>
-      <param-name>time</param-name>
-      <param-value>false</param-value>
-      <description>dump some performance time stamps</description>
-    </init-param>
-    <init-param>
-      <param-name>call</param-name>
-      <param-value>false</param-value>
-      <description>trace some method invocations</description>
-    </init-param>
-    <init-param>
-      <param-name>dump</param-name>
-      <param-value>false</param-value>
-      <description>dumps messages</description>
-    </init-param>
-    <init-param>
       <param-name>queue/connection/defaultPlugin</param-name>
       <param-value>RAM,1.0</param-value>
     </init-param>
@@ -119,58 +94,6 @@
     <!-- Type  "java HelloWorld3 -help"  to get a list of all available options -->
   </servlet>
 
-  <servlet>
-    <servlet-name>AppletServlet</servlet-name>
-    <description>Persistent HTTP connection demo servlet</description>
-    <servlet-class>org.xmlBlaster.protocol.http.appletproxy.AppletServlet</servlet-class>
-    <init-param>
-      <param-name>info</param-name>
-      <param-value>true</param-value>
-      <description>dumps messages</description>
-    </init-param>
-    <init-param>
-      <param-name>trace[servlet]</param-name>
-      <param-value>false</param-value>
-      <description>sets the log level to trace</description>
-    </init-param>
-    <init-param>
-      <param-name>time</param-name>
-      <param-value>false</param-value>
-      <description>dump some performance time stamps</description>
-    </init-param>
-    <init-param>
-      <param-name>call[servlet]</param-name>
-      <param-value>false</param-value>
-      <description>trace some method invocations</description>
-    </init-param>
-    <init-param>
-      <param-name>dump</param-name>
-      <param-value>false</param-value>
-      <description>dumps messages</description>
-    </init-param>
-    <init-param>
-      <param-name>queue/connection/defaultPlugin</param-name>
-      <param-value>RAM,1.0</param-value>
-    </init-param>
-    <init-param>
-      <param-name>protocol</param-name>
-      <param-value>SOCKET</param-value>
-    </init-param>
-
-    <!-- Example to look for xmlBlaster on another host -->
-    <!-- init-param>
-      <param-name>dispatch/connection/plugin/socket/hostname</param-name>
-      <param-value>192.168.1.5</param-value>
-      <description>IP where xmlBlaster is running if not on tomcats host (example for SOCKET protocol)</description>
-    </init-param -->
-    <!-- init-param>
-      <param-name>dispatch/connection/plugin/socket/port</param-name>
-      <param-value>7607</param-value>
-      <description>Port where xmlBlaster is running if not on default port (example for SOCKET protocol)</description>
-    </init-param -->
-
-    <!-- Type  "java HelloWorld3 -help"  to get a list of all available options -->
-  </servlet>
 
   <!-- Simple servlet to test your browser push back capabilities -->
   <servlet>
@@ -179,6 +102,57 @@
     <servlet-class>org.xmlBlaster.protocol.http.BrowserTest</servlet-class>
   </servlet>
 
+
+  <!-- Used with applets, e.g. http://localhost:8080/xmlBlaster/XmlScript.html -->
+  <servlet>
+    <servlet-name>AppletServlet</servlet-name>
+    <description>Persistent HTTP connection demo servlet</description>
+    <servlet-class>org.xmlBlaster.protocol.http.appletproxy.AppletServlet</servlet-class>
+
+    <init-param>
+      <param-name>logging/org.xmlBlaster.protocol.http.appletproxy.AppletServlet</param-name>
+      <param-value>FINEST</param-value>
+      <description>dumps messages</description>
+    </init-param>
+    <init-param>
+      <param-name>queue/connection/defaultPlugin</param-name>
+      <param-value>RAM,1.0</param-value>
+    </init-param>
+    <init-param>
+      <param-name>session.name</param-name>
+      <param-value>joe</param-value>
+      <description>The login name</description>
+    </init-param>
+    <init-param>
+      <param-name>password</param-name>
+      <param-value>secret</param-value>
+      <description>The password to use</description>
+    </init-param>
+    <init-param>
+      <param-name>protocol</param-name>
+      <param-value>SOCKET</param-value>
+    </init-param>
+
+    <!-- Example to look for xmlBlaster on another host with compressed socket -->
+    <!--
+    <init-param>
+      <param-name>plugin/socket/compress/type</param-name>
+      <param-value>zlib:stream</param-value>
+      <description>Compressed SOCKET communication</description>
+    </init-param>
+    <init-param>
+      <param-name>dispatch/connection/plugin/socket/hostname</param-name>
+      <param-value>192.168.1.1</param-value>
+      <description>IP where xmlBlaster is running if not on tomcats host (example for SOCKET protocol)</description>
+    </init-param>
+    <init-param>
+      <param-name>dispatch/connection/plugin/socket/port</param-name>
+      <param-value>7607</param-value>
+      <description>Port where xmlBlaster is running if not on default port (example for SOCKET protocol)</description>
+    </init-param>
+    -->
+    <!-- Type  "java HelloWorld3 -help"  to get a list of all available options -->
+  </servlet>
 
   <servlet-mapping>
     <servlet-name>PullServlet</servlet-name>
