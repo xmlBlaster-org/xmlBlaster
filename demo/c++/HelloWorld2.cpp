@@ -117,6 +117,7 @@ public:
          ConnectReturnQos retQos = con.connect(qos, this);  // Login and register for updates
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
 
+
          // subscribe key. By invoking setOid you implicitly choose the 'EXACT' mode.
          // If you want to subscribe with XPATH use setQueryString instead.
          SubscribeKey subKey(global_);
@@ -151,6 +152,19 @@ public:
          catch(const XmlBlasterException &e) {
             log_.error(ME, e.toXml());
          }
+
+         // peek a history queue (could be any queue, see reveive() method
+         string oid("topic/HelloWorld2");
+         int maxEntries = 4;
+         long timeout = 0;
+         bool consumable = false;
+         vector<MessageUnit> msgVec = con.receive(oid, maxEntries, timeout, consumable);
+         log_.info(ME, "Success, got " + lexical_cast<string>(msgVec.size()) + " messages");
+         for (size_t i=0; i<msgVec.size(); i++) {
+            string str = msgVec[i].getContentStr();
+            log_.info(ME, "Peeked history messages '" + str + "'");
+         }
+
 
          log_.info(ME, "Hit a key to finish ...");
          char ptr[1];
