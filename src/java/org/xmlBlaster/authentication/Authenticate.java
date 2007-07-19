@@ -255,7 +255,6 @@ final public class Authenticate implements I_RunlevelListener
             }
             try {
                // Check password as we can't trust the public session ID
-               // throws XmlBlasterExceptions if authentication fails
                boolean ok = info.getSecuritySession().verify(connectQos.getSecurityQos());
                if (!ok)
                    throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED,
