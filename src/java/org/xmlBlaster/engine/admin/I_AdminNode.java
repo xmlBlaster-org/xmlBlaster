@@ -18,6 +18,10 @@ import org.xmlBlaster.util.admin.I_AdminUsage;
  * @since 0.79f
  */
 public interface I_AdminNode extends I_AdminUsage {
+   //@ManagedAttribute( description = "Marcel RequestBroker Size in bytes")
+   // JMX annotation JSR 255 since JDK 1.6
+   //@javax.management.DescriptorKey
+   // see http://java.sun.com/javase/6/docs/technotes/guides/jmx/tutorial/essential.html
    /**
     * Get the number of known cluster nodes. 
     * @return The number of xmlBlaster cluster nodes

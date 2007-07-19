@@ -2002,6 +2002,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
    //====== These methods satisfy the I_AdminNode administration interface ======
+   //@ManagedAttribute( description = "Marcel RequestBroker Size in bytes")
+   // JMX annotation JSR 255 since JDK 1.6
+   //@javax.management.DescriptorKey
+   // see http://java.sun.com/javase/6/docs/technotes/guides/jmx/tutorial/essential.html
    public int getNumNodes() {
       if (!glob.isClusterManagerReady()) return 1;
       try {
@@ -2725,17 +2729,17 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
  
    public String dumpAllStacks() {
-	   return ThreadLister.getAllStackTraces();
+           return ThreadLister.getAllStackTraces();
    }
    
    public String dumpAllStacksToFile(String file) {
-	   try {
-	      FileLocator.writeFile(file, ThreadLister.getAllStackTraces());
-		   return file + " dumped";
-   	} catch (XmlBlasterException e) {
-   		e.printStackTrace();
-   	   return file + " not created: " + e.toString();
-   	}
+           try {
+              FileLocator.writeFile(file, ThreadLister.getAllStackTraces());
+                   return file + " dumped";
+        } catch (XmlBlasterException e) {
+                e.printStackTrace();
+           return file + " not created: " + e.toString();
+        }
    }
    
    public boolean isAcceptWrongSenderAddress() {
