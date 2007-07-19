@@ -126,8 +126,16 @@
         threshold is set to the max value of the queue (100%).
     </td>
  </tr>
+ <tr>
+    <td>topic/[topicId]/persistence/msgUnitStore/event/threshold.90%</td>
+    <td>The behaviour described for the history queues is also valid here.
+        As topicId you can either pass a specific value or a '*' (star) as  wildcard. 
+        Specific values are always stronger than wildcards. As a threshold you can either specify an absolute 
+        value or a percentage (values higher than the max value of the queue result in a warning and the 
+        threshold is set to the max value of the queue (100%).
+    </td>
+ </tr>
  </table>
-
 
       <p id="eventSinks" class="celltitel">List of supported event sinks</p>
       <p>Once an event occurs it is forwarded to one or multiple of the listed sinks described in the following table,
