@@ -1,6 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+ o #16378 Fixed cluster swapping which could lead to 'MethodName: The given methodName=msg_xml is unknown'
+
  o #16371 C++ extension: Added xmlBlasterAccess.receive(oid, maxEntries, timeout, consumable)
           to peek/take messages from server side queues (history, subject and callback queue)
           see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html
