@@ -8,7 +8,9 @@ package org.xmlBlaster.util.queuemsg;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.MethodName;
@@ -448,6 +450,13 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    final public boolean isStored() {
       return this.stored;
    }
-         
+
+   /**
+    * 
+    * @return null (always)
+    */
+   public MsgUnit getMsgUnit() throws XmlBlasterException {
+      return null;
+   }
 }
 

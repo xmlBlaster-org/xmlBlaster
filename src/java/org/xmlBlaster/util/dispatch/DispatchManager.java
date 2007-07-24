@@ -1016,5 +1016,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       return this.dispatcherActive;
    }
 
+   public ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
+      return this.dispatchConnectionsHandler.filterDistributorEntries(entries, ex);
+   }
 
 }

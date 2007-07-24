@@ -519,5 +519,8 @@ abstract public class DispatchConnectionsHandler
 
       return sb.toString();
    }
+
+   public abstract ArrayList filterDistributorEntries(ArrayList entries, Throwable ex);
+   
 }
 

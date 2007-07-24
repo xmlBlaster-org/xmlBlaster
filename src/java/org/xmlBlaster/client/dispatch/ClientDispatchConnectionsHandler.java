@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.dispatch;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -164,5 +165,10 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          }
       }
    }
+
+   public ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
+      return new ArrayList();
+   }
+   
 }
 

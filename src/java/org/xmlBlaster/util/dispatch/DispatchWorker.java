@@ -14,11 +14,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
-import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
-import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
-
 import java.util.ArrayList;
 
 
@@ -29,15 +24,12 @@ import java.util.ArrayList;
 public final class DispatchWorker implements Runnable
 {
    public final String ME;
-   private final Global glob;
    private static Logger log = Logger.getLogger(DispatchWorker.class.getName());
 
    private DispatchManager dispatchManager;
    private I_Queue msgQueue;
 
    public DispatchWorker(Global glob, DispatchManager mgr) {
-      this.glob = glob;
-
       this.dispatchManager = mgr;
       this.msgQueue = mgr.getQueue();
       ME = "DispatchWorker-" + this.msgQueue.getStorageId(); 
@@ -77,56 +69,15 @@ public final class DispatchWorker implements Runnable
          
          dispatchManager.getDispatchConnectionsHandler().send(entries); // entries are filled with return values
 
-         /*ArrayList defaultEntries = */filterDistributorEntries(entryList, null);
+         /*ArrayList defaultEntries = */this.dispatchManager.filterDistributorEntries(entryList, null);
          if (log.isLoggable(Level.FINE)) log.fine("Commit of successful sending of " + entryList.size() + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + ((MsgQueueEntry)entryList.get(0)).getLogId() + "'");
       }
       catch(Throwable throwable) {
-         ArrayList entriesWithNoDistributor = this.filterDistributorEntries(entryList, throwable);
+         ArrayList entriesWithNoDistributor = this.dispatchManager.filterDistributorEntries(entryList, throwable);
          if (entriesWithNoDistributor.size() > 0) dispatchManager.handleSyncWorkerException(entriesWithNoDistributor, throwable);
       }
    }
 
-
-   /**
-    * Scans through the entries array for such messages which want an async
-    * notification and sends such a notification.
-    * @param entries
-    * @return The MsgQueueEntry objects (as an ArrayList) which did not
-    * want such an async notification. This is needed to allow the core process
-    * such messages the normal way.
-    */
-   private ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
-      // TODO move this on the server side
-      ArrayList entriesWithNoDistributor = new ArrayList();
-      for (int i=0; i < entries.size(); i++) {
-         Object obj = entries.get(i); 
-         if (!(obj instanceof MsgQueueUpdateEntry)) return entries;
-         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)obj;
-         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
-         boolean hasMsgDistributor = wrapper.getServerScope().getTopicAccessor().hasMsgDistributorPluginDirtyRead(wrapper.getKeyOid());
-         
-         if (hasMsgDistributor) {
-            if (ex != null) { // in this case it is possible that retObj is not set yet
-               UpdateReturnQosServer retQos = (UpdateReturnQosServer)entry.getReturnObj();               
-               try {
-                  if (retQos == null) {
-                     retQos = new UpdateReturnQosServer(this.glob, "<qos/>");
-                     entry.setReturnObj(retQos);
-                  }    
-                  retQos.setException(ex);
-               }
-               catch (XmlBlasterException ee) {
-                  log.severe("filterDistributorEntries: " + ee.getMessage());
-               }
-            } 
-            // msgDistributor.responseEvent((String)wrapper.getMsgQosData().getClientProperties().get("asyncAckCorrId"), entry.getReturnObj());
-         }
-         else {
-            entriesWithNoDistributor.add(entry);
-         }
-      }
-      return entriesWithNoDistributor;
-   }
 
    /**
     * Asynchronous pull mode, invoked by DispatchWorkerPool.execute() -> see DispatchManager calling it
@@ -167,15 +118,6 @@ public final class DispatchWorker implements Runnable
             
             if (log.isLoggable(Level.FINE)) log.fine("Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
          }
-
-         if (false) {
-            int n = entryList.size();
-            for(int i=0; i<n; i++) {
-               MsgUnitWrapper msgUnitWrapper = ((org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry)entryList.get(i)).getMsgUnitWrapper();
-               log.info("DEBUG ONLY - after sent size=" + msgUnitWrapper.getSizeInBytes() + ":" + msgUnitWrapper.toXml());
-            }
-         }
-
          // messages are successfully sent, remove them now from queue (sort of a commit()):
          // We remove filtered/destroyed messages as well (which doen't show up in entryListChecked)
          MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
@@ -183,8 +125,7 @@ public final class DispatchWorker implements Runnable
          if (msgInterceptor != null) { // we need to do this before removal since the msgUnits are weak references and would be deleted by gc
             msgUnits = new MsgUnit[entries.length];
             for (int i=0; i < msgUnits.length; i++) {
-               ReferenceEntry entry = (ReferenceEntry)entries[i];
-               msgUnits[i] = entry.getMsgUnit();
+               msgUnits[i] = entries[i].getMsgUnit();
             }
          }
          this.msgQueue.removeRandom(entries);

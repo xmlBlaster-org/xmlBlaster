@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.dispatch;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +19,9 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 
 /**
  * Holding all necessary infos to establish a remote
@@ -77,4 +80,47 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
          }
       }
    }
+   
+   /**
+    * Scans through the entries array for such messages which want an async
+    * notification and sends such a notification.
+    * @param entries
+    * @return The MsgQueueEntry objects (as an ArrayList) which did not
+    * want such an async notification. This is needed to allow the core process
+    * such messages the normal way.
+    */
+   public ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
+      // TODO move this on the server side
+      ArrayList entriesWithNoDistributor = new ArrayList();
+      for (int i=0; i < entries.size(); i++) {
+         Object obj = entries.get(i); 
+         if (!(obj instanceof MsgQueueUpdateEntry)) return entries;
+         MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)obj;
+         MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
+         boolean hasMsgDistributor = wrapper.getServerScope().getTopicAccessor().hasMsgDistributorPluginDirtyRead(wrapper.getKeyOid());
+         
+         if (hasMsgDistributor) {
+            if (ex != null) { // in this case it is possible that retObj is not set yet
+               UpdateReturnQosServer retQos = (UpdateReturnQosServer)entry.getReturnObj();               
+               try {
+                  if (retQos == null) {
+                     retQos = new UpdateReturnQosServer(this.glob, "<qos/>");
+                     entry.setReturnObj(retQos);
+                  }    
+                  retQos.setException(ex);
+               }
+               catch (XmlBlasterException ee) {
+                  log.severe("filterDistributorEntries: " + ee.getMessage());
+               }
+            } 
+            // msgDistributor.responseEvent((String)wrapper.getMsgQosData().getClientProperties().get("asyncAckCorrId"), entry.getReturnObj());
+         }
+         else {
+            entriesWithNoDistributor.add(entry);
+         }
+      }
+      return entriesWithNoDistributor;
+   }
+
+   
 }
