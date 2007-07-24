@@ -626,7 +626,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       synchronized (this.initSync) {
          this.tmpStatus = -1;
          this.forcedCounter++;
-         log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' (invocation since start is '" + this.forcedCounter + "'");
+         log.info("check invoked with status '" + getStatus() + "' for client '" + this.slaveSessionId + "' (invocation since start is '" + this.forcedCounter + "')");
          if (!this.initialized) {
             log.warning("check invoked without having been initialized. Will repeat operation until the real client connects");
             Thread.sleep(250L); // to avoid too fast looping
