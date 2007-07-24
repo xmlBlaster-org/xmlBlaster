@@ -7,6 +7,8 @@ package org.xmlBlaster.engine.msgstore.cache;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
@@ -159,6 +161,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't configure queue, your properties are invalid", e);
          }
          if (log.isLoggable(Level.FINER)) log.finer("Entering initialize(" + getType() + ", " + getVersion() + ")");
+         
+         if (this.property != null && this.glob.isServerSide() != this.property.getGlobal().isServerSide()) {
+            log.severe("Incompatible globals this.property.getGlobal().isServerSide()=" + this.property.getGlobal().isServerSide() + ": " + Global.getStackTraceAsString(null));
+         }
+         this.glob = (ServerScope)this.property.getGlobal();
 
          // For JMX instanceName may not contain ","
          String instanceName = this.glob.validateJmxValue(this.storageId.getId());

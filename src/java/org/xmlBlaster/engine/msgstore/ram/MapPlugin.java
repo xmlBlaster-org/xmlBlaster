@@ -69,9 +69,6 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     */
    public void initialize(StorageId uniqueMapId, Object userData) throws XmlBlasterException {
       setProperties(userData); // sets this.property
-      this.glob = this.property.getGlobal();
-
-
 
       this.mapId = uniqueMapId;
       if (mapId == null || glob == null) {
@@ -81,6 +78,11 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
 
       this.ME = "MapPlugin-" + mapId;
 
+      if (this.property != null && this.glob.isServerSide() != this.property.getGlobal().isServerSide()) {
+         log.severe("Incompatible globals this.property.getGlobal().isServerSide()=" + this.property.getGlobal().isServerSide() + ": " + Global.getStackTraceAsString(null));
+      }
+      this.glob = this.property.getGlobal();
+      
       if (property.getMaxEntries() > Integer.MAX_VALUE) throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME + ".initialize: The maximum number of messages is too big");
       
       this.storage = new TreeMap();
@@ -422,6 +424,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
 //      java.util.Properties props = pluginInfo.getParameters();
+      this.glob = glob;
       this.pluginInfo = pluginInfo;
    }
 

@@ -24,6 +24,7 @@ import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
@@ -220,11 +221,15 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.isDown) {
          this.property = null;
          setProperties(userData);
-         this.glob = this.property.getGlobal();
-
+         
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.storageId = uniqueQueueId;
          if (log.isLoggable(Level.FINER)) log.finer("initialize '" + this.storageId + "'");
+
+         if (this.property != null && this.glob.isServerSide() != this.property.getGlobal().isServerSide()) {
+            log.severe("Incompatible globals this.property.getGlobal().isServerSide()=" + this.property.getGlobal().isServerSide() + ": " + Global.getStackTraceAsString(null));
+         }
+         this.glob = this.property.getGlobal();
 
          this.manager = getJdbcQueueManagerCommonTable(this.pluginInfo);
 
@@ -1187,6 +1192,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
+      this.glob = glob;
       this.pluginInfo = pluginInfo;
    }
 

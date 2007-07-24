@@ -1301,7 +1301,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       }
       else {
          PublishQosServer qos = new PublishQosServer(glob, msgQosData);
-         MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, qos.getData());
+         // Since xmlBlaster 1.5.2: We need to serialize and replace the original Global with ServerScope
+         MsgUnit msgUnit = new MsgUnit(glob, updateKey.getData().toXml(), content, qos.getData().toXml());
+         //MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, qos.getData());
          return publish(sessionInfo, msgUnit, true);
       }
    }
