@@ -93,7 +93,7 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
       ArrayList entriesWithNoDistributor = new ArrayList();
       for (int i=0; i < entries.size(); i++) {
          Object obj = entries.get(i); 
-         if (!(obj instanceof MsgQueueUpdateEntry)) return entries;
+         if (!(obj instanceof MsgQueueUpdateEntry)) return entries; // Can be removed, was to distinguish client side code which is not necessary anymore (as we are the server side implementation)
          MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)obj;
          MsgUnitWrapper wrapper = entry.getMsgUnitWrapper();
          boolean hasMsgDistributor = wrapper.getServerScope().getTopicAccessor().hasMsgDistributorPluginDirtyRead(wrapper.getKeyOid());
