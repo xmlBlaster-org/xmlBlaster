@@ -70,6 +70,9 @@ o Client should be able to query which subscriptions he has
 JDBC persistence
 ----------------
 
+
+o On Startup lazy loading (for performance reasons)
+
 o Cache should only be reloaded on demand 
  
 o New Implementation should be transactional: transaction 
