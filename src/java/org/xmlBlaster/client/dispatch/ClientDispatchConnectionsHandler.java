@@ -32,6 +32,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 
 /**
  * Holding all necessary infos to establish a remote
@@ -167,7 +168,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
    }
 
    public ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
-      return new ArrayList();
+      return entries;
    }
    
 }

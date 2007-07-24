@@ -90,7 +90,6 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
     * such messages the normal way.
     */
    public ArrayList filterDistributorEntries(ArrayList entries, Throwable ex) {
-      // TODO move this on the server side
       ArrayList entriesWithNoDistributor = new ArrayList();
       for (int i=0; i < entries.size(); i++) {
          Object obj = entries.get(i); 
