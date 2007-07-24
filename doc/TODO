@@ -69,6 +69,8 @@ o Client should be able to query which subscriptions he has
 
 JDBC persistence
 ----------------
+
+o Cache should only be reloaded on demand 
  
 o New Implementation should be transactional: transaction 
   manager and possibility to commit/rollback a series of
