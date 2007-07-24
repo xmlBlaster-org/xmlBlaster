@@ -1379,6 +1379,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
+      this.glob = glob;
       this.pluginInfo = pluginInfo;
 //      this.pluginProperties = pluginInfo.getParameters();
    }

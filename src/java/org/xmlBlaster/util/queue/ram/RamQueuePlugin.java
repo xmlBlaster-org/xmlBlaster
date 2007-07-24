@@ -76,9 +76,11 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    public void initialize(StorageId uniqueQueueId, Object userData) throws XmlBlasterException {
       this.property = null;
       setProperties(userData);
-
+      
+      if (this.property != null && this.glob != null && this.glob.isServerSide() != this.property.getGlobal().isServerSide()) {
+         log.severe("Incompatible globals this.property.getGlobal().isServerSide()=" + this.property.getGlobal().isServerSide() + ": " + Global.getStackTraceAsString(null));
+      }
       this.glob = this.property.getGlobal();
-
 
       this.storageId = uniqueQueueId;
       if (storageId == null || glob == null) {
@@ -885,6 +887,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
+      this.glob = glob;
       this.pluginInfo = pluginInfo;
    }
 
