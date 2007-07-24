@@ -1,22 +1,26 @@
-This is xmlBlaster version 1.5.1 2007-02-26
+This is xmlBlaster version 1.6 2007-07-25
 
 
 XmlBlaster  is  under development or productive in a huge range
 of  industries  like  satellite  control,  air  traffic control
-telecommunication, radar, car industry, process monitoring etc.
+telecommunication,  radar,  car  industry,  process monitoring,
+live tracking, mobile phone integration (J2ME), PDA integration
+(C#) etc.
 
 This  release  is backward compatible to the previous, it is a
 bug fix maintenance release. See CHANGES for more details.
 
 It is tested under Linux/Solaris-SPARC/FreeBSD/WinXP/WINCE with
 JDK  1.4-1.6 and g++ 2.9x/3.x/4.x, icc 8.x and 9.x, MSVisualC++
-from 2003, MSVisualC++ 2005 beta2, SunCC compilers. There is no
-reason  why other platforms/compilers should not work, just try
-it.
+2005,   SunCC   compilers.   There   is  no  reason  why  other
+platforms/compilers should not work, just try it.
 
 Persistence  is  checked  against  Oracle 9i and 10g, different
 Postgres  versions,  MS-SQLServer  2000  and 2005, Firebird and
 hsqldb.
+
+Real-time  database  replication  is  tested  between different
+Oracle versions and between Oracle and DB2 (as a sink).
 
 It  is  leak  checked  in  RAM  and  on  persistence  store for
 Java,C,C++.

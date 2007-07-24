@@ -1,6 +1,9 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for 1.6 [2007-07-25] #16384
+===================================
+
  o #16378 Fixed cluster swapping which could lead to 'MethodName: The given methodName=msg_xml is unknown'
 
  o #16371 C++ extension: Added xmlBlasterAccess.receive(oid, maxEntries, timeout, consumable)
@@ -12,6 +15,8 @@ The "#99999" numbers are Subversion revision numbers.
 
  o #16339 Added jconsole/JMX support to increase on a running system the maxNumOfEntries and maxNumOfBytes
           of a map (msgUnitStore), the changes are persistently and durable after a xmlBlaster re-start.
+	  Added threshold alarm events (e.g. 90% full) for msgUnitStore, see
+	  http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html
 
  o #16332 fixed excessive CPU Usage due to short loops for logs in Execute (native cmd line invoker)
 
