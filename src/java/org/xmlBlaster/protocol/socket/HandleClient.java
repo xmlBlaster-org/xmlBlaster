@@ -8,6 +8,8 @@ package org.xmlBlaster.protocol.socket;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -228,16 +230,18 @@ public class HandleClient extends SocketExecutor implements Runnable
          if (receiveReply(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {
                // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
+               Socket socket = this.sock;
+               if (socket == null) return; // Is possible when EOF arrived inbetween
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
-               conQos.getSecurityQos().setClientIp (sock.getInetAddress().getHostAddress());
+               if (conQos.getSecurityQos() == null)
+                  throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");
+               conQos.getSecurityQos().setClientIp (socket.getInetAddress().getHostAddress());
 
                conQos.setAddressServer(this.driver.getAddressServer());
                setLoginName(conQos.getSessionName().getRelativeName());
                Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
 
-               Socket socket = this.sock;
-               if (socket == null) return;
 
                // getInetAddress().toString() does no reverse DNS lookup (no blocking danger) ...
                log.info("Client connected, coming from host=" + socket.getInetAddress().toString() + " port=" + socket.getPort());
