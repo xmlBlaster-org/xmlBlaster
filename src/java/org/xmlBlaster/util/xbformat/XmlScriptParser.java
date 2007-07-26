@@ -5,7 +5,6 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.xbformat;
 
-import org.xml.sax.InputSource;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -157,6 +156,9 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
             }
             in = new ByteArrayInputStream(out.toByteArray()); // Now "in" contains exactly one script
             if (log.isLoggable(Level.FINEST)) log.finest("Got script [" + new String(out.toByteArray()) + "]");
+         } catch (IOException e) { // SocketException extends IOException
+            log.warning("Reading data from client stream failed: " + e.toString());
+            return msgInfos;
          } catch (Exception e) {
             e.printStackTrace();
             log.severe("Client failed: " + e.toString());
