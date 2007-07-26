@@ -60,7 +60,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
    if (cb == 0) return cb;
    cb->props = createProperties(argc, argv);
    if (cb->props == 0) {
-      freeCallbackServerUnparsed(cb);
+      freeCallbackServerUnparsed(&cb);
       return (CallbackServerUnparsed *)0;
    }
    cb->stopListenLoop = false;
@@ -124,12 +124,14 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseU
    return true;
 }
 
-void freeCallbackServerUnparsed(CallbackServerUnparsed *cb)
+void freeCallbackServerUnparsed(CallbackServerUnparsed **cb_)
 {
+   CallbackServerUnparsed *cb = *cb_;
    if (cb != 0) {
       shutdownCallbackServer(cb);
       freeProperties(cb->props);
       free(cb);
+      *cb_ = 0;
    }
 }
 
@@ -811,7 +813,7 @@ int main(int argc, char** argv)
    /* This code is reached only on socket EOF */
 
    printf("[main] Socket listener is shutdown\n");
-   freeCallbackServerUnparsed(cb);
+   freeCallbackServerUnparsed(&cb);
    return 0;
 }
 #endif /* USE_MAIN_CB */

@@ -101,9 +101,11 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
 Dll_Export extern XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const char* const* argv);
 
 /**
- * Free your instance after accessing xmlBlaster. 
+ * Free your instance after accessing xmlBlaster.
+ * After freeing  *xmlBlasterAccess is set to null
+ * Call example: freeXmlBlasterConnectionUnparsed(&xa->connectionP);
  */
-Dll_Export extern void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xmlBlasterAccess);
+Dll_Export extern void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed **xmlBlasterAccess);
 
 /**
  * Help usage

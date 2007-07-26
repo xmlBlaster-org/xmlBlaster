@@ -170,9 +170,10 @@ extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* c
                                UpdateCbFp updateCb, void *userData);
 
 /**
- * free() the CallbackServerUnparsed structure
+ * free() the CallbackServerUnparsed structure and sets *callbackData to 0
+ * Call freeCallbackServerUnparsed(&cb);
  */
-extern void freeCallbackServerUnparsed(CallbackServerUnparsed *callbackData);
+extern void freeCallbackServerUnparsed(CallbackServerUnparsed **callbackData);
 
 /**
  * Help on configuration

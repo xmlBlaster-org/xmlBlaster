@@ -234,13 +234,11 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
    }
 
    if (xa->connectionP != 0) {
-      freeXmlBlasterConnectionUnparsed(xa->connectionP);
-      xa->connectionP = 0;
+      freeXmlBlasterConnectionUnparsed(&xa->connectionP);
    }
 
    if (xa->callbackP != 0) {
-      freeCallbackServerUnparsed(xa->callbackP);
-      xa->callbackP = 0;
+      freeCallbackServerUnparsed(&xa->callbackP);
    }
 
    freeProperties(xa->props);
@@ -277,7 +275,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
    }
 
    if (xa->connectionP) {
-      freeXmlBlasterConnectionUnparsed(xa->connectionP);
+      freeXmlBlasterConnectionUnparsed(&xa->connectionP);
    }
    xa->connectionP = getXmlBlasterConnectionUnparsed(xa->argc, xa->argv);
    if (xa->connectionP == 0) {
@@ -317,7 +315,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
 
    /* the fourth arg 'xa' is returned as 'void *userData' in update() method */
    if (xa->callbackP != 0) {
-      freeCallbackServerUnparsed(xa->callbackP);
+      freeCallbackServerUnparsed(&xa->callbackP);
    }
    xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, interceptUpdate, xa);
    if (xa->callbackP == 0) {
@@ -325,7 +323,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Creating CallbackServerUnparsed failed", __FILE__, __LINE__);
       if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
-      freeXmlBlasterConnectionUnparsed(xa->connectionP);
+      freeXmlBlasterConnectionUnparsed(&xa->connectionP);
       return false;
    }
    xa->callbackP->log = xa->log;
@@ -366,8 +364,8 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
                "[%.100s:%d] Creating thread failed with error number %d",
                __FILE__, __LINE__, threadRet);
       if (xa->logLevel>=XMLBLASTER_LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, exception->message);
-      freeCallbackServerUnparsed(xa->callbackP);
-      freeXmlBlasterConnectionUnparsed(xa->connectionP);
+      freeCallbackServerUnparsed(&xa->callbackP);
+      freeXmlBlasterConnectionUnparsed(&xa->connectionP);
       return false;
    }
 

@@ -62,7 +62,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->argv = argv;
    xb->props = createProperties(xb->argc, xb->argv);
    if (xb->props == 0) {
-      freeXmlBlasterConnectionUnparsed(xb);
+      freeXmlBlasterConnectionUnparsed(&xb);
       return (XmlBlasterConnectionUnparsed *)0;
    }
    xb->socketToXmlBlaster = -1;
@@ -102,8 +102,9 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    return xb;
 }
 
-void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
+void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed **xb_)
 {
+   XmlBlasterConnectionUnparsed *xb = *xb_;
    if (xb != 0) {
       if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "freeXmlBlasterConnectionUnparsed 0x%x", xb);
       freeProperties(xb->props);
@@ -119,6 +120,7 @@ void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
       }
       xmlBlasterConnectionShutdown(xb);
       free(xb);
+      *xb_ = 0;
    }
 }
 
