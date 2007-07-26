@@ -123,7 +123,8 @@ int main(int argc, const char* const* argv) {
    xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
       printf("[client] Connection to xmlBlaster failed,"
-             " please start the server or check your configuration\n");
+             " please start the server or check your configuration:\n%s %s\n",
+             xmlBlasterException.errorCode, xmlBlasterException.message);
       freeXmlBlasterAccessUnparsed(xa);
       exit(EXIT_FAILURE);
    }
@@ -146,6 +147,7 @@ int main(int argc, const char* const* argv) {
                "   <passwd>secret</passwd>"
                "  ]]>"
                " </securityService>"
+               "  <session name='client/fritz' timeout='0' maxSessions='1'/>"
                "%.1024s"
                "</qos>", callbackQos);
 
