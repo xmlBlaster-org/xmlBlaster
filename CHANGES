@@ -1,6 +1,13 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Current svn repository (subversion), not yet released
+=====================================================
+
+ o #16387 C-client library: Fixed SIGSEG and memory leak when the system has no more threads available
+          Recovery of such a situation is now stable
+
+
 Changes for 1.6 [2007-07-25] #16384
 ===================================
 
