@@ -80,7 +80,7 @@
       see <a href="engine.qos.publish.priority.html" target="others">requirement engine.qos.publish.priority</a>.
       </p>
 
-      <h3>&lt;expiration lifeTime='60000'/></h3>
+      <h3>&lt;expiration lifeTime='60000'/> or &lt;expiration lifeTime='60000' forceDestroy='true'/></h3>
       <p>Control the life time of a message, given in milli seconds.</p>
       <p>This value is calculated relative to the rcvTimestamp in the xmlBlaster server.</p>
       <p>Passing -1 milliseconds asks the server for unlimited livespan, which
@@ -91,9 +91,13 @@
       callback queues, in the callback queues it will stay until retrieved by the subscriber.
       </p>
       <p>
-      Setting it to a value > 0 will expire the message after the given milliseconds,
-      even if they remain in any callback queue.
-      </p>            
+      Setting it to a value > 0 will expire the message after the given milliseconds.<br />
+      With <code>forceDestroy=false</code>, which is the default setting, messages which
+      are already put to clients callback queue will be delivered even after they are expired.
+      But they are not anymore visible to clients subscribing after expiration.<br />
+      Setting <code>forceDestroy=true</code> forces all messages to be discarded on expiry, including those already
+      served to callback queues.
+      </p>
       <p>See <a href="engine.qos.publish.isVolatile.html" target="others">requirement engine.qos.publish.isVolatile</a>.
       </p>
      
