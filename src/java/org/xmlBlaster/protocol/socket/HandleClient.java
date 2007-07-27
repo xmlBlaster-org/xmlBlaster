@@ -8,8 +8,6 @@ package org.xmlBlaster.protocol.socket;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -400,6 +398,9 @@ public class HandleClient extends SocketExecutor implements Runnable
                }
                else {
                   log.warning(toString() + ": Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
+               }
+               if (e instanceof OutOfMemoryError) {
+                  e.printStackTrace();
                }
                I_Authenticate auth = this.authenticate;
                if (auth != null) {
