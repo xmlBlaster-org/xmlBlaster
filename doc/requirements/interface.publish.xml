@@ -83,8 +83,9 @@
       <h3>&lt;expiration lifeTime='60000'/> or &lt;expiration lifeTime='60000' forceDestroy='true'/></h3>
       <p>Control the life time of a message, given in milli seconds.</p>
       <p>This value is calculated relative to the rcvTimestamp in the xmlBlaster server.</p>
-      <p>Passing -1 milliseconds asks the server for unlimited livespan, which
-         the server may or may not grant.</p>
+      <p>Passing -1 milliseconds asks the server for unlimited lifespan, which
+         the server may or may not grant (but currently does grant with the default configuration).
+         This is the default setting.</p>
       <p>  
       Setting to 0 will behave as a volatile message (see setVolatile())
       and the message will be invisible directly after being pushed into the subscribers
