@@ -253,6 +253,7 @@ public class Constants {
    public static final String EXACT_URL_PREFIX = "exact:";
    public static final String DOMAIN = "DOMAIN";
    public static final String DOMAIN_URL_PREFIX = "domain:";
+   public static final String SUBSCRIPTIONID_URL_PREFIX = "subscriptionId:";
    public static final String REGEX = "REGEX";
 
    public static final String TOXML_NOSECURITY = "noSecurity";

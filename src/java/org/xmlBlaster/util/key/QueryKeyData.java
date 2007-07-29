@@ -60,19 +60,19 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
          throw new IllegalArgumentException("QueryKeyData got query=null argument");
       }
 
-      if (query.startsWith("xpath:")) {
+      if (query.startsWith(Constants.XPATH_URL_PREFIX)) { // "xpath:"
          this.queryType = Constants.XPATH;
          if (query.length() <= "xpath:".length())
             throw new IllegalArgumentException("QueryKeyData got query='xpath:' with no query");
          this.queryString = query.substring("xpath:".length());
       }
-      else if (query.startsWith("subscriptionId:")) {
+      else if (query.startsWith(Constants.SUBSCRIPTIONID_URL_PREFIX)) { // "subscriptionId:"
          this.queryType = Constants.EXACT;
          if (query.length() <= "subscriptionId:".length())
             throw new IllegalArgumentException("QueryKeyData got query='subscriptionId:' with empy id");
          setOid(query.substring("subscriptionId:".length()));
       }
-      else if (query.startsWith("oid:")) {
+      else if (query.startsWith("oid:")) { // same as default schema
          this.queryType = Constants.EXACT;
          if (query.length() <= "oid:".length())
             throw new IllegalArgumentException("QueryKeyData got query='oid:' with empy id");
@@ -80,13 +80,13 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
             throw new IllegalArgumentException("Please pass a valid topic oid without apostrophe \" or '");
          setOid(query.substring("oid:".length()));
       }
-      else if (query.startsWith("domain:")) {
+      else if (query.startsWith(Constants.DOMAIN_URL_PREFIX)) { // "domain:";
          this.queryType = Constants.EXACT;
          if (query.length() <= "domain:".length())
             throw new IllegalArgumentException("QueryKeyData got query='domain:' with empy id");
          setDomain(query.substring("domain:".length()));
       }
-      else {
+      else { // EXACT_URL_PREFIX = "exact:"
          this.queryType = Constants.EXACT;
          if (query.indexOf("\"") != -1 || query.indexOf("\'") != -1)
             throw new IllegalArgumentException("Please pass a valid topic oid without apostrophe \" or '");
