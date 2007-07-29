@@ -152,7 +152,7 @@ public abstract class QueryRefinementQos
     */
    public final Query getQuery()
    {
-      return query;
+     return (query==null) ? new Query(glob, "") : query;
    }
 
    /**
