@@ -12,6 +12,7 @@ import org.xmlBlaster.util.def.Constants;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -349,14 +350,8 @@ public final class ContextNode
       if (this.childs == null || this.childs.size() == 0 || child == null) {
          return false;
       }
-      for (int i=0; i<this.childs.size(); i++) {
-         ContextNode curr = (ContextNode)((WeakReference)this.childs.get(i)).get();
-         if (curr != null && curr.equalsAbsolute(child)) {
-            this.childs.remove(i);
-            return true;
-         }
-      }
-      return false;
+      Object removed = this.childs.remove(child.getAbsoluteName());
+      return (removed != null);
    }
 
    /**
