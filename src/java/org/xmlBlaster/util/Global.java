@@ -627,7 +627,7 @@ public class Global implements Cloneable
       }
       catch (Exception e) {
          throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION,
-                   "Global", url.toString(), e);
+                   "Global.initLogManager", url.toString(), e);
       }
    }
 
