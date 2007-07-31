@@ -179,7 +179,7 @@ public class Property implements Cloneable {
    private final Properties dummyProperties = new Properties();
 
    /** Holding all maps from array properties, e.g. prop[A] */
-   private Map propMap = null;
+   private Map propMap = new TreeMap();
 
    /** Scan system environment variables? */
    private boolean scanSystemProperties = true;
@@ -953,15 +953,15 @@ public class Property implements Cloneable {
 
       int posClose = key.indexOf("]", posOpen);
       if (posClose < 0)
-         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".scanArrays", "Invalid array, missing closing ']' braket for key='" + key + "'");
-      String praefix = key.substring(0, posOpen);
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".scanArray", "Invalid array, missing closing ']' bracket for key='" + key + "'");
+      if (posClose <= posOpen)
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION, ME + ".scanArray", "Invalid array, closing ']' bracket before '[' for key='" + key + "'");
+      String prefix = key.substring(0, posOpen);
 
-      if (propMap == null) propMap = new TreeMap(); // The global map holding the array maps
-
-      Map map = getMap_(praefix);
+      Map map = getMap_(prefix);
       if (map == null) {
          map = new TreeMap();
-         /*String oldValue = (String)*/propMap.put(praefix, map);
+         /*String oldValue = (String)*/propMap.put(prefix, map);
       }
 
       String arg = key.substring(posOpen+1, posClose);
