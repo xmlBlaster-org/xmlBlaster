@@ -16,6 +16,8 @@
       showing how to code your plugin. Just take a copy of this and change the parts 
       you want.
       </p>
+      <p>Note that each plugin type is loaded only once (it is a singleton in Global scope), this instance handles
+      all clients which have configured it on subscribe() or get() calls</p>
       <p>
       These are the steps to implement your plugin:
       </p>
@@ -83,6 +85,7 @@ For an example look at the code of ContentLenFilter.java (link below).
    </example>
    <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
    <see type="API">org.xmlBlaster.engine.mime.demo.ContentLenFilter</see>
+   <see type="API">org.xmlBlaster.contrib.mime.DropIfNotDeliverable</see>
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
    <see type="REQ">mime.plugin.accessfilter</see>
    <see type="REQ">mime.plugin.access.regex</see>

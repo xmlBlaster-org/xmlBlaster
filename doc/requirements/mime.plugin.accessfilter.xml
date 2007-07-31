@@ -5,10 +5,10 @@
    <topic>XmlBlaster has a MIME based plugin interface to filter message access</topic>
    <description>
       <p>
-      XmlBlaster allows you to query messages based on their meta information with XPath.
-      Sometimes this is not enough. The key-meta information for one message instance (say oid="Track")
-      is immutable. Putting dynamic data into the meta information is not possible without
-      impact on performance. Distributing thousand messages / second under different message oid is memory consuming.
+      XmlBlaster allows you to query topics based on their meta information with XPath.
+      Sometimes this is not enough. The key-meta information for one topic (say oid="Track")
+      is immutable. Putting dynamic data into the topic meta information is not supported as implementing it has
+      impact on performance. Distributing thousand messages / second under different topics is memory consuming.
       </p>
       <p>
       This is a use case where you may want to write a little plugin, doing some query in the message
