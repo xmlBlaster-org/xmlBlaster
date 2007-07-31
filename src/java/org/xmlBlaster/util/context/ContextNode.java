@@ -11,6 +11,8 @@ import org.xmlBlaster.util.def.Constants;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.management.ObjectName;
@@ -71,7 +73,7 @@ public final class ContextNode
    private String className; // e.g. "node"
    private String instanceName; // e.g. "heron"
    private ContextNode parent;
-   private ArrayList childs; // contains 'new WeakReference(ContextNode)' TODO: Change to map
+   private Map childs; // key=absoluteName, value contains 'new WeakReference(ContextNode)'
    
    public static char QUOTE = '\"';
 
@@ -241,27 +243,25 @@ public final class ContextNode
     */
    public boolean addChild(ContextNode child, boolean doClone) {
       if (child == null) return false;
-      ContextNode[] children = getChildren();
-      for (int i=0; i<children.length; i++) {
-         if (child.equalsAbsolute(children[i]))
+      if (this.childs != null && this.childs.get(child.getAbsoluteName()) != null) {
             return false; // Child is already here
       }
       synchronized (this) {
          if (this.childs == null) {
-            this.childs = new ArrayList();
+            this.childs = new HashMap();
          }
          if (doClone) {
             ContextNode clone = child.getClone();
-            this.childs.add(new WeakReference(clone));
             clone.parent = this;
+            this.childs.put(clone.getAbsoluteName(), new WeakReference(clone));
          }
          else {
             if (child.parent != null && this != child.parent) {
                // If child had another parent already remove it
                child.parent.removeChild(child);
             }
-            this.childs.add(new WeakReference(child));
             child.parent = this;
+            this.childs.put(child.getAbsoluteName(), new WeakReference(child));
          }
       }
       return true;
@@ -325,7 +325,7 @@ public final class ContextNode
       if (this.childs == null || this.childs.size() == 0) {
          return new ContextNode[0];
       }
-      WeakReference[] refs = (WeakReference[])this.childs.toArray(new WeakReference[this.childs.size()]);
+      WeakReference[] refs = (WeakReference[])this.childs.values().toArray(new WeakReference[this.childs.size()]);
       ArrayList list = new ArrayList(refs.length);
       for (int i=0; i<refs.length; i++) {
          Object referent = refs[i].get();
@@ -385,13 +385,13 @@ public final class ContextNode
     */
    protected ContextNode getChild(ContextNode node, String className, String instanceName) {
       if (className == null && instanceName == null) return null;
-      ContextNode[] childsArr = node.getChildren();
       if (className == null && node.getInstanceNameNotNull().equals(instanceName))
          return node;
       if (instanceName == null && node.getClassName().equals(className))
          return node;
       if (node.getClassName().equals(className) && node.getInstanceNameNotNull().equals(instanceName))
          return node;
+      ContextNode[] childsArr = node.getChildren();
       for (int i=0; i<childsArr.length; i++) {
          return getChild(childsArr[i], className, instanceName);
       }
