@@ -59,6 +59,12 @@
    &lt;!-- In one priority the newest message is delivered first with 'true', setting 'false' -->
    &lt;!-- reverts the delivery sequence in this priority. -->
    &lt;history numEntries='20' newestFirst='true'/>
+
+   &lt;!-- optional, see requirement engine.qos.queryspec.QueueQuery -->
+   &lt;querySpec type='QueueQuery'>&lt;![CDATA[
+      maxEntries=3&amp;maxSize=-1&amp;consumable=false&amp;waitingDelay=0]]&gt;
+   &lt;/querySpec>
+
 &lt;/qos>
       </pre>
 
