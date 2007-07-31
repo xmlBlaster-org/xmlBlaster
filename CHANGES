@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository (subversion), not yet released
 =====================================================
 
+ o #16400 Performance fix: If more than ~1000 clients connect the login got very slow
+          This scales now to several thousand clients without performance degradation
+
  o #16387 C-client library: Fixed SIGSEG and memory leak when the system has no more threads available
           Recovery of such a situation is now stable
 
