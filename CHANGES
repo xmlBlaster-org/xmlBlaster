@@ -1,8 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Current svn repository (subversion), not yet released
-=====================================================
+Changes for 1.6.1 [2007-08-02] #16408
+=====================================
 
  o #16405 Bugfix: Added automatical conversion to from Global to ServerScope for native publish calls to RequestBroker
           This had for example inpact when a EventPlugin configuration without a configured PublishQos was used.
