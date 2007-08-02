@@ -450,6 +450,7 @@ MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentL
 MimeAccessPlugin[GnuRegexFilter][1.0]=org.xmlBlaster.engine.mime.regex.GnuRegexFilter
 MimeAccessPlugin[XPathFilter][1.0]=org.xmlBlaster.engine.mime.xpath.XPathFilter
 MimeAccessPlugin[Sql92Filter][1.0]=org.xmlBlaster.engine.mime.sql92.Sql92Filter,cacheQuery=false
+#MimeAccessPlugin[DropIfNotDeliverable][1.0]=org.xmlBlaster.contrib.mime.DropIfNotDeliverable
 #------------------------------------------------------------------------------
 
 
