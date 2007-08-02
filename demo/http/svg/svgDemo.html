@@ -1,0 +1,45 @@
+	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
+    <title>Template</title>
+    <link href="styles.css" rel="stylesheet" type="text/css"/>
+  </head>
+  <body>
+    <script type="text/javascript" src="./xbAjax.js" />
+    <script type="text/javascript">
+    //<![CDATA[
+
+	function startUpdates(topic) {
+     connect("svgDemo/1", "secret");
+     var otherUrl = base + "?ActionType=plainGet&topic=ajaxSvgInit&mimeType=" + encodeURIComponent("image/svg+xml");
+     otherWindow = window.open(otherUrl,'mywin','left=20,top=20,width=500,height=500,toolbar=1,resizable=1');
+     otherWindow.focus();
+     subscribeAndStartListen(topic);
+	}
+	
+    //]]>
+    </script>
+    <form action="BaseCtrl" method="post" name="fpl">
+      <center><h2>AXL DEMO</h2></center>
+      <table width="1024" align="center" bgcolor="#FFFFFF" class="aussen">
+        <tr>
+	  <td>
+	     <input type="button" name="Start Updates" type="button" value="Start Updates" onclick="startUpdates('ajaxSvg');"/>&nbsp;&nbsp;
+	     <input type="button" name="Stop Updates" type="button" value="Stop Updates" onclick="stopUpdates('ajaxSvg');"/>
+	  </td>
+	</tr>
+	<tr>
+	  <td><textarea name="request" id="request" rows="30" cols="75"></textarea></td>
+	  <td><textarea name="response" id="response" rows="30" cols="75"></textarea></td>
+   </tr>
+	<tr>
+	  <td>&nbsp</td>
+	  <td id='pos01'></td>
+   </tr>
+   
+      </table>
+    </form>
+  </body>
+</html>
+
