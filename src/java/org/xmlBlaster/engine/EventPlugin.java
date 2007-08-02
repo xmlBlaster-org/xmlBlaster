@@ -314,9 +314,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.key != null) {
             return engineGlob.getMsgKeyFactory().readObject(this.key);
          }
-         //PublishKey publishKey = new PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
+         //PublishKey publishKey = new PublishKey(engineGlob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
          // TODO: invent an oid depending on the eventType:
-         PublishKey publishKey = new PublishKey(glob, "__sys__Event", "text/plain", "1.0");
+         PublishKey publishKey = new PublishKey(engineGlob, "__sys__Event", "text/plain", "1.0");
          publishKey.setClientTags("<org.xmlBlaster><event/></org.xmlBlaster>");
          return publishKey.getData();
       }
@@ -327,12 +327,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             msgQosData = engineGlob.getMsgQosFactory().readObject(this.qos);
          }
          else {
-            PublishQos publishQos = new PublishQos(glob);
+            PublishQos publishQos = new PublishQos(engineGlob);
             publishQos.setLifeTime(-1L);
             publishQos.setForceUpdate(true);
             // TODO: Configure history depth to 0 only on first publish
-            TopicProperty topicProperty = new TopicProperty(glob);
-            HistoryQueueProperty historyQueueProperty = new HistoryQueueProperty(glob, glob.getId());
+            TopicProperty topicProperty = new TopicProperty(engineGlob);
+            HistoryQueueProperty historyQueueProperty = new HistoryQueueProperty(engineGlob, engineGlob.getId());
             historyQueueProperty.setMaxEntriesCache(2);
             historyQueueProperty.setMaxEntries(2);
             topicProperty.setHistoryQueueProperty(historyQueueProperty);
@@ -1481,7 +1481,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          try {
             new InternetAddress(arr[i]);
          } catch (Throwable e) {
-            throw new XmlBlasterException(this.glob,
+            throw new XmlBlasterException(this.engineGlob,
                   ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME,
                   "Illegal email address '" + address + "': " + e.toString());
          }

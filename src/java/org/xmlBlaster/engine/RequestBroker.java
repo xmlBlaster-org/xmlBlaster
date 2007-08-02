@@ -1301,7 +1301,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       }
       else {
          PublishQosServer qos = new PublishQosServer(glob, msgQosData);
-         // Since xmlBlaster 1.5.2: We need to serialize and replace the original Global with ServerScope
+         // Since xmlBlaster 1.6: We need to serialize and replace the original Global with ServerScope
          MsgUnit msgUnit = new MsgUnit(glob, updateKey.getData().toXml(), content, qos.getData().toXml());
          //MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, qos.getData());
          return publish(sessionInfo, msgUnit, true);
@@ -1316,6 +1316,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
    private final String publish(SessionInfo sessionInfo, MsgUnit msgUnit, boolean isClusterUpdate) throws XmlBlasterException {
+      if (!msgUnit.getGlobal().isServerSide()) {
+         // Since xmlBlaster 1.6.1: We need to serialize and replace the original Global with ServerScope
+         if (log.isLoggable(Level.FINE)) log.fine("publish call with client side Global, converting now to ServerScope: " + Global.getStackTraceAsString(null));
+         msgUnit = new MsgUnit(glob, msgUnit.getMsgUnitRaw(), msgUnit.getMethodName());
+      }
+
       PublishQosServer publishQosServer = new PublishQosServer(glob, msgUnit.getQosData());
       publishQosServer.setClusterUpdate(isClusterUpdate);
       return publish(sessionInfo, msgUnit, publishQosServer);
