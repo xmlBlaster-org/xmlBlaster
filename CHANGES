@@ -4,6 +4,12 @@ The "#99999" numbers are Subversion revision numbers.
 Current svn repository (subversion), not yet released
 =====================================================
 
+ o #16405 Bugfix: Added automatical conversion to from Global to ServerScope for native publish calls to RequestBroker
+          This had for example inpact when a EventPlugin configuration without a configured PublishQos was used.
+
+ o #16404 Added DropIfNotDeliverable mime plugin: Drops messages if subscriber is in POLLING state
+          See xmlBlaster/src/java/org/xmlBlaster/contrib/mime/DropIfNotDeliverable.java javadoc for details
+
  o #16400/16402 Performance fix: If more than ~1000 clients connect the login got very slow
           This scales now to several thousand clients without performance degradation
 
