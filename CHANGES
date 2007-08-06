@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for current svn repository
+==================================
+
+ o #16411 Bugfix: Fixed XmlScript over SOCKET handling for incoming EOF
+          See http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#script
+
 Changes for 1.6.1 [2007-08-02] #16408
 =====================================
 
