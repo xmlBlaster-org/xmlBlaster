@@ -79,6 +79,10 @@ CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
 # But we need it for persistent Session/Subscription recovery on server startup
 CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
 CbProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver,SSL=true,compress/type=zlib:stream
+CbProtocolPlugin[socket_script][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
+                             compress/type=,\
+                             isNullTerminated=true,\
+                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 #CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
 CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
 CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
@@ -104,6 +108,10 @@ CbProtocolPlugin[email][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver,\
 ClientProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaConnection
 ClientProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
 ClientProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection,SSL=true,compress/type=zlib:stream
+ClientProtocolPlugin[socket_script][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection,\
+                             compress/type=,\
+                             isNullTerminated=true,\
+                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 #ClientProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiConnection
 ClientProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
 ClientProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalConnection
@@ -123,6 +131,10 @@ ClientProtocolPlugin[email][1.0]=org.xmlBlaster.client.protocol.email.EmailConne
 ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaCallbackServer
 ClientCbServerProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
 ClientCbServerProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl,SSL=true,compress/type=zlib:stream
+ClientCbServerProtocolPlugin[socket_script][1.0]=org.xmlBlaster.client.protocol.socket.SocketCallbackImpl,\
+                             compress/type=,\
+                             isNullTerminated=true,\
+                             parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
 #ClientCbServerProtocolPlugin[RMI][1.0]=org.xmlBlaster.client.protocol.rmi.RmiCallbackServer
 ClientCbServerProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer
 ClientCbServerProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.client.protocol.local.LocalCallbackImpl

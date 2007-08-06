@@ -66,6 +66,18 @@
       <attribute id='startUdpListener'>false</attribute>
    </plugin>
 
+   <!-- Example to use the XML script parser with raw socket delivery (to easy develop php,python,perl,... access) -->
+   <!-- Read: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#script -->
+   <plugin create='false' id='socket_script' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='20' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='3' sequence='50'/>   
+      <attribute id='compress/type'></attribute>
+      <attribute id='isNullTerminated'>true</attribute>
+      <attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser</attribute>
+      <attribute id='port'>7601</attribute>
+   </plugin>
+
    <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
    <plugin create='true' id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
       <action do='LOAD' onStartupRunlevel='4' sequence='30'
