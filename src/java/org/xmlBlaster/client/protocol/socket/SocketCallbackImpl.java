@@ -204,8 +204,12 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
 
          try {
             // This method blocks until a message arrives
-            MsgInfo[] msgInfos = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), this.pluginInfo);
-            MsgInfo receiver = msgInfos[0];
+            MsgInfo[] msgInfoArr = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), this.pluginInfo);
+            if (msgInfoArr.length < 1) {
+               log.warning(toString() + ": Got unexpected empty data from SOCKET, closing connection now");
+               break;
+            }
+            final MsgInfo receiver = msgInfoArr[0];
 
             if (log.isLoggable(Level.FINEST)) log.finest("Receiving message >" + receiver.toLiteral() + "<\n" + receiver.dump());
 
@@ -229,8 +233,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
             log.warning(e.toString());
          }
          catch(Throwable e) {
-        	if (e instanceof NullPointerException)
-        		e.printStackTrace();
+            if (e instanceof NullPointerException)
+               e.printStackTrace();
             if (running == true) {
                if (e.toString().indexOf("javax.net.ssl") != -1) {
                   log.warning("Closing connection to server, please try debugging SSL with 'java -Djavax.net.debug=all ...': " + e.toString());
