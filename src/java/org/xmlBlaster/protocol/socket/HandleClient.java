@@ -162,12 +162,14 @@ public class HandleClient extends SocketExecutor implements Runnable
    }
 
    public String toString() {
-      String ret = getType() + "-" + this.addressConfig.getName();
+      StringBuffer ret = new StringBuffer(256);
+      ret.append(getType()).append("-").append(this.addressConfig.getName());
       if (loginName != null && loginName.length() > 0)
-         ret += "-"+loginName;
+         ret.append("-").append(loginName);
       else
-         ret += "-"+getSecretSessionId();
-      return ret;
+         ret.append("-").append(getSecretSessionId());
+      ret.append("-").append(remoteSocketStr);
+      return ret.toString();
    }
 
    private void closeSocket() {
@@ -373,7 +375,12 @@ public class HandleClient extends SocketExecutor implements Runnable
          while (running) {
             try {
                // blocks until a message arrives
-               final MsgInfo msgInfo = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), driver.getPluginConfig())[0];
+               final MsgInfo[] msgInfoArr = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), driver.getPluginConfig());
+               if (msgInfoArr.length < 1) {
+                  log.warning(toString() + ": Got unexpected empty data from SOCKET, closing connection now");
+                  break;
+               }
+               final MsgInfo msgInfo = msgInfoArr[0];
 
                if (this.callCoreInSeparateThread) {
                   executorService.execute(new Runnable() {
@@ -388,18 +395,21 @@ public class HandleClient extends SocketExecutor implements Runnable
             }
             catch (Throwable e) {
                if (e.toString().indexOf("closed") != -1 || (e instanceof java.net.SocketException && e.toString().indexOf("Connection reset") != -1)) {
-                  if (log.isLoggable(Level.FINE)) log.fine("TCP socket '" + remoteSocketStr + "' is shutdown: " + e.toString());
+                  if (log.isLoggable(Level.FINE)) log.fine(toString() + ": TCP socket is shutdown: " + e.toString());
                }
                else if (e.toString().indexOf("EOF") != -1) {
                   if (this.disconnectIsCalled)
-                     log.fine("Lost TCP connection from '" + remoteSocketStr + "' after sending disconnect(): " + e.toString());
+                     log.fine(toString() + ": Lost TCP connection after sending disconnect(): " + e.toString());
                   else
-                     log.warning("Lost TCP connection from '" + remoteSocketStr + "': " + e.toString());
+                     log.warning(toString() + ": Lost TCP connection: " + e.toString());
                }
                else {
                   log.warning(toString() + ": Error parsing TCP data from '" + remoteSocketStr + "', check if client and server have identical compression or SSL settings: " + e.toString());
                }
-               if (e instanceof OutOfMemoryError) {
+               if (e instanceof OutOfMemoryError || e instanceof IllegalArgumentException) {
+                  e.printStackTrace();
+               }
+               if (e.getCause() != null && (e.getCause() instanceof OutOfMemoryError || e.getCause() instanceof IllegalArgumentException)) {
                   e.printStackTrace();
                }
                I_Authenticate auth = this.authenticate;

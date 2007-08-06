@@ -135,7 +135,7 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
     * <p />
     * This method blocks until a message arrives
     */
-   public final MsgInfo[] parse(InputStream in) {
+   public final MsgInfo[] parse(InputStream in) throws IOException, XmlBlasterException {
       if (log.isLoggable(Level.FINER))
          log.finer("Entering parse()");
       
@@ -151,46 +151,41 @@ public class XmlScriptParser extends XmlScriptInterpreter implements
             ByteArrayOutputStream out = new ByteArrayOutputStream(4096);
             while (true) {
                int bt = in.read();
+               if (bt == -1) { // EOF
+                  throw new IOException(ME + ": Got EOF");
+               }
                if (bt == 0) break;
                out.write(bt);
             }
             in = new ByteArrayInputStream(out.toByteArray()); // Now "in" contains exactly one script
             if (log.isLoggable(Level.FINEST)) log.finest("Got script [" + new String(out.toByteArray()) + "]");
-         } catch (IOException e) { // SocketException extends IOException
-            log.warning("Reading data from client stream failed: " + e.toString());
-            return msgInfos;
+         } catch (IOException e) {
+            throw e;
          } catch (Exception e) {
-            e.printStackTrace();
-            log.severe("Client failed: " + e.toString());
-            return msgInfos;
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Socket connection failure", e);
          }
       }
       
       this.msgInfoParsed = new ArrayList();
 
-      try {
-         Reader reader = new InputStreamReader(in);
-         super.parse(reader);
-         /*
-         byte[] buf = new byte[100];
-         in.read(buf);
-         //reader.read(buf);
-         System.out.println("XmlScriptParser:" + new String(buf));
-         //super.parse(reader);
-          
-          */
-         msgInfos = (MsgInfo[])this.msgInfoParsed.toArray(new MsgInfo[this.msgInfoParsed.size()]);
-         
-         if (this.progressListener != null) {
-            long size = 0;
-            String text = (msgInfos.length > 0) ? msgInfos[0].getMethodNameStr() : "XmlScript";
-            for (int i=0; i<msgInfos.length; i++)
-               size += msgInfos[i].getUserDataLen();
-            this.progressListener.progressRead(text, size, size);
-         }
-      } catch (Exception e) {
-         e.printStackTrace();
-         log.severe("Client failed: " + e.toString());
+      Reader reader = new InputStreamReader(in);
+      super.parse(reader);
+      /*
+      byte[] buf = new byte[100];
+      in.read(buf);
+      //reader.read(buf);
+      System.out.println("XmlScriptParser:" + new String(buf));
+      //super.parse(reader);
+       
+       */
+      msgInfos = (MsgInfo[])this.msgInfoParsed.toArray(new MsgInfo[this.msgInfoParsed.size()]);
+      
+      if (this.progressListener != null) {
+         long size = 0;
+         String text = (msgInfos.length > 0) ? msgInfos[0].getMethodNameStr() : "XmlScript";
+         for (int i=0; i<msgInfos.length; i++)
+            size += msgInfos[i].getUserDataLen();
+         this.progressListener.progressRead(text, size, size);
       }
 
       if (log.isLoggable(Level.FINE))
