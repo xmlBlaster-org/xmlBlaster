@@ -763,6 +763,7 @@ CbProtocolPlugin[socket_script][1.0]=org.xmlBlaster.protocol.socket.CallbackSock
    &lt;attribute id='compress/type'>&lt;/attribute>
    &lt;attribute id='isNullTerminated'>true&lt;/attribute>
    &lt;attribute id='parserClass'>org.xmlBlaster.util.xbformat.XmlScriptParser&lt;/attribute>
+   &lt;attribute id='port'>7601&lt;/attribute>
 &lt;/plugin>
 </pre>
 
@@ -832,6 +833,12 @@ ClientCbServerProtocolPlugin[socket_script][1.0]=org.xmlBlaster.client.protocol.
  &lt;/qos>
 &lt;/publish>
 ]
+</pre>
+
+   <p>With above configuration a typical command line setting to test the setup is:</p>
+<pre class="BORDER">
+java org.xmlBlaster.Main -logging/org.xmlBlaster.util.xbformat.XmlScriptParser FINEST -logging/org.xmlBlaster.util.protocol.socket.SocketExecutor FINEST 
+java HelloWorld3 -protocol socket_script -plugin/socket_script/port 7601 
 </pre>
 
    </example>
