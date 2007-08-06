@@ -130,6 +130,14 @@ public class MsgInfo {
    }
 
    public MsgInfo(Global glob, byte type, MethodName methodName,
+         String sessionId, I_ProgressListener progressListener, String msgInfoParserClassName)
+   throws XmlBlasterException {
+      this(glob, type, methodName, sessionId, progressListener);
+      if (msgInfoParserClassName != null)
+         setMsgInfoParser(msgInfoParserClassName);
+   }
+
+   public MsgInfo(Global glob, byte type, MethodName methodName,
          String sessionId, I_ProgressListener progressListener) {
       this(glob, type, (String) null, methodName, sessionId, progressListener);
    }
@@ -147,7 +155,7 @@ public class MsgInfo {
       setMethodName(methodName);
       setSecretSessionId(sessionId);
    }
-
+   
    /**
     * Creates a new instance with the meta info from source.
     * 

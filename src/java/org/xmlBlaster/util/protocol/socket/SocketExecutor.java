@@ -173,7 +173,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping() invocation ignored, we are shutdown.");
       try {
          String cbSessionId = "";
-         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener, msgInfoParserClassName);
          parser.addMessage(qos);
          Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + response.toString());
