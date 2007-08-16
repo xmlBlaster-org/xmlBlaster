@@ -21,7 +21,7 @@ namespace org.xmlBlaster.contrib.service {
    ///    <p k='serviceName'>buddy</p>
    ///    <p k='bounce'>myRequestId-5301785</p>
    ///    <p k='taskType'>named</p>
-   ///    <p k='task'>getBuddyList</p>
+   ///    <p k='task'>getBuddies</p>
    ///   </s>
    ///  </sc>
    /// </summary>
