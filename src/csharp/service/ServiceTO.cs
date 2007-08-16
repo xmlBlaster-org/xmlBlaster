@@ -19,10 +19,10 @@ namespace org.xmlBlaster.contrib.service {
    /// <summary>
    /// The transfer object for services
    /// </summary>
-   [XmlRootAttribute("service", IsNullable = false)]
+   [XmlRootAttribute("s", IsNullable = false)]
    public class ServiceTO : IXmlSerializable {
 
-      public static readonly string SERVICE = "service"; // tag name
+      public static readonly string SERVICE = "s"; // tag name
 
       private List<PropTO> propTOs;
 

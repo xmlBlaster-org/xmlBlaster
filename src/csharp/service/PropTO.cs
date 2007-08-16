@@ -76,9 +76,9 @@ namespace org.xmlBlaster.contrib.service {
       // is specific for each service use case
       //public static readonly string VALUE_RESULTMIME_EXCEPTION = "application/xmlBlaster.service.exception";
 
-      public static readonly string PROP = "prop"; // tag name
+      public static readonly string PROP = "p"; // tag name
 
-      public static readonly string KEY = "key"; // attribute name
+      public static readonly string KEY = "k"; // attribute name
 
       protected string key;
 

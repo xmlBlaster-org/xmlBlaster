@@ -16,19 +16,19 @@ using System.Xml.Serialization;
 
 namespace org.xmlBlaster.contrib.service {
    /// <summary>
-   /// <services>
-   ///   <service>
-   ///    <prop key='serviceName'>buddy</prop>
-   ///    <prop key='bounce'>myRequestId-5301785</prop>
-   ///    <prop key='taskType'>named</prop>
-   ///    <prop key='task'>getBuddyList</prop>
-   ///   </service>
-   ///  </services>
+   /// <sc>
+   ///   <s>
+   ///    <p k='serviceName'>buddy</p>
+   ///    <p k='bounce'>myRequestId-5301785</p>
+   ///    <p k='taskType'>named</p>
+   ///    <p k='task'>getBuddyList</p>
+   ///   </s>
+   ///  </sc>
    /// </summary>
-   [XmlRootAttribute("services", IsNullable = false)]
+   [XmlRootAttribute("sc", IsNullable = false)]
    public class ServiceListTO : IXmlSerializable {
       private List<ServiceTO> serviceTOs;
-      public static readonly string SERVICES = "services"; // tag name
+      public static readonly string SERVICES = "sc"; // tag name
 
       public ServiceListTO() {
       }
