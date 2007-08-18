@@ -128,6 +128,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     final static int BLOB = 7;
     
     private int maxNumStatements;
+    private int maxSelectLimit;
     
    /**
     * @param storage TODO
@@ -186,6 +187,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          log.info("The maximum Number of statements for this database instance are '" + this.maxNumStatements + "'");
          if (logWarn && this.pool.getProp("maxNumStatements",-1)==-1)
             log.warning("The maxStatements returned fromt the database metadata is '" + defaultMaxNumStatements + "', will set the default to 50 unless you explicitly set '-queue.persistent.maxNumStatements <num>'");
+
+         // -queue.persistent.maxSelectLimit -1 (off)
+         this.maxSelectLimit = this.pool.getProp("maxSelectLimit", -1);
+         if (this.maxSelectLimit > 0)
+            log.info("The maximum results returned by a select is set to '" + this.maxSelectLimit + "' (MSSQLerver only)");
       }
       catch (XmlBlasterException ex) {
          success = false;
@@ -2077,17 +2083,21 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC FETCH FIRST " + numOfEntries + " ROWS ONLY";
          }
          else if (isMicrosoftSQLServer()) {
-        	if (true) {
-        		if (numOfEntries > 10000 && numOfEntries != 100000) {
-        			synchronized (this) {
-            			if (countDumps < 20) {
-            				log.info("numOfEntries=" + numOfEntries + "\r\n" + ThreadLister.getAllStackTraces());
-            				countDumps++;
-            			}
-					}
-        		}
-        	}
-            req = "SELECT TOP " + numOfEntries + " * from " + this.entriesTableName + " where queueName='" + queueName
+           	if (true) {
+           		if (numOfEntries > 10000 && numOfEntries != 100000) {
+           			synchronized (this) {
+               			if (countDumps < 20) {
+               				log.info("numOfEntries=" + numOfEntries + "\r\n" + ThreadLister.getAllStackTraces());
+               				countDumps++;
+               			}
+   					}
+           		}
+           	}
+            int selectLimit = numOfEntries;
+            if (maxSelectLimit > 0 && numOfEntries > maxSelectLimit) {
+               selectLimit = maxSelectLimit;
+            }
+            req = "SELECT TOP " + selectLimit + " * from " + this.entriesTableName + " where queueName='" + queueName
             + "' ORDER BY prio DESC, " + this.dataIdColName + " ASC";
          }
          else if (isHSQLDatabaseEngine()) {
