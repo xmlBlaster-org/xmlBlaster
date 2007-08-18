@@ -65,6 +65,13 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private static boolean firstConnectError = true;
    private Properties pluginProp = null;
    private boolean dbAdmin = true;
+   /** Sets the number of seconds the driver will wait for a 
+     * <code>Statement</code> object to execute to the given number of seconds.
+     * If the limit is exceeded, an <code>SQLException</code> is thrown.
+     *
+     * @param seconds the new query timeout limit in seconds; zero means 
+     *        there is no limit
+   */
    private int queryTimeout = 0; // wait indefinitely
    private int managerCount = 0;
    private boolean isShutdown = false;
@@ -482,6 +489,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          log.warning("queue.persistent.connectionPoolSize=" + this.capacity + " is too small, setting it to " + MIN_POOL_SIZE);
          this.capacity = MIN_POOL_SIZE;
       }
+      this.queryTimeout = prop.get("queue.persistent.queryTimeout", 0);
       this.connectionBusyTimeout = prop.get("queue.persistent.connectionBusyTimeout", 60000L);
       this.maxWaitingThreads = prop.get("queue.persistent.maxWaitingThreads", 200);
       // these should be handled by the JdbcManager
@@ -496,7 +504,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       ME = "JdbcConnectionPool-" + this.url;
       this.user = pluginProp.getProperty("user", this.user);
       this.password = pluginProp.getProperty("password", this.password);
-      
+
       String txt = pluginProp.getProperty("debug", "" + false);
       try {
          this.debug = (new Boolean(txt)).booleanValue();
@@ -531,6 +539,14 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       catch (Exception ex) {
          log.warning("the 'maxWaitingThreads' plugin-property is not parseable: '" + help + "' will be using the default '" + this.maxWaitingThreads + "'");
+      }
+
+      help = pluginProp.getProperty("queryTimeout", "" + this.queryTimeout);
+      try {
+         this.queryTimeout = Integer.parseInt(help);
+      }
+      catch (Exception ex) {
+         log.warning("the 'queryTimeout' plugin-property is not parseable: '" + help + "' will be using the default '" + this.queryTimeout + "'");
       }
 
       help = pluginProp.getProperty("enableBatchMode", "true");
@@ -589,6 +605,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          log.finest("initialize -user                   : " + this.user);
          log.finest("initialize -password               : " + this.password);
          log.finest("initialize -max number of conn     : " + this.capacity);
+         log.finest("initialize -queryTimeout           : " + this.queryTimeout);
          log.finest("initialize -conn busy timeout      : " + this.connectionBusyTimeout);
          log.finest("initialize -driver list            : " + xmlBlasterJdbc);
          log.finest("initialize -max. waiting Threads   :" + this.maxWaitingThreads);
@@ -624,6 +641,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             log.info("diagnostics: initialize -user                : '" + user + "'");
             log.info("diagnostics: initialize -password            : '" + password + "'");
             log.info("diagnostics: initialize -max number of conn  : '" + this.capacity + "'");
+            log.info("diagnostics: initialize -queryTimeout        : '" + this.queryTimeout + "'");
             log.info("diagnostics: initialize -conn busy timeout   : '" + this.connectionBusyTimeout + "'");
             log.info("diagnostics: initialize -driver list         : '" + xmlBlasterJdbc + "'");
             log.info("diagnostics: initialize -max. waiting Threads: '" + this.maxWaitingThreads + "'");
