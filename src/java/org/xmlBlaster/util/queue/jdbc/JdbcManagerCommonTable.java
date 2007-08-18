@@ -2116,6 +2116,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
       catch (Throwable ex) {
          success = false;
+         ex.printStackTrace();
          if (query != null) 
             query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, "getEntries"), ex))
