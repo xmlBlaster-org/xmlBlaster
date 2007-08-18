@@ -15,6 +15,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
@@ -155,7 +156,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       boolean success = true;
       try {
          conn = this.pool.getConnection();
-         this.maxStatementLength = conn.getMetaData().getMaxStatementLength();
+         DatabaseMetaData dbmd = conn.getMetaData();
+         this.maxStatementLength = dbmd.getMaxStatementLength();
          if (this.maxStatementLength < 1) {
             this.maxStatementLength = glob.getProperty().get("queue.persistent.maxStatementLength", 2048);
             if (first) {
@@ -164,20 +166,20 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
 
-         if (!conn.getMetaData().supportsTransactions()) {
-            String dbName = conn.getMetaData().getDatabaseProductName();
+         if (!dbmd.supportsTransactions()) {
+            String dbName = dbmd.getDatabaseProductName();
             log.severe("the database '" + dbName + "' does not support transactions, unpredicted results may happen");
          }
 
-         if (!conn.getMetaData().supportsBatchUpdates()) {
-            String dbName = conn.getMetaData().getDatabaseProductName();
+         if (!dbmd.supportsBatchUpdates()) {
+            String dbName = dbmd.getDatabaseProductName();
             this.supportsBatch = false;
             log.fine("the database '" + dbName + "' does not support batch mode. No problem I will work whitout it");
          }
          
          // zero means not limit (to be sure we also check negative Values
          boolean logWarn = false;
-         int defaultMaxNumStatements = conn.getMetaData().getMaxStatements();
+         int defaultMaxNumStatements = dbmd.getMaxStatements();
          if (defaultMaxNumStatements < 1) {
             defaultMaxNumStatements = 50;
             logWarn = true;
@@ -192,6 +194,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          this.maxSelectLimit = this.pool.getProp("maxSelectLimit", -1);
          if (this.maxSelectLimit > 0)
             log.info("The maximum results returned by a select is set to '" + this.maxSelectLimit + "' (MSSQLerver only)");
+         
+         log.info("Using DB " + dbmd.getDatabaseProductName() + " " + dbmd.getDatabaseProductVersion() + " " + dbmd.getDriverName());
       }
       catch (XmlBlasterException ex) {
          success = false;
