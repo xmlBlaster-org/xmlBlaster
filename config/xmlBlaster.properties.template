@@ -285,10 +285,12 @@ JdbcStorage[MicrosoftSQLServer]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTa
 #                  colNamePrefix=XB_,\
 #                  dbAdmin=true
 
-# for Microsoft SQL Server 2005 JDBC (sqljdbc.jar Version 1.1):
+# for Microsoft SQL Server 2005 JDBC (sqljdbc.jar Version 1.2):
 # with driver class com.microsoft.sqlserver.jdbc.SQLServerDriver
+# Use this for SQLServer 2000 and 2005!
+# If you use v1.1 please remove the adaptive setting
 JdbcStorage[MicrosoftSQLServer2005]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                  url=jdbc:sqlserver://localhost:1433;databaseName=xmlBlaster,\
+                  url=jdbc:sqlserver://localhost:1433;responseBuffering=adaptive;databaseName=xmlBlaster,\
                   user=sa,\
                   password=xxx,\
                   configurationIdentifier=MicrosoftSQLServer2005,\
