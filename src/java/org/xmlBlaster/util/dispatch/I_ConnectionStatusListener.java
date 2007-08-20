@@ -9,8 +9,9 @@ import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 /**
- * Listen to connection states of the dispatcher framework. 
+ * Listen to connection states of the dispatcher framework.
  * <p>
+ * Register with a call to DispatchManager.addConnectionStatusListener()
  * @author xmlBlaster@marcelruff.info
  */
 public interface I_ConnectionStatusListener
