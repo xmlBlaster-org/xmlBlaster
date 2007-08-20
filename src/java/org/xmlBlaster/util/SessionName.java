@@ -12,7 +12,7 @@ import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 
 /**
- * Handles unified naming convention of login names and user sessions. 
+ * Handles unified naming convention of login names and user sessions.
  *
  * Instances are immutable.
  * @author xmlBlaster@marcelruff.info
@@ -34,13 +34,13 @@ public final class SessionName implements java.io.Serializable
    private final String subjectId; // == loginName
    private long pubSessionId;
    private boolean nodeIdExplicitlyGiven = false;
-   
+
    // TODO:
    // On release 2.0 we should change the default to the new "client/joe/session/1" notation.
    // Note that C++ clients compiled before V1.4 and java clients before V1.3 can't handle
    // the new notation
    private static boolean useSessionMarker=false;
-   
+
    static {
       // To switch back to old "client/joe/1" markup, default is now "client/joe/session/1"
       useSessionMarker = Global.instance().getProperty().get("xmlBlaster/useSessionMarker", useSessionMarker);
@@ -51,7 +51,7 @@ public final class SessionName implements java.io.Serializable
    }
 
    /**
-    * Create and parse a unified name. 
+    * Create and parse a unified name.
     * <p>
     * @param name Examples:
     * <pre>
@@ -59,7 +59,7 @@ public final class SessionName implements java.io.Serializable
     *  client/joe/2
     *  joe/2
     *  joe
-    *  
+    *
     *  /node/heron/client/joe/session/2
     *  client/joe/session/2
     *  joe/session/2
@@ -79,6 +79,8 @@ public final class SessionName implements java.io.Serializable
     *  joe/2
     *  joe
     * </pre>
+    * The EventPlugin supports wildcard '*' as sessionNumber,
+    * to be able to use this parser we map it to Long.MIN_VALUE
     * @exception IllegalArgumentException if your name can't be parsed
     */
    public SessionName(Global glob, NodeId nodeId, String name) {
@@ -172,7 +174,12 @@ public final class SessionName implements java.io.Serializable
                tmp = arr[ii++];
             }
          }
-         this.pubSessionId = Long.parseLong(tmp);
+         if ("*".equals(tmp)) { // The eventplugin supports wildcard, to use this parser we map it to Long.MIN_VALUE)
+        	 this.pubSessionId = Long.MIN_VALUE;
+         }
+         else {
+         	this.pubSessionId = Long.parseLong(tmp);
+         }
       }
    }
 
@@ -214,7 +221,7 @@ public final class SessionName implements java.io.Serializable
    public String getRelativeName() {
       return getRelativeName(false);
    }
-   
+
    /**
     * @param forceSessionMarker If false the configured syntax is chosen, if true wie force the /session/ markup
     * @return e.g. "client/joe/session/2" or "client/joe", never null
@@ -353,7 +360,7 @@ public final class SessionName implements java.io.Serializable
 
    /**
     * Note: no blanks in the example below are allowed, we need to write it like this to distinguish it from a java comment
-    * @return e.g. "client/joe/session/ * 
+    * @return e.g. "client/joe/session/ *
     */
    public String getRelativePubSessionIdWildcard() {
       return ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + getLoginName() + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
@@ -361,7 +368,7 @@ public final class SessionName implements java.io.Serializable
 
    /**
     * Note: no blanks in the example below are allowed, we need to write it like this to distinguish it from a java comment
-    * @return "client/* /session/* 
+    * @return "client/* /session/*
     */
    public String getRelativeWildcard() {
       return ContextNode.SUBJECT_MARKER_TAG + ContextNode.SEP + "*" + ContextNode.SEP + ContextNode.SESSION_MARKER_TAG + ContextNode.SEP + "*";
