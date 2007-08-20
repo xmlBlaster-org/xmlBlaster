@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn repository
 ==================================
+ o #16430 EventPlugin: Added missing support for wildcards in event type callbackState
+          client/*/session/*/event/callbackState
+
  o #16416 Bugfix XmlScript over SOCKET: Fixed to use configured parser on callback ping
 
  o #16411 Bugfix: Fixed XmlScript over SOCKET handling for incoming EOF
