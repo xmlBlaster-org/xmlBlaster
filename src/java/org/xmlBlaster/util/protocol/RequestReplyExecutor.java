@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Collections;
 
 /**
- * Request/reply simulates a local method invocation. 
+ * Request/reply simulates a local method invocation.
  * <p />
  * A common base class for socket or email based messaging.
  * Allows to block during a request and deliver the return message
@@ -84,11 +84,11 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    public static final boolean ONEWAY = false;
    /** Used for execute() */
    public static final boolean WAIT_ON_RESPONSE = true;
-   
+
    /** My JMX registration, can be done optionally by implementing classes */
    protected Object mbeanHandle;
    protected ContextNode contextNode;
-   
+
    public RequestReplyExecutor() {
    }
 
@@ -112,7 +112,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 
       if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressConfig.getCompressType())) { // Statically configured for server side protocol plugin
          this.compressZlibStream = true;
-         log.info("Full stream compression enabled with '" + Constants.COMPRESS_ZLIB_STREAM + "'");
+         if (log.isLoggable(Level.FINE)) log.fine("Full stream compression enabled with '" + Constants.COMPRESS_ZLIB_STREAM + "'");
       }
       else if (Constants.COMPRESS_ZLIB.equals(this.addressConfig.getCompressType())) { // Compress each message indiviually
          this.compressZlib = true;
@@ -122,11 +122,11 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          this.compressZlibStream = false;
          this.compressZlib = false;
       }
-      
+
       // 1. Response should never expire
       // 2. Otherwise the Pop3Driver must be changed to nevertheless return it to wake up the blocking latch
       setUseEmailExpiryTimestamp(addressConfig.getEnv("useEmailExpiryTimestamp", true).getValue());
-      
+
       setResponseTimeout(addressConfig.getEnv("responseTimeout", getDefaultResponseTimeout()).getValue());
       if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseTimeout);
       // the responseTimeout is used later to wait on a return value
@@ -146,7 +146,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     * @return "SOCKET" or "EMAIL", never null
     */
    abstract public String getType();
-   
+
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
       I_ProgressListener oldOne = this.progressListener;
       this.progressListener = listener;
@@ -158,7 +158,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    /**
-    * How long to block on remote call waiting on response. 
+    * How long to block on remote call waiting on response.
     * The default is to block forever (Integer.MAX_VALUE)
     * Changed after xmlBlaster release 1.0.7 (before it was one minute: Constants.MINUTE_IN_MILLIS)
     * Can be overwritten by implementations like EMAIL
@@ -168,7 +168,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    /**
-    * How long to block on remote call waiting on a ping response. 
+    * How long to block on remote call waiting on a ping response.
     * The default is to block for one minute
     * This method can be overwritten by implementations like EMAIL
     */
@@ -177,7 +177,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    /**
-    * How long to block on remote call waiting on a update() response. 
+    * How long to block on remote call waiting on a update() response.
     * The default is to block forever
     * This method can be overwritten by implementations like EMAIL
     */
@@ -202,7 +202,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    /**
-    * Set the given millis to protect against blocking client for ping invocations. 
+    * Set the given millis to protect against blocking client for ping invocations.
     * @param millis If <= 0 it is set to the default (one minute).
     * An argument less than or equal to zero means not to wait at all
     * and is not supported
@@ -218,7 +218,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    /**
-    * Set the given millis to protect against blocking client for update() invocations. 
+    * Set the given millis to protect against blocking client for update() invocations.
     * @param millis If <= 0 it is set to the default (one minute).
     * An argument less than or equal to zero means not to wait at all
     * and is not supported
@@ -245,18 +245,18 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       }
       return this.responseTimeout;
    }
-   
+
    /**
-    * Access the timeout for method invocation. 
+    * Access the timeout for method invocation.
     * @param methodName e.g. "PING", "UPDATE", "SUBSCRIBE", "PUBLISH", ...
     * @return Returns the responseTimeout for JMX in milli seconds
     */
    public long getResponseTimeout(String methodName) {
       return getResponseTimeout(MethodName.toMethodName(methodName));
    }
-   
+
    /**
-    * Return the time in future when the email can be deleted. 
+    * Return the time in future when the email can be deleted.
     * @return Returns the expiry timestamp, is null if message never expires
     */
    public Timestamp getExpiryTimestamp(MethodName methodName) {
@@ -266,9 +266,9 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       long current = new Date().getTime();
       return new Timestamp(current+diff);
    }
-   
+
    /**
-    * For logging. 
+    * For logging.
     * @param methodName
     * @return
     */
@@ -354,7 +354,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       }
       return (I_ResponseListener)this.responseListenerMap.get(requestId);
    }
-   
+
    public void clearResponseListenerMap() {
       try {
          StringBuffer buf = null;
@@ -544,9 +544,9 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 
       return true;
    }
-   
+
    /*
-    * Overwrite on demand. 
+    * Overwrite on demand.
     * TODO: Is this needed anymore?
     * @return
     */
@@ -649,8 +649,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             return response[0];
          }
          else {
-            String str = "Timeout of " + getResponseTimeout(msgInfo.getMethodName()) 
-                       + " milliseconds occured when waiting on " + msgInfo.getMethodName() + "(" + requestId 
+            String str = "Timeout of " + getResponseTimeout(msgInfo.getMethodName())
+                       + " milliseconds occured when waiting on " + msgInfo.getMethodName() + "(" + requestId
                        + ") response. You can change it with -plugin/"
                        + getType().toLowerCase()+"/"+getResponseTimeoutPropertyName(msgInfo.getMethodName())+" <millis>";
             removeResponseListener(requestId);
@@ -661,7 +661,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          removeLatch(startSignal); //synchronized (this.latchSet) { this.latchSet.remove(startSignal); }
       }
    }
-   
+
    private class LatchHolder {
       public LatchHolder(Latch latch) {
          this.latch = latch;
@@ -669,9 +669,9 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       Latch latch;
       boolean latchIsInterrupted;
    }
-   
+
    /**
-    * Interrupts a blocking request with a not returning reply. 
+    * Interrupts a blocking request with a not returning reply.
     * The pending message is handled as not delivered and will be queued
     * @return Number of interrupted invocations, typically 0 or 1
     */
@@ -684,7 +684,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       }
       return latches.length;
    }
-   
+
    private LatchHolder addLatch(Latch latch) {
       LatchHolder latchHolder = new LatchHolder(latch);
       synchronized (this.latchSet) {
@@ -694,17 +694,17 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       }
       return latchHolder;
    }
-   
+
    private void removeLatch(LatchHolder latchHolder) {
       synchronized (this.latchSet) {
          this.latchSet.remove(latchHolder);
       }
    }
-   
+
    private LatchHolder[] getLatches() {
-      synchronized (this.latchSet) { 
+      synchronized (this.latchSet) {
          return (LatchHolder[])this.latchSet.toArray(new LatchHolder[this.latchSet.size()]);
-      } 
+      }
    }
 
    /**
@@ -725,10 +725,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
     * Send a one way response message back to the other side
     */
    protected final void executeResponse(MsgInfo receiver, Object response, boolean udp) throws XmlBlasterException, IOException {
-      
+
       // Take a clone:
       MsgInfo returner = receiver.createReturner(MsgInfo.RESPONSE_BYTE);
-      
+
       if (response instanceof String)
          returner.addMessage((String)response);
       else if (response instanceof String[])
@@ -759,19 +759,19 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    /**
-    * Flush the data to the protocol layer (socket, email, ...). 
-    * Overwrite this in your derived class to send using your specific protocol 
+    * Flush the data to the protocol layer (socket, email, ...).
+    * Overwrite this in your derived class to send using your specific protocol
     */
    abstract protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException;
-      
+
    public boolean isCompressZlib() {
       return this.compressZlib;
    }
-   
+
    public void setCompressZlib(boolean compress) {
       this.compressZlib = compress;
    }
-   
+
    /**
     * Compressing too small messages won't reduce the size
     * @return The number of bytes, only compress if bigger
@@ -808,13 +808,13 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    public void setUseEmailExpiryTimestamp(boolean useEmailExpiryTimestamp) {
       this.useEmailExpiryTimestamp = useEmailExpiryTimestamp;
    }
-   
+
    /**
     * @return a human readable usage help string
     */
    public java.lang.String usage() {
-      return 
-        "interruptInvocation(): Interrupts a blocking request" + 
+      return
+        "interruptInvocation(): Interrupts a blocking request" +
         "\n  The pending message is handled as not delivered and will be kept in queue";
    }
 
@@ -823,7 +823,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    }
 
    /**
-    * The invocation timeout for "ping" method calls. 
+    * The invocation timeout for "ping" method calls.
     * @return Returns the pingResponseTimeout.
     */
    public final long getPingResponseTimeout() {
@@ -832,7 +832,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 
    /**
     * The invocation timeout for all remaining method calls like "publish", "connect", "subscribe"
-    * but NOT for "ping" and "update" 
+    * but NOT for "ping" and "update"
     * @return Returns the responseTimeout.
     */
    public final long getResponseTimeout() {
