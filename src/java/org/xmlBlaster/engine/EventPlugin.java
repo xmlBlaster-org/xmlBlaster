@@ -68,20 +68,20 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * This <tt>EventPlugin</tt> plugin is started with the run level manager as
  * configured in <code>xmlBlasterPlugins.xml</code>, for example:
  * </p>
- * 
+ *
  * <pre>
  *&lt;plugin id='EventPlugin' className='org.xmlBlaster.engine.EventPlugin'&gt;
  *   &lt;action do='LOAD' onStartupRunlevel='7' sequence='11'
  *                        onFail='resource.configuration.pluginFailed'/&gt;
  *   &lt;action do='STOP' onShutdownRunlevel='6' sequence='11'/&gt;
- *   
+ *
  *   &lt;attribute id='eventTypes'>
  *      logging/severe/*,
  *      logging/warning/*,
  *      service/RunlevelManager/event/startupRunlevel8,
  *      client/joe/session/1/event/connect
  *   &lt;/attribute>
- *   
+ *
  *   &lt;attribute id='destination.smtp'>
  *      mail.smtp.from=xmlBlaster@localhost,
  *      mail.smtp.to=demo@localhost,
@@ -90,7 +90,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  *   &lt;attribute id='destination.jmx'/>
  *&lt;/plugin&gt;
  * </pre>
- * 
+ *
  * <p>
  * In the above example an email is send if any logging/severe/* (==log/error) or logging/warning/* occurs.
  * Further an event is emitted on xmlBlaster startup in run level 8
@@ -137,7 +137,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  *    You need to configure at least the email address parameters
  *    <code>mail.stmp.from</code> and <code>mail.smtp.to</code> and
  *    activate the <code>SmtpClient</code> plugin in <code>xmlBlasterPlugins.xml</code>.
- *    If you have a reasonable email provider you can configure it to 
+ *    If you have a reasonable email provider you can configure it to
  *    forward the mail as an SMS (mine offers this feature).</td>
  * </tr>
  * <tr>
@@ -153,7 +153,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  *     Now you receive the configured events.</td>
  * </tr>
  * </table>
- * 
+ *
  * <p>
  * We access the xmlBlaster core directly to register the supported internal
  * events, hence this plugin works only if it is in the same virtual
@@ -163,7 +163,7 @@ import org.xmlBlaster.engine.runlevel.RunlevelManager;
  * All events don't throw any exceptions as this plugin should have
  * no influence on the regular work-flow of xmlBlaster.
  * </p>
- * 
+ *
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
  * @see <a
  *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.events.html">The
@@ -191,23 +191,23 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected RequestBroker requestBroker;
 
    protected SessionInfo sessionInfo;
-   
+
    protected boolean isActive;
 
    protected boolean isShutdown;
-   
+
    protected String eventTypes;
    protected Set loggingSet;
    protected Set runlevelSet;
    protected Set clientSet;
    protected Set topicSet;
-   
+
    protected Set pendingCallbackSessionInfoSet;
    protected Set callbackSessionStateSet;
-   
+
    protected static int staticInstanceCounter;
    protected int instanceCounter;
-   
+
    /**
     * Helper class to send emails
     */
@@ -215,7 +215,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       SmtpClient smtpClient;
 
       String to, from, subjectTemplate, cc, bcc, contentTemplate, contentSeparator;
-      
+
       long collectIntervall = Constants.DAY_IN_MILLIS / 2;
 
       public SmtpDestinationHelper(SmtpClient smtpClient, String destination)
@@ -290,9 +290,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected long heartbeatInterval;
    protected Timeout heartbeatTimeout;
    protected Timestamp heartbeatTimeoutHandle;
-   
+
    /**
-    * Helper class to publish messages. 
+    * Helper class to publish messages.
     */
    class PublishDestinationHelper {
       String destination;
@@ -340,19 +340,19 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             msgQosData = publishQos.getData();
          }
          if (summary != null && summary.length() > 0)
-            msgQosData.addClientProperty("_summary", summary);
+            msgQosData.addClientProperty(Constants.EVENTPLUGIN_PROP_SUMMARY, summary); // "_summary"
          if (description != null && description.length() > 0)
-            msgQosData.addClientProperty("_description", description);
+            msgQosData.addClientProperty(Constants.EVENTPLUGIN_PROP_DESCRIPTION, description);
          if (eventType != null && eventType.length() > 0)
-            msgQosData.addClientProperty("_eventType", eventType);
+            msgQosData.addClientProperty(Constants.EVENTPLUGIN_PROP_EVENTTYPE, eventType);
          if (errorCode != null && errorCode.length() > 0)
-            msgQosData.addClientProperty("_errorCode", errorCode);
+            msgQosData.addClientProperty(Constants.EVENTPLUGIN_PROP_ERRORCODE, errorCode);
          if (sessionName != null) {
-            msgQosData.addClientProperty("_publicSessionId",
+            msgQosData.addClientProperty(Constants.EVENTPLUGIN_PROP_PUBSESSIONID,
                   sessionName.getPublicSessionId());
-            msgQosData.addClientProperty("_subjectId",
+            msgQosData.addClientProperty(Constants.EVENTPLUGIN_PROP_SUBJECTID,
                   sessionName.getLoginName());
-            msgQosData.addClientProperty("_absoluteName",
+            msgQosData.addClientProperty(Constants.EVENTPLUGIN_PROP_ABSOLUTENAME,
                   sessionName.getAbsoluteName());
             /*
             // To be backwards compatible with loginEvent=true setting:
@@ -368,7 +368,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             // To be backwards compatible with loginEvent=true setting:
             */
          }
-         msgQosData.addClientProperty("_nodeId", engineGlob.getId());
+         msgQosData.addClientProperty(Constants.EVENTPLUGIN_PROP_NODEID, engineGlob.getId());
 
          return msgQosData;
       }
@@ -380,7 +380,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                getPublishKey(summary, description, eventType, errorCode),
                content.getBytes(),
                getPublishQos(summary, description, eventType, errorCode, sessionName));
-         
+
       }
    }
    protected PublishDestinationHelper publishDestinationHelper;
@@ -404,12 +404,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String content = replaceTokens(
             this.contentTemplate, summary, description, eventType, errorCode);
          return content;
-         
+
       }
    }
    protected JmxDestinationHelper jmxDestinationHelper;
    protected String jmxDestinationConfiguration;
-   
+
    public EventPlugin() {
       synchronized (EventPlugin.class) {
          staticInstanceCounter++;
@@ -417,10 +417,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          log.fine("instance #" + instanceCounter + " created");
       }
    }
-   
+
    /**
     * Initializes the plugin
-    * 
+    *
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,
     *      org.xmlBlaster.util.plugin.PluginInfo)
     */
@@ -501,13 +501,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       this.isActive = true;
 
       registerEventTypes(this.eventTypes);
-      
+
       log.info("Configured to send core events of type '" + this.eventTypes.trim()
             + "' to '" + destLogStr.toString() + "'");
    } // init()
 
    /**
-    * Find out which events to listen. 
+    * Find out which events to listen.
     * @param eventTypes A commas seperated list of supported events, e.g. <code>logging/severe/*,logging/warning/*</code>
     */
    private void registerEventTypes(String eventTypes) throws XmlBlasterException {
@@ -515,7 +515,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       for (int i = 0; i < eventTypeArr.length; i++) {
          String event = eventTypeArr[i].trim();
          if (event.length() < 1) continue; // Allow ',' at end
-         
+
          try {
             // "logging/severe/*"
             // TODO: support specific channels as "logging/severe/*" -> "logging/severe/core"
@@ -541,11 +541,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                if (this.runlevelSet == null) this.runlevelSet = new TreeSet();
                this.runlevelSet.add(event);
             }
-            else if (event.endsWith("/event/callbackState") || event.endsWith("/event/callbackAlive") || event.endsWith("/event/callbackPolling") || event.endsWith("/event/callbackDead")) {
-               // "client/joe/session/1/event/callbackState"
+            else if (isCallbackStateEvent(event)) {
+            //else if (event.endsWith("/event/callbackState") || event.endsWith("/event/callbackAlive") || event.endsWith("/event/callbackPolling") || event.endsWith("/event/callbackDead")) {
+               // OK: "client/joe/session/1/event/callbackState"
                // Not yet supported: "client/joe/session/1/event/callbackAlive", "client/joe/session/1/event/callbackPolling"
                int index = event.lastIndexOf("/event/");
                String name = event.substring(0, index);
+               SessionName sessionName = new SessionName(this.engineGlob, name);
                this.requestBroker.getAuthenticate().addClientListener(this);
                if (this.callbackSessionStateSet == null) this.callbackSessionStateSet = new TreeSet();
                if (event.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP+"*"+ContextNode.SEP) ||
@@ -554,10 +556,29 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   if (this.pendingCallbackSessionInfoSet == null) this.pendingCallbackSessionInfoSet = new TreeSet();
                   this.pendingCallbackSessionInfoSet.add(name);
                   this.callbackSessionStateSet.add(name);
+                  SubjectInfo[] subs = null;
+                  log.fine("Register existing wildcard callback session state event = " + event);
+                  if (event.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP+"*"+ContextNode.SEP) &&
+                		  !event.endsWith(ContextNode.SESSION_MARKER_TAG+ContextNode.SEP+"*"+"/event/callbackState")) {
+	                  subs = this.requestBroker.getAuthenticate().getSubjectInfoArr();
+	                  for (int sj=0; sj<subs.length; sj++) {
+	                	  SubjectInfo subjectInfo = subs[sj];
+	                	  if (!wildcardMatch(sessionName.getLoginName(), subjectInfo.getLoginName()))
+                			  continue;
+	                	  SessionInfo[] ses = subjectInfo.getSessions();
+	                	  for (int se=0; se<ses.length; se++) {
+	                		  if (!wildcardMatch(sessionName.getPublicSessionId(), ses[se].getPublicSessionId()))
+	                			  continue;
+	                		  DispatchManager mgr = ses[se].getDispatchManager();
+	                          if (mgr != null) {
+	                              mgr.addConnectionStatusListener(this);
+	                           }
+	                	  }
+	                  }
+                  }
                }
                else {
                   log.fine("Register callback session state event = " + event);
-                  SessionName sessionName = new SessionName(this.engineGlob, name);
                   SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
                   DispatchManager mgr = null;
                   if (sessionInfo != null)
@@ -626,7 +647,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                         catch (XmlBlasterException e) {
                            e.printStackTrace();
                         }
-                       
+
                      }
                    }, initialInterval, event);
                }
@@ -654,11 +675,32 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    public static boolean isQueueEvent(String txt) {
       return matchesRegex(".*/queue/.*/event/threshold.*", txt);
    }
-   
+
    public static boolean isPersistenceEvent(String txt) {
       return matchesRegex(".*/persistence/.*/event/threshold.*", txt);
    }
-   
+
+   public static boolean isCallbackStateEvent(String txt) {
+	   return matchesRegex("client/.*/session/.*/event/callbackState", txt);
+   }
+
+	public final boolean isWildcard(String pattern) {
+		return "*".equals(pattern);
+	}
+
+	public final boolean wildcardMatch(String pattern, String name) {
+		if ("*".equals(pattern))
+			return true;
+		return pattern.equals(name);
+	}
+
+	/** SessionName.java parsed "client/joe/session/*" to pubSessionId=Long.MIN_VALUE */
+	public final boolean wildcardMatch(long pattern, long pubSessionId) {
+		if (pattern == Long.MIN_VALUE)
+			return true;
+		return pattern == pubSessionId;
+	}
+
    private static boolean matchesRegex(String pattern, String txt) {
       try {
          RE regex = new RE(pattern, RE.REG_ICASE);
@@ -669,11 +711,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return false;
       }
    }
-   
+
    /**
     * Called when a client sends his remote properties, for example client side errors.
-    * eventType == client/* /session/* /event/remoteProperties 
-    * Enforced by I_RemotePropertiesListener 
+    * eventType == client/* /session/* /event/remoteProperties
+    * Enforced by I_RemotePropertiesListener
     */
    public void update(SessionInfo sessionInfo, Map remoteProperties) {
       log.fine("Received new remote properties from client " + sessionInfo.getId());
@@ -693,7 +735,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             }
          }
       }
-      
+
       try {
          String summary = "Remote properties change for client " + sessionName.getAbsoluteName();
          String description = summary;
@@ -706,7 +748,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
                     eventType, errorCode, sessionName);
@@ -718,11 +760,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       } catch (Throwable e) {
          e.printStackTrace();
       }
-      
+
    }
-   
+
    /**
-    * Send a heartbeat message/notification. 
+    * Send a heartbeat message/notification.
     * Called by timeout or by manual trigger (e.g. over jconsole)
     * @param eventType
     */
@@ -734,17 +776,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
          String description = "Heartbeat event from " + contextNode.getAbsoluteName() + ", runlevel=" + RunlevelManager.toRunlevelStr(rl) + " (" + rl + ")";
          SessionName sessionName = null;
-   
+
          if (this.smtpDestinationHelper != null) {
             // Ignores contentTemplate and forces the XML as last argument
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             // Uses XML as message content
             sendMessage(summary, description, eventType, errorCode, sessionName);
          }
-   
+
          if (this.jmxDestinationHelper != null) {
             sendJmxNotification(summary, description, eventType, null, false);
          }
@@ -761,10 +803,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       newHeartbeatNotification(eventType);
       return "Triggered event of type '" + eventType + "'";
    }
-   
+
    /**
-    * Create an XML xmlBlaster dump which contains the most important status informations. 
-    * Follows the admin.commands markup (without the root tag &lt;xmlBlaster> 
+    * Create an XML xmlBlaster dump which contains the most important status informations.
+    * Follows the admin.commands markup (without the root tag &lt;xmlBlaster>
     * @param g The global of the running server instance
     * @return The XML dump
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">The admin.commands requirement</a>
@@ -834,9 +876,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       //buf.append("\n").append("</xmlBlaster>");
       return buf.toString();
    }
-   
+
    /**
-    * Initialize email sending. 
+    * Initialize email sending.
     * @param destination The configuration string, a comma separated list of key/value properties, e.g.
     * <code>mail.smtp.from=xmlBlaster@localhost,mail.smtp.to=demo@localhost,mail.collectMillis=10000</code>
     * @throws XmlBlasterException
@@ -853,7 +895,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
    /**
     * Replace some $_{} tokens.
-    * 
+    *
     * @param str The string to check and replace
     * @param summary The value for a $_{summary}, can be null
     * @param description The value for a $_{description}, can be null
@@ -913,22 +955,22 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
    /**
     * Shutdown the plugin
-    * 
+    *
     * @see org.xmlBlaster.util.plugin.I_Plugin#shutdown()
     */
    public void shutdown() throws XmlBlasterException {
       if (this.isShutdown) return;
-      
+
       // TODO: Check if we unregister everything!
       // TODO: Protect each call with catch Throwable
-      
+
       if (this.loggingSet != null)
          this.loggingSet = null;
-      
+
       XbNotifyHandler hh = XbNotifyHandler.instance();
       hh.unregister(Level.WARNING.intValue(), this);
       hh.unregister(Level.SEVERE.intValue(), this);
-      
+
       if (this.engineGlob != null && this.mbeanHandle != null)
          this.engineGlob.unregisterMBean(this.mbeanHandle);
 
@@ -937,7 +979,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.engineGlob != null) {
          this.engineGlob.getRunlevelManager().removeRunlevelListener(this);
       }
-      
+
       if (this.clientSet != null)
          this.clientSet = null;
       if (this.requestBroker != null)
@@ -951,17 +993,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          this.unSubscribeSet = null;
       */
       this.requestBroker.removeSubscriptionListener(this);
-      
+
       if (this.topicSet != null)
          this.topicSet = null;
       this.engineGlob.getTopicAccessor().removeTopicListener(this);
-      
+
       this.isShutdown = true;
    }
 
    /**
     * TODO: Put into engine.Global and util.Global (see EmailExecutor.java)
-    * 
+    *
     * @return
     * @throws XmlBlasterException
     */
@@ -980,7 +1022,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
    /**
     * Redirect logging.
-    * 
+    *
     * @see org.xmlBlaster.util.log.I_LogListener#log(LogRecord)
     */
    public void log(LogRecord record) {
@@ -998,19 +1040,19 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (!this.loggingSet.contains(foundEvent))
          return;
       // How to extract the Logger name like "core"?
-      
+
       try {
          if (source == null) source = "";
          String description = (str == null) ? "" : str;
 
-         String summary = 
+         String summary =
              "[" + new java.sql.Timestamp(record.getMillis()).toString()
            + " " + level.toString()
            + " " + Thread.currentThread().getName()
            + " " + source + "]";
 
          String eventType = foundEvent;
-         
+
          // extract errorCode e.g. "... errorCode=communication.noConnection bla bla..."
          String errorCode=null;
          try {
@@ -1027,7 +1069,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, errorCode, false);
          }
-   
+
          /*
          if (this.publishDestinationHelper != null) {
             if (Logger.LOG_WARN == level) {
@@ -1052,8 +1094,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    }
 
    /**
-    * The xmlBlaster-JMX notification data sink. 
-    * Sends a JMX notification with the current event occurred. 
+    * The xmlBlaster-JMX notification data sink.
+    * Sends a JMX notification with the current event occurred.
     * <p>
     * Open <code>jconsole</code> and from the menue
     * 'MBeans->org.xmlBlaster->node->xxx->service->EventPlugin[yyy]',
@@ -1083,8 +1125,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    }
 
    /**
-    * The xmlBlaster-message data sink. 
-    * Publishes a message with the current event occurred. 
+    * The xmlBlaster-message data sink.
+    * Publishes a message with the current event occurred.
     * @param useEventTypeAsContent TODO
     * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
     */
@@ -1105,7 +1147,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    }
 
    /**
-    * Sending email as configured with <code>destination.smtp</code>. 
+    * Sending email as configured with <code>destination.smtp</code>.
     * @param summary The email summary line to use, it is injected to the template as $_{summary}
     * @param description The event description to send, it is injected as $_{description}
     * @param eventType For example "logging/severe/*"
@@ -1117,10 +1159,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       try {
          if (this.smtpDestinationHelper == null) return;
          if (!this.isActive) return;
-   
+
          if (summary == null) summary = "";
          if (description == null) description = "";
-         
+
          if (forceSending) {
             EmailData emailData = this.smtpDestinationHelper.createEmailData();
             emailData.setSubject(replaceTokens(
@@ -1130,18 +1172,18 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
             return;
          }
-   
+
          synchronized(this.smtpDestinationMonitor) {
             // Build the email, if timer is active append new logging to the content of the existing mail ...
             EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
             emailData.setSubject(replaceTokens(
                   this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
             String old = (emailData.getContent().length() == 0) ? "" :
-                  emailData.getContent() + this.smtpDestinationHelper.contentSeparator;  
+                  emailData.getContent() + this.smtpDestinationHelper.contentSeparator;
             emailData.setContent(old
                   + replaceTokens(
                         this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
-            
+
             // If no timer was active send immeditately (usually the first email)
             if (this.smtpTimeoutHandle == null) {
                try {
@@ -1158,8 +1200,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                this.currentEmailData = emailData;
                return;
             }
-            
-            // Now span timer, other emails are collected until this timer elapses 
+
+            // Now span timer, other emails are collected until this timer elapses
             if (this.smtpDestinationHelper.collectIntervall > 0) {
                this.smtpTimeoutHandle = this.smtpTimeout.addTimeoutListener(new I_Timeout() {
                   public void timeout(Object userData) {
@@ -1184,7 +1226,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          e.printStackTrace();
       }
    }
-   
+
    /* (non-Javadoc)
     * @see org.xmlBlaster.engine.runlevel.I_RunlevelListener#getName()
     */
@@ -1226,13 +1268,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             description = "xmlBlaster shutdown runlevel from " + RunlevelManager.toRunlevelStr(from) + " to " + RunlevelManager.toRunlevelStr(to);
             eventType = foundEvent;
          }
-         
+
          if (eventType == null) return;
-   
+
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             try {
                sendMessage(summary, description, eventType, null, null);
@@ -1249,8 +1291,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
-   
-   
+
+
    /**
     * Enforced by I_EventDispatcher
     * @param summary
@@ -1261,7 +1303,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             try {
                sendMessage(summary, description, eventType, null, null);
@@ -1277,7 +1319,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          e.printStackTrace();
       }
    }
-   
+
    /* (non-Javadoc)
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionAdded(org.xmlBlaster.authentication.ClientEvent)
     */
@@ -1318,9 +1360,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             }
          }
       }
-      
+
       if (this.clientSet == null) return;
-      
+
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
       String relativeName = sessionName.getRelativeName();
@@ -1355,7 +1397,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
                   eventType, errorCode, sessionName);
@@ -1382,7 +1424,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                boolean isNew = this.pendingCallbackSessionInfoSet.add(name);
                if (!isNew)
                   System.err.println("EventPlugin.sessionPreRemoved: Unexpected occurrence of " + name);
-               
+
                // Remove the listener for now
                SessionName sessionName = new SessionName(this.engineGlob, name);
                SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
@@ -1410,7 +1452,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       // PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
 
       if (this.clientSet == null) return;
-      
+
       SessionInfo sessionInfo = clientEvent.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
       String relativeName = sessionName.getRelativeName();
@@ -1432,7 +1474,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             }
          }
       }
-      
+
       try {
          String summary = "Logout of client " + sessionName.getAbsoluteName();
          String description = summary;
@@ -1442,7 +1484,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
                     eventType, errorCode, sessionName);
@@ -1471,7 +1513,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    }
 
    /**
-    * Check string addresses if they have valid email syntax. 
+    * Check string addresses if they have valid email syntax.
     * @param address Can be a comma separated list of email addresses
     * @throws XmlBlasterException If one of the addresses has invalid syntax
     */
@@ -1487,7 +1529,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
       }
    }
-   
+
    /**
     * JMX
     */
@@ -1500,7 +1542,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             return "No sending of emails configured";
       }
    }
-   
+
    /**
     * JMX
     */
@@ -1521,7 +1563,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          return ret;
       }
    }
-   
+
    /**
     * JMX
     */
@@ -1540,17 +1582,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   this.smtpTimeoutHandle = this.smtpTimeout.refreshTimeoutListener(this.smtpTimeoutHandle, 0);
                }
                catch (XmlBlasterException e) {
-                  throw new IllegalArgumentException(e.getMessage()); 
+                  throw new IllegalArgumentException(e.getMessage());
                }
                return "Send email from '" + this.smtpDestinationHelper.from + "' to '" + this.smtpDestinationHelper.to + "'";
             }
          }
       }
-      return (this.smtpDestinationHelper == null) ? 
+      return (this.smtpDestinationHelper == null) ?
               "No sending of emails configured" :
                  "Currently there is no pending email to send";
    }
-   
+
    /* (non-Javadoc)
     * @see org.xmlBlaster.util.admin.I_AdminService#activate()
     */
@@ -1664,10 +1706,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
       String oid = subscriptionInfo.getKeyOid();
-      
+
       // "/event/subscribe"
       String event = ContextNode.SEP + "event" + ContextNode.SEP + "subscribe";
-      
+
       // "topic/hello/event/subscribe"
       String foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + oid + event;
       boolean found = true;
@@ -1694,9 +1736,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             }
          }
       }
-      
+
       try {
-         String summary = "New subscription of client " 
+         String summary = "New subscription of client "
              + sessionInfo.getSessionName().getAbsoluteName()
              + " on topic " + oid;
          String description = subscriptionInfo.toXml();
@@ -1706,7 +1748,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
@@ -1744,7 +1786,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       // "/event/unSubscribe"
       String event = ContextNode.SEP + "event" + ContextNode.SEP + "unSubscribe";
-      
+
       // "topic/hello/event/unSubscribe"
       String foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + oid + event;
       boolean found = true;
@@ -1771,9 +1813,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             }
          }
       }
-      
+
       try {
-         String summary = "unSubscribe of client " 
+         String summary = "unSubscribe of client "
              + sessionInfo.getSessionName().getAbsoluteName()
              + " on topic " + oid;
          String description = subscriptionInfo.toXml();
@@ -1783,7 +1825,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
@@ -1831,11 +1873,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       if (this.topicSet == null) return;
 
       TopicHandler topicHandler = topicEvent.getTopicHandler();
-      
+
       boolean newTopic = !topicHandler.isDead(); // UNCONFIGURED is treated as alive
       // "/event/alive", "/event/dead"
       String event = ContextNode.SEP + "event" + ContextNode.SEP + ((newTopic) ? "alive" : "dead");
-      
+
       // "topic/hello/event/alive"
       String foundEvent = ContextNode.TOPIC_MARKER_TAG + ContextNode.SEP + topicHandler.getId() + event;
       if (!this.topicSet.contains(foundEvent)) {
@@ -1844,7 +1886,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             return;
          }
       }
-      
+
       try {
          String summary = (newTopic) ? ("Creating new topic " + topicHandler.getId())
                           : ("Destroying topic " + topicHandler.getId());
@@ -1855,7 +1897,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             try {
                MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
@@ -1877,7 +1919,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    }
 
    /* (non-Javadoc)
-    * Needed so we can put this instance into a Set (to register for TopicListener). 
+    * Needed so we can put this instance into a Set (to register for TopicListener).
     * @see java.lang.Comparable#compareTo(java.lang.Object)
     */
    public int compareTo(Object obj) {
@@ -1898,7 +1940,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    public int getInstanceCounter() {
       return this.instanceCounter;
    }
-   
+
    protected void callbackStateChange(DispatchManager dispatchManager, ConnectionStateEnum oldState, ConnectionStateEnum newState) {
       if (this.callbackSessionStateSet == null) return;
 
@@ -1923,7 +1965,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
       }
       */
-      
+
       // "/event/callbackState"
       String event = ContextNode.SEP + "event" + ContextNode.SEP + "callbackState";
       // "client/joe/session/1/event/callbackState"
@@ -1944,18 +1986,18 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
       }
       foundEvent += event;
-      
+
       try {
-         String summary = "Callback state has changed to " 
-             + newState.toString() + " for client " 
+         String summary = "Callback state has changed to "
+             + newState.toString() + " for client "
              + sessionName.getAbsoluteName();
-         String description = (oldState.equals(newState))? 
+         String description = (oldState.equals(newState))?
                ("Callback has state changed"
-               + " to "+ newState.toString() + " for client " 
+               + " to "+ newState.toString() + " for client "
                + sessionName.getAbsoluteName())
                :
                ("Callback state has changed from " + oldState.toString()
-               + " to "+ newState.toString() + " for client " 
+               + " to "+ newState.toString() + " for client "
                + sessionName.getAbsoluteName());
          String eventType = foundEvent + " " + newState.toString();
          String errorCode = null;
@@ -1963,7 +2005,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.smtpDestinationHelper != null) {
             sendEmail(summary, description, eventType, null, false);
          }
-   
+
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description, eventType, errorCode, sessionName);
          }
