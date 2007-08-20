@@ -262,6 +262,15 @@ public class Constants {
    public static final String TOXML_ENCLOSINGTAG = "enclosingTag";
    public static final String TOXML_MAXCONTENTLEN = "maxContentLen";
 
+   public static final String EVENTPLUGIN_PROP_SUMMARY = "_summary";
+   public static final String EVENTPLUGIN_PROP_DESCRIPTION = "_description";
+   public static final String EVENTPLUGIN_PROP_EVENTTYPE = "_eventType";
+   public static final String EVENTPLUGIN_PROP_ERRORCODE = "_errorCode";
+   public static final String EVENTPLUGIN_PROP_PUBSESSIONID = "_publicSessionId";
+   public static final String EVENTPLUGIN_PROP_SUBJECTID = "_subjectId";
+   public static final String EVENTPLUGIN_PROP_ABSOLUTENAME = "_absoluteName";
+   public static final String EVENTPLUGIN_PROP_NODEID = "_nodeId";
+
    /** Stuff used for Streaming */
 
    /** This is the key of a client property telling the number of
