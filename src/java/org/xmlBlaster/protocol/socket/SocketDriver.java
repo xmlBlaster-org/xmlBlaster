@@ -113,9 +113,9 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    /** My JMX registration */
    protected Object mbeanHandle;
    protected ContextNode contextNode;
-   
+
    protected boolean isShutdown;
-   
+
    void addClient(String sessionId, HandleClient h) {
       synchronized(handleClientMap) {
          handleClientMap.put(sessionId, h);
@@ -127,7 +127,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          return (HandleClient) handleClientMap.get(sessionId);
       }
    }
-   
+
    public I_PluginConfig getPluginConfig() {
       return this.pluginInfo;
    }
@@ -283,6 +283,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
       this.glob = glob;
+      this.ME = getType();
       org.xmlBlaster.engine.ServerScope engineGlob = (org.xmlBlaster.engine.ServerScope)glob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
@@ -360,7 +361,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       throws XmlBlasterException
    {
       this.glob = glob;
-      this.ME = "SocketDriver" + this.glob.getLogPrefixDashed();
+      this.ME = "SocketDriver" + this.glob.getLogPrefixDashed() + "-" + getType();
 
       if (log.isLoggable(Level.FINER)) log.finer("Entering init()");
       this.addressServer = addressServer;
@@ -402,7 +403,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          try { Thread.sleep(10); } catch( InterruptedException i) {}
       }
    }
-   
+
    public boolean isActive() {
       return running == true;
    }
@@ -517,20 +518,21 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       try {
          int backlog = this.addressServer.getEnv("backlog", 50).getValue(); // queue for max 50 incoming connection request
          if (log.isLoggable(Level.FINE)) log.fine(addressServer.getEnvLookupKey("backlog") + "=" + backlog);
-         
-         
+
+
          if (isSSL()) {
              listen = this.socketUrl.createServerSocketSSL(backlog, this.addressServer);
          }
          else {
              listen = new ServerSocket(this.socketUrl.getPort(), backlog, this.socketUrl.getInetAddress());
          }
-         
+
          log.info("Started successfully " + getType() + " driver on '" + this.socketUrl.getUrl() + "'");
          listenerReady = true;
          while (running) {
             Socket accept = listen.accept();
-            //log.trace(ME, "New incoming request on port=" + this.socketUrl.getPort() + " ...");
+            if (log.isLoggable(Level.INFO))
+            	log.info(ME + ": New incoming request on " + this.socketUrl.getUrl() + " from " + accept.getInetAddress() + ":" + accept.getPort());
             if (!running) {
                log.info("Closing server '" + this.socketUrl.getUrl() + "'");
                break;
@@ -580,7 +582,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
       }
 
       this.glob.unregisterMBean(this.mbeanHandle);
-      
+
       this.isShutdown = true;
 
       log.info("Socket driver '" + getType() + "' stopped, all resources released.");
