@@ -19,10 +19,10 @@ import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * StringPairTokenizer is a utility class used to parse a string giving
- * back a map containing pairs of key/value strings. 
+ * back a map containing pairs of key/value strings.
  * <br />
  * The method parseLine respects quoted '"' tokens and ignores the separator inside the quotes.
- * 
+ *
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:mr@marcelruff.info">Marcel Ruff</a>
  */
@@ -64,26 +64,26 @@ public class StringPairTokenizer {
       nextLines[0] = nextLine;
       return parseLine(nextLines, separator, quotechar, trimEmpty, preserveInsideQuoteChar);
    }
-   
+
    /**
-    * Split string to tokens and respect quotes. 
-    * 
-    *<pre>  
+    * Split string to tokens and respect quotes.
+    *
+    *<pre>
     * /node/heron/client/\"joe/the/great\"
-    * 
+    *
     *  'node'
     *  'heron'
     *  'client'
     *  'joe/the/great'
-    *</pre>  
+    *</pre>
     *
     * Thanks to http://opencsv.sourceforge.net/ (under Apache license)
-    * 
+    *
     * @param nextLines An array of lines, followup lines will only be parsed if an open quotechar exists
     * @param separator Defaults to StringPairTokenizer.DEFAULT_SEPARATOR=','
     * @param quotechar Defaults to StringPairTokenizer.DEFAULT_QUOTE_CHARACTER='"'
     * @param trimEmpty if true removes silently empy tokens
-    * @param preserveInsideQuoteChar true: Preserve the  inside quotes of "bla, bla, "blu blu", bli"  
+    * @param preserveInsideQuoteChar true: Preserve the  inside quotes of "bla, bla, "blu blu", bli"
     * @return Never null, if nextLines is null or empty we return an empty array
     */
    public static String[] parseLine(String[] nextLines, char separator,
@@ -109,11 +109,12 @@ public class StringPairTokenizer {
                if (preserveInsideQuoteChar && i>0 && i<(nextLine.length()-1))
                   sb.append(c);
             } else if (c == separator && !inQuotes) {
-               if (trimEmpty && sb.toString().trim().length() == 0) {
+               String tmp = sb.toString();
+               if (trimEmpty && tmp.trim().length() == 0) {
                   ;
                }
                else {
-                  tokensOnThisLine.add(sb.toString());
+                  tokensOnThisLine.add(tmp);
                }
                sb = new StringBuffer(); // start work on next token
             } else {
@@ -121,17 +122,22 @@ public class StringPairTokenizer {
             }
          }
       } while (inQuotes);
-      tokensOnThisLine.add(sb.toString());
+      String tmp = sb.toString();
+      if (trimEmpty && tmp.trim().length() == 0) {
+         ;
+      } else {
+         tokensOnThisLine.add(tmp);
+      }
       return (String[]) tokensOnThisLine.toArray(new String[0]);
    }
-   
+
    /**
-    * Split string to tokens and respect quotes, then parse key/values into the returned map. 
-    *  
+    * Split string to tokens and respect quotes, then parse key/values into the returned map.
+    *
     * If a value is missing then a null object will be put into the map as value.
     * The map returns pairs 'String,ClientProperty' if wantClientProperties is true,
     * otherwise it returns 'String,String' pairs.
-    *   
+    *
     * @param nextLines e.g.
     * <code>String[] nextLines = { "org.xmlBlaster.protocol.soap.SoapDriver,\"classpath=xerces.jar:soap.jar,all\",MAXSIZE=100,a=10,\"b=", "20\",c=30" };</code>
     *                  Followup lines will only be parsed if an open quotechar exists
@@ -161,8 +167,8 @@ public class StringPairTokenizer {
          else {
             String key = tok.substring(0,pos).trim();
             String value = tok.substring(pos+1);
-            if (trimValue) value = value.trim(); 
-            if (wantClientProperties) 
+            if (trimValue) value = value.trim();
+            if (wantClientProperties)
                ret.put(key, new ClientProperty(key, null, null, value));
             else
                ret.put(key, value);
@@ -180,9 +186,9 @@ public class StringPairTokenizer {
       nextLines[0] = nextLine;
       return parseLine(nextLines, separator, quotechar, innerSeparator, trimEmpty, wantClientProperties, true);
    }
-   
+
    /**
-    * Parsing for example >org.xmlBlaster.protocol.soap.SoapDriver,"classpath=xerces.jar:soap.jar,all",MAXSIZE=100,a=10<. 
+    * Parsing for example >org.xmlBlaster.protocol.soap.SoapDriver,"classpath=xerces.jar:soap.jar,all",MAXSIZE=100,a=10<.
     * <p>
     * Using default separator chars and quote chars:
     *  <code>return parseLine(nextLines, DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHARACTER, DEFAULT_INNER_SEPARATOR, true, false, false);</code>
@@ -196,25 +202,25 @@ public class StringPairTokenizer {
    }
 
    /*
-    * Split a string (similar to StringTokenizer) but respect escape quotes. 
+    * Split a string (similar to StringTokenizer) but respect escape quotes.
     * <br />
-    *<pre>  
+    *<pre>
     * String[] arr = split("now,DATE,\"dd,MM,yyyy\"", ",", "\"");
     *  now
     *  DATE
     *  "dd,MM,yyyy"
-    *</pre>  
-    *<pre>  
+    *</pre>
+    *<pre>
     *  ,node,\"h,,eron\",client,\"X,\,[],X,X\"
     *    'node'
     *    '"h,,eron"'
     *    'client'
     *    '"X,,[],X,X"'
-    *</pre>  
-    *  
+    *</pre>
+    *
     *  Caution: I don't think this is very stable
     *  We should change to something like http://opencsv.sourceforge.net/
-    *  
+    *
     *  @see http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm#FileFormat
     *  @see http://www.jguru.com/faq/view.jsp?EID=809266
    public static String[] split(String field, String separator, String quotechar) {
@@ -228,7 +234,7 @@ public class StringPairTokenizer {
       String regex = sb.toString();
       while (field.startsWith(separator))
          field = field.substring(1); // hack
-      
+
       //  DOES NOT WORK STABLE, for exampel '/node/heron/client/joe' fails
       //  whereas '/node/heron/client/\"joe/xx\"' works
       //String regex = "(?:[^\",]+?(?=,))|(\".+\")";
@@ -237,7 +243,7 @@ public class StringPairTokenizer {
 
       Pattern pat = Pattern.compile(regex);
       Matcher mat = pat.matcher(field);
-   
+
       ArrayList list = new ArrayList();
       while (mat.find()) {
          String s = mat.group();
@@ -249,15 +255,15 @@ public class StringPairTokenizer {
 
          /*
         public static final char ESCAPE_CHARACTER = '\\';
-        
+
         public static final char DEFAULT_SEPARATOR = ',';
-        
+
         public static final char DEFAULT_QUOTE_CHARACTER = '"';
          * Writes the next line to the file.
-         * 
+         *
          * @param nextLine a string array with each comma-separated element as a separate
          *         entry.
-         * 
+         *
          * @throws IOException
          *             if bad things happen during the write
         public void writeNext(String[] nextLine) throws IOException {
@@ -288,7 +294,7 @@ public class StringPairTokenizer {
 
 
    /**
-    * Convert a separator based string to an array of strings. 
+    * Convert a separator based string to an array of strings.
     * <p />
     * Example:<br />
     * NameList=Josua,David,Ken,Abel<br />
@@ -318,7 +324,7 @@ public class StringPairTokenizer {
     }
 
     /**
-     * Dumps the given map to a human readable string. 
+     * Dumps the given map to a human readable string.
      * @param map
      * @return e.g. "key1=15,name=joe"
      */
@@ -343,8 +349,8 @@ public class StringPairTokenizer {
    /**
     * If a value is missing then a null object will be put into the map as value.
     * The map returns pairs 'String,ClientProperty' if wantClientProperties is true,
-    * otherwise it returns 'String,String' pairs. 
-    *   
+    * otherwise it returns 'String,String' pairs.
+    *
     * @param rawString e.g. "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
     * @param outerToken is for example ";" or ","
     * @param innterToken is for example "=" or " "
@@ -362,8 +368,8 @@ public class StringPairTokenizer {
          }
          else {
             String key = tok.substring(0,pos).trim();
-            String value = tok.substring(pos+1).trim(); 
-            if (wantClientProperties) 
+            String value = tok.substring(pos+1).trim();
+            if (wantClientProperties)
                ret.put(key, new ClientProperty(key, null, null, value));
             else
                ret.put(key, value);
@@ -395,13 +401,13 @@ public class StringPairTokenizer {
    public static Map parseToStringStringPairs(String rawString, String outerToken, String innerToken) {
       return parseStringProperties(rawString, outerToken, innerToken, false);
    }
-   
+
    // java org.xmlBlaster.util.StringPairTokenizer
    public static void main(String[] args) {
       String test = (args.length > 0) ? args[0] : "/node/heron/client/\"joe/the/great\"";
       String separator = (args.length > 1) ? args[1] : "/";
       String quotechar = (args.length > 2) ? args[2] : "\"";
-      
+
       System.out.println("From '" + test + "' we get");
       /*
       {
