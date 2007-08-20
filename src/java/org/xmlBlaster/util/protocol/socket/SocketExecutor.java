@@ -83,7 +83,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
 
       this.isNullTerminated = addressConfig.getEnv("isNullTerminated", false).getValue();
       this.maxChunkSize = addressConfig.getEnv("maxChunkSize", MAX_CHUNKSIZE_DEFAULT).getValue();
-      log.info("Max chunk size is '" + this.maxChunkSize + "'");
+      if (log.isLoggable(Level.FINE)) log.fine("Max chunk size is '" + this.maxChunkSize + "'");
       if (isCompressZlibStream()) { // Statically configured for server side protocol plugin
          this.iStream = new ZFlushInputStream(iStream);
          this.oStream =  new ZFlushOutputStream(oStream);
