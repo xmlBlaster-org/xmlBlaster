@@ -48,7 +48,7 @@
       and deliver them directly to the client with whichever protocol the client wished (like CORBA or XmlRpc).
       </p>
       <p>
-      As the client has requested to use the plugin, all messages from the callback queue are
+      As the client has requested to use the plugin in his connectQos, all messages from the callback queue are
       intercepted by the plugin and inspected. Depending on the configuration of the plugin
       the messages are handled as requested. The possible actions are <i>send</i>, <i>queue</i> and
       <i>destroy</i> each of them can have the additional action <i>notifySender</i>.
@@ -160,9 +160,34 @@
       below.
       </p>
       <p>
-      In a future release there will be support to specify the wanted plugin in
-      the connect() QoS XML string.
+      In normal cases, the user will configure the plugin during login with the ConnectQos
+      the connect() QoS XML string (requirement <a href="interface.connect.html" target="others">interface.connect</a>):
       </p>
+<pre class="BORDER">
+   &lt;connect>
+     &lt;qos>
+       ...
+       &lt;queue relating='callback'>
+          &lt;callback ... <font color="red">dispatchPlugin='Priority,1.0'></font>
+         ...
+         &lt;/callback>
+       &lt;/queue>
+     &lt;/qos>
+  &lt;/connect>
+</pre>
+      <p>
+      or as a Java code fragment:
+      </p>
+<pre class="BORDER">
+  this.connectQos = new ConnectQos(glob, name, passwd);
+
+  CallbackAddress cbAddress = new CallbackAddress(glob);
+  cbAddress.setDelay(1000L);      // retry connecting every 4 sec
+  cbAddress.setRetries(-1);       // -1 == forever
+  cbAddress.setPingInterval(5000L); // ping every 4 seconds
+  cbAddress.setDispatchPlugin("Priority,1.0");  // Activate plugin for callback only
+  this.connectQos.addCallbackAddress(cbAddress);
+  </pre>
    </description>
 
    <example lang="Java" type="HTML">
