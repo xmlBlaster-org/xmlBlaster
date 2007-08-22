@@ -77,7 +77,7 @@ int main(int argc, const char* const* argv) {
    if (*exception.errorCode != '\0') {
       printf("[client] Caught exception during connect, errorCode=%s, message=%s\n",
              exception.errorCode, exception.message);
-      freeXmlBlasterConnectionUnparsed(xb);
+      freeXmlBlasterConnectionUnparsed(&xb);
       exit(1);
    }
 
@@ -87,7 +87,7 @@ int main(int argc, const char* const* argv) {
    if (*exception.errorCode != '\0') {
       printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s\n",
              exception.errorCode, exception.message);
-      freeXmlBlasterConnectionUnparsed(xb);
+      freeXmlBlasterConnectionUnparsed(&xb);
       exit(1);
    }
    if (msgUnitArr != (MsgUnitArr *)0 && msgUnitArr->len > 0) {
@@ -100,7 +100,7 @@ int main(int argc, const char* const* argv) {
    
    (void)xb->disconnect(xb, 0, &exception);
 
-   freeXmlBlasterConnectionUnparsed(xb);
+   freeXmlBlasterConnectionUnparsed(&xb);
    printf("[HelloWorld] Good bye.\n");
 #  if defined(WINCE)
       freeArgv(argv, argc);
