@@ -1232,8 +1232,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
    /**
     * Clears everything and removes the queue (i.e. frees the associated table)
+    * This method is not synchronized because of the callback in remove which must
+    * be outside the synchronized.
     */
-   synchronized public long clear() {
+   public long clear() {
       if (this.notifiedAboutAddOrRemove) {
          long numOfEntries = getNumOfEntries();
          while (true) {
