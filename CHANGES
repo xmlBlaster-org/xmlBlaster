@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn repository
 ==================================
+ o #16442 Fixed to avoid remote DNS hostname lookup if hostname given is raw IP
+          Added to avoid DNS localHostname lookup if localHostname given is raw IP
+
  o #16430 EventPlugin: Added missing support for wildcards in event type callbackState
           client/*/session/*/event/callbackState
 
