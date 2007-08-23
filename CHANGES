@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn repository
 ==================================
+ o #16444 removed synchronized in CacheQueueInterceptorPlugin.clear since it caused a deadlock
+          when clearing a callback queue and publishing messages at the same time
+
  o #16442 Fixed to avoid remote DNS hostname lookup if hostname given is raw IP
           Added to avoid DNS localHostname lookup if localHostname given is raw IP
 
