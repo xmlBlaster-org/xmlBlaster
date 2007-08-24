@@ -789,6 +789,9 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       log.info(getStorageId() + ": Change request of max"+loc+"=" + oldMax + ", to " + max + " ...");
 
       if (max < oldMax)
+         // Allow decreasing, not yet intense tested!!!
+         // And TopicHandler.allowedToReconfigureTopicAndFixWrongLimits() limits it currently! 
+         //; //return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", decreasing setMax"+loc+"(" + max + ") is not supported";
          return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", decreasing setMax"+loc+"(" + max + ") is not supported";
       else if (max == oldMax)
          return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", changing to setMax"+loc+"(" + max + ") are identical";
@@ -806,7 +809,9 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          else
             property.setMaxEntries(max);
       }
-      String tmpRet = getStorageId() + ": Successfully increased max"+loc+"=" + oldMax + " to " + max + ". This is a NOT persistent change and is lost on restart when the configuration of existing msgUnits are recovered from harddisk";
+      String word = (max < oldMax) ? "decreased" : "increased";
+
+      String tmpRet = getStorageId() + ": Successfully " + word + " max"+loc+"=" + oldMax + " to " + max + ". This is a NOT persistent change and is lost on restart when the configuration of existing msgUnits are recovered from harddisk";
       
       // persistent change
       try {
@@ -822,12 +827,12 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             pq.getData().getTopicProperty().setMsgUnitStoreProperty((MsgUnitStoreProperty)property);
             org.xmlBlaster.util.MsgUnit msgUnit = new org.xmlBlaster.util.MsgUnit(pk, "", pq);
             this.glob.getRequestBroker().publish(this.glob.getInternalSessionInfo(), msgUnit);
-            String resultStr = getStorageId() + ": Persistenty increased max"+loc+"=" + oldMax + " to " + max + ".";
+            String resultStr = getStorageId() + ": Persistenty " + word + " max"+loc+"=" + oldMax + " to " + max + ".";
             log.info(resultStr);
             return resultStr;
          }
          else {
-            String resultStr = tmpRet + "\nPersistent change failed as we couldn't determine the topic oid";
+            String resultStr = tmpRet + "\nPersistent change failed as we couldn't determine the topic oid of '" + this.storageId + "'";
             log.severe(resultStr);
             return resultStr;
          }
