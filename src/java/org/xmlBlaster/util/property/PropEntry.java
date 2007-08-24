@@ -42,6 +42,10 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
       return this.creationOrigin == CREATED_BY_DEFAULT;
    }
 
+   public final boolean isSet() {
+      return this.creationOrigin == CREATED_BY_SETTER;
+   }
+
    public void setCreationOrigin(int creationOrigin) {
       this.creationOrigin = creationOrigin;
    }

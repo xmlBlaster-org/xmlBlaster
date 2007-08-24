@@ -792,6 +792,23 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       return this.sessionQueue.getNumOfEntries();
    }
 
+   public final long getCbQueueBytes() {
+      if (this.sessionQueue == null) return 0L;
+      return this.sessionQueue.getNumOfBytes();
+   }
+
+   public final long getCbQueueBytesCache() {
+      I_Queue sq = this.sessionQueue;
+      if (sq == null) return 0L;
+      if (sq instanceof CacheQueueInterceptorPlugin) {
+         CacheQueueInterceptorPlugin cq = (CacheQueueInterceptorPlugin)sq;
+         I_Queue tq = cq.getTransientQueue();
+         if (tq != null) return tq.getNumOfBytes();
+         return 0L;
+      }
+      return -1L;
+   }
+   
    public final long getCbQueueNumMsgsCache() {
       I_Queue sq = this.sessionQueue;
       if (sq == null) return 0L;

@@ -371,6 +371,9 @@ public interface I_AdminNode extends I_AdminUsage {
    String dumpAllStacks();
    String dumpAllStacksToFile(String file);
    
+   String reportMemoryOverview();
+   String reportMemoryOverviewToFile(String file);
+   
    /**
     * Configure server with '-xmlBlaster/acceptWrongSenderAddress true' or "-xmlBlaster/acceptWrongSenderAddress/joe true".
     * @return true: We accept wrong sender address in PublishQos.getSender() (not myself)

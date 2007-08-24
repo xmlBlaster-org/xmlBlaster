@@ -260,6 +260,10 @@ public abstract class QueuePropertyBase implements Cloneable
       return this.maxEntries.getValue();
    }
 
+   public final PropLong getMaxEntriesProp() {
+      return this.maxEntries;
+   }
+
    /**
     * Max number of messages for this queue.
     * <br />
@@ -327,6 +331,10 @@ public abstract class QueuePropertyBase implements Cloneable
       return this.maxEntriesCache.getValue();
    }
 
+   public final PropLong getMaxEntriesCacheProp() {
+      return this.maxEntriesCache;
+   }
+
    /**
     * Max number of messages for the cache of this queue.
     * <br />
@@ -347,6 +355,10 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public final long getMaxBytes() {
       return this.maxBytes.getValue();
+   }
+
+   public final PropLong getMaxBytesProp() {
+      return this.maxBytes;
    }
 
    /**
@@ -372,6 +384,9 @@ public abstract class QueuePropertyBase implements Cloneable
       return this.maxBytesCache.getValue();
    }
 
+   public final PropLong getMaxBytesCacheProp() {
+      return this.maxBytesCache;
+   }
 
    /**
     * Gets the storeSwapLevel for the queue (only used on cache queues).

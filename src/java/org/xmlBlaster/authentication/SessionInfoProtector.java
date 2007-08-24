@@ -118,9 +118,17 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
       return this.sessionInfo.getCbQueueNumMsgs();
    }
 
+   public final long getCbQueueBytes() {
+      return this.sessionInfo.getCbQueueBytes();
+   }
+
    public final long getCbQueueNumMsgsCache() {
 	      return this.sessionInfo.getCbQueueNumMsgsCache();
 	   }
+
+   public final long getCbQueueBytesCache() {
+      return this.sessionInfo.getCbQueueBytesCache();
+   }
 
    public final long getCbQueueMaxMsgs() {
       return this.sessionInfo.getCbQueueMaxMsgs();

@@ -461,6 +461,11 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return false;
    }
 
+   /**
+    * Currently we support growing and shrinking, note that shrinking is not thoroughly tested. 
+    * @param msgQosData The new configuration, can be adjusted by this method if limits are reached
+    * @return true if the change is accepted
+    */
    private final boolean allowedToReconfigureTopicAndFixWrongLimits(MsgQosData msgQosData) {
       if (this.topicProperty == null)
          return true;
@@ -474,7 +479,6 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          log.warning("The msgUnitStoreProps are null, not reconfiguring anything");
          return false;
       }
-      HistoryQueueProperty historyProps = topicProps.getHistoryQueueProperty();
       
       MsgUnitStoreProperty currentMsgUnitStoreProps = this.topicProperty.getMsgUnitStoreProperty();
       long currentMaxBytes = currentMsgUnitStoreProps.getMaxBytes();
@@ -482,47 +486,51 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       long currentMaxEntries = currentMsgUnitStoreProps.getMaxEntries();
       long currentMaxEntriesCache = currentMsgUnitStoreProps.getMaxEntriesCache();
       StringBuffer report = new StringBuffer(1024);
-      if (currentMaxBytes > msgUnitStoreProps.getMaxBytes()) {
+      // msgUnitStoreProps.getMaxBytesProp().isSet() checks if the value is explicitely set by a client
+      if (msgUnitStoreProps.getMaxBytes() == 0 || !msgUnitStoreProps.getMaxBytesProp().isSet() && currentMaxBytes > msgUnitStoreProps.getMaxBytes()) {
          report.append("msgUnitStore: 'currentMaxBytes='" + currentMaxBytes + "' > than what publish proposed: '" + msgUnitStoreProps.getMaxBytes() + "' will leave it to '" + currentMaxBytes + "'\n");
          msgUnitStoreProps.setMaxBytes(currentMaxBytes);
       }
-      if (currentMaxBytesCache > msgUnitStoreProps.getMaxBytesCache()) {
+      if (msgUnitStoreProps.getMaxBytesCache() == 0 || !msgUnitStoreProps.getMaxBytesCacheProp().isSet() && currentMaxBytesCache > msgUnitStoreProps.getMaxBytesCache()) {
          report.append("msgUnitStore: 'currentMaxBytesCache='" + currentMaxBytesCache + "' > than what publish proposed: '" + msgUnitStoreProps.getMaxBytesCache() + "' will leave it to '" + currentMaxBytesCache + "'\n");
          msgUnitStoreProps.setMaxBytesCache(currentMaxBytesCache);
       }
-      if (currentMaxEntries > msgUnitStoreProps.getMaxEntries()) {
+      if (msgUnitStoreProps.getMaxEntries() == 0 || !msgUnitStoreProps.getMaxEntriesProp().isSet() && currentMaxEntries > msgUnitStoreProps.getMaxEntries()) {
          report.append("msgUnitStore: 'currentMaxEntries='" + currentMaxEntries + "' > than what publish proposed: '" + msgUnitStoreProps.getMaxEntries() + "' will leave it to '" + currentMaxEntries + "'\n");
          msgUnitStoreProps.setMaxEntries(currentMaxEntries);
       }
-      if (currentMaxEntriesCache > msgUnitStoreProps.getMaxEntriesCache()) {
+      if (msgUnitStoreProps.getMaxEntriesCache() == 0 || !msgUnitStoreProps.getMaxEntriesCacheProp().isSet() && currentMaxEntriesCache > msgUnitStoreProps.getMaxEntriesCache()) {
          report.append("msgUnitStore: 'currentMaxEntriesCache='" + currentMaxEntriesCache + "' > than what publish proposed: '" + msgUnitStoreProps.getMaxEntriesCache() + "' will leave it to '" + currentMaxEntriesCache + "'\n");
          msgUnitStoreProps.setMaxEntriesCache(currentMaxEntriesCache);
       }
+      log.info("new msgUnitStore Props: " + msgUnitStoreProps.toXml());
       
-      HistoryQueueProperty currentHistoryProps = this.topicProperty.getHistoryQueueProperty();
-      currentMaxBytes = currentHistoryProps.getMaxBytes();
-      currentMaxBytesCache = currentHistoryProps.getMaxBytesCache();
-      currentMaxEntries = currentHistoryProps.getMaxEntries();
-      currentMaxEntriesCache = currentHistoryProps.getMaxEntriesCache();
-      if (currentMaxBytes > historyProps.getMaxBytes()) {
-         report.append("history: 'currentMaxBytes='" + currentMaxBytes + "' > than what publish proposed: '" + historyProps.getMaxBytes() + "' will leave it to '" + currentMaxBytes + "'\n");
-         historyProps.setMaxBytes(currentMaxBytes);
-      }
-      if (currentMaxBytesCache > historyProps.getMaxBytesCache()) {
-         report.append("history: 'currentMaxBytesCache='" + currentMaxBytesCache + "' > than what publish proposed: '" + historyProps.getMaxBytesCache() + "' will leave it to '" + currentMaxBytesCache + "'\n");
-         historyProps.setMaxBytesCache(currentMaxBytesCache);
-      }
-      if (currentMaxEntries > historyProps.getMaxEntries()) {
-         report.append("history: 'currentMaxEntries='" + currentMaxEntries + "' > than what publish proposed: '" + historyProps.getMaxEntries() + "' will leave it to '" + currentMaxEntries + "'\n");
-         historyProps.setMaxBytes(currentMaxBytes);
-      }
-      if (currentMaxEntriesCache > historyProps.getMaxEntriesCache()) {
-         report.append("history: 'currentMaxEntriesCache='" + currentMaxEntriesCache + "' > than what publish proposed: '" + historyProps.getMaxEntriesCache() + "' will leave it to '" + currentMaxEntriesCache + "'\n");
-         historyProps.setMaxEntriesCache(currentMaxEntriesCache);
+      HistoryQueueProperty historyProps = topicProps.getHistoryQueueProperty();
+      if (historyProps != null) {
+         HistoryQueueProperty currentHistoryProps = this.topicProperty.getHistoryQueueProperty();
+         currentMaxBytes = currentHistoryProps.getMaxBytes();
+         currentMaxBytesCache = currentHistoryProps.getMaxBytesCache();
+         currentMaxEntries = currentHistoryProps.getMaxEntries();
+         currentMaxEntriesCache = currentHistoryProps.getMaxEntriesCache();
+         if (!historyProps.getMaxBytesProp().isSet() && currentMaxBytes > historyProps.getMaxBytes()) {
+            report.append("history: 'currentMaxBytes='" + currentMaxBytes + "' > than what publish proposed: '" + historyProps.getMaxBytes() + "' will leave it to '" + currentMaxBytes + "'\n");
+            historyProps.setMaxBytes(currentMaxBytes);
+         }
+         if (!historyProps.getMaxBytesCacheProp().isSet() && currentMaxBytesCache > historyProps.getMaxBytesCache()) {
+            report.append("history: 'currentMaxBytesCache='" + currentMaxBytesCache + "' > than what publish proposed: '" + historyProps.getMaxBytesCache() + "' will leave it to '" + currentMaxBytesCache + "'\n");
+            historyProps.setMaxBytesCache(currentMaxBytesCache);
+         }
+         if (!historyProps.getMaxEntriesProp().isSet() && currentMaxEntries > historyProps.getMaxEntries()) {
+            report.append("history: 'currentMaxEntries='" + currentMaxEntries + "' > than what publish proposed: '" + historyProps.getMaxEntries() + "' will leave it to '" + currentMaxEntries + "'\n");
+            historyProps.setMaxEntries(currentMaxEntries);
+         }
+         if (!historyProps.getMaxEntriesCacheProp().isSet() && currentMaxEntriesCache > historyProps.getMaxEntriesCache()) {
+            report.append("history: 'currentMaxEntriesCache='" + currentMaxEntriesCache + "' > than what publish proposed: '" + historyProps.getMaxEntriesCache() + "' will leave it to '" + currentMaxEntriesCache + "'\n");
+            historyProps.setMaxEntriesCache(currentMaxEntriesCache);
+         }
+         log.info("new history Props: " + historyProps.toXml());
       }
       log.info(report.toString());
-      log.info("new msgUnitStore Props: " + msgUnitStoreProps.toXml());
-      log.info("new history Props: " + historyProps.toXml());
       return true;
    }
    

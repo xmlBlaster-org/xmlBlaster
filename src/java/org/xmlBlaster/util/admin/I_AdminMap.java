@@ -43,7 +43,7 @@ public interface I_AdminMap extends I_AdminPlugin {
     */
    public String removeOldestEntry() throws Exception;
    /**
-    * Returns the number of elements in this queue.
+    * Returns the number of elements in this storage.
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporary not available) it will return -1.
@@ -51,11 +51,17 @@ public interface I_AdminMap extends I_AdminPlugin {
     */
    public long getNumOfEntries();
    /**
-    * Returns the number of elements having the persistent flag set in this queue.
+    * Returns the number of elements in the RAM part of this storage.
+    * If no cache map is used and there is no RAM storage beneath we return -1
+    * @return int the number of elements or -1 if not applicable
+    */
+   public long getNumOfCachedEntries();
+   /**
+    * Returns the number of elements having the persistent flag set in this storage.
     * If the implementation of this interface is not able to return the correct
     * number of entries (for example if the implementation must make a remote
     * call to a DB which is temporarly not available) it will return -1.
-    * @return int the number of elements currently in the queue
+    * @return int the number of elements currently in the store
     */
    public long getNumOfPersistentEntries();
    /**
@@ -88,6 +94,11 @@ public interface I_AdminMap extends I_AdminPlugin {
     * @return The number of elements currently in the storage
     */
    public long getNumOfBytes();
+   /**
+    * Returns the amount of bytes currently in the RAM part of the storage
+    * @return The number of elements currently in the storage or -1
+    */
+   public long getNumOfCachedBytes();
    /**
     * Returns the amount of bytes used by the persistent entries in the storage
     * If the implementation of this interface is not able to return the correct

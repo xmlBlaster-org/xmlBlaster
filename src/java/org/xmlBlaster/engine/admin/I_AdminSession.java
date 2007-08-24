@@ -114,10 +114,23 @@ public interface I_AdminSession extends ConnectQosDataMBean, I_AdminUsage {
    public long getOverallBytesWritten();
    /** How many messages are in this clients session callback queue */
    public long getCbQueueNumMsgs();
+   /**
+    * Number of bytes used by the callback queue.
+    * Note that this is the bytes occupied by the references (which point to the real message in msgUnitStore)
+    * @return the approximately occupied bytes
+    */
+   public long getCbQueueBytes();
    /** How many messages are in this clients session callback queue and are cached
     * @return -1 if no cach queue is used
     */
    public long getCbQueueNumMsgsCache();
+   /**
+    * Number of bytes used on the RAM part of the callback queue.
+    * Note that this is the bytes occupied by the references (which point to the real message in msgUnitStore)
+    * @return the approximately occupied bytes; -1L if not applicable (e.g. only a persistent queue is configured)
+    */
+   public long getCbQueueBytesCache();
+
    /** How many messages are max. allowed in this clients session callback queue */
    public long getCbQueueMaxMsgs();
    /** How many messages are max. allowed in the cache of the callback queue,

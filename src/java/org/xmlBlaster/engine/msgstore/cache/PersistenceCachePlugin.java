@@ -428,7 +428,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          try {
             if (!oldest.isPersistent()) { // if entry is marked as persistent it is already in persistentStore (see code above)
                // swap away the oldest cache entry to harddisk ...
-               if (log.isLoggable(Level.FINE)) this.log.fine("Swapping '" + oldest.getLogId() + " size=" + oldest.getSizeInBytes() + "'. Exceeding size state after removing from transient before entering persistent: " + toXml(""));
+               if (log.isLoggable(Level.FINE)) log.fine("Swapping '" + oldest.getLogId() + " size=" + oldest.getSizeInBytes() + "'. Exceeding size state after removing from transient before entering persistent: " + toXml(""));
                if (this.persistentStore == null)
                   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
                         "assureTransientSpace: no persistent queue configured, needed for swapping, entry " + mapEntry.getLogId() + " is not handled");
@@ -672,6 +672,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       return this.transientStore.getNumOfEntries();
    }
 
+   /** @see I_AdminMap#getNumOfCachedEntries() */
+   public long getNumOfCachedEntries() {
+      return this.transientStore.getNumOfEntries();
+   }
+
    /**
     * It returns the size of persistent entries in the queue. Note that this call will return the size
     * stored in cache, i.e. it will NOT make a call to the underlying DB.
@@ -713,6 +718,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          ret += this.transientStore.getNumOfBytes() - this.transientStore.getNumOfPersistentBytes();
          return ret;
       }
+      return this.transientStore.getNumOfBytes();
+   }
+
+   /** @see I_AdminMap#getNumOfCachedBytes */
+   public long getNumOfCachedBytes() {
       return this.transientStore.getNumOfBytes();
    }
 
@@ -791,8 +801,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       if (max < oldMax)
          // Allow decreasing, not yet intense tested!!!
          // And TopicHandler.allowedToReconfigureTopicAndFixWrongLimits() limits it currently! 
-         //; //return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", decreasing setMax"+loc+"(" + max + ") is not supported";
-         return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", decreasing setMax"+loc+"(" + max + ") is not supported";
+         ; //return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", decreasing setMax"+loc+"(" + max + ") is not supported";
       else if (max == oldMax)
          return getStorageId() + ": Currently max"+loc+"=" + oldMax + ", changing to setMax"+loc+"(" + max + ") are identical";
 

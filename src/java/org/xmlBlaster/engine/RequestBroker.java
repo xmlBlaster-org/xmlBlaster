@@ -7,9 +7,11 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -45,6 +47,7 @@ import org.xmlBlaster.util.dispatch.DispatchStatistic;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.RouteInfo;
@@ -73,6 +76,7 @@ import org.xmlBlaster.engine.qos.GetReturnQosServer;
 import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
@@ -418,6 +422,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             //this.topicStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
             log.info("Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");
 
+            MsgUnitStoreProperty limitM = new MsgUnitStoreProperty(glob, null); // The current limit from xmlBlaster.properties
+            HistoryQueueProperty limitH = new HistoryQueueProperty(glob, null); // The current limit
             I_MapEntry[] mapEntryArr = this.topicStore.getAll(null);
             boolean fromPersistenceStore = true;
             for(int i=0; i<mapEntryArr.length; i++) {
@@ -437,6 +443,41 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   continue;
                }
                try {
+                  // Check limits
+                  TopicProperty topicProps = ((MsgQosData)topicEntry.getMsgUnit().getQosData()).getTopicProperty();
+                  if (topicProps != null && topicProps.getMsgUnitStoreProperty() != null) {
+                     MsgUnitStoreProperty p = topicProps.getMsgUnitStoreProperty();
+                     if (p.getMaxBytes() > limitM.getMaxBytes()) { // How to prevent a smaller limit than actual bytes on HD?
+                        p.setMaxBytes(limitM.getMaxBytes());
+                     }
+                     if (p.getMaxBytesCache() > limitM.getMaxBytesCache()) {
+                        p.setMaxBytesCache(limitM.getMaxBytesCache());
+                     }
+                     if (p.getMaxEntries() > limitM.getMaxEntries()) { // How to prevent a smaller limit than actual entries on HD?
+                        p.setMaxEntries(limitM.getMaxEntries());
+                     }
+                     if (p.getMaxEntriesCache() > limitM.getMaxEntriesCache()) {
+                        p.setMaxEntriesCache(limitM.getMaxEntriesCache());
+                     }
+                  }
+
+                  if (topicProps != null && topicProps.getHistoryQueueProperty() != null) {
+                     HistoryQueueProperty h = topicProps.getHistoryQueueProperty();
+                     if (h.getMaxBytes() > limitH.getMaxBytes()) {
+                        h.setMaxBytes(limitH.getMaxBytes());
+                     }
+                     if (h.getMaxBytesCache() > limitH.getMaxBytesCache()) {
+                        h.setMaxBytesCache(limitH.getMaxBytesCache());
+                     }
+                     if (h.getMaxEntries() > limitH.getMaxEntries()) {
+                        h.setMaxEntries(limitH.getMaxEntries());
+                     }
+                     if (h.getMaxEntriesCache() > limitH.getMaxEntriesCache()) {
+                        h.setMaxEntriesCache(limitH.getMaxEntriesCache());
+                     }
+                  }
+                  
+                  
                   publish(unsecureSessionInfo, topicEntry.getMsgUnit(), publishQosServer);
                   // Called after sessions/subscriptions are recovered from SessionPersistencePlugin:
                   //   glob.getTopicAccessor().spanTopicDestroyTimeout();
@@ -2479,6 +2520,109 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       return sb.toString();
    }
    
+   public String reportMemoryOverviewToFile(String reportFileName) {
+      if (reportFileName == null || reportFileName.length() == 0 || reportFileName.equalsIgnoreCase("String")) {
+         return "Please enter a file name";
+      }
+      return reportMemoryOverview(reportFileName);
+   }
+   public String reportMemoryOverview() {
+      return reportMemoryOverview((String)null);
+   }
+
+   private String reportMemoryOverview(String reportFileName) {
+      try {
+         OutputStream out = null;
+         String fileName = null;
+         if (reportFileName == null || reportFileName.length() == 0 || reportFileName.equalsIgnoreCase("String")) {
+            out = new ByteArrayOutputStream();
+            log.info("Reporting memory overview to string");
+         }
+         else {
+            File to_file = new File(reportFileName);
+            if (to_file.getParent() != null) {
+               to_file.getParentFile().mkdirs();
+            }
+            out = new FileOutputStream(to_file);
+            log.info("Reporting memory overview to '" + to_file.getAbsolutePath() + "'");
+            fileName = to_file.getAbsolutePath();
+         }
+         out.write(("<report>").getBytes("UTF-8"));
+         out.write(("\nXmlBlaster " + new Timestamp().toString()).getBytes());
+         out.write(("\n"+XmlBlasterException.createVersionInfo()+"\n").getBytes());
+         
+         
+         SessionInfo[] ses = authenticate.getSessionInfoArr();
+         for (int i=0; i<ses.length; i++) {
+            SessionInfo s = ses[i];
+            out.write(("\n <SessionInfo id='"+s.getSessionName().getAbsoluteName()+"'>").getBytes("UTF-8"));
+            out.write(("\n   <queue relating='callback' entries='"+s.getCbQueueNumMsgs()
+                  +"' entriesCache='"+s.getCbQueueNumMsgsCache()+"' bytes='"+s.getCbQueueBytes()+"' bytesCache='"+s.getCbQueueBytesCache()+"'/>").getBytes("UTF-8"));
+            out.write(("\n </SessionInfo>").getBytes("UTF-8"));
+         }
+
+         out.write(("\n").getBytes("UTF-8"));
+
+         long currentBytes = 0L;
+         long currentBytesCache = 0L;
+         long currentEntries = 0L;
+         long currentEntriesCache = 0L;
+         long currentMaxBytes = 0L;
+         long currentMaxBytesCache = 0L;
+         long currentMaxEntries = 0L;
+         long currentMaxEntriesCache = 0L;
+         String[] topicIds = glob.getTopicAccessor().getTopics();
+         for (int i=0; i<topicIds.length; i++) {
+            final TopicHandler topicHandler = glob.getTopicAccessor().access(topicIds[i]);
+            if (topicHandler == null)
+               continue;
+            try {
+               out.write(("\n <TopicHandler id='"+topicHandler.getUniqueKey()+"'><topic>").getBytes("UTF-8"));
+               I_Map m = topicHandler.getMsgUnitCache();
+               PersistenceCachePlugin c = null;
+               if (m instanceof PersistenceCachePlugin) c = (PersistenceCachePlugin)m;
+               MsgUnitStoreProperty p = (MsgUnitStoreProperty)m.getProperties();
+               long bc = (c != null) ? c.getNumOfCachedBytes() : 0;
+               long ec = (c != null) ? c.getNumOfCachedEntries() : 0;
+               out.write(("\n   <persistence relating='msgUnitStore' entries='"+m.getNumOfEntries()
+                     +"' entriesCache='"+ec+"' bytes='"+m.getNumOfBytes()+"' bytesCache='"+bc+"'/>").getBytes("UTF-8"));
+               out.write(p.toXml("  ").getBytes("UTF-8"));
+               out.write(("\n </topic></TopicHandler>").getBytes("UTF-8"));
+               currentBytes += m.getNumOfBytes();
+               currentBytesCache += bc;
+               currentEntries += m.getNumOfEntries();
+               currentEntriesCache += ec;
+               currentMaxBytes += p.getMaxBytes();
+               currentMaxBytesCache += p.getMaxBytesCache();
+               currentMaxEntries += p.getMaxEntries();
+               currentMaxEntriesCache += p.getMaxEntriesCache();
+            }
+            finally {
+               if (topicHandler!=null) glob.getTopicAccessor().release(topicHandler);
+            }
+         }
+         StringBuffer sb = new StringBuffer(256);
+         sb.append("\nbytes=").append(currentBytes);
+         sb.append("\nbytesCache=").append(currentBytesCache);
+         sb.append("\nentries=").append(currentEntries);
+         sb.append("\nentriesCache=").append(currentEntriesCache);
+         sb.append("\nmaxBytes=").append(currentMaxBytes);
+         sb.append("\nmaxBytesCache=").append(currentMaxBytesCache);
+         sb.append("\nmaxEntries=").append(currentMaxEntries);
+         sb.append("\nmaxEntriesCache=").append(currentMaxEntriesCache);
+         out.write(("\n\nSummary:" + sb.toString()).getBytes("UTF-8"));
+         out.write(("\n</report>").getBytes("UTF-8"));
+         out.close();
+         if (fileName != null)
+            return "Reported memory overview to '" + fileName + "'";
+         return out.toString();
+      }
+      catch (Throwable e) {
+         return e.toString();
+      }
+   }
+
+   
    public String checkConsistency(final I_Map map, boolean fixIt, String reportFileName) {
       FileOutputStream out = null;
       final StringBuffer sb = new StringBuffer(1024);
@@ -2563,8 +2707,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                                  final long refId = historyEntry.getMsgUnitWrapperUniqueId();
                                  if (refId == currMsgUnitId)
                                     foundInHistoryQueue.put(currMsgUnitIdL, historyEntry);
-                                 else
-                                    notFoundInHistoryQueue.put(currMsgUnitIdL, entry);
+                                 //else
+                                 //   notFoundInHistoryQueue.put(currMsgUnitIdL, entry);
                                  return null; // Filter away so getAll returns nothing
                               }
                               catch (Throwable e) {
@@ -2594,8 +2738,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                                        final long refId = callbackEntry.getMsgUnitWrapperUniqueId();
                                        if (refId == currMsgUnitId)
                                           foundInCallbackQueue.put(currMsgUnitIdL, callbackEntry);
-                                       else
-                                          notFoundInCallbackQueue.put(currMsgUnitIdL, entry);
+                                       //else
+                                       //   notFoundInCallbackQueue.put(currMsgUnitIdL, entry);
                                     }
                                     else {
                                        // todo
@@ -2608,6 +2752,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                                  }
                               }
                            });
+                           if (before == (foundInCallbackQueue.size() + notFoundInCallbackQueue.size())) // no hit
+                              notFoundInCallbackQueue.put(currMsgUnitIdL, entry);  
+                           
                         }
                         catch (Throwable e) {
                            log.severe("Raw access to database failed: " + e.toString());
@@ -2631,8 +2778,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                                        final long refId = callbackEntry.getMsgUnitWrapperUniqueId();
                                        if (refId == currMsgUnitId)
                                           foundInCallbackQueue.put(currMsgUnitIdL, callbackEntry);
-                                       else
-                                          notFoundInCallbackQueue.put(currMsgUnitIdL, entry);
+                                       //else
+                                       //   notFoundInCallbackQueue.put(currMsgUnitIdL, entry);
                                        return null; // Filter away so getAll returns nothing
                                     }
                                     catch (Throwable e) {
@@ -2641,11 +2788,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                                     }
                                  }
                               });
+                              if (before == (foundInCallbackQueue.size() + notFoundInCallbackQueue.size())) // no hit
+                                 notFoundInCallbackQueue.put(currMsgUnitIdL, entry);  
                            }
                         }
                      }
-                     if (before == (foundInCallbackQueue.size() + notFoundInCallbackQueue.size())) // no hit
-                        notFoundInCallbackQueue.put(currMsgUnitIdL, entry);  
                      
                      return null;  // The maps intercept shall not collect any entries
 
