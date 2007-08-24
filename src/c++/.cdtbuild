@@ -124,6 +124,9 @@
 <resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1483991281./xmlBlasterClientCPP/xmlBlasterCppCE/stdafx.cpp" name="stdafx.cpp" rcbsApplicability="disable" resourcePath="/xmlBlasterClientCPP/xmlBlasterCppCE/stdafx.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE/stdafx.cpp">
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE/stdafx.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
 </resourceConfiguration>
+<resourceConfiguration exclude="true" id="cdt.managedbuild.config.gnu.exe.debug.1483991281./xmlBlasterClientCPP/xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp" name="xmlBlasterCppCE.cpp" rcbsApplicability="disable" resourcePath="/xmlBlasterClientCPP/xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp">
+<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023./xmlBlasterClientCPP/xmlBlasterCppCE-FirstWinCE-Try/xmlBlasterCppCE.cpp" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.683157023"/>
+</resourceConfiguration>
 </configuration>
 <configuration artifactName="xmlBlasterClientCPP" cleanCommand="rm -rf" description="" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" id="cdt.managedbuild.config.gnu.exe.release.595657596" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
 <toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.88690145" name="GCC Tool Chain" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
