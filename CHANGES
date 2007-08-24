@@ -3,6 +3,24 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn repository
 ==================================
+
+ o #16449 JMX control
+          - Added SessionInfo getCbQueueBytes() and getCbQueueBytesCache()
+            These are the bytes of the refence objects only (not containing the message itself)
+          - Fixed allowedToReconfigureTopicAndFixWrongLimits() typo at: if (currentMaxEntries > historyProps.getMaxEntries())
+          - Added reportMemoryOverview() and reportMemoryOverviewToFile(String file) on node level
+          - Added I_Map: getNumOfCachedEntries and getNumOfCachedBytes
+          Configuration of 
+             persistence/msgUnitStore/maxEntriesCache
+             persistence/msgUnitStore/maxEntries
+             persistence/msgUnitStore/maxBytesCache
+             persistence/msgUnitStore/maxBytes
+            and the history queue equivalents
+            is now enforced on restart of xmlBlaster during persistent topic recovery
+          Bugfix of checkConsistency(I_Map, fixIt, reportFileName) which reported
+          leaks which probably weren't.
+
+
  o #16444 removed synchronized in CacheQueueInterceptorPlugin.clear since it caused a deadlock
           when clearing a callback queue and publishing messages at the same time
 
