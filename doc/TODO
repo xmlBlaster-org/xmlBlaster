@@ -70,6 +70,7 @@ o Client should be able to query which subscriptions he has
 JDBC persistence
 ----------------
 
+o Make queue properties manually editable in DB
 
 o On Startup lazy loading (for performance reasons)
 
