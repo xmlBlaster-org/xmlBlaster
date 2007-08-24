@@ -213,7 +213,7 @@ public final class TopicAccessor {
             Thread.dumpStack();
          }
       } finally {
-         tc.erase();
+         tc.erase(); // unlocks all locks
       }
    }
 
@@ -432,6 +432,12 @@ public final class TopicAccessor {
       }
    }
 
+   /**
+    * Called by msgUnitWrapper.toDestroyed():
+    *   this.glob.getTopicAccessor().entryDestroyed_scheduleForExecution(this);
+    * Is currently switched off (not used)
+    * @author mr@marcelruff.info
+    */
    private class Consumer implements Runnable {
       private final BlockingQueue queue;
 
@@ -454,8 +460,13 @@ public final class TopicAccessor {
          TopicHandler topicHandler = access(msgUnitWrapper.getKeyOid());
          if (topicHandler == null)
             return; // Too late
-         log.severe("DEBUG ONLY: Executing now entry destroyed");
-         topicHandler.entryDestroyed(msgUnitWrapper);
+         try {
+            log.severe("DEBUG ONLY: Executing now entry destroyed");
+            topicHandler.entryDestroyed(msgUnitWrapper);
+         }
+         finally {
+            release(topicHandler);
+         }
       }
    }
 
