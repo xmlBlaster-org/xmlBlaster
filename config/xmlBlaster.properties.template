@@ -408,6 +408,8 @@ queue/callback/maxBytesCache = 200555666
 queue/callback/maxBytes = 4147483647
 
 # How big is the topic cache for messages of same oid (here your message content occupies the memory)
+# If you have already data in the DB you should NEVER reduce maxEntries or maxBytes below the current existing data
+# The values of maxEntriesCache and maxBytesCache however you can reduce or increase on next startup
 persistence/msgUnitStore/maxEntriesCache = 10000
 persistence/msgUnitStore/maxEntries = 100000000
 persistence/msgUnitStore/maxBytesCache = 2097152
