@@ -11,7 +11,7 @@
 
 rm -rf $HOME/tmp/fileRecorder
 echo "STARTING classtest TESTS ..."
-java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
+#java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
 echo "STARTING xmlBlaster and wait for 10 sec to startup ..."
 xterm -geom 180x26 -e java org.xmlBlaster.Main&
 sleep 10
