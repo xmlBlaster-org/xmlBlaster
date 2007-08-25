@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
+ o #16457 Continue loading sessions from persistence even if one fails (e.g. because of changed authentication)
+          TODO: Implement generic approach to handle such sessions (security plugin should grant access if coming
+	  from persistent store).
+
  o #16449 JMX control
           - Added SessionInfo getCbQueueBytes() and getCbQueueBytesCache()
             These are the bytes of the refence objects only (not containing the message itself)
