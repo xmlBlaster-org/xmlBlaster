@@ -127,6 +127,10 @@ public class Receiver extends GlobalInfo implements I_Callback {
       if (directoryName == null)
          throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "constructor: 'directoryName' is mandatory");
       String tmpDirectoryName = this.global.get("tmpDirectoryName", directoryName + File.separator + "tmp", null, this.info);
+      File d = new File(directoryName);
+      if (!d.exists())
+    	  if (!d.mkdirs())
+   	         throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "Can't create directoryName="+directoryName);
 
       boolean overwrite = this.global.get("overwrite", true, null, this.info);
       String lockExtention =  this.global.get("lockExtention", (String)null, null, this.info);
@@ -173,8 +177,10 @@ public class Receiver extends GlobalInfo implements I_Callback {
          log.finer("shutdown");
       synchronized (this) {
          this.isShutdown = false;
-         this.access.disconnect(new DisconnectQos(this.global));
-         this.global.shutdown();
+         if (this.access != null)
+        	 this.access.disconnect(new DisconnectQos(this.global));
+         if (this.global != null)
+        	 this.global.shutdown();
       }
    }
 
