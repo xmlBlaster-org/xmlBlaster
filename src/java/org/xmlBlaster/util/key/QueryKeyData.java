@@ -14,7 +14,7 @@ import org.xmlBlaster.util.qos.AccessFilterQos;
 import java.util.ArrayList;
 
 /**
- * This class encapsulates the Message key information of query invocations. 
+ * This class encapsulates the Message key information of query invocations.
  * <p />
  * <ul>
  * <li>SubscribeKey Client side access facade</i>
@@ -72,7 +72,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
             throw new IllegalArgumentException("QueryKeyData got query='subscriptionId:' with empy id");
          setOid(query.substring("subscriptionId:".length()));
       }
-      else if (query.startsWith("oid:")) { // same as default schema
+      else if (query.startsWith(Constants.OID_URL_PREFIX)) { // "oid:" same as default schema
          this.queryType = Constants.EXACT;
          if (query.length() <= "oid:".length())
             throw new IllegalArgumentException("QueryKeyData got query='oid:' with empy id");
@@ -120,7 +120,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    }
 
    /**
-    * Constructor to parse a message. 
+    * Constructor to parse a message.
     * @param factory If null, the default factory from Global is used.
     */
    public QueryKeyData(Global glob, I_QueryKeyFactory factory, String serialData) {
@@ -204,7 +204,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    }
 
    /**
-    * Your XPath query string. 
+    * Your XPath query string.
     * @param query The query string, e.g. "//key"
     */
    public void setQueryString(String query) {
@@ -214,7 +214,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
 
    /**
     * Same as setQueryString() but allows you to call it more than once
-    * the strings are concatenated. 
+    * the strings are concatenated.
     * @param query The query string, e.g. "//key"
     */
    public void appendQueryString(String query) {
@@ -232,7 +232,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    }
 
    /**
-    * Helper which returns the oid OR the xpath query for nice logging. 
+    * Helper which returns the oid OR the xpath query for nice logging.
     */
    public String getNiceString() {
       if (getOid() != null && getOid().length() > 0) {
@@ -242,7 +242,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    }
 
    /**
-    * Return the filters or array with size==0 if none is specified. 
+    * Return the filters or array with size==0 if none is specified.
     * <p />
     * For subscribe() and get() and cluster messages.
     * @return never null

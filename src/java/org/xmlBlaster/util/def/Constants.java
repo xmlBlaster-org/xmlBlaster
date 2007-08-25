@@ -247,6 +247,7 @@ public class Constants {
 
 
    /** XmlKey queryType enum */
+   public static final String OID_URL_PREFIX = "oid:";
    public static final String XPATH = "XPATH";
    public static final String XPATH_URL_PREFIX = "xpath:";
    public static final String EXACT = "EXACT";
