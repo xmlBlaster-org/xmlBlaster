@@ -15,8 +15,8 @@ public interface I_Manager extends I_Plugin
    // querySubjects(String query, String syntax)
 
    /**
-    * The session handling. 
-    * <code>org.xmlBlaster.authentication.authenticate.init(...)</code>
+    * The session handling.
+    * <code>org.xmlBlaster.authentication.Authenticate.connect(...)</code>
     * and <code>login(...)</code> calls this method to get a new I_Session
     * and bind it to the session.
     * <p/>
@@ -33,7 +33,7 @@ public interface I_Manager extends I_Plugin
    public void releaseSession(String sessionId, String qos_literal) throws XmlBlasterException;
 
    /**
-    * Get the I_Session which corresponds to the given sessionId. 
+    * Get the I_Session which corresponds to the given sessionId.
     * <p/>
     * @param String The sessionId
     * @return I_Session
