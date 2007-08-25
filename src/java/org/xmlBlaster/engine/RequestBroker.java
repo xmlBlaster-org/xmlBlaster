@@ -113,7 +113,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    private static Logger log = Logger.getLogger(RequestBroker.class.getName());
 
    /**
-    * Contains total count of published messages and get() invocations. 
+    * Contains total count of published messages and get() invocations.
     */
    private DispatchStatistic dispatchStatistic = new DispatchStatistic();
 
@@ -147,7 +147,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
    /**
     * For listeners who want to be informed about subscribe/unsubscribe events.
-    * The key is an Integer number where the lowest is the first invoked on subscribe and the 
+    * The key is an Integer number where the lowest is the first invoked on subscribe and the
     * last invoked on unsubscribe.
     */
    private final Map subscriptionListenerMap = new TreeMap();
@@ -189,7 +189,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    // Enforced by I_AdminNode
    /** Incarnation time of this object instance in millis */
    private long startupTime;
-   
+
    /** State during construction */
    private static final int UNDEF = -1;
    private static final int ALIVE = 0;
@@ -209,9 +209,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       this.glob = this.authenticate.getGlobal();
 
       glob.setRequestBroker(this);
-      
+
       glob.setTopicAccessor(new TopicAccessor(this.glob));
-      
+
       this.startupTime = System.currentTimeMillis();
       this.mbeanHandle = this.glob.registerMBean(this.glob.getContextNode(), this);
 
@@ -324,7 +324,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
    /**
-    * Holds all subscriptions. 
+    * Holds all subscriptions.
     * @return Is never null
     */
    public ClientSubscriptions getClientSubscriptions() {
@@ -386,8 +386,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       if (wipeOutJdbcDB) {
          this.glob.setWipeOutDB(wipeOutJdbcDB);
          // it is now the responsability of the QueuePlugin (see JdbcQueueCommonTable) to
-         // really perform the wipeout, the request broker only gives him an order to do so. 
-/*         
+         // really perform the wipeout, the request broker only gives him an order to do so.
+/*
          String tableNamePrefix = "XMLBLASTER";
          tableNamePrefix = glob.getProperty().get("queue.persistent.tableNamePrefix", tableNamePrefix).toUpperCase();
          log.warn(ME, "You have set '-wipeOutJdbcDB true', we will destroy now the complete JDBC persistence store entries of prefix="+tableNamePrefix);
@@ -476,8 +476,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                         h.setMaxEntriesCache(limitH.getMaxEntriesCache());
                      }
                   }
-                  
-                  
+
+
                   publish(unsecureSessionInfo, topicEntry.getMsgUnit(), publishQosServer);
                   // Called after sessions/subscriptions are recovered from SessionPersistencePlugin:
                   //   glob.getTopicAccessor().spanTopicDestroyTimeout();
@@ -648,15 +648,15 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
       return new String[0];
    }
-   
+
    public String subscribe(SessionInfo sessionInfo, QueryKeyData xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException   {
       if (!sessionInfo.hasCallback()) {
          throw new XmlBlasterException(glob, ErrorCode.USER_SUBSCRIBE_NOCALLBACK, ME, "You can't subscribe to '" + xmlKey.getOid() + "' without having a callback server");
       }
-      
+
       try {
          SubscriptionInfo.verifySubscriptionId(sessionInfo.getConnectQos().isClusterNode(), sessionInfo.getSessionName(), xmlKey, subscribeQos);
-         
+
          if (log.isLoggable(Level.FINER)) log.finer("Entering subscribe(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "', domain='" + xmlKey.getDomain() + "') from client '" + sessionInfo.getId() + "' ...");
          String returnOid = "";
 
@@ -667,7 +667,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   SubscriptionInfo sub = (SubscriptionInfo)vec.elementAt(i);
                   sub.update(subscribeQos);
                }
-               log.info("Ignoring duplicate subscription '" + 
+               log.info("Ignoring duplicate subscription '" +
                        ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid()) +
                         "' as you have set multiSubscribe to false");
                StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
@@ -718,7 +718,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                else
                   subs = new SubscriptionInfo(glob, sessionInfo, xmlKeyExact, subscribeQos);
             }
-            
+
             subscribeToOid(subs, false); // fires event for subscription
 
             if (returnOid.equals("")) returnOid = subs.getSubscriptionId();
@@ -799,7 +799,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_ADMIN_UNAVAILABLE, ME, "Sorry administrative get() is not available, try to configure xmlBlaster.");
             MsgUnit[] raw = glob.getMomClientGateway().getCommand(sessionInfo, xmlKey, getQos.getData());
             if (getQos.getWantContent())  return raw;
-            
+
             MsgUnit[] msgUnitArr = new MsgUnit[raw.length];
             for(int i=0; i<raw.length; i++) {
                // byte[] cont = (getQos.getWantContent()) ? raw[i].getContent() : new byte[0];
@@ -819,7 +819,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          ArrayList msgUnitList = new ArrayList(keyDataArr.length);
 
          if (log.isLoggable(Level.FINE)) log.fine("get(): " + ((keyDataArr!=null&&keyDataArr.length>0&&keyDataArr[0]!=null)?"Found local match "+keyDataArr[0].toXml():"No local match"));
-         
+
          // Always forward the get request to the master
          // even if there are no matching keys
          // In the cluster environment all messages are accessed from the master cluster node,
@@ -888,24 +888,24 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
             try {
                if (topicHandler.isAlive()) {
-   
+
                   int numEntries = getQos.getHistoryQos().getNumEntries();
                   MsgUnitWrapper[] msgUnitWrapperArr = topicHandler.getMsgUnitWrapperArr(numEntries, getQos.getHistoryQos().getNewestFirst());
-   
+
                   NEXT_HISTORY:
                   for(int kk=0; kk<msgUnitWrapperArr.length; kk++) {
-   
+
                      MsgUnitWrapper msgUnitWrapper = msgUnitWrapperArr[kk];
                      if (msgUnitWrapper == null) {
                         continue NEXT_HISTORY;
                      }
-   
+
                      if (this.glob.useCluster() && !msgUnitWrapper.getMsgQosData().isAtMaster()) {
                         if (log.isLoggable(Level.FINE)) log.fine("get(): Ignore message as we are not the master: " + msgUnitWrapper.toXml());
                         continue NEXT_HISTORY;
                      }
-   
-                     //topicHandler.checkFilter(SessionInfo publisherSessionInfo, SubscriptionInfo sub, MsgUnitWrapper msgUnitWrapper, boolean handleException)                     
+
+                     //topicHandler.checkFilter(SessionInfo publisherSessionInfo, SubscriptionInfo sub, MsgUnitWrapper msgUnitWrapper, boolean handleException)
                      AccessFilterQos[] filterQos = getQos.getAccessFilterArr();
                      if (filterQos != null) {
                         if (log.isLoggable(Level.FINE)) log.fine("Checking " + filterQos.length + " filters");
@@ -922,23 +922,23 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                               continue NEXT_HISTORY; // filtered message is not send to client
                         }
                      }
-   
+
                      if (msgUnitWrapper.isExpired()) {
                         continue NEXT_HISTORY;
                      }
-   
+
                      MsgUnit mm = msgUnitWrapper.getMsgUnit();
                      if (mm == null) {
                         continue NEXT_HISTORY; // WeakReference to cache lost and lookup failed
                      }
-   
+
                      GetReturnQosServer retQos = new GetReturnQosServer(glob, msgUnitWrapper.getMsgQosData(), Constants.STATE_OK);
                      byte[] cont = (getQos.getWantContent()) ? mm.getContent() : new byte[0];
                      mm = new MsgUnit(mm, null, cont, retQos.getData());
                      msgUnitList.add(mm);
-   
+
                   } // for each history entry
-   
+
                } // topicHandler.isAlive()
             }
             finally {
@@ -1159,7 +1159,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    private void subscribeToOid(SubscriptionInfo subs, boolean calleeIsXPathMatchCheck) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
       String uniqueKey = subs.getKeyData().getOid();
-      SessionInfo publisherSessionInfo = null; // subs.getSessionInfo() is the wrong one 
+      SessionInfo publisherSessionInfo = null; // subs.getSessionInfo() is the wrong one
       TopicHandler topicHandler = this.glob.getTopicAccessor().findOrCreate(publisherSessionInfo, uniqueKey);
       try {
          subs.incrSubscribeCounter();
@@ -1175,7 +1175,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
    /**
-    * This method returns the unprotected Authenticate object. 
+    * This method returns the unprotected Authenticate object.
     * @param secretSessionId the secret Session Id of the invoker.
     * TODO in future an authorization operation shall be performed here
     * @return
@@ -1183,7 +1183,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    public Authenticate getAuthenticate(String secretSessionId) {
       return this.authenticate;
    }
-   
+
    /**
     * Incoming unsubscribe request from a client.
     * <p />
@@ -1464,11 +1464,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                arr[i].update(sessionInfo, publishQos.getData().getClientProperties());
             return Constants.RET_OK;
          }
-         
+
          if (msgKeyData.isRunlevelManager()) { // __sys__RunlevelManager
             return this.glob.getRunlevelManager().publish(sessionInfo, msgUnit, publishQos);
          }
-         
+
          // Check if a publish filter is installed and if so invoke it ...
          if (getPublishPluginManager().hasPlugins() && !publishQos.isClusterUpdate()) {
             Map mimePlugins = getPublishPluginManager().findMimePlugins(msgKeyData.getContentMime(),msgKeyData.getContentMimeExtended());
@@ -1749,7 +1749,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                if (this.glob.useCluster() && !this.glob.isClusterManagerReady()) {
                   log.warning("erase not forwarded to cluster as ClusterManager is not ready");
                }
-               
+
                if (topicHandler == null) { // unSubscribe on a unknown message ...
                   if (clusterRetArr != null && clusterRetArr.length > 0) {
                      log.info("Erase for topic [" + xmlKey.getOid() + "] successfully forwarded to cluster master");
@@ -1761,11 +1761,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   // !!! how to delete XPath subscriptions, still MISSING ???
                   continue;
                }
-   
+
                if (log.isLoggable(Level.FINE)) log.fine("erase oid='" + topicHandler.getUniqueKey() + "' of total " + oids.length + " ...");
-   
+
                //log.info(ME, "Erasing " + topicHandler.toXml());
-   
+
                oidSet.add(topicHandler.getUniqueKey());
                if (eraseQos.getData().containsHistoryQos()) {
                   if (log.isLoggable(Level.FINE)) log.fine("Erasing history instances only, the topic '" + topicHandler.getId() + "' remains");
@@ -1832,7 +1832,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          msgQosData.addClientProperty("__sessionId", sessionInfo.getPublicSessionId());
          msgQosData.addClientProperty("__publicSessionId", sessionInfo.getPublicSessionId());
          msgQosData.addClientProperty("__absoluteName", sessionInfo.getSessionName().getAbsoluteName());
-         
+
          MsgUnit msgUnit = new MsgUnit(this.xmlKeyLoginEvent,
                                   sessionInfo.getLoginName().getBytes(),
                                   msgQosData);
@@ -1863,13 +1863,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       if (this.publishLogoutEvent) {
          if (log.isLoggable(Level.FINE)) log.fine("Logout event for client " + sessionInfo.toString());
          this.publishQosLogoutEvent.clearRoutes();
-         
+
          MsgQosData msgQosData = (MsgQosData)this.publishQosLogoutEvent.getData().clone();
          // __sessionId is deprecated, please use __publicSessionId
          msgQosData.addClientProperty("__sessionId", sessionInfo.getPublicSessionId());
          msgQosData.addClientProperty("__publicSessionId", sessionInfo.getPublicSessionId());
          msgQosData.addClientProperty("__absoluteName", sessionInfo.getSessionName().getAbsoluteName());
-         
+
          MsgUnit msgUnit = new MsgUnit(this.xmlKeyLogoutEvent, sessionInfo.getLoginName().getBytes(), msgQosData);
          publish(this.unsecureSessionInfo, msgUnit); // publish that this client logged out
          this.publishQosLogoutEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
@@ -1880,7 +1880,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
 
    public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {
    }
-    
+
    /**
     * Event invoked on new created SubjectInfo.
     */
@@ -1897,9 +1897,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    {
       log.warning("Ignoring SubjectInfo removed event for client " + e.getSubjectInfo().toString());
    }
-   
+
    /**
-    * Add listener if new remote properties arrive. 
+    * Add listener if new remote properties arrive.
     * Clients which publish client side properties to their sessionInfo
     * @param RemotePropertiesListener
     * @return
@@ -1924,9 +1924,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          return this.remotePropertiesListeners.remove(remotePropertiesListener);
       }
    }
-   
+
    /**
-    * Access a current snapshot of all listeners. 
+    * Access a current snapshot of all listeners.
     * @return
     */
    public I_RemotePropertiesListener[] getRemotePropertiesListenerArr() {
@@ -2308,7 +2308,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          return "Class '" + clazzName + "' not found in '" + System.getProperty("java.class.path") + "'";
       }
    }
-   
+
    /** JMX */
    public java.lang.String usage() {
       return ServerScope.getJmxUsageLinkInfo(this.getClass().getName(), null);
@@ -2321,13 +2321,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    public void setUsageUrl(java.lang.String url) {}
 
    /**
-    * Redirect logging, configure in xmlBlaster.properties. 
+    * Redirect logging, configure in xmlBlaster.properties.
     * Enforced by interface LogableDevice
     */
    public void log(LogRecord record) {
       // We may not do any log.xxx() call here because of recursion!!
       String source = record.getSourceClassName()+"."+record.getSourceMethodName();
-      String summary = 
+      String summary =
          "[" + new java.sql.Timestamp(record.getMillis()).toString()
        + " " + record.getLevel().toString()
        + " " + Thread.currentThread().getName() + "-" + record.getThreadID()
@@ -2346,9 +2346,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          this.lastError = newLog;
       }
    }
-   
+
    /**
-    * Declare available notification event types. 
+    * Declare available notification event types.
     */
    public MBeanNotificationInfo[] getNotificationInfo() {
       String[] types = new String[] {
@@ -2392,7 +2392,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       boolean fix = Boolean.valueOf(fixIt).booleanValue();
       return checkCallbackEntriesConsistency(fix, reportFileName);
    }
-   
+
    /**
     * Loop through all database entries of relating='callback' and check if there are
     * entries from not existing sessions with pubSessionId=<0
@@ -2418,7 +2418,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          out_.write(("\n"+XmlBlasterException.createVersionInfo()+"\n").getBytes());
 
          log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
-         
+
          // Check no 1: find callback entries with negative session id and no logged in such session
          final JdbcManagerCommonTable manager = JdbcManagerCommonTable.createInstance(glob, glob.getEntryFactory(), null, null, null);
          final Set leakedEntries = new HashSet();
@@ -2473,7 +2473,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                      }
                      catch (XmlBlasterException e) {
                         log.warning("Failed to remove leaking entry '"+entry.getLogId()+"': " + e.getMessage());
-                        
+
                      }
                   }
                }
@@ -2486,7 +2486,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          else {
             log.warning("Raw access to database is not possible");
          }
-         
+
          sb.append("\nSummary\n");
          sb.append("Leaked callback entries :      ").append(leakedEntries.size()).append("\n");
          if (fixIt)
@@ -2516,10 +2516,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             }
          }
       }
-      
+
       return sb.toString();
    }
-   
+
    public String reportMemoryOverviewToFile(String reportFileName) {
       if (reportFileName == null || reportFileName.length() == 0 || reportFileName.equalsIgnoreCase("String")) {
          return "Please enter a file name";
@@ -2531,9 +2531,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
    private String reportMemoryOverview(String reportFileName) {
+       OutputStream out = null;
+       String fileName = null;
       try {
-         OutputStream out = null;
-         String fileName = null;
          if (reportFileName == null || reportFileName.length() == 0 || reportFileName.equalsIgnoreCase("String")) {
             out = new ByteArrayOutputStream();
             log.info("Reporting memory overview to string");
@@ -2550,11 +2550,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          out.write(("<report>").getBytes("UTF-8"));
          out.write(("\nXmlBlaster " + new Timestamp().toString()).getBytes());
          out.write(("\n"+XmlBlasterException.createVersionInfo()+"\n").getBytes());
-         
-         
+
+
          SessionInfo[] ses = authenticate.getSessionInfoArr();
          for (int i=0; i<ses.length; i++) {
             SessionInfo s = ses[i];
+            if (s == null) continue;
             out.write(("\n <SessionInfo id='"+s.getSessionName().getAbsoluteName()+"'>").getBytes("UTF-8"));
             out.write(("\n   <queue relating='callback' entries='"+s.getCbQueueNumMsgs()
                   +"' entriesCache='"+s.getCbQueueNumMsgsCache()+"' bytes='"+s.getCbQueueBytes()+"' bytesCache='"+s.getCbQueueBytesCache()+"'/>").getBytes("UTF-8"));
@@ -2576,26 +2577,33 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             final TopicHandler topicHandler = glob.getTopicAccessor().access(topicIds[i]);
             if (topicHandler == null)
                continue;
+            //log.info("topicHandler " + i + ": " + topicHandler.getUniqueKey());
             try {
                out.write(("\n <TopicHandler id='"+topicHandler.getUniqueKey()+"'><topic>").getBytes("UTF-8"));
                I_Map m = topicHandler.getMsgUnitCache();
-               PersistenceCachePlugin c = null;
-               if (m instanceof PersistenceCachePlugin) c = (PersistenceCachePlugin)m;
-               MsgUnitStoreProperty p = (MsgUnitStoreProperty)m.getProperties();
-               long bc = (c != null) ? c.getNumOfCachedBytes() : 0;
-               long ec = (c != null) ? c.getNumOfCachedEntries() : 0;
-               out.write(("\n   <persistence relating='msgUnitStore' entries='"+m.getNumOfEntries()
-                     +"' entriesCache='"+ec+"' bytes='"+m.getNumOfBytes()+"' bytesCache='"+bc+"'/>").getBytes("UTF-8"));
-               out.write(p.toXml("  ").getBytes("UTF-8"));
-               out.write(("\n </topic></TopicHandler>").getBytes("UTF-8"));
-               currentBytes += m.getNumOfBytes();
-               currentBytesCache += bc;
-               currentEntries += m.getNumOfEntries();
-               currentEntriesCache += ec;
-               currentMaxBytes += p.getMaxBytes();
-               currentMaxBytesCache += p.getMaxBytesCache();
-               currentMaxEntries += p.getMaxEntries();
-               currentMaxEntriesCache += p.getMaxEntriesCache();
+               if (m != null) {
+	               PersistenceCachePlugin c = null;
+	               if (m instanceof PersistenceCachePlugin) c = (PersistenceCachePlugin)m;
+	               MsgUnitStoreProperty p = (MsgUnitStoreProperty)m.getProperties();
+	               long bc = (c != null) ? c.getNumOfCachedBytes() : 0;
+	               long ec = (c != null) ? c.getNumOfCachedEntries() : 0;
+	               out.write(("\n   <persistence relating='msgUnitStore' entries='"+m.getNumOfEntries()
+	                     +"' entriesCache='"+ec+"' bytes='"+m.getNumOfBytes()+"' bytesCache='"+bc+"'/>").getBytes("UTF-8"));
+	               out.write(p.toXml("  ").getBytes("UTF-8"));
+	               out.write(("\n </topic></TopicHandler>").getBytes("UTF-8"));
+	               currentBytes += m.getNumOfBytes();
+	               currentBytesCache += bc;
+	               currentEntries += m.getNumOfEntries();
+	               currentEntriesCache += ec;
+	               currentMaxBytes += p.getMaxBytes();
+	               currentMaxBytesCache += p.getMaxBytesCache();
+	               currentMaxEntries += p.getMaxEntries();
+	               currentMaxEntriesCache += p.getMaxEntriesCache();
+               }
+               else {
+	               out.write(("\n   <persistence relating='msgUnitStore'>null</persistence>").getBytes("UTF-8"));
+	               out.write(("\n </topic></TopicHandler>").getBytes("UTF-8"));
+               }
             }
             finally {
                if (topicHandler!=null) glob.getTopicAccessor().release(topicHandler);
@@ -2611,18 +2619,25 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          sb.append("\nmaxEntries=").append(currentMaxEntries);
          sb.append("\nmaxEntriesCache=").append(currentMaxEntriesCache);
          out.write(("\n\nSummary:" + sb.toString()).getBytes("UTF-8"));
-         out.write(("\n</report>").getBytes("UTF-8"));
-         out.close();
-         if (fileName != null)
-            return "Reported memory overview to '" + fileName + "'";
-         return out.toString();
       }
       catch (Throwable e) {
-         return e.toString();
+     	 e.printStackTrace();
+    	 out.write(e.toString().getBytes("UTF-8"));
+      }
+      finally {
+    	  try {
+              out.write(("\n</report>").getBytes("UTF-8"));
+    		  out.close();
+    	  }
+    	  catch (IOException e) {
+    	  }
+          if (fileName != null)
+             return "Reported memory overview to '" + fileName + "'";
+          return out.toString();
       }
    }
 
-   
+
    public String checkConsistency(final I_Map map, boolean fixIt, String reportFileName) {
       FileOutputStream out = null;
       final StringBuffer sb = new StringBuffer(1024);
@@ -2652,9 +2667,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          out = new FileOutputStream(to_file);
          out.write(("XmlBlaster " + new Timestamp().toString()).getBytes());
          out.write(("\n"+XmlBlasterException.createVersionInfo()+"\n").getBytes());
-         
+
          log.info("Reporting check to '" + to_file.getAbsolutePath() + "'");
-         
+
          sb.append("Checking storage '").append(id).append("' relating '").append(relating).append("'\n");
          String pre = glob.getNodeId()+"/";
          if (!id.startsWith(pre)) {
@@ -2662,8 +2677,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             return sb.toString();
          }
          String topicOid = id.substring(pre.length());
-         /* 
-         ContextNode parent = ContextNode.valueOf(id); 
+         /*
+         ContextNode parent = ContextNode.valueOf(id);
          if (parent == null) {
             sb.append("The corresponding topic is not found, relating=" + relating + " is strange.\n");
             out.write(sb.toString().getBytes());
@@ -2695,7 +2710,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   try {
                      final long currMsgUnitId = entry.getUniqueId();
                      final Long currMsgUnitIdL = new Long(currMsgUnitId);
-                     
+
                      // Process the history queue of this topic if the messagUnit is referenced
                      int before = foundInHistoryQueue.size() + notFoundInHistoryQueue.size();
                      I_Queue historyQueue = topicHandler.getHistoryQueue();
@@ -2719,7 +2734,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                         });
                      }
                      if (before == (foundInHistoryQueue.size() + notFoundInHistoryQueue.size())) // no hit
-                        notFoundInHistoryQueue.put(currMsgUnitIdL, entry);  
+                        notFoundInHistoryQueue.put(currMsgUnitIdL, entry);
 
                      // Raw database access: process all queues used by plugins which also may reference the msgUnitStore
                      before = foundInCallbackQueue.size() + notFoundInCallbackQueue.size();
@@ -2753,8 +2768,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                               }
                            });
                            if (before == (foundInCallbackQueue.size() + notFoundInCallbackQueue.size())) // no hit
-                              notFoundInCallbackQueue.put(currMsgUnitIdL, entry);  
-                           
+                              notFoundInCallbackQueue.put(currMsgUnitIdL, entry);
+
                         }
                         catch (Throwable e) {
                            log.severe("Raw access to database failed: " + e.toString());
@@ -2765,7 +2780,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                      }
 
                      if (manager == null) { // fallback if raw access failed
-                        // Process the callback queue of each loaded client (we won't find transient clients with positive session id and not yet re-connected) 
+                        // Process the callback queue of each loaded client (we won't find transient clients with positive session id and not yet re-connected)
                         SessionInfo[] arr = authenticate.getSessionInfoArr();
                         for (int i=0; i<arr.length; i++) {
                            SessionInfo sessionInfo = arr[i];
@@ -2789,11 +2804,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                                  }
                               });
                               if (before == (foundInCallbackQueue.size() + notFoundInCallbackQueue.size())) // no hit
-                                 notFoundInCallbackQueue.put(currMsgUnitIdL, entry);  
+                                 notFoundInCallbackQueue.put(currMsgUnitIdL, entry);
                            }
                         }
                      }
-                     
+
                      return null;  // The maps intercept shall not collect any entries
 
                   }
@@ -2808,7 +2823,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          finally {
             if (topicHandler!=null) glob.getTopicAccessor().release(topicHandler);
          }
-         
+
          long num = map.getNumOfEntries();
          Set numUnref = new HashSet();
 
@@ -2843,7 +2858,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             }
          }
 
-         
+
          sb.append("\nCaution: Only references of history and callback queues where checked, queues used by plugins which also may reference the msgUnitStore have not been checked.\n\n");
          sb.append("Summary\n");
          sb.append("Total msgUnit entries:             ").append(num).append("\n");
@@ -2851,7 +2866,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          sb.append("Not referenced by history queue:   ").append(notFoundInHistoryQueue.size()).append("\n");
          sb.append("Not referenced by callback queues: ").append(notFoundInCallbackQueue.size()).append("\n");
          sb.append("Leaked msgUnit entries:            ").append(numUnref.size()).append("\n");
-         
+
          if (fixIt)
             sb.append("Removed " + numUnref.size() + " not referenced entries.\n");
          else
@@ -2879,14 +2894,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             }
          }
       }
-      
+
       return sb.toString();
    }
- 
+
    public String dumpAllStacks() {
            return ThreadLister.getAllStackTraces();
    }
-   
+
    public String dumpAllStacksToFile(String file) {
            try {
               FileLocator.writeFile(file, ThreadLister.getAllStackTraces());
@@ -2896,11 +2911,11 @@ public final class RequestBroker extends NotificationBroadcasterSupport
            return file + " not created: " + e.toString();
         }
    }
-   
+
    public boolean isAcceptWrongSenderAddress() {
       return this.authenticate.isAcceptWrongSenderAddress(null);
    }
-   
+
    /**
     * @param acceptWrongSenderAddress the acceptWrongSenderAddress to set
     */
