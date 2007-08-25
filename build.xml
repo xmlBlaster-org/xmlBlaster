@@ -1033,6 +1033,7 @@ TODO
       <echo message=""/>
       <echo message="   Start tomcat and invoke the persistent HTTP HTML demo with:"/>
       <echo message="      ${TOMCAT_HOME}/bin/startup.sh"/>
+      <echo message="      tail -n 500 -f ${TOMCAT_HOME}/logs/catalina.out"/>
       <echo message="      http://localhost:8080/xmlBlaster         or:"/>
       <echo message="      http://localhost:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=karl&amp;xmlBlaster.passwd=secret"/>
       <echo message=""/>
