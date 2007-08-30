@@ -645,7 +645,7 @@ public class SqlInfo implements ReplicationConstants {
       return toXml("", true, true);
    }
    
-   private final String toXml(String extraOffset, boolean doTruncate, boolean forceReadable) {
+   public final String toXml(String extraOffset, boolean doTruncate, boolean forceReadable) {
       String charSet = info.get("charSet", "UTF-8");
       final boolean withRowTag = true; // used for row.toXml()
       StringBuffer sb = new StringBuffer(4096);
