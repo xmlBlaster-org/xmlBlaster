@@ -183,7 +183,9 @@ public class SpecificOracle extends SpecificDefault {
                if (typeName.equals("DATE") || type == Types.DATE) 
                   buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS');\n");
                else // then timestamp
-                  buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SSXFF');\n");
+                  buf.append("             tmpNum := TO_CHAR(").append(varName).append(",'YYYY-MM-DD HH24:MI:SS.FF');\n");
+               // do not use 'YYYY-MM-DD HH24:MI:SSXFF' since it would take the local punctuator of the env or 
+               // invoking session
                buf.append("             dbms_lob.writeappend(tmpCont, LENGTH(tmpNum), tmpNum);\n");
                buf.append("             fake := ").append(this.replPrefix).append("col2xml('");
                buf.append(colName).append("', tmpCont,").append(contName).append(");\n");
