@@ -132,6 +132,46 @@ public class InfoHelper {
    }
 
    /**
+    * Returns the subset of properties found in the I_Info object ending 
+    * with the specified postfix. 
+    * @param postfix The postfix to use. If null is passed, then all properties
+    * are returned
+    * @param info The I_Info object on which to operate
+    * @param dbHelper the DbMetaHelper used to determine if the key and value have
+    * to be moved to uppercase/lowcase or left untouched. Can be null, in which case it
+    * is ignored.
+    * @param newPostfix if not null, the map returned has the properties ending with the new postfix. So for
+    * example if you specify prefix='.class' and have a property called 'db.class', and the newPrefix is called '.java'
+    * you will get 'db.java' in the return map as key.
+    * @return the subset of properties found. The keys are stripped from their
+    * postfix. The returned keys are returned in alphabetical order.
+    */
+   public static Map getPropertiesEndingWith(String postfix, I_Info info, DbMetaHelper dbHelper, String newPostfix) {
+      synchronized (info) {
+         Iterator iter = info.getKeys().iterator();
+         TreeMap map = new TreeMap();
+         while (iter.hasNext()) {
+            String key = ((String)iter.next()).trim();
+            if (postfix == null || key.endsWith(postfix)) {
+               String val = info.get(key, null);
+               if (postfix != null)
+                  key = key.substring(0, key.length() - postfix.length());
+               if (dbHelper != null) {
+                  key = dbHelper.getIdentifier(key);
+                  val = dbHelper.getIdentifier(val);
+               }
+               log.fine("found and adding key='" + key + "' value='" + val + "' on map for postfix='" + postfix + "'");
+               if (newPostfix != null)
+                  map.put(key + newPostfix, val);
+               else
+                  map.put(key, val);
+            }
+         }
+         return map;
+      }
+   }
+
+   /**
     * Returns the subset of objects (not normal properties) found in the I_Info object starting 
     * with the specified prefix. 
     * @param prefix The prefix to use. If null is passed, then all objects are returned
