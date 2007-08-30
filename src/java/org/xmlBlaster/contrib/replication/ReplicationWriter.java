@@ -652,18 +652,22 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
             String txt = "Error code:'" + ex.getErrorCode() + "' state='" + ex.getSQLState() + "' localizedMsg='" + ex.getLocalizedMessage() + "'";
             log.severe(txt);
             log.severe(Global.getStackTraceAsString(ex));
+            // since if the structure has changed we may want to re-read it 
+            removeTableDescriptionFromCache(catalog, schema, table);
             throw ex;
          }
          catch (Exception ex) {
             this.exceptionInTransaction = true;
             log.severe("An exception occured when trying storing the entry." + ex.getMessage());
             log.severe(Global.getStackTraceAsString(ex));
+            removeTableDescriptionFromCache(catalog, schema, table);
             throw ex;
          }
          catch (Throwable ex) {
             this.exceptionInTransaction = true;
             log.severe("A Throwable exception occured when trying storing the entry." + ex.getMessage());
             log.severe(Global.getStackTraceAsString(ex));
+            removeTableDescriptionFromCache(catalog, schema, table);
             throw new Exception(ex);
          }
          finally {
@@ -716,6 +720,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
 
    private final synchronized SqlInfo getTableDescriptionFromCache(String catalog, String schema, String tableName) {
       return (SqlInfo)this.sqlInfoCache.get(getKey(catalog, schema, tableName));
+   }
+   
+   private final synchronized void removeTableDescriptionFromCache(String catalog, String schema, String tableName) {
+      sqlInfoCache.remove(getKey(catalog, schema, tableName));
    }
    
    private final synchronized void addToSqlInfoCache(SqlInfo sqlInfo) {
