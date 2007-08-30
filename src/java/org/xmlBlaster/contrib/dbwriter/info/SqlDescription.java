@@ -563,7 +563,21 @@ public class SqlDescription {
          log.fine("Handling insert column=" + colName + " as Date (type=" + sqlType + ", count=" + pos + ")");
          
          String dateTxt = prop.getStringValue();
-         Timestamp ts = Timestamp.valueOf(dateTxt);
+         Timestamp ts = null;
+         try {
+            ts = Timestamp.valueOf(dateTxt);
+         }
+         catch (NumberFormatException ex) { 
+            // this because for some reason timestamps and dates
+            // can come with a comma separator instead of a dot.
+            // This was probably due to:
+            // TO_CHAR(LR_SERVER_DATE,'YYYY-MM-DD HH24:MI:SSXFF') in the triggers. It has now
+            // been replaced by TO_CHAR(LR_SERVER_DATE,'YYYY-MM-DD HH24:MI:SS.FF')
+            // 'X' meaning the locale punctuator char (of the env and the writing session)
+            String dateTxt1 = dateTxt.replace(',', '.');
+            log.warning("Conversion of '" + dateTxt + "' not possible, trying it with '" + dateTxt1 + "'");
+            ts = Timestamp.valueOf(dateTxt1);
+         }
          // this works even for older oracles where the content is a Date and not a Timestamp
          st.setTimestamp(pos, ts);
       }
