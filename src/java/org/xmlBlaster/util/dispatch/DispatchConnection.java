@@ -583,7 +583,9 @@ abstract public class DispatchConnection implements I_Timeout
             if (this.address.getDelay() > 0L) { // respan reconnect poller
                if (log.isLoggable(Level.FINE)) log.fine("Polling for server with delay=" + this.address.getDelay() + " oldState=" + oldState + " retryCounter=" + retryCounter);
                if (!this.physicalConnectionOk) resetConnection();
-               timerKey = this.glob.getPingTimer().addTimeoutListener(this, this.address.getDelay(), "poll");
+               // next line would have spanned timeout twice and outside the synchronize (2007-00-05 Michele)
+               long realSpanTime = address.getDelay();
+               //  timerKey = this.glob.getPingTimer().addTimeoutListener(this, this.address.getDelay(), "poll");
                if (oldState == ConnectionStateEnum.ALIVE || oldState == ConnectionStateEnum.UNDEF) {
                   String str = (throwable != null) ? ": " + throwable.toString() : "";
                   //if (throwable != null) throwable.printStackTrace();
@@ -593,8 +595,12 @@ abstract public class DispatchConnection implements I_Timeout
                   if (log.isLoggable(Level.FINE)) log.fine(ME + "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + ME +
                                ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
                   connectionsHandler.toPolling(this);
-                  spanPingTimer(400, false); // do one instant try
+                  // spanPingTimer(400, false); // do one instant try
+                  realSpanTime = 400;
                }
+               if (log.isLoggable(Level.FINE))
+                  log.fine(ME + " Respanning timeout for polling to '" + realSpanTime + "' ms");
+               spanPingTimer(realSpanTime, false); 
                if (byDispatchConnectionsHandler)
                   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request. oldState=" + oldState);
                return;
