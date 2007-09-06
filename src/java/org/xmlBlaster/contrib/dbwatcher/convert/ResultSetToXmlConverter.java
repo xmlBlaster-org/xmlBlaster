@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Properties;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
@@ -194,7 +195,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
     * Add another result set to the XML string
     * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#addInfo(ResultSet, int)
     */
-   public void addInfo(ResultSet rs, int what) throws Exception {
+   public void addInfo(Connection conn, ResultSet rs, int what) throws Exception {
       if (rs == null)
          throw new IllegalArgumentException("ResultSetToXmlConverter: Given ResultSet is null");
       if (this.out == null)
@@ -357,7 +358,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
       return this.postStatement;
    }
 
-   public static byte[] getResultSetAsXmlLiteral(ResultSet rs, String command, String ident, long maxRows) throws Exception {
+   public static byte[] getResultSetAsXmlLiteral(Connection conn, ResultSet rs, String command, String ident, long maxRows) throws Exception {
       Properties props = new Properties();
       if (maxRows > 0L) {
          if (maxRows > Integer.MAX_VALUE)
@@ -368,7 +369,7 @@ public class ResultSetToXmlConverter implements I_DataConverter
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       converter.setOutputStream(baos, command, ident, null);
       while (rs.next())
-         converter.addInfo(rs, ResultSetToXmlConverter.ROW_ONLY);
+         converter.addInfo(conn, rs, ResultSetToXmlConverter.ROW_ONLY);
       converter.done();
       converter.shutdown();
       return baos.toByteArray();

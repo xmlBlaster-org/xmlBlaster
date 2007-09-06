@@ -312,4 +312,7 @@ public interface I_DbSpecific extends I_ContribPlugin {
    void setAttributeTransformer(I_AttributeTransformer transformer);
    
    boolean isDatasourceReadonly();
+   
+   void addTrigger(Connection conn, String catalog, String schema, String tableName) throws Exception;
+   
 }

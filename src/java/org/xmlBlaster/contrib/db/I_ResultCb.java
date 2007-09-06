@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.db;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 
 /**
@@ -28,5 +29,5 @@ public interface I_ResultCb {
     * @param rs The current ResultSet, is null if table or view does not exist
     * @throws Exception Can be of any type
     */
-   void result(ResultSet rs) throws Exception;
+   void result(Connection conn, ResultSet rs) throws Exception;
 }

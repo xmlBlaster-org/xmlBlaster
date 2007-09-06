@@ -298,7 +298,7 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
          // conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); // TOO RESTRICTIVE IN MOST CASES !!!
          
          conn = this.dbPool.select(conn, this.changeDetectStatement, new I_ResultCb() {
-            public void result(ResultSet rs) throws Exception {
+            public void result(Connection conn, ResultSet rs) throws Exception {
                if (log.isLoggable(Level.FINE)) log.fine("Processing result set");
             
                // Check for missing/dropped table

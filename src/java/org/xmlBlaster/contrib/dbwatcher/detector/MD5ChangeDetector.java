@@ -213,7 +213,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
 
       try {
          this.conn = this.dbPool.select(this.conn, this.changeDetectStatement, new I_ResultCb() {
-            public void result(ResultSet rs) throws Exception {
+            public void result(Connection conn, ResultSet rs) throws Exception {
                if (log.isLoggable(Level.FINE)) log.fine("Processing result set");
             
                if (rs == null) {
@@ -251,9 +251,9 @@ public class MD5ChangeDetector implements I_ChangeDetector
                }
 
                if (useGroupCol)
-                  changeCount = checkWithGroupCol(rs);
+                  changeCount = checkWithGroupCol(conn, rs);
                else
-                  changeCount = checkComplete(rs);
+                  changeCount = checkComplete(conn, rs);
                if (log.isLoggable(Level.FINE)) log.fine("Processing result set done");
             }
          });
@@ -280,7 +280,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
     * @return The number of changes detected 
     * @throws Exception of any type
     */
-   private int checkComplete(ResultSet rs) throws Exception {                
+   private int checkComplete(Connection conn, ResultSet rs) throws Exception {                
       int count = 0;
       String resultXml = "";
       ByteArrayOutputStream bout = null;
@@ -300,7 +300,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                String command = "UPDATE"; // (md5Map.size() == 0) ? "INSERT" : "UPDATE";
                dataConverter.setOutputStream(out, command, this.groupColName, null);
             }
-            dataConverter.addInfo(rs, I_DataConverter.ALL);
+            dataConverter.addInfo(conn, rs, I_DataConverter.ALL);
          }
       }
 
@@ -323,7 +323,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                   bout = new ByteArrayOutputStream();
                   out = new BufferedOutputStream(bout);
                   dataConverter.setOutputStream(out, command, this.groupColName, null);
-                  dataConverter.addInfo(rs, I_DataConverter.META_ONLY); // Add the meta info for a CREATE
+                  dataConverter.addInfo(conn, rs, I_DataConverter.META_ONLY); // Add the meta info for a CREATE
                }
                dataConverter.done();
                resultXml = bout.toString();
@@ -355,7 +355,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
     * @return The number of changes detected 
     * @throws Exception of any type
     */
-   private int checkWithGroupCol(ResultSet rs) throws Exception {
+   private int checkWithGroupCol(Connection conn, ResultSet rs) throws Exception {
       int count = 0;
       int rowCount = 0;
       String resultXml = "";
@@ -455,7 +455,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
             }
             
             if (dataConverter != null) { // Create XML dump on demand
-               dataConverter.addInfo(rs, I_DataConverter.ALL);
+               dataConverter.addInfo(conn, rs, I_DataConverter.ALL);
             }
             first = false;
          }
@@ -485,7 +485,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                       bout = new ByteArrayOutputStream();
                       out = new BufferedOutputStream(bout);
                       dataConverter.setOutputStream(out, command, newGroupColValue, null);
-                      dataConverter.addInfo(rs, I_DataConverter.META_ONLY); // Add the meta info for a CREATE
+                      dataConverter.addInfo(conn, rs, I_DataConverter.META_ONLY); // Add the meta info for a CREATE
                    }
                    dataConverter.done();
                    resultXml = bout.toString();

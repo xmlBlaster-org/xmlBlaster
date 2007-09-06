@@ -1,5 +1,6 @@
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -33,7 +34,7 @@ public class RsToSqlInfo implements I_ResultCb {
     * Can handle all sort of tables (not REPL_ITEM) for initial scan. 
     * @see I_ResultCb#init(ResultSet)
     */
-   public final void result(ResultSet rs) throws Exception {
+   public final void result(Connection conn, ResultSet rs) throws Exception {
       try {
          // TODO clear the columns since not really used anymore ...
          int msgCount = 1; // since 0 was the create, the first must be 1

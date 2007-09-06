@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.dbwatcher.convert;
 
 import java.io.OutputStream;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Map;
 
@@ -100,7 +101,7 @@ public interface I_DataConverter
     *        {@link #META_ONLY} is useful for an empty table where rs access fails.
     * @throws Exception of any type 
     */
-   void addInfo(ResultSet rs, int what) throws Exception;
+   void addInfo(Connection conn, ResultSet rs, int what) throws Exception;
    
    /**
     * After the last <tt>addInfo()</tt> call this method to complete the XML dump. 

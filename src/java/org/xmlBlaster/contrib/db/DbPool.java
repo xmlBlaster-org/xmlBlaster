@@ -360,7 +360,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
          stmt = conn.createStatement();
          if (log.isLoggable(Level.FINE)) log.fine("Running " + (autoCommit?"autoCommit":"in "+((connection==null)?"new ":"")+"open transaction") + " command '" + command + "'");
          rs = stmt.executeQuery(command);
-         cb.result(rs);
+         cb.result(connection, rs);
       }
       catch (SQLException e) {
          if (e.getSQLState() != null && e.getSQLState().indexOf("42000") != -1
@@ -368,7 +368,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
             // sqlStateXOpen=1, sqlStateSQL99=2 (Oracle 10g returns 0)
             //log.fine("SQLStateType=" + conn.getMetaData().getSQLStateType());
             log.fine("No db change detected, the table does not exist: " + e.toString());
-            cb.result(null);
+            cb.result(connection, null);
             return conn;
          }
          String str = "SQLException in query '" + command + "' : " + e;

@@ -362,13 +362,13 @@ public class DbWatcher implements I_ChangeListener {
 
       try {
           connRet = this.dbPool.select(conn, stmt, autoCommit, new I_ResultCb() {
-             public void result(ResultSet rs) throws Exception {
+             public void result(Connection conn, ResultSet rs) throws Exception {
                 if (log.isLoggable(Level.FINE)) log.fine("Processing result set for '" + stmt + "'");
                 String groupColName = changeEvent.getGroupColName();
                 try {
                    ByteArrayOutputStream bout = null;
                    BufferedOutputStream out = null;
-    
+
                    // default if no grouping is configured
                    if (groupColName == null)
                       groupColName = info.get("mom.topicName", "db.change");
@@ -413,7 +413,7 @@ public class DbWatcher implements I_ChangeListener {
                          dataConverter.setOutputStream(out, command, newGroupColValue, changeEvent);
                       }
                       
-                      if (dataConverter != null) dataConverter.addInfo(rs, I_DataConverter.ALL); // collect data
+                      if (dataConverter != null) dataConverter.addInfo(conn, rs, I_DataConverter.ALL); // collect data
     
                       first = false;
                    } // end while

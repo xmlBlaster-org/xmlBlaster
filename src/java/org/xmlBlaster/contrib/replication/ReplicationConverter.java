@@ -68,7 +68,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private long messageSeq;
    private long newReplKey;
    private boolean sendUnchangedUpdates = true;
-   private String currentThreadId; // TODO REMOVE THIS AFTER TESTING
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -244,7 +243,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
     * 
     * @see org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter#addInfo(ResultSet, int)
     */
-   public void addInfo(ResultSet rs, int what) throws Exception {
+   public void addInfo(Connection conn, ResultSet rs, int what) throws Exception {
       if (rs == null)
          throw new IllegalArgumentException("ReplicationConverter: Given ResultSet is null");
       
@@ -392,6 +391,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
             SqlDescription description = this.sqlInfo.getDescription(); 
             description.setCommand(action);
             description.addAttributes(completeAttrs);
+            dbSpecific.addTrigger(conn, catalog, schema, tableName);
          }
          else if (action.equalsIgnoreCase(INSERT_ACTION)) {
             SqlRow row = this.sqlInfo.fillOneRow(rs, newContent, this.transformer);
@@ -440,7 +440,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
     * This method is invoked before sending the message over the mom.
     */
    public int done() throws Exception {
-      checkThread("setOutputStream", false);
       int ret = this.sqlInfo.getRowCount();
       boolean doSend = true;
       if (ret < 1) {
@@ -472,22 +471,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       return ret;
    }
 
-   // TODO REMOVE THIS AFTER TESTING
-   private final void checkThread(String location, boolean doStack) {
-      String newThreadId = "" + Thread.currentThread();
-      if (this.currentThreadId != null) {
-         if (!this.currentThreadId.equals(newThreadId)) {
-            log.severe("The current thread has changed from '" + this.currentThreadId + "' to '" + newThreadId + "'");
-            if (doStack)
-               Thread.dumpStack();
-         }
-      }
-      this.currentThreadId = newThreadId;
-   }
-
-
    public void setOutputStream(OutputStream out, String command, String ident, ChangeEvent event) throws Exception {
-      checkThread("setOutputStream", false);
       this.out = out;
       this.transactionId = null;
       this.allTransactions.clear();
@@ -501,7 +485,6 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    }
 
    public String getPostStatement() {
-      checkThread("setOutputStream", false);
       if (this.transactionId == null) {
          if (this.sqlInfo != null)
             log.severe("No transaction id has been found for " + this.sqlInfo.toXml(""));

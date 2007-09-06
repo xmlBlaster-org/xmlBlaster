@@ -773,11 +773,11 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
     * @param sqlInfo
     * @throws Exception
     */
-   private void addTrigger(Connection conn, TableToWatchInfo tableToWatch, SqlInfo sqlInfo) throws Exception {
+   private final void addTrigger(Connection conn, TableToWatchInfo tableToWatch, SqlInfo sqlInfo, boolean force) throws Exception {
       Statement st = null;
       String table = tableToWatch.getTable();
       try {
-         if (!tableToWatch.getStatus().equals(TableToWatchInfo.STATUS_OK)) {
+         if (!tableToWatch.getStatus().equals(TableToWatchInfo.STATUS_OK) || force) {
             String createString = createTableTrigger(sqlInfo.getDescription(), tableToWatch);
             if (createString != null && createString.length() > 1) {
                log.info("adding triggers to '" + table + "':\n\n" + createString);
@@ -795,6 +795,21 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
    
+   
+   /**
+    * @see org.xmlBlaster.contrib.replication.I_DbSpecific#addTrigger(java.sql.Connection, java.lang.String, java.lang.String, java.lang.String, org.xmlBlaster.contrib.dbwriter.info.SqlInfo)
+    */
+   public void addTrigger(Connection conn, String catalog, String schema, String tableName) throws Exception {
+      TableToWatchInfo tableToWatch = getTableToWatch(conn, catalog, schema, tableName);
+      SqlInfo sqlInfo = new SqlInfo(this.info);
+      if (sqlInfo.fillMetadata(conn, catalog, schema, tableName, null, null)) {
+         final boolean force = true;
+         addTrigger(conn, tableToWatch, sqlInfo, force);
+      }
+      else
+         log.warning("The table='" + tableName + "' on schema='" + schema + "' and catalog='" + catalog + "' has not been found");
+   }
+
    /**
     * @see I_DbSpecific#readNewTable(String, String, String, Map)
     */
@@ -824,12 +839,12 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          // table has to be replicated.
          // it does not need this if the table only needs an initial synchronization. 
          if (this.isDbWriteable) {
-            TableToWatchInfo tableToWatch = TableToWatchInfo.get(conn, this.replPrefix + "tables", catalog, schema, table, null);
+            TableToWatchInfo tableToWatch = getTableToWatch(conn, catalog, schema, table);
             
             if (tableToWatch != null) {
                boolean addTrigger = tableToWatch.isReplicate();
                if (addTrigger) { // create the function and trigger here
-                  addTrigger(conn, tableToWatch, sqlInfo);
+                  addTrigger(conn, tableToWatch, sqlInfo, false);
                }
                else
                   log.info("trigger will not be added since entry '" + tableToWatch.toXml() + "' will not be replicated");
@@ -927,6 +942,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
    }
    
+   private final TableToWatchInfo getTableToWatch(Connection conn, String catalog, String schema, String tableName) throws Exception {
+      final String TABLES_TABLE = this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES");
+      return TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, null);
+   }
    
    /**
     * @see I_DbSpecific#addTableToWatch(String, String, String, String, String, boolean, String, boolean)
@@ -957,10 +976,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             log.info("schema '" + schema + "' is not registered, going to add it");
             addSchemaToWatch(conn, catalog, schema);
          }
-
-         final String TABLES_TABLE = this.dbMetaHelper.getIdentifier(this.replPrefix + "TABLES");
-         TableToWatchInfo tableToWatch = null;
-         tableToWatch = TableToWatchInfo.get(conn, TABLES_TABLE, catalog, schema, tableName, tableToWatch);
+         
+         TableToWatchInfo tableToWatch = getTableToWatch(conn, catalog, schema, tableName);
          if (!conn.getAutoCommit())
             conn.commit(); // to be sure it is a new transaction
          if (!force && tableToWatch != null && tableToWatch.isStatusOk(this, conn)) {
@@ -1260,7 +1277,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          try {
             if (st2.execute(sql)) {
                ResultSet rs = st2.getResultSet();
-               response = ResultSetToXmlConverter.getResultSetAsXmlLiteral(rs, "statement", "query", maxResponseEntries);
+               response = ResultSetToXmlConverter.getResultSetAsXmlLiteral(conn, rs, "statement", "query", maxResponseEntries);
             }
             else {
                int updateCount = st2.getUpdateCount();
