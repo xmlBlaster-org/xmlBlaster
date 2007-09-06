@@ -38,7 +38,7 @@ import java.io.FileInputStream;
 import java.util.StringTokenizer;
 
 /**
- * @author $Author$ (laghi@swissinfo.org)
+ * @author $Author$ (michele@laghi.eu)
  */
 
 public class Transceiver implements I_Callback

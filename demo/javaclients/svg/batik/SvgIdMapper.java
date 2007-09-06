@@ -32,7 +32,7 @@ import javax.xml.parsers.DocumentBuilder;
 /**
  * This class implements the NodeFilter interface to handle only nodes which
  * are of the type "element" whith an attribute "id" which is not empty.
- * @author $Author$ (laghi@swissinfo.org)
+ * @author $Author$ (michele@laghi.eu)
  */
 public class SvgIdMapper /*implements NodeFilter*/
 {

@@ -26,7 +26,7 @@ import org.xmlBlaster.util.Global;
 
 /**
  *
- * @author $Author$ (laghi@swissinfo.org)
+ * @author $Author$ (michele@laghi.eu)
  */
 public class ExtendedApplication
 {

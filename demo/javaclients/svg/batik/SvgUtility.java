@@ -18,7 +18,7 @@ import org.apache.batik.dom.svg.SVGOMDocument;
 
 
 /**
- * @author $Author$ (laghi@swissinfo.org)
+ * @author $Author$ (michele@laghi.eu)
  */
 
 public class SvgUtility

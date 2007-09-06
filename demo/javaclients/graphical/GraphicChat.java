@@ -28,7 +28,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 
 /**
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class GraphicChat extends MDI_DrawApplication implements I_Callback {
 

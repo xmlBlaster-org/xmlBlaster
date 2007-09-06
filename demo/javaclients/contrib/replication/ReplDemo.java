@@ -10,7 +10,7 @@ package javaclients.contrib.replication;
 import org.xmlBlaster.contrib.replication.ReplicationAgent;
 
 /**
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class ReplDemo {
    // private static Logger log = Logger.getLogger(ReplDemo.class.getName());

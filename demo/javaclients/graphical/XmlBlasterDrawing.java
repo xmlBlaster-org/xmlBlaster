@@ -34,7 +34,7 @@ import CH.ifa.draw.framework.Drawing;
 
 
 /**
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_Callback {
 

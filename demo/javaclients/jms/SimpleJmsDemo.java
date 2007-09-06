@@ -23,7 +23,7 @@ import org.xmlBlaster.jms.XBDestination;
 /**
  * SimpleTest
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class SimpleJmsDemo implements MessageListener {

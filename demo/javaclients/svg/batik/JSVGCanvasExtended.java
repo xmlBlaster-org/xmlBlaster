@@ -26,7 +26,7 @@ import org.w3c.dom.Element;
 
 
 /**
- * @author $Author$ (laghi@swissinfo.org)
+ * @author $Author$ (michele@laghi.eu)
  */
 
 public class JSVGCanvasExtended extends JSVGCanvas

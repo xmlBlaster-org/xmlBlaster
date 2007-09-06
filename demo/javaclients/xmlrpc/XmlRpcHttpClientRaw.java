@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
 Version:   $Id$
-Author:    "Michele Laghi" <laghi@swissinfo.org>
+Author:    "Michele Laghi" <michele@laghi.eu>
 ------------------------------------------------------------------------------*/
 
 package javaclients.xmlrpc;
@@ -33,7 +33,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * <p/>
  * This demo first reads "raw" procedure calls from the standard input.
  *
- * @author "Michele Laghi" <laghi@swissinfo.org>
+ * @author "Michele Laghi" <michele@laghi.eu>
  * @see org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection
  */
 public class XmlRpcHttpClientRaw

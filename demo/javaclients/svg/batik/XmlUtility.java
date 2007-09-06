@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 
  /**
   * Used to retrieve a default Document (of the underling implementation)
-  * @author $Author$ (laghi@swissinfo.org)
+  * @author $Author$ (michele@laghi.eu)
   */
 public class XmlUtility {
 

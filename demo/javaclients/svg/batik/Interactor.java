@@ -30,7 +30,7 @@ import java.util.List;
  * We need to create an extention of JSVGCanvas in order to be able to
  * retrieve the protected member bridgeContext. Lets call this class
  * com.eclettic.svg.JSVGCanvasExtended
- * @author $Author$ (laghi@swissinfo.org)
+ * @author $Author$ (michele@laghi.eu)
  */
 public class Interactor extends InteractorAdapter
 {

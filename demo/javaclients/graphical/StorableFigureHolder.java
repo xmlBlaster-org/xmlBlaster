@@ -20,7 +20,7 @@ import java.util.logging.Level;
 
 /**
  * This is a placeholder for the Figure when it is sent over xmlBlaster
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class StorableFigureHolder implements Storable {
 
