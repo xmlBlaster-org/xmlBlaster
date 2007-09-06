@@ -270,7 +270,7 @@ JdbcDriver.mapping[myStrangeDB]=string=text,\
    <see type="REQ">queue.jdbc.ldbc</see>
 
 <!--   <see type="REQ">cluster</see> -->
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <date>2003 01 28</date>
    <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">

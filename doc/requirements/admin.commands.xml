@@ -784,7 +784,7 @@ java javaclients.HelloWorldPublish -oid __cmd:client/joe/session/1/?dispatcherAc
    <see type="REQ">engine.qos.queryspec.QueueQuery</see>
 
    <author>Heinrich.Goetzger@exploding-systems.de</author>
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
    <revision>$Revision: 1.56 $</revision>

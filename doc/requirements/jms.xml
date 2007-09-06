@@ -38,7 +38,7 @@ import org.xmlBlaster.util.Global;
 /**
  * SimpleTest
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class SimpleJmsDemo implements MessageListener {
@@ -135,7 +135,7 @@ Tasks to be done in the near future:
    <see type="API"></see>
   <see type="REQ"></see>
 -->
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <date>2003 09 25</date>
    <revision>$Revision: 1.2 $</revision>
   <testcase status="OPEN">

@@ -168,8 +168,8 @@ persistence/session/maxEntries = 200
    <see type="REQ">client.failsafe</see>
    <see type="REQ">engine.persistence.subscription</see>
    <see type="API">org.xmlBlaster.engine.I_SessionPersistencePlugin</see>
-   <author><a ref='laghi@swissinfo.org'>Michele Laghi</a></author>
-   <hacker><a ref='laghi@swissinfo.org'>Michele Laghi</a></hacker>
+   <author><a ref='michele@laghi.eu'>Michele Laghi</a></author>
+   <hacker><a ref='michele@laghi.eu'>Michele Laghi</a></hacker>
    <date>2004 02 19</date>
    <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">

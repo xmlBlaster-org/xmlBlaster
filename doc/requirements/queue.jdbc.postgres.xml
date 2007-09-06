@@ -179,7 +179,7 @@ JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char
    <see type="REQ">queue</see>
 
 <!--   <see type="REQ">cluster</see> -->
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <date>2002 11 17</date>
    <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">

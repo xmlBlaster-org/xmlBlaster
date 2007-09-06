@@ -271,7 +271,7 @@ int main(int args, char ** argv)
        <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html" target="others">ACE 5.3 and TAO 1.3</a></td>
        <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2</a></td>
        <td>2003-02-14</td>
-       <td><a href="mailto:laghi@swissinfo.org">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="mailto:michele@laghi.eu">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
        </tr>
 
@@ -284,7 +284,7 @@ int main(int args, char ** argv)
        <td>CORBA: <a href="http://www.mico.org/" target="others">mico 2.3.7</a></td>
        <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2</a></td>
        <td>2003-02-14</td>
-       <td><a href="mailto:laghi@swissinfo.org">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="mailto:michele@laghi.eu">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
        </tr>
 
@@ -324,7 +324,7 @@ int main(int args, char ** argv)
        <td>CORBA: <a href="http://www.iona.com/" target="others">Orbix E2A v. 5.1</a></td>
        <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2.0</a></td>
        <td>2003-02-23</td>
-       <td><a href="mailto:laghi@swissinfo.org">Michele</a></td>
+       <td><a href="mailto:michele@laghi.eu">Michele</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
        </tr>
 
@@ -337,7 +337,7 @@ int main(int args, char ** argv)
        <td>CORBA: <a href="http://www.iona.com/" target="others">ORBACUS v. 4.1.0</a></td>
        <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2.0</a></td>
        <td>2003-02-23</td>
-       <td><a href="mailto:laghi@swissinfo.org">Michele</a></td>
+       <td><a href="mailto:michele@laghi.eu">Michele</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
        </tr>
 
@@ -467,7 +467,7 @@ int main(int args, char ** argv)
        <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
        <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.5</a></td>
        <td>2004-04-02</td>
-       <td><a href="mailto:laghi@swissinfo.org">Michele</a></td>
+       <td><a href="mailto:michele@laghi.eu">Michele</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile<br /><i>build cpp</i></td>
        </tr>
 
@@ -614,7 +614,7 @@ doxygen Doxyfile
    <see type="REQ">client.cpp.protocol</see>
 
 <!--   <see type="REQ">cluster</see> -->
-   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <author><a href="mailto:michele@laghi.eu">Michele Laghi</a></author>
    <date>2003 01 15</date>
    <revision>$Revision: 1.32 $</revision>
 </requirement>

@@ -234,7 +234,7 @@ AddType application/java-archive .jar
    <see type="INTERNET" label="Emulator from Nokia">http://www.forum.nokia.com/tools#java</see>
    <see type="INTERNET" label="Emulator from Motorola">http://www.motocoder.com</see>
 <!--   <see type="REQ">cluster</see> -->
-   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <author><a href="mailto:michele@laghi.eu">Michele Laghi</a></author>
    <date>2004 04 01</date>
    <revision>$Revision: 1.11 $</revision>
 

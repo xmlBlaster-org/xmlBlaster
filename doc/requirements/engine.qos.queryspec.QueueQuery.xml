@@ -134,7 +134,7 @@ GET topic/Hello/?historyQueueEntries="maxEntries=2&amp;maxSize=-1&amp;consumable
    <see type="REQ">engine.qos.queryspec</see>            
    <see type="REQ">client.script</see>
    <see type="INTERNET" label="A scripting example">http://www.xmlBlaster.org/xmlBlaster/demo/javaclients/script/queueQuery.xml</see>
-   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <author><a href="mailto:michele@laghi.eu">Michele Laghi</a></author>
    <date>2004 05 06</date>
    <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">

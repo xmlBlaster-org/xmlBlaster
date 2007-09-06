@@ -337,7 +337,7 @@ MimeAccessPlugin[Sql92Filter][1.0]=org.xmlBlaster.engine.mime.sql92.Sql92Filter,
    <see type="REQ">mime.plugin.accessfilter.howto</see>
    <see type="REQ">mime.plugin.accessfilter</see>
    <see type="REQ">cluster</see>
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <date>2004 05 26</date>
    <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">

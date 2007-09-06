@@ -90,7 +90,7 @@
    <see type="CODE" lang="CPP">org::xmlBlaster::demo::ExternOrb</see>
 
 <!--   <see type="REQ">cluster</see> -->
-   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <author><a href="mailto:michele@laghi.eu">Michele Laghi</a></author>
    <date>2003 01 15</date>
    <revision>$Revision: 1.7 $</revision>
 </requirement>

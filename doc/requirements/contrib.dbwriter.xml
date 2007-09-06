@@ -249,8 +249,8 @@
    <see type="API">org.xmlBlaster.contrib.dbwatcher.DbWatcher</see>
    <see type="REQ">engine.runlevel</see>
    <see type="REQ">contrib.dbwatcher</see>
-   <author>laghi@swissinfo.org</author>
-   <hacker>laghi@swissinfo.org</hacker>
+   <author>michele@laghi.eu</author>
+   <hacker>michele@laghi.eu</hacker>
    <date>2005 12 19</date>
    <revision>$Revision$</revision>
    <testcase status="CLOSED">

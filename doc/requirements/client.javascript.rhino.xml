@@ -294,7 +294,7 @@ to play chess.
    <see>org.xmlBlaster.client.JavascriptCallback</see>
    <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/demo/javaclients/svg/rhino/README</see>
    <see type="INTERNET" label="SVG chess screenshot">http://www.xmlBlaster.org/demos.html#chess</see>
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <effort>1</effort>
    <date>2001 04 06</date>
    <revision>$Revision: 1.10 $</revision>

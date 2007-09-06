@@ -173,7 +173,7 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
    <see type="API">org.xmlBlaster.util.Global</see>
 
 <!--   <see type="REQ">cluster</see> -->
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <date>2002 11 17</date>
    <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">

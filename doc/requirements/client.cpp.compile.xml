@@ -505,7 +505,7 @@ The example <top>/src/examples/ssl_echo/ illustrates how to tell the ORB to use 
    <see type="INTERNET" label="ZLib compression">http://www.zlib.net/</see>
 
 <!--   <see type="REQ">cluster</see> -->
-   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <author><a href="mailto:michele@laghi.eu">Michele Laghi</a></author>
    <date>2003 01 07</date>
    <revision>$Revision: 1.19 $</revision>
 </requirement>

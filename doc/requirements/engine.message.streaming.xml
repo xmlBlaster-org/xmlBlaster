@@ -120,7 +120,7 @@
    <see type="REQ">engine.queue</see>
    <see type="REQ">engine.callback</see>
    <see type="REQ">util.property</see>
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <date>2005 10 10</date>
    <revision>$Revision$</revision>
    <testcase status="OPEN">

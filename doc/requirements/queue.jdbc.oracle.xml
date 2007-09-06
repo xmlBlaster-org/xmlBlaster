@@ -101,7 +101,7 @@
    <see type="REQ">queue</see>
 
 <!--   <see type="REQ">cluster</see> -->
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <date>2002 11 17</date>
    <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">

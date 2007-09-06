@@ -336,7 +336,7 @@ errorCode description=A null pointer is an xmlBlaster internal programming error
    
    <author>konrad.krafft@doubleslash.de</author>
    <author>xmlBlaster@marcelruff.info</author>
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    
    <date>2002 09 24</date>
    

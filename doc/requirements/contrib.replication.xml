@@ -214,8 +214,8 @@
    <see type="INTERNET" label="Replication Documentation">http://www.xmlBlaster.org/replication/index.html</see>
    <see type="REQ">contrib.dbwatcher</see>
    <see type="REQ">contrib.dbwriter</see>
-   <author>laghi@swissinfo.org</author>
-   <hacker>laghi@swissinfo.org</hacker>
+   <author>michele@laghi.eu</author>
+   <hacker>michele@laghi.eu</hacker>
    <date>2005 12 19</date>
    <revision>$Revision$</revision>
    <testcase status="CLOSED">

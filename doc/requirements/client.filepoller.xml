@@ -351,9 +351,9 @@ and here a minimalistic one:
    </configuration>
 
    <see type="REQ">engine.runlevel</see>
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <author>mr@marcelruff.info</author>
-   <hacker>laghi@swissinfo.org</hacker>
+   <hacker>michele@laghi.eu</hacker>
    <date>2004 12 12</date>
    <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">

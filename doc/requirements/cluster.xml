@@ -871,7 +871,7 @@ cluster.node[heron]=\
 
    <author>xmlBlaster@marcelruff.info</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
-   <author>laghi@swissinfo.org</author>
+   <author>michele@laghi.eu</author>
    <date>2002 05 12</date>
    <revision>$Revision: 1.48 $</revision>
    <testcase status="CLOSED">
