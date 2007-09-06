@@ -13,12 +13,12 @@
       ]]></securityService>
       <persistent/>
       <session name='yourName/6' />
-      <queue relating='connection'><address pingInterval='0' retries='-1' delay='2000' /></queue>
-      <queue relating='callback' maxEntries='5' maxEntriesCache='2'><callback pingInterval='0' retries='-1' delay='1000' /></queue>
+      <queue relating='connection'><address pingInterval='30000' delay='30000' /></queue>
+      <queue relating='callback' maxEntries='5' maxEntriesCache='2'><callback pingInterval='1000' retries='-1' delay='1000' /></queue>
    </qos>
   </connect>
 
-  <wait delay="1000" />
+  <wait delay="1000000" />
 <!--
   <disconnect /> 
 -->

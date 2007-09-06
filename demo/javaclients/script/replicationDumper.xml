@@ -6,11 +6,11 @@
 
   <connect>
     <qos>
-       <securityService type="htpasswd" version="1.0"><![CDATA[<user>ReplWriter-DEE_V_00-AIS</user><passwd>secret</passwd>]]></securityService>
+       <securityService type="htpasswd" version="1.0"><![CDATA[<user>ReplWriter-DEE_V_00-AIP</user><passwd>secret</passwd>]]></securityService>
        <persistent/>
-       <session name='/node/replXbl/client/ReplWriter-DEE_V_00-AIS/1' timeout='0' maxSessions='100' clearSessions='false' reconnectSameClientOnly='false'/>
+       <session name='/node/replXbl/client/ReplWriter-DEE_V_00-AIP/1' timeout='0' maxSessions='100' clearSessions='false' reconnectSameClientOnly='false'/>
        <queue relating='callback' maxEntries='10000' maxEntriesCache='1000'> 
-          <callback bootstrapHostname='laptopAir' pingInterval='10000' retries='-1' dispatchPlugin='ReplManager,1.0'>
+          <callback bootstrapHostname='testMichele' pingInterval='10000' retries='-1' dispatchPlugin='ReplManager,1.0'>
 	  </callback>
        </queue>
     </qos>
