@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn repository
 ==================================
+ 
+ o #16471 contrib: incompatible interface change in I_ResultCb: needed to make alter table recreate the 
+          trigger on the master side of a replication
 
  o #16469 removed double spanning of poll timer when going from ALIVE to POLLING
  
