@@ -29,7 +29,7 @@ import java.net.URLClassLoader;
  *       org.xmlBlaster.engine.mime.demo.ContentLenFilter,\
  *       DEFAULT_MAX_LEN=200,DEFAULT_MIN_LEN=20,classpath=mime.jar
  * </pre>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author W. Kleinertz (wkl) H. Goetzger
  * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>

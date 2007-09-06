@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * The default error recovery implementation for messages which are lost
  * in time and universe.
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 public final class MsgErrorHandler implements I_MsgErrorHandler
 {

@@ -18,7 +18,7 @@ import org.xmlBlaster.client.protocol.http.common.I_Connection;
 
 /**
  * UrlConnection
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class UrlConnection implements I_Connection {
 

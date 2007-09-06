@@ -112,7 +112,7 @@ import java.util.logging.Logger;
  * logging framework. You can switch this off by setting the attribute <tt>xmlBlaster/jdk14loggingCapture</tt> to false.
  * </p>
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class ReplManagerPlugin extends GlobalInfo 
    implements ReplManagerPluginMBean, 

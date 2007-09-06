@@ -23,7 +23,7 @@ import org.apache.batik.util.RunnableQueue;
  * <p>
  * We use this dispatcher for example in the SVG example
  * <code>xmlBlaster/demo/javaclients/svg/rhino/chessRhino.svg</code>.
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>.
  * @see http://xml.apache.org/batik
  */
 public class JavascriptCallback implements I_Callback

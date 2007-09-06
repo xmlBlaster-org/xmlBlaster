@@ -29,7 +29,7 @@ import org.xmlBlaster.engine.qos.AddressServer;
  * void return is not allowed so we return an empty string instead
  * </pre>
  * <p />
- * @author "Michele Laghi" (laghi@swissinfo.org)
+ * @author "Michele Laghi" (michele@laghi.eu)
  */
 public class XmlBlasterImpl
 {

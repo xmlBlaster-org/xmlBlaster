@@ -46,7 +46,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * The other is as an info object for each table in the replication (hold in cache to contain meta information
  * of the table on which to perform the operations (either INSERT, UPDATE or DELETE).
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 
 public class SqlDescription {

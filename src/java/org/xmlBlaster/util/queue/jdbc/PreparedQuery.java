@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 /**
- * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
+ * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  */
 
 class PreparedQuery {

@@ -11,7 +11,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 /**
  * Interface for storage plugins
  *
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  */
 public interface I_StoragePlugin extends I_Plugin

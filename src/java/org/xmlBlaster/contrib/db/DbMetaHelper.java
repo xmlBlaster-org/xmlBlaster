@@ -16,7 +16,7 @@ import java.sql.DatabaseMetaData;
  * knowledge. You just pass the name of the table to the method getUnquotedIdentifier and you
  * get back the correct name (if uppercase it will be uppercase).
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class DbMetaHelper {
 

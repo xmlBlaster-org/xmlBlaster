@@ -42,7 +42,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * connections (one for each session). Then again, each jms session would map to
  * one xmlBlaster session.
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBConnection implements QueueConnection, TopicConnection, I_StatusChangeListener {

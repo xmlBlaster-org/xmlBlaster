@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Class encapsulating the unique id for the message entries in queue
 Version:   $Id$
-Author:    xmlBlaster@marcelruff.info, laghi@swissinfo.org
+Author:    xmlBlaster@marcelruff.info, michele@laghi.eu
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 import org.xmlBlaster.util.Timestamp;

@@ -19,7 +19,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * FilePollerPlugin polls on a directory in the file system for new files. If one new file
  * is found which meets the required specifications, its content is read and published.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @see <a
  *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.filepoller.html">The
  *      client.filepoller requirement</a>

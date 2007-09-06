@@ -29,7 +29,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * 
  * Implementation details about how 
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBMessage implements Message { 

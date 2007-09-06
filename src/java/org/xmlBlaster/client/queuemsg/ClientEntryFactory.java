@@ -42,7 +42,7 @@ import java.io.IOException;
  * useful for example if you want to store such entries in persistent storage
  * like a database or a file system. It might however be used even for other
  * purposes.
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  */
 public class ClientEntryFactory implements I_EntryFactory

@@ -13,7 +13,7 @@ import java.util.Comparator;
 /**
  * This class is used to compare PluginConfig objects with eachother.
  * <p>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class PluginConfigComparator implements Comparator
 {

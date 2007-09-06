@@ -15,7 +15,7 @@ import java.util.Set;
  * 
  * PropertiesInfo This is the I_Info implementation making use of Properties.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class PropertiesInfo implements I_Info {
         

@@ -20,7 +20,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * can choose the update() they like most.
  *
  * @version $Revision: 1.7 $
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public interface I_CallbackExtended extends I_Callback, I_CallbackRaw
 {

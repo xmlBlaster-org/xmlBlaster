@@ -17,7 +17,7 @@ import org.xmlBlaster.contrib.db.DbMetaHelper;
 
 /**
  * SearchableConfig
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class SearchableConfig extends DefaultMapper {
 

@@ -21,7 +21,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * InfoHelper offers helper methods for operations on I_Info objects.
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class InfoHelper {
 

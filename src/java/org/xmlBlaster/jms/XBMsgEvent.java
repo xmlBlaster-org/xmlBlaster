@@ -14,7 +14,7 @@ import javax.jms.MessageListener;
  * XBMsgEvent is a placeholder used to be passed from the update method of a specific
  * MessageConsumer to the thread of control for asynchronous calls, which
  * is the thread of the associated session (its run() method).
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 final class XBMsgEvent {
 

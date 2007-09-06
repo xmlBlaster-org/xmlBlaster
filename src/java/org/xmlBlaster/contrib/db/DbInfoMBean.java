@@ -17,7 +17,7 @@ package org.xmlBlaster.contrib.db;
  * 
  * This class is thread safe.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public interface DbInfoMBean {
    String get(String key, String def);

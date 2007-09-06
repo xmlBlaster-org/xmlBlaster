@@ -11,7 +11,7 @@ import javax.jms.TemporaryQueue;
 /**
  * XBTemporaryQueue
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBTemporaryQueue extends XBDestination implements TemporaryQueue {

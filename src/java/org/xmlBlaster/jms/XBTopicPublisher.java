@@ -15,7 +15,7 @@ import javax.jms.TopicPublisher;
 /**
  * XBTopicPublisher
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBTopicPublisher extends XBMessageProducer implements TopicPublisher {

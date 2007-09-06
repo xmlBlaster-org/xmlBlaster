@@ -26,7 +26,7 @@ import org.xmlBlaster.contrib.replication.I_Mapper;
  * table1=tableOne,table2=tableTwo,...
  * All tables not found the the configuration are mapped one to one.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class DefaultMapper implements I_Mapper {
 

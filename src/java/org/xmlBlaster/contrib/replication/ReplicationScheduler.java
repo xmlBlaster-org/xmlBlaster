@@ -18,7 +18,7 @@ import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
  * implementations where it is not possible to get CREATE TABLE, DROP TABLE or ALTER TABLE events by means of
  * trigger. This is for example the case of PostGres 8.0.
  *  
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 
 public class ReplicationScheduler extends AlertScheduler {

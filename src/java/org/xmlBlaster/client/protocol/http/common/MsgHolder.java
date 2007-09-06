@@ -10,7 +10,7 @@ package org.xmlBlaster.client.protocol.http.common;
  * MsgHolder is a placeholder for the messages to be sent to xmlBlaster, i.e.
  * the requests to xmlBlaster.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class MsgHolder {
 

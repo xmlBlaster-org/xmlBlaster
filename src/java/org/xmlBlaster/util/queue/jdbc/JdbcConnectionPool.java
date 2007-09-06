@@ -3,7 +3,7 @@ Name:      JdbcConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JDBC Connection Pool for persistent queues.
-Author:    laghi@swissinfo.org
+Author:    michele@laghi.eu
 ------------------------------------------------------------------------------*/
 
 package org.xmlBlaster.util.queue.jdbc;

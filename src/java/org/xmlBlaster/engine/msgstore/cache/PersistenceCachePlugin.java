@@ -43,7 +43,7 @@ import java.util.Properties;
  * Implements a random access message storage.
  * <p/>
  * The implementation uses internally a RAM and a JDBC map and handles the caching between those two.
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.html">The engine.persistence requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 

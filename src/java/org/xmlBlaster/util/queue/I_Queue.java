@@ -35,7 +35,7 @@ import java.io.OutputStream;
  * <p>
  * All methods are reentrant and thread safe
  * </p>
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  */
 public interface I_Queue extends I_Storage, I_StorageProblemNotifier

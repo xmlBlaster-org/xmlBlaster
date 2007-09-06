@@ -43,7 +43,7 @@ import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
  * connections and invoke their update().
  * @see DispatchConnection
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 public final class CbDispatchConnection extends DispatchConnection
 {

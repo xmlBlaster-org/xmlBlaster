@@ -15,7 +15,7 @@ import java.util.logging.Level;
  * This runs in its own thread, so when it is stared, the invoker 
  * thread can return without waiting for all messages to be processed.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class ConsumableQueueWorker implements Runnable {
 

@@ -28,7 +28,7 @@ import org.xmlBlaster.util.qos.ConnectQosData;
 
 /**
  * Publisher
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class Publisher implements I_Timeout {
 

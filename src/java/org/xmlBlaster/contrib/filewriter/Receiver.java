@@ -55,7 +55,7 @@ import org.xmlBlaster.util.qos.ConnectQosData;
  * </pre>
  *
  * TODO Write a test for this class.
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class Receiver extends GlobalInfo implements I_Callback {
 

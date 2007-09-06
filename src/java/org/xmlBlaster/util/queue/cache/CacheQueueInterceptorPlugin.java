@@ -41,7 +41,7 @@ import java.io.OutputStream;
  * Implements a queue cache. 
  * Internally it utilizes a RAM queue and a JDBC queue and manages the cache logic. 
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.cache.html">The queue.cache requirement</a>
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  */
 public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_StorageProblemListener, CacheQueueInterceptorPluginMBean

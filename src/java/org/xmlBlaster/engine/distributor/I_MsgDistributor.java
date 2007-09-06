@@ -14,7 +14,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 /**
  * I_MsgDistributor
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public interface I_MsgDistributor extends I_SubscriptionListener, I_Plugin {

@@ -9,7 +9,7 @@ package org.xmlBlaster.jms;
 /**
  * I_StatusChangeListener Listens to changes of status of a particular object. 
  * Statuses are int values defined as static constant members here.
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 interface I_StatusChangeListener {
    

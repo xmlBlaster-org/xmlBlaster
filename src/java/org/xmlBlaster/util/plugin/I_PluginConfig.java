@@ -6,7 +6,7 @@ import java.util.Properties;
  * Abstraction to allow access configuration parameters of a Plugin. 
  * Example: xmlBlasterPlugins. <attributes:
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public interface I_PluginConfig {
    

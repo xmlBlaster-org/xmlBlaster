@@ -11,7 +11,7 @@ import javax.jms.TextMessage;
 /**
  * XBTextMessage
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBTextMessage extends XBMessage implements TextMessage {

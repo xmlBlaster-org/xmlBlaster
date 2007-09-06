@@ -16,7 +16,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 /**
  * XBQueueBrowser
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBQueueBrowser implements QueueBrowser {

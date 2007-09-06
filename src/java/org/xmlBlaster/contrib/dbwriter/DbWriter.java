@@ -27,7 +27,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * 
- * @author Michele Laghi mailto:laghi@swissinfo.org
+ * @author Michele Laghi mailto:michele@laghi.eu
  */
 public class DbWriter implements I_Update {
 

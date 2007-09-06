@@ -15,7 +15,7 @@ import javax.jms.QueueSession;
 /**
  * XBQueueSession
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBQueueSession extends XBSession implements QueueSession {

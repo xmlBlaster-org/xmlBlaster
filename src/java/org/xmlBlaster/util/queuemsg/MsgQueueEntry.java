@@ -22,7 +22,7 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
 /**
  * Base class to enter xmlBlaster method invocations (messages) into an ordered queue.
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 {

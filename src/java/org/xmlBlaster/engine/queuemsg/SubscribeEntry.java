@@ -13,7 +13,7 @@ import org.xmlBlaster.util.queue.StorageId;
 
 /**
  * SubscribeEntry
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class SubscribeEntry implements I_MapEntry {
    private static final long serialVersionUID = 1L;

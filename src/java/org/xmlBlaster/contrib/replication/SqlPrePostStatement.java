@@ -29,7 +29,7 @@ import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
  * after the operation on the replica (it is invoked as an optional plugin by the 
  * ReplicationWriter).
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class SqlPrePostStatement implements I_PrePostStatement {
    

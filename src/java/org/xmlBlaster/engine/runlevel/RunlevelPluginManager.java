@@ -14,7 +14,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * This class is used to load the static plugins, i.e. the plugins loaded by the 
  * RunlevelManager.
  * <p>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
  */

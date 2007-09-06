@@ -20,7 +20,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 /**
  * XBTextMessage
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBObjectMessage extends XBMessage implements ObjectMessage {

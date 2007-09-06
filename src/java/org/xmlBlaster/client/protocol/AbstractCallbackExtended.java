@@ -28,7 +28,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
  * <p>
  *
  * @version $Revision: 1.16 $
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public abstract class AbstractCallbackExtended implements I_CallbackExtended

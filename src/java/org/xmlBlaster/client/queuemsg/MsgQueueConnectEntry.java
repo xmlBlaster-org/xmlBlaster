@@ -19,7 +19,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * Wraps an connect() message into an entry for a sorted queue.
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  */
 public final class MsgQueueConnectEntry extends MsgQueueEntry

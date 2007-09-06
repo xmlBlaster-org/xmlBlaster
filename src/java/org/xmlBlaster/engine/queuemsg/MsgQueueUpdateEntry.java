@@ -19,7 +19,7 @@ import org.xmlBlaster.util.queue.StorageId;
 
 /**
  * Wraps an publish() message into an entry for a sorted queue.
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  */
 public final class MsgQueueUpdateEntry extends ReferenceEntry

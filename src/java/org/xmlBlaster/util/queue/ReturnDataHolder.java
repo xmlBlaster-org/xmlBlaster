@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * implementations of the I_Queue and their helper classes.
  * 
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
- * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
+ * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  *
  */
 public class ReturnDataHolder {

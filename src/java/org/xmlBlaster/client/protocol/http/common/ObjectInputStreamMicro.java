@@ -14,7 +14,7 @@ import java.util.Vector;
 
 /**
  * ObjectInputStreamMicro
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class ObjectInputStreamMicro implements I_ObjectStream {
 

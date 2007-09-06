@@ -11,7 +11,7 @@ package org.xmlBlaster.util.queue.jdbc;
  * JdbcConnectionPool that the pool has successfully reconnected
  *
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 public interface I_ConnectionListener
 {

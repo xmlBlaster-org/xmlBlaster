@@ -44,7 +44,7 @@ import java.util.HashMap;
  * java javaclients.XmlScript -requestFile inFile.xml -responseFile outFile.xml -updateFile updFile.xml
  * </tt>
  * </p>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.script.html">The client.script requirement</a>
  */
 public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback {

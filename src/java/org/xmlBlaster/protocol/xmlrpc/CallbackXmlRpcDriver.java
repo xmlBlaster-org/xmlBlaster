@@ -27,7 +27,7 @@ import java.util.Vector;
  * <p>
  * The I_CallbackDriver.update() method of the client will be invoked
  *
- * @author Michele Laghi (laghi@swissinfo.org)
+ * @author Michele Laghi (michele@laghi.eu)
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
  */

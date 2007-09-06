@@ -13,7 +13,7 @@ import org.xmlBlaster.contrib.replication.ReplicationConstants;
 
 /**
  * I_PrePostStatement is an interface which is invoked just before a statement is invoked for a row and just after. 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public interface I_PrePostStatement extends I_ContribPlugin, ReplicationConstants {
 

@@ -20,7 +20,7 @@ import gnu.regexp.REException;
  * FilenameFilter. This code is based on the BasicFileChooserUI swing code. The
  * difference is that id returns false if the found file is a directory.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi </a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi </a>
  */
 public class FilenameFilter implements FileFilter {
 

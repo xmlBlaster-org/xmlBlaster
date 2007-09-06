@@ -23,7 +23,7 @@ import org.xmlBlaster.client.protocol.I_CallbackServer;
  * This means that even when choosing the local protocol there could be the situation where
  * the client is not (yet/anymore) available, particularly on run level changes.
  *  
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>.
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>.
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.local.html">The protocol.local requirement</a>

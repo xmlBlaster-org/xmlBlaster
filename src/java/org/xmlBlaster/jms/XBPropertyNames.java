@@ -15,7 +15,7 @@ import org.xmlBlaster.util.def.Constants;
  * XBProviderSpecificProperties. Here are the definitions of the
  * keys of the properties used within xmlBlaster for JMS.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class XBPropertyNames {
    

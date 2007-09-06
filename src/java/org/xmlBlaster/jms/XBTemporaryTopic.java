@@ -11,7 +11,7 @@ import javax.jms.TemporaryTopic;
 /**
  * XBTemporaryTopic
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBTemporaryTopic extends XBDestination implements TemporaryTopic {

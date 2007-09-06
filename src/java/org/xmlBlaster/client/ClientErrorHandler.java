@@ -19,7 +19,7 @@ import org.xmlBlaster.util.error.I_MsgErrorInfo;
  * The default error recovery implementation for messages which are lost
  * in time and universe.
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 public final class ClientErrorHandler implements I_MsgErrorHandler
 {

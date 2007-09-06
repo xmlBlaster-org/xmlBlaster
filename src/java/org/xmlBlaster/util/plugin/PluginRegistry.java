@@ -19,7 +19,7 @@ import java.util.Enumeration;
 /**
  * One instance of this class is used to keep track of all cached plugins.
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class PluginRegistry {
    private static String ME = "PluginRegistry";

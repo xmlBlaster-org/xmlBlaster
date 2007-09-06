@@ -17,7 +17,7 @@ import java.util.TreeSet;
 /**
  * This class contains the information on how to configure a certain plugin and when a certain plugin is invoked by the run level manager
  * <p>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
  * <pre>

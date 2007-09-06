@@ -14,7 +14,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 
 /**
  * I_ReplSlave
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public interface I_ReplSlave extends I_ContribPlugin {
    

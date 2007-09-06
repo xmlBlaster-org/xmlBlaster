@@ -26,7 +26,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 /**
  * FileWriterCallback stores messages to the file system.
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class FileWriterCallback implements I_Update, ContribConstants {
 

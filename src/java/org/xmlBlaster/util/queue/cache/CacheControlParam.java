@@ -11,7 +11,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
  * Class used to configure and control the swapping behaviour (and performance)
  * of the cache queue.
  * 
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  */
 public class CacheControlParam

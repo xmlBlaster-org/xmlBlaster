@@ -27,7 +27,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 
 /**
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 public class SqlInfoParser extends XmlParserBase implements I_Parser {
    

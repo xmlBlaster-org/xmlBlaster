@@ -35,7 +35,7 @@ import org.xmlBlaster.engine.ServerScope;
  * a filter.
  * <p />
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @see <a href="http://java.sun.com/products/jms/docs.html" target="others">The
  *      JMS specification</a>
  */

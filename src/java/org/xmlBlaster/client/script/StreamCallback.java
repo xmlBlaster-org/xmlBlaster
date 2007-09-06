@@ -27,7 +27,7 @@ import org.xmlBlaster.util.def.ErrorCode;
  * If you want another behavior (for example by outputting the content in base64) you
  * can overwrite the writeContent method.
  *   
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class StreamCallback implements I_Callback {
 

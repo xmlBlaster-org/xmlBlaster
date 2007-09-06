@@ -59,7 +59,7 @@ import java.io.InputStream;
  * 
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/queue.jdbc.commontable.html">The queue.jdbc.commontable requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
- * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
+ * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  *
  */
 public class JdbcManagerCommonTable implements I_StorageProblemListener, I_StorageProblemNotifier {

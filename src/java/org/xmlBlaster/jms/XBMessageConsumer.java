@@ -39,7 +39,7 @@ import org.xmlBlaster.util.qos.QuerySpecQos;
 /**
  * XBMessageConsumer
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBMessageConsumer implements MessageConsumer, I_Callback {

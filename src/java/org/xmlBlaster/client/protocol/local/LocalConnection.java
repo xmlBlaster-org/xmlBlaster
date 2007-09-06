@@ -28,7 +28,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
  * <p>There is one very important requirement for this to work: The client
  that gets the XmlBlasterAccess from wich this driver is instantiated MUST
  have access to the serverside engine.Global singleton, it MUST use a cloned Global for each connection that contains the engine.Global in the cloned globals objectEntry at key: ServerNodeScope.</p>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>.
  * @see LocalCallbackImpl

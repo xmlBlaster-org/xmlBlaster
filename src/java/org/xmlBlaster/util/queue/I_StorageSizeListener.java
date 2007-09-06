@@ -10,7 +10,7 @@ package org.xmlBlaster.util.queue;
  * I_StorageSizeListener listens on number of containing entry changes in the queue.
  * 
  * @author <a href="mailto:mr@marcelruff.info">Marcel Ruff</a>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public interface I_StorageSizeListener {
    

@@ -36,7 +36,7 @@ import edu.emory.mathcs.backport.java.util.concurrent.TimeUnit;
  * Each TopicHandler/SessionInfo or SubjectInfo instance creates its own instance of this plugin. 
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.html">The engine.qos.queryspec requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">The engine.qos.queryspec.QueueQuery requirement</a>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class QueueQueryPlugin implements I_Query, I_StorageSizeListener {
    

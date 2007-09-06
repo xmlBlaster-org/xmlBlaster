@@ -23,7 +23,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * <br />
  * The method parseLine respects quoted '"' tokens and ignores the separator inside the quotes.
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author <a href="mailto:mr@marcelruff.info">Marcel Ruff</a>
  */
 public class StringPairTokenizer {

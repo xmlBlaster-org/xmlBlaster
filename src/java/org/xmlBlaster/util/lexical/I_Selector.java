@@ -13,7 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 /**
  * I_Selector
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public interface I_Selector {
    

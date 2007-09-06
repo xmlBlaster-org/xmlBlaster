@@ -43,7 +43,7 @@ import org.xmlBlaster.util.xbformat.I_ProgressListener;
  * you need to create a new instance if desired
  * </p>
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 abstract public class DispatchConnection implements I_Timeout
 {

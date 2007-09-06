@@ -12,7 +12,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * Class encapsulating the unique id of a queue or a cache. 
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  * @author xmlBlaster@marcelruff.info
  */
 public class StorageId implements java.io.Serializable

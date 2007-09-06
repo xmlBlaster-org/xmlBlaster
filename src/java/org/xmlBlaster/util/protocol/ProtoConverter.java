@@ -22,7 +22,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
  * support a particular data type. This class is used extensively in the
  * xml-rpc protocol where user-defined classes are not supported.
  * <p />
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class ProtoConverter {
 

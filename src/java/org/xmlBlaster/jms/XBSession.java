@@ -52,7 +52,7 @@ import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
 /**
  * XBSession
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * 
  */
 public class XBSession extends Thread implements Session, I_Callback {

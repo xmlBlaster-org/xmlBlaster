@@ -36,7 +36,7 @@ import org.apache.xmlrpc.XmlRpcException;
  * xmlBlaster would be on the same VM, making this way the xml-rpc protocol
  * totally transparent.
  * <p />
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class XmlRpcConnection implements I_XmlBlasterConnection
