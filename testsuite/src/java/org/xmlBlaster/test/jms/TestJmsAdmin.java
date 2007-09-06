@@ -31,7 +31,7 @@ import org.xmlBlaster.jms.XBDestination;
  * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.TestJmsAdmin
  * @see org.xmlBlaster.util.qos.ConnectQosData
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/jms.html" target="others">the jms requirement</a>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class TestJmsAdmin extends XMLTestCase {
    private final static String CONNECTION_FACTORY = "connectionFactory";

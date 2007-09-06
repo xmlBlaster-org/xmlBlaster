@@ -47,7 +47,7 @@ import java.util.Set;
  * {@link #setUpDbPool(I_Info)}
  * </p>
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
    private static Logger log = Logger.getLogger(TestDbBasics.class.getName());

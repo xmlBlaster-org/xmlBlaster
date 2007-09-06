@@ -47,7 +47,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * Test helper classes as for example beans used for the configuration.
  * Does not need a DB nor xmlBlaster running.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class TestHelperClasses extends XMLTestCase {
    private static Logger log = Logger.getLogger(TestHelperClasses.class.getName());

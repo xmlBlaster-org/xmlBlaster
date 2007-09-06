@@ -36,7 +36,7 @@ import junit.framework.*;
  * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.TestJmsSubscribe
  * @see org.xmlBlaster.util.qos.ConnectQosData
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/jms.html" target="others">the jms requirement</a>
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class TestJmsSubscribe extends TestCase implements MessageListener {
    private final static String CONNECTION_FACTORY = "connectionFactory";

@@ -22,7 +22,7 @@ import org.apache.naming.NamingService;
 /**
  * JndiDumper is used to analize the specified context.
  * 
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class JndiDumper {
 

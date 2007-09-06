@@ -23,7 +23,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 /**
  * PtPDestination is a helper class when testing ptp destinations
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class PtPDestination {
    private Global global;

@@ -34,7 +34,7 @@ import org.xmlBlaster.contrib.replication.TableToWatchInfo;
  * {@link #setUpDbPool(I_Info)}
  * </p>
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class TestSqlPrePostStatement extends XMLTestCase {
    private static Logger log = Logger.getLogger(TestSqlPrePostStatement.class.getName());

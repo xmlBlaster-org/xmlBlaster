@@ -44,7 +44,7 @@ import org.xmlBlaster.util.Global;
  * {@link #setUpDbPool(I_Info)}
  * </p>
  *
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class TestReplication extends XMLTestCase {
    private static Logger log = Logger.getLogger(TestReplication.class.getName());
