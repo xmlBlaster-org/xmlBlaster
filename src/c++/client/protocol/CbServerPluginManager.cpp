@@ -11,7 +11,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
  * with your own lowlevel SOCKET or CORBA coding as well.
  *
  * @see org.xmlBlaster.client.protocol.I_CallbackServer
- * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
+ * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>.
  */
 
 #include <client/protocol/CbServerPluginManager.h>

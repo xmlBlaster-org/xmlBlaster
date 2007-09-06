@@ -21,7 +21,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.QueryQosFactoryTest
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 
 #include <util/qos/QueryQosData.h>

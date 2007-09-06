@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
 Version:   $Id$
-Author:    <Michele Laghi> laghi@swissinfo.org
+Author:    <Michele Laghi> michele@laghi.eu
 ----------------------------------------------------------------------------*/
 #ifdef _WINDOWS
 #pragma warning(disable:4786)

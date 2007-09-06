@@ -16,7 +16,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @see org.xmlBlaster.util.qos.MsgQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 
 #include <util/qos/TopicProperty.h>

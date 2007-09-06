@@ -20,7 +20,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @see org.xmlBlaster.util.qos.StatusQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 
 #include <client/qos/SubscribeReturnQos.h>

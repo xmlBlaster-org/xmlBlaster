@@ -13,7 +13,7 @@ Version:   $Id$
  * Holds example a CORBA "IOR:00012..." string
  * @version $Revision: 1.6 $
  * @author xmlBlaster@marcelruff.info
- * @author laghi@swissinfo.org
+ * @author michele@laghi.eu
  */
 
 #include <util/ServerRef.h>

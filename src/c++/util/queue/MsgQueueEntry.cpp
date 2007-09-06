@@ -18,7 +18,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * This way this queue entry is the owner of the content (and therefore will
  * delete it when its destructor is called).
  *
- * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
+ * @author <a href='mailto:michele@laghi.eu'>Michele Laghi</a>
  */
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
