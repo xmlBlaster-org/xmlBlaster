@@ -638,18 +638,19 @@ public class SqlInfo implements ReplicationConstants {
    }
 
    public String toXml(String extraOffset) {
-      return toXml(extraOffset, false, false);
+      return toXml(extraOffset, false, false, false);
    }
    
    public String toString() {
-      return toXml("", true, true);
+      return toXml("", true, true, false);
    }
    
-   public final String toXml(String extraOffset, boolean doTruncate, boolean forceReadable) {
+   public final String toXml(String extraOffset, boolean doTruncate, boolean forceReadable, boolean omitDecl) {
       String charSet = info.get("charSet", "UTF-8");
       final boolean withRowTag = true; // used for row.toXml()
       StringBuffer sb = new StringBuffer(4096);
-      sb.append("<?xml version='1.0' encoding='" + charSet + "' ?>");
+      if (!omitDecl)
+         sb.append("<?xml version='1.0' encoding='" + charSet + "' ?>");
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
       sb.append(offset).append("<").append(SQL_TAG).append(">");
