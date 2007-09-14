@@ -115,7 +115,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
    protected boolean useGroupCol;
    protected int changeCount;
    protected String queryMeatStatement;
-   protected Connection conn;
+   //protected Connection conn;
 
    /**
     * Default constructor, you need to call {@link #init} thereafter. 
@@ -209,15 +209,15 @@ public class MD5ChangeDetector implements I_ChangeDetector
    public synchronized int checkAgain(Map attrMap) throws Exception {
       if (log.isLoggable(Level.FINE)) log.fine("Checking for MD5 changes ...");
       this.changeCount = 0;
-      this.conn = null;
+      Connection conn = null;
 
       try {
-         this.conn = this.dbPool.select(this.conn, this.changeDetectStatement, new I_ResultCb() {
+         conn = this.dbPool.select(conn, this.changeDetectStatement, new I_ResultCb() {
             public void result(Connection conn, ResultSet rs) throws Exception {
                if (log.isLoggable(Level.FINE)) log.fine("Processing result set");
             
                if (rs == null) {
-                  int changeCount = 0; 
+                  changeCount = 0;
                   if (!tableExists || md5Map.size() == 0) {
                      if (log.isLoggable(Level.FINE)) log.fine("Table/view '" + changeDetectStatement + "' does not exist, no changes to report");
                   }
@@ -229,7 +229,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
                         String resultXml = "";
                         if (queryMeatStatement != null) { // delegate processing of message meat ...
                            ChangeEvent changeEvent = new ChangeEvent(groupColName, key, null, "DROP", null);
-                           changeCount = changeListener.publishMessagesFromStmt(queryMeatStatement, useGroupCol, changeEvent, conn);
+                           changeCount += changeListener.publishMessagesFromStmt(queryMeatStatement, useGroupCol, changeEvent, conn);
                         }
                         else {
                            if (dataConverter != null) {
@@ -264,10 +264,10 @@ public class MD5ChangeDetector implements I_ChangeDetector
                     this.changeDetectStatement + "': " + e.toString()); 
       }
       finally {
-         if (this.conn != null) {
-            this.conn.commit();
-            this.dbPool.release(this.conn);
-            this.conn = null;
+         if (conn != null) {
+            conn.commit();
+            this.dbPool.release(conn);
+            conn = null;
          }
       }
       return changeCount;
@@ -315,7 +315,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
          if (this.queryMeatStatement != null) { // delegate processing of message meat ...
             ChangeEvent changeEvent = new ChangeEvent(this.groupColName, null, null, command, null);
             String stmt = this.queryMeatStatement;
-            count = changeListener.publishMessagesFromStmt(stmt, false, changeEvent, this.conn);
+            count = changeListener.publishMessagesFromStmt(stmt, false, changeEvent, conn);
          }
          else { // send message without meat ...
             if (dataConverter != null) {
