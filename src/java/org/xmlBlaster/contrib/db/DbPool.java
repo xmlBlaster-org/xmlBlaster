@@ -25,6 +25,8 @@ import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.util.pool.PoolManager;
 import org.xmlBlaster.util.pool.I_PoolManager;
 import org.xmlBlaster.util.pool.ResourceWrapper;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
@@ -58,7 +60,6 @@ public class DbPool implements I_DbPool, I_PoolManager {
    private long resourceExhaustSleepGap;
    private final Object meetingPoint = new Object();
    private int initCount = 0;
-   
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
@@ -159,11 +160,13 @@ public class DbPool implements I_DbPool, I_PoolManager {
           }
           catch (XmlBlasterException e) {
              if (e.getErrorCode() == ErrorCode.RESOURCE_EXHAUST && ii < this.maxResourceExhaustRetries) {
-                if (ii == 0) log.warning("Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
+                if (ii == 0)
+                   log.warning("Caught exception in reserve(), going to poll " + this.maxResourceExhaustRetries + " times every " + resourceExhaustSleepGap + " millis");
                 try { Thread.sleep(this.resourceExhaustSleepGap); } catch (InterruptedException ie) { /* Ignore */ }
                 ii++;
              }
              else {
+                log.warning("Other stacks are doing: " + ThreadLister.getAllStackTraces());
                 throw e;
              }
          }
@@ -360,7 +363,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
          stmt = conn.createStatement();
          if (log.isLoggable(Level.FINE)) log.fine("Running " + (autoCommit?"autoCommit":"in "+((connection==null)?"new ":"")+"open transaction") + " command '" + command + "'");
          rs = stmt.executeQuery(command);
-         cb.result(connection, rs);
+         cb.result(conn, rs);
       }
       catch (SQLException e) {
          if (e.getSQLState() != null && e.getSQLState().indexOf("42000") != -1
@@ -368,7 +371,7 @@ public class DbPool implements I_DbPool, I_PoolManager {
             // sqlStateXOpen=1, sqlStateSQL99=2 (Oracle 10g returns 0)
             //log.fine("SQLStateType=" + conn.getMetaData().getSQLStateType());
             log.fine("No db change detected, the table does not exist: " + e.toString());
-            cb.result(connection, null);
+            cb.result(conn, null);
             return conn;
          }
          String str = "SQLException in query '" + command + "' : " + e;

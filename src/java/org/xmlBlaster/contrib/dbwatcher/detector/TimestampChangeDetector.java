@@ -341,7 +341,7 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
                   throw new IllegalArgumentException("Please correct your change detection SQL statement, it may return max one result set: 'changeDetector.detectStatement="+changeDetectStatement);
 
                if (log.isLoggable(Level.FINE)) log.fine("oldTimestamp=" + oldTimestamp + " newTimestamp=" + newTimestamp);
-            }
+            } // end of callback method
          });
        
          if (this.changeCommand != null) {
@@ -387,6 +387,8 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
             }
             catch (SQLException ex) {
             }
+            this.dbPool.erase(conn);
+            conn = null;
          }
          if (!reported) {
             log.severe("Panic: Change detection failed for '" +
@@ -394,10 +396,7 @@ public class TimestampChangeDetector implements I_ChangeDetector, TimestampChang
          }
       }
       finally {
-         if (conn != null) {
-            conn.commit();
-            this.dbPool.release(conn);
-         }
+         DbWatcher.releaseWithCommit(conn, this.dbPool);
       }
       return changeCount;
    }

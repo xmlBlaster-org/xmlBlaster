@@ -540,4 +540,34 @@ public class DbWatcher implements I_ChangeListener {
          // this.info.putObject("db.pool", null);
       }
    }
+   
+   
+   /**
+    * Helper method used for cleanup:
+    * invoke conn = DbWatcher.
+    * @param conn
+    * @param pool
+    * @return always null (to be set to the connection) 
+    * @throws Exception
+    */
+   public static Connection releaseWithCommit(Connection conn, I_DbPool pool) throws Exception {
+      if (conn != null) {
+         try {
+            conn.commit();
+         }
+         catch (Throwable ex) {
+            ex.printStackTrace();
+            if (conn != null) {
+               pool.erase(conn);
+               conn = null;
+            }
+         }
+         finally {
+            if (conn != null)
+               pool.release(conn);
+            conn = null;
+         }
+      }
+      return conn;
+   }
 }

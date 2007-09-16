@@ -28,6 +28,7 @@ import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.ChangeEvent;
+import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwatcher.I_ChangeListener;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 
@@ -261,14 +262,14 @@ public class MD5ChangeDetector implements I_ChangeDetector
       catch (Exception e) {
          e.printStackTrace();
          log.severe("Panic: Change detection failed for '" +
-                    this.changeDetectStatement + "': " + e.toString()); 
-      }
-      finally {
+                    this.changeDetectStatement + "': " + e.toString());
          if (conn != null) {
-            conn.commit();
-            this.dbPool.release(conn);
+            this.dbPool.erase(conn);
             conn = null;
          }
+      }
+      finally {
+         conn = DbWatcher.releaseWithCommit(conn, this.dbPool);
       }
       return changeCount;
    }
