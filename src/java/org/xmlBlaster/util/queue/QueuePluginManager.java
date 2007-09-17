@@ -167,6 +167,17 @@ public class QueuePluginManager extends PluginManagerBase implements I_StorageSi
       return plugin;
    }
 
+   public void cleanup(I_Storage storage) {
+      try {
+         if (this.storageEventHandler != null)
+            this.storageEventHandler.removeListener(storage);
+      }
+      catch (Throwable e) {
+         log.severe("Failed to remove StorageEventListener: " + e.toString());
+         e.printStackTrace();
+      }
+   }
+
    /**
     * Enforced by PluginManagerBase. 
     * @return The name of the property in xmlBlaster.property "QueuePlugin"
@@ -206,6 +217,13 @@ public class QueuePluginManager extends PluginManagerBase implements I_StorageSi
     */
    public void changed(I_Storage storage, long numEntries, long numBytes, boolean isShutdown) {
       this.storageEventHandler.changed(storage, numEntries, numBytes, isShutdown);
+   }
+
+   /**
+    * @return the storageEventHandler
+    */
+   public StorageEventHandler getStorageEventHandler() {
+      return this.storageEventHandler;
    }
    
 }

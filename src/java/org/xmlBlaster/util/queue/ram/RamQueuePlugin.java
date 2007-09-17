@@ -207,6 +207,8 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       if (log.isLoggable(Level.FINER)) {
          log.finer("shutdown() of queue " + this.getStorageId() + " which contains " + size + "messages");
       }
+      
+      glob.getQueuePluginManager().cleanup(this);
    }
 
    public boolean isShutdown() {

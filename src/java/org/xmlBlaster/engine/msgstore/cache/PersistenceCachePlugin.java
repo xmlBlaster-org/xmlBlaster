@@ -930,6 +930,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       }
       this.storageSizeListenerHelper.invokeStorageSizeListener();
       removeStorageSizeListener(null);
+      glob.getQueuePluginManager().cleanup(this);
    }
 
    public boolean isShutdown() {

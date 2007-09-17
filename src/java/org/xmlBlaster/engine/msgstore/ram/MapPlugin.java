@@ -383,6 +383,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       if (log.isLoggable(Level.FINER)) log.finer("shutdown() of RAM map " + this.getStorageId());
       this.storageSizeListenerHelper.invokeStorageSizeListener();
       removeStorageSizeListener(null);
+      glob.getQueuePluginManager().cleanup(this);
    }
 
    public final boolean isShutdown() {

@@ -48,6 +48,26 @@ public abstract class StorageEventHandler {
       }
    }
    
+   public void removeListener(I_Storage storage) throws XmlBlasterException {
+      if (this.processedEvents != null) {
+         synchronized(this.processedEvents) {
+            this.processedEvents.remove(storage);
+         }
+      }
+      if (this.events != null) {
+         synchronized(this.events) {
+            EventHelper helper = generateEventHelper(storage.getStorageId());
+            this.events.remove(helper.getKey());
+         }
+      }
+      if (this.unprocessedEvents != null) {
+         synchronized (this.unprocessedEvents) {
+            this.unprocessedEvents.remove(storage);
+            
+         }
+      }
+   }
+   
    private EventHelper getMatchingEvent(EventHelper helper, I_Storage storage) throws XmlBlasterException {
       if (helper == null || this.events == null)
          return null;

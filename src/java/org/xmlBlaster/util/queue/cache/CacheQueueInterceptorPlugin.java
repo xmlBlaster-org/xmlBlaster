@@ -1321,6 +1321,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       }
       this.storageSizeListenerHelper.invokeStorageSizeListener();
       removeStorageSizeListener(null);
+      glob.getQueuePluginManager().cleanup(this);
    }
 
    public boolean isShutdown() {
