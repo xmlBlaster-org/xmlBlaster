@@ -103,7 +103,8 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
       if (this.queue == null)
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_JDBC_INVALID, "The invoked queue is null (already shutdown ?)");
       ArrayList ret = this.queue.peek(numOfEntries, -1L);
-      if (ret.size() >= numOfEntries || timeout == 0L) // should be sufficient a ==
+      // TODO: if numOfEntries == -1 und timeout > 0L we expect at least one
+      if ((ret.size() > 0 && ret.size() >= numOfEntries) || timeout == 0L) // should be sufficient a ==
          return ret;
 
       try {
@@ -117,7 +118,8 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
          long remainingTime = 0L;
          boolean infiniteBlocking = (timeout < 0L);
          while ( (remainingTime=endTime-System.currentTimeMillis()) > 0L || infiniteBlocking) {
-            if (this.queue.getNumOfEntries() >= numOfEntries) {
+            if ((numOfEntries != -1 && this.queue.getNumOfEntries() >= numOfEntries) ||
+            		numOfEntries == -1 && this.queue.getNumOfEntries() > 0) {
                return cb.queueOperation(this.queue, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
             }
             long sleepTime = Math.max(remainingTime, this.pollInterval);

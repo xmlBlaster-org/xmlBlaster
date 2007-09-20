@@ -423,6 +423,15 @@ public class AjaxServlet extends HttpServlet {
 				return;
 			}
 
+		   /* see watchee.js for an example:
+		   In the mode "updatePoll" this script polls every 8000 millis for update
+		   and the servlet returns directly if nothing is available, this is suboptimal
+		   as we have a delay of up to 8 seconds.
+		   In the mode "updatePollBlocking" we don't poll but the servlet blocks our call
+		   and immediately returns when update messages arrive.
+		   To prevent from server timeouts the servlet returns after 15sec and we immediately
+		   poll again.
+		   */
 			// "timeout" and "numEntries" is only evaluated for "updatePollBlocking"
 			boolean updatePoll = actionType.equals("updatePoll");
 			boolean updatePollBlocking = actionType.equals("updatePollBlocking");
