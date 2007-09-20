@@ -1,10 +1,10 @@
 /*------------------------------------------------------------------------------
-Name:      AjaxServlet.java
-Project:   xmlBlaster.org
-Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Registered in xmlBlaster/demo/http/WEB-INF/web.xml
-Author:    xmlBlaster@marcelruff.info
-------------------------------------------------------------------------------*/
+ Name:      AjaxServlet.java
+ Project:   xmlBlaster.org
+ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+ Comment:   Registered in xmlBlaster/demo/http/WEB-INF/web.xml
+ Author:    xmlBlaster@marcelruff.info
+ ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http.ajax;
 
 import java.io.IOException;
@@ -41,6 +41,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.BlockingQueueWrapper;
@@ -55,10 +56,9 @@ import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
  */
 class BlasterInstance implements I_Callback {
-	private static Logger log = Logger.getLogger(BlasterInstance.class
-			.getName());
+	private static Logger log = Logger.getLogger(BlasterInstance.class.getName());
 
-	private Map/*<String, BlasterInstance>*/ blasterInstanceMap;
+	private Map/*<String, BlasterInstance>*/blasterInstanceMap;
 
 	private I_XmlBlasterAccess xmlBlasterAccess;
 
@@ -74,19 +74,18 @@ class BlasterInstance implements I_Callback {
 
 	private final String RELATED_AJAX = "ajax";
 
-   private BlockingQueueWrapper blockingQueueWrapper;
-   
+	private BlockingQueueWrapper blockingQueueWrapper;
+
 	public BlasterInstance(HttpServletRequest req,
-			Map/*<String, BlasterInstance>*/ blasterInstanceMap) {
+			Map/*<String, BlasterInstance>*/blasterInstanceMap) {
 		this.blasterInstanceMap = blasterInstanceMap;
-		req.getSession().setAttribute("sessionTimeoutListener",
-				new SessionTimeoutListener(this));
+		req.getSession().setAttribute("sessionTimeoutListener", new SessionTimeoutListener(this));
 		synchronized (this.blasterInstanceMap) {
 			this.blasterInstanceMap.put(req.getSession().getId(), this);
 		}
 	}
 
-    // TODO Business specific code should be moved somewhere else
+	// TODO Business specific code should be moved somewhere else
 	public String getGpsTopicId() {
 		// one publisher 'joe' -> 'gps.joe', many sessions 'joe/-1' 'joe/-2' may
 		// access it
@@ -98,40 +97,37 @@ class BlasterInstance implements I_Callback {
 
 	public String getCbSessionId() {
 		if (xmlBlasterAccess != null && xmlBlasterAccess.isConnected()) {
-			return this.xmlBlasterAccess.getConnectQos()
-				.getSessionCbQueueProperty().getCallbackAddresses()[0]
-				.getSecretSessionId();
+			return this.xmlBlasterAccess.getConnectQos().getSessionCbQueueProperty()
+					.getCallbackAddresses()[0].getSecretSessionId();
 		}
 		return "";
 	}
 
-	public void init(HttpServletRequest req, Properties props)
-			throws XmlBlasterException {
+	public void init(HttpServletRequest req, Properties props) throws XmlBlasterException {
 		this.glob = new Global(props);
 		this.xmlBlasterAccess = this.glob.getXmlBlasterAccess();
 		this.session = req.getSession();
 		this.sessionId = this.session.getId();
 		this.updateQueue = new RamQueuePlugin();
-		this.storageId = new StorageId(glob, RELATED_AJAX+":"+this.sessionId);
+		this.storageId = new StorageId(glob, RELATED_AJAX + ":" + this.sessionId);
 		// glob.getNodeId().getId() is not yet available:
-		QueuePropertyBase queueProps = new CbQueueProperty(glob, RELATED_AJAX,"/node/dummy");
+		QueuePropertyBase queueProps = new CbQueueProperty(glob, RELATED_AJAX, "/node/dummy");
 		queueProps.setMaxEntries(100L);
 		queueProps.setMaxBytes(200000L);
 		this.updateQueue.initialize(storageId, queueProps);
-      this.blockingQueueWrapper = new BlockingQueueWrapper(500L);
-      this.blockingQueueWrapper.init(this.updateQueue);
+		this.blockingQueueWrapper = new BlockingQueueWrapper(500L);
+		this.blockingQueueWrapper.init(this.updateQueue);
 		log.info("Created new sessionId=" + this.sessionId);
 	}
 
-	public synchronized void execute(byte[] xmlScriptRaw, Writer out)
-			throws XmlBlasterException, UnsupportedEncodingException,
-			IOException {
+	public synchronized void execute(byte[] xmlScriptRaw, Writer out) throws XmlBlasterException,
+			UnsupportedEncodingException, IOException {
 		String xmlScript = new String(xmlScriptRaw, "UTF-8");
-      log.info("Processing script: " + xmlScript);
+		log.info("Processing script: " + xmlScript);
 		java.io.Reader reader = new java.io.StringReader(xmlScript);
 		java.io.ByteArrayOutputStream outStream = new java.io.ByteArrayOutputStream();
-		XmlScriptClient interpreter = new XmlScriptClient(this.glob,
-				this.xmlBlasterAccess, this, null, outStream);
+		XmlScriptClient interpreter = new XmlScriptClient(this.glob, this.xmlBlasterAccess, this,
+				null, outStream);
 		interpreter.parse(reader);
 		byte[] bytes = outStream.toByteArray();
 		out.write(new String(bytes, "UTF-8"));
@@ -154,93 +150,91 @@ class BlasterInstance implements I_Callback {
 	}
 
 	public void put(MsgUnit msgUnit) throws XmlBlasterException {
-		MsgQueuePublishEntry queueEntry = new MsgQueuePublishEntry(glob,
-				msgUnit, this.storageId);
-		if (this.updateQueue.getNumOfEntries() >= this.updateQueue
-				.getMaxNumOfEntries())
+		MsgQueuePublishEntry queueEntry = new MsgQueuePublishEntry(glob, msgUnit, this.storageId);
+		if (this.updateQueue.getNumOfEntries() >= this.updateQueue.getMaxNumOfEntries())
 			this.updateQueue.remove(1, -1);
 		this.updateQueue.put(queueEntry, I_Queue.IGNORE_PUT_INTERCEPTOR);
 	}
 
-	public int sendUpdates(Writer out, boolean onlyContent) throws XmlBlasterException,
-			IOException {
-		ArrayList entries = this.updateQueue.takeLowest(-1, -1, null, false);
-		//For now we max send one message
-		// ArrayList entries = this.updateQueue.takeLowest(1, -1, null, false);
-		MsgUnit[] msgs = new MsgUnit[entries.size()];
-		if (msgs.length < 1)
+	/*
+	public int sendUpdates(Writer out, boolean onlyContent) throws XmlBlasterException, IOException {
+		if (this.updateQueue.getNumOfEntries() == 0)
 			return 0;
-      out.write("<xmlBlasterResponse>");
-		for (int i = 0; i < msgs.length; i++) {
+		ArrayList entries = this.updateQueue.takeWithPriority(-1,-1,PriorityEnum.MIN_PRIORITY.getInt(),PriorityEnum.MAX_PRIORITY.getInt());
+		int count = entries.size();
+		if (count < 1)
+			return 0;
+		out.write("<xmlBlasterResponse>");
+		for (int i = 0; i < count; i++) {
 			MsgQueuePublishEntry entry = (MsgQueuePublishEntry) entries.get(i);
-         out.write("<update>");
-         if (onlyContent)
-            out.write(entry.getMsgUnit().getContentStr());
-         else
-            out.write(entry.getMsgUnit().toXml());
-         out.write("</update>");
+			out.write("<update>");
+			if (onlyContent)
+				out.write(entry.getMsgUnit().getContentStr());
+			else
+				out.write(entry.getMsgUnit().toXml());
+			out.write("</update>");
 		}
-      out.write("</xmlBlasterResponse>");
+		out.write("</xmlBlasterResponse>");
+		return count;
+	}
+	*/
+
+	/**
+	 * This method gets the entries in the correct form, i.e. the first stored comes first.
+	 * @param out The out stream
+	 * @param onlyContent if false the complete MsgUnit XML is send
+	 * @param numEntries if -1 unlimited
+	 * @param timeout if 0 not blocking, if timeout > 0: blocking, if timeout < 0: infinite blocking
+	 * @return Number of send updates
+	 * @throws XmlBlasterException
+	 * @throws IOException
+	 */
+	public int sendUpdates(Writer out, boolean onlyContent, int numEntries, long timeout)
+			throws XmlBlasterException, IOException {
+		ArrayList entries = null;
+		if (timeout == 0) { // None Blocking
+			entries = this.updateQueue.takeWithPriority(numEntries,-1,
+					PriorityEnum.MIN_PRIORITY.getInt(),PriorityEnum.MAX_PRIORITY.getInt());
+		}
+		else {
+			entries = this.blockingQueueWrapper.blockingTakeWithPriority(numEntries, timeout,
+					PriorityEnum.MIN_PRIORITY.getInt(),PriorityEnum.MAX_PRIORITY.getInt());
+		}
+		int count = entries.size();
+		if (count < 1)
+			return 0;
+		out.write("<xmlBlasterResponse>");
+		for (int i = 0; i < count; i++) {
+			MsgQueuePublishEntry entry = (MsgQueuePublishEntry) entries.get(i);
+			out.write("<update>");
+			if (onlyContent)
+				out.write(entry.getMsgUnit().getContentStr());
+			else
+				out.write(entry.getMsgUnit().toXml());
+			out.write("</update>");
+		}
+		out.write("</xmlBlasterResponse>");
 		this.updateQueue.clear();
-		return msgs.length;
+		return count;
+
 	}
 
-   /**
-    * This method gets the entries in the correct form, i.e. the first stored comes first. (sendUpdates always sends
-    * the freshest).
-    * 
-    * @param out
-    * @param onlyContent
-    * @param numEntries
-    * @param timeout
-    * @return
-    * @throws XmlBlasterException
-    * @throws IOException
-    */
-   public int sendUpdatesBlocking(Writer out, boolean onlyContent, int numEntries, long timeout) throws XmlBlasterException,
-   IOException {
-      
-      ArrayList entries = this.blockingQueueWrapper.blockingTakeWithPriority(numEntries, timeout, 0, 9);
-      
-      MsgUnit[] msgs = new MsgUnit[entries.size()];
-      if (msgs.length < 1)
-         return 0;
-    out.write("<xmlBlasterResponse>");
-    for (int i = 0; i < msgs.length; i++) {
-       MsgQueuePublishEntry entry = (MsgQueuePublishEntry) entries.get(i);
-       out.write("<update>");
-       if (onlyContent)
-          out.write(entry.getMsgUnit().getContentStr());
-       else
-          out.write(entry.getMsgUnit().toXml());
-       out.write("</update>");
-    }
-    out.write("</xmlBlasterResponse>");
-    this.updateQueue.clear();
-    return msgs.length;
-      
-   }
-
-
-   
-   public String update(String cbSessionId, UpdateKey updateKey,
-			byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+	public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
+			UpdateQos updateQos) throws XmlBlasterException {
 		if (updateKey.isInternal() || !updateQos.isOk()) {
-			log.warning("Ignoring received message " + updateKey.toXml() + " "
-					+ updateQos.toXml());
+			log.warning("Ignoring received message " + updateKey.toXml() + " " + updateQos.toXml());
 			return "";
 		}
-		MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, updateQos
-				.getData());
+		MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, updateQos.getData());
 		// if (!positionHasChanged(req, pos)) {
 		// return "";String url = getUrl(pos);
 		// }
-      log.info("receiving '" + msgUnit.toXml() + "'");
+		log.info("receiving '" + msgUnit.toXml() + "'");
 		put(msgUnit);
 		return "";
 	}
 
-   // TODO Business specific code should be moved somewhere else
+	// TODO Business specific code should be moved somewhere else
 	public String getStartupPos() {
 		if (getGpsTopicId().length() < 1)
 			return "";
@@ -270,37 +264,38 @@ class BlasterInstance implements I_Callback {
 		}
 		this.session.invalidate();
 	}
-   
-   
-   void plainGet(HttpServletRequest req, HttpServletResponse res, StringWriter out) throws IOException, XmlBlasterException {
-      String topic = (String)req.getParameter("topic");
-      if (topic == null) {
-         log.severe("The topic must be specified when using 'plainGet'");
-         return;
-      }
-      String mimeType = (String)req.getParameter("mimeType");
-      String charset =  (String)req.getParameter("charset");
-      log.info("Making the request for 'plainGet' with topic='" + topic + "' mimeType='" + mimeType + "' charset='" + charset + "'");
-      res.setContentType("text/xml; charset=UTF-8");
-      GetKey key = new GetKey(this.glob, topic);
-      GetQos qos = new GetQos(this.glob);
-      MsgUnit[] ret = this.xmlBlasterAccess.get(key, qos);
-      if (ret != null && ret.length > 0) {
-         if (ret.length > 1)
-            log.warning("" + ret.length + " entries are found but only the first will be sent back to the client");
-         if (mimeType == null)
-            mimeType = ret[0].getContentMime();
-         if (mimeType == null)
-            mimeType = "text/xml";
-         if (charset == null)
-            charset = "UTF-8";
-         res.setContentType(mimeType + "; charset=" + charset);
-         out.write(ret[0].getContentStr());
-      }
-      else
-         log.info("No entry found for topic '" + topic + "'");
-   }
-   
+
+	void plainGet(HttpServletRequest req, HttpServletResponse res, StringWriter out)
+			throws IOException, XmlBlasterException {
+		String topic = (String) req.getParameter("topic");
+		if (topic == null) {
+			log.severe("The topic must be specified when using 'plainGet'");
+			return;
+		}
+		String mimeType = (String) req.getParameter("mimeType");
+		String charset = (String) req.getParameter("charset");
+		log.info("Making the request for 'plainGet' with topic='" + topic + "' mimeType='"
+				+ mimeType + "' charset='" + charset + "'");
+		res.setContentType("text/xml; charset=UTF-8");
+		GetKey key = new GetKey(this.glob, topic);
+		GetQos qos = new GetQos(this.glob);
+		MsgUnit[] ret = this.xmlBlasterAccess.get(key, qos);
+		if (ret != null && ret.length > 0) {
+			if (ret.length > 1)
+				log.warning("" + ret.length
+						+ " entries are found but only the first will be sent back to the client");
+			if (mimeType == null)
+				mimeType = ret[0].getContentMime();
+			if (mimeType == null)
+				mimeType = "text/xml";
+			if (charset == null)
+				charset = "UTF-8";
+			res.setContentType(mimeType + "; charset=" + charset);
+			out.write(ret[0].getContentStr());
+		} else
+			log.info("No entry found for topic '" + topic + "'");
+	}
+
 }
 
 /**
@@ -308,8 +303,7 @@ class BlasterInstance implements I_Callback {
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
  */
 class SessionTimeoutListener implements HttpSessionBindingListener {
-	private static Logger log = Logger.getLogger(SessionTimeoutListener.class
-			.getName());
+	private static Logger log = Logger.getLogger(SessionTimeoutListener.class.getName());
 
 	private BlasterInstance blasterInstance;
 
@@ -342,15 +336,14 @@ class SessionTimeoutListener implements HttpSessionBindingListener {
 public class AjaxServlet extends HttpServlet {
 	private static final long serialVersionUID = -8094289301696678030L;
 
-	private static Logger log = Logger.getLogger(AjaxServlet.class
-			.getName());
+	private static Logger log = Logger.getLogger(AjaxServlet.class.getName());
 
 	private Properties props = new Properties();
 
 	private int maxInactiveInterval = 60; // sec
 
 	/** key is the browser sessionId */
-	private Map/*<String, BlasterInstance>*/ blasterInstanceMap;
+	private Map/*<String, BlasterInstance>*/blasterInstanceMap;
 
 	public void init(ServletConfig conf) throws ServletException {
 		super.init(conf);
@@ -367,13 +360,13 @@ public class AjaxServlet extends HttpServlet {
 		this.blasterInstanceMap = new HashMap/*<String, BlasterInstance>*/();
 	}
 
-	public void doPost(HttpServletRequest req, HttpServletResponse res)
-			throws ServletException, IOException {
+	public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException,
+			IOException {
 		doGet(req, res);
 	}
 
-	public void doGet(HttpServletRequest req, HttpServletResponse res)
-			throws ServletException, IOException {
+	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException,
+			IOException {
 		String host = req.getRemoteAddr();
 		String ME = "AjaxServlet.doGet(" + host + "): ";
 		//log.info("ENTERING DOGET ....");
@@ -385,15 +378,14 @@ public class AjaxServlet extends HttpServlet {
 			HttpSession session = req.getSession(true);
 			session.setMaxInactiveInterval(this.maxInactiveInterval);
 			newBrowser = true;
-			log(ME + "new browser arrived, charset="
-					+ req.getCharacterEncoding());
+			log(ME + "new browser arrived, charset=" + req.getCharacterEncoding());
 		}
 
 		// set header field first
-      //res.setContentType("text/plain; charset=UTF-8");
-      // xml header don't like empty response, so send at least "<void/>
+		//res.setContentType("text/plain; charset=UTF-8");
+		// xml header don't like empty response, so send at least "<void/>
 		res.setContentType("text/xml; charset=UTF-8");
-      StringWriter out = new StringWriter();
+		StringWriter out = new StringWriter();
 
 		try {
 			BlasterInstance blasterInstance = getBlasterInstance(req);
@@ -407,105 +399,119 @@ public class AjaxServlet extends HttpServlet {
 			// TODO: handle logout script to also destroy the session entry
 
 			if (actionType.equals("xmlScript")) {
-				String xmlScript64 = (String)req.getParameter("xmlScriptBase64");
-            String xmlScriptPlain = (String)req.getParameter("xmlScriptPlain");
-            byte[] raw = null;
-            if (xmlScript64 != null && xmlScriptPlain != null) {
-               String errTxt = "You can not set both 'xmlScriptBase64' and 'xmlScriptPlain'";
-               out.write(errTxt);
-               return;
-            }
-            if (xmlScript64 != null) {
-               // the url encoder has somewhere changed my + to blanks
-               // you must send this by invoking encodeURIComponent(txt) on the javascript side. 
-               xmlScript64 = ReplaceVariable.replaceAll(xmlScript64, " ", "+");
-               raw = Base64.decode(xmlScript64);
-            }
-            else if (xmlScriptPlain != null) {
-               raw = xmlScriptPlain.getBytes();
-            }
-            else {
-               String errTxt = "You must choose one of 'xmlScriptBase64' and 'xmlScriptPlain' since you choosed 'xmlScript'";
-               out.write(errTxt);
-               return;
-            }
-            blasterInstance.execute(raw, out);
-            return;
+				String xmlScript64 = (String) req.getParameter("xmlScriptBase64");
+				String xmlScriptPlain = (String) req.getParameter("xmlScriptPlain");
+				byte[] raw = null;
+				if (xmlScript64 != null && xmlScriptPlain != null) {
+					String errTxt = "You can not set both 'xmlScriptBase64' and 'xmlScriptPlain'";
+					out.write(errTxt);
+					return;
+				}
+				if (xmlScript64 != null) {
+					// the url encoder has somewhere changed my + to blanks
+					// you must send this by invoking encodeURIComponent(txt) on the javascript side.
+					xmlScript64 = ReplaceVariable.replaceAll(xmlScript64, " ", "+");
+					raw = Base64.decode(xmlScript64);
+				} else if (xmlScriptPlain != null) {
+					raw = xmlScriptPlain.getBytes();
+				} else {
+					String errTxt = "You must choose one of 'xmlScriptBase64' and 'xmlScriptPlain' since you choosed 'xmlScript'";
+					out.write(errTxt);
+					return;
+				}
+				blasterInstance.execute(raw, out);
+				return;
 			}
 
-         if (actionType.equals("updatePoll")) {
-            String onlyContentTxt = (String)req.getParameter("onlyContent");
-            boolean onlyContent = onlyContentTxt != null && "true".equalsIgnoreCase(onlyContentTxt.trim());
-            int count = blasterInstance.sendUpdates(out, onlyContent);
-            if (count == 0) {
-               if (newBrowser || forceLoad) {
-                  String initGps = (String)req.getParameter("initGps");
-                  if (initGps != null && "true".equalsIgnoreCase(initGps.trim())) {
-                     String tmp = blasterInstance.getStartupPos();
-                     if (tmp.length() > 0) {
-                        out.write(tmp);
-                        log(ME + tmp);
-                     }
-                  }
-               }
-            }
-            else
-               log(ME + " Sending " + count + " received update messages to browser");
-            return;
-         }
-         if (actionType.equals("updatePollBlocking")) {
-            String onlyContentTxt = (String)req.getParameter("onlyContent");
-            boolean onlyContent = onlyContentTxt != null && "true".equalsIgnoreCase(onlyContentTxt.trim());
-            String timeoutTxt = (String)req.getParameter("timeout");
-            long timeout = 15000L;
-            if (timeoutTxt != null)
-               timeout = Long.parseLong(timeoutTxt.trim()) * 1000L;
-            String numEntriesTxt = (String)req.getParameter("numEntries");
-            int numEntries = 1;
-            if (numEntriesTxt != null)
-               numEntries = Integer.parseInt(numEntriesTxt.trim());
-            blasterInstance.sendUpdatesBlocking(out, onlyContent, numEntries, timeout);
-            return;
-         }
-         
-         if (actionType.equals("plainGet")) {
-            blasterInstance.plainGet(req, res, out);
-         }
+			// "timeout" and "numEntries" is only evaluated for "updatePollBlocking"
+			boolean updatePoll = actionType.equals("updatePoll");
+			boolean updatePollBlocking = actionType.equals("updatePollBlocking");
+			if (updatePoll || updatePollBlocking) {
+				boolean onlyContent = get(req, "onlyContent", false);
+				long timeout = get(req, "timeout", (updatePoll) ? 0L : 15000L);
+				int numEntries = get(req, "numEntries", -1);
+				int count = blasterInstance.sendUpdates(out, onlyContent, numEntries, timeout);
+				if (count == 0) { // watchee hack
+					if (newBrowser || forceLoad) {
+						String initGps = (String) req.getParameter("initGps");
+						if (initGps != null && "true".equalsIgnoreCase(initGps.trim())) {
+							String tmp = blasterInstance.getStartupPos();
+							if (tmp.length() > 0) {
+								out.write(tmp);
+								log(ME + tmp);
+							}
+						}
+					}
+				} else
+					log(ME + " Sending " + count + " received update messages to browser");
+				return;
+			}
+
+			if (actionType.equals("plainGet")) {
+				blasterInstance.plainGet(req, res, out);
+			}
 
 			// log(ME+"Ignoring identical");
 		} catch (XmlBlasterException e) {
 			log.warning("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
 					+ e.toString());
-			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
-					+ e.toString());
+			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": " + e.toString());
 			// if (newBrowser || forceLoad)
 			// out.write(blasterInstance.getStartupPos());
 		} catch (Throwable e) {
-			log.severe("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
-					+ e.toString());
-         e.printStackTrace();
-			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
-					+ e.toString());
+			log
+					.severe("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
+							+ e.toString());
+			e.printStackTrace();
+			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": " + e.toString());
 		} finally {
-         PrintWriter backToBrowser = res.getWriter();
-         if (out.getBuffer().length() > 0)
-        	 log.info("Sending now '" + out.getBuffer().toString() + "'");
-         if (out.getBuffer().length() > 0)
-            backToBrowser.write(out.getBuffer().toString());
-         else
-            backToBrowser.write("<void/>"); // text/xml needs at least a root tag!
-         backToBrowser.close();
+			PrintWriter backToBrowser = res.getWriter();
+			if (out.getBuffer().length() > 0)
+				log.info("Sending now '" + out.getBuffer().toString() + "'");
+			if (out.getBuffer().length() > 0)
+				backToBrowser.write(out.getBuffer().toString());
+			else
+				backToBrowser.write("<void/>"); // text/xml needs at least a root tag!
+			backToBrowser.close();
 		}
 	}
 
-	private synchronized BlasterInstance getBlasterInstance(
-			HttpServletRequest req) throws XmlBlasterException {
+	public boolean get(HttpServletRequest req, String key, boolean defaultVal) {
+		String value = (String) req.getParameter(key);
+		if (value == null) return defaultVal;
+		return "true".equalsIgnoreCase(value.trim());
+	}
+
+	public long get(HttpServletRequest req, String key, long defaultVal) {
+		String value = (String) req.getParameter(key);
+		if (value == null) return defaultVal;
+		try {
+			return Long.parseLong(value.trim());
+		}
+		catch (NumberFormatException e) {
+			return defaultVal;
+		}
+	}
+
+	public int get(HttpServletRequest req, String key, int defaultVal) {
+		String value = (String) req.getParameter(key);
+		if (value == null) return defaultVal;
+		try {
+			return Integer.parseInt(value.trim());
+		}
+		catch (NumberFormatException e) {
+			return defaultVal;
+		}
+	}
+
+	private synchronized BlasterInstance getBlasterInstance(HttpServletRequest req)
+			throws XmlBlasterException {
 		// Map blasterInstanceMap =
 		// (Map)session.getAttribute("blasterInstanceMap");
 		BlasterInstance blasterInstance = null;
 		synchronized (this.blasterInstanceMap) {
-			blasterInstance = (BlasterInstance) this.blasterInstanceMap.get(req
-					.getSession().getId());
+			blasterInstance = (BlasterInstance) this.blasterInstanceMap.get(req.getSession()
+					.getId());
 			if (blasterInstance != null)
 				return blasterInstance;
 
@@ -524,7 +530,7 @@ public class AjaxServlet extends HttpServlet {
 
 	public BlasterInstance[] getBlasterInstances() {
 		synchronized (this.blasterInstanceMap) {
-			return (BlasterInstance[])this.blasterInstanceMap.values().toArray(
+			return (BlasterInstance[]) this.blasterInstanceMap.values().toArray(
 					new BlasterInstance[this.blasterInstanceMap.size()]);
 		}
 	}
