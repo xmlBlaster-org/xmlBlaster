@@ -15,9 +15,9 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
 /**
- * BlockingQueueWrapper is a wrapper to I_Queue which can be used to perform a 
- * blocking peek on an I_Queue. 
- * 
+ * BlockingQueueWrapper is a wrapper to I_Queue which can be used to perform a
+ * blocking peek on an I_Queue.
+ *
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
 public class BlockingQueueWrapper implements I_StorageSizeListener {
@@ -27,11 +27,11 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
    private I_Queue queue;
    private boolean isRegistered;
    private boolean waiting;
-   
+
    public interface I_BlockingQueueCb {
       ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException;
    }
-   
+
    /**
     * Constructor
     * @param pollInterval time in milliseconds to wait before a check about the
@@ -43,27 +43,27 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
       else
          log.warning("The requested pollInterval is negative, will set it to the default value '" + this.pollInterval + "'");
    }
-   
+
    public BlockingQueueWrapper() {
       this(1000L);
    }
-   
+
    public synchronized void init(I_Queue queue) throws XmlBlasterException {
       if (queue == null)
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_CONFIGURATION, "The queue passed is null");
       this.queue = queue;
    }
-   
+
    public synchronized void shutdown() {
       if (this.isRegistered)
          this.queue.removeStorageSizeListener(this);
       this.queue = null;
-      
+
    }
 
    /**
     * Enforced by I_StorageSizeListener.
-    * 
+    *
     * @param queue
     * @param numEntries
     * @param numBytes
@@ -87,15 +87,15 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
 
    /**
     * Blocks until at least numOfEntries are found in the queue, or the timeout has occured. This method can return partial results,
-    * i.e. if the requested amout of entries is 10 and the number of entries in the queue is 4 when the timeout occurs, then the 
+    * i.e. if the requested amout of entries is 10 and the number of entries in the queue is 4 when the timeout occurs, then the
     * four entries found are returned.
-    * 
+    *
     * This method works best if the queue performs its puts without inhibiting queueSizeEvents (the second argument in the put method),
     * since the put would be intercepted directly. However even if the putter decides to inhibit this event, this method will poll
     * according to what specified in the constructor and will work anyway (possibly with a slight offset after the put has occured).
-    *  
+    *
     * @param numOfEntries the number of entries to return (or the maximum number of entries if the timeout occurs).
-    * @param timeout The timeout in milliseconds to wait until to return. 
+    * @param timeout The timeout in milliseconds to wait until to return, timeout=0: no blocking, timeout<0:Infinite blocking
     * @return The ArrayList containing the I_Entry entries of the queue found.
     * @throws XmlBlasterException if the queue is null or if the backend queue throws an Exception.
     */
@@ -105,7 +105,7 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
       ArrayList ret = this.queue.peek(numOfEntries, -1L);
       if (ret.size() >= numOfEntries || timeout == 0L) // should be sufficient a ==
          return ret;
-      
+
       try {
          this.waiting = true;
          if (!this.isRegistered) {
@@ -150,7 +150,7 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
          }
       });
    }
-   
+
    public ArrayList blockingPeekLowest(int numOfEntries, long timeout, I_QueueEntry limitEntry) throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  0, 0, limitEntry, new I_BlockingQueueCb() {
          public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
@@ -159,7 +159,7 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
          }
       });
    }
-   
+
    public ArrayList blockingTakeWithPriority(int numOfEntries, long timeout, int minPrio, int maxPrio) throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  minPrio, maxPrio, null, new I_BlockingQueueCb() {
          public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
@@ -167,7 +167,7 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
          }
       });
    }
-   
+
    public ArrayList blockingPeekWithPriority(int numOfEntries, long timeout, int minPrio, int maxPrio) throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  minPrio, maxPrio, null, new I_BlockingQueueCb() {
          public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
@@ -175,7 +175,7 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
          }
       });
    }
-   
+
    public ArrayList blockingPeekSamePriority(int numOfEntries, long timeout) throws XmlBlasterException {
       return blockingQueueOperation(numOfEntries, timeout,  0, 0, null, new I_BlockingQueueCb() {
          public ArrayList queueOperation(I_Queue queue, int numEntries, long numBytes, int minPrio, int maxPrio, I_QueueEntry limitEntry) throws XmlBlasterException {
@@ -183,5 +183,5 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
          }
       });
    }
-   
+
 }
