@@ -129,8 +129,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private long startupTime;
 
    StreamingCallback streamingCb;
-   
+
    private String storageIdPrefix;
+
+   private boolean shutdown = false;
 
    /**
     * Create an xmlBlaster accessor.
@@ -649,7 +651,16 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       this.streamingCb = null;
 
       super.glob.shutdown();
+
+      this.shutdown = true;
       return true;
+   }
+
+   /**
+    * @return true if shutdown was called, typically by disconnect()
+    */
+   public boolean isShutdown() {
+	   return this.shutdown;
    }
 
    /**
@@ -689,7 +700,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
       return null;
    }
-   
+
    /**
     * @see I_XmlBlasterAccess#getStorageIdStr()
     */
@@ -701,7 +712,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#setStorageIdStr(String)
     */
    public void setStorageIdStr(String prefix) {
-      this.storageIdPrefix = Global.getStrippedString(prefix);   
+      this.storageIdPrefix = Global.getStrippedString(prefix);
    }
 
 
