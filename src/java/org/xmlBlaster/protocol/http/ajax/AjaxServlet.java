@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -42,6 +43,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.queue.BlockingQueueWrapper;
@@ -63,6 +65,8 @@ class BlasterInstance implements I_Callback {
 	private I_XmlBlasterAccess xmlBlasterAccess;
 
 	private Global glob;
+
+	private String id; // loginName
 
 	private HttpSession session;
 
@@ -106,6 +110,7 @@ class BlasterInstance implements I_Callback {
 	public void init(HttpServletRequest req, Properties props) throws XmlBlasterException {
 		this.glob = new Global(props);
 		this.xmlBlasterAccess = this.glob.getXmlBlasterAccess();
+		this.id = this.xmlBlasterAccess.getId();
 		this.session = req.getSession();
 		this.sessionId = this.session.getId();
 		this.updateQueue = new RamQueuePlugin();
@@ -117,13 +122,29 @@ class BlasterInstance implements I_Callback {
 		this.updateQueue.initialize(storageId, queueProps);
 		this.blockingQueueWrapper = new BlockingQueueWrapper(500L);
 		this.blockingQueueWrapper.init(this.updateQueue);
-		log.info("Created new sessionId=" + this.sessionId);
+		log.info(id + " Created new sessionId=" + this.sessionId);
+		this.xmlBlasterAccess.registerConnectionListener(new I_ConnectionStateListener() {
+            public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.info("I_ConnectionStateListener.reachedAlive(): We were lucky, connected to " +
+                        connection.getConnectReturnQos().getSessionName());
+               id = connection.getConnectReturnQos().getSessionName().getLoginName();
+            }
+
+            public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.warning("I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
+            }
+
+            public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+               log.warning("I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead, good bye");
+               shutdown();
+            }
+         });
 	}
 
 	public synchronized void execute(byte[] xmlScriptRaw, Writer out) throws XmlBlasterException,
 			UnsupportedEncodingException, IOException {
 		String xmlScript = new String(xmlScriptRaw, "UTF-8");
-		log.info("Processing script: " + xmlScript);
+		log.info(id + " Processing script: " + xmlScript);
 		java.io.Reader reader = new java.io.StringReader(xmlScript);
 		java.io.ByteArrayOutputStream outStream = new java.io.ByteArrayOutputStream();
 		XmlScriptClient interpreter = new XmlScriptClient(this.glob, this.xmlBlasterAccess, this,
@@ -131,6 +152,15 @@ class BlasterInstance implements I_Callback {
 		interpreter.parse(reader);
 		byte[] bytes = outStream.toByteArray();
 		out.write(new String(bytes, "UTF-8"));
+
+		// Processing script: <xmlBlaster><disconnect><qos></qos></disconnect></xmlBlaster>
+		// Unfortunately on disconnect() the toDead() is not triggered, so detect it here (Hack:)
+		if (xmlScript.indexOf("<disconnect>") != -1 && xmlScript.indexOf("</disconnect>") != -1
+				|| xmlScript.indexOf("<disconnect/>") != -1) {
+			//if (xmlBlasterAccess).isDead()) does not report a disconnect (buggy???)
+			//if (((XmlBlasterAccess)xmlBlasterAccess).isShutdown())
+				shutdown();
+		}
 	}
 
 	public HttpSession getSession() {
@@ -222,14 +252,14 @@ class BlasterInstance implements I_Callback {
 	public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
 			UpdateQos updateQos) throws XmlBlasterException {
 		if (updateKey.isInternal() || !updateQos.isOk()) {
-			log.warning("Ignoring received message " + updateKey.toXml() + " " + updateQos.toXml());
+			log.warning(id+ " Ignoring received message " + updateKey.toXml() + " " + updateQos.toXml());
 			return "";
 		}
 		MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, updateQos.getData());
 		// if (!positionHasChanged(req, pos)) {
 		// return "";String url = getUrl(pos);
 		// }
-		log.info("receiving '" + msgUnit.toXml() + "'");
+		log.info(id + " receiving '" + msgUnit.toXml() + "'");
 		put(msgUnit);
 		return "";
 	}
@@ -258,11 +288,18 @@ class BlasterInstance implements I_Callback {
 		if (!xmlBlasterAccess.isDead()) {
 			try {
 				xmlBlasterAccess.disconnect(null);
+				log.info(id + " XmlBlaster is disconnected");
 			} catch (Throwable e) {
-				log.warning("Ignoring disconnect problem " + e.toString());
+				log.warning(id + " Ignoring disconnect problem " + e.toString());
 			}
 		}
-		this.session.invalidate();
+		try {
+			this.session.invalidate();
+			log.info(id + " Servlet session is invalidated");
+		}
+		catch (Throwable e) {
+			//Session already invalidated
+		}
 	}
 
 	void plainGet(HttpServletRequest req, HttpServletResponse res, StringWriter out)
@@ -274,7 +311,7 @@ class BlasterInstance implements I_Callback {
 		}
 		String mimeType = (String) req.getParameter("mimeType");
 		String charset = (String) req.getParameter("charset");
-		log.info("Making the request for 'plainGet' with topic='" + topic + "' mimeType='"
+		log.info(id + " Making the request for 'plainGet' with topic='" + topic + "' mimeType='"
 				+ mimeType + "' charset='" + charset + "'");
 		res.setContentType("text/xml; charset=UTF-8");
 		GetKey key = new GetKey(this.glob, topic);
@@ -282,7 +319,7 @@ class BlasterInstance implements I_Callback {
 		MsgUnit[] ret = this.xmlBlasterAccess.get(key, qos);
 		if (ret != null && ret.length > 0) {
 			if (ret.length > 1)
-				log.warning("" + ret.length
+				log.warning(id + " " + ret.length
 						+ " entries are found but only the first will be sent back to the client");
 			if (mimeType == null)
 				mimeType = ret[0].getContentMime();
@@ -293,7 +330,7 @@ class BlasterInstance implements I_Callback {
 			res.setContentType(mimeType + "; charset=" + charset);
 			out.write(ret[0].getContentStr());
 		} else
-			log.info("No entry found for topic '" + topic + "'");
+			log.info(id + " No entry found for topic '" + topic + "'");
 	}
 
 }
