@@ -523,7 +523,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Configure JDK 1.4 java.util.logging. 
+    * Configure JDK 1.4 java.util.logging (only once per JVM-Classloader, multiple Global instances share the same). 
     * </p>
     * Switch off xmlBlaster specific logging:
     * <pre>
