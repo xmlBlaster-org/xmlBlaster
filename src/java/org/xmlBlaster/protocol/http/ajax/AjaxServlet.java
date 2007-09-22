@@ -132,6 +132,8 @@ class BlasterInstance implements I_Callback {
 
             public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
                log.warning("I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
+               // We shut down as the xbSession was transient and on xbRestart all subscriptions would be lost anyhow
+               shutdown();
             }
 
             public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
@@ -377,7 +379,7 @@ public class AjaxServlet extends HttpServlet {
 
 	private Properties props = new Properties();
 
-	private int maxInactiveInterval = 60; // sec
+	private int maxInactiveInterval = 1800; // sec, see web.xml and javadoc of doGet() for details
 
 	/** key is the browser sessionId */
 	private Map/*<String, BlasterInstance>*/blasterInstanceMap;
@@ -402,6 +404,28 @@ public class AjaxServlet extends HttpServlet {
 		doGet(req, res);
 	}
 
+	/**
+	 * <pre>
+	 * ServletSessionTimeout according to specification:
+	 * The default timeout period for sessions is defined by the servlet container and
+	 *	can be obtained via the getMaxInactiveInterval method of the HttpSession
+	 *	interface. This timeout can be changed by the Developer using the
+	 *	setMaxInactiveInterval method of the HttpSession interface. The timeout
+	 *	periods used by these methods are defined in seconds. By definition, if the timeout
+	 *	period for a session is set to -1, the session will never expire.
+	 * </pre>
+	 * <p>
+     * We have set the maxInactiveInterval to 1800 sec in web.xml (30 min):
+     * <p/>
+     * If no Ajax call arrives after the given timeout the servlet-session dies,
+     * as a browser user may choose to halt NMEA updates we must
+     * set this to a high enough value.
+     * <p/>
+	 * The web.xml setting &lt;session-config>
+     *       <session-timeout>30</session-timeout>
+     *       &lt;/session-config>
+     * is overwritten by our maxInactiveInterval
+	 */
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException,
 			IOException {
 		String host = req.getRemoteAddr();
@@ -466,7 +490,7 @@ public class AjaxServlet extends HttpServlet {
 		   as we have a delay of up to 8 seconds.
 		   In the mode "updatePollBlocking" we don't poll but the servlet blocks our call
 		   and immediately returns when update messages arrive.
-		   To prevent from server timeouts the servlet returns after 15sec and we immediately
+		   To prevent from e.g. proxy timeouts the servlet returns after 15sec and we immediately
 		   poll again.
 		   */
 			// "timeout" and "numEntries" is only evaluated for "updatePollBlocking"
