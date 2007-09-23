@@ -119,6 +119,9 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     After <i>timeout=3600000</i> milliseconds (which is one day) of inactivity our login session dies
     automatically and all resources like the callback queue are garbage collected.
     The session lasts forever if <tt>timeout</tt> is set to <tt>0</tt>.
+    Please read the requirement 
+    <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html" target="others">engine.qos.login.session</a>
+    about the definition of 'inactivity'.
     </p>
     <p>
     The user <i>joe</i> can login most ten times, as specified with <i>maxSessions='10'</i>.
