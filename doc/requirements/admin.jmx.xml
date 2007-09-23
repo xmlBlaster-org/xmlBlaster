@@ -180,7 +180,8 @@ java -Dcom.sun.management.jmxremote.port=1099
 jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
    </pre>
    <p>Please replace <tt>localhost</tt> in the above example
-    with your computer DNS name or IP address.</p>
+    with your computer DNS name or IP address. Note that on Linux the
+    command 'hostname -i' must return the remote IP address (adjust /etc/hostname).</p>
 
    <h3>Simple password protection</h3>
    <p>Now we add simple password protection, first we create a password file
@@ -214,7 +215,8 @@ jconsole service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi
    <p>Note: For remote access of xmlBlaster using jconsole with password or SSL
    protection please consult the
    <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html" target="others">
-   <tt>jconsole</tt> online documentation</a>.</p>
+   <tt>jconsole</tt> online documentation</a> and read the 
+   <a href="http://java.sun.com/javase/6/docs/technotes/guides/management/faq.html#config1">jconsole FAQ</a>.</p>
 
    <h3>Handcrafted JMX-RMI startup</h3>
    <p>If you don't have access to the JVM and can't set the system properties we
