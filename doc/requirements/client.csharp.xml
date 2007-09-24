@@ -164,7 +164,7 @@
         </p>
         <pre>
    > set XMLBLASTER_HOME=D:\xmlBlaster_REL_1_0_7\xmlBlaster
-   > java -cp %XMLBLASTER_HOME%/lib -jar %XMLBLASTER_HOME%/lib/xmlBlaster.jar
+   > java -jar %XMLBLASTER_HOME%/lib/xmlBlaster.jar -plugin/xmlrpc/port 8089 -plugin/xmlrpc/hostname localhost
         </pre>
         <p>
         Start 2 demo applications by clicking on xmlBlaster/demo/csharp/xmlrpc/bin/CSharpDrawingDemo.exe.<br/>
