@@ -71,7 +71,6 @@ abstract public class DispatchConnectionsHandler
 
    /** holds all DispatchConnection instances */
    private ArrayList conList = new ArrayList();
-   private final DispatchConnection[] DUMMY_ARR = new DispatchConnection[0];
 
    private ConnectionStateEnum state = ConnectionStateEnum.UNDEF;
    
@@ -113,31 +112,33 @@ abstract public class DispatchConnectionsHandler
     * Overwrite existing connections with new configuration
     */
    public final void initialize(AddressBase[] cbAddr) throws XmlBlasterException {
-      int oldConSize = conList.size();
+      int oldConSize = getCountDispatchConnection();//conList.size();
       DispatchConnection reconfiguredCon = null;
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Initialize old connections=" + oldConSize +
                                  " new connections=" + ((cbAddr==null)?0:cbAddr.length));
       ArrayList toShutdown = new ArrayList();
       try {
-         synchronized (conList) {
+         synchronized (this.dispatchManager) {
+            
+            DispatchConnection[] tmpList = getDispatchConnectionArr();
+            clearDispatchConnectionList(); // conList.clear();
             
             if (cbAddr == null || cbAddr.length==0) {
-               for (int ii=0; ii<conList.size(); ii++)
-                  ((DispatchConnection)conList.get(ii)).shutdown();
-               conList.clear();
+               for (int ii=0; ii<tmpList.length; ii++) {
+                  if (tmpList[ii] != null)
+                     tmpList[ii].shutdown();
+               }
                updateState(null);
                return;
             }
 
-            ArrayList tmpList = (ArrayList)conList.clone(); // shallow
-            conList.clear();
-
             // shutdown callbacks not in use any more ...
-            for (int ii=0; ii<tmpList.size(); ii++) {
+            for (int ii=0; ii<tmpList.length; ii++) {
                boolean found = false;
+               DispatchConnection  tmpConn = tmpList[ii];
+               if (tmpConn == null) continue;
                for (int jj=0; jj<cbAddr.length; jj++) {
                   Object obj = cbAddr[jj].getCallbackDriver();
-                  DispatchConnection  tmpConn = (DispatchConnection)tmpList.get(ii);
                   if (obj != null && obj != tmpConn.getAddress().getCallbackDriver()) {
                      continue;
                   }
@@ -147,11 +148,9 @@ abstract public class DispatchConnectionsHandler
                   }
                }
                if (!found) {
-                  DispatchConnection con = (DispatchConnection)tmpList.get(ii);
-                  log.info(ME+": Shutting down callback connection '" + con.getName() + "' because of new configuration.");
-                  toShutdown.add(con);
-                  tmpList.remove(ii);
-                  ii--;
+                  log.info(ME+": Shutting down callback connection '" + tmpConn.getName() + "' because of new configuration.");
+                  toShutdown.add(tmpConn);
+                  tmpList[ii] = null;
                   //con.shutdown();
                }
             }
@@ -159,12 +158,13 @@ abstract public class DispatchConnectionsHandler
             // keep existing addresses, add the new ones ...
             for (int ii=0; ii<cbAddr.length; ii++) {
                boolean found = false;
-               for (int jj=0; jj<tmpList.size(); jj++) {
-                  DispatchConnection tmpCon = (DispatchConnection)tmpList.get(jj);
+               for (int jj=0; jj<tmpList.length; jj++) {
+                  DispatchConnection tmpCon = tmpList[jj];
+                  if (tmpCon == null) continue;
                   if (cbAddr[ii].isSameAddress((tmpCon).getAddress())) {
                      found = true;
                      tmpCon.setAddress(cbAddr[ii]);
-                     conList.add(tmpCon); // reuse
+                     addDispatchConnection(tmpCon); // reuse
                      reconfiguredCon = tmpCon;
                      tmpCon.registerProgressListener(this.statistic); // presistent SOCKET cb after restart
                      break;
@@ -175,7 +175,7 @@ abstract public class DispatchConnectionsHandler
                      DispatchConnection con = createDispatchConnection(cbAddr[ii]);
                      if (log.isLoggable(Level.FINE)) log.fine(ME+": Create new DispatchConnection, retries=" + cbAddr[ii].getRetries() + " :" + cbAddr[ii].toXml());
                      try {
-                        conList.add(con);
+                        addDispatchConnection(con);
                         con.initialize();
                         con.registerProgressListener(this.statistic);
                      }
@@ -188,7 +188,9 @@ abstract public class DispatchConnectionsHandler
                            log.severe(ME+": Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
                            toShutdown.add(con);
                            //con.shutdown();
-                           conList.remove(con);
+                           synchronized (conList) {
+                              conList.remove(con);
+                           }
                         }
                      }
                   }
@@ -204,7 +206,7 @@ abstract public class DispatchConnectionsHandler
                }
             }
             
-            tmpList.clear();
+            tmpList = null;
 
          } // synchronized
       }
@@ -214,7 +216,12 @@ abstract public class DispatchConnectionsHandler
          // blocked for 20 min in LAST_ACK, so we shutdown outside of the synchronized now: 
          for (int i=0;  i<toShutdown.size(); i++) {
             DispatchConnection con = (DispatchConnection)toShutdown.get(i);
-            con.shutdown();
+            try {
+               con.shutdown();
+            }
+            catch (XmlBlasterException ex) {
+               log.severe(ME+"initialize(): Could not shutdown properly. " + ex.getMessage());
+            }
          }
 
          updateState(null);  // Redundant??
@@ -244,22 +251,20 @@ abstract public class DispatchConnectionsHandler
 
    /** @return a currently alive callback connection or null */
    public final DispatchConnection getAliveDispatchConnection() {
-      synchronized (conList) {
-         for (int ii=0; ii<conList.size(); ii++) {
-            if (((DispatchConnection)conList.get(ii)).isAlive())
-               return ((DispatchConnection)conList.get(ii));
-         }
+      DispatchConnection[] arr = getDispatchConnectionArr();
+      for (int ii=0; ii<arr.length; ii++) {
+         if (arr[ii].isAlive())
+            return arr[ii];
       }
       return null;
    }
 
    /** @return a currently polling callback connection or null */
    public final DispatchConnection getPollingDispatchConnection() {
-      synchronized (conList) {
-         for (int ii=0; ii<conList.size(); ii++) {
-            if (((DispatchConnection)conList.get(ii)).isPolling())
-               return ((DispatchConnection)conList.get(ii));
-         }
+      DispatchConnection[] arr = getDispatchConnectionArr();
+      for (int ii=0; ii<arr.length; ii++) {
+         if (arr[ii].isPolling())
+            return arr[ii];
       }
       return null;
    }
@@ -278,22 +283,38 @@ abstract public class DispatchConnectionsHandler
 
    /** @return a dead callback connection or null */
    public final DispatchConnection getDeadDispatchConnection() {
-      synchronized (conList) {
-         for (int ii=0; ii<conList.size(); ii++) {
-            if (((DispatchConnection)conList.get(ii)).isDead())
-               return ((DispatchConnection)conList.get(ii));
-         }
+      DispatchConnection[] arr = getDispatchConnectionArr();
+      for (int ii=0; ii<arr.length; ii++) {
+         if (arr[ii].isDead())
+            return arr[ii];
       }
       return null;
    }
 
    /** @return a copy snapshot of the current connections */
-   public final DispatchConnection[] getConnectionsArrCopy() {
-      DispatchConnection[] dest = null;
+   public DispatchConnection[] getDispatchConnectionArr() {
       synchronized (conList) {
-         dest = (DispatchConnection[])conList.toArray(DUMMY_ARR);
+         return (DispatchConnection[])conList.toArray(new DispatchConnection[conList.size()]);
       }
-      return dest;
+   }
+
+   /** @return Number of established callback connections */
+   public int getCountDispatchConnection() {
+      synchronized (conList) {
+         return conList.size();
+      }
+   }
+
+   public void addDispatchConnection(DispatchConnection con) {
+      synchronized (conList) {
+         conList.add(con);
+      }
+   }
+
+   public void clearDispatchConnectionList() {
+      synchronized (conList) {
+         conList.clear();
+      }
    }
 
    /** Call by DispatchConnection on state transition */
@@ -322,19 +343,18 @@ abstract public class DispatchConnectionsHandler
    private final void updateState(XmlBlasterException ex) {
       ConnectionStateEnum oldState = this.state;
       ConnectionStateEnum tmp = ConnectionStateEnum.DEAD;
-      if (log.isLoggable(Level.FINE)) log.fine(ME+": updateState() oldState="+oldState+" conList.size="+conList.size());
-      //Thread.currentThread().dumpStack();
-      synchronized (conList) {
-         for (int ii=0; ii<conList.size(); ii++) {
-            if (((DispatchConnection)conList.get(ii)).isAlive()) {
-               this.state = ConnectionStateEnum.ALIVE;
-               if (oldState != this.state)
-                  dispatchManager.toAlive(oldState);
-               return;
-            }
-            else if (((DispatchConnection)conList.get(ii)).isPolling()) {
-               tmp = ConnectionStateEnum.POLLING;
-            }
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": updateState() oldState="+oldState+" conList.size="+
+            getCountDispatchConnection());
+      DispatchConnection[] arr = getDispatchConnectionArr();
+      for (int ii=0; ii<arr.length; ii++) {
+         if (arr[ii].isAlive()) {
+            this.state = ConnectionStateEnum.ALIVE;
+            if (oldState != this.state)
+               dispatchManager.toAlive(oldState);
+            return;
+         }
+         else if (arr[ii].isPolling()) {
+            tmp = ConnectionStateEnum.POLLING;
          }
       }
       if (tmp == ConnectionStateEnum.POLLING) {
@@ -397,7 +417,7 @@ abstract public class DispatchConnectionsHandler
       catch (XmlBlasterException ex) {
          log.severe(ME+": Could not shutdown properly. " + ex.getMessage());
       }
-      if (log.isLoggable(Level.FINE)) log.fine(ME+": Destroyed one callback connection, " + conList.size() + " remain.");
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Destroyed one callback connection, " + getCountDispatchConnection() + " remain.");
    }
 
    /**
@@ -426,7 +446,7 @@ abstract public class DispatchConnectionsHandler
          // Try to find a connection which delivers the message ...
          // PtP messages from the subject Queue are delivered to all reachable sessions of this user ...
 
-      DispatchConnection[] cons = getConnectionsArrCopy(); // take a snapshot
+      DispatchConnection[] cons = getDispatchConnectionArr(); // take a snapshot
       for (int ii=0; ii<cons.length; ii++) {
          DispatchConnection con = cons[ii];
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Trying cb# " + ii + " state=" + con.getState().toString() + " ...");
@@ -465,11 +485,6 @@ abstract public class DispatchConnectionsHandler
       throw ex;
    }
 
-   /** @return Number of established callback connections */
-   public final int getSize() {
-      return conList.size();
-   }
-
    /**
     * @return A container holding some statistical delivery information, is never null
     */
@@ -482,16 +497,15 @@ abstract public class DispatchConnectionsHandler
     */
    public final void shutdown() {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Entering shutdown ...");
-      synchronized (conList) {
-         for (int ii=0; ii<conList.size(); ii++) {
-            try {
-               ((DispatchConnection)conList.get(ii)).shutdown();
-            }
-            catch (XmlBlasterException ex) {
-               log.severe(ME+": Could not shutdown properly. " + ex.getMessage());
-            }
+      DispatchConnection[] arr=getDispatchConnectionArr();
+      clearDispatchConnectionList();
+      for (int ii=0; ii<arr.length; ii++) {
+         try {
+            arr[ii].shutdown();
          }
-         conList.clear();
+         catch (XmlBlasterException ex) {
+            log.severe(ME+": Could not shutdown properly. " + ex.getMessage());
+         }
       }
    }
 
@@ -507,10 +521,10 @@ abstract public class DispatchConnectionsHandler
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<DispatchConnectionsHandler state='").append(this.state.toString()).append("'>");
-      if (this.conList.size() < 1)
+      DispatchConnection[] arr = getDispatchConnectionArr();
+      if (arr.length < 1)
          sb.append(offset).append(" <noDispatchConnection/>");
       else {
-         DispatchConnection[] arr = getConnectionsArrCopy();
          for (int ii=0; ii<arr.length; ii++) {
             sb.append(offset).append(" <connection type='" + arr[ii].getDriverName() + "' state='" + arr[ii].getState() + "'/>");
          }

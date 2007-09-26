@@ -520,7 +520,7 @@ abstract public class DispatchConnection implements I_Timeout
 
       if (log.isLoggable(Level.FINE)) log.fine(ME + "Connection transition " + oldState.toString() + " -> toReconnected=" + toReconnected + " byDispatchConnectionsHandler=" + byDispatchConnectionsHandler + ": " + ((ex == null) ? "" : ex.toXml()));
 
-      synchronized (this) {
+      synchronized (this.connectionsHandler.dispatchManager) {
          if (isDead()) {   // ignore, not possible
             if (log.isLoggable(Level.FINE)) log.fine(ME + "Connection transition " + oldState.toString() + " -> " + this.state.toString() +
                       " for " + ME + ": We ignore it: " + ((throwable == null) ? "No throwable" : throwable.toString()));
