@@ -629,17 +629,29 @@ public class jcrypt {
 
 		or put that class out of package, then :
 			jcrypt <salt> <password>
-
+			
+		Output: [XY] [blabla] => [XYgByTb9Qr46s]
+			
+		to only return the crypt: -plain <salt> <password>
 	*/
    public static void main(String args[])
    {
-      if(args.length >= 2)
+      if(args.length == 2)
       {
          System.out.println
          (
             "[" + args[0] + "] [" + args[1] + "] => [" +
             jcrypt.crypt(args[0], args[1]) + "]"
          );
+      }
+      else if(args.length == 3)
+      {
+    	 String salt = args[1];
+    	 String pepper = args[2];
+         System.out.println(jcrypt.crypt(salt, pepper));
+      }
+      else {
+          System.out.println("Usage:\njava org.xmlBlaster.authentication.plugins.htpasswd.jcrypt <salt> <password>");
       }
    }
 }
