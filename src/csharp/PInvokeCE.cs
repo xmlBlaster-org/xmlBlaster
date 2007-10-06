@@ -138,6 +138,8 @@ using System.Collections;
 
 namespace org.xmlBlaster.client
 {
+
+
    /// Calling unmanagegd code: xmlBlasterClientC.dll
    public class PInvokeCE : I_XmlBlasterAccess
    {
@@ -647,6 +649,8 @@ namespace org.xmlBlaster.client
       private IntPtr updateFpForDelegate;
       private IntPtr loggerFpForDelegate;
       private IntPtr progressFpForDelegate;
+      /** Is not null if the client wishes to be notified about connection state changes in fail safe operation */
+      private I_ConnectionStateListener connectionListener;
 
       public PInvokeCE() {
       }
@@ -771,6 +775,14 @@ namespace org.xmlBlaster.client
          logInfos(XmlBlasterLogLevel.TRACE);
       }
 
+      /**
+       * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener(I_ConnectionStateListener)
+       */
+      public void RegisterConnectionListener(I_ConnectionStateListener connectionListener) {
+         logger(XmlBlasterLogLevel.WARN, "", "~RegisterConnectionListener() is not implemented, TODO");
+         this.connectionListener = connectionListener;
+      }
+
       public void logInfos(XmlBlasterLogLevel level) {
          // At this stage (constructor) no logListener can be here, so this
          // output will end up in the console
@@ -871,6 +883,12 @@ namespace org.xmlBlaster.client
             checkAndThrow("xmlBlasterUnmanagedCEConnect", ref exception);
             string ret = stringFromUtf8IntPtr(retP);
             //logger(XmlBlasterLogLevel.TRACE, "", "xmlBlasterUnmanagedCEConnect: SUCCESS '" + ret + "'");
+
+            I_ConnectionStateListener li = this.connectionListener;
+            if (li != null) {
+               li.reachedAlive(ConnectionStateEnum.UNDEF, this);
+            }
+
             return new ConnectReturnQos(ret);
          }
          catch (XmlBlasterException e)
@@ -931,6 +949,12 @@ namespace org.xmlBlaster.client
          {
             throw new XmlBlasterException("internal.unknown", "disconnect failed", e);
          }
+         finally {
+            I_ConnectionStateListener li = this.connectionListener;
+            if (li != null) {
+               li.reachedDead(ConnectionStateEnum.ALIVE, this); // TODO: previous state
+            }
+         }
       }
 
       private void checkAndThrow(string location, ref XmlBlasterUnmanagedCEException exception)
@@ -940,6 +964,14 @@ namespace org.xmlBlaster.client
             XmlBlasterException e = fillXmlBlasterException(ref exception);
             logger(XmlBlasterLogLevel.WARN, "", location + ": errorCode=" + e.ErrorCode);
             logger(XmlBlasterLogLevel.TRACE, "", location + ": Got exception from C: " + e.ToString());
+
+            if (e.ErrorCode.StartsWith("communication.")) {
+               I_ConnectionStateListener li = this.connectionListener;
+               if (li != null) {
+                  li.reachedDead(ConnectionStateEnum.ALIVE, this); // TODO: previous state
+               }
+            }
+
             throw e;
          }
          logger(XmlBlasterLogLevel.TRACE, "", location + ": SUCCESS");

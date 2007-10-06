@@ -333,6 +333,14 @@ namespace org.xmlBlaster.client
          throw new XmlBlasterException("internal.notImplemented", "Please call initialize(string[]");
       }
 
+      /**
+       * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener(I_ConnectionStateListener)
+       */
+      public void RegisterConnectionListener(I_ConnectionStateListener connectionListener) {
+         logger("RegisterConnectionListener() is not implemented, TODO");
+         //this.connectionListener = connectionListener;
+      }
+
       ~NativeC()
       {
          if (xa != new IntPtr(0))

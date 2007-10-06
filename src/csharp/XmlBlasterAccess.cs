@@ -82,6 +82,69 @@ namespace org.xmlBlaster.client
       void OnData(bool read, int currBytesRead, int nbytes);
    }
 
+      public enum ConnectionStateEnum
+   {
+      UNDEF = -1,
+      ALIVE = 0,
+      POLLING = 1,
+      DEAD = 2
+   }
+
+   public interface I_ConnectionStateListener
+   {
+      /**
+       * This is the callback method invoked from XmlBlasterAccess
+       * notifying the client that a connection has been established and that its status is now ALIVE.
+       *
+       * <p>
+       * Note that this method is invoked also when the connection has been 
+       * established the first time. In this case the connection is fully operational
+       * but your connect() call has not yet returned. You can access the
+       * returned connect QoS in this case with <i>connect.getConnectReturnQos()</i>.
+       * </p>
+       *
+       * <p>
+       * You can erase all entries of the queue manually or add others before you return and in
+       * this way control the behavior.
+       * During you have control in <i>reachedAlive()</i> the client side
+       * queue is blocked and does not accept publish or request messages from other threads.
+       * So you can do peacefully your work (your thread is allowed to modify the queue exclusively).
+       * </p>
+       *
+       * <p>
+       * If you send messages during this method invocation they are queued only and
+       * are sent as soon as this method returns.
+       * </p>
+       *
+       * <p>
+       * This method is invoked by the login polling thread from I_XmlBlasterAccess.
+       * </p>
+       * @param oldState The previous state of the connection.
+       * @param connectionHandler An interface which allows you to control the queue and the connection
+       */
+      void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
+
+      /**
+       * This is the callback method invoked from XmlBlasterAccess
+       * informing the client that the connection state has changed to POLLING.
+       *
+       * @param oldState The previous state of the connection.
+       * @param connectionHandler An interface which allows you to control the queue and the connection
+       */
+      void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
+
+      /**
+       * This is the callback method invoked from XmlBlasterAccess
+       * informing the client that the connection was lost (i.e. when the state of the
+       * connection has gone to DEAD).
+       *
+       * @param oldState The previous state of the connection.
+       * @param connectionHandler An interface which allows you to control the queue and the connection
+       */
+      void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection);
+   }
+
+
    /// <summary>
    /// Access xmlBlaster, for details see
    /// http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
@@ -100,6 +163,13 @@ namespace org.xmlBlaster.client
       /// </summary>
       /// <param name="properties">e.g. "logLevel" "INFO"</param>
       void Initialize(Hashtable properties);
+
+      /**
+       * Register a listener to get events about connection status changes. 
+       * @param connectionListener null or your listener implementation on connection state changes (ALIVE | POLLING | DEAD)
+       * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html">client.failsafe requirement</a>
+       */
+      void RegisterConnectionListener(I_ConnectionStateListener connectionListener);
 
       ConnectReturnQos Connect(string qos, I_Callback listener);
 

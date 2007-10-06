@@ -81,7 +81,11 @@ namespace org.xmlBlaster.client
 
       public bool IsBase64()
       {
+#        if CF1
+         return ENCODING_BASE64.Equals(this.encoding);
+#        else
          return ENCODING_BASE64.Equals(this.encoding, StringComparison.OrdinalIgnoreCase);
+#        endif
       }
 
       /**
@@ -101,7 +105,7 @@ namespace org.xmlBlaster.client
       public string GetStringValue()
       {
          if (this.value == null) return null;
-         if (ENCODING_BASE64.Equals(this.encoding, StringComparison.OrdinalIgnoreCase))
+         if (IsBase64())
          {
             byte[] content = GetBlobValue();
             try
@@ -127,7 +131,7 @@ namespace org.xmlBlaster.client
       public byte[] GetBlobValue()
       {
          if (this.value == null) return null;
-         if (ENCODING_BASE64.Equals(this.encoding, StringComparison.OrdinalIgnoreCase))
+         if (IsBase64())
          {
             try
             {
