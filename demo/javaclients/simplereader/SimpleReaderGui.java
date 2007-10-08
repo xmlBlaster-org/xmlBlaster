@@ -11,6 +11,7 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.Constants;
@@ -24,15 +25,19 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.Properties;
 
+import javaclients.simplereader.FileDumper;
+import javaclients.simplereader.MessageWrapper;
+
 import javax.swing.*;
 import javax.swing.event.*;
 
 /**
  * Usage:
  * <pre>
- *  java javaclients.simplereader.SimpleReaderGui 
+ *  java javaclients.simplereader.SimpleReaderGui -dumpToFile true -directoryName /tmp 
  *  java javaclients.simplereader.SimpleReaderGui -xpath "//key[starts-with(@oid,'com.')]" 
  * </pre>
+ * -directoryName defaults to ${user.home}/FileDumper
  */
 public class SimpleReaderGui extends JFrame implements I_Callback {
    /**
@@ -43,6 +48,9 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
    private static final String ME = "SimpleReaderGui";
 
    private static final String USR_LOGIN  = ME;
+   
+   private FileDumper fileDumper;
+   private boolean dumpToFile;
 
    private ImageIcon image;
 
@@ -76,6 +84,10 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       catch(Exception e) {
         e.printStackTrace();
       }
+      
+      this.dumpToFile = _xmlBlaster.getGlobal().getProperty().get("dumpToFile", false);
+      if (this.dumpToFile)
+         this.fileDumper = new FileDumper(_xmlBlaster.getGlobal());
 
       // set the application icon
       java.net.URL oUrl;
@@ -119,6 +131,9 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       MessageWrapper messageWrapper = new MessageWrapper(secretCallbackSessionId, updateKey, content, updateQos);
       listModel.addElement(messageWrapper);
       System.out.println("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
+      if (this.fileDumper != null) {
+         this.fileDumper.dumpMessage(updateKey, content, updateQos);
+      }
       return "";
    }
 
