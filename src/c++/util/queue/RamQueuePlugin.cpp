@@ -97,7 +97,7 @@ const vector<EntryType> RamQueuePlugin::peekWithSamePriority(long maxNumOfEntrie
       numOfBytes += (**iter).getSizeInBytes();
       numOfEntries++;
       if (numOfBytes > maxNumOfBytes && maxNumOfBytes > -1) break;
-      if (numOfEntries > maxNumOfEntries && maxNumOfBytes > -1) break;
+      if (numOfEntries > maxNumOfEntries && maxNumOfEntries > -1) break;
       if ((**iter).getPriority() != referencePriority ) break;
       EntryType entry = (*iter);
       ret.insert(ret.end(), entry); 
