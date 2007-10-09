@@ -34,21 +34,21 @@ import javax.swing.event.*;
 /**
  * Usage:
  * <pre>
- *  java javaclients.simplereader.SimpleReaderGui -dumpToFile true -directoryName /tmp 
- *  java javaclients.simplereader.SimpleReaderGui -xpath "//key[starts-with(@oid,'com.')]" 
+ *  java javaclients.simplereader.SimpleReaderGui -dumpToFile true -directoryName /tmp
+ *  java javaclients.simplereader.SimpleReaderGui -xpath "//key[starts-with(@oid,'com.')]"
  * </pre>
  * -directoryName defaults to ${user.home}/FileDumper
  */
 public class SimpleReaderGui extends JFrame implements I_Callback {
    /**
-    * 
+    *
     */
    private static final long serialVersionUID = 8368002446068669824L;
 
    private static final String ME = "SimpleReaderGui";
 
    private static final String USR_LOGIN  = ME;
-   
+
    private FileDumper fileDumper;
    private boolean dumpToFile;
 
@@ -84,7 +84,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       catch(Exception e) {
         e.printStackTrace();
       }
-      
+
       this.dumpToFile = _xmlBlaster.getGlobal().getProperty().get("dumpToFile", false);
       if (this.dumpToFile)
          this.fileDumper = new FileDumper(_xmlBlaster.getGlobal());
@@ -107,7 +107,14 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
    public static void main(String[] args) {
       SimpleReaderGui srGui = null;
       try {
-         Global glob = new Global(args);
+         Global glob = new Global();
+         if (glob.init(args) != 0) { // Get help with -help
+            System.out.println(glob.usage());
+            System.err.println("Example:\n");
+            System.err.println("java javaclients.simplereader.SimpleReaderGui -xpath '//key' -session.name simpleReader -passwd secret -protocol SOCKET -dispatch/connection/plugin/socket/hostname localhost -dumpToFile true -directoryName ${user.home}/FileDumper\n");
+            System.exit(1);
+         }
+
          I_XmlBlasterAccess xmlBlaster = glob.getXmlBlasterAccess();
          srGui = new SimpleReaderGui(xmlBlaster);
          srGui.loadImage();
@@ -234,7 +241,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
    void jButton1_actionPerformed(ActionEvent e) {
       String text = jTextField1.getText();
       this.setTitle(ME + "  " + xmlBlaster.getSessionName().getNodeIdStr() + "  " + text);
-      
+
       if (this.subscribeReturnQos != null) {
          try {
             UnSubscribeKey key = new UnSubscribeKey(xmlBlaster.getGlobal(), this.subscribeReturnQos.getSubscriptionId());
@@ -293,7 +300,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
 
    class MyCellRenderer extends DefaultListCellRenderer {
       /**
-       * 
+       *
        */
       private static final long serialVersionUID = 5678672570993331767L;
 
