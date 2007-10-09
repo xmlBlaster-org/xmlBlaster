@@ -635,9 +635,10 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
       log_.info(ME, "Queue [" + queue_->getType() + "][" + queue_->getVersion() + "] contains " +
                   lexical_cast<string>(queue_->getNumOfEntries()) + " entries, we send them to the server");
    }
-   while (!queueToFlush->empty()) {
-      log_.trace(ME, "flushQueueUnlocked: flushing one priority sweep");
-      const vector<EntryType> entries = queueToFlush->peekWithSamePriority();
+   while (!queueToFlush->empty()) { 
+      long maxNumOfEntries= (doRemove) ? 1 : -1; // doRemove==false makes no sense, TODO: remove this arg
+      if (log_.trace()) log_.trace(ME, "flushQueueUnlocked: flushing one priority sweep maxNumOfEntries=" + lexical_cast<string>(maxNumOfEntries));
+      const vector<EntryType> entries = queueToFlush->peekWithSamePriority(maxNumOfEntries);
       vector<EntryType>::const_iterator iter = entries.begin();
       while (iter != entries.end()) {
          try {
@@ -658,7 +659,10 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
          }
          iter++;
       }
-      if (doRemove) ret += queueToFlush->randomRemove(entries.begin(), entries.end());
+      if (doRemove) {
+          //log_.trace(ME, "remove send message from client queue");
+    	  ret += queueToFlush->randomRemove(entries.begin(), entries.end());
+      }
    }
    return ret;
 }
