@@ -649,11 +649,12 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
                MsgQueueEntry &entry3 = const_cast<MsgQueueEntry&>(entry2);
                entry3.setSender(connectReturnQos_->getSessionQos().getSessionName());
             }
-            entry2.send(*this);
-            if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent");
+            PublishReturnQos& pubRet = (PublishReturnQos&)entry2.send(*this);
+            if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent " + pubRet.getStateInfo());
          }
          catch (XmlBlasterException &ex) {
            if (ex.isCommunication()) toPollingOrDead(&ex);
+           log_.warn(ME, "flushQueueUnlocked: can't send queued message to server: " + ex.getMessage());
            //if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
            throw ex;
          }
