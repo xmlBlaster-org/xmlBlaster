@@ -374,7 +374,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
          while (running) {
             try {
-               // blocks until a message arrives
+               // blocks until a message arrives (see XbfParser.java)
                final MsgInfo[] msgInfoArr = MsgInfo.parse(glob, progressListener, iStream, getMsgInfoParserClassName(), driver.getPluginConfig());
                if (msgInfoArr.length < 1) {
                   log.warning(toString() + ": Got unexpected empty data from SOCKET, closing connection now");
