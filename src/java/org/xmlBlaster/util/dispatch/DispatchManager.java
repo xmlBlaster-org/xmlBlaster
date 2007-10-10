@@ -1003,6 +1003,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
     * @param dispatcherActive
     */
    public void setDispatcherActive(boolean dispatcherActive) {
+      if (log.isLoggable(Level.FINE)) log.fine(ME+": Changed dispatcherActive from " + this.dispatcherActive + " to " + dispatcherActive);
       this.dispatcherActive = dispatcherActive;
       if (this.dispatcherActive) notifyAboutNewEntry();
    }
