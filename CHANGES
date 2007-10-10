@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
+ o #16500 C++ RamQueuePlugin: Fixed typo which prevented sending limited maxNumOfEntries
+   #16501 C++ ConnectionsHandler: Each tailback msg send from client queue is no instantly removed from queue (no bulk acks)
+
  o #16493 Dead lock fix between callback ping and reconnect thread (reported by Xavier)
  	  Now all threads enter the syncs hierarchical over the DispatchManager
  
