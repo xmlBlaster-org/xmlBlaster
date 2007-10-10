@@ -49,7 +49,10 @@ Timestamp TimestampFactory::getTimestamp()
 {
    Lock lock(getterMutex_);
    Timestamp timestamp = Thread::getCurrentTimestamp();
-   while (timestamp <= lastTimestamp_) timestamp++;
+   if (timestamp <= lastTimestamp_) {
+      timestamp = lastTimestamp_;
+      timestamp++;
+   }
 
    lastTimestamp_ = timestamp;
    return timestamp;
