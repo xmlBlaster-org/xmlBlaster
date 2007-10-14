@@ -102,7 +102,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    /** Incarnation time of this object instance in millis */
    private long startupTime;
    private int maxSessions;
-   
+
    /** State during and after construction */
    public final int UNDEF = -1;
    /** State after calling toAlive() */
@@ -124,7 +124,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
    /** this is used for administrative gets (queries on callback queue) */
    private volatile QueueQueryPlugin queueQueryPlugin;
-   
+
    /** Statistics */
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
@@ -156,7 +156,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       }
 
       String instanceName = this.glob.validateJmxValue(this.subjectName.getLoginName());
-      this.contextNode = new ContextNode(ContextNode.SUBJECT_MARKER_TAG, instanceName, 
+      this.contextNode = new ContextNode(ContextNode.SUBJECT_MARKER_TAG, instanceName,
                                        this.glob.getContextNode());
 
       this.ME = this.instanceId + "-" + this.subjectName.getAbsoluteName();
@@ -169,7 +169,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    /**
-    * The unique name of this subject instance. 
+    * The unique name of this subject instance.
     * @return Never null, for example "/xmlBlaster/node/heron/client/joe"
     */
    public final ContextNode getContextNode() {
@@ -212,7 +212,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    /**
-    * Access the synchronization object of this SubjectInfo instance. 
+    * Access the synchronization object of this SubjectInfo instance.
     */
    public ReentrantLock getLock() {
       return this.lock;
@@ -279,7 +279,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    /**
-    * The shutdown is synchronized and checks if there is no need for this subject anymore. 
+    * The shutdown is synchronized and checks if there is no need for this subject anymore.
     * <p>
     * clearQueue==false&&forceIfEntries==true: We shutdown and preserve existing PtP messages
     * </p>
@@ -414,9 +414,9 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    /**
-    * Allows to overwrite queue property. 
+    * Allows to overwrite queue property.
     * <p>
-    * It will be only written if prop!= null. 
+    * It will be only written if prop!= null.
     * </p>
     * @param prop CbQueueProperty transports subject queue property as well
     *        TODO: we should have a clear named SubjectQueueProperty
@@ -541,7 +541,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       return this.securityCtx.isAuthorized(actionKey, key);
    }
 */
-   
+
    /**
     * PtP mode: If the qos is set to forceQueuing the message is queued.
     * @param msgUnit The message. Only called in sync mode on publish (TopicHandler)
@@ -599,7 +599,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             MsgQueueEntry[] msgQueueEntries = new MsgQueueEntry[] { entry };
             MsgErrorInfo msgErrorInfo = new MsgErrorInfo(glob, msgQueueEntries, null, e);  // this.subjectQueue
             getMsgErrorHandler().handleError(msgErrorInfo);
- 
+
             try {
                this.subjectQueue.removeRandom(entry); // Remove the entry
             }
@@ -612,7 +612,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       }
 
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Forwarded " + numMsgs + " messages from subject queue to session queue");
-      
+
       if (!isLoggedIn()) { // Check if we can shutdown now
          shutdown(false, false);
       }
@@ -637,9 +637,9 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       if (destination.isSession()) {
          // send to a specific session, it should never happen to have such messages in the subject queue ...
          String tmp = "Can't forward msg " + entry.getLogId() + " from " +
-                      this.subjectQueue.getStorageId() + " size=" + 
-                      this.subjectQueue.getNumOfEntries() + " to unknown session '" + 
-                      entry.getReceiver().getAbsoluteName() + "'"; 
+                      this.subjectQueue.getStorageId() + " size=" +
+                      this.subjectQueue.getNumOfEntries() + " to unknown session '" +
+                      entry.getReceiver().getAbsoluteName() + "'";
          log.warning(ME+": "+tmp);
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, tmp);
       }
@@ -715,11 +715,11 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          }
       }
       return this.sessionArrCache;
-      
+
    }
 
    /**
-    * Find a session by its absolute name. 
+    * Find a session by its absolute name.
     * @param absoluteName e.g. "/node/heron/client/joe/2"
     * @return SessionInfo or null if not found
     */
@@ -730,7 +730,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    /**
-    * Find a session by its public session ID. 
+    * Find a session by its public session ID.
     * @param sessionName
     * @return SessionInfo or null if not found
     */
@@ -792,7 +792,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          this.maxSessions = qos.getSessionQos().getMaxSessions();
 
       if (getSessions().length >= this.maxSessions) {
-         log.warning(ME+": Max sessions = " + this.maxSessions + " for user " + getLoginName() + " exhausted, login denied.");
+         log.warning(ME+": Max sessions = " + this.maxSessions + " for user " + getLoginName() + "@" + qos.getSecurityQos().getClientIp() + " exhausted, login denied.");
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_MAXSESSION, ME, "Max sessions = " + this.maxSessions + " exhausted, login denied.");
       }
    }
@@ -808,7 +808,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo is shutdown, try to login again");
       }
-      
+
       if (log.isLoggable(Level.FINER)) log.finer(ME+": notifyAboutLogin(" + sessionInfo.getSecretSessionId() + ")");
       synchronized (this.sessionMap) {
          this.sessionMap.put(sessionInfo.getId(), sessionInfo);
@@ -970,9 +970,9 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          return "INTERNAL_ERROR";
       }
    }
-   
+
    /**
-    * Query the subject queue, can be peeking or consuming. 
+    * Query the subject queue, can be peeking or consuming.
     * @param querySpec Can be configured to be consuming
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html">The engine.qos.queryspec.QueueQuery requirement</a>
     */
@@ -981,12 +981,12 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          synchronized (this) {
             if (this.queueQueryPlugin == null) {
                this.queueQueryPlugin = new QueueQueryPlugin(this.glob);
-            } 
+            }
          }
       }
       return this.queueQueryPlugin.query(this.subjectQueue, querySpec);
    }
-   
+
 
 
    //=========== Enforced by I_AdminSubject and SubjectInfoProtector.java ================
@@ -1041,7 +1041,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    /**
-    * JMX access. 
+    * JMX access.
     * @param Change the max allowed simultaneous logins of this user
     */
    void setMaxSessions(int max) {
@@ -1067,7 +1067,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    }
 
    /**
-    * Find a session by its public session ID. 
+    * Find a session by its public session ID.
     * @param pubSessionId e.g. "-2"
     * @return I_AdminSession or null if not found
     */
@@ -1110,7 +1110,7 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
 
    public String[] peekSubjectMessages(int numOfEntries) throws XmlBlasterException {
       return this.glob.peekMessages(this.subjectQueue, numOfEntries, "subject");
-   } 
+   }
 
    public String[] peekSubjectMessagesToFile(int numOfEntries, String path) throws Exception {
       try {
@@ -1135,14 +1135,14 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    /**
     * JMX: Enforced by interface NotificationBroadcasterSupport
     */
-   public MBeanNotificationInfo[] getNotificationInfo() { 
-      String[] types = new String[] { 
-         AttributeChangeNotification.ATTRIBUTE_CHANGE 
-      }; 
-      String name = AttributeChangeNotification.class.getName(); 
-      String description = "TODO: An attribute of this MBean has changed"; 
-      MBeanNotificationInfo info = 
-         new MBeanNotificationInfo(types, name, description); 
-      return new MBeanNotificationInfo[] {info}; 
-   } 
+   public MBeanNotificationInfo[] getNotificationInfo() {
+      String[] types = new String[] {
+         AttributeChangeNotification.ATTRIBUTE_CHANGE
+      };
+      String name = AttributeChangeNotification.class.getName();
+      String description = "TODO: An attribute of this MBean has changed";
+      MBeanNotificationInfo info =
+         new MBeanNotificationInfo(types, name, description);
+      return new MBeanNotificationInfo[] {info};
+   }
 }
