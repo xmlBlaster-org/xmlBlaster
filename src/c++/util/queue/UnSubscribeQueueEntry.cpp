@@ -31,6 +31,10 @@ MsgQueueEntry *UnSubscribeQueueEntry::getClone() const
    return new UnSubscribeQueueEntry(*this);
 }
 
+bool UnSubscribeQueueEntry::isUnSubscribe() const {
+	return true;
+}
+
 // this should actually be in another interface but since it is an only method we put it here.
 const MsgQueueEntry& UnSubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {

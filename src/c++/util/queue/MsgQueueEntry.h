@@ -69,7 +69,7 @@ protected:
    /**
     * Specific return value for publish(). 
     */
-   mutable org::xmlBlaster::client::qos::PublishReturnQos* publishReturnQos_;
+   mutable const org::xmlBlaster::client::qos::PublishReturnQos* publishReturnQos_;
    /**
     * Return status for subscribe() etc. 
     */
@@ -80,7 +80,7 @@ protected:
     * encoded according to embeddedType
     */
    mutable BlobHolder blobHolder_;
-
+   
 public:
 
     /**
@@ -193,9 +193,20 @@ public:
    /**
     * gets the embeddedType of the object embedded in this entry.
     * @return String in namespace MethodName, the identifier which tells the I_EntryFactory how to
-    *         deserialize this entry.
+    *         deserialize this entry, e.g. "MSG_RAW|publish"
     */
    virtual std::string getEmbeddedType() const;
+   
+   virtual bool isConnect() const;
+
+   virtual bool isPublish() const;
+
+   virtual bool isSubscribe() const;
+
+   virtual bool isUnSubscribe() const;
+
+   virtual bool isErase() const;
+
 
    /**
     * Return a human readable identifier for logging output.
@@ -223,7 +234,7 @@ public:
 
    // this should actually be in another interface but since it is an only method we put it here.
    virtual const MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler&) const; // = 0;
-
+   
    virtual std::string toXml(const std::string& indent="") const; // = 0;
 
 };

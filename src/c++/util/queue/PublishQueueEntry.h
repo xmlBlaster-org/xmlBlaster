@@ -49,6 +49,8 @@ public:
    PublishQueueEntry& operator =(const PublishQueueEntry& entry);
 
    MsgQueueEntry *getClone() const;
+   
+   virtual bool isPublish() const;
 
    /**
     * @param type "MSG_RAW|publish"
@@ -60,7 +62,7 @@ public:
 
    size_t getSizeInBytes() const;
 
-   org::xmlBlaster::client::qos::PublishReturnQos &getPublishReturnQos() const;
+   const org::xmlBlaster::client::qos::PublishReturnQos* getPublishReturnQos() const;
 
    std::string toXml(const std::string& indent="") const;
 

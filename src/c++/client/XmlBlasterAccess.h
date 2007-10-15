@@ -12,6 +12,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/I_ConnectionProblems.h>
 #include <client/I_Callback.h>
 #include <util/thread/ThreadImpl.h>
+#include <util/dispatch/I_PostSendListener.h>
 #include <util/ReferenceCounterBase.h>
 #include <util/ReferenceHolder.h>
 #include <string>
@@ -77,7 +78,8 @@ typedef std::map<std::string, std::string> StringMap;
  * mixed with other instances. 
  */
 class Dll_Export XmlBlasterAccess : public org::xmlBlaster::client::I_Callback,
-                                    public org::xmlBlaster::util::ReferenceCounterBase
+                                    public org::xmlBlaster::util::ReferenceCounterBase,
+                                    public org::xmlBlaster::util::dispatch::I_PostSendListener
 {
 private:
    std::string ME;
@@ -112,6 +114,8 @@ private:
    org::xmlBlaster::util::thread::Mutex updateMutex_;
    /** this makes sure only one invocation is done at a time on this connection. The update method is not blocked by this mutex. The shutdown is blocked */
    org::xmlBlaster::util::thread::Mutex invocationMutex_;
+   
+   org::xmlBlaster::util::dispatch::I_PostSendListener* postSendListener_; 
 
    /**
     * Private copy constructor, clones are not supported
@@ -195,6 +199,21 @@ public:
     * @param listener Your listener, pass 0 to unregister.
     * @return The previously registered listener or 0
     */
+   org::xmlBlaster::util::dispatch::I_PostSendListener* registerPostSendListener(org::xmlBlaster::util::dispatch::I_PostSendListener *listener);
+
+   /**
+    * Register a listener for to receive the return Qos of send messages
+    * from the client queue. 
+    * Only one listener is supported, the last call overwrites older calls.
+    * <p/>
+    * Note: The synchronously send returned QoS are not delivered here as they
+    * are returned by the method invocation already:
+    * <pre>
+    * PublishReturnQos pubRetQos = con.publish(msgUnit);
+    * </pre>
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
    org::xmlBlaster::client::protocol::I_ProgressListener* registerProgressListener(org::xmlBlaster::client::protocol::I_ProgressListener *listener);
 
    /**
@@ -228,6 +247,11 @@ public:
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
    bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos, bool flush=true, bool shutdown=true, bool shutdownCb=true);
+
+   /**
+    * Enforced by I_PostSendListener
+    */
+   void postSend(const org::xmlBlaster::util::queue::MsgQueueEntry &msgQueueEntry);
 
    /**
     * Create a descriptive ME, for logging only

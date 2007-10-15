@@ -10,6 +10,7 @@ Comment:   Handles the org::xmlBlaster::client::protocol::I_XmlBlasterConnection
 #include <vector>
 #include <util/xmlBlasterDef.h>
 #include <util/dispatch/I_ConnectionsHandler.h>
+#include <util/dispatch/I_PostSendListener.h>
 #include <client/I_ConnectionProblems.h>
 #include <util/XmlBlasterException.h>
 #include <util/thread/ThreadImpl.h>
@@ -49,6 +50,7 @@ private:
    int currentRetry_;
    org::xmlBlaster::util::Timestamp timestamp_;
    org::xmlBlaster::util::queue::I_Queue* queue_;
+   org::xmlBlaster::util::dispatch::I_PostSendListener* postSendListener_; 
    bool pingIsStarted_;
    const std::string instanceName_;
    bool doStopPing_; // used to stop the pinger when destroying the object
@@ -112,6 +114,14 @@ public:
    std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
    std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
+
+   /**
+    * Register a listener for to receive information about the progress of incoming data. 
+    * Only one listener is supported, the last call overwrites older calls.
+    * @param listener Your listener, pass 0 to unregister.
+    * @return The previously registered listener or 0
+    */
+   org::xmlBlaster::util::dispatch::I_PostSendListener* registerPostSendListener(org::xmlBlaster::util::dispatch::I_PostSendListener *listener);
 
    void initFailsafe(org::xmlBlaster::client::I_ConnectionProblems* connectionProblems);
 

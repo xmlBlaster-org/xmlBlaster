@@ -52,6 +52,10 @@ MsgQueueEntry *SubscribeQueueEntry::getClone() const
    return new SubscribeQueueEntry(*this);
 }
 
+bool SubscribeQueueEntry::isSubscribe() const {
+	return true;
+}
+
 // this should actually be in another interface but since it is an only method we put it here.
 const MsgQueueEntry& SubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {

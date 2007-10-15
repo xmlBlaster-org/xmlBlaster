@@ -8,6 +8,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/dispatch/I_ConnectionsHandler.h>
 #include <util/Global.h>
 #include <util/lexical_cast.h>
+#include <util/qos/ConnectQos.h>
+#include <client/qos/PublishReturnQos.h>
 #include <cstddef> //<stddef.h>
 #include <util/msgUtil.h> // from xmlBlaster C library
 #include <socket/xmlBlasterSocket.h> // from xmlBlaster C library ::encodeMsgUnit(&msgUnit, debug);
@@ -27,6 +29,7 @@ using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::client::qos;
 
 MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& embeddedType, int priority, bool persistent, Timestamp uniqueId)
    : ReferenceCounterBase(), 
@@ -187,6 +190,26 @@ string MsgQueueEntry::getLogId() const
 string MsgQueueEntry::getEmbeddedType() const
 {
    return embeddedType_;
+}
+
+bool MsgQueueEntry::isConnect() const {
+	return false;
+}
+
+bool MsgQueueEntry::isPublish() const {
+	return false; // set to true by derived class PublishQueueEntry
+}
+
+bool MsgQueueEntry::isSubscribe() const {
+	return false;
+}
+
+bool MsgQueueEntry::isUnSubscribe() const {
+	return false;
+}
+
+bool MsgQueueEntry::isErase() const {
+	return false;
 }
 
 const void* MsgQueueEntry::getEmbeddedObject() const

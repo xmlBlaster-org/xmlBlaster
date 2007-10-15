@@ -35,7 +35,8 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
      connectReturnQos_((ConnectReturnQos*)0),
      subscriptionCallbackMap_(),
      updateMutex_(),
-     invocationMutex_(global.getProperty().get("xmlBlaster/invocationMutex/recursive", true))
+     invocationMutex_(global.getProperty().get("xmlBlaster/invocationMutex/recursive", true)),
+     postSendListener_(0)
 {
    log_.call(ME, "::constructor");
    cbServer_           = NULL;
@@ -59,7 +60,8 @@ XmlBlasterAccess::XmlBlasterAccess(GlobalRef globalRef)
      connectReturnQos_((ConnectReturnQos*)0),
      subscriptionCallbackMap_(),
      updateMutex_(),
-     invocationMutex_(globalRef->getProperty().get("xmlBlaster/invocationMutex/recursive", true))
+     invocationMutex_(globalRef->getProperty().get("xmlBlaster/invocationMutex/recursive", true)),
+     postSendListener_(0)
 {
    log_.call(ME, "::constructor");
    cbServer_           = NULL;
@@ -141,6 +143,7 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
 
    if (!connection_) {
       connection_ = dispatchManager_->getConnectionsHandler(instanceName_);
+      connection_->registerPostSendListener(this);
    }
 
    if (connectionProblems_) {
@@ -257,6 +260,22 @@ XmlBlasterAccess::initCbServer(const string& loginName, const string& type, cons
    server->initialize(loginName, *this);
    if (log_.trace()) log_.trace(ME, "After callback plugin initialize");
    return server;
+}
+
+org::xmlBlaster::util::dispatch::I_PostSendListener* XmlBlasterAccess::registerPostSendListener(org::xmlBlaster::util::dispatch::I_PostSendListener *listener) {
+   I_PostSendListener* old = this->postSendListener_;
+   this->postSendListener_ = listener;
+   //if (connection_)
+   //   return connection_->registerPostSendListener(this);
+   return old;
+}
+
+// I_PostSendListener
+void XmlBlasterAccess::postSend(const org::xmlBlaster::util::queue::MsgQueueEntry &msgQueueEntry)
+{
+   I_PostSendListener* l = this->postSendListener_;
+   if (l)
+      l->postSend(msgQueueEntry);
 }
 
 org::xmlBlaster::client::protocol::I_ProgressListener* XmlBlasterAccess::registerProgressListener(org::xmlBlaster::client::protocol::I_ProgressListener *listener)

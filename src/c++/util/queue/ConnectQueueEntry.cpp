@@ -55,6 +55,10 @@ ConnectQueueEntry::~ConnectQueueEntry() {
    memset(&blobHolder_, 0, sizeof(BlobHolder));
 }
 
+bool ConnectQueueEntry::isConnect() const {
+	return true;
+}
+
 const void* ConnectQueueEntry::getEmbeddedObject() const
 {
    if (log_.call()) log_.call(ME, "getEmbeddedObject() ...");

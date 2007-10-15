@@ -62,9 +62,13 @@ const MsgQueueEntry& PublishQueueEntry::send(I_ConnectionsHandler& connectionsHa
    return *this;
 }
 
-PublishReturnQos &PublishQueueEntry::getPublishReturnQos() const
+const PublishReturnQos* PublishQueueEntry::getPublishReturnQos() const
 {
-   return *publishReturnQos_;
+   return publishReturnQos_;
+}
+
+bool PublishQueueEntry::isPublish() const {
+	return true;
 }
 
 size_t PublishQueueEntry::getSizeInBytes() const

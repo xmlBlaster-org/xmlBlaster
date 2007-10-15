@@ -52,6 +52,10 @@ MsgQueueEntry *EraseQueueEntry::getClone() const
    return new EraseQueueEntry(*this);
 }
 
+bool EraseQueueEntry::isErase() const {
+	return true;
+}
+
 // this should actually be in another interface but since it is an only method we put it here.
 const MsgQueueEntry& EraseQueueEntry::send(I_ConnectionsHandler& connectionsHandler) const
 {

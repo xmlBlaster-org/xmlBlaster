@@ -58,6 +58,8 @@ public:
     * persistent queues this is the data which is stored as a blob.
     */
    const void* getEmbeddedObject() const;
+   
+   virtual bool isConnect() const;
 
    // this should actually be in another interface but since it is an only method we put it here.
    const org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler) const;

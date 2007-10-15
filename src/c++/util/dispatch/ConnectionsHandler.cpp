@@ -39,6 +39,7 @@ ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
      log_(global.getLog("org.xmlBlaster.util.dispatch")),
      connectMutex_(),
      publishMutex_(),
+     postSendListener_(0),
      instanceName_(instanceName)
 {
    ClientQueueProperty prop(global_, "");
@@ -592,7 +593,11 @@ ConnectReturnQosRef& ConnectionsHandler::queueConnect()
    return connectReturnQos_;
 }
 
-
+I_PostSendListener* ConnectionsHandler::registerPostSendListener(I_PostSendListener *listener) {
+   I_PostSendListener* old = postSendListener_; 
+   postSendListener_ = listener;
+   return old;
+}
 
 /**
  * Flushes all entries in the queue, i.e. the entries of the queue are sent to xmlBlaster.
@@ -649,8 +654,13 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
                MsgQueueEntry &entry3 = const_cast<MsgQueueEntry&>(entry2);
                entry3.setSender(connectReturnQos_->getSessionQos().getSessionName());
             }
-            PublishReturnQos& pubRet = (PublishReturnQos&)entry2.send(*this);
-            if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent " + pubRet.getStateInfo());
+            entry2.send(*this); // entry2 contains the PublishReturnQos after calling send
+            if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent");
+
+            I_PostSendListener *p = postSendListener_;
+            if (p) {
+            	p->postSend(entry2);
+            }
          }
          catch (XmlBlasterException &ex) {
            if (ex.isCommunication()) toPollingOrDead(&ex);
