@@ -9,6 +9,7 @@ Comment:   Little demo to show how a publish is done
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 #include <util/qos/ClientProperty.h>
+#include <util/queue/PublishQueueEntry.h>
 #include <authentication/SecurityQos.h>
 #include <iostream>
 #include <fstream>
@@ -19,6 +20,7 @@ using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::qos::storage;
+using namespace org::xmlBlaster::util::queue;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
@@ -50,7 +52,7 @@ static int fileRead(string &fn, string &content)
 }
 
 
-class PublishDemo
+class PublishDemo : public org::xmlBlaster::util::dispatch::I_PostSendListener
 {
 private:
    string ME;
@@ -127,6 +129,24 @@ public:
          connection_.erase(key, eq);
       }
    }
+   
+   /**
+    * Is called after each successful send tail back message from client side queue
+    * (typically after a connection loss with ongoing publishes)
+    * @see I_PostSendListener and connection_.registerPostSendListener(this);
+    */
+   void postSend(const org::xmlBlaster::util::queue::MsgQueueEntry &msgQueueEntry)
+   {
+	  if (msgQueueEntry.isPublish()) {
+          const PublishQueueEntry* entry = dynamic_cast<const PublishQueueEntry*>(&msgQueueEntry);
+		  const PublishReturnQos* qos = entry->getPublishReturnQos();
+		  log_.info(ME, "Tailback message is send from client queue, state=" + qos->getState() + ": " + msgQueueEntry.getMsgUnit().getContentStr());
+	  }
+	  else {
+		  log_.info(ME, "Tailback message is send from client queue");
+	  }
+   }
+
 };
 
 void PublishDemo::initEnvironment()
@@ -241,6 +261,9 @@ void PublishDemo::connect()
    ConnectQos connQos(global_);
    //org::xmlBlaster::authentication::SecurityQos sec(global_, "jack", "secret", "htpasswd,1.0");
    //connQos.setSecurityQos(sec);
+   
+   connection_.registerPostSendListener(this);
+
    log_.trace(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
    ConnectReturnQos retQos = connection_.connect(connQos, NULL); // no callback
    log_.trace(ME, "successfully connected to " + connection_.getServerNodeId() + ". Return qos: " + retQos.toXml());
@@ -360,7 +383,7 @@ static void usage(I_Log& log)
  * </pre>
  * for usage help
  * <p />Example:
- * PublishDemo -oid __sys__remoteProperties -clientProperty.key "MultiByte" -clientProperty.value "With 'Ä' multibyte" -clientProperty.charset windows-1252 -clientProperty.encoding base64
+ * PublishDemo -oid __sys__remoteProperties -clientProperty.key "MultiByte" -clientProperty.value "With 'ï¿½' multibyte" -clientProperty.charset windows-1252 -clientProperty.encoding base64
  */
 int main(int args, char ** argv)
 {
