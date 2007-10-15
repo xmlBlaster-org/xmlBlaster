@@ -14,6 +14,7 @@ import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
@@ -34,19 +35,31 @@ import org.xmlBlaster.util.MsgUnit;
 
 
 /**
- * The Java client side access to xmlBlaster. 
+ * The Java client side access to xmlBlaster.
  * <br />
- * This interface hides a remote connection or a native connection to the server. 
+ * This interface hides a remote connection or a native connection to the server.
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html">interface requirement</a>
  */
 public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 {
    /**
-    * Register a listener to get events about connection status changes. 
+    * Register a listener to get events about connection status changes.
     * @param connectionListener null or your listener implementation on connection state changes (ALIVE | POLLING | DEAD)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsafe.html">client.failsafe requirement</a>
     */
    void registerConnectionListener(I_ConnectionStateListener connectionListener);
+
+   /**
+    * Register a listener to get notifications when a messages is successfully send from
+    * the client side tail back queue.
+    * Max one can be registered, any old one will be overwritten.
+    * <p/>
+    * A use case is that you want to get the ReturnQos when a message which was
+    * queued on client side is finally sent to the server.
+    * @param postSendListener The postSendListener to set, pass null to stop the listener
+    * @return the old listener or null if no previous was registered
+    */
+   I_PostSendListener registerPostSendListener(I_PostSendListener postSendListener);
 
    /**
     * Setup the cache mode.
@@ -67,14 +80,14 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    public SynchronousCache createSynchronousCache(int size);
 
    /**
-    * Use a specific error handler instead of the default one. 
+    * Use a specific error handler instead of the default one.
     * @param msgErrorHandler Your implementation of the error handler.
     * @see org.xmlBlaster.client.ClientErrorHandler
     */
    public void setClientErrorHandler(I_MsgErrorHandler msgErrorHandler);
 
    /**
-    * Login to xmlBlaster. 
+    * Login to xmlBlaster.
     * <p>
     * Connecting with the default configuration (which checks xmlBlaster.properties and
     * your command line arguments):
@@ -88,7 +101,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * <p>
     * The default behavior is to poll automatically for the server if it is not found.
     * As we have not specified a listener for returned messages from the server there
-    * is no callback server created. 
+    * is no callback server created.
     * </p>
     * <p>
     * This example shows how to configure different behavior:
@@ -110,7 +123,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  cbAddress.setRetries(-1);       // -1 == forever
     *  cbAddress.setPingInterval(4000L); // ping every 4 seconds
     *  connectQos.addCallbackAddress(cbAddress);
-    *  
+    *
     *  xmlBlasterAccess.connect(connectQos, new I_Callback() {
     *
     *     public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
@@ -129,17 +142,17 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  });  // Login to xmlBlaster, default handler for updates;
     * </pre>
     * @param qos Your configuration desire
-    * @param updateListener If not null a callback server will be created and 
+    * @param updateListener If not null a callback server will be created and
     *        callback messages will be routed to your updateListener.update() method.
-    * @return Can only be null if '-dispatch/connection/doSendConnect false' was set  
+    * @return Can only be null if '-dispatch/connection/doSendConnect false' was set
     * @throws XmlBlasterException only if connection state is DEAD, typically thrown on wrong configurations.
     *            You must call connect again with different settings.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
     */
    ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException;
-      
+
    /**
-    * Create a new instance of the desired protocol driver like CORBA or RMI driver using the plugin loader. 
+    * Create a new instance of the desired protocol driver like CORBA or RMI driver using the plugin loader.
     * <p>
     * Note that the returned instance is of your control only, we don't cache it in any way, this
     * method is only a helper hiding the plugin loading.
@@ -151,8 +164,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     */
    I_CallbackServer initCbServer(String loginName, CallbackAddress callbackAddress) throws XmlBlasterException;
 
-   /** 
-    * Switch callback dispatcher on/off. 
+   /**
+    * Switch callback dispatcher on/off.
     * This is a convenience function (see ConnectQos). It will update the client side
     * ConnectQos as well so we don't loose the setting on reconnects after server maintenance.
     * @param activate true: XmlBlaster server delivers callback messages
@@ -161,7 +174,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    void setCallbackDispatcherActive(boolean activate) throws XmlBlasterException;
 
    /**
-    * Convenience method to send an administrative command to xmlBlaster. 
+    * Convenience method to send an administrative command to xmlBlaster.
     * If the command contains a '=' it is interpreted as a set() call, else it is used as
     * a get() call.
     * @param command for example "client/joe/?dispatcherActive" (a getter) or "client/joe/?dispatcherActive=false" (a setter).
@@ -174,7 +187,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    String sendAdministrativeCommand(String command) throws XmlBlasterException;
 
    /**
-    * Access the client side security plugin. 
+    * Access the client side security plugin.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.introduction.html">security.introduction requirement</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.development.serverPlugin.howto.html">security.development.serverPlugin.howto requirement</a>
     */
@@ -200,7 +213,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *       collects messages.
     * <p />
     * If '-dispatch/connection/doSendConnect false' was set call disconnect() nevertheless
-    * to cleanup client side resources.  
+    * to cleanup client side resources.
     * @param disconnectQos Describe the desired behavior on disconnect
     * @return false if connect() wasn't called before or if you call disconnect() multiple times
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
@@ -208,9 +221,9 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    boolean disconnect(DisconnectQos disconnectQos);
 
    /**
-    * Leaves the connection to the server and cleans up the 
-    * client side resources without making a server side disconnect. 
-    * This way the client side persistent messages are kept in queue while 
+    * Leaves the connection to the server and cleans up the
+    * client side resources without making a server side disconnect.
+    * This way the client side persistent messages are kept in queue while
     * transient ones are lost. If you want to delete also the
     * persistent messages you have to do it manually.
     * <p>
@@ -220,21 +233,21 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * </p>
     * <p>
     * Once you have called this method the I_XmlBlasterAccess
-    * becomes invalid and any further invocation results in 
+    * becomes invalid and any further invocation results in
     * an XmlBlasterException to be thrown.
     * </p>
-    *  
+    *
     * @param map The properties to pass while leaving server.
     *        Currently this argument has no effect. You can
     *        pass null as a parameter.
     */
    void leaveServer(Map map);
-   
+
    /**
-    * Has the connect() method successfully passed? 
+    * Has the connect() method successfully passed?
     * <p>
     * Note that this contains no information about the current connection state
-    * of the protocol layer. 
+    * of the protocol layer.
     * </p>
     * @return true If the connection() method was invoked without exception
     * @see I_ConnectionHandler#isAlive()
@@ -251,7 +264,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    void refreshSession() throws XmlBlasterException;
 
    /**
-    * Access the returned QoS of a connect() call. 
+    * Access the returned QoS of a connect() call.
     * @return is null if connect() was not called before
     */
    ConnectReturnQos getConnectReturnQos();
@@ -263,8 +276,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    ConnectQos getConnectQos();
 
    /**
-    * Access the callback server which is currently used in I_XmlBlasterAccess. 
-    * The callback server is not null if you have passes a I_Callback handle on connect(). 
+    * Access the callback server which is currently used in I_XmlBlasterAccess.
+    * The callback server is not null if you have passes a I_Callback handle on connect().
     * @return null if no callback server is established
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.html">protocol requirement</a>
     * @see #connect(ConnectQos, I_Callback)
@@ -278,7 +291,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    String getId();
 
    /**
-    * The public session ID of this login session. 
+    * The public session ID of this login session.
     * This is a convenience method only, the information is from ConnectReturnQos or if not available
     * from ConnectQos.
     * @return null if not known
@@ -287,7 +300,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    SessionName getSessionName();
 
    String getStorageIdStr();
-   
+
    /**
     * Allows to set a unique client side queue name (connection queue).
     * Useful only if you code connects to multiple servers with the same login name.
@@ -297,7 +310,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    void setStorageIdStr(String prefix);
 
    /**
-    * Allows to set the node name for nicer logging. 
+    * Allows to set the node name for nicer logging.
     * Used for clustering.
     * @param nodeId For example "/xmlBlaster/node/heron"
     */
@@ -314,9 +327,9 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    //SubscribeReturnQos subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
-    * Subscribe to messages. 
+    * Subscribe to messages.
     * <p>
-    * The messages are delivered asynchronous with the update() method. 
+    * The messages are delivered asynchronous with the update() method.
     * </p>
     * @param subscribeKey Which message topics to retrieve
     * @param subscribeQos Control the behavior and further filter messages with mime based filter plugins
@@ -371,7 +384,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos, I_Callback cb) throws XmlBlasterException;
 
    /**
-    * Subscribe to messages. 
+    * Subscribe to messages.
     * @param xmlKey Which message topics to retrieve
     * @param xmlQos Control the behavior and further filter messages with mime based filter plugins
     * @return is never null
@@ -382,7 +395,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    /**
     * Access synchronously messages. They are on first request subscribed
-    * and cached on client side. 
+    * and cached on client side.
     * <p>
     * A typical use case is a servlet which receives many HTML requests and
     * usually the message has not changed. This way we avoid asking xmlBlaster
@@ -414,7 +427,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    //MsgUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
-    * Get synchronous messages. 
+    * Get synchronous messages.
     * @param getKey Which message topics to retrieve
     * @param getQos Control the behavior and further filter messages with mime based filter plugins
     * @return never null
@@ -439,19 +452,19 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * As a workaround please use a loop and a timeout of for example 60000
     * and just ignore returned arrays of length 0.
     * </p>
-    * @param oid The identifier like 
+    * @param oid The identifier like
     *            "topic/hello" to access a history queue,
     *            "client/joe" to access a subject queue or
     *            "client/joe/session/1"
     *            to access a callback queue.
     *            The string must follow the formatting rule of ContextNode.java
     * @param maxEntries The maximum number of entries to retrieve
-    * @param timeout The time to wait until return. 
+    * @param timeout The time to wait until return.
     *                If you choose a negative value it will block until the maxEntries
     *                has been reached.
     *                If the value is '0' (i.e. zero) it will not wait and will correspond to a non-blocking get.
     *                If the value is positive it will block until the specified amount in milliseconds
-    *                has elapsed or when the maxEntries has been reached (whichever comes first). 
+    *                has elapsed or when the maxEntries has been reached (whichever comes first).
     * @param consumable  Expressed with 'true' or 'false'.
     *                    If true the entries returned are deleted from the queue
     * @return An array of messages, is never null but may be an array of length=0 if no message is delivered
@@ -460,11 +473,11 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @see javax.jms.MessageConsumer#receive
     */
    MsgUnit[] receive(String oid, int maxEntries, long timeout, boolean consumable) throws XmlBlasterException;
-   
+
 
    //UnSubscribeReturnQos[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
    /**
-    * Cancel subscription. 
+    * Cancel subscription.
     * @param unSubscribeKey Which messages to cancel
     * @param unSubscribeQos Control the behavior
     * @return The status of the unSubscribe request, is never null
@@ -480,13 +493,13 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    //Rename publishArr() to publish
    //PublishReturnQos[] publish(org.xmlBlaster.util.MsgUnit[] msgUnitArr) throws XmlBlasterException;
    /**
-    * Publish messages. 
+    * Publish messages.
     * @param msgUnitArr The messages to send to the server
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
     * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    void publishOneway(org.xmlBlaster.util.MsgUnit [] msgUnitArr) throws XmlBlasterException;
-   
+
    /**
     * Implements the blocking request/reply pattern.
     * <p>
@@ -513,7 +526,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  PublishKey pk = new PublishKey(glob, tempTopicOid);
     *  ...
     *  </pre>
-    *  
+    *
     *  <p>
     *  This approach is similar to the JMS approach for request/reply (TopicRequestor.java)
     *  but we have the choice to send the msgUnit directly to another client or to a topic (as JMS),
@@ -542,7 +555,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    EraseReturnQos[] erase(EraseKey eraseKey, EraseQos eraseQos) throws XmlBlasterException;
 
    /**
-    * Access the environment settings of this connection. 
+    * Access the environment settings of this connection.
     * <p>Enforced by interface I_ConnectionHandler</p>
     * @return The global handle (like a stack with local variables for this connection)
     */

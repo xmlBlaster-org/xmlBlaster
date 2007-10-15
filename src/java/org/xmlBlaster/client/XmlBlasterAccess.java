@@ -111,6 +111,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private I_Callback updateListener;
    /** Is not null if the client wishes to be notified about connection state changes in fail safe operation */
    private I_ConnectionStateListener connectionListener;
+   private I_PostSendListener postSendListener;
    /** Allow to cache updated messages for simulated synchronous access with get().
     * Do behind a get() a subscribe to allow cached synchronous get() access */
    private SynchronousCache synchronousCache;
@@ -183,15 +184,31 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
-    * Called after a messages is send, but not for oneway messages.
+    * Register a listener to get notifications when a messages is successfully send from
+    * the client side tail back queue.
+    * Max one can be registered, any old one will be overwritten
+    * @param postSendListener The postSendListener to set.
+    * @return the old listener or null if no previous was registered
+    */
+   public final I_PostSendListener registerPostSendListener(I_PostSendListener postSendListener) {
+      I_PostSendListener old = this.postSendListener;
+      this.postSendListener = postSendListener;
+      return old;
+   }
+
+   /**
+    * Called after a messages is send from the client side queue, but not for oneway messages.
     * Enforced by I_PostSendListener
-    * @param msgQueueEntry, includes the returned QoS
+    * @param msgQueueEntry, includes the returned QoS (e.g. PublisReturnQos)
     */
    public final void postSend(MsgQueueEntry msgQueueEntry) {
       if (msgQueueEntry.getMethodName() == MethodName.CONNECT) {
          this.connectReturnQos = (ConnectReturnQos)msgQueueEntry.getReturnObj();
          setContextNodeId(this.connectReturnQos.getServerInstanceId());
       }
+      I_PostSendListener l = this.postSendListener;
+      if (l != null)
+         l.postSend(msgQueueEntry);
    }
 
    /**
