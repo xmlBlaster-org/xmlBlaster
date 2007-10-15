@@ -128,6 +128,13 @@ public:
    void timeout(void *userData);
 
    /**
+    * On POLLING or if the client side queue contains entries
+    * further messages need to be put to the queue to maintain sequence. 
+    * @return true if the message must be put to queue.
+    */
+   bool putToQueue();
+
+   /**
     * Flushes all entries in the queue, i.e. the entries of the queue are sent to xmlBlaster.
     * If the queue is empty or NULL, then 0 is returned. If the state is in POLLING or DEAD, then -1 is
     * returned.. This method blocks until all entries in the queue have been sent.
