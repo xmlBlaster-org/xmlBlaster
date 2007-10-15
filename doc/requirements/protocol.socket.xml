@@ -295,10 +295,13 @@ it is determined by len.
 The '"' is just to show the boundary, '"' is not part of the message.
       ]]>
 
-      <p>You can switch on dumping of such SOCKET messages with following command line argument:
+      <p>You can switch on dumping of such SOCKET messages with following command line argument (all in one line):
       </p>
       <pre>
-java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -logging/org.xmlBlaster.util.protocol.RequestReplyExecutor FINEST 
+java -Dcom.sun.management.jmxremote org.xmlBlaster.Main
+     -logging/org.xmlBlaster.util.protocol.RequestReplyExecutor FINEST 
+     -logging/org.xmlBlaster.util.protocol.socket.SocketExecutor FINEST
+     -logging/org.xmlBlaster.util.xbformat.XbfParser FINEST
       </pre>
    </example>
 

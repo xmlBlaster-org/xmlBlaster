@@ -300,8 +300,8 @@
       On client crash the persistent messages are recovered.
       </p>
       <p>
-      The C++ queuing framework is memory based only.
-      If the C++ client is crashing and in tailback mode the messages are lost.
+      The C++ queuing framework is memory based, or if the sqlite database was compiled in, also persistent.
+      In the first case, if the C++ client is crashing the tailback messages are lost.
       </p>
       <p>
       Publish and update messages are priorized in the queue sorting as configured by the publisher.
@@ -311,7 +311,7 @@
       <p>
       On demand a client can register a local callback listener to receive the real
       return values as soon as the connection is established and the tailback messages
-      are flushed to the server.
+      are flushed to the server, see <pre>I_XmlBlasterAccess.registerPostSend()</pre>
       </p>
    </description>
    <example lang="Java">
