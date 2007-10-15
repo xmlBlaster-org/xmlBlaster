@@ -4,7 +4,7 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
- o #16510 C++ I_PostSendListener introduced
+ o #16510-#16514 C++ I_PostSendListener introduced
           You can now be notified after a message from client side tail back queue has
           been send to xmlBlaster (e.g. to access the real PublishReturnQos)
           See PublishDemo.cpp postSend() as an example
