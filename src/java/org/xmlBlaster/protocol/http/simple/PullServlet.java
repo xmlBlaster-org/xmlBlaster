@@ -33,11 +33,11 @@ import org.xmlBlaster.util.XmlBlasterException;
  * This servlet supports requests from a browser, it queries the topic given by
  * "gpsTopicId" configuration which needs to contain GPS coordinates (published
  * for example by a PDA).
- * 
+ *
  * <p>
  * Use xmlBlaster/demo/http/gpsmap.html to display the coordinates in a map.
  * </p>
- * 
+ *
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2006
  */
 public class PullServlet extends HttpServlet {
@@ -211,7 +211,7 @@ public class PullServlet extends HttpServlet {
 		// I_XmlBlasterAccess xmlBlaster = (I_XmlBlasterAccess) session
 		// .getAttribute("xmlBlaster");
 		if (this.xmlBlasterAccess == null) {
-			if (!props.contains("dispatch/callback/retries"))
+			if (!props.containsKey("dispatch/callback/retries"))
 				props.put("dispatch/callback/retries", "-1");
 			String sessionName = props.getProperty("sessionName", loginName
 					+ "/1");
