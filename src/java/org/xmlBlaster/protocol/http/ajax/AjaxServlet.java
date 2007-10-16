@@ -51,7 +51,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 
-//Debug: ~/apache-tomcat-5.5.15/bin/catalina.sh jpda start
+//Debug: $TOMCAT_HOME/bin/catalina.sh jpda start
 
 /**
  * One browser session maps on exactly one xmlBlaster login session.
