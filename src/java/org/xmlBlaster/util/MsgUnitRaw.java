@@ -13,7 +13,7 @@ import java.util.Properties;
 import org.xmlBlaster.util.def.Constants;
 
 /**
- * Encapsulates the xmlKey, content and qos. 
+ * Encapsulates the xmlKey, content and qos.
  * <p />
  * Keep this class slim, it is serialized and passed with RMI
  * <p />
@@ -52,7 +52,7 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
    public MsgUnitRaw(String key, byte[] content, String qos) {
       this(null, key, content, qos);
    }
-   
+
    public MsgUnitRaw(String key, EncodableData encodedContent, String qos) {
       this.msgUnit = null;
       this.qos = (qos == null) ? EMPTY_STRING : qos;
@@ -94,7 +94,7 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       return this.qos;
    }
 
-   /** 
+   /**
     * The number of bytes of qos+key+content
     */
    public long size() {
@@ -156,14 +156,14 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
    }
 
    /**
-    * Standard message dump. 
+    * Standard message dump.
     * Used for logging and XmlScripting
     * @param extraOffset
     * @param out
     * @throws IOException
     */
    public void toXml(String extraOffset, OutputStream out, Properties props) throws IOException {
-      boolean forceReadable = (props!=null && props.contains(Constants.TOXML_FORCEREADABLE)) ?
+      boolean forceReadable = (props!=null && props.containsKey(Constants.TOXML_FORCEREADABLE)) ?
             (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE)).booleanValue()) : false;
       StringBuffer sb = new StringBuffer(qos.length() + key.length() + 256);
       String offset = "\n";
@@ -174,21 +174,21 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
       if (this.key.length() > 0) sb.append(offset).append(key);
       out.write(sb.toString().getBytes());
       sb.setLength(0);
-      
+
       if (this.content == null && this.encodedContent != null && this.encodedContent.getSize() == 0 ||
           this.content != null && this.content.length == 0) {
          return;
       }
-      
+
       if (this.encodedContent != null) {
          out.write(this.encodedContent.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable).getBytes());
          return;
       }
-      
-      dumpContent(extraOffset, out, this.content, forceReadable); 
+
+      dumpContent(extraOffset, out, this.content, forceReadable);
    }
-      
-   public static void dumpContent(String extraOffset, OutputStream out, byte[] content, boolean forceReadable) throws IOException { 
+
+   public static void dumpContent(String extraOffset, OutputStream out, byte[] content, boolean forceReadable) throws IOException {
 
       // TODO: Potential charset problem when not Base64 protected
       boolean doEncode = false;
@@ -203,12 +203,12 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
             break;
          }
       }
-      
+
       // Needs to be parseable by XmlScriptInterpreter
       if (doEncode) {
          // link=''?  name=null, size=1000L type=Constants.TYPE_BLOB encoding=Constants.ENCODING_BASE64
          EncodableData data = new EncodableData(MsgUnitRaw.CONTENT_TAG, null, content);
-         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable); 
+         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable);
          out.write(contentXml.getBytes());
       }
       else {
@@ -218,7 +218,7 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
                Constants.TYPE_STRING,
                Constants.ENCODING_NONE,
                new String(content));
-         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable); 
+         String contentXml = data.toXml(extraOffset, MsgUnitRaw.CONTENT_TAG, forceReadable);
          out.write(contentXml.getBytes());
       }
    }
