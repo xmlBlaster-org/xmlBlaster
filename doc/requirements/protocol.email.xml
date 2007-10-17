@@ -574,6 +574,14 @@ of using our native XfbParser protocol.
 <p class="celltitel">Configuration of SmtpClient.java</p>
 <p>This plugin is responsible to send away emails with SMTP, it is used
 on server side and on java client side.</p>
+<p>Note that you can set additionally any system property which is supported by
+javax.mail, as for example:</p>
+<pre class="border">
+java -Dmail.smtp.connectiontimeout=10000 -Dmail.smtp.timeout=10000 ...
+</pre>
+<p>
+Click <a href="http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html" target="others">here for a complete list of javax.mail properties</a>.
+</p>
       <table border="1">
          <tr>
             <th>Property</th>
@@ -927,6 +935,7 @@ on server side and on java client side.</p>
    <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see>
    <see type="API">org.xmlBlaster.util.xbformat.XbfParser</see>
    <see type="API">org.xmlBlaster.util.xbformat.XmlScriptParser</see>
+   <see type="INTERNET" label="Javamail API">http://java.sun.com/products/javamail/javadocs/index.html?com/sun/mail/smtp/package-summary.html</see>
    <author>mr@marcelruff.info</author>
    <date>2005 11 23</date>
    <testcase status="OPEN">
