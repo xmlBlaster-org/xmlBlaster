@@ -14,4 +14,16 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>classes/classes.lnk</name>
+			<type>2</type>
+			<locationURI>XMLBLASTER_HOME/build.tmp/classes</locationURI>
+		</link>
+		<link>
+			<name>classes.lnk</name>
+			<type>2</type>
+			<locationURI>XMLBLASTER_HOME/build.tmp/classes</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

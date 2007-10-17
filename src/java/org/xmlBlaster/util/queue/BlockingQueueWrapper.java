@@ -54,9 +54,25 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
       this.queue = queue;
    }
 
+   public void clear() {
+	   I_Queue q = this.queue;
+	   if (q != null)
+		   q.clear();
+   }
+
+   /**
+    * @return null after shutdown
+    */
+   public I_Queue getQueue() {
+	   return this.queue;
+   }
+
    public synchronized void shutdown() {
-      if (this.isRegistered)
-         this.queue.removeStorageSizeListener(this);
+	  I_Queue q = this.queue;
+	  if (q != null) {
+		 if (this.isRegistered)
+            q.removeStorageSizeListener(this);
+	  }
       this.queue = null;
 
    }
@@ -100,9 +116,10 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
     * @throws XmlBlasterException if the queue is null or if the backend queue throws an Exception.
     */
    private final synchronized ArrayList blockingQueueOperation(int numOfEntries, long timeout, int minPrio, int maxPrio, I_QueueEntry limitEntry, I_BlockingQueueCb cb) throws XmlBlasterException {
-      if (this.queue == null)
+	  I_Queue q = this.queue;
+      if (q == null)
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_JDBC_INVALID, "The invoked queue is null (already shutdown ?)");
-      ArrayList ret = this.queue.peek(numOfEntries, -1L);
+      ArrayList ret = q.peek(numOfEntries, -1L);
       // TODO: if numOfEntries == -1 und timeout > 0L we expect at least one
       if ((ret.size() > 0 && ret.size() >= numOfEntries) || timeout == 0L) // should be sufficient a ==
          return ret;
@@ -111,25 +128,25 @@ public class BlockingQueueWrapper implements I_StorageSizeListener {
          this.waiting = true;
          if (!this.isRegistered) {
             this.isRegistered = true;
-            this.queue.addStorageSizeListener(this);
+            q.addStorageSizeListener(this);
          }
 
          long endTime = System.currentTimeMillis() + timeout;
          long remainingTime = 0L;
          boolean infiniteBlocking = (timeout < 0L);
          while ( (remainingTime=endTime-System.currentTimeMillis()) > 0L || infiniteBlocking) {
-            if ((numOfEntries != -1 && this.queue.getNumOfEntries() >= numOfEntries) ||
-            		numOfEntries == -1 && this.queue.getNumOfEntries() > 0) {
-               return cb.queueOperation(this.queue, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
+            if ((numOfEntries != -1 && q.getNumOfEntries() >= numOfEntries) ||
+            		numOfEntries == -1 && q.getNumOfEntries() > 0) {
+               return cb.queueOperation(q, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
             }
             long sleepTime = Math.max(remainingTime, this.pollInterval);
             this.wait(sleepTime);
          }
-         return cb.queueOperation(this.queue, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
+         return cb.queueOperation(q, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
       }
       catch (InterruptedException ex) {
          ex.printStackTrace();
-         return cb.queueOperation(this.queue, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
+         return cb.queueOperation(q, numOfEntries, -1L, minPrio, maxPrio, limitEntry);
       }
       finally {
          this.waiting = false;

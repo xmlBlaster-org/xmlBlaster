@@ -37,5 +37,5 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/js.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxtools.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/jacorb.jar"/>
-	<classpathentry kind="output" path="classes"/>
+	<classpathentry kind="output" path="classes.lnk"/>
 </classpath>
