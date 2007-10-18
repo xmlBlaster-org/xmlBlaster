@@ -137,6 +137,8 @@ wrapper.ntservice.description=http://www.xmlBlaster.org xmlBlaster MOM server
 # Service dependencies.  Add dependencies as needed starting from 1
 # Forstware: Start SQLServer first: MSSQLSERVER
 wrapper.ntservice.dependency.1=MSSQLSERVER
+# service name for Sql Server 2005 
+#wrapper.ntservice.dependency.1=SQL Server (MSSQLSERVER)
 
 # Mode in which the service is installed.  AUTO_START or DEMAND_START
 wrapper.ntservice.starttype=AUTO_START
