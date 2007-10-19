@@ -104,7 +104,9 @@
    <plugin create='false' id='smtp' className='org.xmlBlaster.util.protocol.email.SmtpClient'>
       <action do='LOAD' onStartupRunlevel='4' sequence='7' 
               onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='4' sequence='9'/>   
+      <action do='STOP' onShutdownRunlevel='4' sequence='9'/>
+      <attribute id='mail.smtp.timeout'>3600000</attribute> <!-- 1 h -->
+      <attribute id='mail.smtp.connectiontimeout'>600000</attribute> <!-- 10 min -->
       <attribute id='mail.smtp.url'>smtp://xmlBlaster:xmlBlaster@localhost:25</attribute>
    </plugin>
 
