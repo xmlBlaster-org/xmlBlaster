@@ -92,6 +92,18 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    private boolean contentForceBase64;
    
    private boolean breakLongMessageIdLine;
+   
+   /**
+    * mail.smtp.timeout
+    * Socket I/O timeout value in milliseconds. Default is infinite timeout.
+    */
+   private int smtpIoTimeout;
+
+   /**
+    * mail.smtp.connectiontimeout
+    * Socket connection timeout value in milliseconds. Default is infinite timeout.
+    */
+   private int smtpConnectionTimeout;
 
    /**
     * Add 'Expires:' email header. 
@@ -320,6 +332,20 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                pluginConfig));
       this.inlineExtension = props.getProperty("inlineExtension"); // like ".txt,.xml"
       
+      if (props.getProperty("mail.smtp.timeout") == null)
+          props.put("mail.smtp.timeout", ""+glob.get("mail.smtp.timeout",
+        		  Integer.MAX_VALUE, null,
+                pluginConfig));
+       p = props.getProperty("mail.smtp.timeout");
+       this.smtpIoTimeout = new Integer(p).intValue();
+
+       if (props.getProperty("mail.smtp.connectiontimeout") == null)
+           props.put("mail.smtp.connectiontimeout", ""+glob.get("mail.smtp.connectiontimeout",
+         		  Integer.MAX_VALUE, null,
+                 pluginConfig));
+        p = props.getProperty("mail.smtp.connectiontimeout");
+        this.smtpConnectionTimeout = new Integer(p).intValue();
+
       // Pass "this" for SMTP authentication with Authenticator
       this.authentication = new PasswordAuthentication(getUser(), this.xbUri.getPassword());
       this.session = Session.getDefaultInstance(props, this);
@@ -818,4 +844,22 @@ Some body text
    public void setBreakLongMessageIdLine(boolean breakLongMessageIdLine) {
       this.breakLongMessageIdLine = breakLongMessageIdLine;
    }
+
+   public int getSmtpIoTimeout() {
+	  return smtpIoTimeout;
+   }
+
+   //I don't think i can change this on an established connection
+   //public void setSmtpIoTimeout(int smtpIoTimeout) {
+   //   this.smtpIoTimeout = smtpIoTimeout;
+   //}
+	
+   public int getSmtpConnectionTimeout() {
+      return smtpConnectionTimeout;
+   }
+	
+   //I don't think i can change this on an established connection
+   //public void setSmtpConnectionTimeout(int smtpConnectionTimeout) {
+   //   this.smtpConnectionTimeout = smtpConnectionTimeout;
+   //}
 }

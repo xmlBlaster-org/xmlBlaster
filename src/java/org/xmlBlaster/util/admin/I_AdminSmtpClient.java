@@ -96,4 +96,16 @@ public interface I_AdminSmtpClient extends I_AdminUsage {
     * @param uri For example "smtp://aUser:mypassword@mySmtpHost.org:25"
     */
    public void setSmtpUrl(String uri);
+   
+   /**
+    * mail.smtp.timeout
+    * Socket I/O timeout value in milliseconds. Default is infinite timeout.
+    */
+   public int getSmtpIoTimeout();
+
+   /**
+    * mail.smtp.connectiontimeout
+    * Socket connection timeout value in milliseconds. Default is infinite timeout.
+    */
+   public int getSmtpConnectionTimeout();
 }
