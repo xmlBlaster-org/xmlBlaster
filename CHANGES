@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
+ o #16528 Adjustable SmtpClient mail timeout (see xmlBlasterPlugins.xml example)
+      <attribute id='mail.smtp.timeout'>3600000</attribute> <!-- socket IO: 1 h -->
+      <attribute id='mail.smtp.connectiontimeout'>600000</attribute> <!-- 10 min -->
+
  o #16518 C++ Fixed putToQueue(): Now always if POLLING or other messages in queue
 
  o #16510-#16514 C++ I_PostSendListener introduced
