@@ -402,6 +402,19 @@ public class StringPairTokenizer {
       return parseStringProperties(rawString, outerToken, innerToken, false);
    }
 
+   public static String arrayToCSV(String[] strs, String sep) {
+      if (strs == null || strs.length < 1)
+         return "";
+      StringBuffer buf = new StringBuffer(strs.length*100);
+      for (int i=0; i<strs.length; i++) {
+         if (strs[i] == null) continue; // Ignore
+         if (buf.length() > 0)
+            buf.append(sep);
+         buf.append(strs[i]);
+      }
+      return buf.toString();
+   }
+
    // java org.xmlBlaster.util.StringPairTokenizer
    public static void main(String[] args) {
       String test = (args.length > 0) ? args[0] : "/node/heron/client/\"joe/the/great\"";
