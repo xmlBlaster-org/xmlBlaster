@@ -50,6 +50,7 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -1506,6 +1507,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                               log.warning(txt);
                               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, txt);
                            }
+                           I_Checkpoint cp = glob.getCheckpointPlugin();
+                           if (cp != null)
+                              cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
                            return publishReturnQos.toXml();
                         }
                         /*
@@ -1602,6 +1606,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             publishReturnQos.getData().setRcvTimestamp(publishQos.getRcvTimestamp());
             log.severe("Internal: did not excpect to build a PublishReturnQos, but message '" + msgKeyData.getOid() + "' is processed correctly");
             Thread.dumpStack();
+         }
+
+         if (!publishQos.isFromPersistenceStore()) {
+            I_Checkpoint cp = glob.getCheckpointPlugin();
+            if (cp != null)
+               cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
          }
 
          return publishReturnQos.toXml(); // Use the return value of the cluster master node

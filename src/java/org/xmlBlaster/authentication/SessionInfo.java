@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -118,7 +119,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
    /** Holding properties send by our remote client via the topic __sys__sessionProperties */
    private ClientPropertiesInfo remoteProperties;
-   
+
    private boolean acceptWrongSenderAddress;
 
    /**
@@ -239,7 +240,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    }
 
    /**
-    * Configure server with '-xmlBlaster/acceptWrongSenderAddress true' 
+    * Configure server with '-xmlBlaster/acceptWrongSenderAddress true'
     * or "-xmlBlaster/acceptWrongSenderAddress/joe true".
     * Is available using JMX.
     * @return true: We accept wrong sender address in PublishQos.getSender() (not myself)
@@ -495,6 +496,12 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
          }
       }
       sessionQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
+
+      I_Checkpoint cp = glob.getCheckpointPlugin();
+      if (cp != null) {
+         cp.passingBy(I_Checkpoint.CP_UPDATE_QUEUE_ADD, entry.getMsgUnit(),
+                  this.getSessionName(), null);
+      }
    }
 
    public final ConnectQosServer getConnectQos() {
@@ -808,7 +815,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
       return -1L;
    }
-   
+
    public final long getCbQueueNumMsgsCache() {
       I_Queue sq = this.sessionQueue;
       if (sq == null) return 0L;
@@ -820,7 +827,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
       return -1L;
    }
-   
+
    public final long getCbQueueMaxMsgs() {
       if (this.sessionQueue == null) return 0L;
       return this.sessionQueue.getMaxNumOfEntries();

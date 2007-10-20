@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 public final class ServerScope extends org.xmlBlaster.util.Global implements I_RunlevelListener
 {
    private static Logger log = Logger.getLogger(ServerScope.class.getName());
-   
+
    private volatile RunlevelManager runlevelManager;
    private int currRunlevel = 0;
 
@@ -86,9 +86,9 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    private volatile MsgDistributorPluginManager msgDistributorPluginManager;
 
    private SubjectEntryShuffler subjectEntryShuffler;
-   
+
    private SessionInfo internalSessionInfo;
-   
+
    private TopicAccessor topicAccessor;
 
    public void finalize() {
@@ -186,7 +186,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    }
 
    /**
-    * Unique id of the xmlBlaster server, changes on each restart. 
+    * Unique id of the xmlBlaster server, changes on each restart.
     * If 'node/heron' is restarted, the instanceId changes.
     * @return nodeId + timestamp, '/node/heron/instanceId/33470080380'
     */
@@ -298,7 +298,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       }
       return this.runlevelManager;
    }
-   
+
    public int getRunlevel() {
       return this.currRunlevel;
    }
@@ -315,7 +315,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       this.clusterManager = clusterManager;
       this.useCluster = (this.clusterManager != null);
    }
-   
+
    /**
     * Since v1.1 the clusterManager is loaded via xmlBlasterPlugins.xml
     * See useCluster() to check if clustering is switched on
@@ -421,7 +421,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    }
 
    /**
-    * Initialize cb protocol manager. 
+    * Initialize cb protocol manager.
     * <p>To administer CORBA/RMI etc. plugins</p>
     */
    public final CbProtocolManager getCbProtocolManager() throws XmlBlasterException {
@@ -781,7 +781,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
          if (this.subjectEntryShuffler == null) {
             this.subjectEntryShuffler = new SubjectEntryShuffler(this);
          }
-         return this.subjectEntryShuffler;           
+         return this.subjectEntryShuffler;
       }
    }
 
@@ -821,10 +821,10 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
       }
 
       return (String[])tmpList.toArray(new String[tmpList.size()]);
-   } 
+   }
 
    /**
-    * Dumps given amount of messages from queue to file. 
+    * Dumps given amount of messages from queue to file.
     * @param queue The queue to observe
     * @param numOfEntries Maximum number of messages to dump
     * @param path The path to dump the messages to, it is automatically created if missing.
@@ -901,7 +901,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    }
 
    /**
-    * The singleton to handle all topics and its access. 
+    * The singleton to handle all topics and its access.
     * @return never null (is filled by RequestBroker after construction)
     */
    public TopicAccessor getTopicAccessor() {

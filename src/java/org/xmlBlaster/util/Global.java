@@ -14,6 +14,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.address.Address;
@@ -92,7 +93,7 @@ import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
 import org.xmlBlaster.util.admin.extern.JmxWrapper;
 
 /**
- * Global variables to avoid singleton. 
+ * Global variables to avoid singleton.
  * <p>
  * Each Global instance holds all configuration and helper objects for
  * exactly one XmlBlasterAccess client instance. It is like a local
@@ -170,7 +171,7 @@ public class Global implements Cloneable
    protected /*final*/ Map objectMap;
    /** Helper to synchronize objectMap access */
    public final Object objectMapMonitor = new Object();
-   
+
    protected volatile Address bootstrapAddress;
    protected PluginLoader clientSecurityLoader;
 
@@ -188,6 +189,9 @@ public class Global implements Cloneable
    protected SAXParserFactory saxFactory;
    protected DocumentBuilderFactory docBuilderFactory;
    protected TransformerFactory transformerFactory;
+
+   /** Must be loaded in runlevel 0 or 1 before any access as not synchronized */
+   protected I_Checkpoint checkpointPlugin;
 
    protected volatile I_MsgKeyFactory msgKeyFactory;
    protected volatile I_QueryKeyFactory queryKeyFactory;
@@ -212,10 +216,10 @@ public class Global implements Cloneable
    protected volatile I_XmlBlasterAccess xmlBlasterAccess;
 
    protected boolean isDoingShutdown = false;
-   
+
    /** set to allow wipe out the persistence on restarts */
    protected boolean wipeOutDB = false;
-   
+
    //** the entry factory to be used */
    protected I_EntryFactory entryFactory;
 
@@ -255,7 +259,7 @@ public class Global implements Cloneable
     * <p>By setting loadPropFile to false it is possible to create a Global
     * which does not automatically search out the xmlBlaster.properties file,
     * which is good when you want to start xmlBlaster in an embedded environment.
-    * <p>It is possible to later load the property file if one wants, here is one 
+    * <p>It is possible to later load the property file if one wants, here is one
     * way to do it:</p>
     * <pre>
          Property p = glob.getProperty();
@@ -310,7 +314,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Check if JMX is activated. 
+    * Check if JMX is activated.
     * @return true if JMX is in use
     */
    public boolean isJmxActivated() {
@@ -323,7 +327,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Send an administrative notification. 
+    * Send an administrative notification.
     */
    public void sendNotification(NotificationBroadcasterSupport source,
           String msg, String attributeName,
@@ -343,12 +347,12 @@ public class Global implements Cloneable
    }
 
    /**
-    * JMX support. 
+    * JMX support.
     * Start xmlBlaster with <code>java -Dcom.sun.management.jmxremote org.xmlBlaster.Main</code>
     * You can access xmlBlaster from 'jconsole' delivered with JDK1.5 or above.
     * The root node is always the cluster node id.
     * @param contextNode Used to retrieve a unique instance name for the given MBean
-    * @param mbean the MBean object instance 
+    * @param mbean the MBean object instance
     * @return The object name used to register or null on error
     * @since 1.0.5
     * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
@@ -358,8 +362,8 @@ public class Global implements Cloneable
    }
 
    /**
-    * Unregister a JMX MBean. 
-    * Never throws any exception 
+    * Unregister a JMX MBean.
+    * Never throws any exception
     * @param objectName The object you got from registerMBean() of type ObjectName,
     *                   if null nothing happens
     */
@@ -400,7 +404,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Combination from getVersion() and getRevisionNumber(). 
+    * Combination from getVersion() and getRevisionNumber().
     * @return e.g. "0.91 #12702"
     */
    public String getReleaseId() {
@@ -432,7 +436,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Blocks until a key on the keyboard is hit. 
+    * Blocks until a key on the keyboard is hit.
     * Consumes multiple hits (for Windows DOS box)
     * @param str If not null it will be printed on console with System.out
     * @return The int pressed (for example 49 for '1')
@@ -480,7 +484,7 @@ public class Global implements Cloneable
    /**
     * private, called from constructor
     * @param args arguments to initilize the property with.
-    * @param loadPropFile if loading of xmlBlaster.properties 
+    * @param loadPropFile if loading of xmlBlaster.properties
     *        file should be done, if false no loading of the file is done.
     * @return -1 on error
     * @exception If no Property instance can be created
@@ -523,24 +527,24 @@ public class Global implements Cloneable
    }
 
    /**
-    * Configure JDK 1.4 java.util.logging (only once per JVM-Classloader, multiple Global instances share the same). 
+    * Configure JDK 1.4 java.util.logging (only once per JVM-Classloader, multiple Global instances share the same).
     * </p>
     * Switch off xmlBlaster specific logging:
     * <pre>
     * xmlBlaster/java.util.logging=false
-    * </pre> 
+    * </pre>
     * </p>
     * Lookup a specific logging.properties:
     * <pre>
     * java.util.logging.config.file=logging.properties
-    * </pre> 
+    * </pre>
     * @return The used configuration file (can be used for user notification) or null
     * @throws XmlBlasterException if redirection fails
     */
    private URL initLogManager(String[] args) throws XmlBlasterException {
       if (args == null) return null;
       if (logIsInitialized) return null;
-      
+
       final String propertyName = "java.util.logging.config.file";
 
       if ("false".equals(getProperty().get("xmlBlaster/java.util.logging", (String)null))) {
@@ -557,11 +561,11 @@ public class Global implements Cloneable
       }
       try {
          InputStream in = url.openStream();
-         
+
          LogManager logManager = LogManager.getLogManager();
          logManager.readConfiguration(in);
          in.close();
-         
+
          // init from command line (or xmlBlaster.properties)
          synchronized (Global.class) {
             if (!logIsInitialized) {
@@ -583,7 +587,7 @@ public class Global implements Cloneable
                   }
                }
                Iterator iter = map.entrySet().iterator();
-               
+
                Logger defLogger = logManager.getLogger("");
                // Handler[] tmpHandlers = defLogger.getHandlers();
                // Handler[] refHandlers = new Handler[tmpHandlers.length];
@@ -596,7 +600,7 @@ public class Global implements Cloneable
                      xb.setGlobal(this);
                   }
                }
-               
+
                while (iter.hasNext()) {
                   Map.Entry entry = (Map.Entry)iter.next();
                   String key = (String)entry.getKey();
@@ -673,9 +677,9 @@ public class Global implements Cloneable
        }
  */
     }
-    
+
     /**
-     * Changes the given logger to given level. 
+     * Changes the given logger to given level.
      * @param loggerName e.g. "logging" or "logging/org.xmlBlaster.util.StopWatch"
      * @param level For example "FINE"
      * @return The set level
@@ -686,9 +690,9 @@ public class Global implements Cloneable
       logger.setLevel(level);
       return level;
    }
-   
+
    /**
-    * Calls init(String[] args), the props keys have no leading "-". 
+    * Calls init(String[] args), the props keys have no leading "-".
     * @return 1 Show usage, 0 OK, -1 error
     */
    public int init(Map props) {
@@ -696,7 +700,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The args key needs a leading "-". 
+    * The args key needs a leading "-".
     * @return 1 Show usage, 0 OK, -1 error
     */
    public int init(String[] args)
@@ -720,7 +724,7 @@ public class Global implements Cloneable
             System.err.println("Configuring JDK 1.4 logging output failed: " + e.toString());
          }
          return property.wantsHelp() ? 1 : 0;
-      } 
+      }
       catch (XmlBlasterException e) {
          errorText = ME + " ERROR: " + e.toString();
          System.err.println(errorText); // Log probably not initialized yet.
@@ -766,10 +770,10 @@ public class Global implements Cloneable
    public void setContextNode(ContextNode contextNode) {
       this.contextNode = contextNode;
    }
-   
+
    /**
     * Helper for the time being to be used on client side by
-    * services like SmtpClient. 
+    * services like SmtpClient.
     * Is filled by XmlBlasterAccess with for example "/node/heron/client/joe/session/1"
     * @return
     */
@@ -798,7 +802,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the unique local id (as a String), 
+    * Access the unique local id (as a String),
     * on client side typically the loginName with the public sessionId,
     * on server side the server instance unique id.
     * @return ""
@@ -912,7 +916,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Get a cloned instance. 
+    * Get a cloned instance.
     * <p>
     * Calls clone() and sets the given args thereafter.
     * </p>
@@ -951,10 +955,24 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the environment properties, is never null. 
+    * Access the environment properties, is never null.
     */
    public final Property getProperty() {
       return (this.property == null) ? new Property() : this.property;
+   }
+
+   /**
+    * @return the checkpointPlugin
+    */
+   public I_Checkpoint getCheckpointPlugin() {
+      return this.checkpointPlugin;
+   }
+
+   /**
+    * @param checkpointPlugin the checkpointPlugin to set
+    */
+   public void setCheckpointPlugin(I_Checkpoint checkpointPlugin) {
+      this.checkpointPlugin = checkpointPlugin;
    }
 
    /**
@@ -1000,7 +1018,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Return a factory parsing QoS XML strings from disconnect() requests. 
+    * Return a factory parsing QoS XML strings from disconnect() requests.
     */
    public final I_DisconnectQosFactory getDisconnectQosFactory() {
       if (this.disconnectQosFactory == null) {
@@ -1240,7 +1258,7 @@ public class Global implements Cloneable
     */
    public String accessFromInternalHttpServer(Address address, String urlPath, boolean verbose) throws XmlBlasterException
    {
-      if (log.isLoggable(Level.FINER)) 
+      if (log.isLoggable(Level.FINER))
          log.finer("Entering accessFromInternalHttpServer(" + ((address==null)?"null":address.getRawAddress()) + ") ...");
       //log.info(ME, "accessFromInternalHttpServer address=" + address.toXml());
       Address addr = address;
@@ -1257,8 +1275,8 @@ public class Global implements Cloneable
          if (urlPath != null && urlPath.startsWith("/") == false)
             urlPath = "/" + urlPath;
 
-         if (log.isLoggable(Level.FINE)) 
-            log.fine("Trying internal http server on " + 
+         if (log.isLoggable(Level.FINE))
+            log.fine("Trying internal http server on " +
                                addr.getBootstrapHostname() + ":" + addr.getBootstrapPort() + "" + urlPath);
          java.net.URL nsURL = new java.net.URL("http", addr.getBootstrapHostname(), addr.getBootstrapPort(), urlPath);
          java.io.InputStream nsis = nsURL.openStream();
@@ -1364,17 +1382,17 @@ public class Global implements Cloneable
             if ( clf != null) {
                try {
                   Class clfc = Thread.currentThread().getContextClassLoader().loadClass(clf);
-                  
-                  
+
+
                   classLoaderFactory = (ClassLoaderFactory)clfc.newInstance();
                   classLoaderFactory.init(this);
                   return classLoaderFactory;
-                  
+
                } catch (Exception e) {
                   log.warning("Could not load custom classLoaderFactory " + clf + " using StandaloneClassLoaderFactory");
                } // end of try-catch
             } // end of if ()
-            
+
             classLoaderFactory = new StandaloneClassLoaderFactory(this);
          }
       }
@@ -1433,13 +1451,13 @@ public class Global implements Cloneable
                saxFactory = JAXPFactory.newSAXParserFactory(fac);
             }
 /*
-            String defaultFac = (XmlNotPortable.JVM_VERSION<=14) ? 
+            String defaultFac = (XmlNotPortable.JVM_VERSION<=14) ?
                   "org.apache.crimson.jaxp.SAXParserFactoryImpl" :
                   "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl";
             if (isIbmVM()) {
                defaultFac = "org.apache.xerces.jaxp.SAXParserFactoryImpl";
             }
-            
+
             saxFactory = JAXPFactory.newSAXParserFactory(
                getProperty().get(
                   "javax.xml.parsers.SAXParserFactory", defaultFac));
@@ -1509,10 +1527,10 @@ public class Global implements Cloneable
                   "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl" :
                   "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl";
             if (isIbmVM()) {
-               defaultFac = 
+               defaultFac =
                   "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl";
             }
-            
+
             docBuilderFactory =JAXPFactory.newDocumentBuilderFactory(
                getProperty().get(
                   "javax.xml.parsers.DocumentBuilderFactory", defaultFac));
@@ -1555,10 +1573,10 @@ public class Global implements Cloneable
                "org.apache.xalan.processor.TransformerFactoryImpl" :
                "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
             if (isIbmVM()) {
-               defaultFac = 
+               defaultFac =
                "org.apache.xalan.processor.TransformerFactoryImpl";
             }
-            
+
             transformerFactory =JAXPFactory.newTransformerFactory(
                getProperty().get(
                   "javax.xml.transform.TransformerFactory", defaultFac));
@@ -1656,7 +1674,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the handle of the ping timer thread to test a client or callback connection. 
+    * Access the handle of the ping timer thread to test a client or callback connection.
     * @return The Timeout instance
     */
    public final Timeout getPingTimer() {
@@ -1746,7 +1764,7 @@ public class Global implements Cloneable
          log.warn(ME, "Ignoring: " + e.toString());
       }
       */
-      
+
       //Thread.currentThread().dumpStack();
       if (this.dispatchWorkerPool != null) {
          this.dispatchWorkerPool.shutdown();
@@ -1787,10 +1805,10 @@ public class Global implements Cloneable
             firstInstance = null;
          }
       }
-      
+
       this.isDoingShutdown = false;
    }
-   
+
    public int getRunlevel() {
       return -1;
    }
@@ -1825,7 +1843,7 @@ public class Global implements Cloneable
 
 
    /**
-    * The client handle to access xmlBlaster remotely. 
+    * The client handle to access xmlBlaster remotely.
     * <p>
     * Access your client side handle with this method only, it
     * is the with this Global instance configured client connection to xmlBlaster
@@ -1883,7 +1901,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Convenience method which returns the typical environment settings for a LOCAL connection. 
+    * Convenience method which returns the typical environment settings for a LOCAL connection.
     * <p>If you write a native plugin you can use these settings as a base.</p>
     * Don't use for plugins started on runlevel below AvailabilityChecker allows to publish
     * as we don't have a client side queue.
@@ -1911,7 +1929,7 @@ public class Global implements Cloneable
            };
       return nativeConnectArgs;
    }
-   
+
    /**
     * Command line usage.
     * <p />
@@ -1952,12 +1970,12 @@ public class Global implements Cloneable
       System.out.println("NO GLOBAL, Hit a key");
       try { System.in.read(); } catch(java.io.IOException e) {}
       Global glob = new Global(args);
-      
+
       synchronized(glob) {
          System.out.println(ThreadLister.getAllStackTraces());
       }
-      
-      
+
+
       try {
          while (true) {
             System.out.println("NO XmlBlasterAccess, Hit a key");
@@ -1967,7 +1985,7 @@ public class Global implements Cloneable
             System.out.println("connecting ...");
             a.connect(null, null);
             System.out.println("connected ...");
-            
+
             System.out.println("Hit a key");
             try { System.in.read(); } catch(java.io.IOException e) {}
             a.disconnect(null);
@@ -1980,23 +1998,23 @@ public class Global implements Cloneable
          System.out.println("Global.main: " + e.toString());
       }
    }
-   
+
    /**
-    * It searches for the given property. 
+    * It searches for the given property.
     * The replacement for '${...}' is supported. Note that the assignment of a '$'
     * variable can only be done in global scope, that is in the xmlBlaster.properties or command line,
     * and JVM properties but not in the xmlBlasterPlugins.xml.
-    * 
+    *
     * It first looks into the map (the hardcoded properties). If one is found it is returned.
-    * Then it looks into the global. If one is found it is returned. If none is found it is 
+    * Then it looks into the global. If one is found it is returned. If none is found it is
     * searched in the plugin
     * @param shortKey the key (in its short form without prefix) of the property
     * @param defaultValue the default value of the property (weakest)
     * @param map the hardcoded properties (strongest)
-    * @param pluginConfig the pluginConfig used, checks the properties from PluginInfo 
+    * @param pluginConfig the pluginConfig used, checks the properties from PluginInfo
     * @return
     */
-   public String get(String shortKey, String defaultValue, Properties map, I_PluginConfig pluginConfig) 
+   public String get(String shortKey, String defaultValue, Properties map, I_PluginConfig pluginConfig)
       throws XmlBlasterException {
       try {
          if (shortKey == null) {
@@ -2014,9 +2032,9 @@ public class Global implements Cloneable
          throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME + ".get", "exception when getting property '" + shortKey + "'", ex);
       }
    }
-   
+
    /**
-    * 
+    *
     * @param shortKey
     * @param defaultValue
     * @param map
@@ -2025,11 +2043,11 @@ public class Global implements Cloneable
     * @throws XmlBlasterException
     * @see get(String, String, map, I_PluginConfig)
     */
-   public long get(String shortKey, long defaultValue, Properties map, I_PluginConfig pluginConfig) 
+   public long get(String shortKey, long defaultValue, Properties map, I_PluginConfig pluginConfig)
       throws XmlBlasterException {
       String tmp = get(shortKey, null, map, pluginConfig);
       if (tmp == null) // should never happen
-         return defaultValue; 
+         return defaultValue;
       try {
          return Long.parseLong(tmp);
       }
@@ -2037,9 +2055,9 @@ public class Global implements Cloneable
          throw new XmlBlasterException(this, ErrorCode.RESOURCE_CONFIGURATION, ME + ".get", "wrong type for '" + shortKey + "': should be long but is '" + tmp + "'");
       }
    }
-   
+
    /**
-    * 
+    *
     * @param shortKey
     * @param defaultValue
     * @param map
@@ -2048,11 +2066,11 @@ public class Global implements Cloneable
     * @throws XmlBlasterException
     * @see get(String, String, map, I_PluginConfig)
     */
-   public int get(String shortKey, int defaultValue, Properties map, I_PluginConfig pluginConfig) 
+   public int get(String shortKey, int defaultValue, Properties map, I_PluginConfig pluginConfig)
       throws XmlBlasterException {
       String tmp = get(shortKey, null, map, pluginConfig);
       if (tmp == null) // should never happen
-         return defaultValue; 
+         return defaultValue;
       try {
          return Integer.parseInt(tmp);
       }
@@ -2062,7 +2080,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Checks PluginInfo as well. 
+    * Checks PluginInfo as well.
     * @param shortKey
     * @param defaultValue
     * @param map
@@ -2071,11 +2089,11 @@ public class Global implements Cloneable
     * @throws XmlBlasterException
     * @see get(String, String, map, I_PluginConfig)
     */
-   public boolean get(String shortKey, boolean defaultValue, Properties map, I_PluginConfig pluginConfig) 
+   public boolean get(String shortKey, boolean defaultValue, Properties map, I_PluginConfig pluginConfig)
       throws XmlBlasterException {
       String tmp = get(shortKey, null, map, pluginConfig);
       if (tmp == null) // should never happen
-         return defaultValue; 
+         return defaultValue;
       try {
          return new Boolean(tmp).booleanValue();
       }
@@ -2085,7 +2103,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * 
+    *
     * @param shortKey
     * @param defaultValue
     * @param map
@@ -2094,11 +2112,11 @@ public class Global implements Cloneable
     * @throws XmlBlasterException
     * @see get(String, String, map, I_PluginConfig)
     */
-   public double get(String shortKey, double defaultValue, Properties map, I_PluginConfig pluginConfig) 
+   public double get(String shortKey, double defaultValue, Properties map, I_PluginConfig pluginConfig)
       throws XmlBlasterException {
       String tmp = get(shortKey, null, map, pluginConfig);
       if (tmp == null) // should never happen
-         return defaultValue; 
+         return defaultValue;
       try {
          return Double.parseDouble(tmp);
       }
@@ -2117,7 +2135,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Unique id of the client, changes on each restart. 
+    * Unique id of the client, changes on each restart.
     * If 'client/joe' is restarted, the instanceId changes.
     * @return id + timestamp, '/client/joe/instanceId/33470080380'
     */
@@ -2135,7 +2153,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Dumps given amount of messages from queue to file. 
+    * Dumps given amount of messages from queue to file.
     * TODO: This method is only partly implemented
     * @param queue The queue to observe
     * @param numOfEntries Maximum number of messages to dump
@@ -2162,7 +2180,7 @@ public class Global implements Cloneable
       for (int i=0; i<list.size(); i++) {
          MsgQueueEntry entry = (MsgQueueEntry)list.get(i);
          if (entry.isExpired() || entry.isDestroyed()) continue;
-         
+
          String fn = entry.getKeyOid() + entry.getUniqueId() + ".xml";
          String xml = null;
 
@@ -2266,7 +2284,7 @@ public class Global implements Cloneable
       }
       return str;
    }
-   
+
    /**
     * http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/util/admin/I_AdminPop3Driver.html#setPollingInterval(long)
     * @param className
@@ -2324,5 +2342,5 @@ public class Global implements Cloneable
       statistic.append(".");
       return statistic.toString();
    }
-   
+
 }

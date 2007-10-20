@@ -188,6 +188,17 @@
       <action do='STOP' onShutdownRunlevel='3' sequence='65'/>
    </plugin>
 
+   <!-- See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java -->
+   <plugin create='false' id='Checkpoint' className='org.xmlBlaster.util.checkpoint.Checkpoint'>
+      <action do='LOAD' onStartupRunlevel='1' sequence='1'
+                           onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='0' sequence='1'/>
+      <attribute id='filterClientPropertyKey'>wfguid</attribute>
+      <attribute id='xmlStyle'>true</attribute>
+      <attribute id='showAllMessages'>false</attribute>
+      <attribute id='showAllClientProperties'>false</attribute>
+   </plugin>
+
    <!-- ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver -->
    <plugin create='true' id='JDBC' className='org.xmlBlaster.protocol.jdbc.JdbcDriver'>
       <action do='LOAD' onStartupRunlevel='5' sequence='5' />

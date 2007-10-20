@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -48,11 +49,12 @@ import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 public final class CbDispatchConnection extends DispatchConnection
 {
    private static Logger log = Logger.getLogger(CbDispatchConnection.class.getName());
-   
+
    public final String ME;
    private I_CallbackDriver cbDriver;
    private String cbKey;
    private I_AdminSession session;
+   private SessionName sessionName;
 
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -61,8 +63,8 @@ public final class CbDispatchConnection extends DispatchConnection
    public CbDispatchConnection(Global glob, CbDispatchConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
       this.ME = connectionsHandler.getDispatchManager().getQueue().getStorageId().toString();
-      
-      SessionName sessionName = connectionsHandler.getDispatchManager().getSessionName();
+
+      sessionName = connectionsHandler.getDispatchManager().getSessionName();
       ServerScope serverScope = (ServerScope)glob;
       I_AdminSubject subject = serverScope.getAuthenticate().getSubjectInfoByName(sessionName);
       if (subject != null)
@@ -75,15 +77,15 @@ public final class CbDispatchConnection extends DispatchConnection
    public final String getName() {
       return ME;
    }
-   
+
    public void setAddress(AddressBase address) throws XmlBlasterException {
       super.setAddress(address);
       if (this.cbDriver == null || !this.cbDriver.isAlive())
          loadPlugin();
-      this.cbDriver.init(this.glob, (CallbackAddress)address);   
+      this.cbDriver.init(this.glob, (CallbackAddress)address);
    }
-   
-   
+
+
    /**
     * The name of the protocol driver
     */
@@ -94,7 +96,7 @@ public final class CbDispatchConnection extends DispatchConnection
    /** Load the appropriate protocol driver */
    public final void loadPlugin() throws XmlBlasterException {
       // Check if a native callback driver is passed in the glob Hashtable (e.g. for "jdbc" or "native"), take this instance
-      
+
       // SOCKET protocol
       this.cbDriver = (I_CallbackDriver)this.address.getCallbackDriver();
 
@@ -109,7 +111,7 @@ public final class CbDispatchConnection extends DispatchConnection
          this.cbDriver = ((org.xmlBlaster.engine.ServerScope)glob).getCbProtocolManager().getNewCbProtocolDriverInstance(address.getType());
          if (this.cbDriver == null)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Sorry, callback protocol type='" + address.getType() + "' is not supported");
-            
+
          // glob.addNativeCallbackDriver(this.cbKey, this.cbDriver);
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Created callback plugin '" + this.address.getType() + "'");
       }
@@ -145,7 +147,7 @@ public final class CbDispatchConnection extends DispatchConnection
       public MsgQueueUpdateEntry msgQueueUpdateEntry;
       public MsgUnitRaw msgUnitRaw;
       public String subscriptionId;
-      
+
       public Holder(MsgQueueUpdateEntry msgQueueUpdateEntry, MsgUnitRaw msgUnitRaw, String subscriptionId) {
          this.msgQueueUpdateEntry = msgQueueUpdateEntry;
          this.msgUnitRaw = msgUnitRaw;
@@ -155,24 +157,24 @@ public final class CbDispatchConnection extends DispatchConnection
 
    /**
     * We export/encrypt the message (call the interceptor)
-    * 
+    *
     * @param holderList list of Holder instances
     * @param methodName UPDATE or UPDATE_ONEWAY
     * @throws XmlBlasterException
     */
    private void exportCrypt(ArrayList holderList, MethodName methodName) throws XmlBlasterException {
       if (holderList == null || methodName == null) return;
-      
+
       I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
       if (securityInterceptor == null) {
          log.warning(ME+": No session security context, sending " + holderList.size() + " messages without encryption");
          return;
       }
       ServerScope scope = (ServerScope)this.glob;
-            
+
       for (int i=0; i<holderList.size(); i++) {
          Holder holder = (Holder)holderList.get(i);
-         
+
          // Pass subscribeQos or connectQos - clientProperties to exportMessage() in case there are
          // some interesting settings provided, for example a desired XSL transformation
          SubscriptionInfo subscriptionInfo = null;
@@ -186,7 +188,7 @@ public final class CbDispatchConnection extends DispatchConnection
          else {
             // todo: use map=ConnectQos.getClientProperties() as a map to pass to dataHolder
          }
-         
+
          CryptDataHolder dataHolder = new CryptDataHolder(methodName, holder.msgUnitRaw, map);
          holder.msgUnitRaw = securityInterceptor.exportMessage(dataHolder);
       }
@@ -194,7 +196,7 @@ public final class CbDispatchConnection extends DispatchConnection
    }
 
    /**
-    * Send the messages back to the client. 
+    * Send the messages back to the client.
     * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content
     * <p>
     * The RETURN value is transferred in the msgArr[i].getReturnObj(), for oneway updates it is null
@@ -204,7 +206,7 @@ public final class CbDispatchConnection extends DispatchConnection
    {
       ArrayList oneways = null;
       ArrayList responders = null;
-      
+
       {
          for (int i=0; i<msgArr_.length; i++) {
             MsgQueueUpdateEntry entry = (MsgQueueUpdateEntry)msgArr_[i];
@@ -220,7 +222,7 @@ public final class CbDispatchConnection extends DispatchConnection
                entry.setReturnObj(new UpdateReturnQosServer(this.glob, Constants.RET_ERASED));
                continue;
             }
-            
+
             MsgUnit mu = msgUnitWrapper.getMsgUnit();
             //MsgUnit mu = entry.getMsgUnit(); throws unwanted exception if meat==null (forceDestroy)
             MsgQosData msgQosData = (MsgQosData)mu.getQosData().clone();
@@ -257,7 +259,7 @@ public final class CbDispatchConnection extends DispatchConnection
             else {
                mu = new MsgUnit(mu, null, null, msgQosData);
             }
-            
+
             MsgUnitRaw raw = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
             if (address.oneway() || entry.updateOneway()) {
                if (oneways == null) oneways = new ArrayList();
@@ -269,7 +271,7 @@ public final class CbDispatchConnection extends DispatchConnection
             }
          }
       }
-      
+
       exportCrypt(responders, MethodName.UPDATE);
       exportCrypt(oneways, MethodName.UPDATE_ONEWAY);
 
@@ -281,6 +283,14 @@ public final class CbDispatchConnection extends DispatchConnection
          cbDriver.sendUpdateOneway(raws);
          connectionsHandler.getDispatchStatistic().incrNumUpdate(oneways.size());
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + oneways.size() + " oneway messages.");
+         I_Checkpoint cp = glob.getCheckpointPlugin();
+         if (cp != null) {
+            for (int i=0; i<oneways.size(); i++) {
+               Holder h = (Holder)oneways.get(i);
+               cp.passingBy(I_Checkpoint.CP_UPDATE_ACK, (MsgUnit)h.msgUnitRaw.getMsgUnit(),
+                     sessionName, null);
+            }
+         }
       }
 
       if (responders != null) {
@@ -293,6 +303,14 @@ public final class CbDispatchConnection extends DispatchConnection
          connectionsHandler.getDispatchStatistic().incrNumUpdate(raws.length);
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
 
+         I_Checkpoint cp = glob.getCheckpointPlugin();
+         if (cp != null) {
+            for (int i=0; i<raws.length; i++) {
+               cp.passingBy(I_Checkpoint.CP_UPDATE_ACK, (MsgUnit)raws[i].getMsgUnit(),
+                     sessionName, null);
+            }
+         }
+
          // this is done since the client could send one single bulk acknowledge
          if (rawReturnVal != null && rawReturnVal.length == 1 && raws.length > 1) {
             String bulkReturnValue = rawReturnVal[0];
@@ -301,7 +319,7 @@ public final class CbDispatchConnection extends DispatchConnection
             for (int i=0; i < rawReturnVal.length; i++)
                rawReturnVal[i] = bulkReturnValue;
          }
-         
+
          if (rawReturnVal != null && rawReturnVal.length == raws.length) {
             I_MsgSecurityInterceptor securityInterceptor = connectionsHandler.getDispatchManager().getMsgSecurityInterceptor();
             for (int i=0; i<rawReturnVal.length; i++) {
@@ -333,7 +351,7 @@ public final class CbDispatchConnection extends DispatchConnection
             }
             if (log.isLoggable(Level.FINE)) log.fine(ME+": Imported/decrypted " + rawReturnVal.length + " message return values.");
          }
-         else 
+         else
             log.severe(ME+": Unexpected UpdateReturnQos '" + (rawReturnVal==null?"null":""+rawReturnVal.length)+ "', expected " + raws.length);
       }
    }
@@ -353,7 +371,7 @@ public final class CbDispatchConnection extends DispatchConnection
    }
 
    /**
-    * On reconnect polling try to establish the connection. 
+    * On reconnect polling try to establish the connection.
     */
    protected final void reconnect() throws XmlBlasterException {
       // this.connectionsHandler.createDispatchConnection(address);
@@ -397,6 +415,6 @@ public final class CbDispatchConnection extends DispatchConnection
    protected boolean forcePingFailure() {
       return false;
    }
-   
+
 }
 

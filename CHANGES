@@ -4,6 +4,10 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
+ o #      Added Checkpoint plugin to support tracing the message flow with customized log files
+          See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java
+	  for usage details (and xmlBlasterPlugins.xml to activate it).
+
  o #16528 Adjustable SmtpClient mail timeout (see xmlBlasterPlugins.xml example)
       <attribute id='mail.smtp.timeout'>3600000</attribute> <!-- socket IO: 1 h -->
       <attribute id='mail.smtp.connectiontimeout'>600000</attribute> <!-- 10 min -->
