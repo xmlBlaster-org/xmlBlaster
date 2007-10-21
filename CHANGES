@@ -4,7 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
- o #      Added Checkpoint plugin to support tracing the message flow with customized log files
+ o #16532 Logging with XbFormatter: Changed to use ISO 8601 date and time for logging
+
+ o #16531 Added Checkpoint plugin to support tracing the message flow with customized log files
           See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java
 	  for usage details (and xmlBlasterPlugins.xml to activate it).
 
