@@ -21,41 +21,50 @@ import org.xmlBlaster.util.qos.ClientProperty;
 /**
  * Plugin to trace the message flow into log files.
  * <p>
- * Currently there are 3 checkpoints defined inside the xmlBlaster core
- * (see I_Checkpoint.java).<br />
- * You can add a client property (e.g. "wfguid") to your PublishQos and register this here
- * with filterClientPropertyKey="wfguid".
- * When such a marked message passes one of the checkpoints a logging entry
- * will be written to a log file (as configured in logging.properties).
+ * Currently there are 3 checkpoints defined inside the xmlBlaster core (see
+ * I_Checkpoint.java).<br />
+ * You can add a client property (e.g. "wfguid") to your PublishQos and register
+ * this here with filterClientPropertyKey="wfguid". When such a marked message
+ * passes one of the checkpoints a logging entry will be written to a log file
+ * (as configured in logging.properties). See logging.properties for examples
+ * on how to control which checkpoints are logged and if the complete message
+ * shall be dumped.
  * <p>
  * Is adjustable during runtime using JMX (jconsole)
  * <p>
  * Needs to be loaded in xmlBlasterPlugins.xml at run level 1:
+ *
  * <pre>
-   &lt;plugin create='true' id='Checkpoint' className='org.xmlBlaster.util.checkpoint.Checkpoint'>
-      &lt;action do='LOAD' onStartupRunlevel='1' sequence='1'
-                           onFail='resource.configuration.pluginFailed'/>
-      &lt;action do='STOP' onShutdownRunlevel='0' sequence='1'/>
-      &lt;attribute id='filterClientPropertyKey'>wfguid&lt;/attribute>
-      &lt;attribute id='xmlStyle'>true&lt;/attribute>
-      &lt;attribute id='showAllMessages'>false&lt;/attribute>
-      &lt;attribute id='showAllClientProperties'>false&lt;/attribute>
-   </plugin>
+ *  &lt;plugin create='true' id='Checkpoint' className='org.xmlBlaster.util.checkpoint.Checkpoint'&gt;
+ *  &lt;action do='LOAD' onStartupRunlevel='1' sequence='1'
+ *  onFail='resource.configuration.pluginFailed'/&gt;
+ *  &lt;action do='STOP' onShutdownRunlevel='0' sequence='1'/&gt;
+ *  &lt;attribute id='filterClientPropertyKey'&gt;wfguid&lt;/attribute&gt;
+ *  &lt;attribute id='xmlStyle'&gt;true&lt;/attribute&gt;
+ *  &lt;attribute id='showAllMessages'&gt;false&lt;/attribute&gt;
+ *  &lt;attribute id='showAllClientProperties'&gt;false&lt;/attribute&gt;
+ *  &lt;/plugin&gt;
  * </pre>
- * If showAllMessages is set to true all messages are logged and the filter
- * is ignored.
+ *
+ * If showAllMessages is set to true all messages are logged and the filter is
+ * ignored.
  * <p>
  * A typical log entry looks like this:
+ *
  * <pre>
  * Oct 20, 2007 7:14:29 PM org.xmlBlaster.util.checkpoint.Checkpoint passingBy
- *  INFO: &lt;cp>publish.ack&lt;/cp> &lt;topicId>Hello&lt;/topicId> &lt;wfguid>234345667777&lt;/wfguid> &lt;sender>client/Publisher/1&lt;/sender>
+ *  INFO: &lt;cp&gt;publish.ack&lt;/cp&gt; &lt;topicId&gt;Hello&lt;/topicId&gt; &lt;wfguid&gt;234345667777&lt;/wfguid&gt; &lt;sender&gt;client/Publisher/1&lt;/sender&gt;
  * </pre>
+ *
  * or if you set xmlStyle to false like this:
+ *
  * <pre>
  * Oct 20, 2007 7:26:46 PM org.xmlBlaster.util.checkpoint.Checkpoint passingBy
  *  INFO: [cp=update.ack] [topicId=Hello] [wfguid=234345667777] [sender=client/Publisher/1] [destination=client/Subscribe/1]
  * </pre>
- * You can extend this class and change the output style by overwriting the method append()
+ *
+ * You can extend this class and change the output style by overwriting the
+ * method append()
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
@@ -72,6 +81,7 @@ public class Checkpoint implements I_Checkpoint {
    private PluginInfo pluginInfo;
 
    private boolean running;
+
    private boolean shutdown;
 
    /** My JMX registration */
@@ -114,19 +124,21 @@ public class Checkpoint implements I_Checkpoint {
                      this.filterClientPropertyKey);
 
          if (showAllMessages || cp != null) {
+            boolean finest = l.isLoggable(Level.FINEST);
             if (l.isLoggable(Level.INFO)) {
                StringBuffer buf = new StringBuffer(2048);
                append(buf, "cp", CP_NAMES[checkpoint]);
                append(buf, "topicId", msgUnit.getKeyOid());
                if (this.showAllClientProperties) {
-                  Iterator it = msgUnit.getQosData().getClientProperties().keySet().iterator();
+                  Iterator it = msgUnit.getQosData().getClientProperties()
+                        .keySet().iterator();
                   while (it.hasNext()) {
-                     String key = (String)it.next();
-                     String value = msgUnit.getQosData().getClientProperty(key, "");
+                     String key = (String) it.next();
+                     String value = msgUnit.getQosData().getClientProperty(key,
+                           "");
                      append(buf, key, value);
                   }
-               }
-               else if (cp != null) {
+               } else if (cp != null) {
                   append(buf, this.filterClientPropertyKey, cp.getStringValue());
                }
                append(buf, "sender", (this.cluster) ? msgUnit.getQosData()
@@ -136,7 +148,12 @@ public class Checkpoint implements I_Checkpoint {
                   append(buf, "destination", (this.cluster) ? destination
                         .getAbsoluteName() : destination.getRelativeName());
                }
-               l.info(buf.toString());
+               if (finest) {
+                  buf.append(" ").append(msgUnit.toXml("", true));
+                  l.finest(buf.toString());
+               } else {
+                  l.info(buf.toString());
+               }
             }
          }
       } catch (Throwable e) {
@@ -192,8 +209,9 @@ public class Checkpoint implements I_Checkpoint {
             this.showAllClientProperties, null, this.pluginInfo);
 
       for (int i = 0; i < loggers.length; i++) {
-         loggers[i] = Logger.getLogger(Checkpoint.class.getName() + "."
-               + CP_NAMES[i]);
+         String loggerName = "xmlBlaster.checkpoint." + CP_NAMES[i];
+         loggers[i] = Logger.getLogger(loggerName);
+         log.info("Adding logger '" + loggerName + "'");
       }
 
       this.cluster = engineGlob.isClusterManagerReady();
