@@ -1,12 +1,15 @@
 /**
- * 
+ *
  */
 package org.xmlBlaster.util.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -15,7 +18,7 @@ import org.xmlBlaster.util.Global;
 
 /**
  * A xmlBlaster specific formatter for java.util.logging
- * 
+ *
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.logging.html">The admin.logging requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
@@ -23,11 +26,17 @@ public class XbFormatter extends Formatter {
    private final String id;
 
    private static long instanceCounter;
-   
+
    private Global glob;
 
    /** Colored output to xterm */
    private boolean withXtermEscapeColor = false;
+
+   /** Using ISO 8601 time or the default java.util.logging time? */
+   private boolean iso8601Time = true;
+   public final SimpleDateFormat iso8601Formater;
+   private String iso8601Fmt = "yyyy-MM-dd HH:mm:ss.S";
+   private String iso8601Timezone= null; // local time, else choose e.g. "GMT"
 
    private Date dat = new Date();
 
@@ -44,7 +53,7 @@ public class XbFormatter extends Formatter {
 
    // private static final String BOLD = "\033[1m";
 
-   /** color foreground/background (for xterm). 
+   /** color foreground/background (for xterm).
       The ESC [30m ... ESC [38m should set the foreground
       color, and ESC [40m .. ESC [48m should set the background color
    */
@@ -111,6 +120,20 @@ public class XbFormatter extends Formatter {
 
    public XbFormatter(String id) {
       this.id = id + "-" + instanceCounter++;
+
+      String tmp = System.getProperty("xmlBlaster/iso8601Time");
+      if (tmp != null) {
+         iso8601Time = Boolean.valueOf(tmp).booleanValue();
+      }
+      iso8601Timezone = System.getProperty("xmlBlaster/iso8601Timezone");
+      tmp = System.getProperty("xmlBlaster/iso8601Fmt");
+      if (tmp != null)
+         iso8601Fmt = tmp;
+
+      iso8601Formater = new SimpleDateFormat(iso8601Fmt, Locale.US);
+      if (iso8601Timezone != null)
+         iso8601Formater.setTimeZone(TimeZone.getTimeZone(iso8601Timezone));
+
       if (withXtermColors()) {
          this.withXtermEscapeColor = true;
          this.severe = severeE;
@@ -130,13 +153,13 @@ public class XbFormatter extends Formatter {
       }
       this.lineSeparator = System.getProperty("line.separator", "\n");
    }
-   
+
    public void setGlobal(Global glob) {
       this.glob = glob;
    }
-   
+
    /**
-    * If we may switch on xterm colors. 
+    * If we may switch on xterm colors.
     * java -DxmlBlaster/supressXtermColors ... suppresses those
     * @return true for none Linux systems
     */
@@ -166,7 +189,7 @@ public class XbFormatter extends Formatter {
 
    /*
     * (non-Javadoc)
-    * 
+    *
     * @see java.util.logging.Formatter#format(java.util.logging.LogRecord)
     */
    public String format(LogRecord record) {
@@ -177,13 +200,20 @@ public class XbFormatter extends Formatter {
       StringBuffer sb = new StringBuffer();
       // Minimize memory allocations here.
       dat.setTime(record.getMillis());
-      args[0] = dat;
-      StringBuffer text = new StringBuffer();
-      if (formatter == null) {
-         formatter = new MessageFormat(format);
+      if (iso8601Time) {
+         sb.append(iso8601Formater.format(dat));
+         if ("GMT".equals(iso8601Timezone))
+            sb.append("Z");
       }
-      formatter.format(args, text, null);
-      sb.append(text);
+      else {
+         args[0] = dat;
+         StringBuffer text = new StringBuffer();
+         if (formatter == null) {
+            formatter = new MessageFormat(format);
+         }
+         formatter.format(args, text, null);
+         sb.append(text);
+      }
       sb.append(" ");
       sb.append(levelString);//record.getLevel().getLocalizedName());
       sb.append(" ");
@@ -234,6 +264,13 @@ public class XbFormatter extends Formatter {
     */
    public boolean isWithXtermEscapeColor() {
       return this.withXtermEscapeColor;
+   }
+
+   /**
+    * @return Returns the iso8601Time.
+    */
+   public boolean iso8601Time() {
+      return this.iso8601Time;
    }
 
    /**
