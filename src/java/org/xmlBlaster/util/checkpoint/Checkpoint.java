@@ -67,6 +67,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
  * method append()
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.checkpoint.html">The admin.checkpoint requirement</a>
  */
 public class Checkpoint implements I_Checkpoint {
    private String ME = "Checkpoint";
