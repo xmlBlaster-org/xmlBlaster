@@ -88,11 +88,11 @@ java -Dcom.sun.management.jmxremote
 [cp=publish.ack] [topicId=Hello] [sender=client/Publisher/1]
 </pre>
 
-<p>The logging output has a ISO 8601 formatted date and time string at the beginning of each line which allows easy sorting of the logging outputs.</p>
+<p>The logging output has an ISO 8601 formatted date and time string at the beginning of each line which allows easy sorting of the logging outputs.</p>
 
 <p>
 The plugin can be configured during runtime using JMX, typically you choose <code>jconsole</code> for administration.
-In the server node you can configure the porperties of the Checkpoint plugin and in the logging section the
+In the <code>service/Checkpoint</code> node you can configure the porperties of the Checkpoint plugin and in the <code>logging</code> section the
 trace intensity.
 </p>
 
