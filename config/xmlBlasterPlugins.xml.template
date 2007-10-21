@@ -188,14 +188,14 @@
       <action do='STOP' onShutdownRunlevel='3' sequence='65'/>
    </plugin>
 
-   <!-- See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.checkpoint.html -->
    <plugin create='false' id='Checkpoint' className='org.xmlBlaster.util.checkpoint.Checkpoint'>
       <action do='LOAD' onStartupRunlevel='1' sequence='1'
                            onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='0' sequence='1'/>
       <attribute id='filterClientPropertyKey'>wfguid</attribute>
+      <attribute id='showAllMessages'>true</attribute>
       <attribute id='xmlStyle'>true</attribute>
-      <attribute id='showAllMessages'>false</attribute>
       <attribute id='showAllClientProperties'>false</attribute>
    </plugin>
 
@@ -366,15 +366,15 @@
       <attribute id='mom.topicName'>file.writer</attribute>
       <!-- attribute id='mom.loginName'>FileWriter/1</attribute> -->
       <attribute id='connectQos'><![CDATA[
-	   <qos>
-	      <securityService type='htpasswd' version='1.0'>
-	        <user>FileWriter</user>
-	        <passwd>secret</passwd>
-	      </securityService>
-	      <session name='client/FileWriter/session/1' timeout='0' maxSessions='1'
-	                  clearSessions='true' reconnectSameClientOnly='false'/>
-	   </qos>
-	   ]]>
+           <qos>
+              <securityService type='htpasswd' version='1.0'>
+                <user>FileWriter</user>
+                <passwd>secret</passwd>
+              </securityService>
+              <session name='client/FileWriter/session/1' timeout='0' maxSessions='1'
+                          clearSessions='true' reconnectSameClientOnly='false'/>
+           </qos>
+           ]]>
       </attribute>
       <attribute id='directoryName'>${user.home}${file.separator}J2meTestResults</attribute>
       <action do='LOAD' onStartupRunlevel='6' sequence='6'
