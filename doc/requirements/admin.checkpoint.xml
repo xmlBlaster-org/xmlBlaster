@@ -1,0 +1,175 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.checkpoint' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>Trace the message flow at pre-defined checkpoints</topic>
+   <description>
+<p class="celltitel">Introduction</p>
+     <p>
+     If you need more control about where your messages are ending up you should consider
+     to switch on this plugin.
+     On several checkpoints inside the xmlBlaster server you can output a message passing by
+     into a log file.
+     </p>
+<p>The first step is to setup the server side configuration and load the plugin:</p>
+<pre class="BORDER">
+xmlBlasterPlugins.xml:
+   &lt;plugin create='true' id='Checkpoint' className='org.xmlBlaster.util.checkpoint.Checkpoint'>
+      &lt;action do='LOAD' onStartupRunlevel='1' sequence='1'
+                           onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='0' sequence='1'/>
+      &lt;attribute id='filterClientPropertyKey'>wfguid&lt;/attribute>
+      &lt;attribute id='showAllMessages'>true&lt;/attribute>
+      &lt;attribute id='xmlStyle'>true&lt;/attribute>
+      &lt;attribute id='showAllClientProperties'>false&lt;/attribute>
+   &lt;/plugin>
+</pre>
+
+<p>
+Note that <code>showAllMessages</code> is set to true, so all published messages are traced.
+If you want to
+limit tracing to specific messages, set <code>showAllMessages</code> to false and add a client property to the PublishQos and specify
+this client property key in the above plugin configuration (here it is <code>filterClientPropertyKey="wfguid"</code>).
+Now only messages having a "wfguid" (a workflow global unique identifier) client property will be logged.
+</p>
+
+<p>The output is configured in logging.properties (see example in <code>xmlBlaster/conf/logging.properties</code>)</p>
+
+<pre class="BORDER">
+logging.properties:
+#-----------------------------------------------------------------------------
+# Trace flow of messages
+# See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java
+# Checkpoints: "publish.ack", "update.queue.add", "update.ack"
+# INFO dumps the most important data
+# FINEST dumps the complete message
+# SEVERE switches a checkpoint off
+xmlBlaster.checkpoint=INFO
+xmlBlaster.checkpoint.handlers=org.xmlBlaster.util.log.FileHandler2
+xmlBlaster.checkpoint.useParentHandlers=false
+# Dump complete incoming message
+#xmlBlaster.checkpoint.publish.ack.level=FINEST
+# Don't log checkpoint "update.queue.add"
+#xmlBlaster.checkpoint.update.queue.add.level=SEVERE
+# Standard logging for "update.ack"
+#xmlBlaster.checkpoint.update.ack.level=INFO
+
+org.xmlBlaster.util.log.FileHandler2.pattern = %h/logs/xmlBlasterCheckpoint%u%g.log
+org.xmlBlaster.util.log.FileHandler2.limit = 1000000
+org.xmlBlaster.util.log.FileHandler2.count = 10
+org.xmlBlaster.util.log.FileHandler2.formatter = org.xmlBlaster.util.log.XbFormatter
+#-----------------------------------------------------------------------------
+</pre>
+
+<p>You can copy the logging.properties to your home directory or pass it on command line:</p>
+
+<pre class="BORDER">
+Start xmlBlaster:
+
+java -Dcom.sun.management.jmxremote
+     -Djava.util.logging.config.file=$XMLBLASTER_HOME/config/logging.properties
+     org.xmlBlaster.Main -cluster.node.id heron
+</pre>
+
+<p>Now you can see message flow in the logging files in $user.home/logs</p>
+
+<pre class="BORDER">
+2007-10-21 13:48:14.260  INFO   12-XmlBlaster.SOCKET.tcpListener-Publisher org.xmlBlaster.util.checkpoint.Checkpoint passingBy:
+ &lt;cp>publish.ack&lt;/cp> &lt;topicId>Hello&lt;/topicId> &lt;wfguid>234345667777&lt;/wfguid> &lt;sender>client/Publisher/1&lt;/sender>
+
+2007-10-21 13:48:20.860  INFO   13-XmlBlaster.DispatchWorkerPool.marcel-5 org.xmlBlaster.util.checkpoint.Checkpoint passingBy:
+ &lt;cp>update.ack&lt;/cp> &lt;topicId>Hello&lt;/topicId> &lt;wfguid>234345667777&lt;/wfguid> &lt;sender>client/Publisher/1&lt;/sender> &lt;destination>client/Subscribe/1&lt;/destination>
+</pre>
+
+<p>If you prefer a more readably view without xml set <code>xmlStyle</code> to <code>false</code>:</p>
+
+<pre class="BORDER">
+2007-10-21 14:32:42.269  INFO   12-XmlBlaster.SOCKET.tcpListener-Publisher org.xmlBlaster.util.checkpoint.Checkpoint passingBy: 
+[cp=publish.ack] [topicId=Hello] [sender=client/Publisher/1]
+</pre>
+
+<p>The logging output has a ISO 8601 formatted data and time string at the beginning of each line which allows easy sorting of the logging outputs.</p>
+
+
+<p>If the Checkstyle plugin does not fullfill your requirements you can extend it or write a specific one for your needs.</p>
+</description>
+
+
+<configuration where="server">
+
+<p class="celltitel">Configuration of the Checkpoint.java plugin (since v1.6.2)</p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>showAllMessages</td>
+            <td>false</td>
+            <td>If true all published message are traced, and filtering with <code>filterClientPropertyKey</code> is ignored.
+            Note that internal messages and amdinistrative command messages are never traced.
+             </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>filterClientPropertyKey</td>
+            <td>wfguid</td>
+            <td>If <code>showAllMessages</code> is set to <code>false</code> this string will be used
+            to lookup a client property in the message. If it is found the message is
+            logged, else not. The value of the key is logged as well.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>xmlStyle</td>
+            <td>true</td>
+            <td>The logging output is partially using xml style.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>showAllClientProperties</td>
+            <td>false</td>
+            <td>By default only the filterClientPropertyKey property is logged.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>Checkpoints</td>
+            <td>---</td>
+            <td>Currently we have three checkpoints:
+            "publish.ack", "update.queue.add", "update.ack".
+            In <code>logging.properties</code> you can choose the log level of each
+            checkpoint individually: Choosing INFO dumps the logging output as described above,
+            choosing FINEST dumps the complete message and choosing SEVERE dumps nothing for
+            the specific checkpoint. Please see <code>logging.properties</code> for usage examples. 
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>XbFormatter</td>
+            <td>---</td>
+            <td>In <code>logging.properties</code> the XbFormatter is activated, please
+            see the code of this formatter for its configuration options.
+            On specific demand you can choose any other formatter.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.checkpoint.Checkpoint</see>
+   <see type="API">org.xmlBlaster.util.log.XbFormat</see>
+   <see type="INTERNET" label="Java logging API"> http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/overview.html</see>
+
+   <author>mr@marcelruff.info</author>
+   <date>2007 10 21</date>
+   <revision>16531</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+
