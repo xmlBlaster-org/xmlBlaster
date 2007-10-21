@@ -71,7 +71,7 @@ java -Dcom.sun.management.jmxremote
      org.xmlBlaster.Main -cluster.node.id heron
 </pre>
 
-<p>Now you can see message flow in the logging files in $user.home/logs</p>
+<p>Now you can see the message flow in the logging files in $user.home/logs (on log entry is one line)</p>
 
 <pre class="BORDER">
 2007-10-21 13:48:14.260  INFO   12-XmlBlaster.SOCKET.tcpListener-Publisher org.xmlBlaster.util.checkpoint.Checkpoint passingBy:
@@ -88,10 +88,10 @@ java -Dcom.sun.management.jmxremote
 [cp=publish.ack] [topicId=Hello] [sender=client/Publisher/1]
 </pre>
 
-<p>The logging output has a ISO 8601 formatted data and time string at the beginning of each line which allows easy sorting of the logging outputs.</p>
+<p>The logging output has a ISO 8601 formatted date and time string at the beginning of each line which allows easy sorting of the logging outputs.</p>
 
 
-<p>If the Checkstyle plugin does not fullfill your requirements you can extend it or write a specific one for your needs.</p>
+<p>If the Checkstyle plugin does not fullfill your requirements you can extend the class or write a specific one for your needs.</p>
 </description>
 
 
@@ -125,13 +125,13 @@ java -Dcom.sun.management.jmxremote
          <tr>
             <td>xmlStyle</td>
             <td>true</td>
-            <td>The logging output is partially using xml style.</td>
+            <td>The logging output is partially formatted with xml tags.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>showAllClientProperties</td>
             <td>false</td>
-            <td>By default only the filterClientPropertyKey property is logged.</td>
+            <td>By default only the <code>filterClientPropertyKey</code> client property is logged.</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
