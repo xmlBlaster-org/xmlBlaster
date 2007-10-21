@@ -71,7 +71,7 @@ java -Dcom.sun.management.jmxremote
      org.xmlBlaster.Main -cluster.node.id heron
 </pre>
 
-<p>Now you can see the message flow in the logging files in $user.home/logs (on log entry is one line)</p>
+<p>Now you can see the message flow in the logging files in $user.home/logs (one log entry is one line)</p>
 
 <pre class="BORDER">
 2007-10-21 13:48:14.260  INFO   12-XmlBlaster.SOCKET.tcpListener-Publisher org.xmlBlaster.util.checkpoint.Checkpoint passingBy:
@@ -90,8 +90,14 @@ java -Dcom.sun.management.jmxremote
 
 <p>The logging output has a ISO 8601 formatted date and time string at the beginning of each line which allows easy sorting of the logging outputs.</p>
 
+<p>
+The plugin can be configured during runtime using JMX, typically you choose <code>jconsole</code> for administration.
+In the server node you can configure the porperties of the Checkpoint plugin and in the logging section the
+trace intensity.
+</p>
 
 <p>If the Checkstyle plugin does not fullfill your requirements you can extend the class or write a specific one for your needs.</p>
+
 </description>
 
 
@@ -159,7 +165,7 @@ java -Dcom.sun.management.jmxremote
    </configuration>
 
    <see type="API">org.xmlBlaster.util.checkpoint.Checkpoint</see>
-   <see type="API">org.xmlBlaster.util.log.XbFormat</see>
+   <see type="API">org.xmlBlaster.util.log.XbFormatter</see>
    <see type="INTERNET" label="Java logging API"> http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/overview.html</see>
 
    <author>mr@marcelruff.info</author>
