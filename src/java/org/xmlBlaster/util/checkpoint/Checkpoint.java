@@ -93,6 +93,9 @@ public class Checkpoint implements I_Checkpoint {
    /** If given will be used to filter which messages are logged */
    protected String filterClientPropertyKey;
 
+   /** Is parsed from comma separated list of filterClientPropertyKey */
+   protected String[] filterKeys = new String[0];
+
    protected boolean showAllClientProperties;
 
    /** If false show only messages marked by filterClientPropertyKey=wfguid */
@@ -120,11 +123,15 @@ public class Checkpoint implements I_Checkpoint {
 
          Logger l = loggers[checkpoint];
 
-         ClientProperty cp = (this.filterClientPropertyKey.length() == 0) ? null
-               : msgUnit.getQosData().getClientProperty(
-                     this.filterClientPropertyKey);
+         boolean foundKey = false;
+         for (int i=0; i<this.filterKeys.length; i++) {
+            if (msgUnit.getQosData().getClientProperty(this.filterKeys[i])!=null) {
+               foundKey = true;
+               break;
+            }
+         }
 
-         if (showAllMessages || cp != null) {
+         if (showAllMessages || foundKey) {
             boolean finest = l.isLoggable(Level.FINEST);
             if (l.isLoggable(Level.INFO)) {
                StringBuffer buf = new StringBuffer(2048);
@@ -139,8 +146,12 @@ public class Checkpoint implements I_Checkpoint {
                            "");
                      append(buf, key, value);
                   }
-               } else if (cp != null) {
-                  append(buf, this.filterClientPropertyKey, cp.getStringValue());
+               } else if (foundKey) {
+                  for (int i=0; i<this.filterKeys.length; i++) {
+                     ClientProperty cp = msgUnit.getQosData().getClientProperty(this.filterKeys[i]);
+                     if (cp != null)
+                        append(buf, this.filterKeys[i], cp.getStringValue());
+                  }
                }
                append(buf, "sender", (this.cluster) ? msgUnit.getQosData()
                      .getSender().getAbsoluteName() : msgUnit.getQosData()
@@ -149,6 +160,8 @@ public class Checkpoint implements I_Checkpoint {
                   append(buf, "destination", (this.cluster) ? destination
                         .getAbsoluteName() : destination.getRelativeName());
                }
+               //if (msgUnit.getQosData().getRcvTimestamp() != null)
+               //   append(buf,"rcvTS", msgUnit.getQosData().getRcvTimestamp().toString());
                if (finest) {
                   buf.append(" ").append(msgUnit.toXml("", true));
                   l.finest(buf.toString());
@@ -200,8 +213,8 @@ public class Checkpoint implements I_Checkpoint {
                ME + ".init",
                "could not retreive the ServerNodeScope. Am I really on the server side ?");
 
-      this.filterClientPropertyKey = glob.get("filterClientPropertyKey",
-            "wfguid", null, this.pluginInfo);
+      setFilter(glob.get("filterClientPropertyKey",
+            "wfguid", null, this.pluginInfo));
       this.xmlStyle = glob
             .get("xmlStyle", this.xmlStyle, null, this.pluginInfo);
       this.showAllMessages = glob.get("showAllMessages", this.showAllMessages,
@@ -212,7 +225,7 @@ public class Checkpoint implements I_Checkpoint {
       for (int i = 0; i < loggers.length; i++) {
          String loggerName = "xmlBlaster.checkpoint." + CP_NAMES[i];
          loggers[i] = Logger.getLogger(loggerName);
-         log.info("Adding logger '" + loggerName + "'");
+         log.fine("Adding logger '" + loggerName + "'");
       }
 
       this.cluster = engineGlob.isClusterManagerReady();
@@ -238,6 +251,8 @@ public class Checkpoint implements I_Checkpoint {
       }
 
       engineGlob.setCheckpointPlugin(this);
+
+      log.info("Loaded " + getType() + " plugin for checkpoints '" + getCheckpointList() + "'");
    }
 
    /*
@@ -368,16 +383,21 @@ public class Checkpoint implements I_Checkpoint {
    }
 
    /**
-    * A key of a ClientProperty, only those messages containing such a
-    * ClientProperty are logged
+    * A key (or a key-list) of a ClientProperty,
+    * only those messages containing such a ClientProperty are logged
     *
     * @param filterClientPropertyKey
-    *           the filterClientPropertyKey to set
+    *           A client property key like "wfguid" or a comma separated list of keys
+    *           like "transId,wfguid,guid"
     */
    public void setFilter(String filterClientPropertyKey) {
-      if (filterClientPropertyKey == null)
-         filterClientPropertyKey = "";
+      if (filterClientPropertyKey == null) {
+         this.filterClientPropertyKey = "";
+         this.filterKeys = new String[0];
+         return;
+      }
       this.filterClientPropertyKey = filterClientPropertyKey;
+      this.filterKeys = StringPairTokenizer.toArray(this.filterClientPropertyKey, ",");
    }
 
    /**
