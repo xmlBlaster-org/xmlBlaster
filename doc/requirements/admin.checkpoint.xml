@@ -125,6 +125,9 @@ trace intensity.
             <td>If <code>showAllMessages</code> is set to <code>false</code> this string will be used
             to lookup a client property in the message. If it is found the message is
             logged, else not. The value of the key is logged as well.
+            You can specify multiple keys separated by commas, if any of those match the message will be logged
+            - ergo sum - keys containing a comma are not supported by this plugin.
+            Example: "wfguid,transactionId,guid"
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
