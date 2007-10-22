@@ -115,6 +115,7 @@ java javaclients.script.XmlScript \
 
   <replaceTokens />
   <property name="waitMillis">1000</property>
+  <property name="queue/connection/defaultPlugin">RAM,1.0</property>
 
   <echo message="Starting now ${waitMillis} ..."/>
 
