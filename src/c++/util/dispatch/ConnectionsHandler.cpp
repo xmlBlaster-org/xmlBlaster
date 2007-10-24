@@ -404,6 +404,7 @@ void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
 
 void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlasterException* reason)
 {
+   if (log_.call()) log_.call(ME, "toPollingOrDead");
    enum States oldState = status_;
    if (!isFailsafe()) {
       log_.info(ME, "going into DEAD status since not in failsafe mode. "
@@ -549,6 +550,7 @@ SubscribeReturnQos ConnectionsHandler::queueSubscribe(const SubscribeKey& key, c
 
 PublishReturnQos ConnectionsHandler::queuePublish(const MessageUnit& msgUnit)
 {
+   if (log_.call()) log_.call(ME, "queuePublish");
    if (!queue_) {
       if (connectQos_.isNull()) {
          throw XmlBlasterException(INTERNAL_PUBLISH, ME + "::queuePublish", "need to create a queue but the connectQos is NULL (probably never connected)");
@@ -666,7 +668,7 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
 
             I_PostSendListener *p = postSendListener_;
             if (p) {
-            	p->postSend(entry2);
+                p->postSend(entry2);
             }
          }
          catch (XmlBlasterException &ex) {
@@ -679,7 +681,7 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
       }
       if (doRemove) {
           //log_.trace(ME, "remove send message from client queue");
-    	  ret += queueToFlush->randomRemove(entries.begin(), entries.end());
+          ret += queueToFlush->randomRemove(entries.begin(), entries.end());
       }
    }
    return ret;
