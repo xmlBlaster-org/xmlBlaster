@@ -48,8 +48,7 @@ ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
    queue_              = NULL;
    retries_            = -1;
    currentRetry_       = 0;
-   timestamp_          = 0;
-   pingIsStarted_      = false;
+   pingPollTimerKey_   = 0;
    doStopPing_         = false;
    if (log_.call()) log_.call(ME, "constructor");
 }
@@ -57,9 +56,9 @@ ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
 ConnectionsHandler::~ConnectionsHandler()
 {
    if (log_.call()) log_.call(ME, "destructor");
-   if (timestamp_ != 0) {
-      global_.getPingTimer().removeTimeoutListener(timestamp_);
-      timestamp_ = 0;
+   if (pingPollTimerKey_ != 0) {
+      global_.getPingTimer().removeTimeoutListener(pingPollTimerKey_);
+      pingPollTimerKey_ = 0;
    }
    doStopPing_ = true;
    /*
@@ -128,7 +127,7 @@ ConnectReturnQosRef ConnectionsHandler::connect(const ConnectQosRef& qos)
    catch (XmlBlasterException &ex) {
       if ((ex.isCommunication() || ex.getErrorCodeStr().find("user.configuration") == 0)) {
          log_.warn(ME, "Got exception when connecting, polling now: " + ex.toString());
-         if (!pingIsStarted_)
+         if (pingPollTimerKey_ == 0)
             startPinger(false);
          return queueConnect();
       }
@@ -227,12 +226,15 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
       return ret;
    }   
    catch (XmlBlasterException& ex) {
-      //   toPollingOrDead(&ex); Do it always?
-      if ( ex.isCommunication() && pingIsStarted_) {
-         toPollingOrDead(&ex);
+      toPollingOrDead(&ex);
+      if (putToQueue() && isRecoverable(&ex)) {
+         log_.info(ME, string("::subscribe ") + key.getOid() + " is queued, exception=" + ex.getMessage());
          return queueSubscribe(key, qos);
       }
-      throw ex;
+      else {
+         log_.warn(ME, string("::subscribe failed throwing now exception: ") + key.toXml() + qos.toXml() + " exception=" + ex.getMessage());
+         throw ex;
+      }
    }
 }
 
@@ -249,7 +251,7 @@ vector<MessageUnit> ConnectionsHandler::get(const GetKey& key, const GetQos& qos
       return connection_->get(key, qos);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) toPollingOrDead(&ex);
+      toPollingOrDead(&ex);
       throw ex;
    }
 }
@@ -269,7 +271,7 @@ vector<UnSubscribeReturnQos>
       return ret;
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) toPollingOrDead(&ex);
+      toPollingOrDead(&ex);
       throw ex;
    }
 }
@@ -298,11 +300,15 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
       return connection_->publish(msgUnit);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() && pingIsStarted_) {
-         toPollingOrDead(&ex);
+      toPollingOrDead(&ex);
+      if (putToQueue() && isRecoverable(&ex)) {
+         log_.info(ME, string("::publish ") + msgUnit.getKey().getOid() + " is queued, exception=" + ex.getMessage());
          return queuePublish(msgUnit);
       }
-      else throw ex;
+      else {
+         log_.warn(ME, string("::publish failed throwing now exception, the msgUnit is: ") + msgUnit.toXml() + " exception=" + ex.getMessage());
+         throw ex;
+      }
    }
 }
 
@@ -329,11 +335,12 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
       connection_->publishOneway(msgUnitArr);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
-         toPollingOrDead(&ex);
+      toPollingOrDead(&ex);
+      if (putToQueue() && isRecoverable(&ex)) {
          for (size_t i=0; i < msgUnitArr.size(); i++) queuePublish(msgUnitArr[i]);
       }
-      else throw ex;
+      else
+         throw ex;
    }
 }
 
@@ -363,8 +370,8 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(const vector<MessageUnit
       return connection_->publishArr(msgUnitArr);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) {
-         toPollingOrDead(&ex); 
+      toPollingOrDead(&ex);
+      if (putToQueue() && isRecoverable(&ex)) {
          vector<PublishReturnQos> retQos;
          for (size_t i=0; i < msgUnitArr.size(); i++) {
             retQos.insert(retQos.end(), queuePublish(msgUnitArr[i]));
@@ -390,7 +397,7 @@ vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const Eras
       return connection_->erase(key, qos);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() ) toPollingOrDead(&ex);
+      toPollingOrDead(&ex);
       throw ex;
    }
 }
@@ -402,9 +409,28 @@ void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
    connectionProblemsListener_ = connectionProblems;
 }
 
+// If recoverable we queue a msgUnit, else we throw an exception
+bool ConnectionsHandler::isRecoverable(const org::xmlBlaster::util::XmlBlasterException* reason)
+{
+	// TODO: Authorization could also be recoverable (by a server admin)
+	//       Such decision must be left to the user (we need a callback to the user here)
+	// As a default all communication problems are assumed to be recoverable
+	if (reason == 0)
+		return true;
+	bool ret = reason->isCommunication();
+    if (log_.call()) log_.call(ME, "isRecoverable " + lexical_cast<string>(ret));
+	return ret;
+}
+
 void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlasterException* reason)
 {
+   if (reason == 0)
+	   return;
+   if (!reason->isCommunication())
+	  return;
+	   
    if (log_.call()) log_.call(ME, "toPollingOrDead");
+   
    enum States oldState = status_;
    if (!isFailsafe()) {
       log_.info(ME, "going into DEAD status since not in failsafe mode. "
@@ -438,8 +464,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
 {
                                                     
   Lock lock(connectMutex_);
-   pingIsStarted_ = false;
-   timestamp_ = 0;
+   pingPollTimerKey_ = 0;
    if (doStopPing_) return; // then it must stop
    if ( log_.call() ) log_.call(ME, string("ping timeout occured with status '") + getStatusString() + "'" );
    if (status_ == ALIVE) { // then I am pinging
@@ -704,13 +729,14 @@ bool ConnectionsHandler::isFailsafe() const
    return connectQos_->getAddress()->getDelay() > 0;
 }
 
+// pinger or poller
 bool ConnectionsHandler::startPinger(bool withInitialPing)
 {
    if (log_.call()) log_.call(ME, "startPinger");
    if (doStopPing_) return false;
 
    if (log_.trace()) log_.trace(ME, "startPinger (no request to stop the pinger is active for the moment)");
-   if (pingIsStarted_ && !withInitialPing) {
+   if (pingPollTimerKey_ != 0 && !withInitialPing) {
       if (log_.trace()) log_.trace(ME, "startPinger: the pinger is already running. I will return without starting a new thread");
       return false;  
    }
@@ -737,8 +763,7 @@ bool ConnectionsHandler::startPinger(bool withInitialPing)
       long delta = delay;
       if (status_ == ALIVE) delta = pingInterval;
       if (withInitialPing) delta = 400;
-      timestamp_ = global_.getPingTimer().addOrRefreshTimeoutListener(this, delta, NULL, timestamp_);
-      pingIsStarted_ = true;
+      pingPollTimerKey_ = global_.getPingTimer().addOrRefreshTimeoutListener(this, delta, NULL, pingPollTimerKey_);
    }
    return true;
 }

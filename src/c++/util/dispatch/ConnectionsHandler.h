@@ -48,10 +48,9 @@ private:
    org::xmlBlaster::util::thread::Mutex publishMutex_;
    int retries_;
    int currentRetry_;
-   org::xmlBlaster::util::Timestamp timestamp_;
+   org::xmlBlaster::util::Timestamp pingPollTimerKey_;
    org::xmlBlaster::util::queue::I_Queue* queue_;
    org::xmlBlaster::util::dispatch::I_PostSendListener* postSendListener_; 
-   bool pingIsStarted_;
    const std::string instanceName_;
    bool doStopPing_; // used to stop the pinger when destroying the object
 
@@ -133,6 +132,8 @@ public:
     * @return true if the message must be put to queue.
     */
    bool putToQueue();
+
+   bool isRecoverable(const org::xmlBlaster::util::XmlBlasterException* reason);
 
    /**
     * Flushes all entries in the queue, i.e. the entries of the queue are sent to xmlBlaster.
