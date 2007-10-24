@@ -225,7 +225,7 @@ const void* MsgQueueEntry::getEmbeddedObject() const
    if (blobHolder_.data != 0) // Cached
       return &blobHolder_;
 
-   log_.info(ME+".getEmbeddedObject("+ embeddedType_ +")", string("C++ msgUnit=")+msgUnit_->toXml());
+   if (log_.dump()) log_.dump(ME+".getEmbeddedObject("+ embeddedType_ +")", string("C++ msgUnit=")+msgUnit_->toXml());
 
    // dump MsgQueueEntry->msgUnit_ with SOCKET protocol into C ::MsgUnit
    ::MsgUnit mu;
