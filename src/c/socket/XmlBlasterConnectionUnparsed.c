@@ -315,7 +315,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
          localAddr.sin_family = AF_INET;
          if (localHostName) {
             if (isalpha(localHostName[0]) || strchr(localHostName,':') != 0) { /* look for dns name or ipv6 */
-               xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Local hostname DNS lookup of hostname '%s'", localHostName);
+               if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Local hostname DNS lookup of hostname '%s'", localHostName);
                *errP = 0;
                localHostP = gethostbyname_re(localHostName, &localHostbuf, &tmpLocalHostbuf, &localHostbuflen, errP);
                if (*errP != 0) {
@@ -332,7 +332,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
                }
             }
             else {
-               xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_INFO, __FILE__, "Local IP4 usage (without DNS lookup) of IP '%s'", localHostName);
+            	if (xb->logLevel>=XMLBLASTER_LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, XMLBLASTER_LOG_TRACE, __FILE__, "Local IP4 usage (without DNS lookup) of IP '%s'", localHostName);
                /* use ip4 addr directly to avoid dns lookup */
                localAddr.sin_addr.s_addr = inet_addr(localHostName);
             }
