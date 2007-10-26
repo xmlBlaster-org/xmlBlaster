@@ -20,6 +20,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
@@ -383,7 +384,13 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       if (log.isLoggable(Level.FINER)) log.finer("shutdown() of RAM map " + this.getStorageId());
       this.storageSizeListenerHelper.invokeStorageSizeListener();
       removeStorageSizeListener(null);
-      glob.getQueuePluginManager().cleanup(this);
+      // glob.getQueuePluginManager().cleanup(this);
+      if (glob instanceof ServerScope) {
+         ((ServerScope)glob).getStoragePluginManager().cleanup(this);
+      }
+      else
+         log.warning("The global is not a ServerScope: we can not clean up this entry from the storage plugin manager");
+      
    }
 
    public final boolean isShutdown() {
@@ -520,6 +527,13 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     */
    public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
       return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
+   }
+
+   /**
+    * @see I_Storage#getStorageSizeListeners()
+    */
+   public I_StorageSizeListener[] getStorageSizeListeners() {
+      return storageSizeListenerHelper.getStorageSizeListeners();
    }
 
    /**

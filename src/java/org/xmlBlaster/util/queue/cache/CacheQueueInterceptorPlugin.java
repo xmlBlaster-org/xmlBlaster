@@ -1443,6 +1443,13 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
    }
 
+   /**
+    * @see I_Storage#getStorageSizeListeners()
+    */
+   public I_StorageSizeListener[] getStorageSizeListeners() {
+      return storageSizeListenerHelper.getStorageSizeListeners();
+   }
+
 
    /**
     * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)

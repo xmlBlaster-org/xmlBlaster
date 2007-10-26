@@ -49,6 +49,7 @@ public class StorageSizeListenerHelper {
                return;
             if (!this.storageSizeListeners.remove(listener))
                log.warning("removeStorageSizeListener: could not remove listener '" + listener.toString() + "' since not registered");
+
             if (this.storageSizeListeners.size() == 0) 
                this.storageSizeListeners = null;
          }
@@ -86,7 +87,16 @@ public class StorageSizeListenerHelper {
       }
    }
 
-   
-   
+   /**
+    * @see I_Queue#getStorageSizeListeners()
+    */
+   public I_StorageSizeListener[] getStorageSizeListeners() {
+      if (this.storageSizeListeners == null)
+         return new I_StorageSizeListener[0];
+      synchronized (this.storageSizeListenersSync) {
+         int size = storageSizeListeners.size();
+         return (I_StorageSizeListener[])storageSizeListeners.toArray(new I_StorageSizeListener[size]);
+      }
+   }
 
 }

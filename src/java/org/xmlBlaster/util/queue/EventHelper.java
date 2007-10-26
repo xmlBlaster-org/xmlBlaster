@@ -9,10 +9,12 @@ package org.xmlBlaster.util.queue;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_EventDispatcher;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
-public class EventHelper {
+public class EventHelper implements I_StorageSizeListener {
+   
    private final static Logger log = Logger.getLogger(EventHelper.class.getName());
    private String eventType;
    private String type;
@@ -22,12 +24,13 @@ public class EventHelper {
    private String key;
    private boolean procent;
    private boolean alreadyAlarmed;
+   private I_EventDispatcher eventDispatcher;
    
    private EventHelper() {
       
    }
    
-   public EventHelper(String eventType, String type, String id1, String id2, String val) throws XmlBlasterException {
+   public EventHelper(String eventType, String type, String id1, String id2, String val, I_EventDispatcher eventDispatcher) throws XmlBlasterException {
       if (id2 == null)
          id2 = "";
       this.eventType = eventType;
@@ -46,6 +49,12 @@ public class EventHelper {
       catch (Throwable ex) {
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_CONFIGURATION, "EventHelper", "could not parse treshold string '" + val + "' to a long", ex);
       }
+      if (eventDispatcher == null) {
+         throw new XmlBlasterException(new Global(), ErrorCode.INTERNAL, "EventHelper: The event dispatcher can not be null");
+      }
+         
+      this.eventDispatcher = eventDispatcher;
+      
    }
 
    protected Object clone() {
@@ -57,6 +66,8 @@ public class EventHelper {
       helper.value = this.value;
       helper.procent = this.procent;
       helper.eventType = this.eventType;
+      helper.eventDispatcher = this.eventDispatcher;
+      helper.alreadyAlarmed = this.alreadyAlarmed;
       return helper;
    }
    
@@ -112,6 +123,24 @@ public class EventHelper {
    
    public String getEventType() {
       return this.eventType;
+   }
+   
+   /**
+    * Enforced by I_StorageSizeListener
+    * @param queue
+    * @param numEntries
+    * @param numBytes
+    * @param isShutdown
+    */
+   public void changed(I_Storage storage, long numEntries, long numBytes, boolean isShutdown) {
+      if (!isShutdown && shallTrigger(numEntries)) {
+         String description = "The '" + storage.getStorageId().getId() + "' has reached its treshold: '" + numEntries + "' of max '" + storage.getMaxNumOfEntries() + "' (message sent only once)";
+         StringBuffer summary = new StringBuffer(1024);
+         summary.append("[").append(new java.sql.Timestamp(System.currentTimeMillis()).toString());
+         summary.append(" ").append(Thread.currentThread().getName()).append(" ");
+         summary.append(QueuePluginManager.class.getName()).append("]");
+         eventDispatcher.dispatchEvent(summary.toString(), description, eventType);
+      }
    }
    
 }

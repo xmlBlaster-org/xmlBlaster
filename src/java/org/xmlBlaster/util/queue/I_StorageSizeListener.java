@@ -34,6 +34,6 @@ public interface I_StorageSizeListener {
     *        has taken change.
     * @param isShutdown Is set to true if queue.shutdown() was executed
     */
-   public void changed(I_Storage queue, long numEntries, long numBytes, boolean isShutdown);
-
+   void changed(I_Storage queue, long numEntries, long numBytes, boolean isShutdown);
+   
 }

@@ -950,6 +950,13 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    }
 
    /**
+    * @see I_Storage#getStorageSizeListeners()
+    */
+   public I_StorageSizeListener[] getStorageSizeListeners() {
+      return storageSizeListenerHelper.getStorageSizeListeners();
+   }
+
+   /**
     * @see I_Queue#embeddedObjectsToXml(OutputStream, Properties)
     */
    public long embeddedObjectsToXml(OutputStream out, Properties props) {

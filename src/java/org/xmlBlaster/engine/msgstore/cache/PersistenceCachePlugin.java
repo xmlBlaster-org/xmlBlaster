@@ -930,7 +930,13 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       }
       this.storageSizeListenerHelper.invokeStorageSizeListener();
       removeStorageSizeListener(null);
-      glob.getQueuePluginManager().cleanup(this);
+      // glob.getQueuePluginManager().cleanup(this);
+      if (glob instanceof ServerScope) {
+         ((ServerScope)glob).getStoragePluginManager().cleanup(this);
+      }
+      else
+         log.warning("The global is not a ServerScope: we can not clean up this entry from the storage plugin manager");
+      
    }
 
    public boolean isShutdown() {
@@ -1165,5 +1171,13 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
       return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
    }
+
+   /**
+    * @see I_Storage#getStorageSizeListeners()
+    */
+   public I_StorageSizeListener[] getStorageSizeListeners() {
+      return storageSizeListenerHelper.getStorageSizeListeners();
+   }
+
 
 }

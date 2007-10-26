@@ -24,6 +24,7 @@ import org.xmlBlaster.util.queue.StorageSizeListenerHelper;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
@@ -1130,6 +1131,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       }
       
       glob.getQueuePluginManager().cleanup(this);
+      
+      if (glob instanceof ServerScope) {
+         ((ServerScope)glob).getStoragePluginManager().cleanup(this);
+      }
    }
 
    public boolean isShutdown() {
@@ -1348,6 +1353,13 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public boolean hasStorageSizeListener(I_StorageSizeListener listener) {
       return this.storageSizeListenerHelper.hasStorageSizeListener(listener);
+   }
+
+   /**
+    * @see I_Storage#getStorageSizeListeners()
+    */
+   public I_StorageSizeListener[] getStorageSizeListeners() {
+      return storageSizeListenerHelper.getStorageSizeListeners();
    }
 
    /**

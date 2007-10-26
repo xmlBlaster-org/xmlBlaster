@@ -46,6 +46,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.queue.QueueEventHandler;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.authentication.ClientEvent;
@@ -54,6 +55,7 @@ import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.engine.msgstore.MapEventHandler;
 import org.xmlBlaster.engine.msgstore.StoragePluginManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
@@ -512,6 +514,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    private void registerEventTypes(String eventTypes) throws XmlBlasterException {
       String[] eventTypeArr = StringPairTokenizer.parseLine(eventTypes);
+      
+      ServerScope serverScope = requestBroker.getServerScope();
+      QueuePluginManager queuePluginManager = serverScope.getQueuePluginManager();
+      StoragePluginManager storagePluginManager = serverScope.getStoragePluginManager();
+      QueueEventHandler queueEventHandler = new QueueEventHandler(serverScope, this);
+      MapEventHandler mapEventHandler = new MapEventHandler(serverScope, this);
+      
       for (int i = 0; i < eventTypeArr.length; i++) {
          String event = eventTypeArr[i].trim();
          if (event.length() < 1) continue; // Allow ',' at end
@@ -594,12 +603,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                }
             }
             else if (isQueueEvent(event)) {
-               QueuePluginManager queuePluginManager = this.requestBroker.getServerScope().getQueuePluginManager();
-               queuePluginManager.registerEvent(this, event);
+               queueEventHandler.registerEvent(this, event);
             }
             else if (isPersistenceEvent(event)) {
-               StoragePluginManager storagePluginManager = this.requestBroker.getServerScope().getStoragePluginManager();
-               storagePluginManager.registerEvent(this, event);
+               mapEventHandler.registerEvent(this, event);
             }
             else if (event.startsWith(ContextNode.SUBJECT_MARKER_TAG+ContextNode.SEP)) {
                // REGEX: "client/.*/session/.*/event/.*"
@@ -663,13 +670,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      + "' from eventTypes='" + eventTypes + "' because of " + e.toString());
          }
       }
-      // after the loop (we know we have finished
 
-      StoragePluginManager storagePluginManager = this.requestBroker.getServerScope().getStoragePluginManager();
-      storagePluginManager.registerFinished();
-
-      QueuePluginManager queuePluginManager = this.requestBroker.getServerScope().getQueuePluginManager();
-      queuePluginManager.registerFinished();
+      storagePluginManager.setEventHandler(mapEventHandler);
+      queuePluginManager.setEventHandler(queueEventHandler);
    }
 
    public static boolean isQueueEvent(String txt) {
@@ -963,6 +966,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       // TODO: Check if we unregister everything!
       // TODO: Protect each call with catch Throwable
+      // we shut down the resources for the queue and storage events
+      ServerScope serverScope = requestBroker.getServerScope();
+      QueuePluginManager queuePluginManager = serverScope.getQueuePluginManager();
+      StoragePluginManager storagePluginManager = serverScope.getStoragePluginManager();
+      storagePluginManager.setEventHandler(null);
+      queuePluginManager.setEventHandler(null);
 
       if (this.loggingSet != null)
          this.loggingSet = null;

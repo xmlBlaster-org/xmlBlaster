@@ -32,7 +32,7 @@ public interface I_Storage
     *        If you pass null, all queueSizeListeners are removed.
     * @exception IllegalArgumentException if the listener was not found
     */
-   public void removeStorageSizeListener(I_StorageSizeListener listener);
+   void removeStorageSizeListener(I_StorageSizeListener listener);
    
    /**
     * Checks wether the specified listener is registered.
@@ -42,7 +42,14 @@ public interface I_Storage
     *         you passed null in the argument list it returns true if a
     *         listener exists.
     */
-   public boolean hasStorageSizeListener(I_StorageSizeListener listener);
+   boolean hasStorageSizeListener(I_StorageSizeListener listener);
+   
+   /**
+    * 
+    * @return the array of storage size listeners for this storage. It never returns 
+    * null.
+    */
+   I_StorageSizeListener[] getStorageSizeListeners();
    
    /**
     * Adds a storage size listener to the storage. 
@@ -55,7 +62,7 @@ public interface I_Storage
     * @param listener the listener to be added, adding the same listener multiple times will only remember one and fire once
     * @exception IllegalArgumentException if you pass null
     */
-   public void addStorageSizeListener(I_StorageSizeListener listener);
+   void addStorageSizeListener(I_StorageSizeListener listener);
    
    /**
     * Returns the number of elements in this queue.
