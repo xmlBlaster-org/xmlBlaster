@@ -88,6 +88,7 @@ public class I_QueueTest extends TestCase {
          this.lastNumBytes = numBytes;
          this.count++;
       }
+
    }
    
 
@@ -1775,7 +1776,6 @@ public class I_QueueTest extends TestCase {
       }
       return suite;
    }
-
 
    /**
     * <pre>

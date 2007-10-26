@@ -34,11 +34,9 @@ public class EventPluginTest extends TestCase implements I_Callback {
    private static Logger log = Logger.getLogger(EventPluginTest.class.getName());
 
    private EmbeddedXmlBlaster embeddedServer;
-   private MsgInterceptor msgInterceptor;
    
    public EventPluginTest(String name) {
       super(name);
-      this.msgInterceptor = new MsgInterceptor(new Global(), log, null);
    }
 
    private void writePluginsFile(String port, String eventTypes) {
@@ -151,30 +149,33 @@ public class EventPluginTest extends TestCase implements I_Callback {
          {
             Global global = new Global(args);
             ConnectQos qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
+            qos.getSessionCbQueueProperty().setMaxEntries(10L);
+            qos.getSessionCbQueueProperty().setMaxEntriesCache(10L);
             I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
             conn.connect(qos, this);
             SubscribeKey subKey = new SubscribeKey(global, topicName);
             SubscribeQos subQos = new SubscribeQos(global);
             conn.subscribe(subKey, subQos);
-            conn.leaveServer(null);
+            // conn.leaveServer(null);
+            DisconnectQos disconnectQos = new DisconnectQos(global);
+            disconnectQos.setLeaveServer(true);
+            conn.disconnect(disconnectQos);
          }
 
-         {
-            Global secondGlobal = new Global(args);
-            ConnectQos qos = new ConnectQos(secondGlobal, "tester/1", "secret");
-            I_XmlBlasterAccess conn2 = secondGlobal.getXmlBlasterAccess();
-            conn2.connect(qos, this.msgInterceptor);
-            SubscribeKey subKey = new SubscribeKey(secondGlobal, "__sys__Event");
-            SubscribeQos subQos = new SubscribeQos(secondGlobal);
-            conn2.subscribe(subKey, subQos);
-         }
-         
-         this.msgInterceptor.clear();
+         Global secondGlobal = new Global(args);
+         MsgInterceptor msgInterceptor = new MsgInterceptor(secondGlobal, log, null);
+         ConnectQos qos = new ConnectQos(secondGlobal, "tester/1", "secret");
+         I_XmlBlasterAccess conn2 = secondGlobal.getXmlBlasterAccess();
+         conn2.connect(qos, msgInterceptor);
+         SubscribeKey subKey = new SubscribeKey(secondGlobal, "__sys__Event");
+         SubscribeQos subQos = new SubscribeQos(secondGlobal);
+         conn2.subscribe(subKey, subQos);
+         msgInterceptor.clear();
 
          {
             // publish now
             Global global = new Global(args);
-            ConnectQos qos = new ConnectQos(global, "testPublisher/1", "secret");
+            qos = new ConnectQos(global, "testPublisher/1", "secret");
             I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
             conn.connect(qos, this);
             PublishKey pubKey = new PublishKey(global, topicName);
@@ -184,27 +185,28 @@ public class EventPluginTest extends TestCase implements I_Callback {
                conn.publish(new MsgUnit(pubKey, content.getBytes(), pubQos));
             }
             
-            int ret = this.msgInterceptor.waitOnUpdate(1000L, 1);
+            int ret = msgInterceptor.waitOnUpdate(3000L, 1);
             assertEquals("We expected one message for the excess of the history queue", 1, ret);
-            this.msgInterceptor.clear();
+            msgInterceptor.clear();
             for (int i=5; i < 8; i++) {
                String content = "This is test " + i;
                conn.publish(new MsgUnit(pubKey, content.getBytes(), pubQos));
             }
-            ret = this.msgInterceptor.waitOnUpdate(1000L, 1);
-            assertEquals("We expected one message for the excess of the callback queue", 1, ret);
-            this.msgInterceptor.clear();
+            ret = msgInterceptor.waitOnUpdate(3000L, 1);
+            assertEquals("We expected one message", 1, ret);
+            msgInterceptor.clear();
             conn.disconnect(new DisconnectQos(global));
          }
 
          {
             Global global = new Global(args);
-            ConnectQos qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
+            qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
             I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
             conn.connect(qos, this);
             Thread.sleep(1000L);
             conn.disconnect(new DisconnectQos(global));
          }
+         conn2.disconnect(new DisconnectQos(secondGlobal));
       }
       catch (Exception ex) {
          ex.printStackTrace();
@@ -215,6 +217,25 @@ public class EventPluginTest extends TestCase implements I_Callback {
       }
    }
 
+   /**
+    * We start an embedded server where we define an EventPlugin to fire on two events:
+    * <ul>
+    *    <li>on all callback queues (all users) 70 % of the maximum has been reached (maximum is 10 Entries)</li>
+    *    <li>on all topics when the history queue reaches 4</li>
+    * </ul>
+    * We then connect one failsafe client, make a subscription and leave the server (without logging out) to keep
+    * the entries in the callback queue (and in the history queue).
+    * <p/>
+    * The second client subscribes to the configured events (this is the client which will get 
+    * the events.
+    * <p/>
+    * A third client publishes 5 messages (which hit the subscription of the first client). 
+    * Such messages fill the callback queue and the history queue.
+    * This shall result in an event coming from the history queue. The callback queue shall not
+    * fire since it has not been exceeded, however the second history queue, the one for the __sys__Event
+    * shall fire since it has exceeded too, so two messages shall arrive.
+    * <p/>
+    */
    public void testQueueEventsWithWildcards() {
       try {
          String userName = "eventTester";
@@ -241,25 +262,26 @@ public class EventPluginTest extends TestCase implements I_Callback {
             SubscribeKey subKey = new SubscribeKey(global, topicName);
             SubscribeQos subQos = new SubscribeQos(global);
             conn.subscribe(subKey, subQos);
-            conn.leaveServer(null);
+            // conn.leaveServer(null);
+            DisconnectQos disconnectQos = new DisconnectQos(global);
+            disconnectQos.setLeaveServer(true);
+            conn.disconnect(disconnectQos);
          }
 
-         {
-            Global secondGlobal = new Global(args);
-            ConnectQos qos = new ConnectQos(secondGlobal, "tester/1", "secret");
-            I_XmlBlasterAccess conn2 = secondGlobal.getXmlBlasterAccess();
-            conn2.connect(qos, this.msgInterceptor);
-            SubscribeKey subKey = new SubscribeKey(secondGlobal, "__sys__Event");
-            SubscribeQos subQos = new SubscribeQos(secondGlobal);
-            conn2.subscribe(subKey, subQos);
-         }
-         
-         this.msgInterceptor.clear();
+         Global secondGlobal = new Global(args);
+         MsgInterceptor msgInterceptor = new MsgInterceptor(secondGlobal, log, null);
+         ConnectQos qos = new ConnectQos(secondGlobal, "tester/2", "secret");
+         I_XmlBlasterAccess conn2 = secondGlobal.getXmlBlasterAccess();
+         conn2.connect(qos, msgInterceptor);
+         SubscribeKey subKey = new SubscribeKey(secondGlobal, "__sys__Event");
+         SubscribeQos subQos = new SubscribeQos(secondGlobal);
+         conn2.subscribe(subKey, subQos);
+         msgInterceptor.clear();
 
          {
             // publish now
             Global global = new Global(args);
-            ConnectQos qos = new ConnectQos(global, "testPublisher/1", "secret");
+            qos = new ConnectQos(global, "testPublisher/1", "secret");
             I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
             conn.connect(qos, this);
             PublishKey pubKey = new PublishKey(global, topicName);
@@ -269,27 +291,28 @@ public class EventPluginTest extends TestCase implements I_Callback {
                conn.publish(new MsgUnit(pubKey, content.getBytes(), pubQos));
             }
             
-            int ret = this.msgInterceptor.waitOnUpdate(1000L, 1);
+            int ret = msgInterceptor.waitOnUpdate(3000L, 1);
             assertEquals("We expected one message for the excess of the history queue", 1, ret);
-            this.msgInterceptor.clear();
+            msgInterceptor.clear();
             for (int i=5; i < 8; i++) {
                String content = "This is test " + i;
                conn.publish(new MsgUnit(pubKey, content.getBytes(), pubQos));
             }
-            ret = this.msgInterceptor.waitOnUpdate(1000L, 1);
-            assertEquals("We expected one message for the excess of the callback queue", 1, ret);
-            this.msgInterceptor.clear();
+            ret = msgInterceptor.waitOnUpdate(3000L, 2);
+            assertEquals("We expected two messages: one for the excess of the callback queue and the other for the excess of the history queue of the __sys__Event topic", 2, ret);
+            msgInterceptor.clear();
             conn.disconnect(new DisconnectQos(global));
          }
 
          {
             Global global = new Global(args);
-            ConnectQos qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
+            qos = new ConnectQos(global, userName + "/" + sessionId, "secret");
             I_XmlBlasterAccess conn = global.getXmlBlasterAccess();
             conn.connect(qos, this);
             Thread.sleep(1000L);
             conn.disconnect(new DisconnectQos(global));
          }
+         conn2.disconnect(new DisconnectQos(secondGlobal));
       }
       catch (Exception ex) {
          ex.printStackTrace();
