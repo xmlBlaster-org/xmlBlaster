@@ -70,13 +70,13 @@ public class QueueEventHandler extends StorageEventHandler {
          throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "QueuePluginManager.registerEvent", "event '" + event + "' is not supported");
       }
       
-      if (this.events == null)
-         this.events = new HashMap();
+      if (this.eventsHelperMap == null)
+         this.eventsHelperMap = new HashMap();
       if (this.eventDispatcher == null)
          this.eventDispatcher = dispatcher;
       EventHelper helper = new EventHelper(event, type, id1, id2, value, this.eventDispatcher);
-      synchronized(this.events) {
-         this.events.put(helper.getKey(), helper);
+      synchronized(this.eventsHelperMap) {
+         this.eventsHelperMap.put(helper.getKey(), helper);
       }
    }
 }

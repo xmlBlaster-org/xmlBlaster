@@ -514,13 +514,13 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    private void registerEventTypes(String eventTypes) throws XmlBlasterException {
       String[] eventTypeArr = StringPairTokenizer.parseLine(eventTypes);
-      
+
       ServerScope serverScope = requestBroker.getServerScope();
       QueuePluginManager queuePluginManager = serverScope.getQueuePluginManager();
       StoragePluginManager storagePluginManager = serverScope.getStoragePluginManager();
       QueueEventHandler queueEventHandler = new QueueEventHandler(serverScope, this);
       MapEventHandler mapEventHandler = new MapEventHandler(serverScope, this);
-      
+
       for (int i = 0; i < eventTypeArr.length; i++) {
          String event = eventTypeArr[i].trim();
          if (event.length() < 1) continue; // Allow ',' at end
@@ -671,8 +671,10 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
       }
 
-      storagePluginManager.setEventHandler(mapEventHandler);
-      queuePluginManager.setEventHandler(queueEventHandler);
+      if (mapEventHandler.hasRegisteredEventHelpers())
+         storagePluginManager.setEventHandler(mapEventHandler);
+      if (queueEventHandler.hasRegisteredEventHelpers())
+         queuePluginManager.setEventHandler(queueEventHandler);
    }
 
    public static boolean isQueueEvent(String txt) {

@@ -18,7 +18,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.context.ContextNode;
 
 /**
- * QueuePluginManager loads the I_Queue implementation plugins. 
+ * QueuePluginManager loads the I_Queue implementation plugins.
  * <p>
  * Usage examples:
  * </p>
@@ -37,7 +37,7 @@ import org.xmlBlaster.util.context.ContextNode;
  */
 public class QueuePluginManager extends PluginManagerBase {
 
-   
+
    // private final String ME;
    private final Global glob;
    private static Logger log = Logger.getLogger(QueuePluginManager.class.getName());
@@ -46,10 +46,10 @@ public class QueuePluginManager extends PluginManagerBase {
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.util.queue.ram.RamQueuePlugin"},
                                                           {"JDBC", "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin"},
                                                           {"CACHE", "org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin"} };
-   
-   private Map storagesMap = new HashMap();
+
+   private Map/*<String(storageId), I_Queue>*/ storagesMap = new HashMap();
    private StorageEventHandler eventHandler;
-   
+
    public QueuePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
@@ -61,13 +61,13 @@ public class QueuePluginManager extends PluginManagerBase {
     * @see #getPlugin(String, String, StorageId, QueuePropertyBase)
     */
    public I_Queue getPlugin(String typeVersion, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
-      return getPlugin(new PluginInfo(glob, this, typeVersion, 
+      return getPlugin(new PluginInfo(glob, this, typeVersion,
               new ContextNode(this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
               storageId, props);
    }
 
    /**
-    * Return a new created (persistent) queue plugin. 
+    * Return a new created (persistent) queue plugin.
     * <p/>
     * @param String The type of the requested plugin, pass 'undef' to suppress using a storage.
     * @param String The version of the requested plugin.
@@ -88,7 +88,7 @@ public class QueuePluginManager extends PluginManagerBase {
       plugin.initialize(storageId, props);
 
       if (!props.isEmbedded()) {
-         synchronized(this) {
+         synchronized(this.storagesMap) {
             this.storagesMap.put(storageId.getId(), plugin);
             if (eventHandler != null)
                eventHandler.registerListener(plugin);
@@ -97,12 +97,16 @@ public class QueuePluginManager extends PluginManagerBase {
       return plugin;
    }
 
-   public synchronized void cleanup(I_Storage storage) {
-      storagesMap.remove(storage.getStorageId().getId());
+   public void cleanup(I_Storage storage) {
+      synchronized (this.storagesMap) {
+         storagesMap.remove(storage.getStorageId().getId());
+         if (eventHandler != null)
+            eventHandler.removeListener(storage);
+      }
    }
 
    /**
-    * Enforced by PluginManagerBase. 
+    * Enforced by PluginManagerBase.
     * @return The name of the property in xmlBlaster.property "QueuePlugin"
     * for "QueuePlugin[JDBC][1.0]"
     */
@@ -127,12 +131,24 @@ public class QueuePluginManager extends PluginManagerBase {
       return defaultPluginNames[0][1];
    }
 
-   public synchronized void setEventHandler(StorageEventHandler handler) throws XmlBlasterException {
-      if (handler != null)
-         handler.initialRegistration(storagesMap);
-      else if (eventHandler != null)
-         eventHandler.removeListeners(storagesMap);
-      eventHandler = handler;
+   /**
+    * Set an EventHandler singleton
+    * @param handler null resets an existing handler
+    * @return if false another one existed already and your handler is not set
+    * @throws XmlBlasterException
+    */
+   public boolean setEventHandler(StorageEventHandler handler) throws XmlBlasterException {
+      synchronized (this.storagesMap) {
+         if (handler != null && this.eventHandler != null)
+            return false; // can't overwrite existing handler
+
+         if (handler != null)
+            handler.initialRegistration(this.storagesMap);
+         else if (eventHandler != null)
+            eventHandler.removeListeners(this.storagesMap);
+         eventHandler = handler;
+      }
+      return true;
    }
 
 }

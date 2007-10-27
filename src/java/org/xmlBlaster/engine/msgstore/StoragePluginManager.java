@@ -21,7 +21,7 @@ import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.context.ContextNode;
 
 /**
- * StoragePluginManager loads the I_Map implementation plugins. 
+ * StoragePluginManager loads the I_Map implementation plugins.
  * <p>
  * Usage examples:
  * </p>
@@ -33,7 +33,7 @@ import org.xmlBlaster.util.context.ContextNode;
  * StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
  * StoragePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
  * StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,transientMap=RAM,persistentMap=JDBC
- * 
+ *
  * # Choose the plugin (each publisher can overwrite this in its publish topic-QoS)
  * persistence/defaultPlugin=CACHE,1.0
  * persistence/topicStore/defaultPlugin=JDBC,1.0
@@ -59,8 +59,8 @@ public class StoragePluginManager extends PluginManagerBase {
                                                           {"CACHE", "org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin"} };
    public static final String pluginPropertyName = "StoragePlugin";
 
-   private Map storagesMap = new HashMap();
-   
+   private Map/*<String(storageId), I_Map>*/ storagesMap = new HashMap();
+
    private StorageEventHandler eventHandler;
 
    public StoragePluginManager(ServerScope glob) {
@@ -74,13 +74,13 @@ public class StoragePluginManager extends PluginManagerBase {
     * @see #getPlugin(String, String, StorageId, QueuePropertyBase)
     */
    public I_Map getPlugin(String typeVersion, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
-      return getPlugin(new PluginInfo(glob, this, typeVersion, 
+      return getPlugin(new PluginInfo(glob, this, typeVersion,
                                       new ContextNode(this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
                        storageId, props);
    }
 
    /**
-    * Return a new created storage plugin. 
+    * Return a new created storage plugin.
     * <p/>
     * @param String The type of the requested plugin, pass 'undef' to suppress using a storage.
     * @param String The version of the requested plugin.
@@ -102,14 +102,18 @@ public class StoragePluginManager extends PluginManagerBase {
       plugin.initialize(storageId, props);
 
       if (!props.isEmbedded()) {
-         this.storagesMap.put(storageId.getId(), plugin);
+         synchronized (this.storagesMap) {
+            this.storagesMap.put(storageId.getId(), plugin);
+            if (eventHandler != null)
+               eventHandler.registerListener(plugin);
+         }
       }
       return plugin;
    }
 
-   
+
    /**
-    * Enforced by PluginManagerBase. 
+    * Enforced by PluginManagerBase.
     * @return The name of the property in xmlBlaster.property "StoragePlugin"
     * for "StoragePlugin[JDBC][1.0]"
     */
@@ -133,19 +137,38 @@ public class StoragePluginManager extends PluginManagerBase {
       log.warning("Choosing for type=" + type + " default plugin " + defaultPluginNames[0][1]);
       return defaultPluginNames[0][1];
    }
-   
-   public synchronized void setEventHandler(StorageEventHandler handler) throws XmlBlasterException {
-      if (handler != null)
-         handler.initialRegistration(storagesMap);
-      else if (eventHandler != null)
-         eventHandler.removeListeners(storagesMap);
-      eventHandler = handler;
+
+   /**
+    * Set an EventHandler singleton
+    * @param handler null resets an existing handler
+    * @return if false another one existed already and your handler is not set
+    * @throws XmlBlasterException
+    */
+   public boolean setEventHandler(StorageEventHandler handler) throws XmlBlasterException {
+      synchronized (this.storagesMap) {
+         if (handler != null && this.eventHandler != null)
+            return false; // can't overwrite existing handler
+         if (handler != null)
+            handler.initialRegistration(storagesMap);
+         else if (eventHandler != null)
+            eventHandler.removeListeners(storagesMap);
+         eventHandler = handler;
+      }
+      return true;
    }
 
-   public synchronized void cleanup(I_Storage storage) {
-      storagesMap.remove(storage.getStorageId().getId());
+   public I_Storage[] getStorages() {
+      synchronized (this.storagesMap) {
+         return (I_Storage[])this.storagesMap.values().toArray(new I_Storage[storagesMap.size()]);
+      }
    }
-   
-   
+
+   public void cleanup(I_Storage storage) {
+      synchronized (this.storagesMap) {
+         this.storagesMap.remove(storage.getStorageId().getId());
+         if (eventHandler != null)
+            eventHandler.removeListener(storage);
+      }
+   }
 }
 
