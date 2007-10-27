@@ -514,6 +514,44 @@
    </example>
 
 
+   <example lang="XML" type="HTML">
+      <p id="messageFormat" class="celltitel">Examples for filling up a queue and get threshold alarm</p>
+      <p>The xmlBlasterPlugins.xml.template contains a more complete plugin configuration
+      but for this test this is enough:
+      </p>
+<pre class="BORDER">
+   &lt;plugin create='false' id='thresholdEventsCbQueue' className='org.xmlBlaster.engine.EventPlugin'>
+      &lt;action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      &lt;action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      &lt;attribute id='eventTypes'>client/*/session/*/queue/callback/event/threshold.90%&lt;/attribute>
+      &lt;attribute id='destination.publish'>
+         "publish.key=&lt;key oid='__queueFillingUp'/>"
+      &lt;/attribute>
+   &lt;/plugin>
+</pre>
+   <p>And try it on command line:</p>
+<pre class="BORDER">
+# Start the server:
+java -Dcom.sun.management.jmxremote org.xmlBlaster.Main
+
+# Publish messages:
+java javaclients.HelloWorldPublish -session.name Publisher/1 -numPublish 1000
+
+# All in one line:
+java javaclients.HelloWorldSubscribe  -session.name Subscriber/1 -persistentSubscribe true
+      -dispatch/callback/retries -1 -interactiveUpdate true -queue/callback/maxEntries 10
+
+# Watch the messages:
+java javaclients.simplereader.SimpleReaderGui -xpath "//key" -session.name sniffer
+</pre>
+
+   <p>The subscriber has configured the callback queue to max 10 messages and
+   it will block on first update message.
+   Hit ten times enter for the publisher and the sniffer will show the
+   alarm message.
+   </p>
+   </example>
+
    <configuration where="server">
       <p>
       These parameters allow to configure the plugin.
