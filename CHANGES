@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
+ o #16561 Memory leak fix for EventPlugin, it was introduced  about #16357 (EventPlugin notification when queue threshold is reached)
+
  o #16532 Logging with XbFormatter: Changed to use ISO 8601 date and time for logging
 
  o #16531 Added Checkpoint plugin to support tracing the message flow with customized log files
@@ -100,6 +102,8 @@ Changes for 1.6 [2007-07-25] #16384
 
  o #16359,16360 acceptWrongSenderAddress is now configurable using JMX/jconsole
           see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html why you could need this
+
+ o #16357 EventPlugin notification when queue threshold is reached
 
  o #16339 Added jconsole/JMX support to increase on a running system the maxNumOfEntries and maxNumOfBytes
           of a map (msgUnitStore), the changes are persistently and durable after a xmlBlaster re-start.
