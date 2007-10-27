@@ -151,4 +151,7 @@ public class QueuePluginManager extends PluginManagerBase {
       return true;
    }
 
+   public StorageEventHandler getEventHandler() {
+      return this.eventHandler;
+   }
 }

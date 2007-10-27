@@ -1,7 +1,5 @@
 package org.xmlBlaster.util.queue;
 
-import java.util.HashMap;
-
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_EventDispatcher;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -15,18 +13,21 @@ public class QueueEventHandler extends StorageEventHandler {
       super(dispatcher);
       this.global = global;
    }
-   
-   public void registerEvent(I_EventDispatcher dispatcher, String event) throws XmlBlasterException {
+
+   /**
+    * Is called from EventPlugin to register the configured eventTypes
+    */
+   public void registerEventType(I_EventDispatcher dispatcher, String eventType) throws XmlBlasterException {
       // client/*/session/[publicSessionId]/queue/callback/event/threshold.90%
       // client/[subjectId]/session/[publicSessionId]/queue/callback/event/threshold.90%
       // topic/[topicId]/queue/history/event/threshold.90%
       // */queue/*/event/threshold*
 
       String end = "/event/threshold.";
-      int index = event.lastIndexOf(end);
-      String value = event.substring(index + end.length());
+      int index = eventType.lastIndexOf(end);
+      String value = eventType.substring(index + end.length());
 
-      String tmp = event.substring(0, index);
+      String tmp = eventType.substring(0, index);
       end = "/queue/";
       index = tmp.lastIndexOf(end);
       String type = tmp.substring(index + end.length());
@@ -67,16 +68,14 @@ public class QueueEventHandler extends StorageEventHandler {
          id2 = "";
       }
       else {
-         throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "QueuePluginManager.registerEvent", "event '" + event + "' is not supported");
+         throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "QueuePluginManager.registerEvent", "event '" + eventType + "' is not supported");
       }
-      
-      if (this.eventsHelperMap == null)
-         this.eventsHelperMap = new HashMap();
+
       if (this.eventDispatcher == null)
          this.eventDispatcher = dispatcher;
-      EventHelper helper = new EventHelper(event, type, id1, id2, value, this.eventDispatcher);
-      synchronized(this.eventsHelperMap) {
-         this.eventsHelperMap.put(helper.getKey(), helper);
+      EventHelper helper = new EventHelper(eventType, type, id1, id2, value, this.eventDispatcher);
+      synchronized(this.wantedEventsMap) {
+         this.wantedEventsMap.put(helper.getKey(), helper);
       }
    }
 }

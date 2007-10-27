@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
 public class EventHelper implements I_StorageSizeListener {
-   
+
    private final static Logger log = Logger.getLogger(EventHelper.class.getName());
    private String eventType;
    private String type;
@@ -25,11 +25,11 @@ public class EventHelper implements I_StorageSizeListener {
    private boolean procent;
    private boolean alreadyAlarmed;
    private I_EventDispatcher eventDispatcher;
-   
+
    private EventHelper() {
-      
+
    }
-   
+
    public EventHelper(String eventType, String type, String id1, String id2, String val, I_EventDispatcher eventDispatcher) throws XmlBlasterException {
       if (id2 == null)
          id2 = "";
@@ -44,7 +44,7 @@ public class EventHelper implements I_StorageSizeListener {
          val = val.substring(0, pos);
       }
       try {
-        this.value = Long.parseLong(val); 
+        this.value = Long.parseLong(val);
       }
       catch (Throwable ex) {
          throw new XmlBlasterException(Global.instance(), ErrorCode.USER_CONFIGURATION, "EventHelper", "could not parse treshold string '" + val + "' to a long", ex);
@@ -52,9 +52,9 @@ public class EventHelper implements I_StorageSizeListener {
       if (eventDispatcher == null) {
          throw new XmlBlasterException(new Global(), ErrorCode.INTERNAL, "EventHelper: The event dispatcher can not be null");
       }
-         
+
       this.eventDispatcher = eventDispatcher;
-      
+
    }
 
    protected Object clone() {
@@ -70,7 +70,7 @@ public class EventHelper implements I_StorageSizeListener {
       helper.alreadyAlarmed = this.alreadyAlarmed;
       return helper;
    }
-   
+
    public EventHelper getCopy(I_Storage storage) {
       EventHelper ret = (EventHelper)clone();
       long maxValue = 1L;
@@ -86,10 +86,10 @@ public class EventHelper implements I_StorageSizeListener {
       }
       return ret;
    }
-   
+
    public boolean shallTrigger(long numEntries) {
       if (numEntries < this.value) {
-         if (this.alreadyAlarmed) 
+         if (this.alreadyAlarmed)
             this.alreadyAlarmed = false; // clear flag since treshold not reached anymore
          return false;
       }
@@ -100,7 +100,7 @@ public class EventHelper implements I_StorageSizeListener {
          return true;
       }
    }
-   
+
    public String getKey() {
       return this.key;
    }
@@ -120,11 +120,11 @@ public class EventHelper implements I_StorageSizeListener {
    public long getValue() {
       return value;
    }
-   
+
    public String getEventType() {
       return this.eventType;
    }
-   
+
    /**
     * Enforced by I_StorageSizeListener
     * @param queue
@@ -142,7 +142,14 @@ public class EventHelper implements I_StorageSizeListener {
          eventDispatcher.dispatchEvent(summary.toString(), description, eventType);
       }
    }
-   
+
+   /**
+    * @return the eventDispatcher
+    */
+   public I_EventDispatcher getEventDispatcher() {
+      return this.eventDispatcher;
+   }
+
 }
 
 

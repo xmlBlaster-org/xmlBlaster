@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.I_EventDispatcher;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.I_Storage;
 import org.xmlBlaster.util.queue.StorageEventHandler;
@@ -150,11 +151,16 @@ public class StoragePluginManager extends PluginManagerBase {
             return false; // can't overwrite existing handler
          if (handler != null)
             handler.initialRegistration(storagesMap);
-         else if (eventHandler != null)
+         else if (eventHandler != null) {
             eventHandler.removeListeners(storagesMap);
+         }
          eventHandler = handler;
       }
       return true;
+   }
+
+   public StorageEventHandler getEventHandler() {
+      return this.eventHandler;
    }
 
    public I_Storage[] getStorages() {
