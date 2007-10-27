@@ -268,6 +268,30 @@
       </attribute>
    </plugin>
 
+   <!-- Get event before a callback queue runs full -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <plugin create='false' id='thresholdEventsCbQueue' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>client/*/session/*/queue/callback/event/threshold.90%</attribute>
+      <attribute id='destination.publish'>
+         "publish.key=<key oid='__queueFillingUp'><__sys__internal/></key>",
+         "publish.qos=<qos><expiration lifeTime='0'/><topic destroyDelay='30000'><persistence relating='msgUnitStore' type='RAM'/><queue relating='history' type='RAM'/></topic></qos>"
+      </attribute>
+   </plugin>
+
+   <!-- Get event before a msgUnitStore runs full -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <plugin create='false' id='thresholdEventsMsgUnitStore' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>topic/*/persistence/msgUnitStore/event/threshold.80%</attribute>
+      <attribute id='destination.publish'>
+         "publish.key=<key oid='__msgUnitStoreFillingUp'><__sys__internal/></key>",
+         "publish.qos=<qos><expiration lifeTime='0'/><topic destroyDelay='30000'><persistence relating='msgUnitStore' type='RAM'/><queue relating='history' type='RAM'/></topic></qos>"
+      </attribute>
+   </plugin>
+
    <!-- Get event when a client logs in, send to topic '__sys__Login' -->
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
    <plugin create='false' id='connectEvent' className='org.xmlBlaster.engine.EventPlugin'>
