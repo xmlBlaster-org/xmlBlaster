@@ -16,6 +16,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * QueuePluginManager loads the I_Queue implementation plugins.
@@ -48,7 +49,7 @@ public class QueuePluginManager extends PluginManagerBase {
                                                           {"CACHE", "org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin"} };
 
    private Map/*<String(storageId), I_Queue>*/ storagesMap = new HashMap();
-   private StorageEventHandler eventHandler;
+   private Map /*<String, StorageEventHandler>*/ eventHandlerMap = new HashMap();
 
    public QueuePluginManager(Global glob) {
       super(glob);
@@ -80,6 +81,19 @@ public class QueuePluginManager extends PluginManagerBase {
               storageId, props);
    }
 
+   private void registerOrRemovePlugin(I_Storage plugin, boolean register) throws XmlBlasterException {
+      int size = eventHandlerMap.size();
+      if (size < 1)
+         return;
+      StorageEventHandler[] eventHandlers = (StorageEventHandler[])eventHandlerMap.values().toArray(new StorageEventHandler[size]);
+      for (int i=0; i < eventHandlers.length; i++) {
+         if (register)
+            eventHandlers[i].registerListener(plugin);
+         else
+            eventHandlers[i].removeListener(plugin);
+      }
+   }
+   
    public I_Queue getPlugin(PluginInfo pluginInfo, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
       if (pluginInfo.ignorePlugin())
          return null;
@@ -88,20 +102,26 @@ public class QueuePluginManager extends PluginManagerBase {
       plugin.initialize(storageId, props);
 
       if (!props.isEmbedded()) {
-         synchronized(this.storagesMap) {
+         final boolean register = true;
+         synchronized (this.storagesMap) {
             this.storagesMap.put(storageId.getId(), plugin);
-            if (eventHandler != null)
-               eventHandler.registerListener(plugin);
+            registerOrRemovePlugin(plugin, register);
          }
       }
       return plugin;
    }
 
    public void cleanup(I_Storage storage) {
-      synchronized (this.storagesMap) {
-         storagesMap.remove(storage.getStorageId().getId());
-         if (eventHandler != null)
-            eventHandler.removeListener(storage);
+      try {
+         synchronized (this.storagesMap) {
+            final boolean remove = false;
+            this.storagesMap.remove(storage.getStorageId().getId());
+            registerOrRemovePlugin(storage, remove);
+         }
+      }
+      catch (XmlBlasterException ex) {
+         log.severe("An error occured when cleaning up storage '" + storage.getStorageId().getId());
+         ex.printStackTrace();
       }
    }
 
@@ -137,21 +157,26 @@ public class QueuePluginManager extends PluginManagerBase {
     * @return if false another one existed already and your handler is not set
     * @throws XmlBlasterException
     */
-   public boolean setEventHandler(StorageEventHandler handler) throws XmlBlasterException {
+   public boolean setEventHandler(String key, StorageEventHandler handler) throws XmlBlasterException {
       synchronized (this.storagesMap) {
-         if (handler != null && this.eventHandler != null)
+         boolean containsKey = eventHandlerMap.containsKey(key);
+         if (handler != null && containsKey)
             return false; // can't overwrite existing handler
-
-         if (handler != null)
-            handler.initialRegistration(this.storagesMap);
-         else if (eventHandler != null)
-            eventHandler.removeListeners(this.storagesMap);
-         eventHandler = handler;
+         if (handler != null) {
+            handler.initialRegistration(storagesMap);
+            eventHandlerMap.put(key, handler);
+         }
+         else if (containsKey) {
+            ((StorageEventHandler)eventHandlerMap.get(key)).removeListeners(storagesMap);
+            eventHandlerMap.remove(key);
+         }
       }
       return true;
    }
 
-   public StorageEventHandler getEventHandler() {
-      return this.eventHandler;
+   public StorageEventHandler getEventHandler(String key) {
+      synchronized(this.storagesMap) {
+         return (StorageEventHandler)eventHandlerMap.get(key);
+      }
    }
 }

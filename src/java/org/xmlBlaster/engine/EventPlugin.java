@@ -211,6 +211,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    protected static int staticInstanceCounter;
    protected int instanceCounter;
 
+   private String uniqueInstanceName;
+   
    /**
     * Helper class to send emails
     */
@@ -430,6 +432,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    public void init(org.xmlBlaster.util.Global utilGlob, PluginInfo pluginInfo)
          throws XmlBlasterException {
       this.pluginConfig = pluginInfo;
+      this.uniqueInstanceName = pluginInfo.getId() + "-" + instanceCounter;
       this.glob = utilGlob.getClone(utilGlob.getNativeConnectArgs());
       this.glob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, utilGlob // "ServerNodeScope"
             .getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
@@ -677,12 +680,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
 
       if (queueEventHandler != null)
-         if (serverScope.getQueuePluginManager().setEventHandler(queueEventHandler) == false) {
+         if (serverScope.getQueuePluginManager().setEventHandler(uniqueInstanceName, queueEventHandler) == false) {
          // TODO: QueueEventHandler should be a member of EventPlugin and not of QueuePluginManager!
          log.severe(ME+getType() + " Can't register queue threshold event, currently max one such event can be registered");
          }
       if (mapEventHandler != null)
-         if (serverScope.getStoragePluginManager().setEventHandler(mapEventHandler) == false) {
+         if (serverScope.getStoragePluginManager().setEventHandler(uniqueInstanceName, mapEventHandler) == false) {
             log.severe(ME+getType() + " Can't register msgUnitStore event, currently max one such event can be registered");
          }
    }
@@ -981,17 +984,17 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       // we shut down the resources for the queue and storage events
       ServerScope serverScope = requestBroker.getServerScope();
       StoragePluginManager storagePluginManager = serverScope.getStoragePluginManager();
-      StorageEventHandler mapEventHandler = storagePluginManager.getEventHandler();
+      StorageEventHandler mapEventHandler = storagePluginManager.getEventHandler(uniqueInstanceName);
       if (mapEventHandler != null) {
-         storagePluginManager.setEventHandler(null);
+         storagePluginManager.setEventHandler(uniqueInstanceName, null);
          mapEventHandler.unRegisterEventHelpers(this);
       }
 
       QueuePluginManager queuePluginManager = serverScope.getQueuePluginManager();
-      StorageEventHandler queueEventHandler = queuePluginManager.getEventHandler();
+      StorageEventHandler queueEventHandler = queuePluginManager.getEventHandler(uniqueInstanceName);
       if (queueEventHandler != null) {
          queueEventHandler.unRegisterEventHelpers(this);
-         queuePluginManager.setEventHandler(null);
+         queuePluginManager.setEventHandler(uniqueInstanceName, null);
       }
 
       if (this.loggingSet != null)
