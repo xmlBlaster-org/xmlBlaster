@@ -681,12 +681,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
       if (queueEventHandler != null)
          if (serverScope.getQueuePluginManager().setEventHandler(uniqueInstanceName, queueEventHandler) == false) {
-         // TODO: QueueEventHandler should be a member of EventPlugin and not of QueuePluginManager!
-         log.severe(ME+getType() + " Can't register queue threshold event, currently max one such event can be registered");
+         log.severe(ME+getType() + " Can't register queue threshold event, max one such event can be registered for '" + uniqueInstanceName + "'");
          }
       if (mapEventHandler != null)
          if (serverScope.getStoragePluginManager().setEventHandler(uniqueInstanceName, mapEventHandler) == false) {
-            log.severe(ME+getType() + " Can't register msgUnitStore event, currently max one such event can be registered");
+            log.severe(ME+getType() + " Can't register msgUnitStore event, max one such event can be registered '" + uniqueInstanceName + "'");
          }
    }
 
