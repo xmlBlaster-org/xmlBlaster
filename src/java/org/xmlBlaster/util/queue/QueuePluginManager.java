@@ -16,7 +16,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.def.ErrorCode;
+
 
 /**
  * QueuePluginManager loads the I_Queue implementation plugins.
@@ -50,6 +50,9 @@ public class QueuePluginManager extends PluginManagerBase {
 
    private Map/*<String(storageId), I_Queue>*/ storagesMap = new HashMap();
    private Map /*<String, StorageEventHandler>*/ eventHandlerMap = new HashMap();
+
+   private final static boolean REMOVE = false;
+   private final static boolean REGISTER = true;
 
    public QueuePluginManager(Global glob) {
       super(glob);
@@ -102,10 +105,9 @@ public class QueuePluginManager extends PluginManagerBase {
       plugin.initialize(storageId, props);
 
       if (!props.isEmbedded()) {
-         final boolean register = true;
          synchronized (this.storagesMap) {
             this.storagesMap.put(storageId.getId(), plugin);
-            registerOrRemovePlugin(plugin, register);
+            registerOrRemovePlugin(plugin, REGISTER);
          }
       }
       return plugin;
@@ -114,9 +116,8 @@ public class QueuePluginManager extends PluginManagerBase {
    public void cleanup(I_Storage storage) {
       try {
          synchronized (this.storagesMap) {
-            final boolean remove = false;
             this.storagesMap.remove(storage.getStorageId().getId());
-            registerOrRemovePlugin(storage, remove);
+            registerOrRemovePlugin(storage, REMOVE);
          }
       }
       catch (XmlBlasterException ex) {

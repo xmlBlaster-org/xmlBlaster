@@ -62,7 +62,11 @@ public class StoragePluginManager extends PluginManagerBase {
    private Map/*<String(storageId), I_Map>*/ storagesMap = new HashMap();
 
    private Map /*<String, StorageEventHandler>*/ eventHandlerMap = new HashMap();
+   
+   private final static boolean REMOVE = false;
+   private final static boolean REGISTER = true;
 
+   
    public StoragePluginManager(ServerScope glob) {
       super(glob);
       this.glob = glob;
@@ -94,6 +98,12 @@ public class StoragePluginManager extends PluginManagerBase {
                        storageId, props);
    }
 
+   /**
+    * Not synchronized since invoked inside the synchronized(this.storagesMap)
+    * @param plugin
+    * @param register
+    * @throws XmlBlasterException
+    */
    private void registerOrRemovePlugin(I_Storage plugin, boolean register) throws XmlBlasterException {
       int size = eventHandlerMap.size();
       if (size < 1)
@@ -114,10 +124,9 @@ public class StoragePluginManager extends PluginManagerBase {
       I_Map plugin = (I_Map)super.instantiatePlugin(pluginInfo, false);
       plugin.initialize(storageId, props);
       if (!props.isEmbedded()) {
-         final boolean register = true;
          synchronized (this.storagesMap) {
             this.storagesMap.put(storageId.getId(), plugin);
-            registerOrRemovePlugin(plugin, register);
+            registerOrRemovePlugin(plugin, REGISTER);
          }
       }
       return plugin;
@@ -182,9 +191,8 @@ public class StoragePluginManager extends PluginManagerBase {
    public void cleanup(I_Storage storage) {
       try {
          synchronized (this.storagesMap) {
-            final boolean remove = false;
             this.storagesMap.remove(storage.getStorageId().getId());
-            registerOrRemovePlugin(storage, remove);
+            registerOrRemovePlugin(storage, REMOVE);
          }
       }
       catch (XmlBlasterException ex) {
