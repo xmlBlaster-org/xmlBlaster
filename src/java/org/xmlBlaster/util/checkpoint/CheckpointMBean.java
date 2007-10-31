@@ -37,6 +37,14 @@ public interface CheckpointMBean extends I_AdminService {
     */
    void setShowAllMessages(boolean showAllMessages);
 
+   boolean isShowAllClientProperties();
+
+   /**
+    * @param showAllClientProperties
+    *           the showAllClientProperties to set
+    */
+   void setShowAllClientProperties(boolean showAllClientProperties);
+
    /**
     * @return if true: <wfguid>4e5082125</wfguid>
     * if false: [wfguid=4e5082125]
