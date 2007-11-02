@@ -71,6 +71,14 @@ java -Dcom.sun.management.jmxremote
      org.xmlBlaster.Main -cluster.node.id heron
 </pre>
 
+
+<pre class="BORDER">
+Publish some messages:
+
+java javaclients.HelloWorldPublish -session.name Publisher/1 -numPublish 1000 -clientProperty[wfguid] 234345667777
+</pre>
+
+
 <p>Now you can see the message flow in the logging files in $user.home/logs (one log entry is one line)</p>
 
 <pre class="BORDER">
