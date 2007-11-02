@@ -72,6 +72,14 @@ JDBC persistence
 
 o Make queue properties manually editable in DB
 
+o Add XB_ATTR_NUM XB_ATTR_STRING to hold for example
+  logicalUniqueId from a publish and be able to remove
+  old variants from a queue.
+  For example a online status: only the current is of interest
+  and older in a callback queue can be removed when the newest arrive
+
+o Add XB_QUEUE with queueName and 1:n to XB_ENTRY
+
 o On Startup lazy loading (for performance reasons)
 
 o Cache should only be reloaded on demand 
