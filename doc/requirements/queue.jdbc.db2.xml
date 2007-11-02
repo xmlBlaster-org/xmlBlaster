@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='queue.jdbc.db2' type='NEW' prio='LOW' status='OPEN'>
+   <topic>
+        XmlBlaster queuing facility with DB2 backend store.
+    </topic>
+    <description>
+       <p>
+       DB2 is available on <a href='http://www.ibm.com'>http://www.ibm.com</a> where you can find all
+       necessary information and instructions on how to make DB2 run.
+       </p>
+    </description>
+
+    <example lang="Java" type="HTML">
+       <pre>
+db2jcc.jar
+db2jcc_license_cu.jar
+sqlj.zip
+
+# DB2 express C 9.1, using com.ibm.db2.jcc.DB2Driver
+# db2 create database xmlblast
+# db2 connect to xmlblast user db2inst1
+JdbcStorage[DB2]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+            url=jdbc:db2://linux:50001/xmlblast,\
+            user=db2inst1,\
+            password=secret,\
+            connectionPoolSize=1,\
+            connectionBusyTimeout=90000,\
+            maxWaitingThreads=300,\
+            tableNamePrefix=XB_,\
+            entriesTableName=ENTRIES,\
+            dbAdmin=true
+
+</pre>
+   </example>
+   <configuration where="server">
+
+      <p>
+      These parameters allow to configure a cache queue running with postgres
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>QueuePlugin[CACHE][1.0]</td>
+            <td>org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin</td>
+            <td>specifies the cache implementing class to be used</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/maxEntries</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/maxBytes</td>
+            <td>10485760</td>
+            <td>(10MB) specifies the maximum total size allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/persistent/url</td>
+            <td>jdbc:db2://linux:50001/xmlblast</td>
+            <td>the url which specifies where to find the DB.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+            <tr>
+            <td>queue/persistent/user</td>
+            <td>xmlblaster</td>
+            <td>The db user under which to run</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue/persistent/password</td>
+            <td>secret</td>
+            <td>The password used together with the user 'xmlblaster'</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+        </table>
+        Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.CacheQueuePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.util.qos.storage.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+   <see type="REQ">queue</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author>michele@laghi.eu</author>
+   <date>2002 11 17</date>
+   <revision>$Revision: 1.6 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.CacheQueueTest</test>
+   </testcase>
+</requirement>
+
