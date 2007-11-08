@@ -10,10 +10,6 @@
      interface with arbitrary administration protocols like SNMP,
      telnet, JMX or xmlBlaster-command-messages.
      </p>
-     <p><i>
-     CAUTION: This requirement is currently redesigned and not consistent,
-     the telnet examples work but will be changed to the new XML view below (2003 03 11, Marcel).
-     </i></p>
      <h3>
      What data can we monitor and control?
      </h3>
@@ -364,10 +360,10 @@
             <td>SUBSCRIBE</td>
             <td>We can subscribe for change events on selective attributes</td>
             <td>subscribe()</td>
-            <td>subscribe</td>
+            <td>-</td>
             <td>trap</td>
             <td>Notification</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" />*</td>
          </tr>
          <tr>
             <td>POLL</td>
@@ -377,22 +373,27 @@
             <td>poll</td>
             <td>trap</td>
             <td>Notification</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" />*</td>
          </tr>
          <tr>
             <td>SCHEDULE</td>
             <td>We can ask xmlBlaster to send us the current value of an attribute
               on fixed times, for example always at midnight</td>
             <td>subscribe()</td>
-            <td>schedule</td>
+            <td>-</td>
             <td>trap</td>
             <td>Notification</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" />*</td>
          </tr>
       </table>
 
       <p>The column <i>Impl</i> states if the feature is implemented.</p>
       <p>For JMX the DynamicMBean and Notification interface is used.</p>
+
+      <p><img src="ok.gif" border="0" alt="yes" />*<br />
+      This feature is supported by the EventPlugin, please read the requirement
+      <a href="admin.events.html">admin.events</a> for details on how to activate and configure it.
+      </p>
 
       <h3>
          How can we query these attributes?
@@ -628,10 +629,11 @@ set logging/?org.xmlBlaster=WARNING
 
          <tr>
             <td>JMX</td>
-            <td><pre>getAttribute(
-"/node/heron/?freeMem")</pre></td>
-            <td>This is a method of DynamicMBean</td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><pre>j org.xmlBlaster:nodeClass=node,
+node="xmlBlaster_192_168_1_25_3412"/action=getFreeMemStr</pre></td>
+            <td>On the command line of a running server you can use the shown command. Alternatively you can use any other GUI
+            JMX tool as described in requirement <a href="admin.events.html">admin.jmx</a>, typically you will use jconsole.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
       </table>
@@ -655,7 +657,9 @@ set logging/?org.xmlBlaster=WARNING
    <example lang="any" type="HTML">
       <p>
          Here is an example of a complete and valid URI, we should try
-         not to break this syntax with our query language (NOTE: this is currently not implemented):
+         not to break this syntax with our query language.
+         You can use the similar syntax for building administrative html pages
+         as described in requirement <a href="admin.http.html">admin.http</a>.
       </p>
       <table border="1"><tr><td><pre> <!-- <pre class="BORDER" (netscape does not like it) -->
 http://joe:mypasswd@www.xmlBlaster.org:3412/myPath/?key.oid=MyMsg&amp;key.mime='text/plain'#myFragment
@@ -763,12 +767,8 @@ java javaclients.HelloWorldPublish -oid __cmd:client/joe/session/1/?dispatcherAc
 
    <todo type="HTML">
       <ul>
-        <li>Read/Write access with telnet and MoM clients on system properties, internal states
-            and messages is implemented.</li>
         <li>SNMP (SnmpGateway.java) support is missing.</li>
-        <li>JMX (JmxGateway.java) support is missing.</li>
-        <li>A swing or browser based GUI interface for administration.</li>
-        <li>Wildcard queries.</li>
+        <li>Wildcard queries are only supported by EventPlugin, others are not implemented.</li>
         <li>XPath queries with <a href="http://jakarta.apache.org/commons/jxpath/" target="others">JXPath</a></li>
       </ul>
    </todo>

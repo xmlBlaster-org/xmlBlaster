@@ -173,7 +173,7 @@ in your browser.
    <p>Please start xmlBlaster with the cluster node id 'heron' and with activated JMX to be successful:</p>
 <pre class="table">java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -cluster.node.id heron</pre>
 <p>Note that all JMX commands need to start with <i>org.xmlBlaster:</i>, for more details please
-read the <code>admin.jmx</code> requirement.</p>
+read the <a href="admin.events.html">admin.jmx</a> requirement.</p>
    </example>
 
 
