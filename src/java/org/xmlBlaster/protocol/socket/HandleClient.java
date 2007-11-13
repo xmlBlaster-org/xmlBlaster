@@ -244,7 +244,7 @@ public class HandleClient extends SocketExecutor implements Runnable
 
 
                // getInetAddress().toString() does no reverse DNS lookup (no blocking danger) ...
-               log.info("Client connected, coming from host=" + socket.getInetAddress().toString() + " port=" + socket.getPort());
+               log.info(ME+": Client connected, coming from host=" + socket.getInetAddress().toString() + " port=" + socket.getPort());
 
                CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
@@ -253,14 +253,14 @@ public class HandleClient extends SocketExecutor implements Runnable
                   if (driver.getAddressServer() != null) {
                      driver.getAddressServer().setRemoteAddress(remoteUrl);
                   }
-                  if (log.isLoggable(Level.FINE)) log.fine("remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
+                  if (log.isLoggable(Level.FINE)) log.fine(ME+": remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
                   if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
-                     if (log.isLoggable(Level.FINE)) log.fine("Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
+                     if (log.isLoggable(Level.FINE)) log.fine(ME+": Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      cbArr[ii].setCallbackDriver(this.callback);
                   }
                   else {
-                     log.severe("Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
+                     log.severe(ME+": Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
                      this.callback = new CallbackSocketDriver(this.loginName);
                      // DispatchConnection.initialize() -> CbDispatchConnection.connectLowlevel()
                      // will later call callback.initialize(loginName, callbackAddress)
