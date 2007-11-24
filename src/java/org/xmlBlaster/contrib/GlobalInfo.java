@@ -219,10 +219,14 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       if (this.onServer)
          additionalAttributes = global_.getNativeConnectArgs();
       this.global = global_.getClone(additionalAttributes);
-      this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
       if (global_ instanceof ServerScope) {
          this.global.addObjectEntry(ORIGINAL_ENGINE_GLOBAL, global_);
+         this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_);
       }
+      else {
+         this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, global_.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
+      }
+         
 
       setStrippedHostname(this, UPPER_CASE);
       log.entering(this.getClass().getName(), "init");
