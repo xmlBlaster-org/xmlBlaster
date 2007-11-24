@@ -60,6 +60,7 @@ import org.xmlBlaster.util.property.Property;
 import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
+import org.xmlBlaster.engine.ServerScope;
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -381,6 +382,10 @@ public class Global implements Cloneable
       catch (Throwable e) {
          log.severe("unregisterMBean(" + objectName.toString() + ") failed: " + e.toString());
       }
+   }
+   
+   public boolean isRegisteredMBean(ContextNode ctxNode) throws XmlBlasterException {
+      return getJmxWrapper().isRegistered(ctxNode);
    }
 
    /**
@@ -951,6 +956,16 @@ public class Global implements Cloneable
       if (this.contextNode != null) {
          g.setContextNode(new ContextNode(this.contextNode.getClassName(), this.contextNode.getInstanceName(), this.contextNode.getParent()));
       }
+      
+      if (isServerSide()) {
+         g.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, this);
+      }
+      else {
+         Object obj = getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
+         if (obj != null)
+            g.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, obj);
+      }
+      
       return g;
    }
 
