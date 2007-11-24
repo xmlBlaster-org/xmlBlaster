@@ -25,8 +25,10 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 /**
  * XmlBlaster plugin wrapper code.
@@ -54,14 +56,13 @@ import org.xmlBlaster.util.qos.ConnectQosData;
    &lt;/plugin>
  * </pre>
  *
- * TODO Write a test for this class.
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
-public class Receiver extends GlobalInfo implements I_Callback {
+public class FileWriter extends GlobalInfo implements I_Callback {
 
    private String ME = "Receiver";
    private Global global;
-   private static Logger log = Logger.getLogger(Receiver.class.getName());
+   private static Logger log = Logger.getLogger(FileWriter.class.getName());
    private I_XmlBlasterAccess access;
    private ConnectQos connectQos;
    private String subscribeKey;
@@ -73,67 +74,102 @@ public class Receiver extends GlobalInfo implements I_Callback {
 
    /** only used as a default login name and logging */
    private String name;
-   private PluginInfo info;
-
-   public Receiver() {
+   private I_PluginConfig pluginConfig;
+   private boolean momAdministered;
+   
+   public FileWriter() {
       super(new String[0]);
    }
 
-   public Receiver(Global globOrig, String name, PluginInfo info) throws XmlBlasterException {
+   public FileWriter(Global globOrig, String name, I_PluginConfig config) throws XmlBlasterException {
       super(new String[0]);
       ME += "-" + name;
       this.name = name;
-      prepareInit(globOrig, info);
+      prepareInit(globOrig, config);
+      initConnection();
    }
 
-   private void prepareInit(Global globOrig, PluginInfo info) throws XmlBlasterException {
+   private void prepareInit(Global globOrig, I_PluginConfig config) throws XmlBlasterException {
       this.isShutdown = false;
-      this.global = globOrig.getClone(globOrig.getNativeConnectArgs()); // sets session.timeout to 0 etc.
-      this.info = info;
-
+      boolean useNativeCfg = globOrig.get("__useNativeCfg", true, null, config);
+      String [] args = useNativeCfg ? globOrig.getNativeConnectArgs() : null;
+      this.global = globOrig.getClone(args); // sets session.timeout to 0 etc.
+      this.pluginConfig = config;
       if (log.isLoggable(Level.FINER))
          log.finer("constructor");
       // retrieve all necessary properties:
-      String tmp = null;
-      tmp = this.global.get("mom.subscribeKey", (String)null, null, info);
-      String topicName =  this.global.get("mom.topicName", (String)null, null, info);
-      if (tmp != null) {
-         this.subscribeKey = tmp;
-         if (topicName != null)
-            log.warning("constructor: since 'mom.subscribeKey' is defined, 'mom.topicName' will be ignored");
-      }
-      else {
-         if (topicName == null)
-            throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "at least one of the properties 'mom.topicName' or 'mom.subscribeKey' must be defined");
-         this.subscribeKey = (new SubscribeKey(this.global, topicName)).toXml();
-      }
 
-      this.subscribeQos = this.global.get("mom.subscribeQos", "<qos/>", null, this.info);
-
-      tmp  = this.global.get("connectQos", (String)null, null, this.info);
+      String tmp  = this.global.get("mom.connectQos", (String)null, null, this.pluginConfig);
       if (tmp != null) {
          ConnectQosData data = this.global.getConnectQosFactory().readObject(tmp);
          this.connectQos = new ConnectQos(this.global, data);
-         this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, globOrig.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
+         Object tmpObj = globOrig.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
+         if (tmpObj != null)
+            this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, tmpObj);
       }
       else {
-         String userId = this.global.get("mom.loginName", "_" + this.name, null, this.info);
-         String password = this.global.get("mom.password", (String)null, null, this.info);
+         String userId = this.global.get("mom.loginName", "_" + this.name, null, this.pluginConfig);
+         String password = this.global.get("mom.password", (String)null, null, this.pluginConfig);
          this.connectQos = new ConnectQos(this.global, userId, password);
          this.global.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, globOrig.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope));
       }
 
-      String directoryName = this.global.get("directoryName", (String)null, null, this.info);
+      
+      momAdministered = this.global.get("mom.administered", false, null, pluginConfig);
+      
+      tmp = this.global.get("mom.subscribeKey", (String)null, null, pluginConfig);
+      String topicName =  this.global.get("mom.topicName", (String)null, null, pluginConfig);
+      if (tmp != null) {
+         subscribeKey = tmp;
+         if (topicName != null)
+            log.warning("constructor: since 'mom.subscribeKey' is defined, 'mom.topicName' will be ignored");
+      }
+      else if (!momAdministered) {
+         if (topicName == null)
+            throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "at least one of the properties 'mom.topicName' or 'mom.subscribeKey' must be defined");
+         subscribeKey = (new SubscribeKey(this.global, topicName)).toXml();
+      }
+      this.subscribeQos = this.global.get("mom.subscribeQos", (String)null, null, this.pluginConfig);
+      
+      if (momAdministered) {
+         if (subscribeKey != null)
+            log.warning("'mom.administered' set to 'true' and 'mom.subscribeKey' set: will ignore subscription since this is triggered by the administator");
+         if (subscribeQos != null)
+            log.warning("'mom.administered' set to 'true' and 'mom.subscribeKey' set: will ignore subscription since this is triggered by the administator");
+         
+         String replDispatchPlugin = "ReplManager,1.0";
+         CallbackAddress cbAddr = connectQos.getData().getCurrentCallbackAddress();
+         if (cbAddr != null) {
+            String dispatchPlugin = cbAddr.getDispatchPlugin();
+            if (!replDispatchPlugin.equals(dispatchPlugin)) {
+               cbAddr.setDispatchPlugin(replDispatchPlugin); 
+               cbAddr.setRetries(-1);
+            }
+         }
+         else {
+            cbAddr = new CallbackAddress(this.global);
+            cbAddr.setRetries(-1);
+            cbAddr.setDispatchPlugin(replDispatchPlugin);
+            connectQos.addCallbackAddress(cbAddr);
+         }
+         
+         
+      }
+      if (subscribeQos == null)
+         subscribeQos = "<qos/>";
+      
+      
+      String directoryName = this.global.get("filewriter.directoryName", (String)null, null, this.pluginConfig);
       if (directoryName == null)
-         throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "constructor: 'directoryName' is mandatory");
-      String tmpDirectoryName = this.global.get("tmpDirectoryName", directoryName + File.separator + "tmp", null, this.info);
+         throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "constructor: 'filewriter.directoryName' is mandatory");
+      String tmpDirectoryName = this.global.get("filewriter.tmpDirectoryName", directoryName + File.separator + "tmp", null, this.pluginConfig);
       File d = new File(directoryName);
       if (!d.exists())
     	  if (!d.mkdirs())
    	         throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "Can't create directoryName="+directoryName);
 
-      boolean overwrite = this.global.get("overwrite", true, null, this.info);
-      String lockExtention =  this.global.get("lockExtention", (String)null, null, this.info);
+      boolean overwrite = this.global.get("filewriter.overwrite", true, null, this.pluginConfig);
+      String lockExtention =  this.global.get("filewriter.lockExtention", (String)null, null, this.pluginConfig);
       try {
          boolean isAbsolute = tmpDirectoryName.startsWith(File.separator) || tmpDirectoryName.startsWith("/");
          if (!isAbsolute) { // then make it absolute since callback needs absolute names
@@ -164,7 +200,8 @@ public class Receiver extends GlobalInfo implements I_Callback {
       this.isShutdown = false;
       this.access = this.global.getXmlBlasterAccess();
       this.access.connect(this.connectQos, this);
-      this.access.subscribe(this.subscribeKey, this.subscribeQos);
+      if (!momAdministered)
+         this.access.subscribe(this.subscribeKey, this.subscribeQos);
 
    }
 
@@ -189,14 +226,18 @@ public class Receiver extends GlobalInfo implements I_Callback {
     * @see org.xmlBlaster.util.plugin.I_Plugin#getType()
     */
    public String getType() {
-      return this.info.getType();
+      if (pluginConfig == null)
+         return null;
+      return pluginConfig.getType();
    }
 
    /**
     * @see org.xmlBlaster.util.plugin.I_Plugin#getVersion()
     */
    public String getVersion() {
-      return this.info.getVersion();
+      if (pluginConfig == null)
+         return null;
+      return pluginConfig.getVersion();
    }
 
 

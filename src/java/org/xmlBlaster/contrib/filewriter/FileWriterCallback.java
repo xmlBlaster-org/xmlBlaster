@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.client.filepoller.FilenameFilter;
 import org.xmlBlaster.contrib.ContribConstants;
 import org.xmlBlaster.contrib.I_Update;
+import org.xmlBlaster.contrib.filewatcher.FilenameFilter;
 import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.jms.XBMessage;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -329,20 +329,23 @@ public class FileWriterCallback implements I_Update, ContribConstants {
 
 
    public void update(String topic, InputStream is, Map attrMap) throws Exception {
-      String fileName = null;
+      String filename = null;
       boolean isLastMsg = true;
       String exMsg = null;
       long chunkCount = 0L;
 
       if (attrMap != null) {
          ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR);
+         if (prop == null) {
+            prop = (ClientProperty)attrMap.get(FILENAME_ATTR_OLD_FASHION);
+         }
          if (prop != null)
-            fileName = prop.getStringValue();
-         if (fileName == null) {
+            filename = prop.getStringValue();
+         if (filename == null || filename.length() < 1) {
             prop = (ClientProperty)attrMap.get(TIMESTAMP_ATTR);
             if (prop != null) {
                String timestamp = prop.getStringValue();
-               fileName = "xbl" + timestamp + ".msg";
+               filename = "xbl" + timestamp + ".msg";
             }
             else
                throw new Exception("update: the message '" + topic + "' should contain either the filename or the timestamp in the properties, but none was found. Can not create a filename to store the data on.");
@@ -363,102 +366,24 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          else
             isLastMsg = true;
       }
-      if (fileName == null) {
+      if (filename == null) {
          // fileName = topic + (new Timestamp()).getTimestamp() + ".msg";
-         fileName = topic;
-         log.warning("The message did not contain any filename nor timestamp. Will write to '" + fileName + "'");
+         filename = topic;
+         log.warning("The message did not contain any filename nor timestamp. Will write to '" + filename + "'");
       }
-      log.fine("storing file '" + fileName + "' on directory '" + this.directory.getName() + "'");
+      log.fine("storing file '" + filename + "' on directory '" + this.directory.getName() + "'");
 
       boolean isCompleteMsg = isLastMsg && chunkCount == 0L;
       if (exMsg == null) { // no exception
          if (isLastMsg)
-            putAllChunksTogether(fileName, chunkCount, is, isCompleteMsg);
+            putAllChunksTogether(filename, chunkCount, is, isCompleteMsg);
          else
-            storeChunk(this.tmpDirectory, fileName, chunkCount, '.', this.overwrite, is);
+            storeChunk(this.tmpDirectory, filename, chunkCount, '.', this.overwrite, is);
       }
       else if (!isCompleteMsg) { // clean up old chunks
-         File[] files = getChunkFilenames(fileName, '.'); // retrieves the chunks in correct order
+         File[] files = getChunkFilenames(filename, '.'); // retrieves the chunks in correct order
          for (int i=0; i < files.length; i++)
             deleteFile(files[i]);
-      }
-   }
-
-   /**
-    * @deprecated
-    */
-   public void updateOLD(String topic, byte[] content, Map attrMap) throws Exception {
-      String fileName = null;
-      if (attrMap != null) {
-         ClientProperty prop = (ClientProperty)attrMap.get(FILENAME_ATTR);
-         if (prop != null)
-            fileName = prop.getStringValue();
-      }
-      if (fileName == null) {
-         ClientProperty prop = (ClientProperty)attrMap.get(TIMESTAMP_ATTR);
-         if (prop != null) {
-            String timestamp = prop.getStringValue();
-            fileName = "xbl" + timestamp + ".msg";
-         }
-         else
-            throw new Exception("update: the message '" + topic + "' should contain either the filename or the timestamp in the properties, but none was found. Can not create a filename to store the data on.");
-      }
-      log.fine("storing file '" + fileName + "' on directory '" + this.directory + "', size: " + content.length + " bytes");
-
-      boolean isLastMsg = false;
-      String exMsg = null;
-      long chunkCount = 0L;
-      ClientProperty prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_SEQ, attrMap);
-      if (prop != null) {
-         chunkCount = prop.getLongValue();
-         prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EOF, attrMap);
-         if (prop != null) {
-            isLastMsg = prop.getBooleanValue();
-            prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_EX, attrMap);
-            if (prop != null)
-               exMsg = prop.getStringValue();
-         }
-      }
-
-      File file = new File(this.directory, fileName);
-      if (file == null)
-         throw new Exception("the file for '" + fileName + "' was null");
-      if (file.exists()) {
-         if (file.isDirectory())
-            throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it is a directory");
-         if (chunkCount == 0L && !this.overwrite)
-            throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it exists already and the 'overwrite' flag is set to 'false'");
-      }
-      try {
-         File lock = null;
-         String lockName = null;
-         if (this.lockExtention != null && chunkCount == 0L) {
-            lockName = fileName + this.lockExtention;
-            lock = new File(this.directory, lockName);
-            lock.createNewFile();
-         }
-
-         log.info("storing file '" + fileName + "' on directory '" + this.directory + "', size: " + content.length + " bytes msgNr.='" + chunkCount + "' isLastMsg='" + isLastMsg + "'");
-
-         if (exMsg == null) {
-            boolean doAppend = !(chunkCount == 0L);
-            FileOutputStream fos = new FileOutputStream(file, doAppend);
-            fos.write(content);
-            fos.close();
-         }
-         else {
-            log.severe("An exception occured '" + exMsg + "' will delete the file and interrupt initial update");
-            file.delete();
-         }
-
-         if (lock != null && (isLastMsg || exMsg != null)) {
-            boolean deleted = lock.delete();
-            if (!deleted)
-               throw new Exception("can not delete lock file '" + lockName + "' in directory '" + this.directory + "'");
-         }
-      }
-      catch (IOException ex) {
-         throw new Exception("update: an exception occured when storing the file '" + fileName + "'", ex);
       }
    }
 
