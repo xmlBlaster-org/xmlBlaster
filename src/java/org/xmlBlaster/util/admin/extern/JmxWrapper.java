@@ -18,6 +18,7 @@ import com.sun.jdmk.comm.AuthInfo;
 import com.sun.jdmk.comm.HtmlAdaptorServer;
 
 import javax.management.Attribute;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ObjectInstance;
 import javax.management.QueryExp;
@@ -1041,5 +1042,21 @@ didn't you have "state" as the name of the attribute?
             ret[i] = par;
       }
       return ret;
+   }
+   
+   public boolean isRegistered(ContextNode contextNode) throws XmlBlasterException {
+      if (contextNode == null) {
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, "JmxWrapper.isRegistered", "The context node was null");
+      }
+      try {
+         ObjectName objectName = new ObjectName( getObjectNameLiteral(this.glob, contextNode));
+         if (this.mbeanServer == null)
+            return false;
+         return this.mbeanServer.isRegistered(objectName); 
+      }
+      catch (MalformedObjectNameException ex) {
+         String txt = "The context node '" + contextNode.getAbsoluteName() + "' was malformed";
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, "JmxWrapper.isRegistered", txt);
+      }
    }
 }
