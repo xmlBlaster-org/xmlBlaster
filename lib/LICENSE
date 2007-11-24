@@ -349,3 +349,10 @@ only the SNMP subagent module jax.jar is GPL only!
      jmxremote.jar, jmxremote_optional.jar, rmissl.jar
   Note:
      jmxremote.jar and jmxri.jar are needed for JDK 1.4 only
+45) quartz-all-1.6.0.jar 
+========================
+  For the Scheduler, 2007-11-24
+  http://www.opensymphony.com/quartz/
+  A Scheduler library which is easy to use
+
+
