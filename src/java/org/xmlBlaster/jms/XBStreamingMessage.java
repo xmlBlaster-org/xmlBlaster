@@ -7,6 +7,7 @@ package org.xmlBlaster.jms;
 
 import java.io.InputStream;
 import java.util.Enumeration;
+
 import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -110,4 +111,6 @@ public class XBStreamingMessage extends XBTextMessage {
          throw new JMSException(ex.getMessage());
       }
    }
+   
+   
 }
