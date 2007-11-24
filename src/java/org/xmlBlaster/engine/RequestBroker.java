@@ -1969,6 +1969,17 @@ public final class RequestBroker extends NotificationBroadcasterSupport
    }
 
    /**
+    * Returns the listener with the specified prio or null if none with that prio has been found.
+    * @param prio
+    * @return
+    */
+   public I_SubscriptionListener getSubscriptionListener(Integer prio) {
+      synchronized(subscriptionListenerMap) {
+         return (I_SubscriptionListener)subscriptionListenerMap.get(prio);
+      }
+   }
+   
+   /**
     * Removes the specified listener.
     */
    public void removeSubscriptionListener(I_SubscriptionListener l) {
