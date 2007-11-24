@@ -29,6 +29,7 @@ import org.xmlBlaster.util.qos.ConnectQosData;
 /**
  * Publisher
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
+ * @deprectated it is now replaced by the corresponding class in org.xmlBlaster.contrib.filewatcher
  */
 public class Publisher implements I_Timeout {
 

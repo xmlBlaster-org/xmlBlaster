@@ -8,7 +8,6 @@ package org.xmlBlaster.client.filepoller;
 import java.io.File;
 import java.io.FileFilter;
 
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
@@ -21,6 +20,7 @@ import gnu.regexp.REException;
  * difference is that id returns false if the found file is a directory.
  * 
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi </a>
+ * @deprectated it is now replaced by the corresponding class in org.xmlBlaster.contrib.filewatcher
  */
 public class FilenameFilter implements FileFilter {
 

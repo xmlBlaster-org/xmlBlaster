@@ -10,6 +10,7 @@ import org.xmlBlaster.util.admin.I_AdminService;
 /**
  * JMX control for the native FilePollerPlugin.  
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
+ * @deprectated it is now replaced by the corresponding class in org.xmlBlaster.contrib.filewatcher
  */
 public interface FilePollerPluginMBean extends I_AdminService {
    /**

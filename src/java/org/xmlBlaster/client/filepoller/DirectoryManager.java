@@ -29,6 +29,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 /**
  * DirectoryManager
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
+ * @deprectated it is now replaced by the corresponding class in org.xmlBlaster.contrib.filewatcher
  */
 public class DirectoryManager {
    private String ME = "DirectoryManager";

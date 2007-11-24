@@ -23,6 +23,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * @see <a
  *      href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.filepoller.html">The
  *      client.filepoller requirement</a>
+ * @deprectated it is now replaced by the corresponding class in org.xmlBlaster.contrib.filewatcher
  */
 public class FilePollerPlugin implements I_Plugin, FilePollerPluginMBean {
    private static Logger log = Logger.getLogger(FilePollerPlugin.class.getName());
