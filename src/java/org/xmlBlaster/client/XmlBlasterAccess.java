@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.ArrayList;
 
@@ -12,6 +14,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -22,6 +25,7 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.dispatch.DispatchManager;
@@ -41,6 +45,7 @@ import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
@@ -62,6 +67,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
@@ -2016,5 +2022,74 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return msgs;
    }
 
+   
+   private PublishReturnQos publishSingleChunk(MsgKeyData keyData, MsgQosData chunkQosData, byte[] buf, int length, boolean isLastChunk, long count, Exception ex) throws XmlBlasterException {
+      MsgKeyData chunkKeyData = keyData;
+      MsgUnit msg = new MsgUnit(chunkKeyData, buf, chunkQosData);
+      if (isLastChunk || ex != null)
+         chunkQosData.addClientProperty(Constants.addJmsPrefix(XBConnectionMetaData.JMSX_GROUP_EOF, log), true);
+      chunkQosData.addClientProperty(Constants.addJmsPrefix(XBConnectionMetaData.JMSX_GROUP_SEQ, log), count);
+      if (ex != null)
+         msg.getQosData().addClientProperty(Constants.addJmsPrefix(XBConnectionMetaData.JMSX_GROUP_EX, log), ex.getMessage());
+      return publish(msg);
+   }
+   
+   public PublishReturnQos[] publishStream(InputStream is, MsgKeyData keyData, MsgQosData qosData, int maxBufSize, I_ReplaceContent contentReplacer) throws XmlBlasterException {
+      String streamId = (getGlobal()).getId() + "-" + (new Timestamp()).getTimestamp();
+      qosData.addClientProperty(Constants.addJmsPrefix(XBConnectionMetaData.JMSX_GROUP_ID, log), streamId);
+      int bufSize = 0;
+      String tmpKey = Constants.addJmsPrefix(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE, log); 
+      if (qosData.getClientProperty(tmpKey) != null)
+         bufSize = qosData.getClientProperty(tmpKey).getIntValue();
+      if (bufSize > maxBufSize || bufSize == 0)
+         bufSize = maxBufSize;
+      long count = 0L;
+      PublishReturnQos pubRetQos = null;
+      byte[] buf = new byte[bufSize];
+      try {
+         while (true) {
+            buf = new byte[bufSize];
+            int offset = 0;
+            int remainingLength = bufSize;
+            int lengthRead = 0;
+            while ((lengthRead = is.read(buf, offset, remainingLength)) != -1) {
+               remainingLength -= lengthRead;
+               offset += lengthRead;
+               if (remainingLength == 0)
+                  break;
+            }
+            int length = offset;
+            // cut the buffer if shorter than maximum buffer size
+            if (length < buf.length) {
+               byte[] tmpBuf = buf;
+               buf = new byte[length];
+               for (int i=0; i<buf.length;i++)
+                  buf[i] = tmpBuf[i];
+            }
+            
+            // We do not need to clone the key since it will not change, but the qos must be cloned
+            MsgQosData chunkQosData = (MsgQosData)qosData.clone();
+            
+            if (contentReplacer != null)
+               buf = contentReplacer.replace(buf, chunkQosData.getClientProperties());
+            boolean isLastChunk = buf.length < bufSize;
+            pubRetQos = publishSingleChunk(keyData, chunkQosData, buf, length, isLastChunk, count, null);
+            count++;
+            if (length < bufSize)
+               return new PublishReturnQos[] { pubRetQos };
+         }            
+      }
+      catch (IOException ex) {
+         if (count > 0)
+            publishSingleChunk(keyData, qosData, buf, 0, true, count, ex);
+         throw new XmlBlasterException(getGlobal(), ErrorCode.RESOURCE, "Sending Chunked message", "failed due to an IOException", ex);
+      }
+      catch (XmlBlasterException ex) {
+         if (count > 0)
+            publishSingleChunk(keyData, qosData, buf, 0, true, count, ex);
+         throw ex;
+      }
+   }
+   
 }
 

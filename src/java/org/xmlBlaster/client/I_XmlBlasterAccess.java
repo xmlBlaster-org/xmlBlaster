@@ -5,13 +5,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
+import java.io.InputStream;
 import java.util.Map;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.dispatch.I_PostSendListener;
@@ -499,6 +503,22 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * @throws XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    void publishOneway(org.xmlBlaster.util.MsgUnit [] msgUnitArr) throws XmlBlasterException;
+
+   /**
+    * Publishes one message in streaming manner, if the message content is too big to fit in one single chunk, the message
+    * is split in several smaller messages (called chunks) and these are published. During the publishing of these messages,
+    * the method blocks.
+    * 
+    * @param is The input stream from which to read the input data.
+    * @param keyData The key for the message (same for all chunks)
+    * @param qosData The qos for all messages (same for all chunks besides internal stuff added in this method)
+    * @param maxBufSize The maximum content size of each chunk.
+    * @param contentReplacer an optional content replacer (i.e. a modifier of the content) can be null.
+    * @return an array containing the return qos. Currently an array of length 1 is returned containing the return qos for
+    * the first message.
+    * @throws XmlBlasterException
+    */
+   PublishReturnQos[] publishStream(InputStream is, MsgKeyData keyData, MsgQosData qosData, int maxBufSize, I_ReplaceContent contentReplacer) throws XmlBlasterException;
 
    /**
     * Implements the blocking request/reply pattern.

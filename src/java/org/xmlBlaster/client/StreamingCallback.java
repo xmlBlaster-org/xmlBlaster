@@ -58,13 +58,13 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
    class Writer extends Thread {
 
       class WriterData extends Mutex {
-         private OutputStream out;
+         private OutputStream outStrm;
          private byte[] data;
-         private Throwable ex;
+         private Throwable exception;
          
          public WriterData(OutputStream out, byte[] data) {
             super();
-            this.out = out;
+            this.outStrm = out;
             this.data = data;
          }
       }
@@ -85,28 +85,28 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
          start();
       }
       
-      public synchronized void write(OutputStream out, byte[] buf) throws InterruptedException, XmlBlasterException {
-         WriterData data = new WriterData(out, buf);
+      public synchronized void write(OutputStream outStream, byte[] buf) throws InterruptedException, XmlBlasterException {
+         WriterData data = new WriterData(outStream, buf);
          try {
             data.acquire();
             this.channel.put(data);
             data.acquire(); // waits until the other thread is finished
-            if (data.ex != null)
-               throw new XmlBlasterException(global, ErrorCode.USER_UPDATE_HOLDBACK, "write: a throwable occured", "", data.ex);
+            if (data.exception != null)
+               throw new XmlBlasterException(global, ErrorCode.USER_UPDATE_HOLDBACK, "write: a throwable occured", "", data.exception);
          }
          finally {
             data.release();
          }
       }
 
-      public synchronized void close(OutputStream out) throws InterruptedException, XmlBlasterException {
-         WriterData data = new WriterData(out, null);
+      public synchronized void close(OutputStream outStream) throws InterruptedException, XmlBlasterException {
+         WriterData data = new WriterData(outStream, null);
          try {
             data.acquire();
             this.channel.put(data);
             data.acquire(); // waits until the other thread is finished
-            if (data.ex != null)
-               throw new XmlBlasterException(global, ErrorCode.USER_UPDATE_HOLDBACK, "close: a throwable occured", "", data.ex);
+            if (data.exception != null)
+               throw new XmlBlasterException(global, ErrorCode.USER_UPDATE_HOLDBACK, "close: a throwable occured", "", data.exception);
          }
          finally {
             data.release();
@@ -121,7 +121,7 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
             try {
                WriterData writerData = (WriterData)this.channel.take();
                try {
-                  if (writerData.out != null) {
+                  if (writerData.outStrm != null) {
                      if (writerData.data != null) {
 
                         int bytesLeft = writerData.data.length;
@@ -129,8 +129,8 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
                         final int MAX_CHUNK_SIZE = 4096;
                         while (bytesLeft > 0) {
                            int toRead = bytesLeft > MAX_CHUNK_SIZE ? MAX_CHUNK_SIZE : bytesLeft;
-                           writerData.out.write(writerData.data, bytesRead, toRead);
-                           writerData.out.flush();
+                           writerData.outStrm.write(writerData.data, bytesRead, toRead);
+                           writerData.outStrm.flush();
                            bytesRead += toRead;
                            bytesLeft -= toRead;
                         }
@@ -142,24 +142,24 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
                         // writerData.out.flush();
                      }
                      else
-                        writerData.out.close();
+                        writerData.outStrm.close();
                   }
                }
-               catch (Throwable ex) {
-                  writerData.ex = ex;
+               catch (Throwable e) {
+                  writerData.exception = e;
                }
                finally {
                   writerData.release();
                }
             }
-            catch (Throwable ex) {
-               if (ex.getMessage().indexOf("Pipe closed") < 0) {
-                  log.warning("An exception occured when writing to the stream: ' " + ex.getMessage());
-                  ex.printStackTrace();
+            catch (Throwable e) {
+               if (e.getMessage().indexOf("Pipe closed") < 0) {
+                  log.warning("An exception occured when writing to the stream: ' " + e.getMessage());
+                  e.printStackTrace();
                }
                else if (log.isLoggable(Level.FINE)) {
                   log.fine("The pipe was closed, which resulted in an IO Exception. It can happen when the client has returned before reading the complete message");
-                  ex.printStackTrace();
+                  e.printStackTrace();
                }
             }
          }
@@ -169,12 +169,22 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
    
    class ExecutionThread extends Thread {
       
-      public ExecutionThread() {
+      private String cbSessionId_;
+      private UpdateKey updateKey_;
+      private byte[] content_;
+      private UpdateQos updateQos_;
+      
+      public ExecutionThread(String cbSessId, UpdateKey updKey, byte[] content, UpdateQos updQos) {
+         this.cbSessionId_ = cbSessId;
+         this.updateKey_ = updKey;
+         this.content_ = content;
+         this.updateQos_ = updQos;
+         
       }
       
       public void run() {
          try {
-            ret = updateNewMessage(cbSessionId, updateKey, content, updateQos);
+            ret = updateNewMessage(cbSessionId_, updateKey_, content_, updateQos_);
             clearQueue();
          }
          catch (Throwable e) {
@@ -186,8 +196,8 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
                if (in != null)
                   in.close();
             }
-            catch (IOException ex) {
-               ex.printStackTrace();
+            catch (IOException e) {
+               e.printStackTrace();
             }
             mutex.release();
          }
@@ -205,9 +215,6 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
    private XmlBlasterException ex;
    private String ret;
    private String cbSessionId;
-   private UpdateKey updateKey;
-   private UpdateQos updateQos;
-   private byte[] content;
    private Writer writer;
    /** The time to wait in ms until returning when waiting (if zero or negative inifinite) */
    private long waitForChunksTimeout;
@@ -218,16 +225,13 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
    private boolean useQueue;
    private boolean initialized;
    private boolean lastMessageCompleted = true;
-   private Mutex mutex;
+   private final Mutex mutex;
    
    private void reset() throws XmlBlasterException {
       this.out = null;
       this.in = null;
       this.ret = null;
       this.cbSessionId = null;
-      this.updateKey = null;
-      this.updateQos = null;
-      this.content = null;
    }
    
    public StreamingCallback(Global global, I_StreamingCallback callback) throws XmlBlasterException {
@@ -279,29 +283,29 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
          MsgQueuePublishEntry entry = (MsgQueuePublishEntry)list.get(i);
          MsgKeyData key = entry.getMsgKeyData();
          MsgQosData qos =(MsgQosData)entry.getMsgUnit().getQosData();
-         byte[] content = entry.getMsgUnit().getContent();
+         byte[] cont = entry.getMsgUnit().getContent();
          String entryCbSessionId = qos.getClientProperty(ENTRY_CB_SESSION_ID, (String)null);
          qos.getClientProperties().remove(ENTRY_CB_SESSION_ID);
          final boolean isExternal = false; // we don't want to store these entries since already here
-         updateInternal(entryCbSessionId, new UpdateKey(key), content, new UpdateQos(this.global, qos), isExternal);
+         updateInternal(entryCbSessionId, new UpdateKey(key), cont, new UpdateQos(this.global, qos), isExternal);
       }
       this.queue.clear();
       return list.size();
    }
    
-   private final void storeEntry(String cbSessionId, UpdateKey key, byte[] content, UpdateQos qos) throws XmlBlasterException {
+   private final void storeEntry(String cbSessId, UpdateKey key, byte[] cont, UpdateQos qos) throws XmlBlasterException {
       if (this.queue == null)
          return;
       final boolean ignorePutInterceptor = false;
-      if (cbSessionId != null) {
+      if (cbSessId != null) {
          String oldCbSessionId = qos.getClientProperty(ENTRY_CB_SESSION_ID, (String)null);
-         if (oldCbSessionId != null && !oldCbSessionId.equals(cbSessionId)) {
+         if (oldCbSessionId != null && !oldCbSessionId.equals(cbSessId)) {
             log.warning("the client property '" + ENTRY_CB_SESSION_ID + "' is a reserved word, we will overwrite its value='" + oldCbSessionId + "' to be '" + cbSessionId + "'");
-            ClientProperty prop = new ClientProperty(ENTRY_CB_SESSION_ID, null, null, cbSessionId);
+            ClientProperty prop = new ClientProperty(ENTRY_CB_SESSION_ID, null, null, cbSessId);
             qos.getClientProperties().put(prop.getName(), prop);
          }
       }
-      MsgUnit msgUnit = new MsgUnit(key.getData(), content, qos.getData());
+      MsgUnit msgUnit = new MsgUnit(key.getData(), cont, qos.getData());
       MsgQueuePublishEntry entry = new MsgQueuePublishEntry(this.global, msgUnit, this.queue.getStorageId());
       this.queue.put(entry, ignorePutInterceptor);
    }
@@ -309,18 +313,18 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
    /**
     * @see org.xmlBlaster.client.I_Callback#update(java.lang.String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     */
-   public String updateStraight(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException, IOException {
-      log.fine("cbSessionId='" + cbSessionId + "'");
-      ByteArrayInputStream bais = new ByteArrayInputStream(content);
-      return this.callback.update(cbSessionId, updateKey, bais, updateQos);
+   public String updateStraight(String cbSessId, UpdateKey updKey, byte[] cont, UpdateQos updQos) throws XmlBlasterException, IOException {
+      log.fine("cbSessionId='" + cbSessId + "'");
+      ByteArrayInputStream bais = new ByteArrayInputStream(cont);
+      return this.callback.update(cbSessId, updKey, bais, updQos);
    }
    
    /**
     * @see org.xmlBlaster.client.I_Callback#update(java.lang.String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     */
-   public String updateNewMessage(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException, IOException {
-      log.fine("cbSessionId='" + cbSessionId + "'");
-      return this.callback.update(cbSessionId, updateKey, in, updateQos);
+   public String updateNewMessage(String cbSessId, UpdateKey updKey, byte[] cont, UpdateQos updQos) throws XmlBlasterException, IOException {
+      log.fine("cbSessionId='" + cbSessId + "'");
+      return this.callback.update(cbSessId, updKey, in, updQos);
    }
 
    private final boolean isFirstChunk(UpdateQos qos) {
@@ -342,33 +346,35 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
    /**
     * @see org.xmlBlaster.client.I_Callback#update(java.lang.String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
+   public String update(String cbSessId, UpdateKey updKey, byte[] cont, UpdateQos updQos) throws XmlBlasterException {
       boolean sendInitial = this.queue != null && this.lastMessageCompleted && this.queue.getNumOfEntries() > 0; 
       if (sendInitial)
          sendInitialQueueEntries();
       
       final boolean isExternal = true;
-      log.fine("cbSessionId='" + cbSessionId + "'");
-      return updateInternal(cbSessionId, updateKey, content, updateQos, isExternal);
+      log.fine("cbSessionId='" + cbSessId + "'");
+      return updateInternal(cbSessId, updKey, cont, updQos, isExternal);
    }
    
    /**
     * @see org.xmlBlaster.client.I_Callback#update(java.lang.String, org.xmlBlaster.client.key.UpdateKey, byte[], org.xmlBlaster.client.qos.UpdateQos)
     */
-   private final String updateInternal(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos, boolean isExternal) throws XmlBlasterException {
+   private final String updateInternal(String cbSessId, UpdateKey updKey, byte[] cont, UpdateQos updQos, boolean isExternal) throws XmlBlasterException {
       this.lastMessageCompleted = false;
       boolean doStore = isExternal;
       boolean isLastChunk = false;
       try {
-         log.fine("entering with cbSessionId='" + cbSessionId + "'");
+         log.fine("entering with cbSessionId='" + cbSessId + "'");
          if (this.timer != null && this.timestamp != null) { // no need to be threadsafe since update is single thread
             this.timer.removeTimeoutListener(this.timestamp);
             this.timestamp = null;
          }
-         ClientProperty exProp = getProp(XBConnectionMetaData.JMSX_GROUP_EX, updateQos);
+         ClientProperty exProp = getProp(XBConnectionMetaData.JMSX_GROUP_EX, updQos);
+         // TODO Check if this exception really should be thrown: I think it shall not be thrown since it is an exception
+         // which occured when publishing and this is the information that the update should return
          if (exProp != null)
-            throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_INTERNALERROR, "update", "An exception occured on a chunk when updating. " + updateQos.toXml());
-         isLastChunk = isLastChunk(updateQos);
+            throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_INTERNALERROR, "update", "An exception occured on a chunk when updating. " + updQos.toXml());
+         isLastChunk = isLastChunk(updQos);
          
          synchronized(this) {
             consumeExceptionIfNotNull();
@@ -379,20 +385,20 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
          }
          
          if (isLastChunk) { // no need to store the last message since sync return
-            if (isFirstChunk(updateQos)) {
+            if (isFirstChunk(updQos)) {
                // TODO a sync to wait until cleared (the updateStraight after the sync, not inside).
                try {
-                  return updateStraight(cbSessionId, updateKey, content, updateQos);
+                  return updateStraight(cbSessId, updKey, cont, updQos);
                }
-               catch (IOException ex) {
-                  throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "StreamingCallback", "update: exception occured.", ex);
+               catch (IOException e) {
+                  throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "StreamingCallback", "update: exception occured.", e);
                }
                
             }
             
             try {
-               if (content != null && content.length > 0) {
-                  this.writer.write(this.out, content);
+               if (cont != null && cont.length > 0) {
+                  this.writer.write(this.out, cont);
                }
                
                this.writer.close(this.out);
@@ -418,15 +424,12 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
             if (this.timer != null)
                this.timestamp = this.timer.addTimeoutListener(this, this.waitForChunksTimeout, null);
             try {
-               if (isFirstChunk(updateQos)) {
+               if (isFirstChunk(updQos)) {
                   this.mutex.acquire();
-                  this.cbSessionId = cbSessionId;
-                  this.updateKey = updateKey;
-                  this.updateQos = updateQos;
-                  this.content = content;
+                  this.cbSessionId = cbSessId;
                   this.out = new PipedOutputStream();
                   this.in = new PipedInputStream(this.out);
-                  ExecutionThread thread = new ExecutionThread();
+                  ExecutionThread thread = new ExecutionThread(cbSessId, updKey, cont, updQos);
                   thread.start();
                }
                else { // check if the message is complete
@@ -442,34 +445,34 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
                   }
                   */
                }
-               this.writer.write(this.out, content);
+               this.writer.write(this.out, cont);
             }
-            catch (InterruptedException ex) {
-               throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "StreamingCallback", "update", ex);
+            catch (InterruptedException e) {
+               throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "StreamingCallback", "update", e);
             }
-            catch (IOException ex) {
-               throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "StreamingCallback", "update", ex);
+            catch (IOException e) {
+               throw new XmlBlasterException(this.global, ErrorCode.INTERNAL, "StreamingCallback", "update", e);
             }
             if (doStore)
-               storeEntry(cbSessionId, updateKey, content, updateQos);
+               storeEntry(cbSessId, updKey, cont, updQos);
             // and return a fake positive response.
             return Constants.RET_OK;
          }
          
       }
-      catch (XmlBlasterException ex) {
+      catch (XmlBlasterException e) {
          try {
             this.writer.close(this.out);
          }
-         catch (InterruptedException e) {
-            e.printStackTrace();
+         catch (InterruptedException e1) {
+            e1.printStackTrace();
          }
          this.lastMessageCompleted = true;
-         throw ex;
+         throw e;
       }
-      catch (Throwable ex) {
-         ex.printStackTrace();
-         throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_HOLDBACK, "throwable in updateInternal", "", ex);
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException(this.global, ErrorCode.USER_UPDATE_HOLDBACK, "throwable in updateInternal", "", e);
       }
       finally {
          if (isLastChunk) {
@@ -488,9 +491,9 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
       try {
          this.writer.close(this.out);
       }
-      catch (Throwable ex) {
+      catch (Throwable e) {
          // we can not make it threadsafe so we must protect against possible NPE Exceptions
-         ex.printStackTrace();
+         e.printStackTrace();
       }
       
    }
@@ -525,10 +528,10 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
     * @return
     */
    private synchronized void consumeExceptionIfNotNull() throws XmlBlasterException {
-      XmlBlasterException ex = this.ex;
-      if (ex != null) {
+      XmlBlasterException e = this.ex;
+      if (e != null) {
          this.ex = null;
-         throw ex;
+         throw e;
       }
    }
    
@@ -560,9 +563,9 @@ public class StreamingCallback implements I_Callback, I_Timeout, I_ConnectionSta
             if (((XmlBlasterAccess)connection).isCallbackDispatcherActive())
                sendInitialQueueEntries();
          }
-         catch (XmlBlasterException ex) {
-            log.severe("An exception occured when trying to initialize the callback client queue: " + ex.getMessage());
-            ex.printStackTrace();
+         catch (XmlBlasterException e) {
+            log.severe("An exception occured when trying to initialize the callback client queue: " + e.getMessage());
+            e.printStackTrace();
          }
       }
       
