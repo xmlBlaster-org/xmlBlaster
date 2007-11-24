@@ -19,6 +19,10 @@
 <xsl:variable name="isInitiator" select="/*/@initiator"/>
 <xsl:variable name="isAdmin" select="/*/@admin"/>
 
+<xsl:param name="transSeq" select="'TransactionSeq'"/>
+<!-- <xsl:param name="transSeq" select="'MaxReplKey'"/> -->
+
+
 <xsl:template match ='/'>
 <html>
 <head>                                                                                       
@@ -204,11 +208,11 @@ function dumpEntry() {
             <td colspan="1" class="normal" title="Current counter of the replicated data">Count</td>
             
             <xsl:choose>
-               <xsl:when test="Attribute[@name='TransactionSeq']/@value = '0'">
-            <td align="right" colspan="1" class="hidden"><xsl:value-of select="Attribute[@name='TransactionSeq']/@value"/></td>
+               <xsl:when test="Attribute[@name= $transSeq ]/@value = '0'">
+            <td align="right" colspan="1" class="hidden"><xsl:value-of select="Attribute[@name= $transSeq ]/@value"/></td>
                </xsl:when>
                <xsl:otherwise>
-            <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name='TransactionSeq']/@value"/></td>
+            <td align="right" colspan="1" class="number"><xsl:value-of select="Attribute[@name= $transSeq ]/@value"/></td>
                </xsl:otherwise>
             </xsl:choose>
 

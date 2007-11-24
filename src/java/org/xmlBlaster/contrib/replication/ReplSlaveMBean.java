@@ -52,4 +52,7 @@ public interface ReplSlaveMBean {
    String getCascadedConnection();
    String getCascadedMasterConnection();
    
+   void setCountSingleMsg(boolean countSingleMsg);
+   boolean isCountSingleMsg();
+   
 }

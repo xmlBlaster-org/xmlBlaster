@@ -124,7 +124,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    /** used for monitoring: to know how many entries are ptp (normally initial updates) */
    private long ptpQueueEntries;
    private String initialDataTopic;
-   
+   /** The real amount of entries in the cb queue (not calculated) */
+   private long cbQueueEntries;
+   private boolean countSingleMessages;
+
    public ReplSlave(Global global, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
       this.forcedCounter = 0L;
       this.global = global;
@@ -229,8 +232,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          if (this.srcVersion != null && this.ownVersion != null && !this.srcVersion.equalsIgnoreCase(this.ownVersion))
             this.doTransform = true;
 
-         this.initialFilesLocation = info.get(ReplicationConstants.INITIAL_FILES_LOCATION, null);
-         this.initialDataTopic = info.get("replication.initialDataTopic", "replication.initialData");
+         initialFilesLocation = info.get(ReplicationConstants.INITIAL_FILES_LOCATION, null);
+         initialDataTopic = info.get("replication.initialDataTopic", "replication.initialData");
+         countSingleMessages = info.getBoolean("replication.countSingleMsg", false);
          this.initialized = true;
       }
    }
@@ -986,7 +990,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     * the queue.
     */
    public long getQueueEntries() {
-      return this.queueEntries;
+      if (countSingleMessages)
+         return this.cbQueueEntries;
+      else
+         return this.queueEntries;
    }
 
    /**
@@ -1025,8 +1032,9 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          log.severe("an exception occured when retieving the session for '" + this.sessionName + "':" + ex.getMessage());
          ex.printStackTrace();
       }
-      
+
       try {
+         this.cbQueueEntries = session.getCbQueueNumMsgs();
          // this.messageSeq, 
          long[] transactionCountBeforeQueue = this.manager.getCurrentTransactionCount(this.replPrefix);
          // check if the numbers in the queue are correct and fix it
@@ -1142,7 +1150,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                if (numOfTransactions > 0L) {
                   long tmpTransactionSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, -1L);
                   int prio = ((MsgQosData)msgUnit.getQosData()).getPriority().getInt();
-                  final boolean absoluteCount = false;
+                  
+                  boolean absoluteCount = msgUnit.getQosData().getClientProperty(ReplicationConstants.ABSOLUTE_COUNT, false);
                   if (tmpTransactionSeq != -1L && absoluteCount) { // in case the ReplManagerPlugin is not configured as a MimePlugin
                      this.transactionSeq[prio] = tmpTransactionSeq;
                   }
@@ -1170,7 +1179,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    }
 
    public long getTransactionSeq() {
-      return this.transactionSeqVisible;
+      if (countSingleMessages)
+         return this.maxReplKey;
+      else
+         return this.transactionSeqVisible;
    }
    
    public static byte[] decompressQueueEntryContent(ReferenceEntry entry) {
@@ -1339,5 +1351,12 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
 
+   public void setCountSingleMsg(boolean countSingleMsg) {
+      this.countSingleMessages = countSingleMsg;
+   }
+   
+   public boolean isCountSingleMsg() {
+      return countSingleMessages;
+   }
    
 }

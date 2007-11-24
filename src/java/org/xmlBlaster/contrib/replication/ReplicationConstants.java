@@ -104,6 +104,6 @@ public interface ReplicationConstants extends ContribConstants {
 
     final static String SIMPLE_MESSAGE = "replSimpleMessage";
     final static String RESPONSE_INITIAL_DATA_TOPIC = "replResponseInitialData";
-    
+    final static String ABSOLUTE_COUNT = "absoluteCount";
     
 }

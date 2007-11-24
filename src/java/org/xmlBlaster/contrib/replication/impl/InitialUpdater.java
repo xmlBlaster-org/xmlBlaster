@@ -41,6 +41,8 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlDescription;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
+import org.xmlBlaster.contrib.replication.I_ReplSource;
+import org.xmlBlaster.contrib.replication.ReplSourceEngine;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.jms.XBDestination;
@@ -55,8 +57,9 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
 
-public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionStateListener, I_ReplaceContent, ReplicationConstants {
+public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionStateListener, I_ReplaceContent, ReplicationConstants, I_ReplSource {
 
    public class ConnectionInfo {
       private Connection connection;
@@ -221,6 +224,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    private boolean initialDumpAsXml;
    private int initialDumpMaxSize = 1048576;
    private long initialCmdSleepDelay = 10L;
+   private ReplSourceEngine replSourceEngine;
    
    /**
     * Not doing anything.
@@ -281,9 +285,10 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       // registering this instance to the Replication Manager
       HashMap subscriptionMap = new HashMap();
       subscriptionMap.put("ptp", "true");
-      if (this.publisher != null)
+      if (this.publisher != null) {
+         replSourceEngine = new ReplSourceEngine(replPrefix, publisher, this); 
          this.publisher.registerAlertListener(this, subscriptionMap);
-      
+      }
       this.initialCmdSleepDelay = this.info.getLong("replication.initialCmd.sleepDelay", 10L);
       
       // rewrite the default behaviour of the timestamp detector to detect even UPDATES (deletes are also updates)
@@ -367,149 +372,6 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          return this.publisher.publish("createTableMsg", updateInfo.toXml("").getBytes(), map);
    }
 
-   private void fireInitialUpdates() {
-      synchronized (this.preparedUpdates) {
-         this.collectInitialUpdates = false; // reset the flag
-         try {
-            ExecutionThread[] threads = (ExecutionThread[])this.preparedUpdates.values().toArray(new ExecutionThread[this.preparedUpdates.size()]);
-            for (int i=0; i < threads.length; i++)
-               threads[i].process();
-         }
-         finally {
-            this.preparedUpdates.clear();
-         }
-      }
-   }
-   
-   /**
-    * @see org.xmlBlaster.contrib.I_Update#update(java.lang.String, byte[], java.util.Map)
-    */
-   public final void update(String topic, InputStream is, Map attrMap) {
-
-      String msg = new String();
-      try {
-         if (is != null)
-            msg = new String(ReplManagerPlugin.getContent(is));
-         // this comes from the requesting ReplSlave
-         log.info("update for '" + topic + "' and msg='" + msg + "'");
-         if (REPL_REQUEST_UPDATE.equals(msg)) {
-            ClientProperty prop = (ClientProperty)attrMap.get("_sender");
-            if (prop == null)
-               throw new Exception("update for '" + msg + "' failed since no '_sender' specified");
-            String replManagerAddress = prop.getStringValue();
-
-            String replTopic = this.info.get("mom.topicName", null);
-            if (replTopic == null)
-               throw new Exception("update for '" + msg + "' failed since the property 'mom.topicName' has not been defined. Check your DbWatcher Configuration file");
-
-            prop = (ClientProperty)attrMap.get(SLAVE_NAME);
-            if (prop == null)
-               throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
-            String slaveName = prop.getStringValue();
-            this.dbSpecific.clearCancelUpdate(slaveName);
-
-            prop = (ClientProperty)attrMap.get(REPL_VERSION);
-            String requestedVersion = null;
-            if (prop != null)
-               requestedVersion = prop.getStringValue();
-            // this.dbSpecific.initiateUpdate(replTopic, destination, slaveName);
-            prop = (ClientProperty)attrMap.get(INITIAL_FILES_LOCATION);
-            String initialFilesLocation = null;
-            if (prop != null)
-               initialFilesLocation = prop.getStringValue();
-            
-            prop = (ClientProperty)attrMap.get(INITIAL_UPDATE_ONLY_REGISTER);
-            boolean onlyRegister = false;
-            if (prop != null)
-               onlyRegister = prop.getBooleanValue();
-            
-            if (onlyRegister || this.collectInitialUpdates) {
-               log.info("The update for slave='" + slaveName + "' and version='" + requestedVersion + "' will be queued since onlyRegister='" + onlyRegister + "' and collectInitialUpdates='" + this.collectInitialUpdates + "'");
-               String key = "__default";
-               if (requestedVersion != null)
-                  key = requestedVersion;
-               synchronized(this.preparedUpdates) {
-                  ExecutionThread executionThread = (ExecutionThread)this.preparedUpdates.get(key);
-                  if (executionThread == null) {
-                     executionThread = new ExecutionThread(replTopic, replManagerAddress, this.dbSpecific, initialFilesLocation);
-                     this.preparedUpdates.put(key, executionThread);
-                  }
-                  executionThread.add(slaveName, replManagerAddress, requestedVersion);
-               }
-            }
-            else {
-               ExecutionThread executionThread = new ExecutionThread(replTopic, replManagerAddress, this.dbSpecific, initialFilesLocation);
-               executionThread.add(slaveName, replManagerAddress, requestedVersion);
-               executionThread.process();
-            }
-         }
-         else if (REPL_REQUEST_CANCEL_UPDATE.equals(msg)) {
-            // do cancel
-            ClientProperty prop = (ClientProperty)attrMap.get(SLAVE_NAME);
-            if (prop == null)
-               throw new Exception("update for '" + msg + "' failed since no '_slaveName' specified");
-            String slaveName = prop.getStringValue();
-            this.dbSpecific.cancelUpdate(slaveName);
-            synchronized (this) {
-               Execute exec = (Execute)this.runningExecutes.remove(slaveName);
-               if (exec != null)
-                  exec.stop();
-            }
-         }
-         else if (REPL_REQUEST_RECREATE_TRIGGERS.equals(msg)) {
-            final boolean force = true;
-            final boolean forceSend = false;
-            this.dbSpecific.addTriggersIfNeeded(force, null, forceSend);
-         }
-         else if (STATEMENT_ACTION.equals(msg)) {
-            String sql = ((ClientProperty)attrMap.get(STATEMENT_ATTR)).getStringValue();
-            boolean isHighPrio = ((ClientProperty)attrMap.get(STATEMENT_PRIO_ATTR)).getBooleanValue();
-            long maxResponseEntries = ((ClientProperty)attrMap.get(MAX_ENTRIES_ATTR)).getLongValue();
-            String statementId = ((ClientProperty)attrMap.get(STATEMENT_ID_ATTR)).getStringValue();
-            String sqlTopic =  ((ClientProperty)attrMap.get(SQL_TOPIC_ATTR)).getStringValue();
-            log.info("Be aware that the number of entries in the result set will be limited to '" + maxResponseEntries + "'. To change this use 'replication.sqlMaxEntries'");
-            final boolean isMaster = true;
-            byte[] response  = null;
-            Exception ex = null;
-            try {
-               response = this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, sqlTopic, statementId);
-            }
-            catch (Exception e) {
-               response = "".getBytes();
-               ex = e;
-            }
-            
-            if (this.publisher != null) {
-               Map map = new HashMap();
-               map.put(MASTER_ATTR, this.replPrefix);
-               map.put(STATEMENT_ID_ATTR, statementId);
-               map.put("_command", STATEMENT_ACTION);
-               if (ex != null)
-                  map.put(EXCEPTION_ATTR, ex.getMessage());
-               this.publisher.publish(sqlTopic, response, map);
-            }
-            if (ex != null)
-               throw ex;
-         }
-         else if (INITIAL_UPDATE_START_BATCH.equals(msg)) {
-            fireInitialUpdates();
-         }
-         else if (INITIAL_UPDATE_COLLECT.equals(msg)) {
-            synchronized(this.preparedUpdates) {
-               this.collectInitialUpdates = true;
-               log.info("Will collect initial updates until message '" + INITIAL_UPDATE_START_BATCH + "' comes");
-            }
-         }
-         else {
-            log.warning("update from '" + topic + "' with request '" + msg + "'");
-         }
-      }
-      catch (Throwable ex) {
-         log.severe("An exception occured when processing the received update '" + msg + "': " + ex.getMessage());
-         ex.printStackTrace();
-      }
-   }
-
    /**
     * Sending this message will reactivate the Dispatcher of the associated slave
     * @param topic
@@ -521,16 +383,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws Exception
     */
    public final void sendInitialDataResponseOnly(String[] slaveSessionNames, String replManagerAddress, long minKey, long maxKey) throws Exception {
-      HashMap attrs = new HashMap();
-      attrs.put("_destination", replManagerAddress);
-      attrs.put("_command", "INITIAL_DATA_RESPONSE");
-      attrs.put("_minReplKey", "" + minKey);
-      attrs.put("_maxReplKey", "" + maxKey);
-      attrs.put(SLAVE_NAME, SpecificDefault.toString(slaveSessionNames));
-      if (this.publisher != null)
-         this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
-      else
-         log.warning("request for sending initial response can not be done since no publisher configured");
+      if (replSourceEngine != null)
+         replSourceEngine.sendInitialDataResponse(slaveSessionNames, replManagerAddress, minKey, maxKey);
    }
    
    public final void sendInitialDataResponse(String[] slaveSessionNames, String shortFilename, String replManagerAddress, long minKey, long maxKey, String requestedVersion, String currentVersion, String initialFilesLocation) throws Exception {
@@ -637,7 +491,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          producer.send(endMsg);
       }
       sendInitialDataResponseOnly(slaveSessionNames, replManagerAddress, minKey, maxKey);
-      sendEndOfTransitionMessage(session, initialFilesLocation, shortFilename, dumpId, producer);
+      if (replSourceEngine != null)
+         replSourceEngine.sendEndOfTransitionMessage(info, session, initialFilesLocation, shortFilename, dumpId, producer);
    }
    
    
@@ -647,33 +502,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @throws JMSException
     */
    public void sendEndOfTransitionMessage(String[] slaveSessionNames) throws JMSException {
-      XBSession session = this.publisher.getJmsSession();
-      XBDestination dest = new XBDestination(this.initialDataTopic, SpecificDefault.toString(slaveSessionNames));
-      XBMessageProducer producer = new XBMessageProducer(session, dest);
-      producer.setPriority(PriorityEnum.HIGH_PRIORITY.getInt());
-      producer.setDeliveryMode(DeliveryMode.PERSISTENT);
-      String dumpId = "" + new Timestamp().getTimestamp();
-      sendEndOfTransitionMessage(session, null, null, dumpId, producer);
-   }
-   
-   private void sendEndOfTransitionMessage(XBSession session, String initialFilesLocation, String shortFilename, String dumpId, XBMessageProducer producer) throws JMSException {
-      TextMessage  endMsg = session.createTextMessage();
-      SqlInfo sqlInfo = new SqlInfo(this.info);
-      SqlDescription description = new SqlDescription(this.info);
-
-      description.setAttribute(END_OF_TRANSITION , "" + true);
-      endMsg.setBooleanProperty(END_OF_TRANSITION , true);
-      description.setAttribute(FILENAME_ATTR, shortFilename);
-      endMsg.setStringProperty(FILENAME_ATTR, shortFilename);
-      if (initialFilesLocation != null) {
-         description.setAttribute(INITIAL_FILES_LOCATION, initialFilesLocation);
-         endMsg.setStringProperty(INITIAL_FILES_LOCATION, initialFilesLocation);
-         description.setAttribute(INITIAL_DATA_ID, dumpId);
-         endMsg.setStringProperty(INITIAL_DATA_ID, dumpId);
-      }
-      sqlInfo.setDescription(description);
-      endMsg.setText(sqlInfo.toXml(""));
-      producer.send(endMsg);
+      if (replSourceEngine != null)
+         replSourceEngine.sendEndOfTransitionMessage(info, initialDataTopic, slaveSessionNames);
    }
    
    /**
@@ -863,6 +693,83 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       if (log.isLoggable(Level.FINEST))
          log.finest(ret);
       return ret.getBytes();
+   }
+
+   
+   /**
+    * @see org.xmlBlaster.contrib.I_Update#update(java.lang.String, byte[], java.util.Map)
+    */
+   public final void update(String topic, InputStream is, Map attrMap) {
+      if (replSourceEngine != null)
+         replSourceEngine.update(topic, is, attrMap);
+   }
+
+   public void collectInitialUpdate() {
+      synchronized(this.preparedUpdates) {
+         this.collectInitialUpdates = true;
+         log.info("Will collect initial updates until message '" + INITIAL_UPDATE_START_BATCH + "' comes");
+      }
+   }
+
+   public byte[] executeStatement(String sql, long maxResponseEntries, boolean isHighPrio, boolean isMaster, String sqlTopic, String statementId) throws Exception {
+      return this.dbSpecific.broadcastStatement(sql, maxResponseEntries, isHighPrio, isMaster, sqlTopic, statementId);
+   }
+   
+   public void recreateTriggers() throws Exception {
+      final boolean force = true;
+      final boolean forceSend = false;
+      this.dbSpecific.addTriggersIfNeeded(force, null, forceSend);
+   }
+   
+   public void cancelUpdate(String slaveName) {
+      this.dbSpecific.cancelUpdate(slaveName);
+      synchronized (this) {
+         Execute exec = (Execute)this.runningExecutes.remove(slaveName);
+         if (exec != null)
+            exec.stop();
+      }
+   }
+
+   
+   public void initialUpdate(String replTopic, String replManagerAddress, String slaveName, String requestedVersion, String initialFilesLocation, boolean onlyRegister) {
+      this.dbSpecific.clearCancelUpdate(slaveName);
+      if (onlyRegister || this.collectInitialUpdates) {
+         log.info("The update for slave='" + slaveName + "' and version='" + requestedVersion + "' will be queued since onlyRegister='" + onlyRegister + "' and collectInitialUpdates='" + this.collectInitialUpdates + "'");
+         String key = "__default";
+         if (requestedVersion != null)
+            key = requestedVersion;
+         synchronized(this.preparedUpdates) {
+            ExecutionThread executionThread = (ExecutionThread)this.preparedUpdates.get(key);
+            if (executionThread == null) {
+               executionThread = new ExecutionThread(replTopic, replManagerAddress, this.dbSpecific, initialFilesLocation);
+               this.preparedUpdates.put(key, executionThread);
+            }
+            executionThread.add(slaveName, replManagerAddress, requestedVersion);
+         }
+      }
+      else {
+         ExecutionThread executionThread = new ExecutionThread(replTopic, replManagerAddress, this.dbSpecific, initialFilesLocation);
+         executionThread.add(slaveName, replManagerAddress, requestedVersion);
+         executionThread.process();
+      }
+   }
+   
+   public String getTopic() {
+      return this.info.get("mom.topicName", null);      
+   }
+   
+   public void startInitialUpdateBatch() {
+      synchronized (this.preparedUpdates) {
+         this.collectInitialUpdates = false; // reset the flag
+         try {
+            ExecutionThread[] threads = (ExecutionThread[])this.preparedUpdates.values().toArray(new ExecutionThread[this.preparedUpdates.size()]);
+            for (int i=0; i < threads.length; i++)
+               threads[i].process();
+         }
+         finally {
+            this.preparedUpdates.clear();
+         }
+      }
    }
    
 }

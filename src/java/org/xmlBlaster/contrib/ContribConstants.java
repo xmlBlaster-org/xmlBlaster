@@ -13,7 +13,9 @@ package org.xmlBlaster.contrib;
 public interface ContribConstants {
 
    final static String FILENAME_ATTR = "_filename"; // used for xml initial update dump
+   final static String FILENAME_ATTR_OLD_FASHION = "_fileName"; // used for xml initial update dump
    final static String TIMESTAMP_ATTR = "_timestamp"; // used for xml initial update dump
    final static String TOPIC_NAME = "_topicName"; // used for xml initial update dump
+   final static String FILE_DATE = "_fileDate"; 
    
 }

@@ -124,7 +124,7 @@ function refresh() {
    <xsl:param name="sessionName" select="Attribute[@name='SessionName']/@value"/>
    <xsl:param name="queueEntries" select="Attribute[@name='QueueEntries']/@value"/>
    <xsl:param name="objectName" select="@objectname"/>
-   <xsl:param name="transactionSeq" select="Attribute[@name='TransactionSeq']/@value"/>
+	<xsl:param name="transactionSeq" select="Attribute[@name='TransactionSeq']/@value"/>
    <xsl:param name="replStatus" select="Attribute[@name='Status']/@value"/>
    <xsl:param name="activeStatus" select="Attribute[@name='Active']/@value"/>
    <xsl:param name="connectedStatus" select="Attribute[@name='Connection']/@value"/>

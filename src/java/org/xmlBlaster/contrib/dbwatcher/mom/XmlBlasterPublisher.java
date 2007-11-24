@@ -196,6 +196,14 @@ public class XmlBlasterPublisher implements
       return set;
    }
 
+   public synchronized void initWithExistingGlob(Global global, String pubKey, String pubQos, int compressionSize) {
+      this.glob = global;
+      this.con = this.glob.getXmlBlasterAccess();
+      this.publishQos = pubQos;
+      this.publishKey = pubKey;
+      this.compressSize = compressionSize;
+   }
+   
    /**
     * If a global is passed with <tt>info.getObject("org.xmlBlaster.engine.Global")</tt>
     * we take a clone and reuse it. 

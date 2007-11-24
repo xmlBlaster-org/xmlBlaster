@@ -49,6 +49,7 @@ import org.xmlBlaster.contrib.replication.ReplSlave;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.contrib.replication.SqlStatement;
 import org.xmlBlaster.engine.I_SubscriptionListener;
+import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.SubscriptionEvent;
 import org.xmlBlaster.engine.SubscriptionInfo;
@@ -473,9 +474,11 @@ public class ReplManagerPlugin extends GlobalInfo
          
          ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
                this.global.getContextNode());
-         this.mbeanHandle = this.global.registerMBean(contextNode, this);
+         if (!this.global.isRegisteredMBean(contextNode))
+            this.mbeanHandle = this.global.registerMBean(contextNode, this);
          
-         this.pool = initializePersistentInfo();
+         if (this.pool == null)
+            this.pool = initializePersistentInfo();
          
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
          ConnectQos connectQos = new ConnectQos(this.global, this.user, this.password);
@@ -504,17 +507,21 @@ public class ReplManagerPlugin extends GlobalInfo
          }
          this.maxResponseEntries = this.getLong("replication.sqlMaxEntries", 10L);
 
-         getEngineGlobal(this.global).getRequestBroker().getAuthenticate(null).addClientListener(this);
+         RequestBroker rb = getEngineGlobal(this.global).getRequestBroker();
+         
+         rb.getAuthenticate(null).addClientListener(this);
 
-         SessionInfo[] sessionInfos = getEngineGlobal(this.global).getRequestBroker().getAuthenticate(null).getSessionInfoArr();
+         SessionInfo[] sessionInfos = rb.getAuthenticate(null).getSessionInfoArr();
          for (int i=0; i < sessionInfos.length; i++) {
             SessionInfo sessionInfo = sessionInfos[i];
             ClientEvent event = new ClientEvent(sessionInfo);
             sessionAdded(event);
-
-            getEngineGlobal(this.global).getRequestBroker().addSubscriptionListener(this);
             
-            SubscriptionInfo[] subInfos = getEngineGlobal(this.global).getRequestBroker().getClientSubscriptions().getSubscriptions(sessionInfo);
+            I_SubscriptionListener oldListener = rb.getSubscriptionListener(getPriority());
+            if (oldListener == null)
+               rb.addSubscriptionListener(this);
+            
+            SubscriptionInfo[] subInfos = rb.getClientSubscriptions().getSubscriptions(sessionInfo);
             for (int j=0; j < subInfos.length; j++) { 
                SubscriptionEvent subEvent = new SubscriptionEvent(subInfos[j]);
                subscriptionAdd(subEvent);
