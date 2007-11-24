@@ -235,6 +235,16 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char* XB_GLOBAL_KEY;
    extern Dll_Export const char* XB_XMLPARSERFACTORY_KEY;
 
+   extern Dll_Export const char* JMS_PREFIX;
+	extern Dll_Export const char* JMSX_GROUP_ID;
+	extern Dll_Export const char* JMSX_GROUP_SEQ;
+   extern Dll_Export const char* JMSX_GROUP_EOF;
+   extern Dll_Export const char* JMSX_GROUP_EX;
+
+   extern Dll_Export const char* FILENAME_ATTR;
+	extern Dll_Export const char* TIMESTAMP_ATTR;
+	extern Dll_Export const char* FILE_DATE;
+	
 //};
 
 

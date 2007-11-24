@@ -110,6 +110,16 @@ const char* const SUBSCRIPTIONID_PtP = "__subId:PtP";
 const char* XB_GLOBAL_KEY = "XB_Global"; // For registration with lifetime manager
 const char* XB_XMLPARSERFACTORY_KEY = "XB_XmlParserFactory"; // For registration with lifetime manager
 
+const char* JMS_PREFIX = "__jms:";
+const char* JMSX_GROUP_ID = "__jms:JMSXGroupID";
+const char* JMSX_GROUP_SEQ = "__jms:JMSXGroupSeq";
+const char* JMSX_GROUP_EOF = "__jms:JMSXGroupEof";
+const char* JMSX_GROUP_EX = "__jms:JMSXGroupEx";
+
+const char* FILENAME_ATTR = "_filename";
+const char* TIMESTAMP_ATTR = "_timestamp";
+const char* FILE_DATE = "_fileDate";
+
 /*
 const int getPriority(string prio, int defaultPriority)
 {
