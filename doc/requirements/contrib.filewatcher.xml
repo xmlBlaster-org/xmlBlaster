@@ -1,0 +1,362 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='contrib.filewatcher' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>
+      You can publish messages by putting files on a certain location in the file system.
+   </topic>
+
+   <description>
+      This is a native plugin which is listening on a certain directory in the file system. 
+      It detects by polling on the directory if a new file has arrived. Once the plugin assumes it has
+      completely written, it will read its contents and publish them.
+      
+      <ul>
+         <li>The Watcher is running as a native xmlBlaster plugin</li>
+         <li>Every registered Watcher is listening on exactly one single directory</li>
+         <li>The polling interval is expressed in ms and is configurable</li>
+         <li>All files in a directory on which a Watcher instance is listening, are published on 
+             a single configurable topic.</li>
+         <li>It is possible to specify a filter for the file name, then only the files matching the filter
+             will be processed by the current plugin instance. 
+         </li>
+         <li>It is possible to have several plugins polling for the same directory provided they all have
+             a filter specified. The choice of the filters must be such to avoid that the same file will 
+             match more than one filter. If the user does not ensure that, unpredicted behavior will result. 
+         </li>
+
+         <li>After a successful publish of the content of a file, the file is removed from the file system.
+              Alternatively, if a 'sent' directory is specified in the configuration, processed
+              files will be moved to that destination. If for some reason it is not possible to 
+              move the file to that direction (for example if necessary rights are missing), then the
+              plugin will continue to poll but will not process any file anymore until the problem has
+              been manually removed.
+         </li>
+         <li>It is possible to configure a maximum file size. Files bigger than the specified size are not
+             published. If a 'discarded' directory is specified in the properties, then the file will be 
+             moved to that directory, otherwise it will be deleted.
+         </li>
+         <li>
+            When moving files, wether to the 'sent' or 'discarded' directories, if a file with the same
+            relative name already exists, it is overwritten.
+         </li>
+         <li>
+            Detection of 'file ready for publishing': 
+            <p>
+            If <i>lockExtention</i> is specified in the plugin configuration, then publishing of a file is
+            controlled by a <i>lock</i> file. 
+            This means that if you specified <i>*.lck</i> as the <i>lockExtention</i>, and want to publish
+            a file called <i>someFile.gif</i>, then the publishing of the file will be inhibited until a 
+            file <i>someFile.gif.lck</i> will be present in the directory.
+            </p>
+            <p>
+            The plugin will wait <i>delaySinceLastFileChange</i> milliseconds since 
+            the last modification of the file to be published (date and size are checked) before 
+            processing anyway. This way, by choosing a sufficiently long <i>delaySinceLastFileChange</i>
+            it is possible to work in an <i>optimistic</i> way without any lock file. 
+            </p>
+            <p>
+            Note however that this <i>optimistic</i> publishing is not to 100% safe. Suppose the writing of
+            the file to be published is stalled for a time which is longer than what specified in
+            <i>delaySinceLastFileChange</i>, then the file will be published in its incomplete state.
+            </p>        
+         </li>
+         <li>
+           If permissions to read the directory are missing or xmlBlaster has no read rights on a 
+           specific file, or if an IO exception occurs when reading a file or trying to delete or move
+           a file, an error is reported (logged) and the plugin does temporarly stop working.
+           (to ensure correct sequence). The plugin continues however to poll and when the rights are 
+           manually fixed, it continues working again.
+         </li>
+         <li>
+           To be able to track the message origin, filename and date are sent in the client properties as:
+           <ul>
+              <li><i>_fileName</i></li> (the relative file name as a String)
+              <li><i>_fileDate</i></li> (the timestamp of the file in ms as a long)
+           </ul>
+         </li>
+         <li>
+           To listen to different directories and/or to publish on different topics you need to configure different
+           plugins. When doing so assign to each plugin a different id (this is actually a general requirement for the
+           plugins).
+         </li>
+         <li>
+           The files to be published are sorted in the first place chronologically. Files having the same <i>last change</i>
+           timestamp are sorted alphabetically. The best precision for the timestamp is one millisecond. If the operating 
+           system does not offer such a precision, the precision of the operating system will be determinant. Also,
+           the timestamp is the <i>last change</i> timestamp. Depending on the operating system this time could be the time
+           when the writing operation is started, when it is ended or in between. This would have to be considered when the 
+           applications writing to the directory on which the filewatcher is listening are working multithreaded.
+         </li>
+       </ul>
+   </description>
+
+
+   <example lang="any" type="HTML">
+      <p id="regex" class="celltitel">Testing your filter pattern</p>
+      <p>You have two options to test your regular expression or your 'simple' filter in your configuration.</p>
+      <p>First, you can use the  <a href="admin.jmx.html#jconsole" target="others"><code>jconsole</code> (see admin.jmx requirement)</a>
+      to test your filter pattern. Go to the <code>MBean -> org.xmlBlaster -> node -> [your cluster name] -> service -> FileWatcherPlugin[xxx]</code>
+      area. Here you can adjust all settings dynamically and test the settings under the tab <code>Operations</code> by clicking the
+      <code>triggerScan</code> button.
+      </p>
+      <p>Further you can test the pattern on command line:</p>
+
+<pre class="BORDER">
+ java org.xmlBlaster.contrib.filewatcher.DirectoryManager -path /tmp/filewatcher -filter "*.xml" -filterType simple 
+
+ java org.xmlBlaster.contrib.filewatcher.DirectoryManager -path /tmp/filewatcher -filter "hi.*\.xml" -filterType regex 
+</pre>
+
+   </example>
+
+
+   <configuration where="server">
+      <p>
+         The plugin is configured in the xmlBlasterPlugins.xml configuration file. Here an example where
+         all properties are used:
+<pre>
+<![CDATA[
+  <xmlBlaster>
+    ...
+     <plugin id='FileWatcherPlugin' className='org.xmlBlaster.contrib.filewatcher.FileWatcherPlugin'>
+        <attribute id='mom.topicName'>watcher.test</attribute>
+        <attribute id='mom.publishKey'><key oid='watcher.test'><watcher><test/></watcher></key></attribute>
+        <attribute id='mom.publishQos'><qos><expiration lifeTime='4000'/></qos></attribute>
+        <attribute id='mom.connectQos'></attribute>
+		  <attribute id='mom.loginName'>fritz</attribute>
+		  <attribute id='mom.password'>secret</attribute>
+		  <attribute id='filewatcher.directoryName'>/tmp/fileWatcher</attribute>
+		  <attribute id='filewatcher.maximumFileSize'>10000000</attribute>
+		  <attribute id='filewatcher.delaySinceLastFileChange'>10000</attribute>
+		  <attribute id='filewatcher.pollInterval'>2000</attribute>
+		  <attribute id='filewatcher.sent'>Sent</attribute>
+		  <attribute id='filewatcher.discarded'>Discarded</attribute>
+		  <attribute id='filewatcher.fileFilter'></attribute>
+		  <attribute id='filewatcher.lockExtention'>*.lck</attribute>
+		  <attribute id='filewatcher.filterType'>simple</attribute>
+        <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+        <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+     </plugin>
+   ...
+
+ </xmlBlaster>
+]]>
+</pre>
+and here a minimalistic one:
+
+<pre>
+<![CDATA[
+  <xmlBlaster>
+    ...
+
+     <plugin id='FileWatcherPlugin' className='org.xmlBlaster.client.filewatcher.FileWatcherPlugin'>
+        <attribute id='filewatcher.directoryName'>/tmp/fileWatcher</attribute>
+        <attribute id='mom.topicName'>watcher.test</attribute>
+        <!-- determines on which level to start/shutdown the plugin and what to do in case of an exception -->
+        <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+        <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+     </plugin>
+   ...
+
+ </xmlBlaster>
+]]>
+</pre>
+ </p>
+
+ and here a more detailed description about each attribute:
+
+    <table border="1">
+       <tr>
+         <th>id (name)</th>
+         <th>type</th>
+         <th>default value</th>
+         <th>Comment</th>
+       </tr>
+       <tr>
+         <td>filwatcher.directoryName</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>mandatory</b>: The name of the directory on which this plugin instance will listen.
+            If the directory does not exist, one will be created. You can specify an absolute name or
+            a relative one. A relative one is based on the <i>${user.home}</i>.
+         </td>
+       </tr>
+
+       <tr>
+         <td>mom.topicName</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>mandatory unless <i>publishKey</i> defined</b>. If both are specified this attribute is
+         ignored and a warning is logged. This is the name of the topic on which to publish (the oid). 
+         </td>
+       </tr>
+
+       <tr>
+         <td>mom.publishKey</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b> unless <i>topicName</i> has not been specified in which case it is mandatory.
+         If you need to specify a more complex <a href="interface.publish.html">key</a> for the publishing 
+         (for example to make it searcheable)
+         of the messages you can specify it here. Note that you can only specify one single key which will
+         be used for all messages published by this plugin. If you need to differentiate you can use
+         more plugins.
+         </td>
+       </tr>
+
+       <tr>
+         <td>mom.publishQos</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>.
+         If you need to specify a more complex <a href="interface.publish.html">qos</a> for the publishing 
+         you can specify it here. Note that you can only specify one single qos which will
+         be used for all messages published by this plugin. If you need to differentiate you can use
+         more plugins.
+         </td>
+       </tr>
+
+       <tr>
+         <td>mom.connectQos</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>. If you need to specify more complex 
+         <a href="interface.connect.html">connection behavior</a> you can do it here. Note however that
+         this is a plugin which per default uses the <a href="protocol.local.html">local protocol</a>.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.loginName</td>
+         <td>String</td>
+         <td>'_' + id of plugin</td>
+         <td><b>optional</b>. If the id of the plugin is <i>watcher1</i>, then the default <i>loginName</i>
+         is <i>_watcher1</i>. If you specify a <i>connectQos</i>, then this attribute is ignored.
+         </td>
+       </tr>
+       <tr>
+         <td>mom.password</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>. This is the password to be used to authenticate the <i>loginName</i>.
+         If you specify a <i>connectQos</i>, then this attribute is ignored.
+         </td>
+       </tr>
+       <tr>
+			 <td>filewatcher.pollInterval</td>
+         <td>long</td>
+         <td>2000</td>
+         <td><b>optional</b>:  The time in milliseconds the plugin sleeps between each poll sweep. This
+         time is also the one used to retry an action which has failed (reading, deleting or moving a 
+         file).
+         </td>
+       </tr>
+       <tr>
+			 <td>filewatcher.delaySinceLastFileChange</td>
+         <td>long</td>
+         <td>10000</td>
+         <td><b>optional</b>: This is the time expressed in milliseconds which the plugin will wait
+         before publishing a file after its latest detected change. The plugin detects changes on
+         discrete times (every time it polls), so the acurancy is never better than what specified in
+         <i>pollInterval</i>. A file is considered to have changed either if its size has changed or 
+         its date. The plugin always waits what specified here even when using a lock file. So if you 
+         always control your publishes with a locking file you can set this attribute to zero to
+         avoid delay.
+         </td>
+       </tr>
+
+
+       <tr>
+			 <td>filewatcher.maximumFileSize</td>
+         <td>long</td>
+         <td>10000000</td>
+         <td><b>optional</b>: The maximum file size expressed in bytes to be allowed to be published. If
+         the file exceeds this size, then it is not published. It is either deleted or moved to the 
+         directory specified in the <i>discarded</i> attribute.
+         </td>
+       </tr>
+
+       <tr>
+			 <td>filewatcher.fileFilter</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>: If you want this plugin to be listening only on a specified filename extention
+         you can specify it here. Let's say you only want files with the gif extention to be sent, then you 
+         specify <i>*.gif</i>. If something is specified here, files on the directory not matching this
+         pattern are left untouched and are not published.
+         </td>
+       </tr>
+
+       <tr>
+			 <td>filewatcher.lockExtention</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>: If you want to use the locking approach you need to specify here the extention
+         of the lock files. The syntax is of the kind <i>*.lck</i>, i.e. the first character is a '*'.
+         </td>
+       </tr>
+
+       <tr>
+			 <td>filewatcher.sent</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>: If nothing is specified here, files are deleted after having been published.
+         If something is specified here it is assumed to be a directory and files published are moved to this
+         location. If the directory does not exist, one is created once the plugin is initialized. 
+         You can either specify an absolute or a relative directory name. Relative names are put in the
+         directory specified in the <i>directoryName</i> attribute.
+         </td>
+       </tr>
+       <tr>
+			 <td>filewatcher.discarded</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>: If nothing is specified here, files which are too big to be 
+         published are deleted.
+         If something is specified it is assumed to be a directory and the files which are too bif are 
+         moved to this location. 
+         If the directory does not exist, one is created once the plugin is initialized. 
+         You can either specify an absolute or a relative directory name. Relative names are put in the
+         directory specified in the <i>directoryName</i> attribute.
+         </td>
+       </tr>
+       <tr>
+			 <td>filewatcher.filterType</td>
+         <td>String</td>
+         <td>simple</td>
+         <td><b>optional</b>: If nothing is specified here, 'simple' is assumed. Valid types are 'simple' and 
+                'regex'. This attribute decides which filter to use when processing both the fileFilter.
+                If you choose 'simple' then you can specify filters of the kind '*.xml' which are very simple to be used but
+                somehow limited if you want more advanced things to be done. The type 'regex' allows you to use regex 
+                syntax for the fileFilter. Note that <i>lockExtention</i> is not affected by this flag and is always considered
+                of type 'simple'.
+         </td>
+       </tr>
+       <tr>
+			 <td>filewatcher.copyOnMove</td>
+         <td>boolean</td>
+         <td>true</td>
+         <td><b>optional</b>: This flag has only effect if <b>sent</b> or <b>discarded</b> have been defined. If this 
+             flag is set to false then the file will be simply moved (or renamed). This is fast but it does not 
+             work on all OS systems. Particularly on non-local file systems this is known to fail.
+             Leaving this flag <i>true</i> (default) forces a complete copy/delete of the file.
+             This is slower but works even on file systems mounted remotely like nfs, samba or cifs.
+         </td>
+       </tr>
+     </table>   
+
+   </configuration>
+
+   <see type="REQ">engine.runlevel</see>
+   <author>michele@laghi.eu</author>
+   <author>mr@marcelruff.info</author>
+   <hacker>michele@laghi.eu</hacker>
+   <date>2004 12 12</date>
+   <revision>$Revision: 1.7 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.contrib.TestFileWatcherPlugin</test>
+   </testcase>
+</requirement>
+
