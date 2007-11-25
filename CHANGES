@@ -4,6 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
+ o #16601 Added Scheduler Plugin: it is now possible to define operations to be
+          scheduled
+
+ o #16582 Added streaming publisher (which chunks big messages into smaller chunks)
+
  o #16561 Memory leak fix for EventPlugin, it was introduced  about #16357 (EventPlugin notification when queue threshold is reached)
 
  o #16532 Logging with XbFormatter: Changed to use ISO 8601 date and time for logging
