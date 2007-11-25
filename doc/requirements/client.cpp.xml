@@ -488,7 +488,7 @@ int main(int args, char ** argv)
        <tr>
        <td>20</td>
        <td>Windows XP Home with <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&amp;displaylang=en" target="others">SDK</a></td>
-       <td><a href="http://msdn.microsoft.com/visualc/whidbey/default.aspx" target="others">VC++ 8 express 2005 (beta 2)</a></td>
+       <td><a href="http://msdn2.microsoft.com/en-us/vstudio/Aa700736.aspx" target="others">VC++ 8 express 2005 (beta 2)</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">1.03</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
