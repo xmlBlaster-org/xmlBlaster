@@ -1031,6 +1031,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       catch (Exception ex) {
          log.severe("an exception occured when retieving the session for '" + this.sessionName + "':" + ex.getMessage());
          ex.printStackTrace();
+         return;
       }
 
       try {
