@@ -176,6 +176,11 @@
       <attribute id="adaptorName">HttpAdaptorMX4J</attribute>
       <attribute id="xsltPath">org/xmlBlaster/contrib/replication/monitor</attribute>
       <attribute  id="xsltCache">false</attribute>
+      <attribute id="authenticationMethod">basic</attribute>
+      <attribute id="replication.monitor.user.user">somepwd:user</attribute>
+      <attribute id="replication.monitor.user.initiator">otherpwd:initiator</attribute>
+      <attribute id="replication.monitor.user.admin">importantpwd:admin</attribute>
+
       <action do='LOAD' onStartupRunlevel='4' sequence='4' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='3' sequence='66'/>
    </plugin>
@@ -343,21 +348,56 @@
       <attribute id='outFileName'>${java.io.tmpdir}${file.separator}xmlBlasterStartupOut.txt</attribute>
    </plugin>
 
-   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.filepoller.html -->
-   <plugin create='false' id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
-     <attribute id='directoryName'>/tmp/filePoller</attribute>
-     <attribute id='topicName'>poller.test</attribute> 
-     <attribute id='sent'>Sent</attribute>
-     <attribute id='discarded'>Discarded</attribute>
-     <attribute id='maximumFileSize'>10000000</attribute>
-     <attribute id='delaySinceLastFileChange'>10000</attribute>
-     <attribute id='pollInterval'>2000</attribute>
-     <attribute id='lockExtention'>*.lck</attribute>
-     <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
-     <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
-   </plugin>
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.filewatcher.html -->
+   <plugin create="false" id='FileWatcherPlugin' className='org.xmlBlaster.contrib.filewatcher.FileWatcherPlugin'>
+      <attribute id='filewatcher.directoryName'>/tmp/fileWatcher</attribute>
+      <attribute id='mom.topicName'>watcher.test</attribute>
+      <attribute id='mom.publishKey'><key oid='watcher.test'><watcher><test/></watcher></key></attribute>
+      <attribute id='mom.publishQos'><qos><persistent/></qos></attribute>
+      <attribute id='mom.loginName'>watcher01/1</attribute>
+      <attribute id='mom.password'>secret</attribute>
+      <attribute id='filewatcher.maximumFileSize'>1000000000</attribute>
+      <attribute id='filewatcher.maximumChunkSize'>2560000</attribute>
+      <attribute id='filewatcher.delaySinceLastFileChange'>30000</attribute>
+      <attribute id='filewatcher.pollInterval'>2000</attribute>
+      <attribute id='filewatcher.sent'>Sent</attribute>
+      <attribute id='filewatcher.discarded'>Discarded</attribute>
+      <attribute id='filewatcher.lockExtention'>*.lck</attribute>
+      <attribute id='filewatcher.filterType'>simple</attribute>
+      <attribute id='replication.prefix'>files</attribute>
+      <attribute id='replication.version'>0.5</attribute>
+      <attribute id='replication.countSingleMsg'>true</attribute>
+      <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='8' sequence='5'/>
+</plugin>
 
-   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwatcher.html -->
+<!-- This is the counterpart of the filewatcher plugin -->
+<plugin create="false" id='FileWriter' className='org.xmlBlaster.contrib.filewriter.FileWriter'>
+      <attribute id='mom.administered'>true</attribute>
+      <attribute id='mom.loginName'>writer01/1</attribute>
+      <attribute id='mom.password'>secret</attribute>
+      <attribute id='filewriter.directoryName'>${user.home}/writerDirName</attribute>
+		<attribute id='filewriter.tmpDirectoryName'>${user.home}/writerDirName/tmp</attribute>
+      <attribute id='filewriter.overwrite'>true</attribute>
+      <attribute id='filewriter.lockExtention'>.lck</attribute>
+      <!--	<attribute id='__useNativeCfg'>false</attribute> -->
+      <action do='LOAD' onStartupRunlevel='9' sequence='4' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='8' sequence='6'/>
+</plugin>
+
+<!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.scheduler.html -->
+<plugin create='false' id='SchedulerPlugin' className='org.xmlBlaster.contrib.scheduler.SchedulerPlugin'>
+      <!--
+      <attribute id="scheduler.open0">0 0 1 MON * org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin startDispatcher</attribute>
+      <attribute id="scheduler.close0">0 0 1 MON * org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin stopDispatcher</attribute>
+      -->
+      <attribute id="scheduler.close">02 * * * * org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin stopDispatcher</attribute>
+      <attribute id="scheduler.open">03 * * * * org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin startDispatcher</attribute>
+      <action do='LOAD' onStartupRunlevel='9' sequence='10' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='8' sequence='1'/>
+</plugin>
+
+<!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwatcher.html -->
    <plugin create='false' id='DbWatcherPlugin.testPollMD5' 
            className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
       <attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver</attribute>
