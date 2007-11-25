@@ -169,8 +169,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    # quartz scheduler
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/quartz-all-1.6.0.jar
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-collections-3.1.jar
 
-   # apache's embedded jndi naming service
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-common.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-java.jar
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/commons-logging.jar
