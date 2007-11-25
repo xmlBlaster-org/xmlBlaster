@@ -400,7 +400,7 @@ std::string FileWriterCallback::update(const std::string &sessionId,
 }}} // namespaces
 
 
-#ifdef _XMLBLASTER_CLASSTEST_1
+#ifdef _XMLBLASTER_CLASSTEST
 
 #include <util/Timestamp.h>
 #include <util/thread/ThreadImpl.h>

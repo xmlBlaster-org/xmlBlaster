@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      FileWriterCallback.h
+Name:      FileWriter.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/

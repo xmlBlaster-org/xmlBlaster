@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      FileWriterCallback.cpp
+Name:      FileWriter.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -155,32 +155,4 @@ FileWriter::~FileWriter()
 
 
 }}} // namespaces
-
-
-#include <util/Timestamp.h>
-#include <util/thread/ThreadImpl.h>
-
-using namespace std;
-using namespace org::xmlBlaster::client;
-using namespace org::xmlBlaster::util;
-
-int main(int args, char* argv[])
-{
-	// Init the XML platform
-	try
-	{
-		Global& glob = Global::getInstance();
-		glob.initialize(args, argv);
-		std::string name("writer");
-		org::xmlBlaster::contrib::FileWriter writer(glob, name);
-		writer.init();
-		org::xmlBlaster::util::thread::Thread::sleep(6000000000);
-		writer.shutdown();
-   }
-   catch (XmlBlasterException &ex) {
-      std::cout << ex.toXml() << std::endl;
-      // std::cout << ex.getRawMessage() << std::endl;
-   }
-   return 0;
-}
 
