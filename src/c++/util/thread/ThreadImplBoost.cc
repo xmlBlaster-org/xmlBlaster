@@ -203,7 +203,10 @@ void Condition::wait(const Lock& lock, long delay)
    long int nano = (long int)((delay - sec*Constants::THOUSAND)*Constants::MILLION);
    timeToWait.sec  +=  sec;
    timeToWait.nsec += nano;
-   condition_->timed_wait(*(lock.lock_), timeToWait);
+   if (delay > -1)
+      condition_->timed_wait(*(lock.lock_), timeToWait);
+   else
+      condition_->wait(*(lock.lock_));
 }
 
 void Condition::notify()

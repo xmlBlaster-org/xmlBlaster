@@ -307,7 +307,10 @@ void Condition::wait(const Lock& lock, long delay)
    unsigned long int absSec = 0;
    unsigned long int absNano = 0;
    omni_thread::get_time(&absSec, &absNano, sec, nano);
-   condition_->timedwait(absSec, absNano);
+   if (delay > -1)
+      condition_->timedwait(absSec, absNano);
+   else
+      condition_->wait();
 }
 
 
