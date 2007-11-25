@@ -21,6 +21,7 @@ public class AllTests {
       suite.addTest(org.xmlBlaster.test.contrib.dbwatcher.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.contrib.dbwriter.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.contrib.replication.AllTests.suite());
+      suite.addTest(org.xmlBlaster.test.contrib.filewatcher.AllTests.suite());
       return suite;
    }
 }
