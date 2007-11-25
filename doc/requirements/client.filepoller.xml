@@ -1,12 +1,17 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.filepoller' type='NEW' prio='HIGH' status="CLOSED">
+<requirement id='client.filepoller' type='OLD' prio='HIGH' status="DEPRECATED">
    <topic>
       You can publish messages by putting files on a certain location in the file system.
    </topic>
 
    <description>
+		<p/>
+		<h2>This is deprecated. It has been replaced by the <a href="contrib.filewatcher.html">contrib.filewatcher</a>
+			requirement.
+		</h2>  
+		<p/>
       This is a native plugin which is listening on a certain directory in the file system. 
       It detects by polling on the directory if a new file has arrived. Once the plugin assumes it has
       completely written, it will read its contents and publish them.
