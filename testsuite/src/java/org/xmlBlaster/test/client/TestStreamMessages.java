@@ -17,6 +17,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 
 import org.xmlBlaster.client.I_StreamingCallback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -195,7 +196,23 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
    }
 
 
-   private void doPublish(byte[] content, int maxChunkSize, boolean doInterrupt, String name) throws JMSException {
+   private void doPublish(byte[] content, int maxChunkSize, boolean doInterrupt, String name) throws XmlBlasterException {
+      log.info("Publishing for '" + name + "'");
+      // Global glob = this.global.getClone(null);
+      Global glob = this.connGlobal;
+      I_XmlBlasterAccess conn = glob.getXmlBlasterAccess();
+      PublishKey key = new PublishKey(glob, this.oid);
+      PublishQos qos = new PublishQos(glob);
+      qos.setPersistent(true);
+      if (doInterrupt)
+         qos.addClientProperty("interrupted", true);
+      qos.addClientProperty("nameOfTest", name);
+      qos.addClientProperty(Constants.addJmsPrefix(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE, log), maxChunkSize);
+      ByteArrayInputStream bais = new ByteArrayInputStream(content);
+      conn.publishStream(bais, key.getData(), qos.getData(), maxChunkSize, null);
+   }
+   
+   private void doPublishJMS(byte[] content, int maxChunkSize, boolean doInterrupt, String name) throws JMSException {
       // Global glob = this.global.getClone(null);
       // XBSession session = new XBSession(this.publisherGlobal, XBSession.AUTO_ACKNOWLEDGE, false);
       log.info("Publishing for '" + name + "'");
@@ -232,7 +249,7 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
          assertEquals("Wrong size of returned buffer", content.length, msgs[0].getContent().length);
          assertTrue("", compareContent(content, msgs[0].getContent()));
       }
-      catch (JMSException ex) {
+      catch (XmlBlasterException ex) {
          ex.printStackTrace();
          fail();
       }
@@ -244,7 +261,7 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
     */
    public void testManyBigChunks() {
       String name = "testManyBigChunks";
-      int maxChunkSize = 1024 * 1024 * 4; // 4 MB
+      int maxChunkSize = 1000 * 1000; // since JMS implementation does not allow more
       byte[] content = createRandomContent(maxChunkSize*3 -1);
       try {
          this.updateInterceptor.clear();
@@ -256,7 +273,7 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
          assertEquals("Wrong size of returned buffer", content.length, msgs[0].getContent().length);
          assertTrue("", compareContent(content, msgs[0].getContent()));
       }
-      catch (JMSException ex) {
+      catch (XmlBlasterException ex) {
          ex.printStackTrace();
          fail();
       }
@@ -277,7 +294,7 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
          assertEquals("Wrong size of returned buffer", content.length, msgs[1].getContent().length);
          assertTrue("", compareContent(content, msgs[1].getContent()));
       }
-      catch (JMSException ex) {
+      catch (XmlBlasterException ex) {
          ex.printStackTrace();
          fail();
       }
@@ -296,7 +313,7 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
          assertEquals("Wrong size of returned buffer", content.length, msgs[0].getContent().length);
          assertTrue("", compareContent(content, msgs[0].getContent()));
       }
-      catch (JMSException ex) {
+      catch (XmlBlasterException ex) {
          ex.printStackTrace();
          fail();
       }
@@ -318,10 +335,6 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
          assertEquals("Wrong size of returned buffer", content.length, msgs[0].getContent().length);
          assertTrue("", compareContent(content, msgs[0].getContent()));
       }
-      catch (JMSException ex) {
-         ex.printStackTrace();
-         fail();
-      }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
          fail();
@@ -340,7 +353,7 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
          assertEquals("wrong number of msg entries when testing testSingleChunk", 1, msgs.length);
          assertTrue("", content.length > msgs[0].getContent().length);
       }
-      catch (JMSException ex) {
+      catch (XmlBlasterException ex) {
          ex.printStackTrace();
          fail();
       }
@@ -401,13 +414,13 @@ public class TestStreamMessages extends TestCase implements I_StreamingCallback 
       test.tearDown();
 
       test.setUp();
-      test.testException();
-      test.tearDown();
-      
-      test.setUp();
       test.testManyChunks();
       test.tearDown();
 
+      test.setUp();
+      test.testException();
+      test.tearDown();
+      
       test.setUp();
       test.testSingleChunk();
       test.tearDown();
