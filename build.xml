@@ -143,7 +143,7 @@ TODO
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/javax.jms.jar:lib/ejb2.0.jar"/>
    <property name="cp.xml" value="lib/omquery.jar:lib/xtdash.jar"/>
    <property name="cp.orb" value="lib/miniJacorb.jar:lib/jacorb/idl.jar:lib/jacorb/jacorb.jar:lib/jacorb/logkit-1.2.jar:lib/jacorb/avalon-framework-4.1.5.jar"/>
-   <property name="cp.core" value="lib/backport-util-concurrent.jar:lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.0.jar"/>
+	<property name="cp.core" value="lib/backport-util-concurrent.jar:lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.0.jar:lib/quartz-all-1.6.0.jar:lib/commons-collections-3.1.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar:lib/naming-common.jar:lib/naming-java.jar:lib/commons-logging.jar:lib/jzlib.jar"/>
    <property name="cp.db" value="lib/postgresql.jar:lib/hsqldb.jar:lib/mysql-connector-java-3.0.8-stable-bin.jar/"/>
    <property name="cp.xpath" value="lib/jaxen.jar"/>
@@ -2518,7 +2518,8 @@ TODO
          <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp" excludes="**/SQLiteQueuePlugin.*"/>
          <fileset dir="${build.src.cpp.dir}/client" includes="**/*.cpp"
                   excludes="${COMPILE_SOCKET_EXCLUDES},${COMPILE_CORBA_EXCLUDES}" />
-         <fileset dir="${build.src.cpp.dir}/authentication" includes="**/*.cpp" />
+			<fileset dir="${build.src.cpp.dir}/authentication" includes="**/*.cpp" />
+			<fileset dir="${build.src.cpp.dir}/contrib" includes="**/*.cpp" />
          <!-- i don't think we need these libs. Boost 1.30 comes with all the classes defined here
          <fileset dir="${build.src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
          -->
@@ -2708,7 +2709,7 @@ TODO
    </target>
 
    <target name="cpp-demo" depends="prepare-cpp" description="Create C++ demo clients">
-      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo,ExternOrb,TestEmptyContent"
+      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo,ExternOrb,TestEmptyContent,FileWriterApp"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${demo.dir}/c++" />
       </foreach>
