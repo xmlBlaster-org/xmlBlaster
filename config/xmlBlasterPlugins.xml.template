@@ -377,7 +377,7 @@
       <attribute id='mom.loginName'>writer01/1</attribute>
       <attribute id='mom.password'>secret</attribute>
       <attribute id='filewriter.directoryName'>${user.home}/writerDirName</attribute>
-		<attribute id='filewriter.tmpDirectoryName'>${user.home}/writerDirName/tmp</attribute>
+      <attribute id='filewriter.tmpDirectoryName'>${user.home}/writerDirName/tmp</attribute>
       <attribute id='filewriter.overwrite'>true</attribute>
       <attribute id='filewriter.lockExtention'>.lck</attribute>
       <!--	<attribute id='__useNativeCfg'>false</attribute> -->
@@ -387,6 +387,7 @@
 
 <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.scheduler.html -->
 <plugin create='false' id='SchedulerPlugin' className='org.xmlBlaster.contrib.scheduler.SchedulerPlugin'>
+      <!-- The given class must implement org.quartz.Job, syntax see http://www.opensymphony.com/quartz/ -->
       <!--
       <attribute id="scheduler.open0">0 0 1 MON * org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin startDispatcher</attribute>
       <attribute id="scheduler.close0">0 0 1 MON * org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin stopDispatcher</attribute>
