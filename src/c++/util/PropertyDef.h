@@ -8,7 +8,8 @@ Comment:   Handling the Client data, defines operating system specific stuff.
 #ifndef _UTIL_PROPERTYDEF_H
 #define _UTIL_PROPERTYDEF_H
 
-#ifdef _WIN32
+// _WIN32 is deprecated, use _WINDOWS
+#if defined(_WIN32) || defined(_WINDOWS)
 #  define FILE_SEP "\\"
 #  define PATH_SEP ";"
 #else

@@ -10,7 +10,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #ifndef _UTIL_STRINGSTRIPPER2_H
 #define _UTIL_STRINGSTRIPPER2_H
 
-// #ifdef _WIN32
+// #if defined(_WIN32) || defined(_WINDOWS)
 // #  include <_pair.h>
 // #endif
 #include <util/StringStripper.h>
