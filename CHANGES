@@ -14,8 +14,9 @@ Changes for current svn repository
  o #16532 Logging with XbFormatter: Changed to use ISO 8601 date and time for logging
 
  o #16531 Added Checkpoint plugin to support tracing the message flow with customized log files
+          See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.checkpoint.html
+	  for usage details (and xmlBlasterPlugins.xml to activate it and logging.properties to configure amount of details logged).
           See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java
-	  for usage details (and xmlBlasterPlugins.xml to activate it).
 
  o #16528 Adjustable SmtpClient mail timeout (see xmlBlasterPlugins.xml example)
       <attribute id='mail.smtp.timeout'>3600000</attribute> <!-- socket IO: 1 h -->
