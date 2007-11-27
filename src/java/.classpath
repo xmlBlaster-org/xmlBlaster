@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="**/LowMemoryDetector.*|**/MainSvc.java|**/j2me/**|**/mime/sql92/**|**/util/lexical/**|j2ee/**" kind="src" path=""/>
+	<classpathentry excluding="**/DebugConnection*|**/LowMemoryDetector.*|**/MainSvc.java|**/j2me/**|**/mime/sql92/**|**/util/lexical/**|j2ee/**" kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/activation.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/backport-util-concurrent.jar"/>
@@ -37,5 +37,7 @@
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/batik/js.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jmxtools.jar"/>
 	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/jacorb/jacorb.jar"/>
-	<classpathentry kind="output" path="classes.lnk"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/commons-collections-3.1.jar"/>
+	<classpathentry kind="var" path="XMLBLASTER_HOME/lib/quartz-all-1.6.0.jar"/>
+	<classpathentry kind="output" path="classes.antLink"/>
 </classpath>
