@@ -30,6 +30,10 @@ as heron would in this case try to establish a connection,
 this issue would need some coding in xmlBlaster (if heron is
 connected by frodo already try to reuse the socket connection).
 
+If the firewall only allows http with proxies inbetween this
+setup won't help. You need to switch to email protocol or
+reuse the applet code which can handle this.
+
 
 Try the example:
 ================

@@ -65,7 +65,7 @@ NOTE 4: The demo below has following setup.
 5. Add a subscriber:
 ====================
 
-   java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -protocol IOR -bootstrapPort 7600 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1 -domain RUGBY_NEWS -persistentSubscribe true -dispatch/callback/retries -1 
+   java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -protocol IOR -bootstrapPort 7600 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1 -domain RUGBY_NEWS -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 
 
    This subscriber connects to 'heron' (port 7600) which is the master of
    'PublishToSlave.RUGBY_NEWS' messages.
