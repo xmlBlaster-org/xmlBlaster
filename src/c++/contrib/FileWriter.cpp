@@ -12,7 +12,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/dispatch/DispatchManager.h>
 #include <util/parser/ParserFactory.h>
 #include <stdio.h>
-#include <dirent.h>
 #include <fstream>
 
 namespace org { namespace xmlBlaster { namespace contrib {

@@ -11,7 +11,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/dispatch/DispatchManager.h>
 #include <util/parser/ParserFactory.h>
 #include <stdio.h>
-#include <dirent.h>
+#if defined(_WINDOWS)
+#	ifdef WIN32_LEAN_AND_MEAN
+#		undef WIN32_LEAN_AND_MEAN
+#	endif
+#	define WIN32_LEAN_AND_MEAN 1
+#	include <windows.h>
+#else
+#	include <dirent.h>
+#endif
 // #include <sys/stat.h>
 #include <fstream>
 
@@ -155,9 +163,31 @@ long FileWriterCallback::extractNumberPostfixFromFile(std::string &filename, std
 	return -1L;
 }
 
-
+using namespace std;
 void FileWriterCallback::getdir(std::string &dir, std::string &prefix, vector<string> &files)
 {
+#ifdef _WIN32
+	// return all files in dir, prefix?
+	HANDLE          hFile = NULL;   /*  Find file handle */
+	WIN32_FIND_DATA FileData;       /*  Find file info structure */
+
+	char buf[256];
+	int  buf_len = 255;
+	if (!GetCurrentDirectory(buf_len,buf)) { return; } // error !
+
+	SetCurrentDirectory(dir.c_str()); // ev. \ /  handling?
+
+	hFile = FindFirstFile( "*", &FileData );
+	if ( hFile == INVALID_HANDLE_VALUE) return;
+	while (1) {
+		if (!(FileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+			files.push_back(FileData.cFileName);
+		if ( !FindNextFile( hFile, &FileData) ) break;
+	}
+	FindClose(hFile);
+
+	SetCurrentDirectory(buf);
+#else
 	DIR *dp;
 	struct dirent *dirp;
 	if((dp  = opendir(dir.c_str())) == NULL) {
@@ -169,6 +199,7 @@ void FileWriterCallback::getdir(std::string &dir, std::string &prefix, vector<st
 		files.push_back(string(dirp->d_name));
 	}
 	closedir(dp);
+#endif
 }
 
 void FileWriterCallback::getChunkFilenames(std::string &fileName, std::string &sep, std::vector<std::string> &filenames) 
