@@ -55,13 +55,15 @@ public class DbStorage {
       if (dbHelper.isOracle())
          keyNameDef = "key"; // to be backwards compatible for replication
       String table = info.get("dbs.table", "DBINFO");
+      this.tableName = this.dbHelper.getIdentifier(table);
+
       String keyName = info.get("dbs.keyName", keyNameDef);
       String valueName = info.get("dbs.valueName", "value");
       String typeName = info.get("dbs.typeName", "type");
       String encodingName = info.get("dbs.encodingName", "encoding");
       String contextName = info.get("dbs.table", "context");
       
-      info.put("dbs.table", table);
+      info.put("dbs.table", this.tableName);
       info.put("dbs.keyName", keyName);
       info.put("dbs.valueName", valueName);
       info.put("dbs.typeName", typeName);
@@ -110,7 +112,6 @@ public class DbStorage {
          throw new Exception("DbStorage constructor: The Database pool 'pool' was null. This is not allowed.");
       this.pool = pool;
       this.dbHelper = new DbMetaHelper(this.pool);
-      this.tableName = this.dbHelper.getIdentifier(tableName);
       prepareSql(info, this.context);
       createTableIfNeeded();
    }
