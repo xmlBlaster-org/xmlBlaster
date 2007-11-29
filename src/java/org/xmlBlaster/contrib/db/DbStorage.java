@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.contrib.I_Info;
+import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
@@ -34,7 +36,72 @@ public class DbStorage {
    private DbMetaHelper dbHelper;
    private String tableName;
    
-   public DbStorage(I_DbPool pool, String tableName, String context) throws Exception {
+   private String createSql;
+   private String modifySql;
+   private String addSql;
+   private String getSql;
+   private String cleanSql;
+   private String deleteSql;
+   private String getKeysSql;
+   
+   private final void prepareSql(I_Info info, String ctx) {
+      
+      String tmp = info.get("dbs.context", null);
+      if (tmp != null && !tmp.equals(ctx))
+         log.warning("Property 'dbs.context' already set to '" + tmp + "' will overwrite it to '" + ctx + "'");
+      info.put("dbs.context", ctx);
+      
+      String keyNameDef = "name";
+      if (dbHelper.isOracle())
+         keyNameDef = "key"; // to be backwards compatible for replication
+      String table = info.get("dbs.table", "DBINFO");
+      String keyName = info.get("dbs.keyName", keyNameDef);
+      String valueName = info.get("dbs.valueName", "value");
+      String typeName = info.get("dbs.typeName", "type");
+      String encodingName = info.get("dbs.encodingName", "encoding");
+      String contextName = info.get("dbs.table", "context");
+      
+      info.put("dbs.table", table);
+      info.put("dbs.keyName", keyName);
+      info.put("dbs.valueName", valueName);
+      info.put("dbs.typeName", typeName);
+      info.put("dbs.encodingName", encodingName);
+      info.put("dbs.contextName", contextName);
+      
+      InfoHelper helper = new InfoHelper(info);
+      tmp = "CREATE TABLE ${dbs.table} (${dbs.contextName} VARCHAR(255), ${dbs.keyName} VARCHAR(255), ${dbs.valueName} VARCHAR(255), ${dbs.typeName} VARCHAR(16), {dbs.encodingName} VARCHAR(16), PRIMARY KEY (${dbs.contextName}, ${dbs.keyName}))";
+      createSql = helper.replace(info.get("dbs.createSql", tmp));
+      log.fine("create statement: '" + createSql + "'");
+      tmp = "UPDATE ${dbs.table} SET ${dbs.valueName}=?, ${dbs.typeName}=?, ${dbs.encodingName}=? WHERE ${dbs.contextName}=? AND ${dbs.keyName}=?";
+      modifySql = helper.replace(info.get("dbs.mofifySql", tmp));
+      log.fine("modify statement: '" + modifySql + "'");
+      tmp = "INSERT INTO ${dbs.table} VALUES(?, ?, ?, ?, ?)";
+      addSql = helper.replace(info.get("dbs.addSql", tmp));
+      log.fine("add statement: '" + addSql + "'");
+      tmp = "SELECT * FROM ${dbs.table} WHERE ${dbs.contextName}=? AND ${dbs.keyName}=?";
+      getSql = helper.replace(info.get("dbs.getSql", tmp));
+      log.fine("get statement: '" + getSql + "'");
+      tmp = "DELETE FROM ${dbs.table} WHERE ${dbs.contextName}='${dbs.context}'";
+      cleanSql = helper.replace(info.get("dbs.cleanSql", tmp));
+      log.fine("clean statement: '" + cleanSql + "'");
+      tmp = "SELECT ${dbs.keyName} FROM ${dbs.table} WHERE ${dbs.contextName}=?";
+      getKeysSql = helper.replace(info.get("db.getKeysSql", tmp));
+      log.fine("getKeys statement: '" + getKeysSql + "'");
+      tmp = "DELETE FROM ${dbs.table} WHERE ${dbs.contextName}='${dbs.context}' AND ${dbs.keyName}=?";
+      deleteSql = helper.replace(info.get("dbs.deleteSql", tmp));
+      log.fine("delete statement: '" + deleteSql + "'");
+      /*
+      this.createSql = "CREATE TABLE " + table + " (context VARCHAR(255), " + KEY_TXT + " VARCHAR(255), value VARCHAR(255), type VARCHAR(16), encoding VARCHAR(16), PRIMARY KEY (context, " + KEY_TXT + "))";
+      this.modifySql = "UPDATE " + table + " SET value=?, type=?, encoding=? WHERE context=? AND " + KEY_TXT + "=?"; 
+      this.addSql = "INSERT INTO " + table + " VALUES(?, ?, ?, ?, ?)";
+      this.getSql = "SELECT * FROM " + table + " WHERE context=? AND " + KEY_TXT + "=?"; 
+      this.cleanSql = "DELETE FROM " + table + " WHERE context='" + ctx + "'";
+      this.getKeysSql = "SELECT " + KEY_TXT + " FROM " + table + " WHERE context=?";
+      this.deleteSql = "DELETE FROM " + table + " WHERE context='" + ctx + "' AND " + KEY_TXT + "=?";
+      */
+   }
+   
+   public DbStorage(I_Info info, I_DbPool pool, String context) throws Exception {
       if (context == null || context.trim().length() < 1)
          this.context = "/";
       else
@@ -44,10 +111,11 @@ public class DbStorage {
       this.pool = pool;
       this.dbHelper = new DbMetaHelper(this.pool);
       this.tableName = this.dbHelper.getIdentifier(tableName);
-      createTableIfNeeded(this.tableName);
+      prepareSql(info, this.context);
+      createTableIfNeeded();
    }
    
-   private final boolean tableExists(String tableName) throws Exception {
+   private final boolean tableExists() throws Exception {
       tableName = this.dbHelper.getIdentifier(tableName);
       Connection conn = null;
       try {
@@ -64,13 +132,13 @@ public class DbStorage {
       }
    }
    
-   private void createTableIfNeeded(String tableName) throws Exception {
-      if (!tableExists(tableName)) {
+   private void createTableIfNeeded() throws Exception {
+      if (!tableExists()) {
          // TODO: Add schema as Oracle finds the same named table in another schema
          // and make tableName configurable 'xmlBlaster.DBINFO'
-         String sql = "CREATE TABLE " + tableName + " (context VARCHAR(255), key VARCHAR(255), value VARCHAR(255), type VARCHAR(16), encoding VARCHAR(16), PRIMARY KEY (context, key))";
-         log.info("Going to create the table with the statement '" + sql + "'");
-         this.pool.update(sql);
+         // TODO !!!!!
+         log.info("Going to create the table with the statement '" + createSql + "'");
+         this.pool.update(createSql);
       }
    }
 
@@ -90,8 +158,7 @@ public class DbStorage {
       try {
          conn = this.pool.reserve();
          conn.setAutoCommit(true);
-         String sql = "INSERT INTO " + this.tableName + " VALUES(?, ?, ?, ?, ?)";
-         st = conn.prepareStatement(sql);
+         st = conn.prepareStatement(addSql);
          st.setString(CONTEXT, this.context);
          st.setString(KEY, key);
          st.setString(VALUE, prop.getValueRaw());
@@ -132,8 +199,7 @@ public class DbStorage {
       try {
          conn = this.pool.reserve();
          conn.setAutoCommit(true);
-         String sql = "UPDATE " + this.tableName + " SET value=?, type=?, encoding=? WHERE context=? AND key=?"; 
-         st = conn.prepareStatement(sql);
+         st = conn.prepareStatement(modifySql);
          st.setString(1, prop.getValueRaw());
          st.setString(2, prop.getType());
          st.setString(3, prop.getEncoding());
@@ -171,8 +237,7 @@ public class DbStorage {
       try {
          conn = this.pool.reserve();
          conn.setAutoCommit(true);
-         String sql = "SELECT * FROM " + this.tableName + " WHERE context=? AND key=?"; 
-         st = conn.prepareStatement(sql);
+         st = conn.prepareStatement(getSql);
          st.setString(1, this.context);
          st.setString(2, key);
          ResultSet rs = st.executeQuery();
@@ -207,7 +272,28 @@ public class DbStorage {
    public boolean remove(String key) throws Exception {
       if (key == null)
          throw new Exception("The key to remove was null");
-      return this.pool.update("DELETE FROM " + this.tableName + " WHERE context='" + this.context + "' AND key='" + key + "'") != 0;
+
+      PreparedStatement st = null;
+      Connection conn = null;
+      try {
+         conn = this.pool.reserve();
+         conn.setAutoCommit(true);
+         st = conn.prepareStatement(deleteSql);
+         st.setString(1, key);
+         return st.executeUpdate() != 0;
+      }
+      finally {
+         if (st != null) {
+            try {
+               st.close();
+            }
+            catch (Throwable ex) { 
+               ex.printStackTrace(); 
+            }
+         }
+         if (conn != null)
+            this.pool.release(conn);
+      }
    }
    
    /**
@@ -216,7 +302,7 @@ public class DbStorage {
     * @throws Exception
     */
    public int clean() throws Exception {
-      return this.pool.update("DELETE FROM " + this.tableName + " WHERE context='" + this.context + "'");
+      return this.pool.update(cleanSql);
    }
    
    /**
@@ -241,8 +327,7 @@ public class DbStorage {
       try {
          conn = this.pool.reserve();
          conn.setAutoCommit(true);
-         String sql = "SELECT key FROM " + this.tableName + " WHERE context=?"; 
-         st = conn.prepareStatement(sql);
+         st = conn.prepareStatement(getKeysSql);
          st.setString(1, this.context);
 
          ResultSet rs = st.executeQuery();

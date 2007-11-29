@@ -28,6 +28,7 @@ public class DbMetaHelper {
    private int caseSense = CASE_UNKNOWN;
 
    private int maxProcLength;
+   private String productName;
    
    /**
     * Initializes the object by reading the metadata of this database.
@@ -53,6 +54,11 @@ public class DbMetaHelper {
             this.caseSense = CASE_MIXED;
          else
             throw new Exception("DbMetaHelper constructor: can not determine which case the identifiers are stored");
+         String tmp = meta.getDatabaseProductName();
+         if (tmp != null)
+            this.productName = tmp.trim().toUpperCase();
+         else
+            this.productName = "";
       }
       finally {
          if (conn != null)
@@ -108,5 +114,9 @@ public class DbMetaHelper {
       if (toCut > 0)
          tableName = tableName.substring(0, tableName.length() - toCut);
       return createFunctionName(prefix, separator, schema, tableName);
+   }
+   
+   public boolean isOracle() {
+      return this.productName.contains("ORACLE");
    }
 }

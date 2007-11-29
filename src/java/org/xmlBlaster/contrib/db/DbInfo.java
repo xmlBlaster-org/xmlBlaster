@@ -32,7 +32,6 @@ import org.xmlBlaster.util.qos.ClientProperty;
 public class DbInfo implements I_Info, DbInfoMBean {
 
    private static Logger log = Logger.getLogger(DbInfo.class.getName());
-   private final static String TABLE_NAME = "DBINFO";
    Map objects;
    private InfoHelper helper;
    private DbStorage storage;
@@ -41,7 +40,7 @@ public class DbInfo implements I_Info, DbInfoMBean {
     * @param clientPropertyMap Can be null
     */
    public DbInfo(I_DbPool pool, String id, I_Info info) throws Exception {
-      this.storage = new DbStorage(pool, TABLE_NAME, id);
+      this.storage = new DbStorage(info, pool, id);
       this.helper = new InfoHelper(this);
       this.objects = new HashMap();
       // performance impact. It should anyway be clean what is in the Db.

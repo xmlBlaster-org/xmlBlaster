@@ -298,7 +298,7 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
       SchedulerFactory schedFact = new org.quartz.impl.StdSchedulerFactory();
       try {
          String instanceName = getType();
-         ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
+         ContextNode contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG, instanceName,
                this.global.getContextNode());
          if (!this.global.isRegisteredMBean(contextNode))
             this.mbeanHandle = this.global.registerMBean(contextNode, this);

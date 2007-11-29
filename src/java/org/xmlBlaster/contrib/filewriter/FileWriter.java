@@ -152,12 +152,9 @@ public class FileWriter extends GlobalInfo implements I_Callback {
             cbAddr.setDispatchPlugin(replDispatchPlugin);
             connectQos.addCallbackAddress(cbAddr);
          }
-         
-         
       }
       if (subscribeQos == null)
          subscribeQos = "<qos/>";
-      
       
       String directoryName = this.global.get("filewriter.directoryName", (String)null, null, this.pluginConfig);
       if (directoryName == null)

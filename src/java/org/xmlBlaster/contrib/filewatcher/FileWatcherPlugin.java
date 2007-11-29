@@ -71,6 +71,9 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
       this.ME += "-" + getType();
       if (log.isLoggable(Level.FINER))
          log.finer(ME+"init");
+      String pluginId = get("plugin.id", null);
+      if (pluginId == null && getType() != null)
+         put("plugin.id", getType());
       this.publisherClient = new Publisher(global, this.getType(), this);
       this.publisherClient.init();
       if (log.isLoggable(Level.FINEST)) {
@@ -81,6 +84,7 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
       this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
             "FileWatcherPlugin[" + getType() + "]", global.getScopeContextNode());
       this.mbeanHandle = global.registerMBean(this.contextNode, this);
+
    }
 
    /**

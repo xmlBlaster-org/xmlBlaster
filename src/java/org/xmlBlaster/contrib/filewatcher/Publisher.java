@@ -17,7 +17,6 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.contrib.ContribConstants;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher;
@@ -26,7 +25,6 @@ import org.xmlBlaster.contrib.replication.ReplSourceEngine;
 import org.xmlBlaster.contrib.replication.ReplicationConstants;
 import org.xmlBlaster.jms.XBConnectionMetaData;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timeout;
@@ -212,6 +210,17 @@ public class Publisher implements I_Timeout {
       String tmp = null;
       tmp = info_.get("mom.publishKey", null);
       String topicName =  info_.get("mom.topicName", null);
+      replPrefix = info_.get(ReplicationConstants.REPL_PREFIX_KEY, null);
+
+      if (replPrefix != null) {
+         replPrefix = replPrefix.trim();
+         if ("${plugin.id}".equals(replPrefix)) {
+            String pluginId = info_.get("plugin.id", null);
+            if (pluginId == null)
+               throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "'replication.prefix' was set to be'${plugin.id}' but the plugin has no id set");
+            replPrefix = pluginId.trim();
+         }
+      }
       
       if (tmp != null) {
          this.publishKey = tmp;
@@ -219,8 +228,12 @@ public class Publisher implements I_Timeout {
             log.warning(ME+": constructor: since 'mom.publishKey' is defined, 'topicName' will be ignored");
       }
       else {
-         if (topicName == null)
-            throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "at least one of the properties 'topicName' or 'publishKey' must be defined");
+         if (topicName == null) {
+            if (replPrefix == null)
+               throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "at least one of the properties 'topicName', 'publishKey' or 'replication.prefix' must be defined");
+            else
+               topicName = "topic." + replPrefix.trim();
+         }
          this.publishKey = (new PublishKey(this.global, topicName)).toXml(); 
       }
       
@@ -258,10 +271,18 @@ public class Publisher implements I_Timeout {
       this.filterType = info_.get("filewatcher.filterType", "simple");
       this.copyOnMove = info_.getBoolean("filewatcher.copyOnMove", true);
 
-      replPrefix = info_.get(ReplicationConstants.REPL_PREFIX_KEY, null);
       // replPrefixGroup = info_.get(ReplicationConstants.REPL_PREFIX_GROUP_KEY, null);
       // replVersion = info_.get(ReplicationConstants.REPLICATION_VERSION, null);
-      prepareReplSource(replPrefix != null);
+      if (replPrefix != null) {
+         String replVersion = info_.get(ReplicationConstants.REPLICATION_VERSION, null);
+         if (replVersion == null)
+            info_.put(ReplicationConstants.REPLICATION_VERSION, "1.0");
+         String tmpKey = "replication.countSingleMsg";
+         String tmpVal = info_.get(tmpKey, null);
+         if (tmpVal == null)
+            info_.put(tmpKey, "true");
+         prepareReplSource(replPrefix != null);
+      }
       createDirectoryManager();
    }
    
