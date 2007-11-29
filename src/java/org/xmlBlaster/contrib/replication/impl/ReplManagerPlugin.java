@@ -15,10 +15,6 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher]=true
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.replication.impl;
 
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -128,8 +124,7 @@ public class ReplManagerPlugin extends GlobalInfo
               I_Timeout, 
               ReplicationConstants, 
               I_Plugin,
-              I_PublishFilter,
-              Job {
+              I_PublishFilter {
 
    private class Counter {
       long msg;
@@ -316,6 +311,11 @@ public class ReplManagerPlugin extends GlobalInfo
       // return InfoHelper.getIteratorAsString(this.replications.keySet().iterator());
       this.cachedListOfReplications = buf.toString();
       return this.cachedListOfReplications;
+   }
+   
+   
+   public static String getPluginName() {
+      return "ReplManager,1,0";
    }
    
    public String getType() {
@@ -1765,7 +1765,7 @@ public class ReplManagerPlugin extends GlobalInfo
       return getSession(sessionId);
    }
 
-   private void doExecute(boolean open, String prefix, String dest) {
+   public void doExecuteSchedulerJob(boolean open, String prefix, String dest) {
       if (prefix == null) {
          synchronized(replications) {
             String[] keys = (String[])replications.keySet().toArray(new String[replications.size()]);
@@ -1787,33 +1787,5 @@ public class ReplManagerPlugin extends GlobalInfo
       }
    }
    
-   public void execute(JobExecutionContext context) throws JobExecutionException {
-      JobDataMap map = context.getJobDetail().getJobDataMap();
-      String operation = map.getString("arg0"); // can not be null
-      String prefix = map.getString("arg1"); // can be null 
-      String dest = map.getString("arg2"); // can be null
-      Global glob = (Global)map.get(ORIGINAL_ENGINE_GLOBAL);
-      if (glob == null) {
-         log.severe("Could not find the ServerScope: can not execute the scheduler job");
-      }
-      else {
-         ReplManagerPlugin plugin = (ReplManagerPlugin)glob.getPluginRegistry().getPlugin(getType() + "," + getVersion());
-         if (plugin == null) {
-            log.severe("Could not find singleton instance of ReplManagerPlugin: can not execute the scheduler job");
-         }
-         else {
-            if ("startDispatcher".equals(operation)) {
-               plugin.doExecute(true, prefix, dest);
-            }
-            else if ("stopDispatcher".equals(operation)) {
-               plugin.doExecute(false, prefix, dest);
-            }
-            else {
-               log.warning("Operation '" + operation + "' not recognized: not doing anything");
-            }
-         }
-         
-      }
-   }
 }
 
