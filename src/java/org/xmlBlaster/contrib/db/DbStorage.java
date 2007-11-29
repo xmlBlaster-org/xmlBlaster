@@ -69,7 +69,7 @@ public class DbStorage {
       info.put("dbs.contextName", contextName);
       
       InfoHelper helper = new InfoHelper(info);
-      tmp = "CREATE TABLE ${dbs.table} (${dbs.contextName} VARCHAR(255), ${dbs.keyName} VARCHAR(255), ${dbs.valueName} VARCHAR(255), ${dbs.typeName} VARCHAR(16), {dbs.encodingName} VARCHAR(16), PRIMARY KEY (${dbs.contextName}, ${dbs.keyName}))";
+      tmp = "CREATE TABLE ${dbs.table} (${dbs.contextName} VARCHAR(255), ${dbs.keyName} VARCHAR(255), ${dbs.valueName} VARCHAR(255), ${dbs.typeName} VARCHAR(16), ${dbs.encodingName} VARCHAR(16), PRIMARY KEY (${dbs.contextName}, ${dbs.keyName}))";
       createSql = helper.replace(info.get("dbs.createSql", tmp));
       log.fine("create statement: '" + createSql + "'");
       tmp = "UPDATE ${dbs.table} SET ${dbs.valueName}=?, ${dbs.typeName}=?, ${dbs.encodingName}=? WHERE ${dbs.contextName}=? AND ${dbs.keyName}=?";
