@@ -32,10 +32,13 @@
               plugin will continue to poll but will not process any file anymore until the problem has
               been manually removed.
          </li>
-         <li>It is possible to configure a maximum file size. Files bigger than the specified size are not
-             published. If a 'discarded' directory is specified in the properties, then the file will be 
-             moved to that directory, otherwise it will be deleted.
-         </li>
+			<li>It is possible to configure a maximum file size. Files bigger than the specified size are not
+				published. If a 'discarded' directory is specified in the properties, then the file will be 
+				moved to that directory, otherwise it will be deleted.
+			</li>
+			<li>For large or huge files it is possible to send them over xmlBlaster in a chunkwise manner, that
+				is they are divided into smaller messages. The maximum size of these chunks is configurable.
+			</li>
          <li>
             When moving files, wether to the 'sent' or 'discarded' directories, if a file with the same
             relative name already exists, it is overwritten.
@@ -71,7 +74,7 @@
          <li>
            To be able to track the message origin, filename and date are sent in the client properties as:
            <ul>
-              <li><i>_fileName</i></li> (the relative file name as a String)
+              <li><i>_filename</i></li> (the relative file name as a String)
               <li><i>_fileDate</i></li> (the timestamp of the file in ms as a long)
            </ul>
          </li>
@@ -80,17 +83,21 @@
            plugins. When doing so assign to each plugin a different id (this is actually a general requirement for the
            plugins).
          </li>
-         <li>
-           The files to be published are sorted in the first place chronologically. Files having the same <i>last change</i>
-           timestamp are sorted alphabetically. The best precision for the timestamp is one millisecond. If the operating 
-           system does not offer such a precision, the precision of the operating system will be determinant. Also,
-           the timestamp is the <i>last change</i> timestamp. Depending on the operating system this time could be the time
-           when the writing operation is started, when it is ended or in between. This would have to be considered when the 
-           applications writing to the directory on which the filewatcher is listening are working multithreaded.
-         </li>
+			<li>
+				The files to be published are sorted in the first place chronologically. Files having the same <i>last change</i>
+				timestamp are sorted alphabetically. The best precision for the timestamp is one millisecond. If the operating 
+				system does not offer such a precision, the precision of the operating system will be determinant. Also,
+				the timestamp is the <i>last change</i> timestamp. Depending on the operating system this time could be the time
+				when the writing operation is started, when it is ended or in between. This would have to be considered when the 
+				applications writing to the directory on which the filewatcher is listening are working multithreaded.
+			</li>
+			<li>
+				It is possible to make the filewatcher be part of a file replication workflow. Its counterpart, i.e. the instance
+				which writes the files on reception is the <a href="./contrib.filewriter.html">file writer</a>. It also can be 
+				configured to be monitored and administered using the monitor for the <a href="http://www.xmlblaster.org/replication/index.html">replication</a>.
+			</li>
        </ul>
    </description>
-
 
    <example lang="any" type="HTML">
       <p id="regex" class="celltitel">Testing your filter pattern</p>
@@ -124,17 +131,17 @@
         <attribute id='mom.publishKey'><key oid='watcher.test'><watcher><test/></watcher></key></attribute>
         <attribute id='mom.publishQos'><qos><expiration lifeTime='4000'/></qos></attribute>
         <attribute id='mom.connectQos'></attribute>
-		  <attribute id='mom.loginName'>fritz</attribute>
-		  <attribute id='mom.password'>secret</attribute>
-		  <attribute id='filewatcher.directoryName'>/tmp/fileWatcher</attribute>
-		  <attribute id='filewatcher.maximumFileSize'>10000000</attribute>
-		  <attribute id='filewatcher.delaySinceLastFileChange'>10000</attribute>
-		  <attribute id='filewatcher.pollInterval'>2000</attribute>
-		  <attribute id='filewatcher.sent'>Sent</attribute>
-		  <attribute id='filewatcher.discarded'>Discarded</attribute>
-		  <attribute id='filewatcher.fileFilter'></attribute>
-		  <attribute id='filewatcher.lockExtention'>*.lck</attribute>
-		  <attribute id='filewatcher.filterType'>simple</attribute>
+        <attribute id='mom.loginName'>fritz</attribute>
+        <attribute id='mom.password'>secret</attribute>
+        <attribute id='filewatcher.directoryName'>/tmp/fileWatcher</attribute>
+        <attribute id='filewatcher.maximumFileSize'>10000000</attribute>
+        <attribute id='filewatcher.delaySinceLastFileChange'>10000</attribute>
+        <attribute id='filewatcher.pollInterval'>2000</attribute>
+        <attribute id='filewatcher.sent'>Sent</attribute>
+        <attribute id='filewatcher.discarded'>Discarded</attribute>
+        <attribute id='filewatcher.fileFilter'></attribute>
+        <attribute id='filewatcher.lockExtention'>*.lck</attribute>
+        <attribute id='filewatcher.filterType'>simple</attribute>
         <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
         <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
      </plugin>
@@ -143,6 +150,35 @@
  </xmlBlaster>
 ]]>
 </pre>
+and here a configuration for a filewatcher which has to be part of a file replication (i.e. which has to be monitored
+by a replication monitor:
+<pre>
+<![CDATA[
+     <plugin create="true" id='fileSet02' className='org.xmlBlaster.contrib.filewatcher.FileWatcherPlugin'>
+        <attribute id='filewatcher.directoryName'>/tmp/fileWatcher</attribute>
+        <attribute id='mom.publishQos'><qos><persistent/></qos></attribute>
+        <attribute id='mom.loginName'>watcher01/1</attribute>
+        <attribute id='mom.password'>secret</attribute>
+	<!-- maximum file size would be 2 GB in this case -->
+        <attribute id='filewatcher.maximumFileSize'>2147483648</attribute>
+	<!-- maximum chunk size would be 256 kB in this case -->
+        <attribute id='filewatcher.maximumChunkSize'>262144</attribute>
+        <!-- optimistically waits 10 minutes after last change in file size -->
+        <attribute id='filewatcher.delaySinceLastFileChange'>600000</attribute>
+        <!-- polls every 5 minutes to see if there are new files -->
+        <attribute id='filewatcher.pollInterval'>300000</attribute>
+        <attribute id='filewatcher.sent'>Sent</attribute>
+        <attribute id='filewatcher.discarded'>Discarded</attribute>
+        <attribute id='filewatcher.filterType'>simple</attribute>
+        <!-- this token will be replaced with the id of the plugin: here 'fileSet02' -->
+        <attribute id='replication.prefix'>${plugin.id}</attribute>
+        <action do='LOAD' onStartupRunlevel='7' sequence='3' onFail='resource.configuration.pluginFailed'/>
+        <action do='STOP' onShutdownRunlevel='6' sequence='7'/>
+     </plugin>
+]]>
+</pre>
+
+
 and here a minimalistic one:
 
 <pre>
@@ -196,7 +232,9 @@ and here a minimalistic one:
          <td>mom.publishKey</td>
          <td>String</td>
          <td>null</td>
-         <td><b>optional</b> unless <i>topicName</i> has not been specified in which case it is mandatory.
+         <td><b>optional</b> if <i>replication.prefix</i> has been set. <b>mandatory</b> if neither <i>replication.prefix</i>
+			nor <i>mom.topicName</i> have been set. You should not set it if you have set <i>mom.topicName</i>: doing so, a
+			warning is written to the logs and this key has precedence over the <i>mom.topicName</i>.
          If you need to specify a more complex <a href="interface.publish.html">key</a> for the publishing 
          (for example to make it searcheable)
          of the messages you can specify it here. Note that you can only specify one single key which will
@@ -265,17 +303,26 @@ and here a minimalistic one:
          </td>
        </tr>
 
-
-       <tr>
+		 <tr>
 			 <td>filewatcher.maximumFileSize</td>
-         <td>long</td>
-         <td>10000000</td>
-         <td><b>optional</b>: The maximum file size expressed in bytes to be allowed to be published. If
-         the file exceeds this size, then it is not published. It is either deleted or moved to the 
-         directory specified in the <i>discarded</i> attribute.
-         </td>
-       </tr>
-
+			 <td>long</td>
+			 <td>10000000</td>
+			 <td><b>optional</b>: The maximum file size expressed in bytes to be allowed to be published. If
+				 the file exceeds this size, then it is not published. It is either deleted or moved to the 
+				 directory specified in the <i>discarded</i> attribute.
+			 </td>
+		 </tr>
+		 
+		 <tr>
+			 <td>filewatcher.maximumChunkSize</td>
+			 <td>long</td>
+			 <td></td>
+			 <td><b>optional</b>: The maximum chunk size expressed in bytes which will be published in a 
+				 single message. If the total file size to be published is bigger than this number, the file is
+				 published in several such chunks.
+			 </td>
+		 </tr>
+		 
        <tr>
 			 <td>filewatcher.fileFilter</td>
          <td>String</td>
@@ -332,19 +379,35 @@ and here a minimalistic one:
                 of type 'simple'.
          </td>
        </tr>
-       <tr>
+		 <tr>
 			 <td>filewatcher.copyOnMove</td>
-         <td>boolean</td>
-         <td>true</td>
-         <td><b>optional</b>: This flag has only effect if <b>sent</b> or <b>discarded</b> have been defined. If this 
-             flag is set to false then the file will be simply moved (or renamed). This is fast but it does not 
-             work on all OS systems. Particularly on non-local file systems this is known to fail.
-             Leaving this flag <i>true</i> (default) forces a complete copy/delete of the file.
-             This is slower but works even on file systems mounted remotely like nfs, samba or cifs.
-         </td>
-       </tr>
-     </table>   
-
+			 <td>boolean</td>
+			 <td>true</td>
+			 <td><b>optional</b>: This flag has only effect if <b>sent</b> or <b>discarded</b> have been defined. If this 
+				 flag is set to false then the file will be simply moved (or renamed). This is fast but it does not 
+				 work on all OS systems. Particularly on non-local file systems this is known to fail.
+				 Leaving this flag <i>true</i> (default) forces a complete copy/delete of the file.
+				 This is slower but works even on file systems mounted remotely like nfs, samba or cifs.
+			 </td>
+		 </tr>
+		 <tr>
+			 <td>replication.prefix</td>
+			 <td>String</td>
+			 <td></td>
+		 	<td><b>optional</b>: This identifier (which mus be unique) tells xmlBlaster that this filewatcher wants to be monitored
+				 via the replication monitor. This is a parameter which has currenlty no effect on the replication of files.
+			 </td>
+		 </tr>
+		 <tr>
+			 <td>replication.version</td>
+			 <td>String</td>
+		 	<td>1.0</td>
+		 	<td><b>optional</b>: This identifier has only effect if you have set <i>replication.prefix</i>. It tells the replication
+			 mechanism which version of the replication data you are using. This can normally be left untouched. If you don't specify
+			 anything and choosed replication it will set it to "1.0".
+		 	</td>
+	 	</tr>
+	 </table>   
    </configuration>
 
    <see type="REQ">engine.runlevel</see>

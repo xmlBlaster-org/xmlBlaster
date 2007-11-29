@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='contrib.filewriter' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>
+      You can receive messages published by the filewatcher and store them at a certain location on the filesystem.
+   </topic>
+
+   <description>
+      <p>
+      This can either be run as a java plugin running locally on the server, or a c++ standalone application.
+      For the standalone application this is to be found under the demos as <b>FileWriterApp</b>.
+      The configuration parameters are the same for both solutions.
+      </p>
+   </description>
+
+   <example lang="any" type="HTML">
+      <p id="cpp" class="celltitel">Invoke the c++ Client</p>
+      <p>You can easlily invoke the c++ client by going to the demo/bin Directory (or pointing the classpath to it)
+      and invoke:
+      </p>
+<pre class="BORDER">
+ FileWriterApp -propertyFile xmlBlaster.properties
+</pre> 
+   </example>
+
+   <configuration where="server">
+      <p>
+         The plugin is configured in the xmlBlasterPlugins.xml configuration file. Here an example where
+         all properties are used:
+<pre>
+<![CDATA[
+  <xmlBlaster>
+    ...
+     <plugin create='true' id='FileWriter' className='org.xmlBlaster.contrib.filewriter.FileWriter'>
+        <attribute id='mom.administered'>true</attribute>
+        <attribute id='mom.loginName'>writer01/1</attribute>
+        <attribute id='mom.password'>secret</attribute>
+        <attribute id='filewriter.directoryName'>${user.home}/writerDirName</attribute>
+        <attribute id='filewriter.tmpDirectoryName'>${user.home}/writerDirName/tmp</attribute>
+        <attribute id='filewriter.overwrite'>true</attribute>
+        <attribute id='filewriter.lockExtention'>.lck</attribute>
+        <action do='LOAD' onStartupRunlevel='7' sequence='4' onFail='resource.configuration.pluginFailed'/>
+        <action do='STOP' onShutdownRunlevel='6' sequence='6'/>
+     </plugin>
+   ...
+ </xmlBlaster>
+]]>
+</pre>
+ </p>
+
+ and here a more detailed description about each attribute:
+
+    <table border="1">
+       <tr>
+         <th>id (name)</th>
+         <th>type</th>
+         <th>default value</th>
+         <th>Comment</th>
+       </tr>
+
+
+       <tr>
+         <td>mom.connectQos</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>optional: In case you need special considerations when connecting, you must specify this in this connectQos. If you
+	     specify something here, the <i>mom.loginName</i> is ignored. Note that you need to specify one of these two.</td>
+       </tr>
+
+       <tr>
+         <td>mom.loginName</td>
+	 <td>String</td>
+	 <td>${user.name}</td>
+	 <td>optional: The name to be used to login. You can specify also a session name for example someName/1 to force it to use a 
+	 positive sessionId. If you specified <i>mom.connectQos</i> this parameter is ignored.</td>
+       </tr>
+
+       <tr>
+         <td>mom.password</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>optional: The password to use to login to xmlBlaster.</td>
+       </tr>
+
+       <tr>
+         <td>mom.administered</td>
+	 <td>String</td>
+	 <td>false</td>
+	 <td>optional: if you want to use this file writer as part of a file replication, you want to administer/monitor the
+	     workflow with the replication monitor. To enable this you must specify <i>true</i> here. Setting this value to
+	     <i>true</i> will </td> result in <i>mom.subscribeKey</i> and <i>mom.subscribeQos</i> to be ignored, since the 
+	     subscription will first be done by the administrator via the replication monitor.
+	     If you do not choose <i>true</i> here, you will not be able to use the replication monitor.
+       </tr>
+
+       <tr>
+         <td>mom.subscribeKey</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>optional: if you specified <i>mom.administered</i> or <i>mom.topicName</i> you do not specify anything here. If you 
+	 however want to subscribe direct when starting the application and need some special attributes in the key you can
+	 specify it here. Note that if you </td>
+       </tr>
+
+       <tr>
+         <td>mom.topicName</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>optional: The topic to which to subscribe. You only need to specify something if you did not set <i>mom.administered</i>
+	    and did not specify a <i>mom.subscribeKey</i>.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>dom.subscribeQos</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>optional: The Qos to use when/if subscribing. You can specify here the stuff if you need additional info to be passed
+	    to the subscription. It only has effect if you did not set <i>mom.administered</i>.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>filewriter.directoryName</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>mandatory: The directory where to store the received files.</td>
+       </tr>
+
+       <tr>
+         <td>filewriter.dmpDirectoryName</td>
+	 <td>String</td>
+	 <td>${filewriter.directoryName}/tmp</td>
+	 <td>optional: The directory where the received chunks are stored before recomposing the entire file (after the file is
+             completed these chunks are deleted).
+	 </td>
+       </tr>
+
+       <tr>
+         <td>filedriter.overwrite</td>
+	 <td>String</td>
+	 <td>true</td>
+	 <td>optional: when this is set, an arriving file will overwrite an existing one even if a file with the same name already
+	     exists.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>filewriter.lockExtention</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>optional: if set to true, a lock file is first written before starting to store the file. This can be used by an other
+	     application using these files, to determine if the file is not completely built yet. Once the file has been completed,
+	     this lock file is removed from the file system.
+	 </td>
+       </tr>
+	 </table>   
+   </configuration>
+
+   <see type="REQ">engine.runlevel</see>
+   <author>michele@laghi.eu</author>
+   <hacker>michele@laghi.eu</hacker>
+   <date>2007 11 29</date>
+   <revision>$Revision: 1.7 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.contrib.TestFileWriter</test>
+   </testcase>
+</requirement>
+
