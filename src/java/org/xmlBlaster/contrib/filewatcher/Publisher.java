@@ -214,10 +214,10 @@ public class Publisher implements I_Timeout {
 
       if (replPrefix != null) {
          replPrefix = replPrefix.trim();
-         if ("${plugin.id}".equals(replPrefix)) {
-            String pluginId = info_.get("plugin.id", null);
+         if (I_Info.ID.equals(replPrefix)) {
+            String pluginId = info_.get(I_Info.ID, null);
             if (pluginId == null)
-               throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "'replication.prefix' was set to be'${plugin.id}' but the plugin has no id set");
+               throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "'replication.prefix' was set to be'${" + I_Info.ID + "}' but the plugin has no id set");
             replPrefix = pluginId.trim();
          }
       }

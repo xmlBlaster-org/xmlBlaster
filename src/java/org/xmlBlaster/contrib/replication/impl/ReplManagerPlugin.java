@@ -315,7 +315,7 @@ public class ReplManagerPlugin extends GlobalInfo
    
    
    public static String getPluginName() {
-      return "ReplManager,1,0";
+      return "ReplManager,1.0";
    }
    
    public String getType() {

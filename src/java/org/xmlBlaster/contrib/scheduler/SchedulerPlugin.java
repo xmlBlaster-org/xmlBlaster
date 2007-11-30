@@ -33,19 +33,17 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
    
    /**
     * 
-    * 
-    * 
     * The syntax for the configuration is as for crontab:
     *  http://www.adminschoice.com/docs/crontab.htm#Crontab%20file
     *  
-    * .   *     *   *   *    *  command to be executed
-    * .   -     -    -    -    -
-    * .   |     |     |     |     |
-    * .   |     |     |     |     +----- day of week (0 - 6) (Sunday=0)
-    * .   |     |     |     +------- month (1 - 12)
-    * .   |     |     +--------- day of month (1 - 31)
-    * .   |     +----------- hour (0 - 23)
-    * .   +------------- min (0 - 59) 
+    * .  *  *  *  *  *  command to be executed
+    * .  -  -  -  -  -
+    * .  |  |  |  |  |
+    * .  |  |  |  |  +----- day of week (0 - 6) (Sunday=0)
+    * .  |  |  |  +------- month (1 - 12)
+    * .  |  |  +--------- day of month (1 - 31)
+    * .  |  +----------- hour (0 - 23)
+    * .  +------------- min (0 - 59) 
     *   
    */
    public class CronData {
@@ -103,8 +101,8 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
          min = getInt(tokenizer);
          hour = getInt(tokenizer);
          dayOfMonth = getInt(tokenizer);
-         dayOfWeek = getInt(tokenizer, WEEK_NAMES);
          month = getInt(tokenizer, MONTH_NAMES);
+         dayOfWeek = getInt(tokenizer, WEEK_NAMES);
          
          command = tokenizer.nextToken().trim();
          int numArgs = nmax - 6;
@@ -232,7 +230,7 @@ public class SchedulerPlugin extends GlobalInfo implements SchedulerPluginMBean,
                   throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "SchedulerPlugin.doInit", "On weekly triggers the hour must be specified");
                if (min < 0)
                   throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, "SchedulerPlugin.doInit", "On weekly triggers the min must be specified");
-               trigger = TriggerUtils.makeWeeklyTrigger(triggerName, dayOfWeek, hour, min);
+               trigger = TriggerUtils.makeWeeklyTrigger(triggerName, dayOfWeek+1, hour, min);
                trigger.setStartTime(new Date());  // start now
             }
             else {

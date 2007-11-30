@@ -352,11 +352,13 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       try {
          if (this.propsOfOwnInterest.contains(key)) {
             String ret = (this.pluginInfo == null) ? def : this.pluginInfo.getParameters().getProperty(key, def);
+            ret = this.helper.replace(ret);
             String prefix = (this.pluginInfo == null) ? "" : this.pluginInfo.getPrefix(); 
             return this.global.getProperty().get(prefix + key, ret);
          }
          
          String value = this.global.get(key, def, null, this.pluginInfo);
+         value = this.helper.replace(value);
          if ("jdbc.drivers".equals(key) && (value == null || value.length() < 1))
             return this.global.getProperty().get("JdbcDriver.drivers", ""); // ask xmlBlaster.properties
          log.fine("Resolving " + key + " to '" + value + "'");

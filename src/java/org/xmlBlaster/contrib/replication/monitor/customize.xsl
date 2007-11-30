@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='iso-8859-1' ?>
 <xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>
 
-<xsl:param name="queue.highalarm" select="10"/>
-<xsl:param name="queue.highwarn" select="4"/>
-<xsl:param name="show.cascading" select="'yes'"/> <!-- the single quotes are important ! -->
-<xsl:param name="show.initialFilesLocation" select="'yes'"/> <!-- the single quotes are important ! -->
+<xsl:param name="queue.highalarm" select="300"/>
+<xsl:param name="queue.highwarn" select="120"/>
+<xsl:param name="show.cascading" select="'no'"/> <!-- the single quotes are important ! -->
+<xsl:param name="show.initialFilesLocation" select="'no'"/> <!-- the single quotes are important ! -->
 
 <xsl:param name="refresh.rate" select="10"/>
 
