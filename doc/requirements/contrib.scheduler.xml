@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='contrib.filewriter' type='NEW' prio='HIGH' status="CLOSED">
+<requirement id='contrib.scheduler' type='NEW' prio='HIGH' status="CLOSED">
 
    <topic>
       You can receive messages published by the filewatcher and store them at a certain location on the filesystem.
