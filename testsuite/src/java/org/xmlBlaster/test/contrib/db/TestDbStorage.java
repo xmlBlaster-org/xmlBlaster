@@ -80,7 +80,8 @@ public class TestDbStorage extends XMLTestCase {
       this.pool = new DbPool();
       this.pool.init(info);
       String context = null; // shall be set to '/'
-      this.dbStorage = new DbStorage(this.pool, "TEST_DB_STORAGE", context);
+      info.put("dbs.table", "TEST_DB_STORAGE");
+      this.dbStorage = new DbStorage(info, this.pool, context);
       
    }
 
