@@ -171,7 +171,7 @@ by a replication monitor:
         <attribute id='filewatcher.discarded'>Discarded</attribute>
         <attribute id='filewatcher.filterType'>simple</attribute>
         <!-- this token will be replaced with the id of the plugin: here 'fileSet02' -->
-        <attribute id='replication.prefix'>${plugin.id}</attribute>
+        <attribute id='replication.prefix'>${id}</attribute>
         <action do='LOAD' onStartupRunlevel='7' sequence='3' onFail='resource.configuration.pluginFailed'/>
         <action do='STOP' onShutdownRunlevel='6' sequence='7'/>
      </plugin>

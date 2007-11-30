@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='contrib.filewriter' type='NEW' prio='HIGH' status="CLOSED">
+
+   <topic>
+      You can receive messages published by the filewatcher and store them at a certain location on the filesystem.
+   </topic>
+
+   <description>
+      <p>
+      If you have requirements to execute some operations or to allow some operations only during some hours
+      of the day, or some days of a month or a week, then this plugin can do it. It is a scheduler using
+      <a href="http://www.opensymphony.com/quartz/">quartz</a> as the underlying library. The syntax to define
+      the execution of jobs is defined/configured in a
+      <a href="http://www.linuxhelp.net/guides/cron/">cron- and crontab</a> alike manner.
+      </p>
+      <p>
+      A typical usage example would be to timely control the dispatch of messages, for example to allow messages
+      for some clients to be dispatched only during non-rush hours (for example during the night or over the
+      weekend). This is for instance accomplished by the <i>org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler</i>
+     </p>
+     <p>
+      In the <i>org.xmlBlaster.contrib.scheduler.jobs</i> directory you find the provided implemented jobs. These
+      classes all implement the <a href="http://www.opensymphony.com/quartz/api/org/quartz/Job.html">Job</a>
+      interface defined by quartz.<br/>
+      If you don't find your requirement is covered by one of the provided jobs it is easy to write an own
+      implementation: just extend the Job class, provide a public default constructor and implement the only
+      relevant method of the interface: <i>void execute(JobExecutionContext context)</i>. On how to retrieve the
+      necessary data from the environment have a look at one of the provided implementations, for example at
+      the class <i>org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler</i>.                             
+      </p>
+      <p>
+      To use this plugin you need to activate it in the xmlBlasterPlugins.xml file and configure it appropriately.
+      In the configuration of this plugin you can define attributes. All attributes starting with
+      the prefix <b>scheduler.</b> will be considered jobs to be scheduled. So for example 
+      <i>scheduler.action1</i> would result in a job having the assigned name <i>action1</i>. Note that the name 
+      of these jobs must be unique inside the plugin.
+
+      <pre class="BORDER">
+ 02    *   *   *    *  org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler stopDispatcher
+ |     |                       
+ *     *   *   *    *  command to be executed                              further attributes:
+ -     -   -   -    -                                                      could be more than 0 and
+ |     |   |   |    |                                                      are depending on the job
+ |     |   |   |    +----- day of week (0 - 6) (Sunday=0)                  implementation          
+ |     |   |   +------- month (1 - 12)
+ |     |   +--------- day of month (1 - 31)                                                        
+ |     +----------- hour (0 - 23)
+ +------------- min (0 - 59)                                                                             
+</pre>
+      For the day of the week one can also use MON (or monday), TUE, WED, THU, FRI, SAT, SUN, this way it
+      is easier to read the configuration.<br/>
+      The same as for the week days is true for the month: these can also be expressed as names or as 
+      JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC.<br/>
+      The above example would mean the <i>ReplScheduler</i> will stop the dispatcher for all involved 
+      replications at minute 02 every hour.
+      </p>
+      <p>
+      For further details on the usage please look at the <i>examples</i> and <i>configuration</i> section.
+      </p>                                                                                        
+   </description>
+
+   <example lang="any" type="HTML">
+      <p id="cpp" class="celltitel">Scheduler Jobs for Replication</p>
+      <p>By means of the scheduler you can control the dispatcher of the replication clients, i.e. you can 
+      determine when to set the callback dispatcher to active or inactive. In the cron-like command line
+      you specify in the 6th attribute the class name of the job (ReplScheduler) and thereafter all the 
+      attributes which <i>org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler</i> understands. These are:
+
+    <table border="1">
+       <tr>
+         <th>arg</th>
+         <th>type</th>
+         <th>default value</th>
+         <th>Comment</th>
+       </tr>
+       <tr>
+         <td>arg0</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>mandatory: The name of the operation to perform. one of <b>startDispatcher</b> or <b>stopDispatcher</b> must be
+	    specified
+	 </td>
+       </tr>
+       <tr>
+         <td>arg1</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>optional: The name of the replication prefix (i.e. the name of the source of the replication) for which the action
+	     specified in <i>arg0</i> is supposed to be. If you choose this (for example <i>masterGroupA</i> and do <b>not</b>
+	     specify <i>arg2</i>, then the action is executed on all the clients (slaves) associated to the source <i>masterGroupA</i>.
+	 </td>
+       </tr>
+       <tr>
+         <td>arg2</td>
+	 <td>String</td>
+	 <td>null</td>
+	 <td>optional: The name of the client session for which to execute the action. Note that the associated prefix must be correct.
+	 </td>
+       </tr>
+     </table>	
+     </p>
+     <p>
+
+<pre class="BORDER">
+ 00    07  *   *    *  org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler stopDispatcher
+ 00    18  *   *    *  org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+ 02    07  *   *    6  org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+ 02    07  *   *    5  org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+</pre> 
+   </p>
+   <p>
+     This would mean that every morning at 07:00 the dispatcher is stopped, it is started again every evening at 18:00. During the
+     weekends we want the dispatcher to be active, so the third raw means that 2 minutes after 07:00 on saturday morning and
+     in fourth raw the same on sunday morning, the dispatcher is set to active. This would mean the dispatcher remains closed during 
+     working hour.
+   </p>
+   <p>
+    You could also express the same of above as:
+<pre class="BORDER">
+ 00    07  *   *    *        org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler stopDispatcher
+ 00    18  *   *    *        org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+ 02    07  *   *    saturday org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+ 02    07  *   *    sunday   org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+</pre> 
+   or
+<pre class="BORDER">
+ 00    07  *   *    *   org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler stopDispatcher
+ 00    18  *   *    *   org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+ 02    07  *   *    SAT org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+ 02    07  *   *    SUN org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher
+</pre> 
+which are easier to understand than the numeric representation of above.
+   </p>
+</example>
+   <configuration where="server">
+
+<pre class="BORDER">
+<![CDATA[
+ <xmlBlaster>
+   ...
+   <plugin id='SchedulerPlugin' className='org.xmlBlaster.contrib.scheduler.SchedulerPlugin'>
+      <attribute id="scheduler.closeWork">00 07 * * * org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler stopDispatcher</attribute>
+      <attribute id="scheduler.openNight">00 18 * * * org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher</attribute>
+      <attribute id="scheduler.openSat">02 07 * * 6 org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher</attribute>
+      <attribute id="scheduler.openSun">02 07 * * 0 org.xmlBlaster.contrib.scheduler.jobs.ReplScheduler startDispatcher</attribute>
+      <action do='LOAD' onStartupRunlevel='9' sequence='10' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='8' sequence='1'/>
+   </plugin>
+   ...
+ </xmlBlaster>
+ ]]>
+</pre>
+<p>
+The example above can also be seen on the jmx page:<br/>
+<img src="./schedulerJmx.png"/>
+In the jmx console you have as <b>JobNames</b> the list of all registered scheduler, as <b>SchedulerList</b> a list (with contents)
+of all the registered schedulers.<br/>
+With <b>addScheduler</b> you can a new scheduler or modify an existing one. The first parameter is the name to associate to the 
+job (that corresponds to the name after the prefix <i>scheduler.</i> in the attribute id in <i>xmlBlasterPlugins.xml</i> which in
+turn correspons to what indicated under <i>JobNames</i>, and as the second parameter the string containing the cron-like syntax 
+for the job.
+<br/>
+With <b>removeScheduler</b> you can remove a scheduler. It takes one argument which is the name of the job (the one displayed in
+the parameter <i>JobNames</i>
+</p>
+   
+   </configuration>
+
+   <see type="REQ">engine.runlevel</see>
+   <author>michele@laghi.eu</author>
+   <hacker>michele@laghi.eu</hacker>
+   <date>2007 11 30</date>
+   <revision>$Revision: 1.7 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+   </testcase>
+</requirement>
+
