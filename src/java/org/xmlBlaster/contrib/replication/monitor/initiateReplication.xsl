@@ -308,7 +308,19 @@ function initialFilesChanged() {
                      </xsl:element>
                    </xsl:when>
                    <xsl:otherwise>
-                      <xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text>
+							 <xsl:choose>
+								 <xsl:when test="$isInitiator = 'true'">
+									 <xsl:element name="button">
+										 <xsl:attribute name="class">small</xsl:attribute>
+										 <xsl:attribute name="Title">Click to start (initiate) the choosen replication combination</xsl:attribute>
+										 <xsl:attribute name="onClick">initiateReplication('<xsl:value-of select="@objectname"/>')</xsl:attribute>
+										 Initiate Repl.
+									 </xsl:element>
+								 </xsl:when>
+								 <xsl:otherwise>
+									 <xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text>
+								 </xsl:otherwise>
+							 </xsl:choose>
                    </xsl:otherwise>
                 </xsl:choose>
                 </td>
