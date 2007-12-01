@@ -124,7 +124,7 @@ void FileWriterCallback::storeChunk(std::string &tmpDir, std::string &fileName, 
 	
 	std::ofstream file(completeFileName.c_str(), ios::out | ios::binary);
 	if (!file.is_open()) {
-		std::string txt("file '" + completeFileName + "' exists already and 'overwrite' is set to 'true', can not continue until you manually remove this file");
+		std::string txt("chunk '" + lexical_cast<std::string>(chunkNumber) + "' for file '" + completeFileName + "' could not be written: check the write permissions on the directory");
 		std::string location(ME + "::storeChunk");
 		throw XmlBlasterException(USER_ILLEGALARGUMENT, location.c_str(), txt.c_str());
 	}
@@ -180,7 +180,7 @@ void FileWriterCallback::getdir(std::string &dir, std::string &prefix, vector<st
 	hFile = FindFirstFile( "*", &FileData );
 	if ( hFile == INVALID_HANDLE_VALUE) return;
 	while (1) {
-		if (!(FileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		if (!(FileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&  std::string(FileData.cFileName).find_first_of(prefix) == 0)
 			files.push_back(FileData.cFileName);
 		if ( !FindNextFile( hFile, &FileData) ) break;
 	}
@@ -195,7 +195,7 @@ void FileWriterCallback::getdir(std::string &dir, std::string &prefix, vector<st
 		std::string location(ME + "::getDir");
 		throw XmlBlasterException(USER_ILLEGALARGUMENT, location.c_str(), txt.c_str());
    }
-	while ((dirp = readdir(dp)) != NULL) {
+	while ((dirp = readdir(dp)) != NULL &&  std::string(dirp->d_name).find_first_of(prefix) == 0) {
 		files.push_back(string(dirp->d_name));
 	}
 	closedir(dp);
@@ -350,7 +350,7 @@ bool FileWriterCallback::deleteFile(std::string &file)
 
 
 
-std::string FileWriterCallback::update(const std::string &sessionId,
+std::string FileWriterCallback::update(const std::string&,
                        org::xmlBlaster::client::key::UpdateKey &updateKey,
                        const unsigned char *content, long contentSize,
                        org::xmlBlaster::client::qos::UpdateQos &updateQos) 
@@ -417,11 +417,11 @@ std::string FileWriterCallback::update(const std::string &sessionId,
    	std::vector<std::string> filenames;
    	std::string sep(".");
 		getChunkFilenames(filename, sep, filenames); // retrieves the chunks in correct order
-		std::vector<std::string>::const_iterator iter = filenames.begin();
-		while (iter != filenames.end()) {
-			std::string tmp((*iter));
+		std::vector<std::string>::const_iterator fileIter = filenames.begin();
+		while (fileIter != filenames.end()) {
+			std::string tmp((*fileIter));
 			deleteFile(tmp);
-			iter++;
+			fileIter++;
 		}
    }
 	return "OK";

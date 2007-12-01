@@ -123,6 +123,7 @@ void FileWriter::shutdown()
 	callback_ = NULL;
 }
 
+// TODO The COMMUNICATION_USER_HOLDBACK Exceptions should be moved to the library
 std::string FileWriter::update(const std::string &sessionId,
                        org::xmlBlaster::client::key::UpdateKey &updateKey,
                        const unsigned char *content, long contentSize,
@@ -138,13 +139,13 @@ std::string FileWriter::update(const std::string &sessionId,
 			return callback_->update(sessionId, updateKey, content, contentSize, updateQos);
 	}
 	catch (XmlBlasterException &ex) {
-		throw ex;
+		throw XmlBlasterException(USER_UPDATE_HOLDBACK, ME + ":update", ex.getMessage());
 	}
 	catch (exception &ex) {
-		throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::update", ex.what());
+		throw XmlBlasterException(USER_UPDATE_HOLDBACK, ME + "::update", ex.what());
 	}
 	catch (...) {
-		throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::update", "unknown exception");
+		throw XmlBlasterException(USER_UPDATE_HOLDBACK, ME + "::update", "unknown exception");
 	}
 }
 
