@@ -212,16 +212,6 @@ public class Publisher implements I_Timeout {
       String topicName =  info_.get("mom.topicName", null);
       replPrefix = info_.get(ReplicationConstants.REPL_PREFIX_KEY, null);
 
-      if (replPrefix != null) {
-         replPrefix = replPrefix.trim();
-         if (I_Info.ID.equals(replPrefix)) {
-            String pluginId = info_.get(I_Info.ID, null);
-            if (pluginId == null)
-               throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "'replication.prefix' was set to be'${" + I_Info.ID + "}' but the plugin has no id set");
-            replPrefix = pluginId.trim();
-         }
-      }
-      
       if (tmp != null) {
          this.publishKey = tmp;
          if (topicName != null)
@@ -281,6 +271,9 @@ public class Publisher implements I_Timeout {
          String tmpVal = info_.get(tmpKey, null);
          if (tmpVal == null)
             info_.put(tmpKey, "true");
+         MsgKeyData key = global.getMsgKeyFactory().readObject(publishKey);
+         String oid = key.getOid();
+         info.put("mom.topicName", oid); // this must ALWAYS be set if using replication
          prepareReplSource(replPrefix != null);
       }
       createDirectoryManager();
