@@ -17,6 +17,7 @@ Comment:   Default handling of Sax callbacks
 #include <util/plugin/I_Plugin.h>
 #include <string>
 #include <xercesc/util/TransService.hpp>
+#include <xercesc/sax2/Attributes.hpp>
 #include <xercesc/sax2/DefaultHandler.hpp>
 #include <xercesc/util/XMLString.hpp>
 #include <util/StopParseException.h>
