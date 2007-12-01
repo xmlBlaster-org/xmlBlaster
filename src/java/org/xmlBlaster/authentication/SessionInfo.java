@@ -216,7 +216,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
       // "__remoteProperties"
       if (this.connectQos.getData().getClientProperty(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, false)) {
-    	  mergeRemoteProperties(this.connectQos.getData().getClientProperties());
+          mergeRemoteProperties(this.connectQos.getData().getClientProperties());
       }
 
       // TODO: Decide by authorizer
@@ -415,7 +415,10 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    public final void refreshSession() throws XmlBlasterException {
       if (connectQos.getSessionTimeout() > 0L) {
          synchronized (this.EXPIRY_TIMER_MONITOR) {
-            this.timerKey = this.expiryTimer.addOrRefreshTimeoutListener(this, connectQos.getSessionTimeout(), null, this.timerKey);
+            Timeout expiryTimer = this.expiryTimer;
+            if (expiryTimer != null) {
+               this.timerKey = expiryTimer.addOrRefreshTimeoutListener(this, connectQos.getSessionTimeout(), null, this.timerKey);
+            }
          }
       }
       else {
@@ -554,7 +557,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
       // "__remoteProperties"
       if (newConnectQos.getData().getClientProperty(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, false)) {
-    	  mergeRemoteProperties(newConnectQos.getData().getClientProperties());
+          mergeRemoteProperties(newConnectQos.getData().getClientProperties());
       }
    }
 
@@ -837,10 +840,10 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       I_Queue sq = this.sessionQueue;
       if (sq == null) return 0L;
       if (sq instanceof CacheQueueInterceptorPlugin) {
-    	  CacheQueueInterceptorPlugin cq = (CacheQueueInterceptorPlugin)sq;
-    	  I_Queue tq = cq.getTransientQueue();
-    	  if (tq != null) return tq.getMaxNumOfEntries();
-    	  return 0L;
+          CacheQueueInterceptorPlugin cq = (CacheQueueInterceptorPlugin)sq;
+          I_Queue tq = cq.getTransientQueue();
+          if (tq != null) return tq.getMaxNumOfEntries();
+          return 0L;
       }
       return -1L;
    }
@@ -1108,7 +1111,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       if (map == null || map.size() == 0) return;
       if (this.remoteProperties == null) {
           this.remoteProperties = new ClientPropertiesInfo(new HashMap());
-    	  /*// Changed 2007-06-29 marcel: we now take a clone
+          /*// Changed 2007-06-29 marcel: we now take a clone
          this.remoteProperties = new ClientPropertiesInfo(map);
          // remove, is only a hint:
          this.remoteProperties.put(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, (ClientProperty)null);
@@ -1119,7 +1122,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       while (it.hasNext()) {
          String key = (String)it.next();
          if (Constants.CLIENTPROPERTY_REMOTEPROPERTIES.equals(key))
-         	continue; // Remove, is only a flag
+                continue; // Remove, is only a flag
          Object value = map.get(key);
          this.remoteProperties.put(key, (ClientProperty)value);
       }
