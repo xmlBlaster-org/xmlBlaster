@@ -60,7 +60,10 @@
       <Link>util\FileLocator.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\src\csharp\util\Serialization.cs">
-      <Link>util\Serialization.cs</Link>
+      <Link>Serialization.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\src\csharp\util\Stuff.cs">
+      <Link>util\Stuff.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\src\csharp\XmlBlasterAccess.cs">
       <Link>XmlBlasterAccess.cs</Link>
