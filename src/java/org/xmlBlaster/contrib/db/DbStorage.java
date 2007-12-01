@@ -44,35 +44,37 @@ public class DbStorage {
    private String deleteSql;
    private String getKeysSql;
    
-   private final void prepareSql(I_Info info, String ctx) {
+   private final void prepareSql(I_Info info, String ctx) throws Exception {
       
       String tmp = info.get("dbs.context", null);
       if (tmp != null && !tmp.equals(ctx))
          log.warning("Property 'dbs.context' already set to '" + tmp + "' will overwrite it to '" + ctx + "'");
       info.put("dbs.context", ctx);
       
-      String keyNameDef = "name";
-      if (dbHelper.isOracle())
-         keyNameDef = "key"; // to be backwards compatible for replication
       String table = info.get("dbs.table", "DBINFO");
       this.tableName = this.dbHelper.getIdentifier(table);
 
-      String keyName = info.get("dbs.keyName", keyNameDef);
+      String contextName = info.get("dbs.table", "context");
+      String keyName = info.get("dbs.keyName", "name");
       String valueName = info.get("dbs.valueName", "value");
       String typeName = info.get("dbs.typeName", "type");
       String encodingName = info.get("dbs.encodingName", "encoding");
-      String contextName = info.get("dbs.table", "context");
-      
+      String[] originalNames = new String[] { contextName, keyName, valueName, typeName, encodingName };
       info.put("dbs.table", this.tableName);
+      
+      info.put("dbs.contextName", contextName);
       info.put("dbs.keyName", keyName);
       info.put("dbs.valueName", valueName);
       info.put("dbs.typeName", typeName);
       info.put("dbs.encodingName", encodingName);
-      info.put("dbs.contextName", contextName);
       
       InfoHelper helper = new InfoHelper(info);
+      
       tmp = "CREATE TABLE ${dbs.table} (${dbs.contextName} VARCHAR(255), ${dbs.keyName} VARCHAR(255), ${dbs.valueName} VARCHAR(255), ${dbs.typeName} VARCHAR(16), ${dbs.encodingName} VARCHAR(16), PRIMARY KEY (${dbs.contextName}, ${dbs.keyName}))";
       createSql = helper.replace(info.get("dbs.createSql", tmp));
+      createTableOrReadColumnNames(originalNames, info);
+
+      
       log.fine("create statement: '" + createSql + "'");
       tmp = "UPDATE ${dbs.table} SET ${dbs.valueName}=?, ${dbs.typeName}=?, ${dbs.encodingName}=? WHERE ${dbs.contextName}=? AND ${dbs.keyName}=?";
       modifySql = helper.replace(info.get("dbs.mofifySql", tmp));
@@ -113,7 +115,6 @@ public class DbStorage {
       this.pool = pool;
       this.dbHelper = new DbMetaHelper(this.pool);
       prepareSql(info, this.context);
-      createTableIfNeeded();
    }
    
    private final boolean tableExists() throws Exception {
@@ -133,13 +134,30 @@ public class DbStorage {
       }
    }
    
-   private void createTableIfNeeded() throws Exception {
+   private void createTableOrReadColumnNames(String originalNames[], I_Info info) throws Exception {
       if (!tableExists()) {
          // TODO: Add schema as Oracle finds the same named table in another schema
          // and make tableName configurable 'xmlBlaster.DBINFO'
          // TODO !!!!!
          log.info("Going to create the table with the statement '" + createSql + "'");
          this.pool.update(createSql);
+      }
+      else {
+         String catalog = info.get("dbs.catalog", null);
+         String schema = info.get("dbs.schema", null);
+         String names[] = this.dbHelper.getColumnNames(pool, catalog, schema, tableName);
+         if (names.length < 5)
+            throw new Exception("Wrong number of columns in table '" + this.tableName + "' it should be at least 5 but is " + names.length);
+         for (int i=0; i < 5; i++) {
+            if (dbHelper.getIdentifier(originalNames[i]).equals(names[i]))
+               continue;
+            log.warning("The proposed name for column '" + originalNames[i] + "' is already set to '" + names[i] + "' on the db for table '" + this.tableName + "' (should not have any impact on the application)");
+         }
+         info.put("dbs.contextName", names[0]);
+         info.put("dbs.keyName", names[1]);
+         info.put("dbs.valueName", names[2]);
+         info.put("dbs.typeName", names[3]);
+         info.put("dbs.encodingName", names[4]);
       }
    }
 

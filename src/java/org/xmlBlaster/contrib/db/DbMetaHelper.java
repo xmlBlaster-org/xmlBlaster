@@ -8,6 +8,9 @@ package org.xmlBlaster.contrib.db;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.TreeMap;
 
 /**
  * 
@@ -68,6 +71,55 @@ public class DbMetaHelper {
    
    
    /**
+    * Returns an array of column names correctly sorted of the specified table.
+    * Never returns null, if no columns found it returns an empty array.
+    * @throws Exception If a backend exception occurs.
+    * 
+    */
+   public String[] getColumnNames(I_DbPool pool, String catalog, String schema, String table) throws Exception {
+      if (pool == null)
+         throw new Exception("DbMetaHelper.getColumnNames: the pool is null");
+      Connection conn = null;
+      ResultSet rs = null;
+      int count = 0;
+      try {
+         conn = pool.reserve();
+         DatabaseMetaData meta = conn.getMetaData();
+         if (catalog != null)
+            catalog = getIdentifier(catalog.trim());
+         if (schema != null)
+            schema = getIdentifier(schema.trim());
+         if (table != null)
+            table = getIdentifier(table.trim());
+         TreeMap map = new TreeMap();
+         rs = meta.getColumns(catalog, schema, table, null);
+         while (rs.next()) {
+            int pos = rs.getInt("ORDINAL_POSITION");
+            String name = rs.getString("COLUMN_NAME");
+            // should already be in the correct order according to 
+            // javadoc but to be really sure we order it too
+            map.put(new Integer(pos), name);
+            count++;
+         }
+         if (count != map.size())
+            throw new Exception("Probably multiple tables '" + table + "' found since more columns with same ordinal position found");
+         return (String[])map.values().toArray(new String[map.size()]);
+      }
+      finally {
+         try {
+            if (rs != null)
+               rs.close();
+         }
+         catch (SQLException ex) {
+            ex.printStackTrace();
+         }
+         if (conn != null)
+            pool.release(conn);
+      }
+   }
+   
+   
+   /**
     * Returns the correct identifier depending on the properties of the database. If it can not
     * determine the case of the identifier it returns null.
     * @param proposedName the name which is proposed.
@@ -117,6 +169,6 @@ public class DbMetaHelper {
    }
    
    public boolean isOracle() {
-      return this.productName.toUpperCase().indexOf("ORACLE") != -1;
+      return this.productName.indexOf("ORACLE") != -1;
    }
 }
