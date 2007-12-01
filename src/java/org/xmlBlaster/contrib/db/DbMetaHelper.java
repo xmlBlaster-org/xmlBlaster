@@ -117,6 +117,6 @@ public class DbMetaHelper {
    }
    
    public boolean isOracle() {
-      return this.productName.contains("ORACLE");
+      return this.productName.toUpperCase().indexOf("ORACLE") != -1;
    }
 }
