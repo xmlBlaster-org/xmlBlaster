@@ -175,7 +175,8 @@ public class HandleClient extends SocketExecutor implements Runnable
    private void closeSocket() {
       try { if (iStream != null) { iStream.close(); /*iStream=null;*/ } } catch (IOException e) { log.warning(e.toString()); }
       try { if (oStream != null) { oStream.close(); /*oStream=null;*/ } } catch (IOException e) { log.warning(e.toString()); }
-      try { if (this.sock != null) { this.sock.close(); this.sock=null; } } catch (IOException e) { log.warning(e.toString()); }
+      Socket sock = this.sock;
+      try { if (sock != null) { sock.close(); this.sock=null; } } catch (IOException e) { log.warning(e.toString()); }
       if (log.isLoggable(Level.FINE)) log.fine("Closed socket for '" + loginName + "'.");
    }
 
