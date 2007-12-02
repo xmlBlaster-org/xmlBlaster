@@ -237,7 +237,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             for (int i=0; i<entries.length; i++) {
                MsgUnit msgUnit = entries[i].getMsgUnit();               
                String fn = this.getFileDumper().dumpMessage(msgUnit.getKeyData(), msgUnit.getContent(), msgUnit.getQosData());
-               log.warning("Async sending of message failed for message " + msgUnit.getKeyOid() +", is dumped to " + fn + ": " + exception.getMessage());
+               log.severe("Async sending of message failed for message " + msgUnit.getKeyOid() +", is dumped to " + fn + ": " + exception.getMessage());
             }
          }
          else {
