@@ -246,7 +246,7 @@ public class TestSubNoInitial extends TestCase implements I_Callback
       // Test requirement "engine.qos.update.rcvTimestamp":
       assertInUpdate = "sentTimestamp not in hamony with rcvTimestamp";
       assertTrue("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQos.getRcvTimestamp(),
-             sentTimestamp.getMillis() < updateQos.getRcvTimestamp().getMillis() &&
+             sentTimestamp.getMillis() <= updateQos.getRcvTimestamp().getMillis() &&
              (sentTimestamp.getMillis()+1000) > updateQos.getRcvTimestamp().getMillis());
 
       assertInUpdate = null;
