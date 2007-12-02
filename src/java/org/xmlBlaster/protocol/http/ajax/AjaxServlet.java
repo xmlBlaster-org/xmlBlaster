@@ -55,6 +55,17 @@ import org.xmlBlaster.util.queue.ram.RamQueuePlugin;
 
 /**
  * One browser session maps on exactly one xmlBlaster login session.
+ * <p />
+ * Callback messages are send as xml to the browser:
+ * <pre>
+ * &lt;xmlBlasterResponse>
+ *  &lt;update>
+ *    &lt;qos>...&lt;/qos>
+ *    &lt;key>...&lt;/key>
+ *    &lt;content>...&lt;/content>
+ *  &lt;/update>
+ * &lt;/xmlBlasterResponse>
+ * </pre>
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
  */
 class BlasterInstance implements I_Callback {
@@ -238,6 +249,7 @@ class BlasterInstance implements I_Callback {
 		out.write("<xmlBlasterResponse>");
 		for (int i = 0; i < count; i++) {
 			MsgQueuePublishEntry entry = (MsgQueuePublishEntry) entries.get(i);
+			///// TODO: escapeXml !!!! or use base64 or use CDATA
 			out.write("<update>");
 			if (onlyContent)
 				out.write(entry.getMsgUnit().getContentStr());
@@ -369,7 +381,17 @@ class SessionTimeoutListener implements HttpSessionBindingListener {
  * <p>
  * Use xmlBlaster/demo/http/gps.html to display the coordinates in a map.
  * </p>
- *
+ * 
+ * Callback messages are send as xml to the browser:
+ * <pre>
+ * &lt;xmlBlasterResponse>
+ *  &lt;update>
+ *    &lt;qos>...&lt;/qos>
+ *    &lt;key>...&lt;/key>
+ *    &lt;content>...&lt;/content>
+ *  &lt;/update>
+ * &lt;/xmlBlasterResponse>
+ * </pre>
  * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
  */
 public class AjaxServlet extends HttpServlet {
