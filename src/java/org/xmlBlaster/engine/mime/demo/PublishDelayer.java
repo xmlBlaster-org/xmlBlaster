@@ -9,9 +9,11 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine.mime.demo;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.util.def.Constants;
@@ -22,30 +24,38 @@ import org.xmlBlaster.engine.ServerScope;
 
 /**
  * This demo plugin delays incoming (published) messages. 
+ * You can also provide for example an exceptionErrorCode=internal.publish and
+ * each message will throw such an exception (usually for testing).  
  * <p />
- * Please register this plugin in xmlBlaster.properties:
+ * Please register this plugin in xmlBlaster.properties
  * <pre>
- * MimePublishPlugin[PublishDelayer][1.0]=org.xmlBlaster.engine.mime.demo.PublishDelayer,delayMillis=2000
+ * MimePublishPlugin[TestDelayer][1.0]=org.xmlBlaster.engine.mime.demo.PublishDelayer,delayMillis=200,exceptionErrorCode=,filterKeyOid=
  * </pre>
  * Plugins must implement the I_Plugin interface to be loadable by the PluginManager
  * and must implement the I_PublishFilter interface to be usable as a filter.
  * @author xmlBlaster@marcelruff.info
  */
-public class PublishDelayer implements I_Plugin, I_PublishFilter
+public class PublishDelayer implements I_Plugin, I_PublishFilter, PublishDelayerMBean
 {
    private final String ME = "PublishDelayer";
-   private ServerScope glob;
+   private ServerScope serverScope;
+   private Global glob;
+   /** My JMX registration */
+   private Object mbeanHandle;
+   private ContextNode contextNode;
+   private PluginInfo pluginConfig;
    private static Logger log = Logger.getLogger(PublishDelayer.class.getName());
    /** How long to delay an incoming publish message */
    private long delayMillis = 0;
+   private String exceptionErrorCode = "";
+   private String filterKeyOid = "";
 
    /**
     * This is called after instantiation of the plugin 
-    * @param glob The Global handle of this xmlBlaster server instance.
+    * @param glob The global handle of this xmlBlaster server instance.
     */
    public void initialize(ServerScope glob) {
-      this.glob = glob;
-
+      this.serverScope = glob;
       log.info("Filter is initialized, we check all mime types if content is not too long");
    }
 
@@ -53,8 +63,9 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
-
+   public void init(Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
+      this.glob = glob;
+      this.pluginConfig = pluginInfo;
 
       java.util.Properties props = pluginInfo.getParameters();
 
@@ -63,21 +74,31 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
          delayMillis = (new Long(lenStr)).longValue();
          log.info("Setting delayMillis=" + delayMillis + " as configured in xmlBlaster.properties");
       }
+      this.exceptionErrorCode = (String)props.getProperty("exceptionErrorCode", "");
+      this.filterKeyOid = (String)props.getProperty("filterKeyOid", "");
+
+      // For JMX instanceName may not contain ","
+      this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
+            "PublishDelayer[" + getType() + "]", glob.getScopeContextNode());
+      this.mbeanHandle = glob.registerMBean(this.contextNode, this);
    }
 
    /**
-    * Return plugin type for Plugin loader
-    * @return "PublishDelayer"
+    * 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#getType()
     */
    public String getType() {
-      return "PublishDelayer";
+      if (this.pluginConfig != null)
+         return this.pluginConfig.getType();
+      return ME;
    }
 
    /**
-    * Return plugin version for Plugin loader
-    * @return "1.0"
+    * @see org.xmlBlaster.util.plugin.I_Plugin#getVersion()
     */
    public String getVersion() {
+      if (this.pluginConfig != null)
+         return this.pluginConfig.getVersion();
       return "1.0";
    }
 
@@ -86,7 +107,7 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
     * @return "PublishDelayer"
     */
    public String getName() {
-      return "PublishDelayer";
+      return getType();
    }
 
    /**
@@ -118,6 +139,17 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
          Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in intercept() call - msgUnit is null");
       }
+      
+      String ec = this.exceptionErrorCode;
+      if (ec != null && ec.length() > 0) {
+         ErrorCode errorCode = ErrorCode.INTERNAL_PUBLISH;
+         try {
+            errorCode = ErrorCode.toErrorCode(ec);
+         }
+         catch (IllegalArgumentException e) {}
+         log.warning("Throwing test exception '" + errorCode + "' for published message " + msgUnit.getKeyOid());
+         throw new XmlBlasterException(glob, errorCode, getType());
+      }
 
       if (msgUnit.getKeyData().isInternal())
          return "";  // ignore internal messages
@@ -139,5 +171,41 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter
    public void shutdown() {
    }
 
+   public long getDelayMillis() {
+      return delayMillis;
+   }
+
+   public void setDelayMillis(long delayMillis) {
+      this.delayMillis = delayMillis;
+   }
+
+   public String getExceptionErrorCode() {
+      return exceptionErrorCode;
+   }
+
+   /**
+    * By setting an errorCode String != "" the published message is rejected
+    * with the given exception type.
+    * Typically used for testing.
+    * @param exceptionErrorCode e.g. "internal.publish" to be thrown
+    * @see org.xmlBlaster.util.def.ErrorCode 
+    */
+   public void setExceptionErrorCode(String exceptionErrorCode) {
+      this.exceptionErrorCode = exceptionErrorCode;
+   }
+
+   public String getFilterKeyOid() {
+      return filterKeyOid;
+   }
+
+   /**
+    * By setting a topicId != "" the plugin is only applied for the given messages oid.
+    * If set to "" all messages are checked. 
+    * @param filterKeyOid e.g. "Hello" to only slow down "Hello" messages, others are ignored
+    * @see org.xmlBlaster.util.def.ErrorCode 
+    */
+   public void setFilterKeyOid(String filterKeyOid) {
+      this.filterKeyOid = filterKeyOid;
+   }
 }
 
