@@ -571,7 +571,12 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          else {
             //log.severe(ME+": Callback failed: " + ex.toString());
             //ex.printStackTrace();
-            internalError(ex);
+            MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
+            boolean isHandled = sendingFailedNotification(entries, ex);
+            if (isHandled)
+               removeFromQueue(entries, false);
+            else
+               internalError(ex);
          }
       }
       else {
