@@ -38,7 +38,6 @@ import org.xmlBlaster.engine.ServerScope;
 public class PublishDelayer implements I_Plugin, I_PublishFilter, PublishDelayerMBean
 {
    private final String ME = "PublishDelayer";
-   private ServerScope serverScope;
    private Global glob;
    /** My JMX registration */
    private Object mbeanHandle;
@@ -54,8 +53,7 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter, PublishDelayer
     * This is called after instantiation of the plugin 
     * @param glob The global handle of this xmlBlaster server instance.
     */
-   public void initialize(ServerScope glob) {
-      this.serverScope = glob;
+   public void initialize(ServerScope serverScope) {
       log.info("Filter is initialized, we check all mime types if content is not too long");
    }
 
@@ -169,6 +167,10 @@ public class PublishDelayer implements I_Plugin, I_PublishFilter, PublishDelayer
    }
 
    public void shutdown() {
+      if (this.glob != null && this.mbeanHandle != null)
+         this.glob.unregisterMBean(this.mbeanHandle);
+      //this.isShutdown = true;
+      log.fine(ME+": shutdown done");
    }
 
    public long getDelayMillis() {
