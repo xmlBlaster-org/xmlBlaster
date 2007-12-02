@@ -13,11 +13,14 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -32,6 +35,7 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
 
 /**
  * This client connects to xmlBlaster and publishes a configurable amount of messages.
@@ -222,6 +226,49 @@ public class HelloWorldPublish
                   //System.exit(1);
                }
             });
+
+         // This listener receives only events from asynchronously send messages from queue.
+         // e.g. after a reconnect when client side queued messages are delivered
+         con.registerPostSendListener(new I_PostSendListener() {
+            /**
+             * @see I_PostSendListener#postSend(MsgQueueEntry[])
+             */
+            public void postSend(MsgQueueEntry[] entries) {
+               try {
+                  for (int i=0; i<entries.length; i++) {
+                     if (MethodName.PUBLISH.equals(entries[i].getMethodName())) { 
+                        MsgUnit msg = entries[i].getMsgUnit();
+                        PublishReturnQos retQos = (PublishReturnQos)entries[i].getReturnObj();
+                        log.info("Send asynchronously message '" + msg.getKeyOid() + "' from queue: " + retQos.toXml());
+                     }
+                     else
+                        log.info("Send asynchronously " + entries[i].getMethodName() + " message from queue");
+                  }
+               } catch (Throwable e) {
+                  e.printStackTrace();
+               }
+            }
+
+            /**
+             * @see I_PostSendListener#sendingFailed(MsgQueueEntry[], XmlBlasterException)
+             */
+            public boolean sendingFailed(MsgQueueEntry[] entries, XmlBlasterException ex) {
+               try {
+                  for (int i=0; i<entries.length; i++) {
+                     if (MethodName.PUBLISH.equals(entries[i].getMethodName())) { 
+                        MsgUnit msg = entries[i].getMsgUnit();
+                        log.info("Send asynchronously message '" + msg.getKeyOid() + "' from queue failed: " + ex.getMessage());
+                     }
+                     else
+                        log.info("Send asynchronously " + entries[i].getMethodName() + " message from queue");
+                  }
+               } catch (Throwable e) {
+                  e.printStackTrace();
+               }
+               //return true; // true: We have handled the case (safely stored the message) and it may be removed from connection queue
+               return false; // false: Default error handling: message remains in queue and we go to dead
+            }
+         });
 
          // ConnectQos checks -session.name and -passwd from command line
          log.info("============= CreatingConnectQos");

@@ -1,30 +1,35 @@
 // xmlBlaster/demo/HelloWorld4.java
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.util.error.I_MsgErrorInfo;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.key.GetKey;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
+import org.xmlBlaster.util.error.I_MsgErrorHandler;
+import org.xmlBlaster.util.error.I_MsgErrorInfo;
+import org.xmlBlaster.util.qos.QosData;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 
 /**
@@ -88,6 +93,48 @@ public class HelloWorld4
                }
             }
          );
+         
+         // This listener receives only events from asynchronously send messages from queue.
+         // e.g. after a reconnect when client side queued messages are delivered
+         con.registerPostSendListener(new I_PostSendListener() {
+            /**
+             * @see I_PostSendListener#postSend(MsgQueueEntry[])
+             */
+            public void postSend(MsgQueueEntry[] entries) {
+               try {
+                  for (int i=0; i<entries.length; i++) {
+                     if (MethodName.PUBLISH.equals(entries[i].getMethodName())) { 
+                        MsgUnit msg = entries[i].getMsgUnit();
+                        PublishReturnQos retQos = (PublishReturnQos)entries[i].getReturnObj();
+                        log.info("Send asynchronously message '" + msg.getKeyOid() + "' from queue: " + retQos.toXml());
+                     }
+                     else
+                        log.info("Send asynchronously " + entries[i].getMethodName() + " message from queue");
+                  }
+               } catch (Throwable e) {
+                  e.printStackTrace();
+               }
+            }
+
+            /**
+             * @see I_PostSendListener#sendingFailed(MsgQueueEntry[], XmlBlasterException)
+             */
+            public boolean sendingFailed(MsgQueueEntry[] entries, XmlBlasterException ex) {
+               try {
+                  for (int i=0; i<entries.length; i++) {
+                     if (MethodName.PUBLISH.equals(entries[i].getMethodName())) { 
+                        MsgUnit msg = entries[i].getMsgUnit();
+                        log.info("Send asynchronously message '" + msg.getKeyOid() + "' from queue failed: " + ex.getMessage());
+                     }
+                     else
+                        log.info("Send asynchronously " + entries[i].getMethodName() + " message from queue");
+                  }
+               } catch (Throwable e) {
+                  e.printStackTrace();
+               }
+               return false; // false: message remains in queue and we go to dead
+            }
+         });
 
 
          // Listen on status changes of our connection to xmlBlaster
