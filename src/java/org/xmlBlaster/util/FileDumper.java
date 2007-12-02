@@ -1,18 +1,25 @@
-package javaclients.simplereader;
+package org.xmlBlaster.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.util.EncodableData;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.key.KeyData;
+import org.xmlBlaster.util.qos.QosData;
 
+/**
+ * Dump message to file. 
+ * The XML is in XmlScript format and can be refed.
+ * <pre>
+ * Configuration:
+ * xmlBlaster/FileDumper/directoryName  -> ${user.home}/FileDumper
+ * xmlBlaster/FileDumper/forceBase64    -> false
+ * </pre>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
+ */
 public class FileDumper {
    private static String ME = "FileDumper";
    private static Logger log = Logger.getLogger(FileDumper.class.getName());
@@ -24,24 +31,26 @@ public class FileDumper {
    public FileDumper(Global glob) throws XmlBlasterException {
       this.glob = glob;
       String defaultPath = System.getProperty("user.home") + System.getProperty("file.separator") + "FileDumper";
-      this.directoryName = this.glob.getProperty().get("directoryName", defaultPath);
+      this.directoryName = this.glob.getProperty().get("xmlBlaster/FileDumper/directoryName", defaultPath);
       initDirectory(null, "directoryName", this.directoryName);
       
       log.info("Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' to directory " + this.directoryName);
-      this.forceBase64 = this.glob.getProperty().get("forceBase64", this.forceBase64);
+      this.forceBase64 = this.glob.getProperty().get("xmlBlaster/FileDumper/forceBase64", this.forceBase64);
    }
    
    /**
     * Dump dead message to hard disk. 
     * The file name is the receive timestamp of the message, for example
     * <tt>/home/xmlblast/tmp/2004-10-23_18_52_39_87.xml</tt>
+    * @return fileName
     */                     
-   public void dumpMessage(UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+   public String dumpMessage(KeyData keyData, byte[] content, QosData qosData) {
+      String fnStr = "";
       try {
-         String fn = updateQos.getRcvTime();
-         String key = updateKey.toXml();
-         String qos = updateQos.toXml();
-         String oid = updateKey.getOid();
+         String fn = qosData.getRcvTimestamp().toString();
+         String key = keyData.toXml();
+         String qos = qosData.toXml();
+         String oid = keyData.getOid();
 
          fn = Global.getStrippedString(fn); // Strip chars like ":" so that fn is usable as a file name
          fn = fn + ".xml";
@@ -49,6 +58,8 @@ public class FileDumper {
          initDirectory(null, "directoryName", this.directoryName); // In case somebody has removed it
          File to_file = new File(this.directoryName, fn);
 
+         fnStr = to_file.getAbsolutePath();
+         
          FileOutputStream to = new FileOutputStream(to_file);
          log.info("Dumping dead message to  '" + to_file.toString() + "'" );
 
@@ -107,8 +118,9 @@ public class FileDumper {
          to.close();
       }
       catch (Throwable e) {
-         log.severe("Dumping of message failed: " + updateQos.toXml() + updateKey.toXml() + new String(content));
+         log.severe("Dumping of message failed: " + qosData.toXml() + keyData.toXml() + new String(content));
       }
+      return fnStr;
    }
 
    /**

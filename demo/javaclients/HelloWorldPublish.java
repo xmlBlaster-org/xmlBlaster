@@ -219,7 +219,7 @@ public class HelloWorldPublish
                                        I_XmlBlasterAccess connection) {
                   log.warning("I_ConnectionStateListener: Connection from " +
                           connection.getGlobal().getId() + " to xmlBlaster is DEAD, doing exit.");
-                  System.exit(1);
+                  //System.exit(1);
                }
             });
 

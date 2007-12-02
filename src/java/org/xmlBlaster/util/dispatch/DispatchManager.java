@@ -7,6 +7,7 @@ package org.xmlBlaster.util.dispatch;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.I_Timeout;
@@ -329,12 +330,20 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          this.msgInterceptor.toPolling(this, oldState);
    }
 
+   /**
+    * 
+    * @param ex
+    */
+   public void toDead(XmlBlasterException ex) {
+      shutdownFomAnyState(ConnectionStateEnum.UNDEF, ex);
+   }
+
    /** Call by DispatchConnectionsHandler on state transition */
-   public void toDead(ConnectionStateEnum oldState, XmlBlasterException ex) {
+   void shutdownFomAnyState(ConnectionStateEnum oldState, XmlBlasterException ex) {
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Switch from " + oldState + " to DEAD");
       if (oldState == ConnectionStateEnum.DEAD) return;
       if (this.isShutdown) return;
-      if (ex != null) {
+      if (ex != null) { // Very dangerous code! The caller ends up with changed Exception type
          ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
       }
       else {
@@ -345,7 +354,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       // 1. We allow a client to intercept and for example destroy all entries in the queue
       I_ConnectionStatusListener[] listeners = getConnectionStatusListeners();
       for (int i=0; i<listeners.length; i++) {
-         listeners[i].toDead(this, oldState, ex.getMessage());
+         try {
+            // Only pass original ex.getMessage() - not the changed errorCode
+            listeners[i].toDead(this, oldState, ex.getMessage());
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+         }
       }
 
       // 2. If a dispatch plugin is registered it may do its work
@@ -359,13 +374,57 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    private void givingUpDelivery(XmlBlasterException ex) {
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Entering givingUpDelivery(), state is " + this.dispatchConnectionsHandler.getState());
       removeBurstModeTimer();
+
       // The error handler flushed the queue and does error handling with them
       getMsgErrorHandler().handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
       shutdown();
    }
+   
+   public void postSendNotification(MsgQueueEntry entry) {
+      MsgQueueEntry[] entries = new MsgQueueEntry[] { entry };
+      postSendNotification(entries);
+   }
+   
+   public void postSendNotification(MsgQueueEntry[] entries) {
+      I_PostSendListener postSendListener = this.dispatchConnectionsHandler.getPostSendListener();
+      if (postSendListener != null) {
+         try {
+            postSendListener.postSend(entries);
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+            log.warning("postSendListener.postSend() exception: " + e.toString());
+         }
+      }
+   }
+   
+   /**
+    * Notify I_PostSendListener about problem. 
+    * <p>
+    * Typically XmlBlasterAccess is notified when message came asynchronously from queue
+    *  
+    * @param entryList
+    * @param ex
+    * @return true if processed
+    * @see I_PostSendListener#postSend(MsgQueueEntry) for explanation
+    */
+   public boolean sendingFailedNotification(MsgQueueEntry[] entries, XmlBlasterException ex) {
+      I_PostSendListener postSendListener = this.dispatchConnectionsHandler.getPostSendListener();
+      if (postSendListener == null)
+         return false;
+      try {
+         return postSendListener.sendingFailed(entries, ex);
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         log.warning("postSendListener.sendingFailed() exception: " + e.toString());
+         return false;
+      }
+   }
 
    /**
     * Called by DispatchWorker if an Exception occured in sync mode
+    * Only on client side
     */
    void handleSyncWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
 
@@ -374,7 +433,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,ME,null,throwable);
 
       if (xmlBlasterException.isUser()) {
-         // Exception from remote client from update(), pass it to error handler and carry on ...
+         // Exception from remote client from update(), pass it to error handler and carry on ...?
+         // A PublishPlugin could throw it
          MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
          getMsgErrorHandler().handleErrorSync(new MsgErrorInfo(glob, entries, this, xmlBlasterException));
          return;
@@ -422,9 +482,45 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    /**
-    * Called by DispatchWorker if an Exception occurred
+    * Messages are successfully sent, remove them now from queue (sort of a commit()):
+    * We remove filtered/destroyed messages as well (which doen't show up in entryListChecked)
+    * @param postSendNotify TODO
     */
-   void handleWorkerException(ArrayList entryList, Throwable throwable) {
+   public void removeFromQueue(MsgQueueEntry[] entries, boolean postSendNotify) throws XmlBlasterException {
+      I_MsgDispatchInterceptor msgInterceptor = getMsgDispatchInterceptor();
+      MsgUnit[] msgUnits = null;
+      if (msgInterceptor != null) { // we need to do this before removal since the msgUnits are weak references and would be deleted by gc
+         msgUnits = new MsgUnit[entries.length];
+         for (int i=0; i < msgUnits.length; i++) {
+            msgUnits[i] = entries[i].getMsgUnit();
+         }
+      }
+      this.msgQueue.removeRandom(entries);
+      /*(currently only done in sync invocation)
+      ArrayList defaultEntries = sendAsyncResponseEvent(entryList);
+      if (defaultEntries.size() > 0) {
+         MsgQueueEntry[] entries = (MsgQueueEntry[])defaultEntries.toArray(new MsgQueueEntry[defaultEntries.size()]);
+         this.msgQueue.removeRandom(entries);
+      }
+      */
+      
+      if (postSendNotify)
+         postSendNotification(entries);
+      
+      if (msgInterceptor != null) {
+         msgInterceptor.postHandleNextMessages(this, msgUnits);
+      }
+      
+      if (log.isLoggable(Level.FINE)) log.fine("Commit of successful sending of " +
+            entries.length + " messages done, current queue size is " +
+            this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
+   }
+
+   /**
+    * Called by DispatchWorker if an Exception occurred in async mode. 
+    * @throws XmlBlasterException should never happen but is possible during removing entries from queue
+    */
+   void handleWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
       // Note: The DispatchManager is notified about connection problems directly by its DispatchConnectionsHandler
       //       we don't need to take care of ErrorCode.COMMUNICATION*
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Async delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
@@ -444,7 +540,11 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          if (ex.isUser()) {
             // Exception from remote client from update(), pass it to error handler and carry on ...
             MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-            getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, ex));
+            boolean isHandled = sendingFailedNotification(entries, ex);
+            if (isHandled)
+               removeFromQueue(entries, false);
+            else
+               getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, ex));
          }
          else if (ex.isCommunication()) {
 
@@ -477,7 +577,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       else {
          //log.severe(ME+": Callback failed: " + throwable.toString());
          //throwable.printStackTrace();
-         internalError(new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "", throwable));
+         XmlBlasterException ex = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "", throwable);
+         // sendingFailedNotification() not called as the msgs remain in queue until problem is resolved by admin
+         internalError(ex);
       }
    }
 

@@ -118,31 +118,23 @@ public final class DispatchWorker implements Runnable
             
             if (log.isLoggable(Level.FINE)) log.fine("Sending of " + entries.length + " messages done, current queue size is " + this.msgQueue.getNumOfEntries());
          }
-         // messages are successfully sent, remove them now from queue (sort of a commit()):
-         // We remove filtered/destroyed messages as well (which doen't show up in entryListChecked)
+
          MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-         MsgUnit[] msgUnits = null;
-         if (msgInterceptor != null) { // we need to do this before removal since the msgUnits are weak references and would be deleted by gc
-            msgUnits = new MsgUnit[entries.length];
-            for (int i=0; i < msgUnits.length; i++) {
-               msgUnits[i] = entries[i].getMsgUnit();
-            }
-         }
-         this.msgQueue.removeRandom(entries);
-         /*(currently only done in sync invocation)
-         ArrayList defaultEntries = sendAsyncResponseEvent(entryList);
-         if (defaultEntries.size() > 0) {
-            MsgQueueEntry[] entries = (MsgQueueEntry[])defaultEntries.toArray(new MsgQueueEntry[defaultEntries.size()]);
-            this.msgQueue.removeRandom(entries);
-         }
-         */
-         if (msgInterceptor != null) {
-            msgInterceptor.postHandleNextMessages(dispatchManager, msgUnits);
-         }
-         if (log.isLoggable(Level.FINE)) log.fine("Commit of successful sending of " + entryList.size() + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + ((MsgQueueEntry)entryList.get(0)).getLogId() + "'");
+         dispatchManager.removeFromQueue(entries, true);
       }
       catch(Throwable throwable) {
-         dispatchManager.handleWorkerException(entryList, throwable);
+         try {
+            dispatchManager.handleWorkerException(entryList, throwable);
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+            StringBuffer buf = new StringBuffer(2048);
+            for (int i=0; i<entryList.size(); i++)
+               buf.append(" ").append(((MsgQueueEntry)entryList.get(i)).getLogId());
+            log.severe("Commit of sending of " +
+                  entryList.size() + " messages failed, current queue size is " +
+                  this.msgQueue.getNumOfEntries() + " '" + buf.toString() + "': " + e.toString());
+         }
          // ArrayList entriesWithNoDistributor = this.sendAsyncResponseEvent(entryList);
          // if (entriesWithNoDistributor.size() > 0) dispatchManager.handleWorkerException(entriesWithNoDistributor, throwable);
       }
@@ -152,7 +144,7 @@ public final class DispatchWorker implements Runnable
          shutdown();
       }
    }
-
+   
    void shutdown() {
       // Commented out to avoid NPE
       //this.dispatchManager = null;

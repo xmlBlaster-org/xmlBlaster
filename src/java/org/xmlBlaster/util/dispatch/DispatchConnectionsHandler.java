@@ -96,7 +96,7 @@ abstract public class DispatchConnectionsHandler
     * @return Returns the postSendListener or null if none is registered
     */
    public final I_PostSendListener getPostSendListener() {
-          return this.postSendListener;
+      return this.postSendListener;
    }
 
    /**
@@ -365,7 +365,7 @@ abstract public class DispatchConnectionsHandler
       else if (tmp == ConnectionStateEnum.DEAD) {
          this.state = ConnectionStateEnum.DEAD;
          if (oldState != this.state)
-            dispatchManager.toDead(oldState, ex);
+            dispatchManager.shutdownFomAnyState(oldState, ex);
       }
       else {
          this.state = tmp;

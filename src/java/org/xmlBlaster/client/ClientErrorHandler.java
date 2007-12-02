@@ -47,13 +47,15 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
 
       boolean shutdown = false;
       XmlBlasterException ex = msgErrorInfo.getXmlBlasterException();
-      if (ex.isUser()) {
+      if (!ex.isCommunication()) { // verify if this makes sense!
          shutdown = true;
       }
 
+      String prefix = "";
       MsgQueueEntry[] entries = msgErrorInfo.getMsgQueueEntries();
       for (int i=0; i<entries.length; i++) {
          if (entries[i].getMethodName() == MethodName.CONNECT) {
+            prefix = "Connection failed: ";
             shutdown = true;
          }
          else {
@@ -64,9 +66,9 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
       }
 
       if (shutdown) {
-         log.severe("Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
+         log.severe(prefix + msgErrorInfo.getXmlBlasterException().getMessage());
          if (msgErrorInfo.getDispatchManager() != null) {
-            msgErrorInfo.getDispatchManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
+            msgErrorInfo.getDispatchManager().toDead(msgErrorInfo.getXmlBlasterException());
             //if (xmlBlasterAccess.getQueue() != null)
             //   xmlBlasterAccess.getQueue().clear();
             msgErrorInfo.getDispatchManager().shutdown();

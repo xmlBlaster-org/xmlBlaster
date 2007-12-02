@@ -61,7 +61,7 @@ public class HelloWorld4
                   if (ex.isUser()) {
                      log.severe("Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
                      if (msgErrorInfo.getDispatchManager() != null) {
-                        msgErrorInfo.getDispatchManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
+                        msgErrorInfo.getDispatchManager().toDead(msgErrorInfo.getXmlBlasterException());
                         if (msgErrorInfo.getQueue() != null)
                            msgErrorInfo.getQueue().clear();
                         msgErrorInfo.getDispatchManager().shutdown();

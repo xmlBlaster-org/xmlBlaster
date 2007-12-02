@@ -338,8 +338,6 @@ public final class CbDispatchConnection extends DispatchConnection
                // create object
                try {
                   entry.setReturnObj(new UpdateReturnQosServer(glob, rawReturnVal[i]));
-                  I_PostSendListener postSendListener = this.connectionsHandler.getPostSendListener();
-                  if (postSendListener != null) postSendListener.postSend(entry);
                }
                catch (Throwable e) {
                   log.warning(ME+": Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());

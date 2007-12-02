@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xmlBlaster.util.FileDumper;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ReplaceContent;
 import org.xmlBlaster.util.SessionName;
@@ -139,6 +140,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    private String storageIdPrefix;
 
+   private FileDumper fileDumper;
+
    private boolean shutdown = false;
 
    /**
@@ -207,15 +210,59 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * Enforced by I_PostSendListener
     * @param msgQueueEntry, includes the returned QoS (e.g. PublisReturnQos)
     */
-   public final void postSend(MsgQueueEntry msgQueueEntry) {
-      if (msgQueueEntry.getMethodName() == MethodName.CONNECT) {
-         this.connectReturnQos = (ConnectReturnQos)msgQueueEntry.getReturnObj();
-         setContextNodeId(this.connectReturnQos.getServerInstanceId());
+   public final void postSend(MsgQueueEntry[] entries) {
+      for (int i=0; i<entries.length; i++) {
+         MsgQueueEntry msgQueueEntry = entries[i];
+         if (msgQueueEntry.getMethodName() == MethodName.CONNECT) {
+            this.connectReturnQos = (ConnectReturnQos)msgQueueEntry.getReturnObj();
+            setContextNodeId(this.connectReturnQos.getServerInstanceId());
+            //break; Loop to the latest if any
+         }
       }
       I_PostSendListener l = this.postSendListener;
-      if (l != null)
-         l.postSend(msgQueueEntry);
+      if (l != null) {
+         try {
+            l.postSend(entries);
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+         }
+      }
    }
+   
+   public boolean sendingFailed(MsgQueueEntry[] entries, XmlBlasterException exception) {
+      I_PostSendListener l = this.postSendListener;
+      try {
+         if (l == null) {
+            for (int i=0; i<entries.length; i++) {
+               MsgUnit msgUnit = entries[i].getMsgUnit();               
+               String fn = this.getFileDumper().dumpMessage(msgUnit.getKeyData(), msgUnit.getContent(), msgUnit.getQosData());
+               log.warning("Async sending of message failed for message " + msgUnit.getKeyOid() +", is dumped to " + fn + ": " + exception.getMessage());
+            }
+         }
+         else {
+            return l.sendingFailed(entries, exception);
+         }
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         for (int i=0; i<entries.length; i++)
+            log.severe("Async sending of message failed for message " + entries[i].toXml() +"\nreason is: " + exception.getMessage());
+      }
+      return false;
+   }
+   
+   public FileDumper getFileDumper() throws XmlBlasterException {
+      if (this.fileDumper == null) {
+         synchronized (this) {
+            if (this.fileDumper == null) {
+               this.fileDumper = new FileDumper(this.glob);
+            }
+         }
+      }
+      return this.fileDumper;
+   }
+
 
    /**
     */

@@ -4,6 +4,13 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn repository
 ==================================
 
+ o #16639 Implemented I_PostSendListener for java clients and server
+          to get notification on *asynchronous* send messages from queue:
+	  1. postSend() delivers the ReturnQos
+	  2. sendingFailed() delivers the Exception
+	  Fixed java client: Now toDead() is called for all erroCodes despite communication
+	  The previous code called toDead() only for user exceptions.
+
  o #16630 C++ client now compiles with xerces 2.8 (64bit or 32bit)
 
  o #16601 Added Scheduler Plugin: it is now possible to define operations to be

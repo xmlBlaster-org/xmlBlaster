@@ -6,30 +6,45 @@ Author:    Wolfgang Kleinertz, Thomas Bodemer
 ------------------------------------------------------------------------------*/
 package javaclients.simplereader;
 
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.util.FileLocator;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-
-import java.awt.event.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.util.Properties;
 
-import javaclients.simplereader.FileDumper;
-import javaclients.simplereader.MessageWrapper;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.util.FileDumper;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * Usage:
@@ -139,7 +154,7 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
       listModel.addElement(messageWrapper);
       System.out.println("Key: "+updateKey.toXml()+" >>> Content: "+new String(content)+" >>> ---");
       if (this.fileDumper != null) {
-         this.fileDumper.dumpMessage(updateKey, content, updateQos);
+         this.fileDumper.dumpMessage(updateKey.getData(), content, updateQos.getData());
       }
       return "";
    }
