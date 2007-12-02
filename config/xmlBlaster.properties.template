@@ -474,6 +474,7 @@ MimeAccessPlugin[Sql92Filter][1.0]=org.xmlBlaster.engine.mime.sql92.Sql92Filter,
 # Add here your MIME based plugins which allow to filter published messages.
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.publishfilter.html
 # MimePublishPlugin[PublishLenChecker][1.0]=org.xmlBlaster.engine.mime.demo.PublishLenChecker,DEFAULT_MAX_LEN=200
+# MimePublishPlugin[TestDelayer][1.0]=org.xmlBlaster.engine.mime.demo.PublishDelayer,delayMillis=200,exceptionErrorCode=,filterKeyOid=
 #------------------------------------------------------------------------------
 
 
