@@ -353,8 +353,7 @@ public class Publisher implements I_Timeout {
       
       this.access.connect(this.connectQos, publisher);
       this.isActive = true;
-      if (this.pollInterval >= 0)
-         this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
+      activatePoller();
    }
    
    /**
@@ -502,6 +501,11 @@ public class Publisher implements I_Timeout {
       return infos;
    }
    
+   private void activatePoller() {
+      if (this.pollInterval >= 0)
+         this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
+   }
+   
    /**
     * @see org.xmlBlaster.util.I_Timeout#timeout(java.lang.Object)
     */
@@ -516,16 +520,14 @@ public class Publisher implements I_Timeout {
          log.severe(ME+": timeout: " + ex.getMessage());
       }
       finally {
-         if (this.pollInterval >= 0)
-            this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
+         activatePoller();
       }
    }
 
    public void activate() throws Exception {
       if (!this.isActive) {
          this.isActive = true;
-         if (this.pollInterval >= 0)
-            this.timeoutHandle = timeout.addTimeoutListener(this, this.pollInterval, null);
+         activatePoller();
       }
    }
 
@@ -634,9 +636,9 @@ public class Publisher implements I_Timeout {
     * @param pollInterval The pollInterval to set.
     */
    public void setPollInterval(long pollInterval) {
+      deActivate();
       this.pollInterval = pollInterval;
-      if (this.pollInterval < 0)
-         deActivate();
+      activatePoller();
    }
 
    /**
