@@ -1,8 +1,8 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes for current svn repository
-==================================
+Changes for 1.6.2 [2007-12-03] #16646 'Openroads'
+=================================================
 
  o #16639 Implemented I_PostSendListener for java clients and server
           to get notification on *asynchronous* send messages from queue:
@@ -13,9 +13,18 @@ Changes for current svn repository
 
  o #16630 C++ client now compiles with xerces 2.8 (64bit or 32bit)
 
+ o #16621 The FileWatcher and FileWriter can be managed by the HTML based replication monitor
+          (similar to the database replication)
+
+ o #16621 FileWatcher plugin for Java (supporting streaming mode for huge files)
+	  http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.filewatcher.html
+
+ o #16614 FileWriter plugin for Java and C++ (supporting streaming mode)
+          http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.filewriter.html
+
  o #16601 Added Scheduler Plugin: it is now possible to define operations to be
           scheduled. see 
-          http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.scheduler.html
+	  http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.scheduler.html
 
  o #16586 Added ServerScope (if any) object to Global when cloning Global
 
@@ -31,8 +40,8 @@ Changes for current svn repository
           See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java
 
  o #16528 Adjustable SmtpClient mail timeout (see xmlBlasterPlugins.xml example)
-      <attribute id='mail.smtp.timeout'>3600000</attribute> <!-- socket IO: 1 h -->
-      <attribute id='mail.smtp.connectiontimeout'>600000</attribute> <!-- 10 min -->
+          <attribute id='mail.smtp.timeout'>3600000</attribute> <!-- socket IO: 1 h -->
+          <attribute id='mail.smtp.connectiontimeout'>600000</attribute> <!-- 10 min -->
 
  o #16518 C++ Fixed putToQueue(): Now always if POLLING or other messages in queue
 

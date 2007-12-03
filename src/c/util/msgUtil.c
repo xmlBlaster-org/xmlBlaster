@@ -55,7 +55,7 @@ Dll_Export const char *getXmlBlasterVersion(void)
    if (strstr(p1, "@") == 0) { /* Verify that version replacement worked fine */
        return p1;
    }
-   return "1.6.1";
+   return "1.6.2";
 }
 
 /**

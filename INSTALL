@@ -1,6 +1,6 @@
            _____________________________________________________
   ________|                                                     |________
-  \       |   xmlBlaster 1.6.1        http://www.xmlBlaster.org |       /
+  \       |   xmlBlaster 1.6.2        http://www.xmlBlaster.org |       /
    \      |        Free Message-oriented Middleware (MOM)       |      /
    /      |_____________________________________________________|      \
   /___________)                                              (__________\
@@ -191,7 +191,27 @@ to generate the CORBA and the SQL92 plugin java code with:
    cd xmlBlaster
    build java-corba-idl javaCup
 
-Now it should be possible to create a xmlBlaster eclipse project.
+Now it should be possible to create an own xmlBlaster eclipse project.
+
+For convenience we provide predefined projects for eclipse
+
+ 1. They all need a CLASSPATH variable XMLBLASTER_HOME (e.g. =/opt/xmlBlaster) preset
+ 2. Switch off the IOR plugin in xmlBlasterPlugins.xml
+ 3. Probably you need to change the 'Properties -> Java Build Path -> Default output folder' to work
+
+Just import them with 
+   File -> Import ... -> General -> Existing Projects into Workspace
+
+There are three Java projects for eclipse:
+   xmlBlaster/src/.project
+   xmlBlaster/demo/.project
+   xmlBlaster/testsuite/src/java/.project
+
+and several C and C++ projects:
+   ./demo/c++/.cdtbuild
+   ./demo/c/socket/.cdtbuild
+   ./src/c++/.cdtbuild
+   ./src/c/.cdtbuild
 
 
 +--------------------+
@@ -334,7 +354,7 @@ instructions.
 +-----------------------------------+
 
 
-As a default xmlBlaster start automatically RMI support.
+RMI support is deprecated and not supported any more!
 If you want to know more here you go:
 
 1. Check if the driver is loaded in xmlBlasterPlugins.xml and xmlBlaster.properties,
@@ -506,6 +526,8 @@ Changing jacorb.poa.thread_priority=MAX_PRIORITY (10) to 5 (NORM_PRIORITY)
 
 
 
-Marcel Ruff - xmlBlaster@marcelruff.info (Unix)
+Michele Laghi - michele@laghi.eu
+Marcel Ruff - xmlBlaster@marcelruff.info
+Heinrich Goetzger - goetzger@gmx.de
 Peter Roth - Roth.Peter@gmx.de (Windows)
 
