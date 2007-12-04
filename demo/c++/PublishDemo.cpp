@@ -135,17 +135,41 @@ public:
     * (typically after a connection loss with ongoing publishes)
     * @see I_PostSendListener and connection_.registerPostSendListener(this);
     */
-   void postSend(const org::xmlBlaster::util::queue::MsgQueueEntry &msgQueueEntry)
+   void postSend(const std::vector<org::xmlBlaster::util::queue::EntryType> &entries)
    {
-	  if (msgQueueEntry.isPublish()) {
-          const PublishQueueEntry* entry = dynamic_cast<const PublishQueueEntry*>(&msgQueueEntry);
-		  const PublishReturnQos* qos = entry->getPublishReturnQos();
-		  log_.info(ME, "Tailback message is send from client queue, state=" + qos->getState() + ": " + msgQueueEntry.getMsgUnit().getContentStr());
-	  }
-	  else {
-		  log_.info(ME, "Tailback message is send from client queue");
-	  }
+      vector<EntryType>::const_iterator iter = entries.begin();
+      while (iter != entries.end()) {
+         const EntryType entryRef = (*iter);
+         iter++;
+         const MsgQueueEntry &entry = *entryRef;
+         if (entry.isPublish()) {
+            const PublishQueueEntry& pubEntry = *(dynamic_cast<const PublishQueueEntry*>(&entry));
+            const PublishReturnQos* qos = pubEntry.getPublishReturnQos();
+            log_.info(ME, "Tailback message is send from client queue, state=" + qos->getState() + ": " + pubEntry.getMsgUnit().getContentStr());
+         }
+         else {
+            log_.info(ME, "Tailback message is send from client queue");
+         }
+      }
    }
+
+   /**
+    * Is called asynchronously if a tailback message from our queue couldn't be send. 
+    * (typically after a connection loss with ongoing publishes)
+    * @see I_PostSendListener and connection_.registerPostSendListener(this);
+    */
+   bool sendingFailed(const std::vector<org::xmlBlaster::util::queue::EntryType> &entries, const XmlBlasterException &exception)
+   {
+      vector<EntryType>::const_iterator iter = entries.begin();
+      while (iter != entries.end()) {
+         const EntryType entryRef = (*iter);
+         iter++;
+         const MsgQueueEntry &entry = *entryRef;
+         log_.warn(ME, "Tailback message "+ entry.getEmbeddedType() + " sending from client queue failed: " + exception.getMessage());
+      }
+      return false; // Let the framework handle it
+   }
+
 
 };
 
