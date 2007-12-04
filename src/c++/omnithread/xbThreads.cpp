@@ -77,6 +77,11 @@
 #elif defined(__darwin__)
 #include "posix.cc"
 
+#elif defined(__macos__)
+#include <sys/time.h>
+#define __COMPILE_POSIX_CC__
+#include "posix.cc"
+
 #else
 #error "No implementation header file"
 #endif
