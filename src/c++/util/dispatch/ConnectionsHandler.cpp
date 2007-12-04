@@ -690,23 +690,34 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
             }
             entry2.send(*this); // entry2 contains the PublishReturnQos after calling send
             if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent");
-
-            I_PostSendListener *p = postSendListener_;
-            if (p) {
-                p->postSend(entry2);
-            }
          }
          catch (XmlBlasterException &ex) {
-           if (ex.isCommunication()) toPollingOrDead(&ex);
-           log_.warn(ME, "flushQueueUnlocked: can't send queued message to server: " + ex.getMessage());
-           //if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
-           throw ex;
+            if (ex.isCommunication()) toPollingOrDead(&ex);
+            log_.warn(ME, "flushQueueUnlocked: can't send queued message to server: " + ex.getMessage());
+            I_PostSendListener *p = postSendListener_;
+            bool isHandled = false; 
+            if (p) {
+               isHandled = p->sendingFailed(entries, ex); // Notify client code
+            }
+            //if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
+            if (isHandled) {
+               // TODO: Remove from queue and continue
+                throw ex; // TODO: This exception ends up in the timout thread and destroys the sending thread
+            }
+            else {
+               throw ex; // TODO: This exception ends up in the timout thread and destroys the sending thread
+               // We should set dispatcher active false so that a C++ client can later reactivate it
+            }
          }
          iter++;
       }
       if (doRemove) {
           //log_.trace(ME, "remove send message from client queue");
           ret += queueToFlush->randomRemove(entries.begin(), entries.end());
+      }
+      I_PostSendListener *p = postSendListener_;
+      if (p) {
+          p->postSend(entries);
       }
    }
    return ret;

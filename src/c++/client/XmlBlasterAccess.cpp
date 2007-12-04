@@ -10,6 +10,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Timestamp.h>
 #include <util/dispatch/DispatchManager.h>
 #include <util/parser/ParserFactory.h>
+#include <util/queue/MsgQueueEntry.h>
+#include <util/queue/I_Queue.h>
+
 
 namespace org { namespace xmlBlaster { namespace client {
 
@@ -17,7 +20,7 @@ using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
-using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::util::queue;
 using namespace org::xmlBlaster::util::qos::storage;
 using namespace org::xmlBlaster::util::qos::address;
 using namespace org::xmlBlaster::authentication;
@@ -271,11 +274,20 @@ org::xmlBlaster::util::dispatch::I_PostSendListener* XmlBlasterAccess::registerP
 }
 
 // I_PostSendListener
-void XmlBlasterAccess::postSend(const org::xmlBlaster::util::queue::MsgQueueEntry &msgQueueEntry)
+void XmlBlasterAccess::postSend(const std::vector<EntryType> &entries)
 {
    I_PostSendListener* l = this->postSendListener_;
    if (l)
-      l->postSend(msgQueueEntry);
+      l->postSend(entries);
+}
+
+// I_PostSendListener
+bool XmlBlasterAccess::sendingFailed(const std::vector<EntryType> &entries, const XmlBlasterException &exception)
+{
+   I_PostSendListener* l = this->postSendListener_;
+   if (l)
+      return l->sendingFailed(entries, exception);
+   return false;
 }
 
 org::xmlBlaster::client::protocol::I_ProgressListener* XmlBlasterAccess::registerProgressListener(org::xmlBlaster::client::protocol::I_ProgressListener *listener)

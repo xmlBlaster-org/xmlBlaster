@@ -15,6 +15,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/dispatch/I_PostSendListener.h>
 #include <util/ReferenceCounterBase.h>
 #include <util/ReferenceHolder.h>
+#include <util/XmlBlasterException.h>
+#include <util/queue/MsgQueueEntry.h>
+#include <util/queue/I_Queue.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -250,8 +253,15 @@ public:
 
    /**
     * Enforced by I_PostSendListener
+    * @see org::xmlBlaster::util::dispatch::I_PostSendListener
     */
-   void postSend(const org::xmlBlaster::util::queue::MsgQueueEntry &msgQueueEntry);
+   void postSend(const std::vector<org::xmlBlaster::util::queue::EntryType> &entries);
+
+   /**
+    * Enforced by I_PostSendListener
+    * @see org::xmlBlaster::util::dispatch::I_PostSendListener
+    */
+   bool sendingFailed(const std::vector<org::xmlBlaster::util::queue::EntryType> &entries, const org::xmlBlaster::util::XmlBlasterException &exception);
 
    /**
     * Create a descriptive ME, for logging only
