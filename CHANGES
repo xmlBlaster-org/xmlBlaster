@@ -1,6 +1,12 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for current svn
+=======================
+
+ o #16652 C++ Implemented same I_PostSendEvent error handling as in Java
+
+
 Changes for 1.6.2 [2007-12-03] #16646 'Openroads'
 =================================================
 
