@@ -579,12 +579,14 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                   Thread.dumpStack();
                   continue;
                }
-               if (origMsgUnit.getQosData().getClientProperties().get("__isErrorHandled") != null) {  // Check for recursion of dead letters
+               // entry.getLogId()="callback:/node/heron/client/Subscriber/1/NORM/1196854278910000000/Hello"
+               String clientPropertyKey = "__isErrorHandled" + entry.getLogId();
+               if (origMsgUnit.getQosData().getClientProperties().get(clientPropertyKey) != null) {  // Check for recursion of dead letters
                   log.warning("Recursive message '" + entry.getLogId() + "' is error handled already (sent as dead letter), we ignore it.");
                   retArr[ii] = entry.getKeyOid();
                   continue;
                }
-               origMsgUnit.getQosData().addClientProperty("__isErrorHandled", true); // Mark the original to avoid looping if failed client is the dead message listener
+               origMsgUnit.getQosData().addClientProperty(clientPropertyKey, true); // Mark the original to avoid looping if failed client is the dead message listener
                String text = "Generating dead message '" + entry.getLogId() + "'" +
                             " from publisher=" + entry.getSender() +
                             " because delivery " +            // entry.getReceiver() is recognized in queueId
