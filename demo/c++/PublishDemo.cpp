@@ -165,7 +165,7 @@ public:
          const EntryType entryRef = (*iter);
          iter++;
          const MsgQueueEntry &entry = *entryRef;
-         log_.warn(ME, "Tailback message "+ entry.getEmbeddedType() + " sending from client queue failed: " + exception.getMessage());
+         log_.warn(ME, "Tailback '"+ entry.getMethodName() + "' message sending from client queue failed: " + exception.getMessage());
       }
       return false; // Let the framework handle it
    }
