@@ -10,6 +10,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/Timestamp.h>
 #include <util/MessageUnit.h>
+#include <util/MethodName.h>
 #include <util/qos/ConnectQos.h>
 #include <client/qos/PublishQos.h>
 #include <client/qos/PublishReturnQos.h>
@@ -196,6 +197,11 @@ public:
     *         deserialize this entry, e.g. "MSG_RAW|publish"
     */
    virtual std::string getEmbeddedType() const;
+   
+   /**
+    * @return for example org::xmlBlaster::util::MethodName::PUBLISH
+    */
+   virtual std::string getMethodName() const;
    
    virtual bool isConnect() const;
 

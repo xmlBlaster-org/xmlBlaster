@@ -192,6 +192,19 @@ string MsgQueueEntry::getEmbeddedType() const
    return embeddedType_;
 }
 
+string MsgQueueEntry::getMethodName() const
+{
+   string::size_type pos = embeddedType_.find("|");
+   if (pos == string::npos) {
+      return org::xmlBlaster::util::MethodName::UNKNOWN;
+   }
+   if (pos < embeddedType_.size()) {
+      return embeddedType_.substr(pos+1);
+   }
+   return org::xmlBlaster::util::MethodName::UNKNOWN;
+}
+
+
 bool MsgQueueEntry::isConnect() const {
 	return false;
 }

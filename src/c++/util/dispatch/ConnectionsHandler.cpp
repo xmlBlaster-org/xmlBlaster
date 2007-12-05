@@ -422,27 +422,20 @@ bool ConnectionsHandler::isRecoverable(const org::xmlBlaster::util::XmlBlasterEx
 	return ret;
 }
 
-void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlasterException* reason)
+void ConnectionsHandler::toDead(const org::xmlBlaster::util::XmlBlasterException* reason)
 {
-   if (reason == 0)
-	   return;
-   if (!reason->isCommunication())
-	  return;
-	   
-   if (log_.call()) log_.call(ME, "toPollingOrDead");
-   
+   if (log_.call()) log_.call(ME, "toDead");
    enum States oldState = status_;
-   if (!isFailsafe()) {
-      log_.info(ME, "going into DEAD status since not in failsafe mode. "
-                    "For failsafe mode set 'delay' to a positive long value, for example on the cmd line: -delay 10000" +
-                    ((reason != 0) ? (": " + reason->getMessage()) : ""));
-      status_ = DEAD;
-      connection_->shutdown();
-      if (connectionProblemsListener_) connectionProblemsListener_->reachedDead(oldState, this);
-      return;
-   }
+   log_.info(ME, "going into DEAD status" + ((reason != 0) ? (": " + reason->getMessage()) : ""));
+   status_ = DEAD;
+   connection_->shutdown(); // close socket/corba connection
+   if (connectionProblemsListener_) connectionProblemsListener_->reachedDead(oldState, this);
+}
 
+void ConnectionsHandler::toPolling(const org::xmlBlaster::util::XmlBlasterException* reason)
+{
    log_.info(ME, "going into POLLING status:" + ((reason != 0) ? (": " + reason->getMessage()) : ""));
+   enum States oldState = status_;
    status_ = POLLING;
    currentRetry_ = 0;
    /*
@@ -454,9 +447,29 @@ void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlaster
       log_.warn(ME, "exception when trying to disconnect");
    }
    */
-   connection_->shutdown();
+   connection_->shutdown(); // close socket/corba connection
    if (connectionProblemsListener_) connectionProblemsListener_->reachedPolling(oldState, this);
    startPinger(true);
+}
+
+void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlasterException* reason)
+{
+   if (reason == 0)
+      return;
+   if (!reason->isCommunication())
+      return;
+
+   if (log_.call()) log_.call(ME, "toPollingOrDead");
+
+   if (!isFailsafe()) {
+      log_.info(ME, "going into DEAD status since not in failsafe mode. "
+                    "For failsafe mode set 'delay' to a positive long value, for example on the cmd line: -delay 10000" +
+                    ((reason != 0) ? (": " + reason->getMessage()) : ""));
+      toDead(reason);
+      return;
+   }
+
+   toPolling(reason);
 }
 
 
@@ -662,7 +675,27 @@ long ConnectionsHandler::flushQueue()
    return flushQueueUnlocked(queue_, true);
 }  
 
-   
+// Notify client code
+bool ConnectionsHandler::sendingFailedNotification(const std::vector<org::xmlBlaster::util::queue::EntryType> &entries, const org::xmlBlaster::util::XmlBlasterException &exception)
+{
+    I_PostSendListener *p = postSendListener_;
+    bool isHandled = false; 
+    if (p) {
+       try {
+          isHandled = p->sendingFailed(entries, exception); // Notify client code
+       }
+       catch (...) {
+          log_.error(ME, "flushQueueUnlocked(async sending mode): Ignoring exception thrown from user code sendingFailed(...)");
+       }
+    }
+    return isHandled;
+}
+
+
+/**
+ * Called synchronously by connect() 
+ * or async by timeout of reconnect poller
+ */
 long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove)
 {
    if ( log_.call() ) log_.call(ME, "flushQueueUnlocked");
@@ -679,45 +712,61 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
       if (log_.trace()) log_.trace(ME, "flushQueueUnlocked: flushing one priority sweep maxNumOfEntries=" + lexical_cast<string>(maxNumOfEntries));
       const vector<EntryType> entries = queueToFlush->peekWithSamePriority(maxNumOfEntries);
       vector<EntryType>::const_iterator iter = entries.begin();
+      bool isHandled = false;
       while (iter != entries.end()) {
+         const EntryType entry = (*iter);
+         iter++;
+         const MsgQueueEntry &entry2 = *entry;
+
          try {
-            if (log_.trace()) log_.trace(ME, "sending the content to xmlBlaster: " + (*iter)->toXml());
-            const EntryType entry = (*iter);
-            const MsgQueueEntry &entry2 = *entry;
+            if (log_.trace()) log_.trace(ME, "sending the content to xmlBlaster: " + entry->toXml());
             {
                MsgQueueEntry &entry3 = const_cast<MsgQueueEntry&>(entry2);
                entry3.setSender(connectReturnQos_->getSessionQos().getSessionName());
             }
             entry2.send(*this); // entry2 contains the PublishReturnQos after calling send
+            isHandled = false;
             if (log_.trace()) log_.trace(ME, "content to xmlBlaster successfully sent");
          }
          catch (XmlBlasterException &ex) {
-            if (ex.isCommunication()) toPollingOrDead(&ex);
-            log_.warn(ME, "flushQueueUnlocked: can't send queued message to server: " + ex.getMessage());
-            I_PostSendListener *p = postSendListener_;
-            bool isHandled = false; 
-            if (p) {
-               isHandled = p->sendingFailed(entries, ex); // Notify client code
+            if (ex.isCommunication()) {
+               toPollingOrDead(&ex);
+               throw ex; // Terminate timer thread //return;
             }
-            //if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
+            log_.warn(ME, "flushQueueUnlocked(async sending mode): can't send queued message " + entry->toXml() + " to server: " + ex.getMessage());
+            isHandled = sendingFailedNotification(entries, ex); // Notify client code 
             if (isHandled) {
-               // TODO: Remove from queue and continue
-                throw ex; // TODO: This exception ends up in the timout thread and destroys the sending thread
+               if (log_.trace()) log_.trace(ME, "message is handled by user code, we remove it now from queue: " + entry->toXml());
             }
             else {
-               throw ex; // TODO: This exception ends up in the timout thread and destroys the sending thread
-               // We should set dispatcher active false so that a C++ client can later reactivate it
+               toDead(&ex);
+               // Instead of toDead we should set dispatcher active false so that a C++ client can later reactivate it?
+               throw ex; // Up to timer thread or back to user
             }
          }
-         iter++;
+         catch (...) {
+            XmlBlasterException ex = XmlBlasterException(INTERNAL_UNKNOWN, ME, "flushQueueUnlocked(async sending mode): can't send queued message, reason is unknown");
+            log_.warn(ME, "flushQueueUnlocked(async sending mode): can't send queued message " + entry->toXml() + " to server because of unknown exception");
+            bool isHandled = sendingFailedNotification(entries, ex); // Notify client code 
+            if (isHandled) {
+               if (log_.trace()) log_.trace(ME, "message is handled by user code, we remove it now from queue: " + entry->toXml());
+            }
+            else {
+               toDead(&ex);
+               // We should set dispatcher active false so that a C++ client can later reactivate it?
+               throw ex;
+            }
+         }
       }
       if (doRemove) {
           //log_.trace(ME, "remove send message from client queue");
           ret += queueToFlush->randomRemove(entries.begin(), entries.end());
       }
-      I_PostSendListener *p = postSendListener_;
-      if (p) {
-          p->postSend(entries);
+      if (!isHandled) {
+	      I_PostSendListener *p = postSendListener_;
+	      if (p) {
+	          p->postSend(entries);
+	      }
       }
    }
    return ret;

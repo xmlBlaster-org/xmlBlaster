@@ -67,7 +67,7 @@ public:
     * 
     * @return 
     * false: We have not handled this case and the dispatcher framework
-    * does its default handling.
+    * does its default handling (which is currently hard coded and the connection goes to dead).
     * For the client it is just a notification.
     * 
     * true: We have processed some error handling and the dispatch framework

@@ -15,6 +15,8 @@ Comment:   Handles the org::xmlBlaster::client::protocol::I_XmlBlasterConnection
 #include <util/XmlBlasterException.h>
 #include <util/thread/ThreadImpl.h>
 #include <util/I_Timeout.h>
+#include <util/queue/MsgQueueEntry.h>
+#include <util/queue/I_Queue.h>
 //#include <util/queue/I_Queue.h>
 // #include <util/queue/PublishQueueEntry.h>
 // #include <util/queue/ConnectQueueEntry.h>
@@ -194,8 +196,21 @@ protected:
 
    /**
     * Going to polling status in case we are in failsafe mode or to DEAD if we are not in failsafe mode.
+    * Only for communication.* exceptions
     */
    void toPollingOrDead(const org::xmlBlaster::util::XmlBlasterException* reason);
+   /**
+    * Going to dead and shutdown the socket connection
+    */
+   void toPolling(const org::xmlBlaster::util::XmlBlasterException* reason);
+   /**
+    * Going to dead and shutdown the socket connection
+    */
+   void toDead(const org::xmlBlaster::util::XmlBlasterException* reason);
+   /**
+    * Convenience method to notify client code
+    */
+   bool sendingFailedNotification(const std::vector<org::xmlBlaster::util::queue::EntryType> &entries, const org::xmlBlaster::util::XmlBlasterException &exception);
 };
 
 
