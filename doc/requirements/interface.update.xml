@@ -106,6 +106,11 @@
       <br />If clients written in other programming languages send a weird exception error code, it is
       handled by the server as "user.update.internalError" (for Corba access since ever,
       for SOCKET and XMLRPC since xmlBlaster 1.3, before it was a "internal.unknown" or "internal.illegalargument").
+      <br />
+      To be more precise, every exception caught by the server from the callback clients which is not of type
+      <code>ErrorCode.USER_*="user.*"</code> or <code>ErrorCode.COMMUNICATION_*="communication.*"</code>
+      is automatically handled as <code>ErrorCode.USER_UPDATE_INTERNALERROR="user.update.internalError"</code>
+      and the above rules apply.
       </p>
       <p>If the server gets a communication exception
       <code><a href="http://www.xmlblaster.org/xmlBlaster/doc/client-api/org/xmlBlaster/util/def/ErrorCode.html" target="others">ErrorCode.COMMUNICATION_*</a></code>
