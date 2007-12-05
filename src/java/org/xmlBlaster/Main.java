@@ -505,6 +505,8 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
    }
 
    public void newException(XmlBlasterException e) {
+      if (!e.isServerSide())
+         return;
       // Typically if the DB is lost: ErrorCode.RESOURCE_DB_UNKNOWN
       if (this.panicErrorCodes.indexOf(e.getErrorCodeStr()) != -1) {
          log.severe("PANIC: Doing immediate shutdown caused by exception: " + e.getMessage());
