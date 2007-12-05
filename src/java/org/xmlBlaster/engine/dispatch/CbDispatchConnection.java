@@ -299,7 +299,19 @@ public final class CbDispatchConnection extends DispatchConnection
          for (int i=0; i<responders.size(); i++) {
             raws[i] = ((Holder)responders.get(i)).msgUnitRaw;
          }
-         String[] rawReturnVal = cbDriver.sendUpdate(raws);
+         String[] rawReturnVal = null;
+         try {
+            rawReturnVal = cbDriver.sendUpdate(raws);
+         }
+         catch (Throwable t) {
+            XmlBlasterException ex = (t instanceof XmlBlasterException) ? (XmlBlasterException)t :
+               new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "Callback failed", t);
+            if (!ex.isServerSide()) { // Transform remote exceptions must be of type user.* or communication.*
+               if (!ex.isUser() && !ex.isCommunication())
+                  ex = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "Callback failed", ex);
+            }
+            throw ex;
+         }
          connectionsHandler.getDispatchStatistic().incrNumUpdate(raws.length);
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Success, sent " + raws.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
 
