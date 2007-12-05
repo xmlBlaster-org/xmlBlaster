@@ -88,7 +88,8 @@
       is a message with the <code>key oid='__sys__deadMessage'</code>.<br />
       You can write a client which subscribes to such dead messages and handles
       them appropriate, or at least activate the DeadMessageDumper in <code>xmlBlasterPlugins.xml</code>
-      as described in the <a href="admin.errorHandling.html" target="others">requirement admin.errorHandling</a>.</p>
+      as described in the <a href="admin.errorHandling.html" target="others">requirement admin.errorHandling</a>.<br />
+      After the message is published as a dead letter it is removed from the clients callback queue and the next one is processed.</p>
       
       <p>If your client throws a <code>USER_UPDATE_HOLDBACK="user.update.holdback"</code>
       exception the behavior is different, the server keeps the message in its callback queue and sets the <code>dispatcherActive=false</code>, that
