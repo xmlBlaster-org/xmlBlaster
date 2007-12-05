@@ -304,11 +304,12 @@ public final class CbDispatchConnection extends DispatchConnection
             rawReturnVal = cbDriver.sendUpdate(raws);
          }
          catch (Throwable t) {
+            // http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html#exception
             XmlBlasterException ex = (t instanceof XmlBlasterException) ? (XmlBlasterException)t :
-               new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "Callback failed", t);
+               new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Callback failed", t);
             if (!ex.isServerSide()) { // Transform remote exceptions must be of type user.* or communication.*
                if (!ex.isUser() && !ex.isCommunication())
-                  ex = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME, "Callback failed", ex);
+                  ex = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Callback failed", ex);
             }
             throw ex;
          }
