@@ -4,6 +4,12 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16660 Catching client side exceptions of type other than user.* and communication.*
+          and converting them to "user.update.internalError"
+
+ o #16657 Fix to not shutdown xmlBlaster for severe client side exceptions during callback
+          Problem could not occure for Java or C++ clients
+
  o #16654 Dead message generation: Now detecting 'isErrorHandled' specific for each
           queue instance (and not only for each MsgUnit).
 
