@@ -104,8 +104,10 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       }
       String strippedHostName = getStrippedString(hostName);
       String oldStrippedHostName = System.getProperty("stripped.host.name");
-      if (oldStrippedHostName != null)
-         log.warning("The system property 'stripped.host.name' was already set to '" + oldStrippedHostName + "' will NOT change it to '" + strippedHostName + "'");
+      if (oldStrippedHostName != null) {
+         if (!oldStrippedHostName.equals(strippedHostName))
+            log.warning("The system property 'stripped.host.name' was already set to '" + oldStrippedHostName + "' will NOT change it to '" + strippedHostName + "'");
+      }
       else {
          System.setProperty("stripped.host.name", strippedHostName);
          log.info("Set system property 'stripped.host.name' to '" + strippedHostName + "'");
@@ -343,6 +345,7 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
    public String get(String key, String def) {
       if (key == null)
          return def;
+      def = this.helper.replace(def);
       key = this.helper.replace(key);
       
       // hack: if in topic name is a ${..} our global tries to replace it and
