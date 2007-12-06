@@ -38,7 +38,6 @@ import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.InfoHelper;
 import org.xmlBlaster.contrib.MomEventEngine;
-import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.db.DbInfo;
 import org.xmlBlaster.contrib.db.DbPool;
@@ -493,6 +492,8 @@ public class ReplManagerPlugin extends GlobalInfo
             this.pool = initializePersistentInfo();
          
          I_XmlBlasterAccess conn = this.global.getXmlBlasterAccess();
+         this.user = get("mom.user", this.user);
+         this.password = get("mom.password", this.password);
          ConnectQos connectQos = new ConnectQos(this.global, this.user, this.password);
          boolean persistentConnection = true;
          boolean persistentSubscription = true;
