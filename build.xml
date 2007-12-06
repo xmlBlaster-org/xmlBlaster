@@ -1711,7 +1711,11 @@ TODO
          <case value="true">
             <echo message="Adding ${lib.dir}/xmlBlasterContrib.jar for CONTRIB support" />
             <echo message="Make sure you have previously built the new contrib package." />
-            <unjar src="${lib.dir}/xmlBlasterContrib.jar" dest="${dist-classes.dir}" />
+            <antcall target="contrib" inheritAll='false' inheritRefs='false'/>
+            <copy todir="${dist-classes.dir}/org/xmlBlaster/contrib/replication/setup" verbose="true">
+               <fileset dir="${build.dest}/org/xmlBlaster/contrib/replication/setup"/>
+            </copy>
+            <!-- unjar src="${lib.dir}/xmlBlasterContrib.jar" dest="${dist-classes.dir}" / -->
             <unjar src="${lib.dir}/javax.jms.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
