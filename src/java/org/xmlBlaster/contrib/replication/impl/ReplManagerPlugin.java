@@ -326,8 +326,17 @@ public class ReplManagerPlugin extends GlobalInfo
       return "1.0";
    }
 
+   private void addIfNotSet(String key, String defValue) {
+      String tmp = get(key, null);
+      if (tmp == null) {
+         if (defValue == null)
+            log.warning("The property '" + key + "' is not set");
+         put(key, defValue);
+      }
+   }
    /**
-    * Creates a I_DbPool object out of the JDBC,1.0 Queue Properties and initializes the pool.
+    * Creates a I_DbPool object using the defaults out of the JDBC,1.0 Queue Properties and initializes 
+    * the pool.
     * @return
     * @throws Exception
     */
@@ -335,28 +344,26 @@ public class ReplManagerPlugin extends GlobalInfo
       QueuePluginManager pluginManager = new QueuePluginManager(this.global);
       PluginInfo queuePluginInfo = new PluginInfo(this.global, pluginManager, "JDBC", "1.0");
       Properties prop = (Properties)queuePluginInfo.getParameters();
-      String dbUrl = prop.getProperty("url", null);
-      String dbUser = prop.getProperty("user", null);
-      String dbPassword = prop.getProperty("password", null);
+      
+      String dbUrl = this.global.get("db.url", prop.getProperty("url", null), null, queuePluginInfo);
+      String dbUser = this.global.get("db.user", prop.getProperty("user", null), null, queuePluginInfo);
+      String dbPassword = this.global.get("db.passwordr", prop.getProperty("password", null), null, queuePluginInfo);
+      
+      String dbDrivers = this.global.get("JdbcDriver.drivers", prop.getProperty("Jdbc.drivers", null), null, queuePluginInfo);
+      dbDrivers = this.global.get("jdbc.drivers", dbDrivers, null, queuePluginInfo);
+
       log.info("db.url='" + dbUrl + "' db.user='" + dbUser + "'");
       
-      I_Info tmpInfo = new PropertiesInfo(new Properties());
-      if (dbUrl != null)
-         tmpInfo.put("db.url", dbUrl);
-      else
-         log.warning("the property 'url' was not set");
-      if (dbUser != null)
-         tmpInfo.put("db.user", dbUser);
-      else
-         log.warning("the property 'user' was not set");
-      if (dbPassword != null)
-         tmpInfo.put("db.password", dbPassword);
-      else
-         log.warning("the property 'password' was not set");
-      I_DbPool pool = new DbPool();
-      pool.init(tmpInfo);
-      this.persistentInfo = new DbInfo(pool, "replication", tmpInfo);
-      return pool;
+      addIfNotSet("db.url", dbUrl);
+      addIfNotSet("db.user", dbUser);
+      addIfNotSet("db.password", dbPassword);
+      addIfNotSet("db.drivers", dbDrivers);
+      
+      I_DbPool newPool = new DbPool();
+      
+      newPool.init(this);
+      this.persistentInfo = new DbInfo(newPool, "replication", this);
+      return newPool;
    }
    
    /**
