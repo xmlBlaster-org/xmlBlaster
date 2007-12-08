@@ -36,6 +36,7 @@ Changes for 1.6.2 [2007-12-03] #16646 'Openroads'
 
  o #16614 FileWriter plugin for Java and C++ (supporting streaming mode)
           http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.filewriter.html
+          Note: Incompatible rename from Reveiver to FileWriter (attrib names changed as well)
 
  o #16601 Added Scheduler Plugin: it is now possible to define operations to be
           scheduled. see 
