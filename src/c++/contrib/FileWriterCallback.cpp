@@ -299,7 +299,7 @@ void FileWriterCallback::putAllChunksTogether(std::string &fileName, long expect
 				throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::storeChunk", "the file is not open for reading");
 			
 			int numRead = 1;
-			while (in) {
+			while ( !in.eof() ) {
 				in.read(buf_, bufSize_);
 				numRead = in.gcount();
 				if (numRead > 0)
