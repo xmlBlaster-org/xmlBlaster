@@ -64,10 +64,16 @@ void DisconnectQos::setClearSessions(bool del)
    clearSessions_ = del;
 }
 
-void DisconnectQos::addClientProperty(const std::string& key, const std::string& value,
-            const std::string& /*type*/, const std::string& /*encoding*/)
+void DisconnectQos::addClientProperty(const ClientProperty& clientProperty)
 {
-   clientProperties_.insert(ClientPropertyMap::value_type(key, value)); // TODO: Port to ClientProperty, type, encoding
+   clientProperties_.insert(ClientPropertyMap::value_type(clientProperty.getName(), clientProperty));   
+}
+
+void DisconnectQos::addClientProperty(const std::string& key, const std::string& value,
+            const std::string& type, const std::string& encoding, const std::string& charset)
+{
+   org::xmlBlaster::util::qos::ClientProperty clientProperty(key, value, type, encoding, charset);
+   clientProperties_.insert(ClientPropertyMap::value_type(key, clientProperty));   
 }
         
 const DisconnectQos::ClientPropertyMap& DisconnectQos::getClientProperties() const
@@ -85,10 +91,11 @@ string DisconnectQos::toXml(const string& extraOffset) const
    ret += offset + "  <deleteSubjectQueue>" + global_.getBoolAsString(deleteSubjectQueue_) + "</deleteSubjectQueue>";
    ret += offset + "  <clearSessions>" + global_.getBoolAsString(clearSessions_) + "</clearSessions>";
 
-   DisconnectQos::ClientPropertyMap::const_iterator 
-      iter = clientProperties_.begin();
+   const bool clearText=false;
+   QosData::ClientPropertyMap::const_iterator iter = clientProperties_.begin();
    while (iter != clientProperties_.end()) {
-      offset + "   <clientProperty name='" + (*iter).first + "'>" + (*iter).second + "</clientProperty>";
+      const ClientProperty& cp = (*iter).second;
+      ret += cp.toXml(extraOffset, clearText);
       iter++;
    }
 

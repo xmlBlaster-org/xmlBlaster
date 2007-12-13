@@ -30,6 +30,7 @@ Version:   $Id$
 
 #include <util/xmlBlasterDef.h>
 #include <util/I_Log.h>
+#include <util/qos/ClientProperty.h>
 #include <string>
 #include <map>
 
@@ -37,7 +38,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 class Dll_Export DisconnectQos
 {
-typedef std::map<std::string, std::string> ClientPropertyMap;
+public:
+   typedef std::map<std::string, org::xmlBlaster::util::qos::ClientProperty> ClientPropertyMap;
 
 private:
    std::string  ME; // = "DisconnectQos";
@@ -83,7 +85,13 @@ public:
     */
    bool getClearSessions() const;
 
-   void addClientProperty(const std::string& key, const std::string& value, const std::string& type="", const std::string& encoding="");
+   /**
+    * Add a client property. 
+    * @param clientProperty
+    * @see ClientProperty
+    */
+   void addClientProperty(const ClientProperty& clientProperty);
+   void addClientProperty(const std::string& key, const std::string& value, const std::string& type="", const std::string& encoding="", const std::string& charset="");
 
    const ClientPropertyMap& getClientProperties() const;
 
