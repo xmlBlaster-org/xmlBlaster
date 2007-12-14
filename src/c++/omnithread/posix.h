@@ -34,6 +34,11 @@
 #endif
 #endif
 
+#ifdef __VMS
+#define pthread_mutex_lock PTHREAD_MUTEX_LOCK
+#define pthread_mutex_unlock PTHREAD_MUTEX_UNLOCK
+#endif
+
 // Use our pthreads_win32 port to WINCE (marcelruff.info)
 #if defined(WINCE)
 #include <pthreads/pthread.h>

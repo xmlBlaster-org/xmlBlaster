@@ -561,6 +561,17 @@ void omni_thread::exit(void* return_value)
       DB(cerr << "omni_thread::exit: thread " << me->id() << " detached "
 	 << me->detached << " return value " << return_value << endl);
 
+
+      if (me->_values) {
+	for (key_t i=0; i < me->_value_alloc; i++) {
+	  if (me->_values[i]) {
+	    delete me->_values[i];
+	  }
+	}
+	delete [] me->_values;
+	me->_values = 0;
+      }
+
       if (me->detached)
 	delete me;
     }

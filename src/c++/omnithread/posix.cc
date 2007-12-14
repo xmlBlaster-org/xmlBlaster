@@ -44,6 +44,35 @@
 // identifies platform that don't.
 //
 
+#ifdef __VMS
+# define pthread_attr_destroy PTHREAD_ATTR_DESTROY
+# define pthread_attr_init PTHREAD_ATTR_INIT
+# define pthread_attr_setschedparam PTHREAD_ATTR_SETSCHEDPARAM
+# define pthread_attr_setstacksize PTHREAD_ATTR_SETSTACKSIZE
+# define pthread_cond_broadcast PTHREAD_COND_BROADCAST
+# define pthread_cond_destroy PTHREAD_COND_DESTROY
+# define pthread_cond_init PTHREAD_COND_INIT
+# define pthread_cond_signal PTHREAD_COND_SIGNAL
+# define pthread_cond_timedwait PTHREAD_COND_TIMEDWAIT
+# define pthread_cond_wait PTHREAD_COND_WAIT
+# define pthread_create PTHREAD_CREATE
+# define pthread_delay_np PTHREAD_DELAY_NP
+# define pthread_detach PTHREAD_DETACH
+# define pthread_exit PTHREAD_EXIT
+# define pthread_get_expiration_np PTHREAD_GET_EXPIRATION_NP
+# define pthread_getspecific PTHREAD_GETSPECIFIC
+# define pthread_join32 PTHREAD_JOIN32
+# define pthread_key_create PTHREAD_KEY_CREATE
+# define pthread_mutex_destroy PTHREAD_MUTEX_DESTROY
+# define pthread_mutex_init PTHREAD_MUTEX_INIT
+# define pthread_mutex_lock PTHREAD_MUTEX_LOCK
+# define pthread_mutex_unlock PTHREAD_MUTEX_UNLOCK
+# define pthread_self PTHREAD_SELF
+# define pthread_setschedparam PTHREAD_SETSCHEDPARAM
+# define pthread_setspecific PTHREAD_SETSPECIFIC
+# define pthread_yield_np PTHREAD_YIELD_NP
+#endif
+
 #include <stdlib.h>
 #if !defined(WINCE) // marcelruff.info TODO: same procedure as with http://sources.redhat.com/pthreads-win32
 #include <errno.h>
@@ -51,7 +80,7 @@
 #include <time.h>
 #include <omnithread.h>
 
-#if (defined(__GLIBC__) && __GLIBC__ >= 2) || defined(__SCO_VERSION__) || defined(__aix__) || defined (__cygwin__)
+#if (defined(__GLIBC__) && __GLIBC__ >= 2) || defined(__SCO_VERSION__) || defined(__aix__) || defined (__cygwin__) || defined(__darwin__) || defined(__macos__)
 // typedef of struct timeval and gettimeofday();
 #include <sys/time.h>
 #include <unistd.h>
@@ -755,6 +784,16 @@ omni_thread::exit(void* return_value)
 	DB(cerr << "omni_thread::exit: thread " << me->id() << " detached "
 	   << me->detached << " return value " << return_value << endl);
 
+	if (me->_values) {
+	  for (key_t i=0; i < me->_value_alloc; i++) {
+	    if (me->_values[i]) {
+	      delete me->_values[i];
+	    }
+	  }
+	  delete [] me->_values;
+	  me->_values = 0;
+	}
+
 	if (me->detached)
 	  delete me;
       }
@@ -876,7 +915,7 @@ omni_thread::get_time(unsigned long* abs_sec, unsigned long* abs_nsec,
 
 #else
 
-#if defined(__linux__) || defined(__aix__) || defined(__SCO_VERSION__) || defined(__darwin__) || defined(__macos__)
+#if defined(__linux__) || defined(__GLIBC__) || defined(__aix__) || defined(__SCO_VERSION__) || defined(__darwin__) || defined(__macos__)
 
     struct timeval tv;
     gettimeofday(&tv, NULL); 
@@ -923,7 +962,7 @@ omni_thread::posix_priority(priority_t
 #endif
 
     throw omni_thread_invalid();
-#ifdef _MSC_VER
+#if defined(_MSC_VER ) || defined(__HP_aCC)
     return 0;
 #endif
 }

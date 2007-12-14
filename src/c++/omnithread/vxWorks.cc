@@ -6,17 +6,20 @@
 // Notes:		 Munching strategy is imperative
 //////////////////////////////////////////////////////////////////////////////
 // $Log: vxWorks.cc,v $
-// Revision 1.1  2003/12/16 17:03:16  ruff
-// Updated to omniORB-4.0.3
+// Revision 1.1.4.5  2005/09/19 18:26:33  dgrisby
+// Merge from omni4_0_develop again.
 //
-// Revision 1.1.2.2  2003/11/05 15:42:39  dgrisby
-// vxWorks omnithread fixes from Jochen Gern.
+// Revision 1.1.4.4  2005/07/08 17:04:56  dgrisby
+// Merge from omni4_0_develop again.
 //
-// Revision 1.2  2003/11/05 11:05:38  gernjo
-// In omni_condition, removed task synchronization via the waiters_ variable. Instead, in signal() re-take the semaphore after signaling. Changed stack size to 60000 due to enhanced stack requirements of release code.
+// Revision 1.1.4.3  2005/04/25 18:24:23  dgrisby
+// Always release per thread data in the thread it belongs to.
 //
-// Revision 1.1.1.1  2003/10/20 10:15:50  gernjo
-// Original distribution
+// Revision 1.1.4.2  2005/01/06 23:11:01  dgrisby
+// Big merge from omni4_0_develop.
+//
+// Revision 1.1.4.1  2003/03/23 21:01:54  dgrisby
+// Start of omniORB 4.1.x development branch.
 //
 // Revision 1.1.2.1  2003/02/17 02:03:11  dgrisby
 // vxWorks port. (Thanks Michael Sturm / Acterna Eningen GmbH).
@@ -588,18 +591,22 @@ void omni_thread::common_constructor(void* arg, priority_t pri, int det)
 //
 omni_thread::~omni_thread(void)
 {
-	DBG_TRACE(cout<<"omni_thread::~omni_thread for thread "<<id()<<endl);
+    DBG_TRACE(cout<<"omni_thread::~omni_thread for thread "<<id()<<endl);
 
     if (_values) {
         for (key_t i=0; i < _value_alloc; i++) {
-	    if (_values[i]) {
-	        delete _values[i];
-	    }
+          if (_values[i]) {
+              delete _values[i];
+          }
         }
-	delete [] _values;
+      delete [] _values;
     }
 
-	delete running_cond;
+    // glblock -- added this to prevent problem with unitialized running_cond
+    if(running_cond)
+      {
+        delete running_cond;
+      }
 }
 
 
@@ -617,13 +624,13 @@ void omni_thread::start(void)
 
 	// Allocate memory for the task. (The returned id cannot be trusted by the task)
 	tid = taskSpawn(
-		NULL,								 // Task name
+		NULL,				// Task name
 		vxworks_priority(_priority),	// Priority
-		0,									 // Option
-		stack_size,						 // Stack size
-		(FUNCPTR)omni_thread_wrapper, // Priority
-		(int)this,							// First argument is this
-		0,0,0,0,0,0,0,0,0				 // Remaining unused args
+		VX_FP_TASK | VX_NO_STACK_FILL,	// Option
+		stack_size,			// Stack size
+		(FUNCPTR)omni_thread_wrapper,	// Entry point
+		(int)this,			// First argument is this
+		0,0,0,0,0,0,0,0,0		// Remaining unused args
 		);
 
 	DBG_ASSERT(assert(tid!=ERROR));
@@ -768,6 +775,16 @@ void omni_thread::exit(void* return_value)
 		me->mutex.unlock();
 
 		DBG_TRACE(cout<<"omni_thread::exit: thread "<<me->id()<<" detached "<<me->detached<<" return value "<<(int)return_value<<endl);
+
+		if (me->_values) {
+		  for (key_t i=0; i < me->_value_alloc; i++) {
+		    if (me->_values[i]) {
+		      delete me->_values[i];
+		    }
+		  }
+		  delete [] me->_values;
+		  me->_values = 0;
+		}
 
 		if(me->detached)
 			delete me;
@@ -930,22 +947,30 @@ class omni_thread_dummy : public omni_thread {
 public:
   inline omni_thread_dummy() : omni_thread()
   {
+    // glblock -- added this to prevent problem with unitialized
+    // running_cond the dummy thread never uses this and we dont want
+    // the destructor to delete it.  vxWorks compiler seems to not set
+    // unitialized vars to NULL.
+    running_cond = NULL;
+
     _dummy = 1;
     _state = STATE_RUNNING;
 
-	// Adjust data members of this instance
-	tid = taskIdSelf();
-
-	// Set the thread values so it can be recongnised as a omni_thread
-	// Set the id last can possibly prevent race condition
-	taskTcb(tid)->spare2 = (int)this;
-	taskTcb(tid)->spare1 = OMNI_THREAD_ID;
-   }
+    // Adjust data members of this instance
+    tid = taskIdSelf();
+    DBG_TRACE(cout<<"created dummy "<<(void*)tid<<endl);
+    // Set the thread values so it can be recongnised as a omni_thread
+    // Set the id last can possibly prevent race condition
+    taskTcb(tid)->spare2 = (int)this;
+    taskTcb(tid)->spare1 = OMNI_THREAD_ID;
+  }
   inline ~omni_thread_dummy()
   {
-	taskTcb(taskIdSelf())->spare1 = 0;
+    DBG_TRACE(cout<<"omni thread dummy destructor " <<endl);
+    taskTcb(taskIdSelf())->spare1 = 0;
   }
 };
+
 
 omni_thread*
 omni_thread::create_dummy()
