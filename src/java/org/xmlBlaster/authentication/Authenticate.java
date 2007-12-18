@@ -219,7 +219,7 @@ final public class Authenticate implements I_RunlevelListener
          if (secretSessionId == null || secretSessionId.length() < 2) {
             secretSessionId = connectQos.getSessionQos().getSecretSessionId();
             if (secretSessionId != null && secretSessionId.length() >= 2)
-               log.info("Using secretSessionId '" + secretSessionId + "' from ConnectQos");
+               log.info(connectQos.getSessionName().getAbsoluteName() + " is using secretSessionId '" + secretSessionId + "' from ConnectQos");
          }
          if (secretSessionId != null && secretSessionId.length() >= 2) {
             SessionInfo info = getSessionInfo(secretSessionId);
