@@ -14,6 +14,7 @@
 <xsl:param name="request.referer"/>
 <xsl:param name="request.sessionName"/>
 <xsl:param name="replPrefixGroup" select="MBean/Attribute[@name='ReplPrefixGroup']/@value"/>
+<xsl:param name="maxNumOfEntries" select="MBean/Attribute[@name='MaxNumOfEntries']/@value"/>
 
 <xsl:variable name="isUser" select="/*/@user"/>
 <xsl:variable name="isInitiator" select="/*/@initiator"/>
@@ -103,6 +104,15 @@ function dumpEntry() {
    var referer = '<xsl:value-of select="$request.referer"/>';
    var objName = '<xsl:value-of select="$request.objectname"/>';
    var url = 'invoke?objectname=' + objName + '&amp;operation=dumpFirstEntry&amp;destination=destinationDetails&amp;template=result&amp;referer=' + referer;
+   self.location.href= url;
+}
+
+function setMaxNumOfEntries() {
+	 var val = document.getElementById("maxNumOfEntries").value;
+   var referer = '<xsl:value-of select="$request.referer"/>';
+   var objName = '<xsl:value-of select="$request.objectname"/>';
+   var url = 'setattribute?objectname=' + objName + '&amp;attribute=MaxNumOfEntries&amp;value=' + val + '&amp;destination=destinationDetails&amp;template=result&amp;referer=' + referer;
+	 alert(url);
    self.location.href= url;
 }
 
@@ -292,7 +302,33 @@ function dumpEntry() {
                   <xsl:attribute name="title">slave (destination) <xsl:value-of select="$connectStatus"/></xsl:attribute>
                </xsl:element>
             </td>
-            <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+
+
+
+           <xsl:choose>
+              <xsl:when test="$isAdmin = 'true'">
+                 <td align="center" colspan="1" class="normal">
+                      <button class="small" onClick="setMaxNumOfEntries()" title="Click to update the maximum number of entries per message">Max Entries</button>
+                </td>
+                 <td colspan="1">
+                  <xsl:element name="input">
+                     <xsl:attribute name="id">maxNumOfEntries</xsl:attribute>
+                     <xsl:attribute name="name">maxNumOfEntries</xsl:attribute>
+                     <xsl:attribute name="size">14</xsl:attribute>
+                     <xsl:attribute name="maxLength">4</xsl:attribute>
+                     <xsl:attribute name="title">The maximum number of entries per message (0 means default)</xsl:attribute>
+                     <xsl:attribute name="value"><xsl:value-of select="$maxNumOfEntries"/></xsl:attribute>
+                  </xsl:element>
+								 </td>
+              </xsl:when>
+              <xsl:otherwise>
+                 <td colspan="2"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+              </xsl:otherwise>
+           </xsl:choose>
+
+
+
+
           </tr>
 
          <!-- Last Message -->
