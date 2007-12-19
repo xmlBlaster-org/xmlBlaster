@@ -882,6 +882,20 @@ public class ReplManagerPlugin extends GlobalInfo
 
 
    /**
+    * TODO implement this
+    * @param slave
+    */
+   private final int getMaxNumOfEntries(I_ReplSlave slave) {
+      if (slave == null)
+         return this.maxNumOfEntries;
+      int max = slave.getMaxNumOfEntries();
+      if (max < 1)
+         return this.maxNumOfEntries;
+      else
+         return max;
+   }
+   
+   /**
     * @see org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor#handleNextMessages(org.xmlBlaster.util.dispatch.DispatchManager, java.util.ArrayList)
     */
    public ArrayList handleNextMessages(DispatchManager dispatchManager, ArrayList pushEntries) throws XmlBlasterException {
@@ -915,6 +929,8 @@ public class ReplManagerPlugin extends GlobalInfo
             log.info("Setting the number of entries to retreive to '1' since status is '" + slave.getStatus() + "' (otherwise it would be '" + this.maxNumOfEntries + "'");
             maxEntriesToRetrieve = 1;
          }
+         else
+            maxEntriesToRetrieve = getMaxNumOfEntries(slave);
       }
       // take messages from queue (none blocking) ...
       I_Queue cbQueue = dispatchManager.getQueue();
@@ -1151,7 +1167,7 @@ public class ReplManagerPlugin extends GlobalInfo
       log.info("addition of session for '" + sessionName +"' occured");
       synchronized (this.replSlaveMap) {
          if (!this.replSlaveMap.containsKey(sessionName)) {
-            I_ReplSlave slave = new ReplSlave(this.global, this, sessionName);
+            I_ReplSlave slave = new ReplSlave(this.global, this, sessionName, connQos.getData());
             try {
                slave.setDispatcher(false, false); // stop dispatcher without persisting the information
             }

@@ -42,6 +42,7 @@ import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -127,8 +128,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    /** The real amount of entries in the cb queue (not calculated) */
    private long cbQueueEntries;
    private boolean countSingleMessages;
+   private int maxNumOfEntries;
+   private String maxNumOfEntriesKey;
 
-   public ReplSlave(Global global, ReplManagerPlugin manager, String slaveSessionId) throws XmlBlasterException {
+   public ReplSlave(Global global, ReplManagerPlugin manager, String slaveSessionId, ConnectQosData connQosData) throws XmlBlasterException {
       this.forcedCounter = 0L;
       this.global = global;
       this.manager = manager;
@@ -144,6 +147,14 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          //setDispatcher(dispatcherActive, doPersist);
          this.persistentInfo = this.manager.getPersistentInfo();
          this.lastMessage = this.persistentInfo.get(this.lastMessageKey, "");
+         
+         maxNumOfEntries = connQosData.getClientProperty(REPLICATION_MAX_ENTRIES_KEY, 0);
+         maxNumOfEntriesKey = REPLICATION_MAX_ENTRIES_KEY + "." + slaveSessionId;
+         int tmp = persistentInfo.getInt(maxNumOfEntriesKey, 0);
+         if (maxNumOfEntries != tmp) {
+            log.info("The ConnectQos Property '" + REPLICATION_MAX_ENTRIES_KEY + "' for replication slave '" + slaveSessionId + "' was initially set to '" + maxNumOfEntries + "' but has explicitly been changed with jmx to '" + tmp + "'");
+            maxNumOfEntries = tmp;
+         }
       }
       catch (Exception ex) {
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE, "ReplSlave constructor", "could not instantiate correctly", ex);
@@ -185,7 +196,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     */
    public void init(I_Info info) throws Exception {
       synchronized(this.initSync) {
-         // we currently allow re-init since we can serve severeal dbWatchers for one DbWriter 
+         // we currently allow re-initialize since we can serve several dbWatchers for one DbWriter 
          this.replPrefix = info.get("_replName", null);
          if (this.replPrefix == null) 
             throw new Exception("The replication name '_replName' has not been defined");
@@ -196,8 +207,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          this.statusTopic = info.get(DbWatcherConstants.MOM_STATUS_TOPIC_NAME, null);
          
          // TODO Remove this when a better solution is found : several ReplSlaves for same Writer if data comes from several DbWatchers.
-         boolean forceSending = info.getBoolean(REPLICATION_FORCE_SENDING, false);
-         if (forceSending)
+         boolean forceSend = info.getBoolean(REPLICATION_FORCE_SENDING, false);
+         if (forceSend)
             this.forceSending = true; 
          String instanceName = this.manager.getInstanceName() + ContextNode.SEP + this.slaveSessionId;
          ContextNode contextNode = new ContextNode(ContextNode.CONTRIB_MARKER_TAG, instanceName,
@@ -207,10 +218,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          this.dbWatcherSessionName = info.get(this.slaveSessionId + DBWATCHER_SESSION_NAME, null);
          this.cascadedReplPrefix = this.persistentInfo.get(this.slaveSessionId + CASCADED_REPL_PREFIX, null);
          this.cascadedReplSlave = this.persistentInfo.get(this.slaveSessionId + CASCADED_REPL_SLAVE, null);
-         log.info(this.name + ": associated DbWatcher='" + this.dbWatcherSessionName + "' cascaded replication prefix='" + this.cascadedReplPrefix + "' and cascaded repl. slave='" + this.cascadedReplSlave + "'");
-         int tmpStatus = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
-         if (tmpStatus > -1)
-            setStatus(tmpStatus);
+         log.info(name + ": associated DbWatcher='" + this.dbWatcherSessionName + "' cascaded replication prefix='" + this.cascadedReplPrefix + "' and cascaded repl. slave='" + this.cascadedReplSlave + "'");
+         int tmp = this.persistentInfo.getInt(this.slaveSessionId + ".status", -1);
+         if (tmp > -1)
+            setStatus(tmp);
          
          final boolean doPersist = false;
          setDispatcher(this.persistentInfo.getBoolean(this.slaveSessionId + ".dispatcher", false), doPersist);
@@ -579,19 +590,15 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     * @param newMsg If newMsg is null, it cleans the message otherwise the behaviour depens on doAdd
     * @param doAdd if true, the message is added to the current message, if false it is replaced.
     */
-   private void changeLastMessage(String newMsg, boolean doAdd) {
-      log.fine("'" + newMsg + "' invoked with add='" + doAdd + "'");
+   private void changeLastMessage(String newMsg) {
+      log.fine("'" + newMsg + "' invoked");
       if (newMsg == null) {
-         if (this.lastMessage != null && this.lastMessage.length() > 0) {
+         if (this.lastMessage != null && this.lastMessage.length() > 0)
             this.lastMessage = "";
-            this.persistentInfo.put(this.lastMessageKey, this.lastMessage);
-         }
+         this.persistentInfo.put(this.lastMessageKey, null);
       }
       else {
-         if (doAdd)
-            this.lastMessage += "\n" + newMsg.trim();
-         else
-            this.lastMessage = newMsg.trim();
+         this.lastMessage = newMsg.trim();
          this.persistentInfo.put(this.lastMessageKey, this.lastMessage);
       }
    }
@@ -643,7 +650,6 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
             return new ArrayList();
          }
 
-         changeLastMessage(null, false); // clean last message
          // if (entries != null && entries.size() > 1)
          //    log.severe("the entries are '" + entries.size() + "' but we currently only can process one single entry at a time");
          
@@ -687,7 +693,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
                      dirName = complete.getAbsolutePath();
                   }
                }
-               changeLastMessage("Manual Data transfer: WAITING (stored on '" + dirName + "')", false);
+               changeLastMessage("Manual Data transfer: WAITING (stored on '" + dirName + "')");
                break; // we need to interrupt here: all subsequent entries will be processed later.
             }
 
@@ -803,6 +809,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
 
    public boolean setDispatcher(boolean status) {
       try {
+         if (!status)
+            changeLastMessage("DISPATCHER STOPPED MANUALLY BY ADMIN");
          setDispatcher(status, true);
          return true;
       }
@@ -820,6 +828,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          this.persistentInfo.put(this.slaveSessionId + ".dispatcher", "" + status);
       // to speed up refresh on monitor
       this.dispatcherActive = session.getDispatcherActive();
+      if (this.dispatcherActive)
+         changeLastMessage(null); // clear the exceptions (and last messages)
       return this.dispatcherActive;
    }
    
@@ -839,17 +849,16 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    
    public void handleException(Throwable ex) {
       try {
-         final boolean add = true;
          if (ex instanceof XmlBlasterException) {
             XmlBlasterException xmlblEx = ((XmlBlasterException)ex);
             log.warning(xmlblEx.toXml());
             if (xmlblEx.getEmbeddedException() != null)
-               changeLastMessage(xmlblEx.getEmbeddedMessage(), add);
+               changeLastMessage(xmlblEx.getEmbeddedMessage());
             else
-               changeLastMessage(ex.getMessage(), add);
+               changeLastMessage(ex.getMessage());
          }
          else
-            changeLastMessage(ex.getMessage(), add);
+            changeLastMessage(ex.getMessage());
          final boolean doPersist = true;
          doPause(doPersist);
       }
@@ -869,7 +878,10 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       synchronized(this.initSync) {
          I_AdminSession session = getSession();
          final boolean doPersist = true;
-         return setDispatcher(!session.getDispatcherActive(), doPersist);
+         boolean ret = setDispatcher(!session.getDispatcherActive(), doPersist);
+         if (!ret)
+            changeLastMessage("Dispatcher stopped manually by Admin");
+         return ret;
       }
    }
    
@@ -1041,6 +1053,8 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          // check if the numbers in the queue are correct and fix it
          long pubSubQueueEntries = 0L;
          long maxTransSeq = transactionCountBeforeQueue[0];
+         if (transactionSeq == null) // then it is too early
+            return;
          for (int i=0; i < this.transactionSeq.length; i++) {
             pubSubQueueEntries += (transactionCountBeforeQueue[i] - this.transactionSeq[i]);
             if (maxTransSeq < transactionCountBeforeQueue[i])
@@ -1117,66 +1131,68 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          log.severe("an exception occured when getting the session name:" + ex.getMessage());
          ex.printStackTrace();
       } 
-
-      // lastMessage
-      try {
-         String tmp = session.getLastCallbackException();
-         if (!this.lastDispatcherException.equals(tmp)) { 
-            this.lastDispatcherException = tmp;
-            final boolean add = true;
-            changeLastMessage(tmp, add);
-         }
-      }
-      catch (Exception ex) {
-         log.severe("an exception occured when getting the last dispatcher exception for '" + this.sessionName + "':" + ex.getMessage());
-         ex.printStackTrace();
-      }
    }
    
    public void postCheck(MsgUnit[] processedMsgUnits) throws Exception {
-      initTransactionSequenceIfNeeded("postCheck has been invoked before init");
-      if (processedMsgUnits == null) {
-         log.severe("The processed Message Units are null");
-         return;
-      }
-      synchronized(this) {
-         long msgSeq = 0L;
-         long tmpReplKey = -1L;
+      try {
+         initTransactionSequenceIfNeeded("postCheck has been invoked before init");
+         if (processedMsgUnits == null) {
+            log.severe("The processed Message Units are null");
+            return;
+         }
+         synchronized(this) {
+            long msgSeq = 0L;
+            long tmpReplKey = -1L;
 
-         if (processedMsgUnits.length > 0) {
-            for (int i=0; i < processedMsgUnits.length; i++) {
-               MsgUnit msgUnit = processedMsgUnits[i];
+            if (processedMsgUnits.length > 0) {
+               for (int i=0; i < processedMsgUnits.length; i++) {
+                  MsgUnit msgUnit = processedMsgUnits[i];
 
-               long numOfTransactions = msgUnit.getQosData().getClientProperty(ReplicationConstants.NUM_OF_TRANSACTIONS, 1L);
-               if (numOfTransactions > 0L) {
-                  long tmpTransactionSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, -1L);
-                  int prio = ((MsgQosData)msgUnit.getQosData()).getPriority().getInt();
-                  
-                  boolean absoluteCount = msgUnit.getQosData().getClientProperty(ReplicationConstants.ABSOLUTE_COUNT, false);
-                  if (tmpTransactionSeq != -1L && absoluteCount) { // in case the ReplManagerPlugin is not configured as a MimePlugin
-                     this.transactionSeq[prio] = tmpTransactionSeq;
+                  long numOfTransactions = msgUnit.getQosData().getClientProperty(ReplicationConstants.NUM_OF_TRANSACTIONS, 1L);
+                  if (numOfTransactions > 0L) {
+                     long tmpTransactionSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.TRANSACTION_SEQ, -1L);
+                     int prio = ((MsgQosData)msgUnit.getQosData()).getPriority().getInt();
+                     
+                     boolean absoluteCount = msgUnit.getQosData().getClientProperty(ReplicationConstants.ABSOLUTE_COUNT, false);
+                     if (tmpTransactionSeq != -1L && absoluteCount) { // in case the ReplManagerPlugin is not configured as a MimePlugin
+                        this.transactionSeq[prio] = tmpTransactionSeq;
+                     }
+                     else {
+                        if (tmpTransactionSeq > this.transactionSeq[5]) // Hack to be removed later (needs always MIME Plugin) TODO 
+                           this.transactionSeq[prio] += numOfTransactions;
+                     }
+                     msgSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.MESSAGE_SEQ, 0L);
+                     tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
                   }
-                  else {
-                     if (tmpTransactionSeq > this.transactionSeq[5]) // Hack to be removed later (needs always MIME Plugin) TODO 
-                        this.transactionSeq[prio] += numOfTransactions;
-                  }
-                  msgSeq = msgUnit.getQosData().getClientProperty(ReplicationConstants.MESSAGE_SEQ, 0L);
-                  tmpReplKey = msgUnit.getQosData().getClientProperty(ReplicationConstants.REPL_KEY_ATTR, -1L);
-               }
-               else { // check if an initial data
-                  if (numOfTransactions < 0L) {
-                     String topicName = msgUnit.getKeyData().getOid();
-                     if (this.initialDataTopic != null && this.initialDataTopic.equalsIgnoreCase(topicName)) {
-                        this.ptpQueueEntries += numOfTransactions; // negative number so it will decrement
+                  else { // check if an initial data
+                     if (numOfTransactions < 0L) {
+                        String topicName = msgUnit.getKeyData().getOid();
+                        if (this.initialDataTopic != null && this.initialDataTopic.equalsIgnoreCase(topicName)) {
+                           this.ptpQueueEntries += numOfTransactions; // negative number so it will decrement
+                        }
                      }
                   }
-               }
-            }      
+               }      
+            }
+            setMaxReplKey(tmpReplKey, this.transactionSeq, msgSeq, this.minReplKey, this.ptpQueueEntries);
+            if (this.tmpStatus > -1)
+               setStatus(this.tmpStatus);
          }
-         setMaxReplKey(tmpReplKey, this.transactionSeq, msgSeq, this.minReplKey, this.ptpQueueEntries);
-         if (this.tmpStatus > -1)
-            setStatus(this.tmpStatus);
       }
+      finally { // lastMessage
+         try {
+            String tmp = getSession().getLastCallbackException();
+            if (tmp.trim().length() > 0 & !lastDispatcherException.equals(tmp)) { 
+               this.lastDispatcherException = tmp;
+               changeLastMessage(tmp);
+            }
+         }
+         catch (Exception ex) {
+            log.severe("an exception occured when getting the last dispatcher exception for '" + this.sessionName + "':" + ex.getMessage());
+            ex.printStackTrace();
+         }
+      }
+      
    }
 
    public long getTransactionSeq() {
@@ -1359,5 +1375,24 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    public boolean isCountSingleMsg() {
       return countSingleMessages;
    }
+   
+   public int getMaxNumOfEntries() {
+      return this.maxNumOfEntries;
+   }
+   
+   /**
+    * Sets the maximum number of entries to be sent in one single message.
+    * Entries means here the number of entries retrieved from the callback queue.
+    */
+   public void setMaxNumOfEntries(int maxNumOfEntries) {
+      this.maxNumOfEntries = maxNumOfEntries;
+      if (persistentInfo != null) {
+         if (maxNumOfEntries > 0)
+            persistentInfo.put(maxNumOfEntriesKey, "" + maxNumOfEntries);
+         else // then remove it from persistency (default will be used)
+            persistentInfo.put(maxNumOfEntriesKey, null);
+      }
+   }
+   
    
 }

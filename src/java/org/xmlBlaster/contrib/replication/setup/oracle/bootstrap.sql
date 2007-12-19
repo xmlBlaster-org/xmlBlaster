@@ -33,21 +33,17 @@ DROP PROCEDURE ${replPrefix}debug
 CREATE TABLE ${replPrefix}debug_table(replKey INTEGER, line VARCHAR(255))
 -- EOC (end of command: needed as a separator for our script parser)            
 
+
+CREATE SEQUENCE ${replPrefix}seq MINVALUE 1 MAXVALUE 1000000000 CYCLE
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
 CREATE OR REPLACE PROCEDURE ${replPrefix}debug(lineTxt VARCHAR2) AS
    replKey INTEGER;
 BEGIN
    replKey := 1;                                                            
    -- SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
    -- INSERT INTO ${replPrefix}debug_table VALUES (replKey, lineTxt);
-END;
--- EOC (end of command: needed as a separator for our script parser)            
-
-CREATE OR REPLACE PROCEDURE ${replPrefix}test_prepost AS
-   replKey INTEGER;
-BEGIN
-   replKey := 1;                                                            
-   SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
-   INSERT INTO ${replPrefix}debug_table VALUES (replKey, 'test pre post');
 END;
 -- EOC (end of command: needed as a separator for our script parser)            
 
@@ -114,9 +110,6 @@ CREATE TABLE ${replPrefix}current_tables AS SELECT table_name AS relname
 -- table. The necessary generic lowlevel functions are created.                 
 -- ---------------------------------------------------------------------------- 
 
-CREATE SEQUENCE ${replPrefix}seq MINVALUE 1 MAXVALUE 1000000000 CYCLE
--- EOC (end of command: needed as a separator for our script parser)            
-
 CREATE TABLE ${replPrefix}items (repl_key INTEGER, 
              trans_key VARCHAR(${charWidth}), dbId VARCHAR(${charWidth}), 
              tablename VARCHAR(${charWidth}), guid VARCHAR(${charWidth}), 
@@ -137,32 +130,6 @@ FOR EACH ROW
 BEGIN
    dbms_alert.signal('${replPrefix}ITEMS', 'INSERT');
 END ${replPrefix}scheduler_trigger;
--- EOC (end of command: needed as a separator for our script parser)            
-
-
--- ---------------------------------------------------------------------------- 
--- ${replPrefix}fill_blob_char                                                  
--- must be invoked as:                                                          
--- repl_fill_blob_char(newCont, :new.SRWY_RWY_ID, 'SRWY_RWY_ID');               
--- ---------------------------------------------------------------------------- 
-
-
-CREATE OR REPLACE FUNCTION ${replPrefix}fill_blob_char(val VARCHAR, 
-                           nameOfParam VARCHAR, res IN OUT NOCOPY CLOB) 
-   RETURN INTEGER AS
-   tmpCont CLOB;
-   fake    INTEGER;
-BEGIN
-   tmpCont := EMPTY_CLOB;
-   dbms_lob.createtemporary(tmpCont, TRUE);
-   dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);
-   dbms_lob.writeappend(tmpCont, LENGTH(val), val);
-   -- dbms_lob.append(completeCont, ${replPrefix}col2xml(nameOfParam, tmpCont));
-   fake := ${replPrefix}col2xml(nameOfParam, tmpCont, res);
-   dbms_lob.close(tmpCont);
-   dbms_lob.freetemporary(tmpCont);
-   RETURN 0;
-END ${replPrefix}fill_blob_char;
 -- EOC (end of command: needed as a separator for our script parser)            
 
 
@@ -427,129 +394,6 @@ END ${replPrefix}base64_enc_raw_t;
 
 
 -- ---------------------------------------------------------------------------- 
--- ${replPrefix}test_blob is only needed for testing since there are problems   
--- in passing LOB objects to the arguments of a method in ORACLE 8.1.6 in a     
--- portable fashion.                                                            
--- since it seems there is no portable way in JDBC to create LOB objects to be  
--- passed to functions. A Blob object is valid for the duration of the          
--- transaction in which is was created.                                         
--- ---------------------------------------------------------------------------- 
-
-CREATE OR REPLACE FUNCTION ${replPrefix}test_blob(method VARCHAR2, 
-                           msg RAW, other VARCHAR2, nmax INTEGER) 
-   RETURN CLOB AS
-   i    INTEGER;
-   len  INTEGER;
-   tmp  BLOB;
-   res  CLOB;
-   fake INTEGER;
-BEGIN
-   ${replPrefix}debug('TEST BLOB INVOKED');
-
-   tmp := EMPTY_BLOB;
-   len := utl_raw.length(msg);
-   dbms_lob.createtemporary(tmp, TRUE);
-   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
-   FOR i IN  1 .. nmax LOOP
-      dbms_lob.writeappend(tmp, len, msg);
-   END LOOP;
-   -- dbms_lob.close(tmp);
-
-   res := EMPTY_CLOB;
-   dbms_lob.createtemporary(res, TRUE);
-   dbms_lob.open(res, dbms_lob.lob_readwrite);
-
-   IF method = 'BASE64_ENC_BLOB' THEN
-      fake := ${replPrefix}base64_enc_blob(tmp, res);
-      dbms_lob.close(tmp);
-      RETURN res;
-   END IF;
-   IF method = 'COL2XML_BASE64' THEN
-      fake := ${replPrefix}col2xml_base64(other, tmp, res);
-      dbms_lob.close(tmp);
-      RETURN res;
-   END IF;
-
-   dbms_lob.close(tmp);
-   -- on other just return 'TEST' as a blob
-   len := LENGTH('TEST');
-   dbms_lob.writeappend(res, len, 'TEST');
-   dbms_lob.close(res);
-   RETURN res;
-END ${replPrefix}test_blob;
--- EOC (end of command: needed as a separator for our script parser)            
-
-
--- ---------------------------------------------------------------------------- 
--- ${replPrefix}test_clob is only needed for testing since there are problems   
--- in passing LOB objects to the arguments of a method in ORACLE 8.1.6 in a     
--- portable fashion.                                                            
--- since it seems there is no portable way in JDBC to create LOB objects to be  
--- passed to functions. A Blob object is valid for the duration of the          
--- transaction in which is was created.                                         
--- ---------------------------------------------------------------------------- 
-
-CREATE OR REPLACE FUNCTION ${replPrefix}test_clob(method VARCHAR2, 
-                           msg VARCHAR2, other VARCHAR2, nmax INTEGER) 
-   RETURN CLOB AS
-   i   INTEGER;
-   len INTEGER;
-   tmp CLOB;
-   res CLOB;
-   needsProt INTEGER;
-   answer VARCHAR(${charWidth});
-   fake INTEGER;
-BEGIN
-   ${replPrefix}debug('TEST CLOB INVOKED');
-   tmp := EMPTY_CLOB;
-   len := LENGTH(msg);
-   answer := 'TEST';
-   dbms_lob.createtemporary(tmp, TRUE);
-   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
-
-   res := EMPTY_CLOB;
-   dbms_lob.createtemporary(res, TRUE);
-   dbms_lob.open(res, dbms_lob.lob_readwrite);
-
-   FOR i IN  1 .. nmax LOOP
-      dbms_lob.writeappend(tmp, len, msg);
-   END LOOP;
-   dbms_lob.close(tmp);
-   IF method = 'BASE64_ENC_CLOB' THEN
-      fake := ${replPrefix}base64_enc_clob(tmp, res);
-      RETURN res;
-   END IF;
-   IF method = 'COL2XML_CDATA' THEN
-      fake := ${replPrefix}col2xml_cdata(other, tmp, res);
-      RETURN res;
-   END IF;
-   IF method = 'COL2XML' THEN
-      fake := ${replPrefix}col2xml(other, tmp, res);
-      RETURN res;
-   END IF;
-   IF method = 'NEEDS_PROT' THEN
-      needsProt := ${replPrefix}needs_prot(tmp);
-      answer := TO_CHAR(needsProt); -- overwrites 'TEST'
-   END IF;
-   IF method = 'FILL_BLOB_CHAR' THEN
-      fake := ${replPrefix}fill_blob_char(msg, other, res);
-      RETURN res;
-   END IF;
-   IF method = 'FILL_BLOB_CHAR2' THEN
-      fake := ${replPrefix}fill_blob_char(msg, other, res);
-      fake := ${replPrefix}fill_blob_char(msg, other, res);
-      RETURN res;
-   END IF;
-   -- on other just return 'TEST' as a blob
-   len := LENGTH(answer);
-   dbms_lob.writeappend(res, len, answer);
-   dbms_lob.close(res);
-   RETURN res;
-END ${replPrefix}test_clob;
--- EOC (end of command: needed as a separator for our script parser)            
-
-
--- ---------------------------------------------------------------------------- 
 -- ${replPrefix}base64_enc_vch converts a VARCHAR2 msg to a base64 encoded      
 -- string. This is needed for ORACLE versions previous to Oracle9.              
 -- content will be encoded to base64.                                           
@@ -746,6 +590,34 @@ BEGIN
    RETURN 0;
 END ${replPrefix}col2xml;
 -- EOC (end of command: needed as a separator for our script parser)            
+
+
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}fill_blob_char                                                  
+-- must be invoked as:                                                          
+-- repl_fill_blob_char(newCont, :new.SRWY_RWY_ID, 'SRWY_RWY_ID');               
+-- ---------------------------------------------------------------------------- 
+
+
+CREATE OR REPLACE FUNCTION ${replPrefix}fill_blob_char(val VARCHAR, 
+                           nameOfParam VARCHAR, res IN OUT NOCOPY CLOB) 
+   RETURN INTEGER AS
+   tmpCont CLOB;
+   fake    INTEGER;
+BEGIN
+   tmpCont := EMPTY_CLOB;
+   dbms_lob.createtemporary(tmpCont, TRUE);
+   dbms_lob.open(tmpCont, dbms_lob.lob_readwrite);
+   dbms_lob.writeappend(tmpCont, LENGTH(val), val);
+   -- dbms_lob.append(completeCont, ${replPrefix}col2xml(nameOfParam, tmpCont));
+   fake := ${replPrefix}col2xml(nameOfParam, tmpCont, res);
+   dbms_lob.close(tmpCont);
+   dbms_lob.freetemporary(tmpCont);
+   RETURN 0;
+END ${replPrefix}fill_blob_char;
+-- EOC (end of command: needed as a separator for our script parser)            
+
 
 
 -- ---------------------------------------------------------------------------- 
@@ -974,5 +846,140 @@ BEGIN
    RETURN res;
 END ${replPrefix}prepare_broadcast;
 -- EOC (end of command: needed as a separator for our script parser)            
+
+
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}test_clob is only needed for testing since there are problems   
+-- in passing LOB objects to the arguments of a method in ORACLE 8.1.6 in a     
+-- portable fashion.                                                            
+-- since it seems there is no portable way in JDBC to create LOB objects to be  
+-- passed to functions. A Blob object is valid for the duration of the          
+-- transaction in which is was created.                                         
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}test_clob(method VARCHAR2, 
+                           msg VARCHAR2, other VARCHAR2, nmax INTEGER) 
+   RETURN CLOB AS
+   i   INTEGER;
+   len INTEGER;
+   tmp CLOB;
+   res CLOB;
+   needsProt INTEGER;
+   answer VARCHAR(${charWidth});
+   fake INTEGER;
+BEGIN
+   ${replPrefix}debug('TEST CLOB INVOKED');
+   tmp := EMPTY_CLOB;
+   len := LENGTH(msg);
+   answer := 'TEST';
+   dbms_lob.createtemporary(tmp, TRUE);
+   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
+
+   res := EMPTY_CLOB;
+   dbms_lob.createtemporary(res, TRUE);
+   dbms_lob.open(res, dbms_lob.lob_readwrite);
+
+   FOR i IN  1 .. nmax LOOP
+      dbms_lob.writeappend(tmp, len, msg);
+   END LOOP;
+   dbms_lob.close(tmp);
+   IF method = 'BASE64_ENC_CLOB' THEN
+      fake := ${replPrefix}base64_enc_clob(tmp, res);
+      RETURN res;
+   END IF;
+   IF method = 'COL2XML_CDATA' THEN
+      fake := ${replPrefix}col2xml_cdata(other, tmp, res);
+      RETURN res;
+   END IF;
+   IF method = 'COL2XML' THEN
+      fake := ${replPrefix}col2xml(other, tmp, res);
+      RETURN res;
+   END IF;
+   IF method = 'NEEDS_PROT' THEN
+      needsProt := ${replPrefix}needs_prot(tmp);
+      answer := TO_CHAR(needsProt); -- overwrites 'TEST'
+   END IF;
+   IF method = 'FILL_BLOB_CHAR' THEN
+      fake := ${replPrefix}fill_blob_char(msg, other, res);
+      RETURN res;
+   END IF;
+   IF method = 'FILL_BLOB_CHAR2' THEN
+      fake := ${replPrefix}fill_blob_char(msg, other, res);
+      fake := ${replPrefix}fill_blob_char(msg, other, res);
+      RETURN res;
+   END IF;
+   -- on other just return 'TEST' as a blob
+   len := LENGTH(answer);
+   dbms_lob.writeappend(res, len, answer);
+   dbms_lob.close(res);
+   RETURN res;
+END ${replPrefix}test_clob;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+CREATE OR REPLACE PROCEDURE ${replPrefix}test_prepost AS
+   replKey INTEGER;
+BEGIN
+   replKey := 1;                                                            
+   SELECT ${replPrefix}seq.nextval INTO replKey FROM DUAL;
+   INSERT INTO ${replPrefix}debug_table VALUES (replKey, 'test pre post');
+END;
+-- EOC (end of command: needed as a separator for our script parser)            
+
+
+-- ---------------------------------------------------------------------------- 
+-- ${replPrefix}test_blob is only needed for testing since there are problems   
+-- in passing LOB objects to the arguments of a method in ORACLE 8.1.6 in a     
+-- portable fashion.                                                            
+-- since it seems there is no portable way in JDBC to create LOB objects to be  
+-- passed to functions. A Blob object is valid for the duration of the          
+-- transaction in which is was created.                                         
+-- ---------------------------------------------------------------------------- 
+
+CREATE OR REPLACE FUNCTION ${replPrefix}test_blob(method VARCHAR2, 
+                           msg RAW, other VARCHAR2, nmax INTEGER) 
+   RETURN CLOB AS
+   i    INTEGER;
+   len  INTEGER;
+   tmp  BLOB;
+   res  CLOB;
+   fake INTEGER;
+BEGIN
+   ${replPrefix}debug('TEST BLOB INVOKED');
+
+   tmp := EMPTY_BLOB;
+   len := utl_raw.length(msg);
+   dbms_lob.createtemporary(tmp, TRUE);
+   dbms_lob.open(tmp, dbms_lob.lob_readwrite);
+   FOR i IN  1 .. nmax LOOP
+      dbms_lob.writeappend(tmp, len, msg);
+   END LOOP;
+   -- dbms_lob.close(tmp);
+
+   res := EMPTY_CLOB;
+   dbms_lob.createtemporary(res, TRUE);
+   dbms_lob.open(res, dbms_lob.lob_readwrite);
+
+   IF method = 'BASE64_ENC_BLOB' THEN
+      fake := ${replPrefix}base64_enc_blob(tmp, res);
+      dbms_lob.close(tmp);
+      RETURN res;
+   END IF;
+   IF method = 'COL2XML_BASE64' THEN
+      fake := ${replPrefix}col2xml_base64(other, tmp, res);
+      dbms_lob.close(tmp);
+      RETURN res;
+   END IF;
+
+   dbms_lob.close(tmp);
+   -- on other just return 'TEST' as a blob
+   len := LENGTH('TEST');
+   dbms_lob.writeappend(res, len, 'TEST');
+   dbms_lob.close(res);
+   RETURN res;
+END ${replPrefix}test_blob;
+-- EOC (end of command: needed as a separator for our script parser)            
+
 
 

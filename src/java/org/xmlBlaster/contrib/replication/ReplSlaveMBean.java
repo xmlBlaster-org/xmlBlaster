@@ -54,5 +54,6 @@ public interface ReplSlaveMBean {
    
    void setCountSingleMsg(boolean countSingleMsg);
    boolean isCountSingleMsg();
-   
+   int getMaxNumOfEntries();
+   void setMaxNumOfEntries(int maxNumOfEntries);
 }

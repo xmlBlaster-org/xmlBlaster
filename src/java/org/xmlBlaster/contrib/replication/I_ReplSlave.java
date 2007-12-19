@@ -108,4 +108,6 @@ public interface I_ReplSlave extends I_ContribPlugin {
     */
    void incrementPtPEntries(long numOfTransactions);
 
+   int getMaxNumOfEntries();
+
 }
