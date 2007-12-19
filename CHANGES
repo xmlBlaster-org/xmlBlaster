@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16674 When an exception occurs in the update method it was converted to a COMMUNICATION
+          and the original information was lost: now it is passed as embedded.
+
  o #16660 Catching client side exceptions of type other than user.* and communication.*
           and converting them to "user.update.internalError"
 
