@@ -602,7 +602,7 @@ abstract public class DispatchConnection implements I_Timeout
                   log.fine(ME + " Respanning timeout for polling to '" + realSpanTime + "' ms");
                spanPingTimer(realSpanTime, false); 
                if (byDispatchConnectionsHandler)
-                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request. oldState=" + oldState);
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_POLLING, ME, "We are in polling mode, can't handle request. oldState=" + oldState, throwable);
                return;
             }
             else {

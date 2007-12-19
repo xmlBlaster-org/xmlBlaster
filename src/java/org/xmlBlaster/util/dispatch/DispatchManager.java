@@ -548,20 +548,25 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          }
          else if (ex.isCommunication()) {
 
-            if (this.msgInterceptor != null && isPolling()) { // If we have a plugin it shall handle it
-               try {
-                  entryList = this.msgInterceptor.handleNextMessages(this, entryList);
+            if (this.msgInterceptor != null) { // If we have a plugin it shall handle it
+               if (isPolling()) { // is this code really invoked ? Note of Michele Laghi on 2007-12-19
+                  try {
+                     entryList = this.msgInterceptor.handleNextMessages(this, entryList);
+                     if (entryList != null && entryList.size() > 0) {
+                        MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
+                        getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, ex));
+                     }
+                  }
+                  catch (XmlBlasterException ex2) {
+                     internalError(ex2);
+                  }
                   if (entryList != null && entryList.size() > 0) {
                      MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
                      getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, ex));
                   }
                }
-               catch (XmlBlasterException ex2) {
-                  internalError(ex2);
-               }
-               if (entryList != null && entryList.size() > 0) {
-                  MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
-                  getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entries, this, ex));
+               if (msgInterceptor != null) { // we want the exception notification at least
+                  msgInterceptor.onDispatchWorkerException(this, ex);
                }
             }
 

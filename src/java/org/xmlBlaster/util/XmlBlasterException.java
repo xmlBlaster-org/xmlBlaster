@@ -739,8 +739,8 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       if (ErrorCode.USER_UPDATE_HOLDBACK.toString().equals(e.getErrorCode().toString())) {
          // Will set dispatcherActive==false
          XmlBlasterException ret = new XmlBlasterException(e.getGlobal(),
-              ErrorCode.COMMUNICATION_USER_HOLDBACK,
-              e.getEmbeddedMessage());
+              ErrorCode.COMMUNICATION_USER_HOLDBACK, "XmlBlaster.transformCallbackException", 
+              e.getEmbeddedMessage(), e);
          ret.isServerSide(e.isServerSide());
          return ret;
       }
