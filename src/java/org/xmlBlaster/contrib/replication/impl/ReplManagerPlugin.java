@@ -58,6 +58,7 @@ import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
@@ -518,6 +519,16 @@ public class ReplManagerPlugin extends GlobalInfo
             subQos.setMultiSubscribe(false);
             conn.subscribe(subKey, subQos);
          }
+         
+         boolean wantsDeadLetters = true;
+         if (wantsDeadLetters) {
+            SubscribeKey subKey = new SubscribeKey(this.global, Constants.OID_DEAD_LETTER);
+            SubscribeQos subQos = new SubscribeQos(this.global);
+            // we probably need this to avoid missing messages when changing runlevels
+            subQos.setPersistent(persistentSubscription);
+            subQos.setMultiSubscribe(false);
+            conn.subscribe(subKey, subQos);
+         }
          this.maxResponseEntries = this.getLong("replication.sqlMaxEntries", 10L);
 
          RequestBroker rb = getEngineGlobal(this.global).getRequestBroker();
@@ -722,6 +733,23 @@ public class ReplManagerPlugin extends GlobalInfo
       return baos.toByteArray();
    }
    
+   private String processDeadLetter(UpdateQos qos) {
+      String receiver = qos.getClientProperty(Constants.CLIENTPROPERTY_DEADMSGRECEIVER, (String)null);
+      // the receiver is the absolute name so we need to cut it since the keys are the relative name:
+      if (receiver == null)
+         return "OK";
+      int pos = receiver.indexOf("client/");
+      if (pos < 0)
+         return "OK";
+      String key = receiver.substring(pos).trim();
+      I_ReplSlave slave = null;
+      synchronized(this.replSlaveMap) {
+         slave = (I_ReplSlave)this.replSlaveMap.get(key);
+      }
+      slave.onDeadLetter(qos.getClientProperties());
+      return "OK";
+   }
+   
    /**
     * It receives events from all ReplicationConverter instances which want to register themselves for
     * administration of initial updates.
@@ -730,6 +758,10 @@ public class ReplManagerPlugin extends GlobalInfo
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       try {
+         // check first if deadLetter ...
+         if (Constants.OID_DEAD_LETTER.equals(updateKey.getOid()))
+            return processDeadLetter(updateQos);
+         
          InputStream is = MomEventEngine.decompress(new ByteArrayInputStream(content), updateQos.getClientProperties());
          content = getContent(is);
          SessionName senderSession = updateQos.getSender();
@@ -1607,6 +1639,10 @@ public class ReplManagerPlugin extends GlobalInfo
    public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException {
       try {
          String topicName = msgUnit.getKeyOid();
+         // check first if deadLetter ...
+         if (Constants.OID_DEAD_LETTER.equals(topicName))
+            return "OK";
+
          log.fine("topic='" + topicName + "'");
          String replPrefix = (String)this.topicToPrefixMap.get(topicName);
          if (replPrefix == null) {

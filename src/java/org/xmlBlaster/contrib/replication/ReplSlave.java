@@ -930,6 +930,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
          // TODO Check this since it could mess up the current status if one is exaclty finished now
          //setStatus(STATUS_NORMAL);
          setStatus(STATUS_INCONSISTENT);
+         changeLastMessage("Initial Update interrupted by the ADMIN");
       }
       catch (Exception ex) {
          log.severe("An exception occured when trying to cancel the initial update for '" + this.replPrefix + "'");
@@ -953,19 +954,24 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
    }
    
    public void clearQueue() throws Exception {
-      setStatus(STATUS_INCONSISTENT);
-      log.warning("has been invoked");
-      (new Thread() {
-         public void run() {
-            clearQueueSync();
-         }
-      }).start();
+      long ret = getSession().getCbQueueNumMsgs();
+      if (ret > 0) {
+         setStatus(STATUS_INCONSISTENT);
+         log.warning("has been invoked");
+         (new Thread() {
+            public void run() {
+               clearQueueSync();
+            }
+         }).start();
+      }
    }
 
    public long removeQueueEntries(long entries) throws Exception {
-      setStatus(STATUS_INCONSISTENT);
       log.warning("has been invoked with entries='" + entries + "'");
-      return getSession().removeFromCallbackQueue(entries);
+      long ret = getSession().removeFromCallbackQueue(entries);
+      if (ret > 0)
+         setStatus(STATUS_INCONSISTENT);
+      return ret;
    }
    
 
@@ -1394,5 +1400,13 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       }
    }
    
+   public void onDeadLetter(Map qosClientProperties) {
+      String txt = "Holdback Queue Overflow occured";
+      if (!lastDispatcherException.equals(txt)) { 
+         this.lastDispatcherException = txt;
+         changeLastMessage(txt);
+         setStatus(STATUS_INCONSISTENT);
+      }
+   }
    
 }

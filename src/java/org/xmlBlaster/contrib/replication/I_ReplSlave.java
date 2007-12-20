@@ -7,6 +7,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.contrib.replication;
 
 import java.util.ArrayList;
+import java.util.Map;
+
 import org.xmlBlaster.contrib.I_ContribPlugin;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.util.MsgUnit;
@@ -109,5 +111,9 @@ public interface I_ReplSlave extends I_ContribPlugin {
    void incrementPtPEntries(long numOfTransactions);
 
    int getMaxNumOfEntries();
+   
+   /** Invoked by the ReplManagerPlugin when a deadMessage is published because an error */
+   void onDeadLetter(Map qosClientProperties);
+
 
 }
