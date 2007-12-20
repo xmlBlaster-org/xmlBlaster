@@ -3,10 +3,6 @@
 -- ALTER events on a particular schema to be watched. It is invoked by the      
 -- method I_DbSpecific.addSchemaToWatch(...)                                    
 -- note that this must be invoked for each Schema.                              
--- Note that for some reason on ORACLE the DDL Schemas such as these do not have
--- any effect if the owner of the trigger is different from the owner of the    
--- schema. To solve that we set the schema on the database i.e:                 
--- AFTER CREATE ON DATABASE instead of AFTER CREATE ON ${schemaName}.SCHEMA     
 -- ---------------------------------------------------------------------------- 
 
 
@@ -16,7 +12,7 @@
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE TRIGGER ${replPrefix}crtg_${schemaName}
-   AFTER CREATE ON DATABASE
+   AFTER CREATE ON ${schemaName}.SCHEMA
 DECLARE
    dbName     VARCHAR(${charWidth});
    tableName  VARCHAR(${charWidth});
@@ -40,7 +36,7 @@ END ${replPrefix}crtg_${schemaName};
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE TRIGGER ${replPrefix}drtg_${schemaName}
-   BEFORE DROP ON DATABASE
+   BEFORE DROP ON ${schemaName}.SCHEMA
 DECLARE
    dbName     VARCHAR(${charWidth});
    tableName  VARCHAR(${charWidth});
@@ -63,7 +59,7 @@ END ${replPrefix}drtg_${schemaName};
 -- ---------------------------------------------------------------------------- 
 
 CREATE OR REPLACE TRIGGER ${replPrefix}altg_${schemaName}
-   AFTER ALTER ON DATABASE
+   AFTER ALTER ON ${schemaName}.SCHEMA
 DECLARE
    dbName     VARCHAR(${charWidth});
    tableName  VARCHAR(${charWidth});
