@@ -114,8 +114,10 @@ public abstract class GlobalInfo implements I_Plugin, I_Info {
       }
       if (info != null) {
          oldStrippedHostName = info.get("stripped.host.name", null);
-         if (oldStrippedHostName != null)
-            log.warning("The info property 'stripped.host.name' was already set to '" + oldStrippedHostName + "' will NOT change it to '" + strippedHostName + "'");
+         if (oldStrippedHostName != null) {
+            if (!oldStrippedHostName.equals(strippedHostName))
+               log.warning("The info property 'stripped.host.name' was already set to '" + oldStrippedHostName + "' will NOT change it to '" + strippedHostName + "'");
+         }
          else {
             info.put("stripped.host.name", strippedHostName);
             log.info("Set info property 'stripped.host.name' to '" + strippedHostName + "'");
