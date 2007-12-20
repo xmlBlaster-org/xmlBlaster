@@ -68,6 +68,11 @@ ConnectQosData& ConnectQosData::operator =(const ConnectQosData& data)
    return *this;
 }
 
+ConnectQosData::~ConnectQosData()
+{
+}
+
+
 bool ConnectQosData::getPtp() const
 {
    return ptp_;

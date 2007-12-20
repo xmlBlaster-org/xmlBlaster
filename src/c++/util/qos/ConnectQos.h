@@ -94,6 +94,8 @@ public:
    ConnectQosData(org::xmlBlaster::util::Global& global, const std::string& user="", const std::string& passwd="", long publicSessionId=0);
    ConnectQosData(const ConnectQosData& data);
    ConnectQosData& operator =(const ConnectQosData& data);
+   virtual ~ConnectQosData();
+
    bool getPtp() const;
    const std::string& getBoolAsString(bool boolVal) const;
    void setPtp(bool ptp);
