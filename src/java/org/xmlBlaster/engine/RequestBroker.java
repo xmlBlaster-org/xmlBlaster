@@ -601,6 +601,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                pubQos.addClientProperty(Constants.CLIENTPROPERTY_OID, origMsgUnit.getKeyOid()); //"__oid"
                pubQos.addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMP, origMsgUnit.getQosData().getRcvTimestamp()); //"__rcvTimestamp"
                pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGREASON, text); //"__deadMessageReason"
+               if (entry.getReceiver() != null)
+                  pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGRECEIVER, entry.getReceiver().getAbsoluteName());
                MsgUnit msgUnit = new MsgUnit(origMsgUnit, publishKey.getData(), null, pubQos.getData());
                retArr[ii] = publish(unsecureSessionInfo, msgUnit);
             }

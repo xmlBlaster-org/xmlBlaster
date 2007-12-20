@@ -225,6 +225,8 @@ public class Constants {
    public final static String CLIENTPROPERTY_DEADMSGKEY = INTERNAL_OID_PREFIX_FOR_CORE + "key";
    /** Dead messages transport in their QoS clientProperty the original message QoS in '__qos' */
    public final static String CLIENTPROPERTY_DEADMSGQOS = INTERNAL_OID_PREFIX_FOR_CORE + "qos";
+   /** Dead messages contain the information of the session for which the delivery failed */
+   public final static String CLIENTPROPERTY_DEADMSGRECEIVER = INTERNAL_OID_PREFIX_FOR_CORE + "receiver";
    /** Dead messages transport in their QoS clientProperty the rcvTimestamp in '__rcvTimestamp' */
    public final static String CLIENTPROPERTY_RCVTIMESTAMP = INTERNAL_OID_PREFIX_FOR_CORE + "rcvTimestamp";
    /** Dead messages transport in their QoS clientProperty the original message oid in '__oid' */
