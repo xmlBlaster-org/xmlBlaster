@@ -431,4 +431,37 @@ public class HtPasswd {
 	   this.htpasswdMap.clear();
 	   this.lastModified = -1L;
    }
+   
+   /**
+    * Helper class for checkPassword in the case of startWith(username) ->
+    * here more usernames of the hashtable can be right
+    * @param userPassword password in plaintext
+    * @param fileEncodedPass vector of passwords where usernames match with the specified beginning of an username
+    * @return true if any one matches
+    */
+   private static boolean isSamePwd(String userPassword, String encoded) {
+      if (encoded != null && encoded.length() == 0) return true; // empty password "joe::"
+      if (encoded != null && encoded.length() > 2) {  
+         String salt = encoded.substring(0,2);
+         log.info("The Salt used is '" + salt + "'");
+         String userEncoded = jcrypt.crypt(salt,userPassword);
+         return userEncoded.trim().equals(encoded.trim());
+      }
+      return false;
+   }
+     
+
+   public static void main(String[] args) {
+      if (args.length < 2) {
+         System.err.println("usage: " + HtPasswd.class.getName() + " userPwd encodedPwd");
+         System.exit(-1);
+      }
+      String userPwd = args[0];
+      String encoded = args[1];
+      if (HtPasswd.isSamePwd(userPwd, encoded))
+         log.info("The password was OK");
+      else
+         log.severe("The password was NOT OK");
+   }
+   
 }//class HtAccess
