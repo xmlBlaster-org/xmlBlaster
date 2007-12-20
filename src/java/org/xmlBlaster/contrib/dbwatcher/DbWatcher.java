@@ -65,7 +65,6 @@ import org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector;
  */
 public class DbWatcher implements I_ChangeListener {
    private static Logger log = Logger.getLogger(DbWatcher.class.getName());
-   private String queryMeatStatement;
    private I_Info info;
    private I_DataConverter dataConverter;
    private I_ChangePublisher publisher;
@@ -170,10 +169,10 @@ public class DbWatcher implements I_ChangeListener {
 
       ClassLoader cl = this.getClass().getClassLoader();
 
-      this.queryMeatStatement = info.get("db.queryMeatStatement", (String)null);
-      if (this.queryMeatStatement != null && this.queryMeatStatement.length() < 1)
-         this.queryMeatStatement = null;
-      if (this.queryMeatStatement != null)
+      String queryMeatStatement = info.get("db.queryMeatStatement", (String)null);
+      if (queryMeatStatement != null && queryMeatStatement.length() < 1)
+         queryMeatStatement = null;
+      if (queryMeatStatement != null)
          this.dbPool = getDbPool(this.info);
 
       // Now we load all plugins to do the job
