@@ -211,14 +211,14 @@ sqlite> .exit
 
          <tr>
             <td>-queue/connection/maxEntries</td>
-            <td>2147483647</td>
+            <td>1000</td>
             <td>The maximum allowed number of messages</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
             <td>-queue/connection/maxBytes</td>
-            <td>2147483647</td>
+            <td>10485760</td>
             <td>The maximum allowed bytes of all messages in the queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
