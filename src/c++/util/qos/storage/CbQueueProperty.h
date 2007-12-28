@@ -44,6 +44,8 @@ public:
 
    CbQueueProperty& operator =(const QueuePropertyBase& prop);
 
+   virtual ~CbQueueProperty();
+
    /**
     * Show some important settings for logging
     */

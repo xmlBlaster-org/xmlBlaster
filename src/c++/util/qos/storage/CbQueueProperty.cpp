@@ -47,6 +47,10 @@ using namespace org::xmlBlaster::util::qos::address;
       return *this;
    }
 
+   CbQueueProperty::~CbQueueProperty()
+   {
+   }
+
    /**
     * Show some important settings for logging
     */
