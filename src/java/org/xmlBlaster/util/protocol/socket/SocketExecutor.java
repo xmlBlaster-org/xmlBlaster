@@ -176,7 +176,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
          MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener, msgInfoParserClassName);
          parser.addMessage(qos);
          Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
-         if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + response.toString());
+         if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + ((response == null) ? "null" : response.toString()));
          return (String)response; // return the QoS
       } catch (Throwable e) {
          boolean weAreOnServerSide = this.xmlBlasterImpl != null;
