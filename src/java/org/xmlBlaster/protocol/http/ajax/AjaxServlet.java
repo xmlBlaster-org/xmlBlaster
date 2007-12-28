@@ -135,23 +135,33 @@ class BlasterInstance implements I_Callback {
 		this.blockingQueueWrapper.init(this.updateQueue);
 		log.info(id + " Created new sessionId=" + this.sessionId);
 		this.xmlBlasterAccess.registerConnectionListener(new I_ConnectionStateListener() {
-            public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.info("I_ConnectionStateListener.reachedAlive(): We were lucky, connected to " +
-                        connection.getConnectReturnQos().getSessionName());
-               id = connection.getConnectReturnQos().getSessionName().getLoginName();
-            }
+			public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+				org.xmlBlaster.client.qos.ConnectReturnQos qos = connection.getConnectReturnQos();
+				if (qos != null) {
+					log
+							.info("I_ConnectionStateListener.reachedAlive(): We were lucky, connected to "
+									+ connection.getConnectReturnQos().getSessionName());
+					id = connection.getConnectReturnQos().getSessionName().getLoginName();
+				} else {
+					log
+							.severe("I_ConnectionStateListener.reachedAlive(): Missing ConnectReturnQos: "
+									+ connection.toXml());
+				}
+			}
 
-            public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.warning("I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
-               // We shut down as the xbSession was transient and on xbRestart all subscriptions would be lost anyhow
-               shutdown();
-            }
+			public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+				log.warning("I_ConnectionStateListener.reachedPolling(): No connection to "
+						+ glob.getId() + ", we are polling ...");
+				// We shut down as the xbSession was transient and on xbRestart all subscriptions would be lost anyhow
+				shutdown();
+			}
 
-            public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-               log.warning("I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead, good bye");
-               shutdown();
-            }
-         });
+			public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
+				log.warning("I_ConnectionStateListener.reachedDead(): Connection to "
+						+ glob.getId() + " is dead, good bye");
+				shutdown();
+			}
+		});
 	}
 
 	public synchronized void execute(byte[] xmlScriptRaw, Writer out) throws XmlBlasterException,
@@ -172,7 +182,7 @@ class BlasterInstance implements I_Callback {
 				|| xmlScript.indexOf("<disconnect/>") != -1) {
 			//if (xmlBlasterAccess).isDead()) does not report a disconnect (buggy???)
 			//if (((XmlBlasterAccess)xmlBlasterAccess).isShutdown())
-				shutdown();
+			shutdown();
 		}
 	}
 
@@ -236,12 +246,11 @@ class BlasterInstance implements I_Callback {
 			throws XmlBlasterException, IOException {
 		ArrayList entries = null;
 		if (timeout == 0) { // None Blocking
-			entries = this.updateQueue.takeWithPriority(numEntries,-1,
-					PriorityEnum.MIN_PRIORITY.getInt(),PriorityEnum.MAX_PRIORITY.getInt());
-		}
-		else {
+			entries = this.updateQueue.takeWithPriority(numEntries, -1, PriorityEnum.MIN_PRIORITY
+					.getInt(), PriorityEnum.MAX_PRIORITY.getInt());
+		} else {
 			entries = this.blockingQueueWrapper.blockingTakeWithPriority(numEntries, timeout,
-					PriorityEnum.MIN_PRIORITY.getInt(),PriorityEnum.MAX_PRIORITY.getInt());
+					PriorityEnum.MIN_PRIORITY.getInt(), PriorityEnum.MAX_PRIORITY.getInt());
 		}
 		int count = entries.size();
 		if (count < 1)
@@ -266,7 +275,8 @@ class BlasterInstance implements I_Callback {
 	public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
 			UpdateQos updateQos) throws XmlBlasterException {
 		if (updateKey.isInternal() || !updateQos.isOk()) {
-			log.warning(id+ " Ignoring received message " + updateKey.toXml() + " " + updateQos.toXml());
+			log.warning(id + " Ignoring received message " + updateKey.toXml() + " "
+					+ updateQos.toXml());
 			return "";
 		}
 		MsgUnit msgUnit = new MsgUnit(updateKey.getData(), content, updateQos.getData());
@@ -310,8 +320,7 @@ class BlasterInstance implements I_Callback {
 		try {
 			this.session.invalidate();
 			log.info(id + " Servlet session is invalidated");
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			//Session already invalidated
 		}
 	}
@@ -437,16 +446,16 @@ public class AjaxServlet extends HttpServlet {
 	 *	period for a session is set to -1, the session will never expire.
 	 * </pre>
 	 * <p>
-     * We have set the maxInactiveInterval to 1800 sec in web.xml (30 min):
-     * <p/>
-     * If no Ajax call arrives after the given timeout the servlet-session dies,
-     * as a browser user may choose to halt NMEA updates we must
-     * set this to a high enough value.
-     * <p/>
+	 * We have set the maxInactiveInterval to 1800 sec in web.xml (30 min):
+	 * <p/>
+	 * If no Ajax call arrives after the given timeout the servlet-session dies,
+	 * as a browser user may choose to halt NMEA updates we must
+	 * set this to a high enough value.
+	 * <p/>
 	 * The web.xml setting &lt;session-config>
-     *       <session-timeout>30</session-timeout>
-     *       &lt;/session-config>
-     * is overwritten by our maxInactiveInterval
+	 *       <session-timeout>30</session-timeout>
+	 *       &lt;/session-config>
+	 * is overwritten by our maxInactiveInterval
 	 */
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException,
 			IOException {
@@ -506,15 +515,15 @@ public class AjaxServlet extends HttpServlet {
 				return;
 			}
 
-		   /* see watchee.js for an example:
-		   In the mode "updatePoll" this script polls every 8000 millis for update
-		   and the servlet returns directly if nothing is available, this is suboptimal
-		   as we have a delay of up to 8 seconds.
-		   In the mode "updatePollBlocking" we don't poll but the servlet blocks our call
-		   and immediately returns when update messages arrive.
-		   To prevent from e.g. proxy timeouts the servlet returns after 15sec and we immediately
-		   poll again.
-		   */
+			/* see watchee.js for an example:
+			In the mode "updatePoll" this script polls every 8000 millis for update
+			and the servlet returns directly if nothing is available, this is suboptimal
+			as we have a delay of up to 8 seconds.
+			In the mode "updatePollBlocking" we don't poll but the servlet blocks our call
+			and immediately returns when update messages arrive.
+			To prevent from e.g. proxy timeouts the servlet returns after 15sec and we immediately
+			poll again.
+			*/
 			// "timeout" and "numEntries" is only evaluated for "updatePollBlocking"
 			boolean updatePoll = actionType.equals("updatePoll");
 			boolean updatePollBlocking = actionType.equals("updatePollBlocking");
@@ -570,28 +579,29 @@ public class AjaxServlet extends HttpServlet {
 
 	public boolean get(HttpServletRequest req, String key, boolean defaultVal) {
 		String value = (String) req.getParameter(key);
-		if (value == null) return defaultVal;
+		if (value == null)
+			return defaultVal;
 		return "true".equalsIgnoreCase(value.trim());
 	}
 
 	public long get(HttpServletRequest req, String key, long defaultVal) {
 		String value = (String) req.getParameter(key);
-		if (value == null) return defaultVal;
+		if (value == null)
+			return defaultVal;
 		try {
 			return Long.parseLong(value.trim());
-		}
-		catch (NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			return defaultVal;
 		}
 	}
 
 	public int get(HttpServletRequest req, String key, int defaultVal) {
 		String value = (String) req.getParameter(key);
-		if (value == null) return defaultVal;
+		if (value == null)
+			return defaultVal;
 		try {
 			return Integer.parseInt(value.trim());
-		}
-		catch (NumberFormatException e) {
+		} catch (NumberFormatException e) {
 			return defaultVal;
 		}
 	}
