@@ -116,4 +116,8 @@ public interface FileWatcherPluginMBean extends I_AdminService {
     * @param sent The sent to set.
     */
    public void setSent(String sent);
+   
+   void setRecursive(boolean rec);
+   
+   boolean isRecursive();
 }

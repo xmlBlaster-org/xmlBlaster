@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE filep
 
 package org.xmlBlaster.contrib.filewatcher;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class Publisher implements I_Timeout {
    private String ME = "Publisher";
    private Global global;
    private static Logger log = Logger.getLogger(Publisher.class.getName());
-   private DirectoryManager directoryManager;
+   private DirectoryManager[] directoryManagers;
    private I_XmlBlasterAccess access;
    private String publishKey;
    private String publishQos;
@@ -62,6 +63,7 @@ public class Publisher implements I_Timeout {
    private String discarded;
    private String lockExtention;
    private long delaySinceLastFileChange;
+   private boolean recursive;
    
    public static final String USE_REGEX = "regex";
 
@@ -276,7 +278,8 @@ public class Publisher implements I_Timeout {
          info.put("mom.topicName", oid); // this must ALWAYS be set if using replication
          prepareReplSource(replPrefix != null);
       }
-      createDirectoryManager();
+      this.recursive = info_.getBoolean("filewatcher.recursive", false);
+      createDirectoryManagers();
    }
    
    private void prepareReplSource(boolean doFill) throws XmlBlasterException {
@@ -309,24 +312,68 @@ public class Publisher implements I_Timeout {
       }
    }
    
+   private String getSubDir(DirectoryManager root, String base, String subDir) {
+      String ret = null;
+      if (base == null)
+         ret = subDir;
+      else {
+         if (subDir == null)
+            ret = base;
+         else {
+            base = base.trim();
+            if (base.charAt(base.length()-1) == '/')
+               ret = base + subDir;
+            else
+               ret = base + "/" + subDir;
+         }
+      }
+      File tmp = new File(ret);
+      if (tmp.isAbsolute())
+         return ret;
+      else {
+         return root.getDir().getAbsolutePath() + "/" + ret;
+      }
+   }
+   
+   private String[] getChildDirectories(boolean isRecursive, DirectoryManager rootDirManager) {
+      if (!isRecursive)
+         return null;
+      if (rootDirManager == null)
+         return null;
+      return rootDirManager.getAllSubDirs();
+   }
+   
    /**
     * Create the file checker instance with the current configuration. 
     * @throws XmlBlasterException
     */
-   private void createDirectoryManager() throws XmlBlasterException {
+   private void createDirectoryManagers() throws XmlBlasterException {
       boolean isTrueRegex = USE_REGEX.equalsIgnoreCase(filterType);
-      this.directoryManager = new DirectoryManager(this.global,
-            this.name, this.directoryName, this.delaySinceLastFileChange, 
-            this.fileFilter, this.sent, this.discarded, this.lockExtention, isTrueRegex,
-            this.copyOnMove);
+      DirectoryManager rootDirManager = new DirectoryManager(global, name, directoryName, null,
+            delaySinceLastFileChange, fileFilter, sent, discarded, lockExtention, isTrueRegex, copyOnMove);
+      
+      String[] dirNames = getChildDirectories(recursive, rootDirManager);
+      if (dirNames != null)
+         directoryManagers = new DirectoryManager[dirNames.length + 1];
+      else
+         directoryManagers = new DirectoryManager[1];
+      directoryManagers[0] = rootDirManager;
+      if (dirNames != null) {
+         for (int i=0; i < dirNames.length; i++) {
+            String sentDir = getSubDir(rootDirManager, sent, dirNames[i]);
+            String discardedDir = getSubDir(rootDirManager, discarded, dirNames[i]);
+            directoryManagers[i+1] = new DirectoryManager(global, name, directoryName, dirNames[i],  
+                  delaySinceLastFileChange, fileFilter, sentDir, discardedDir, lockExtention, isTrueRegex, copyOnMove);
+         }
+      }
    }
 
    /**
     * Useful for JMX invocations
     */
-   private void reCreateDirectoryManager() {
+   private synchronized void reCreateDirectoryManagers() {
       try {
-         createDirectoryManager();
+         createDirectoryManagers();
       } catch (XmlBlasterException e) {
          throw new IllegalArgumentException(e.getMessage());
       }
@@ -387,7 +434,9 @@ public class Publisher implements I_Timeout {
    public synchronized void publish() {
       while (true) {
          try {
-            doPublish();
+            DirectoryManager[] tmpDirs = directoryManagers;
+            for (int i=0; i < tmpDirs.length; i++)
+               doPublish(tmpDirs[i]);
             break;
          }
          catch (XmlBlasterException ex) {
@@ -433,10 +482,10 @@ public class Publisher implements I_Timeout {
     * @return An empty string if nothing was sent, is never null
     * @throws XmlBlasterException
     */
-   private FileInfo[] doPublish() throws XmlBlasterException {
+   private FileInfo[] doPublish(DirectoryManager directoryManager) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) 
          log.finer(ME+": doPublish");
-      Set entries = this.directoryManager.getEntries();
+      Set entries = directoryManager.getEntries();
       if (entries == null || entries.size() < 1)
          return new FileInfo[0];
       FileInfo[] infos = (FileInfo[])entries.toArray(new FileInfo[entries.size()]);
@@ -452,6 +501,9 @@ public class Publisher implements I_Timeout {
                qosData.addClientProperty(ContribConstants.FILENAME_ATTR, infos[i].getRelativeName());
                qosData.addClientProperty(ContribConstants.FILE_DATE, infos[i].getTimestamp());
                qosData.addClientProperty(Constants.addJmsPrefix(XBConnectionMetaData.JMSX_MAX_CHUNK_SIZE, log), maximumChunkSize);
+               String subDir = directoryManager.getSubDir();
+               if (subDir != null)
+                  qosData.addClientProperty(ContribConstants.SUBDIR_ATTR, subDir);
                access.publishStream(is, keyData, qosData, maximumChunkSize, replSourceEngine);
                if (log.isLoggable(Level.FINE)) 
                   log.fine(ME+": Successfully published file " + infos[i].getRelativeName() + " with size=" +infos[i].getSize());
@@ -460,11 +512,14 @@ public class Publisher implements I_Timeout {
                log.severe(ME+": doPublish: sizes bigger than '" + Integer.MAX_VALUE + "' are currently not implemented");
             }
             else {
-               byte[] content = this.directoryManager.getContent(infos[i]);
+               byte[] content = directoryManager.getContent(infos[i]);
                String pubQos = preparePubQos(this.publishQos);
                MsgUnit msgUnit = new MsgUnit(this.publishKey, content, pubQos);
                msgUnit.getQosData().addClientProperty(ContribConstants.FILENAME_ATTR, infos[i].getRelativeName());
                msgUnit.getQosData().addClientProperty(ContribConstants.FILE_DATE, infos[i].getTimestamp());
+               String subDir = directoryManager.getSubDir();
+               if (subDir != null)
+                  msgUnit.getQosData().addClientProperty(ContribConstants.SUBDIR_ATTR, subDir);
                this.access.publish(msgUnit);
                if (log.isLoggable(Level.FINE)) 
                   log.fine(ME+": Successfully published file " + infos[i].getRelativeName() + " with size=" +infos[i].getSize());
@@ -473,7 +528,7 @@ public class Publisher implements I_Timeout {
             while (true) { // must repeat until it works or until shut down
                try {
                   boolean success = true;
-                  this.directoryManager.deleteOrMoveEntry(infos[i].getName(), success);
+                  directoryManager.deleteOrMoveEntry(infos[i].getName(), success);
                   break;
                }
                catch (XmlBlasterException ex) {
@@ -491,7 +546,7 @@ public class Publisher implements I_Timeout {
             log.warning(ME+": doPublish: the file '" + infos[i].getName() + "' is too long (" + infos[i].getSize() + "'): I will remove it without publishing");
             boolean success = false;
             try {
-               this.directoryManager.deleteOrMoveEntry(infos[i].getName(), success);
+               directoryManager.deleteOrMoveEntry(infos[i].getName(), success);
             }
             catch (XmlBlasterException ex) {
                log.warning(ME+": doPublish: could not handle file '" + infos[i].getName() + "' which was too big: check file and directories permissions and fix it manually: I will continue working anyway. " + ex.getMessage());
@@ -551,10 +606,13 @@ public class Publisher implements I_Timeout {
       try {
          //this.timeoutHandle = timeout.addTimeoutListener(this, 0, null);
          // Hack: I need to call it twice to be effective, why? (Marcel 2006-01)
-         for (int i=0; i<2; i++) {
-            FileInfo[] infos = doPublish();
-            if (infos.length > 0) {
-               return "Published matching files '" + toString(infos, 10) + "'";
+         for (int i=0; i < 2; i++) {
+            DirectoryManager[] tmpDirs = directoryManagers;
+            for (int j=0; j < tmpDirs.length; j++) {
+               FileInfo[] infos = doPublish(tmpDirs[j]);
+               if (infos.length > 0) {
+                  return "Published matching files '" + toString(infos, 10) + "'";
+               }
             }
          }
          if (this.delaySinceLastFileChange > 0)
@@ -578,7 +636,7 @@ public class Publisher implements I_Timeout {
     */
    public void setDirectoryName(String directoryName) {
       this.directoryName = directoryName;
-      reCreateDirectoryManager();
+      reCreateDirectoryManagers();
    }
 
    /**
@@ -593,7 +651,7 @@ public class Publisher implements I_Timeout {
     */
    public void setFileFilter(String fileFilter) {
       this.fileFilter = fileFilter;
-      reCreateDirectoryManager();
+      reCreateDirectoryManagers();
    }
 
    /**
@@ -608,7 +666,7 @@ public class Publisher implements I_Timeout {
     */
    public void setFilterType(String filterType) {
       this.filterType = filterType;
-      reCreateDirectoryManager();
+      reCreateDirectoryManagers();
    }
 
    /**
@@ -653,7 +711,7 @@ public class Publisher implements I_Timeout {
     */
    public void setCopyOnMove(boolean copyOnMove) {
       this.copyOnMove = copyOnMove;
-      reCreateDirectoryManager();
+      reCreateDirectoryManagers();
    }
 
    /**
@@ -668,7 +726,7 @@ public class Publisher implements I_Timeout {
     */
    public void setDelaySinceLastFileChange(long delaySinceLastFileChange) {
       this.delaySinceLastFileChange = delaySinceLastFileChange;
-      reCreateDirectoryManager();
+      reCreateDirectoryManagers();
    }
 
    /**
@@ -683,7 +741,7 @@ public class Publisher implements I_Timeout {
     */
    public void setDiscarded(String discarded) {
       this.discarded = discarded;
-      reCreateDirectoryManager();
+      reCreateDirectoryManagers();
    }
 
    /**
@@ -698,7 +756,7 @@ public class Publisher implements I_Timeout {
     */
    public void setLockExtention(String lockExtention) {
       this.lockExtention = lockExtention;
-      reCreateDirectoryManager();
+      reCreateDirectoryManagers();
    }
 
    /**
@@ -713,7 +771,17 @@ public class Publisher implements I_Timeout {
     */
    public void setSent(String sent) {
       this.sent = sent;
-      reCreateDirectoryManager();
+      reCreateDirectoryManagers();
+   }
+   
+   public boolean isRecursive() {
+      return recursive;
+   }
+
+   public void setRecursive(boolean rec) {
+      if (recursive != rec)
+         recursive = rec;
+      reCreateDirectoryManagers();
    }
 
 }

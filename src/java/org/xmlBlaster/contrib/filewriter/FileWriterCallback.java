@@ -11,7 +11,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -196,29 +198,56 @@ public class FileWriterCallback implements I_Update, ContribConstants {
     * @throws Exception If an error occurs when writing / reading the files. This method tries
     * to clean up the destination file in case of an exception when writing.
     */
-   private void putAllChunksTogether(String fileName, long expectedChunks, InputStream is, boolean isCompleteMsg) throws Exception {
-      File file = new File(this.directory, fileName);
+   private void putAllChunksTogether(String fileName, String subDir, long expectedChunks, InputStream is, boolean isCompleteMsg) throws Exception {
+      File dir = null;
+      if (subDir == null)
+         dir = this.directory;
+      else {
+         List list = new ArrayList();
+         
+         // check if the directory exists, if not go back recursively until it exists.
+         dir = new File(this.directory, subDir);
+         File tmp = dir;
+         while (tmp != null && !tmp.exists()) {
+            list.add(0, tmp.getName());
+            tmp = tmp.getParentFile();
+         }
+         if (tmp == null)
+            throw new Exception("Directory '" + subDir + "' not found as subdirectory of '" + directory.getAbsolutePath() + "'");
+         if (!tmp.isDirectory())
+            throw new Exception("File '" + subDir + "' in '" + directory.getAbsolutePath() + "' is not a directory");
+         if (!tmp.canWrite())
+            throw new Exception("Can not write in directory '" + subDir + "' in '" + directory.getAbsolutePath() + "'.");
+         
+         for (int i=0; i < list.size(); i++) {
+            tmp = new File(tmp, (String)list.get(i));
+            tmp.mkdir();
+         }
+         dir = tmp;
+      }
+      
+      File file = new File(dir, fileName);
       if (file == null)
          throw new Exception("the file for '" + fileName + "' was null");
       if (file.exists()) {
          if (file.isDirectory())
-            throw new Exception("can not write on '" + fileName + "' in directory '" + this.directory + "' since it is a directory");
+            throw new Exception("can not write on '" + fileName + "' in directory '" + dir + "' since it is a directory");
          if (!this.overwrite) {
-            log.warning("file '" + fileName + "' in directory '" + this.directory + "' exists already. Will keep the old one");
+            log.warning("file '" + fileName + "' in directory '" + dir + "' exists already. Will keep the old one");
             return;
          }
          else
-            log.warning("file '" + fileName + "' in directory '" + this.directory + "' exists already. Will overwrite it unless the chunks are not there anymore");
+            log.warning("file '" + fileName + "' in directory '" + dir + "' exists already. Will overwrite it unless the chunks are not there anymore");
       }
       try {
          File lock = null;
          String lockName = null;
          if (this.lockExtention != null) {
             lockName = fileName + this.lockExtention;
-            lock = new File(this.directory, lockName);
+            lock = new File(dir, lockName);
             lock.createNewFile();
          }
-         log.info("storing file '" + fileName + "' on directory '" + this.directory + "'");
+         log.info("storing file '" + fileName + "' on directory '" + dir + "'");
 
          File[] files = null;
          long numChunks = 0L;
@@ -292,7 +321,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
          if (lock != null) {
             boolean deleted = lock.delete();
             if (!deleted)
-               throw new Exception("can not delete lock file '" + lockName + "' in directory '" + this.directory + "'");
+               throw new Exception("can not delete lock file '" + lockName + "' in directory '" + dir + "'");
          }
       }
       catch (IOException ex) {
@@ -330,6 +359,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
 
    public void update(String topic, InputStream is, Map attrMap) throws Exception {
       String filename = null;
+      String subDir = null;
       boolean isLastMsg = true;
       String exMsg = null;
       long chunkCount = 0L;
@@ -349,6 +379,10 @@ public class FileWriterCallback implements I_Update, ContribConstants {
             }
             else
                throw new Exception("update: the message '" + topic + "' should contain either the filename or the timestamp in the properties, but none was found. Can not create a filename to store the data on.");
+         }
+         prop = (ClientProperty)attrMap.get(SUBDIR_ATTR);
+         if (prop != null) {
+            subDir = prop.getStringValue();
          }
 
          prop = XBMessage.get(XBConnectionMetaData.JMSX_GROUP_SEQ, attrMap);
@@ -376,7 +410,7 @@ public class FileWriterCallback implements I_Update, ContribConstants {
       boolean isCompleteMsg = isLastMsg && chunkCount == 0L;
       if (exMsg == null) { // no exception
          if (isLastMsg)
-            putAllChunksTogether(filename, chunkCount, is, isCompleteMsg);
+            putAllChunksTogether(filename, subDir, chunkCount, is, isCompleteMsg);
          else
             storeChunk(this.tmpDirectory, filename, chunkCount, '.', this.overwrite, is);
       }

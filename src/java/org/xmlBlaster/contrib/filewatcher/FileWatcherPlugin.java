@@ -47,7 +47,7 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
                            "mom.connectQos", 
                            "mom.loginName", 
                            "mom.password", 
-                           "filewatcher.pollIntervalL", 
+                           "filewatcher.pollIntervall", 
                            "filewatcher.delaySinceLastFileChange", 
                            "filewatcher.maximumFileSize", 
                            "filewatcher.maximumChunkSize", 
@@ -57,6 +57,7 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
                            "filewatcher.discarded", 
                            "filewatcher.filterType", 
                            "filewatcher.copyOnMove",
+                           "filewatcher.recursive",
                            ReplicationConstants.REPL_PREFIX_KEY,
                            ReplicationConstants.REPL_PREFIX_GROUP_KEY,
                            ReplicationConstants.REPLICATION_VERSION});
@@ -304,4 +305,14 @@ public class FileWatcherPlugin extends GlobalInfo implements FileWatcherPluginMB
     */
    public void setUsageUrl(String url) {
    }
+   
+   public void setRecursive(boolean rec) {
+      publisherClient.setRecursive(rec);
+   }
+   
+   public boolean isRecursive() {
+      return publisherClient.isRecursive();
+   }
+   
+   
 }

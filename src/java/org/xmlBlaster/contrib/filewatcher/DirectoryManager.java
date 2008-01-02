@@ -13,9 +13,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -55,7 +57,9 @@ public class DirectoryManager {
    
    private boolean copyOnMove;
    
-   public DirectoryManager(Global global, String name, String directoryName, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention, boolean trueRegex, boolean copyOnMove) throws XmlBlasterException {
+   private String subDirectoryName; // can be null if not a subdirectory (then it is the root)
+   
+   public DirectoryManager(Global global, String name, String directoryName, String subDir, long delaySinceLastFileChange, String filter, String sent, String discarded, String lockExtention, boolean trueRegex, boolean copyOnMove) throws XmlBlasterException {
       ME += "-" + name;
       this.global = global;
       if (filter != null)
@@ -63,8 +67,12 @@ public class DirectoryManager {
 
       this.delaySinceLastFileChange = delaySinceLastFileChange;
       this.directoryEntries = new HashMap();
-      this.directoryName = directoryName;
-      this.directory = initDirectory(null, "directoryName", directoryName);
+      if (subDir == null)
+         this.directoryName = directoryName;
+      else
+         this.directoryName = directoryName + "/" + subDir;
+      this.subDirectoryName = subDir;
+      this.directory = initDirectory(null, "directoryName", this.directoryName);
       if (this.directory == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".constructor", "the directory '" + directoryName + "' is null");
       this.sentDirectory = initDirectory(this.directory, "sent", sent);
@@ -81,6 +89,50 @@ public class DirectoryManager {
       this.copyOnMove = copyOnMove;
    }
 
+   
+   private static List scanSubdirs(File root, String prefix, List subdirs, List ignore) {
+      if (subdirs == null)
+         subdirs = new ArrayList();
+      if (root == null)
+         return subdirs;
+      File[] files = root.listFiles();
+      if (files == null || files.length < 1)
+         return subdirs;
+      for (int i=0; i < files.length; i++) {
+         File tmp = files[i];
+         String name = tmp.getName();
+         if (tmp.isDirectory() && (ignore == null || !ignore.contains(name))) {
+            String tmpPrefix = null;
+            if (prefix != null)
+               tmpPrefix = prefix + "/" + name;
+            else
+               tmpPrefix = name;
+            subdirs.add(tmpPrefix);
+            subdirs = scanSubdirs(tmp, tmpPrefix, subdirs, null);
+         }
+      }
+      return subdirs;
+   }
+   
+   /**
+    * Returns null if no subdirectory found.
+    * @return
+    */
+   public String[] getAllSubDirs() {
+      if (directory == null)
+         return null;
+      List ignore = new ArrayList();
+      if (sentDirectory != null)
+         ignore.add(sentDirectory.getName());
+      if (discardedDirectory != null)
+         ignore.add(discardedDirectory.getName());
+      
+      List list = scanSubdirs(directory, null, null, ignore);
+      if (list.size() < 1)
+         return null;
+      return (String[])list.toArray(new String[list.size()]);
+   }
+   
    /**
     * Returns the specified directory or null or if needed it will create one
     * @param propName
@@ -263,7 +315,7 @@ public class DirectoryManager {
       return delta > this.delaySinceLastFileChange;
    }
    
-   private TreeSet prepareEntries(File directory, Map existingFiles) {
+   private TreeSet prepareEntries(Map existingFiles) {
       if (log.isLoggable(Level.FINER))
          log.finer(ME+": prepareEntries");
       
@@ -346,7 +398,7 @@ public class DirectoryManager {
          log.finer(ME+": getEntries");
       Map newFiles = getNewFiles(this.directory);
       updateExistingFiles(this.directoryEntries, newFiles);
-      return prepareEntries(this.directory, this.directoryEntries);
+      return prepareEntries( this.directoryEntries);
    }
 
    /**
@@ -550,6 +602,10 @@ public class DirectoryManager {
       }
    }
    
+   public String getSubDir() {
+      return this.subDirectoryName;
+   }
+   
    /** java org.xmlBlaster.contrib.filewatcher.DirectoryManager -path /tmp/filewatcher -filter "*.xml" -filterType simple */
    public static void main(String[] args) {
       try {
@@ -588,5 +644,12 @@ public class DirectoryManager {
       }
    }
    
+   public String getString() {
+      String ret = directoryName == null ? "" : directoryName;
+      return ret;
+   }
    
+   File getDir() {
+      return this.directory;
+   }
 }
