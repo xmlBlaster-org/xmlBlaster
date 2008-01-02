@@ -391,6 +391,20 @@ and here a minimalistic one:
 			 </td>
 		 </tr>
 		 <tr>
+			 <td>filewatcher.recursive</td>
+			 <td>boolean</td>
+			 <td>false</td>
+			 <td><b>optional</b>: If you set this flag to true, the watcher will look in all the subdirectories (childs,
+   			    grandchilds and so on) of the directory. The directories specified for <i>sent</i> and <i>discarded</i> are
+			    <b>not</b> scanned to avoid recursivity. In the Client Properties of the published message the <i>_filename</i>
+			    attribute is always containing the relative filename. An additional client property <i>_subdir</i> will contain
+			    the name of the subdirectory relative to the directory specified in the configuration. For example if you 
+			    configured your FileWatcher to look into <i>/tmp/someBaseDir</i> and you have a file 
+			    <i>/tmp/someBaseDir/one/two/three.dat</i>, then <i>_filename='three.dat'</i> and <i>_subdir='one/two'</i>. Note
+			    that <i>_subdir</i> is only provided on subdirectories, not on the base directory.
+			 </td>
+		 </tr>
+		 <tr>
 			 <td>replication.prefix</td>
 			 <td>String</td>
 			 <td></td>
