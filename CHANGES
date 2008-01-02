@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16689 Added recursive flag to filewatcher (to scan directories recursively).
+
  o #16676 C++ client library: Added ~ConnectQosData() because of crash on MacOSX
 
  o #16674 When an exception occurs in the update method it was converted to a COMMUNICATION
