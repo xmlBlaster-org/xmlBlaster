@@ -7,6 +7,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http.ajax;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -21,6 +22,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -456,6 +458,9 @@ public class AjaxServlet extends HttpServlet {
 	 *       <session-timeout>30</session-timeout>
 	 *       &lt;/session-config>
 	 * is overwritten by our maxInactiveInterval
+	 * <p />
+	 * Test:
+	 * http://localhost:8080/watchee/ajax?ActionType=request&task=getRawPhoto&locationPictureId=5823&random=0.6236216717670112
 	 */
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException,
 			IOException {
@@ -476,7 +481,7 @@ public class AjaxServlet extends HttpServlet {
 		// set header field first
 		//res.setContentType("text/plain; charset=UTF-8");
 		// xml header don't like empty response, so send at least "<void/>
-		res.setContentType("text/xml; charset=UTF-8");
+		//res.setContentType("text/xml; charset=UTF-8");
 		StringWriter out = new StringWriter();
 
 		try {
@@ -515,7 +520,56 @@ public class AjaxServlet extends HttpServlet {
 				return;
 			}
 
-			/* see watchee.js for an example:
+			// A request/reply with direct binary streaming of the MsgUnit content
+			// back to the browser, can be used e.g. to access backend DB pictures
+			// Todo: Add a variant with service response, e.g. &binary=false
+			// "/watchee/ajax?ActionType=request&task=getRawPhoto&data=4517&timeout=5000&maxEntries=10"
+			else if (actionType.equals("request")) { // request-response pattern, blocking for repsonse
+				// "image/gif" "image/jpeg" "image/bmp" "image/x-png" "application/x-msdownload" "video/avi" "video/mpeg"
+				long timeout = (req.getParameter("timeout") == null) ? 8000 : Long.valueOf(
+						(String) req.getParameter("timeout")).longValue();
+				int maxEntries = (req.getParameter("maxEntries") == null) ? 1 : Integer.valueOf(
+						(String) req.getParameter("maxEntries")).intValue();
+				String topicId = (req.getParameter("topicId") == null) ? "service" : (String) req
+						.getParameter("topicId");
+				String content = req.getParameter("content");
+				String qos = (req.getParameter("qos") == null) ? "<qos/>" : (String) req
+						.getParameter("qos");
+				if (content == null) {
+					String task = (String) req.getParameter("task"); // "getRawPhoto"
+					String data = (String) req.getParameter("data"); // "locationPictureId"
+					String serviceName = (String) req.getParameter("serviceName");
+					if (serviceName == null)
+						serviceName = "track";
+					String taskType = (String) req.getParameter("taskType");
+					if (taskType == null)
+						taskType = "named";
+					// Service markup: sc=serviceCollection, s=service, p=property
+					content = "<sc>" + " <s>" + "  <p k='serviceName'>" + serviceName + "</p>"
+							+ "  <p k='taskType'>" + taskType + "</p>" + "  <p k='task'>" + task
+							+ "</p>" + "  <p k='data'>" + data + "</p>" + " </s>" + "</sc>";
+				}
+				MsgUnit msgUnit = new MsgUnit("<key oid='" + topicId + "'/>", content, qos);
+				log.info(ME + "Sending request to " + topicId + ": " + content);
+				MsgUnit[] msgUnitArr = blasterInstance.getXmlBlasterAccess().request(msgUnit,
+						timeout, maxEntries);
+				if (msgUnitArr.length > 0) {
+					String contentMime = msgUnitArr[0].getQosData().getClientProperty(
+							"contentMime", "image/jpeg");
+					res.setContentType(contentMime);
+					log.info(ME + "Returning request/reply image '" + contentMime + "' length="
+							+ msgUnitArr[0].getContent().length);
+					out = null;
+					ServletOutputStream binOut = res.getOutputStream();
+					byte[] buff = msgUnitArr[0].getContent();
+					binOut.write(buff, 0, buff.length);
+					binOut.flush();
+					binOut.close();
+				}
+				return;
+			}
+
+			/* see XbAccess.js/watchee.js for an example:
 			In the mode "updatePoll" this script polls every 8000 millis for update
 			and the servlet returns directly if nothing is available, this is suboptimal
 			as we have a delay of up to 8 seconds.
@@ -566,14 +620,17 @@ public class AjaxServlet extends HttpServlet {
 			e.printStackTrace();
 			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": " + e.toString());
 		} finally {
-			PrintWriter backToBrowser = res.getWriter();
-			if (out.getBuffer().length() > 0)
-				log.info("Sending now '" + out.getBuffer().toString() + "'");
-			if (out.getBuffer().length() > 0)
-				backToBrowser.write(out.getBuffer().toString());
-			else
-				backToBrowser.write("<void/>"); // text/xml needs at least a root tag!
-			backToBrowser.close();
+			if (out != null) {
+				res.setContentType("text/xml; charset=UTF-8");
+				PrintWriter backToBrowser = res.getWriter();
+				if (out.getBuffer().length() > 0)
+					log.info("Sending now '" + out.getBuffer().toString() + "'");
+				if (out.getBuffer().length() > 0)
+					backToBrowser.write(out.getBuffer().toString());
+				else
+					backToBrowser.write("<void/>"); // text/xml needs at least a root tag!
+				backToBrowser.close();
+			}
 		}
 	}
 
