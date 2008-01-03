@@ -2,118 +2,132 @@
 <xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>
 <xsl:output method='html' version='3.0' encoding='iso-8859-1'/>
 
-<!--
-
-http://localhost:9999/mbean?objectname=org.xmlBlaster:contribClass=contrib,*&attributes=true&operations=false&notifications=false&constructors=false
-
-
-<Server pattern="org.xmlBlaster:contribClass=contrib,*">
-
-
-<MBean classname="org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin" description="Manageable Bean" objectname="org.xmlBlaster:nodeClass=node,node="replXbl",contribClass=contrib,contrib="replication"">
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Replications" strinit="true" type="java.lang.String" value="aicm,ndb"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Slaves" strinit="true" type="java.lang.String" value="client/ReplWriter-DEE_V_01-AIS/1,client/ReplWriter-NDB-AIS/1"/>
-</MBean>
-<MBean classname="org.xmlBlaster.contrib.replication.ReplSlave" description="Manageable Bean" objectname="org.xmlBlaster:nodeClass=node,node="replXbl",contribClass=contrib,contrib="replication/client/ReplWriter-DEE_V_01-AIS/1"">
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Active" strinit="true" type="boolean" value="true"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Connected" strinit="true" type="boolean" value="false"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="MaxReplKey" strinit="true" type="long" value="4167"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="MinReplKey" strinit="true" type="long" value="0"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="QueueEntries" strinit="true" type="long" value="23"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="true" name="SqlResponse" strinit="true" type="java.lang.String" value="null"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Status" strinit="true" type="java.lang.String" value="NORMAL"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Topic" strinit="true" type="java.lang.String" value="replTopic"/>
-</MBean>
-</Server>
-
-
-
-
-Search Pattern Matching Examples for MBeans:
-
-If the example MBeans with the following names are registered in the MBean server:
-
-MyDomain:description=Printer,type=laser
-MyDomain:description=Disk,capacity=2
-DefaultDomain:description=Disk,capacity=1
-DefaultDomain:description=Printer,type=ink
-DefaultDomain:description=Printer,type=laser,date=1993
-Socrates:description=Printer,type=laser,date=1993
-Here are some examples of queries that can be performed using pattern matching:
-n \u201c*:*\u201d will match all the objects of the MBean server. A null string object or
-empty string (\u201c\u201d) name used as a pattern is equivalent to \u201c*:*\u201d.
-n \u201c:*\u201d will match all the objects of the default domain
-n \u201cMyDomain:*\u201d will match all objects in MyDomain
-n \u201c??Domain:*\u201d will also match all objects in MyDomain
-n \u201c*Dom*:*\u201d will match all objects in MyDomain and DefaultDomain
-n \u201c*:description=Printer,type=laser,*\u201d will match the following objects:
-MyDomain:description=Printer,type=laser
-DefaultDomain:description=Printer,type=laser,date=1993
-Socrates:description=Printer,type=laser,date=1993
-n \u201c*Domain:description=Printer,*\u201d will match the following objects:
-MyDomain:description=Printer,type=laser
-DefaultDomain:description=Printer,type=ink
-DefaultDomain:description=Printer,type=laser,date=1993t
-
--->
-
-
-
-<!--
-   The example document looks like:
-
-<MBean classname="org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin" description="Manageable Bean" objectname="org.xmlBlaster:nodeClass=node,node="replXbl",contribClass=contrib,contrib="replication"">
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Replications" strinit="true" type="java.lang.String" value="aicm,ndb"/>
-<Attribute availability="RO" description="Attribute exposed for management" isnull="false" name="Slaves" strinit="true" type="java.lang.String" value="client/ReplWriter-DEE_V_01-AIS/1,client/ReplWriter-NDB-AIS/1"/>
-<Constructor description="Constructor exposed for management" name="org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin"/>
-        <Operation description="Operation exposed for management" impact="unknown" name="initiateReplication" return="java.lang.String">
-<Parameter description="Operation's parameter n. 1" id="0" name="param1" strinit="true" type="java.lang.String"/>
-<Parameter description="Operation's parameter n. 2" id="1" name="param2" strinit="true" type="java.lang.String"/>
-</Operation>
-        <Operation description="Operation exposed for management" impact="unknown" name="broadcastSql" return="void">
-<Parameter description="Operation's parameter n. 1" id="0" name="param1" strinit="true" type="java.lang.String"/>
-<Parameter description="Operation's parameter n. 2" id="1" name="param2" strinit="true" type="java.lang.String"/>
-<Parameter description="Operation's parameter n. 3" id="2" name="param3" strinit="true" type="boolean"/>
-</Operation>
-        <Operation description="Operation exposed for management" impact="unknown" name="recreateTriggers" return="java.lang.String">
-<Parameter description="Operation's parameter n. 1" id="0" name="param1" strinit="true" type="java.lang.String"/>
-</Operation>
-</MBean>
-
-url to go to:
-concat('invoke?objectname=', $objectname, '&amp;operation=initiateReplication&amp;type0=java.lang.String&amp;value0=','XXX', '&amp;type1=java.lang.String&amp;value1=', 'YYY')
-
-
-http://localhost:9999/mbean?objectname=org.xmlBlaster:nodeClass=node,node=%22replXbl%22,contribClass=contrib,contrib=%22replication%22&template=initiateReplication
-
-<MBean classname="org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin" description="Manageable Bean" objectname="org.xmlBlaster:nodeClass=node,node="replXbl",contribClass=contrib,contrib="replication""/>
-
-http://localhost:9999/mbean?objectname=org.xmlBlaster:contribClass=contrib,contrib=%22replication%22,*&amp;template=initiateReplication
--->
-
 <xsl:include href="customize.xsl"/>
 
 <xsl:variable name="isUser" select="/*/@user"/>
 <xsl:variable name="isInitiator" select="/*/@initiator"/>
 <xsl:variable name="isAdmin" select="/*/@admin"/>
 
-<xsl:template name="replaceString">
+<!-- we also need to avoid doubles -->
+<xsl:param name="request.src"/>
+
+<xsl:template name="replaceSource">
    <xsl:param name="content" />
+   <xsl:param name="alreadyProcessed" />
+
    <xsl:choose>
      <xsl:when test="contains($content, ',')">
-   <xsl:element name="option">
-      <xsl:attribute name="value"><xsl:value-of select="substring-before($content, ',')"/></xsl:attribute>
-      <xsl:value-of select="substring-before($content, ',')"/>
-   </xsl:element>
-        <xsl:call-template name="replaceString">
+       <xsl:choose>
+          <xsl:when test="contains(substring-before($content, ','),$request.src)">
+             <xsl:choose>
+                <xsl:when test="contains($alreadyProcessed, substring-before($content, ','))">
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:element name="option">
+                    <xsl:attribute name="value"><xsl:value-of select="substring-before($content, ',')"/></xsl:attribute>
+                    <xsl:value-of select="substring-before($content, ',')"/>
+                  </xsl:element>
+                </xsl:otherwise>
+             </xsl:choose>
+          </xsl:when>
+       </xsl:choose>
+       <xsl:call-template name="replaceSource">
+          <xsl:with-param name="content" select="substring-after($content, ',')"/>
+          <xsl:with-param name="alreadyProcessed" select="concat($alreadyProcessed, substring-before($content, ','))"/>
+       </xsl:call-template>
+     </xsl:when>
+     <xsl:otherwise>
+       <xsl:choose>
+          <xsl:when test="contains($content,$request.src)">
+             <xsl:choose>
+                <xsl:when test="contains($alreadyProcessed, $content)">
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:element name="option">
+                     <xsl:attribute name="value"><xsl:value-of select="$content"/></xsl:attribute>
+                     <xsl:value-of select="$content"/>
+                  </xsl:element>
+                </xsl:otherwise>
+             </xsl:choose>
+          </xsl:when>
+       </xsl:choose>
+     </xsl:otherwise>
+   </xsl:choose>
+</xsl:template>
+
+
+<!--
+   We need to add the following:
+    source: nothing since it is as it should be 
+    dest: 'client/ReplWriter-' + ${dest} + '-AIS/session/1';
+    for the version you must use what has been defined on the readers property files. For back-replication
+    the version should not have any importance.
+
+-->
+
+<xsl:template name="replaceDest">
+   <xsl:param name="content" />
+   <xsl:param name="pos" />
+
+   <xsl:param name="alreadyProcessed" />
+   <xsl:variable name="txtName" select="substring-before($content, ',')"/>
+   <xsl:choose>
+     <xsl:when test="contains($content, ',')"> <!-- then we have several entries (writers) not only one -->
+        <xsl:choose>
+           <xsl:when test="$pos mod 2 = 0">
+              <xsl:text disable-output-escaping='yes'>&lt;tr&gt;</xsl:text>
+           </xsl:when>
+        </xsl:choose>
+          <td class="list">
+            <xsl:element name="input">
+              <xsl:attribute name="type">checkbox</xsl:attribute>
+              <xsl:attribute name="class">value</xsl:attribute>
+              <xsl:attribute name="onClick">setItem(<xsl:value-of select="$pos"/>)</xsl:attribute>
+              <xsl:attribute name="id">item<xsl:value-of select="$pos"/></xsl:attribute>
+              <xsl:attribute name="name">item<xsl:value-of select="$pos"/></xsl:attribute>
+              <xsl:attribute name="value"><xsl:value-of select="substring-after($txtName,'client/')"/></xsl:attribute>
+            </xsl:element>
+            <xsl:value-of select="substring-after($txtName,'client/')"/>
+          </td>
+        <xsl:choose>
+           <xsl:when test="$pos mod 2 = 1">
+              <xsl:text disable-output-escaping='yes'>&lt;/tr&gt;</xsl:text>
+           </xsl:when>
+        </xsl:choose>
+        <xsl:call-template name="replaceDest">
+           <xsl:with-param name="pos" select="$pos + 1"/>
            <xsl:with-param name="content" select="substring-after($content, ',')"/>
+          <xsl:with-param name="alreadyProcessed" select="concat($alreadyProcessed, substring-before($content, ','))"/>
         </xsl:call-template>
      </xsl:when>
      <xsl:otherwise>
-   <xsl:element name="option">
-      <xsl:attribute name="value"><xsl:value-of select="$content"/></xsl:attribute>
-      <xsl:value-of select="$content"/>
-   </xsl:element>
+        <xsl:choose>
+	         <xsl:when test="string-length($alreadyProcessed) = 0 and contains($alreadyProcessed, $txtName) = 0">
+           </xsl:when>
+           <xsl:otherwise>
+             <xsl:choose>
+                <xsl:when test="$pos mod 2 = 0">
+                   <xsl:text disable-output-escaping='yes'>&lt;tr&gt;</xsl:text>
+                </xsl:when>
+             </xsl:choose>
+               <td class="list">
+                 <xsl:element name="input">
+                   <xsl:attribute name="type">checkbox</xsl:attribute>
+                   <xsl:attribute name="class">value</xsl:attribute>
+                   <xsl:attribute name="onClick">setItem(<xsl:value-of select="$pos"/>)</xsl:attribute>
+                   <xsl:attribute name="id">item<xsl:value-of select="$pos"/></xsl:attribute>
+                   <xsl:attribute name="name">item<xsl:value-of select="$pos"/></xsl:attribute>
+                   <xsl:attribute name="value"><xsl:value-of select="substring-after($content,'client/')"/></xsl:attribute>
+                 </xsl:element>
+                 <xsl:value-of select="substring-after($content,'client/')"/>
+               </td>
+             <xsl:choose>
+                <xsl:when test="$pos mod 2 = 1">
+                   <xsl:text disable-output-escaping='yes'>&lt;/tr&gt;</xsl:text>
+                </xsl:when>
+             </xsl:choose>
+           </xsl:otherwise>
+        </xsl:choose>
      </xsl:otherwise>
    </xsl:choose>
 </xsl:template>
@@ -131,22 +145,71 @@ http://localhost:9999/mbean?objectname=org.xmlBlaster:contribClass=contrib,contr
 
 <script language="JavaScript" type="text/javascript">
 
-function initiateReplication(objName) {
-   var source = document.getElementById("sources").value;
-   var dest = document.getElementById("destinations").value;
+  function GetXmlHttpObject(handler) { 
+     var objXMLHttp = null;
+     if (window.XMLHttpRequest)
+        objXMLHttp = new XMLHttpRequest();
+     else if (window.ActiveXObject)
+        objXMLHttp = new ActiveXObject("Microsoft.XMLHTTP");
+     if (objXMLHttp == null)
+        alert("Your browser does not support Ajax");
+     return objXMLHttp;
+  }
 
-   <xsl:choose>
-     <xsl:when test="$show.cascading = 'yes'">
-   var extraSource = document.getElementById("extraSources").value;
-   var extraDest = document.getElementById("extraDestinations").value;
-     </xsl:when>
-     <xsl:otherwise>
+ 
+  function connect(url) {
+     var xmlHttpC=GetXmlHttpObject();
+     var async = false; 
+     xmlHttpC.open("GET", url, async);
+     xmlHttpC.setRequestHeader("content-type","application/x-www-form-urlencoded");
+     xmlHttpC.send(null);
+     if (xmlHttpC.readyState == 4 || xmlHttpC.readyState == "complete") {
+        //alert("Connect returned: " + xmlHttpC.responseText);
+     }
+     else {
+        alert("Connect failed: " + xmlHttpC.readyState);
+     }
+
+     // /MBeanOperation/Operation/@return;
+
+     var str = '';
+     if (xmlHttpC.responseText != null) {
+        str += xmlHttpC.responseText;
+     }
+     return str;
+  }
+
+
+function stripString(name) {
+   var ret = "";
+   var i;
+   var c;
+   for (i=0; i &lt; name.length; i++) {
+      c = name.charAt(i);
+      if (c == '-') c='_';
+      ret += c;
+   }
+   return ret;
+}
+
+var maxItem = 0;
+var counter = 0;
+
+// used in the html page
+function setItem(val) {
+  if (val > maxItem)
+     maxItem = val;
+}
+
+
+function initiateReplication(objName) {
+   var link = "";
+   var source = document.getElementById("sources").value;
+   var dest;
    var extraSource = "";
    var extraDest = "";
-     </xsl:otherwise>
-   </xsl:choose>
-
    var initialFilesLocation = "";
+
    <xsl:choose>
      <xsl:when test="$show.initialFilesLocation = 'yes'">
    var tmp = document.getElementById("initialFilesLocation").checked;
@@ -154,8 +217,9 @@ function initiateReplication(objName) {
      var initialFilesLocEl = document.getElementById("initialFiles");
      initialFilesLocation = initialFilesLocEl.value; // getAttribute("value");
    }
-   else
+   else {
      initialFilesLocation = "";
+   }
 
      </xsl:when>
      <xsl:otherwise>
@@ -163,10 +227,75 @@ function initiateReplication(objName) {
    var extraDest = "";
      </xsl:otherwise>
    </xsl:choose>
-   var url = 'invoke?objectname=' + objName + '&amp;operation=initiateReplication&amp;type0=java.lang.String&amp;value0=' +
-      dest + '&amp;type1=java.lang.String&amp;value1=' + source + '&amp;type2=java.lang.String&amp;value2=' + extraDest + '&amp;type3=java.lang.String&amp;value3=' + extraSource + '&amp;type4=java.lang.String&amp;value4=' + initialFilesLocation + '&amp;destination=destinationList&amp;template=result' ;
-   self.location.href= url;
+
+   link = "destinationList";
+   // this is the first url, the invocation to start the batch
+
+   var initStatus = document.getElementById("initStatus");
+   initStatus.firstChild.nodeValue = "INITIATING ...";
+
+   var url = 'invoke?objectname=' + 
+           objName + 
+           '&amp;operation=collectInitialUpdates&amp;type0=java.lang.String&amp;value0=' +
+           '<xsl:value-of select="$request.src"/>&amp;template=resultOtherWindow&amp;val=-1';
+
+   var resp = '';
+   resp = connect(url);
+
+   for (var i=0; i &lt;= maxItem; i++) {
+      resp = '';
+      var origDest = document.getElementById("item" + i);
+      if (origDest != null) {
+         if (origDest.checked) {
+            origDest = origDest.value;
+            dest = "client/" + origDest;
+            extraSource = "";
+            extraDest = "";
+
+            extraSource = stripString(extraSource);
+
+            url = 'invoke?objectname=' + 
+                   objName + 
+                   '&amp;operation=initiateReplication&amp;type0=java.lang.String&amp;value0=' +
+                   dest + 
+                   '&amp;type1=java.lang.String&amp;value1=' + 
+                   source + 
+                   '&amp;type2=java.lang.String&amp;value2=' + 
+                   extraDest + 
+                   '&amp;type3=java.lang.String&amp;value3=' + 
+                   extraSource +
+                   '&amp;type4=java.lang.String&amp;value4=' + 
+                   initialFilesLocation + 
+                   '&amp;template=resultOtherWindow&amp;val=' + i;
+            resp = connect(url);
+
+            if (resp != null &amp;&amp; resp.length &gt; 0) {
+               if (resp.indexOf('error:') == 0)
+               alert(resp + " will not add this destination");
+               resp = "";
+            }
+            else {
+               counter++;
+               initStatus.firstChild.nodeValue = "INITIATING replication " + counter;
+            }
+         }
+      }
+   }
+   initStatus.firstChild.nodeValue = "INITIATED ALL REPLICATIONS";
+   counter = 0;
+   
+   // this is the operation to start the initial update
+   url = 'invoke?objectname=' + 
+          objName + 
+          '&amp;operation=startBatchUpdate&amp;type0=java.lang.String&amp;value0=' +
+          '<xsl:value-of select="$request.src"/>' +
+          '&amp;destination=' +
+          link +
+          '&amp;template=result';
+   self.location.href = url;
+
 }
+
 
 function cancel() {
    var url = '<xsl:value-of select="$destinationListUrl"/>';
@@ -192,7 +321,7 @@ function initialFilesChanged() {
 <body>
   <center>
     <xsl:call-template name="header"/>
-    <div class="middle">Initiate Replication<br/>
+    <div class="middle">Initiate Replication (<xsl:value-of select="$request.src"/>)<br/>
       <table width="650" align="center" class="external" summary="">
 
     <xsl:apply-templates/>
@@ -218,21 +347,23 @@ function initialFilesChanged() {
                 <td colspan="1" class="normal" title="The Source of the Replication. (replication.prefix)">Source</td>
                 <td colspan="1" class="value">
                     <select class="values" id="sources" name="sources" size="1">
-   <xsl:call-template name="replaceString">
+   <xsl:call-template name="replaceSource">
      <xsl:with-param name="content" select="Attribute[@name='Replications']/@value"/>
+     <xsl:with-param name="alreadyProcessed" select="first"/>
    </xsl:call-template>
                     </select>
                  </td>
               </tr>
-         
               <tr>
-                <td colspan="1" class="normal" title="The destination of the Replication.">Destination</td>
+                <td colspan="1" class="normal" title="The destinations of the Replication.">Destinations</td>
                 <td colspan="1" class="value">
-                  <select class="values" id="destinations" name="destinations" size="1">
-   <xsl:call-template name="replaceString">
-     <xsl:with-param name="content" select="Attribute[@name='Slaves']/@value"/>
-   </xsl:call-template>
-                  </select>
+                  <table class="list" width="280" align="center" summary="" border="0">
+                     <xsl:call-template name="replaceDest">
+                       <xsl:with-param name="pos" select="0"/>
+                       <xsl:with-param name="content" select="Attribute[@name='Slaves']/@value"/>
+                       <xsl:with-param name="alreadyProcessed" select="first"/>
+                     </xsl:call-template>
+                  </table> 
                 </td>
               </tr>
 
@@ -240,7 +371,7 @@ function initialFilesChanged() {
      <xsl:when test="$show.initialFilesLocation = 'yes'">
               <tr>
                 <td colspan="1" class="value">
-                  <input type="checkbox" name="initialFilesLocation" id="initialFilesLocation" onclick="initialFilesChanged()" value=""/>store initial data
+                  <input type="checkbox" name="initialFilesLocation" id="initialFilesLocation" onclick="initialFilesChanged()" value="">store initial data</input>
                 </td>  
                 <td colspan="1" class="value">
                   <xsl:element name="input">
@@ -255,76 +386,33 @@ function initialFilesChanged() {
               </tr>
      </xsl:when>
    </xsl:choose>
-
-
-   <xsl:choose>
-     <xsl:when test="$show.cascading = 'yes'">
-              <tr>
-                <td colspan="2" class="normal"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
-              </tr>
-              <tr>
-                <td colspan="2" class="normal" title="Only if you want to cascade initiation of several replications automatically">Cascaded Replication or back-replication (<b>optional</b>):</td>
-              </tr>
-
-              <tr>
-                <td colspan="1" class="normal" title="Optional source of cascaded replication">Source</td>
-                <td colspan="1" class="value">
-                  <select class="values" id="extraSources" name="extraSources" size="1">
-<!--                     <option><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></option> -->
-                     <option value=""></option>
-   <xsl:call-template name="replaceString">
-     <xsl:with-param name="content" select="Attribute[@name='Replications']/@value"/>
-   </xsl:call-template>
-                  </select>
-                 </td>
-              </tr>
-              <tr>
-                <td colspan="1" class="normal" title="Optional destination of cascaded replication">Destination</td>
-                <td colspan="1" class="value">
-                  <select class="values" id="extraDestinations" name="extraDestinations" size="1">
-<!--                     <option><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></option> -->
-                     <option value=""></option>
-   <xsl:call-template name="replaceString">
-     <xsl:with-param name="content" select="Attribute[@name='Slaves']/@value"/>
-   </xsl:call-template>
-                  </select>
-                </td>
-              </tr>
-     </xsl:when>
-     <xsl:otherwise>
-     </xsl:otherwise>
-   </xsl:choose>
               <tr>
                 <td colspan="1" align="center"><button class="small" title="Click to return to the replication list" onClick="cancel()">Cancel</button></td>
 
+           <xsl:choose>
+              <xsl:when test="$isInitiator = 'true'">
                 <td colspan="1" align="center">
-                <xsl:choose>
-                   <xsl:when test="$isAdmin = 'true'">
-                     <xsl:element name="button">
-                        <xsl:attribute name="class">small</xsl:attribute>
-                        <xsl:attribute name="Title">Click to start (initiate) the choosen replication combination</xsl:attribute>
-                        <xsl:attribute name="onClick">initiateReplication('<xsl:value-of select="@objectname"/>')</xsl:attribute>
-                        Initiate Repl.
-                     </xsl:element>
-                   </xsl:when>
-                   <xsl:otherwise>
-							 <xsl:choose>
-								 <xsl:when test="$isInitiator = 'true'">
-									 <xsl:element name="button">
-										 <xsl:attribute name="class">small</xsl:attribute>
-										 <xsl:attribute name="Title">Click to start (initiate) the choosen replication combination</xsl:attribute>
-										 <xsl:attribute name="onClick">initiateReplication('<xsl:value-of select="@objectname"/>')</xsl:attribute>
-										 Initiate Repl.
-									 </xsl:element>
-								 </xsl:when>
-								 <xsl:otherwise>
-									 <xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text>
-								 </xsl:otherwise>
-							 </xsl:choose>
-                   </xsl:otherwise>
-                </xsl:choose>
+   <xsl:element name="button">
+      <xsl:attribute name="class">wide</xsl:attribute>
+      <xsl:attribute name="Title">Click to start (initiate) the choosen replication combination</xsl:attribute>
+      <xsl:attribute name="onClick">initiateReplication('<xsl:value-of select="@objectname"/>')</xsl:attribute>
+      Initiate Repl.
+   </xsl:element>
                 </td>
+              </xsl:when>
+              <xsl:otherwise>
+            <td align="center" colspan="1" class="normal"><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></td>
+              </xsl:otherwise>
+           </xsl:choose>
+
               </tr>
+
+              <tr>
+                <td colspan="2" class="value">
+                  <h2><div id='initStatus' name='initStatus'><xsl:text disable-output-escaping='yes'>&amp;nbsp;</xsl:text></div></h2>
+                </td>  
+              </tr>   
+
               </table>
             </td>
           </tr>
@@ -334,3 +422,4 @@ function initialFilesChanged() {
 <!-- end body -->
 
 </xsl:stylesheet>
+
