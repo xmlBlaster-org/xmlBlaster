@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16693 Fixed XPath query multi threading bug, reported by John Horner 2008-01-12
+
  o #16689 Added recursive flag to filewatcher (to scan directories recursively).
 
  o #16676 C++ client library: Added ~ConnectQosData() because of crash on MacOSX
