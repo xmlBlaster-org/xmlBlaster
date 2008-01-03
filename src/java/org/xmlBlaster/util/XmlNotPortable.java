@@ -108,31 +108,29 @@ public class XmlNotPortable
          if (getJvmXmlVersionToUse() >= 15) {
             //javax.xml.xpath.XPath xpath = javax.xml.xpath.XPathFactory.newInstance().newXPath();
             //final org.w3c.dom.NodeList nodes = (org.w3c.dom.NodeList)xpath.evaluate(expression, document, javax.xml.xpath.XPathConstants.NODESET);
-            if (method_newXPath == null) {
-               synchronized(XmlNotPortable.class) {
-                  if (method_newXPath == null) {
-                     clazz_XPathFactory = java.lang.Class.forName("javax.xml.xpath.XPathFactory");
-                     Class[] paramCls = new Class[0];
-                     Object[] params = new Object[0];
-                     java.lang.reflect.Method method = clazz_XPathFactory.getMethod("newInstance", paramCls);
-                     instance_XPathFactory = method.invoke(clazz_XPathFactory, params);
-                     method_newXPath = clazz_XPathFactory.getMethod("newXPath", paramCls);
+            Object xpath = null;
+            synchronized(XmlNotPortable.class) {
+               if (method_newXPath == null) {
+                  clazz_XPathFactory = java.lang.Class.forName("javax.xml.xpath.XPathFactory");
+                  Class[] paramCls = new Class[0];
+                  Object[] params = new Object[0];
+                  java.lang.reflect.Method method = clazz_XPathFactory.getMethod("newInstance", paramCls);
+                  instance_XPathFactory = method.invoke(clazz_XPathFactory, params);
+                  method_newXPath = clazz_XPathFactory.getMethod("newXPath", paramCls);
 
-                     clazz_XPath = java.lang.Class.forName("javax.xml.xpath.XPath");
+                  clazz_XPath = java.lang.Class.forName("javax.xml.xpath.XPath");
 
-                     Class clazz_XPathConstants = java.lang.Class.forName("javax.xml.xpath.XPathConstants");
-                     clazz_QName = java.lang.Class.forName("javax.xml.namespace.QName");
-                     java.lang.reflect.Field field = clazz_XPathConstants.getDeclaredField("NODESET");
-                     field_NODESET = field.get(null);
-                     paramCls_StringDocument = new Class[] { 
-                                      java.lang.String.class,
-                                      java.lang.Object.class, // org.w3c.dom.Document.class,
-                                      clazz_QName };
-                  }
+                  Class clazz_XPathConstants = java.lang.Class.forName("javax.xml.xpath.XPathConstants");
+                  clazz_QName = java.lang.Class.forName("javax.xml.namespace.QName");
+                  java.lang.reflect.Field field = clazz_XPathConstants.getDeclaredField("NODESET");
+                  field_NODESET = field.get(null);
+                  paramCls_StringDocument = new Class[] { 
+                                   java.lang.String.class,
+                                   java.lang.Object.class, // org.w3c.dom.Document.class,
+                                   clazz_QName };
                }
+               xpath = method_newXPath.invoke(instance_XPathFactory, new Object[0]);
             }
-            
-            Object xpath = method_newXPath.invoke(instance_XPathFactory, new Object[0]);
             Object[] params = new Object[] { expression, document, field_NODESET };
             java.lang.reflect.Method method_evaluate = clazz_XPath.getMethod("evaluate", paramCls_StringDocument);
             final org.w3c.dom.NodeList nodes = (org.w3c.dom.NodeList)method_evaluate.invoke(xpath, params);
