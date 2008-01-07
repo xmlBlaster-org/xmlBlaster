@@ -276,7 +276,8 @@ class BlasterInstance implements I_Callback {
 
 	public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
 			UpdateQos updateQos) throws XmlBlasterException {
-		if (updateKey.isInternal() || !updateQos.isOk()) {
+		// Allow e.g. __sys__Login
+		if (/*updateKey.isInternal() ||*/ !updateQos.isOk()) {
 			log.warning(id + " Ignoring received message " + updateKey.toXml() + " "
 					+ updateQos.toXml());
 			return "";
