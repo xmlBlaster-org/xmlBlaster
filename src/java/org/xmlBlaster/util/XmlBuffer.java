@@ -64,6 +64,14 @@ public class XmlBuffer {
         /**
          * Aquivalent to a StringBuffer.append().
          */
+        public XmlBuffer append(double ln) {
+                this.buf.append(ln);
+                return this;
+        }
+
+        /**
+         * Aquivalent to a StringBuffer.append().
+         */
         public XmlBuffer append(boolean b){
                 this.buf.append(b);
                 return this;
