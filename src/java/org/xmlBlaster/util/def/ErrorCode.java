@@ -5,8 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.def;
 
-import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.TreeMap;
 
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -521,10 +521,9 @@ public final class ErrorCode implements java.io.Serializable
       );
 
    public static final ErrorCode USER_JDBC_INVALID = new ErrorCode("user.jdbc.invalid",
-         "You have invoked get() with an illegal JDBC query.",
+         "Illegal JDBC query or access.",
          new ResourceInfo[] {
-            new ResourceInfo(ResourceInfo.REQ, "engine.service.rdbms", "engine.service.rdbms"),
-            new ResourceInfo(ResourceInfo.REQ, "interface.get", "interface.get")
+            new ResourceInfo(ResourceInfo.REQ, "engine.service.rdbms", "engine.service.rdbms")
          }
       );
 
