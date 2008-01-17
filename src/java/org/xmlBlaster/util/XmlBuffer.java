@@ -76,6 +76,14 @@ public class XmlBuffer {
                 this.buf.append(b);
                 return this;
         }
+        
+        /**
+         * Removes all buffer entries.
+         * Calling append fills new data to the beginning of the buffer. 
+         */
+        public void reset() {
+        	this.buf.setLength(0);
+        }
 
         public String toString() {
                 return this.buf.toString();
