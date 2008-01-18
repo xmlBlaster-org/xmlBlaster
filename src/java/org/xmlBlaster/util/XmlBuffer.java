@@ -27,6 +27,17 @@ public class XmlBuffer {
         }
 
         /**
+         * Escape predefined xml entities (', ", \r) for attributes.
+         * Additionally the '\0' is escaped.
+         * @param text
+         * @return The escaped text is appended to the StringBuffer.
+         */
+            public XmlBuffer appendAttributeEscaped(String text) {
+                    appendAttr(this.buf, text);
+                    return this;
+            }
+
+        /**
          * Appends a tag name (e.g. "bla" of a tag called <bla>).
          * Currently is a normal append()
          * @param tagName Could in future escape invalid tokens  '<' and '&' in a tag name.
@@ -75,6 +86,14 @@ public class XmlBuffer {
         public XmlBuffer append(boolean b){
                 this.buf.append(b);
                 return this;
+        }
+        
+        public StringBuffer getRawBuffer() {
+        	return this.buf;
+        }
+        
+        public int length() {
+        	return this.buf.length();
         }
         
         /**
@@ -137,6 +156,46 @@ public class XmlBuffer {
                 case '>':
                         buf.append(GT);
                     break;
+                case '"':
+                        buf.append(QUOT);
+                    break;
+                case '\'':
+                        buf.append(APOS);
+                    break;
+                case '\r':
+                        buf.append(SLASH_R);
+                    break;
+                default:
+                        buf.append(c);
+            }
+        }
+    }
+    /**
+     * Escape predefined xml entities (\0, ', ", \r). for attribute notation
+     * Additionally the '\0' is escaped.
+     * @param text
+     * @return The escaped text is appended to the given StringBuffer.
+     */
+    public static void appendAttr(StringBuffer buf, String text) {
+        if (text == null) return;
+        int length = text.length();
+        for (int i = 0; i < length; i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '\0':
+                    buf.append(NULL);
+                    break;
+                /*
+                case '&':
+                        buf.append(AMP);
+                    break;
+                case '<':
+                        buf.append(LT);
+                    break;
+                case '>':
+                        buf.append(GT);
+                    break;
+                */
                 case '"':
                         buf.append(QUOT);
                     break;
