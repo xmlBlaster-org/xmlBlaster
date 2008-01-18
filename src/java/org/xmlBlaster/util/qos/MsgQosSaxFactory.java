@@ -6,27 +6,26 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import java.io.FileOutputStream;
-import java.util.logging.Logger;
-
-import org.xmlBlaster.util.FileLocator;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.RcvTimestamp;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
-
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Logger;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
+import org.xmlBlaster.util.FileLocator;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.RcvTimestamp;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 
 /**
  * Parsing xml QoS (quality of service) of publish() and update(). 
@@ -782,7 +781,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       final boolean forceReadable = (props!=null) && props.containsKey(Constants.TOXML_FORCEREADABLE) ?
             (Boolean.valueOf(props.getProperty(Constants.TOXML_FORCEREADABLE)).booleanValue()) : false; // "forceReadable"
 
-      StringBuffer sb = new StringBuffer(1024);
+      XmlBuffer sb = new XmlBuffer(1024);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
@@ -793,7 +792,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       if (!msgQosData.isOk() || msgQosData.getStateInfo() != null && msgQosData.getStateInfo().length() > 0) {
          sb.append(offset).append(" <state id='").append(msgQosData.getState());
          if (msgQosData.getStateInfo() != null)
-            sb.append("' info='").append(msgQosData.getStateInfo());
+            sb.append("' info='").appendEscaped(msgQosData.getStateInfo());
          sb.append("'/>");
       }
 
@@ -825,11 +824,13 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             log.severe("The strings should not equal: PriorityEnum.NORM_PRIORITY=" + PriorityEnum.NORM_PRIORITY + " hash1=" + hash1 +
                           " msgQosData.getPriority()=" + msgQosData.getPriority() + " hash2=" + hash2);
          }
-         sb.append(offset).append(" <priority>").append(msgQosData.getPriority()).append("</priority>");
+         sb.append(offset).append(" <priority>").getRawBuffer().append(msgQosData.getPriority()).append("</priority>");
       }
 
-      if (msgQosData.getSubscriptionId() != null)
-         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='").append(msgQosData.getSubscriptionId()).append("'/>");
+      if (msgQosData.getSubscriptionId() != null) {
+         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='");
+         sb.appendAttributeEscaped(msgQosData.getSubscriptionId()).append("'/>"); // Can contain XPath with ' or "
+      }
 
       if (msgQosData.getLifeTimeProp().isModified() || msgQosData.getForceDestroyProp().isModified()) {
          sb.append(offset).append(" <expiration");
