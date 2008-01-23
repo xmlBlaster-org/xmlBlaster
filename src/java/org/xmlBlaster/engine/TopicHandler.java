@@ -744,7 +744,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          msgUnitWrapper.startExpiryTimer();
       }
       catch (XmlBlasterException e) {
-         log.severe(ME+": "+e.getMessage());
+    	 if (e.isUser())
+      	   log.warning(ME+": "+e.getMessage());
+    	 else
+    	   log.severe(ME+": "+e.getMessage());
          throw e;
       }
       catch (Throwable e) {
@@ -816,7 +819,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
             destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
             if (!forceQueing && destinationClient==null) {
                String tmp = ME+": Sending PtP message '" + cacheEntry.getLogId() + "' to '" + destination.getDestination() + "' failed, the destination is unkown, the message rejected.";
-               log.warning(tmp);
+               //log.warning(tmp); is logged by caller already
                throw new XmlBlasterException(serverScope, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
                    " Client is not logged in and <destination forceQueuing='true'> is not set");
             }
