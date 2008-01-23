@@ -224,6 +224,25 @@ public final class ReplaceVariable
       }
       return null;
    }
+
+   /**
+    * If the tag can have attributes
+    * @param xml
+    * @param tag For example "nodeId" for a tag &lt;nodeId something='ignored'>value&lt;/nodeId>
+    * @return null if none is found, else 'value'
+    */
+   public static String extractIgnoreAttr(String xml, String tag) {
+      if (xml == null || tag == null) return null;
+      final String startToken = "<" + tag; // + ">";
+      final String endToken = "</" + tag + ">";
+      int start = xml.indexOf(startToken);
+      start = xml.indexOf(">", start);
+      int end = xml.indexOf(endToken);
+      if (start != -1 && end != -1) {
+         return xml.substring(start + 1, end);
+      }
+      return null;
+   }
    
    /**
     * Find the given tag from the given xml string and return its value.  
