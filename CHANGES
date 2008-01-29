@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16706 EventPlugin: Added client properties to event from SubscribeQos and UnSubscribeQos
+
  o #16702 Fixed MsgUnit - Qos XML markup: escape not allowed chars
 
  o #16693 Fixed XPath query multi threading bug, reported by John Horner 2008-01-12
