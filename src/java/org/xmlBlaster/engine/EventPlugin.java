@@ -8,6 +8,7 @@ package org.xmlBlaster.engine;
 import gnu.regexp.RE;
 import gnu.regexp.REException;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -1791,6 +1792,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      oid);
                msgUnit.getQosData().addClientProperty("_topicId",
                      subscriptionInfo.getTopicId());
+               // Add all user specific client properties
+               Map props = subscriptionInfo.getSubscribeQosServer().getData().getClientProperties();
+               if (props != null) {
+                  Iterator it = props.keySet().iterator();
+                  while (it.hasNext()) {
+                     String key = (String)it.next();
+                     msgUnit.getQosData().addClientProperty(key, props.get(key));
+                  }
+               }
                this.requestBroker.publish(this.sessionInfo, msgUnit);
             } catch (Throwable e) {
                e.printStackTrace();
@@ -1868,6 +1878,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      oid);
                msgUnit.getQosData().addClientProperty("_topicId",
                      subscriptionInfo.getTopicId());
+               // Add all user specific client properties
+               Map props = subscriptionInfo.getSubscribeQosServer().getData().getClientProperties();
+               if (props != null) {
+                  Iterator it = props.keySet().iterator();
+                  while (it.hasNext()) {
+                     String key = (String)it.next();
+                     msgUnit.getQosData().addClientProperty(key, props.get(key));
+                  }
+               }
                this.requestBroker.publish(this.sessionInfo, msgUnit);
             } catch (Throwable e) {
                e.printStackTrace();
