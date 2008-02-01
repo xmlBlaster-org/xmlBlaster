@@ -775,7 +775,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
-                    eventType, errorCode, sessionName);
+                    eventType, errorCode, sessionName, cp);
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -808,7 +808,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (this.publishDestinationHelper != null) {
             // Uses XML as message content
-            sendMessage(summary, description, eventType, errorCode, sessionName);
+            sendMessage(summary, description, eventType, errorCode, sessionName, null);
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -1166,17 +1166,30 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /**
     * The xmlBlaster-message data sink.
     * Publishes a message with the current event occurred.
+    * @param clientProperties Can be null
     * @param useEventTypeAsContent TODO
     * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
     */
    protected void sendMessage(String summary, String description,
-         String eventType, String errorCode, SessionName sessionName) {
+         String eventType, String errorCode, SessionName sessionName, ClientProperty[] clientProperties) {
       if (this.publishDestinationHelper == null) return;
       if (!this.isActive) return;
 
       try {
          MsgUnit msgUnit = this.publishDestinationHelper.getMsgUnit(summary, description,
               eventType, errorCode, sessionName);
+         if (clientProperties != null)
+            for (int i=0; i<clientProperties.length; i++)
+               msgUnit.getQosData().addClientProperty(clientProperties[i]);
+         /*
+         if (clientProperties != null) {
+            Iterator it = clientProperties.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               msgUnit.getQosData().addClientProperty(key, clientProperties.get(key));
+            }
+         }
+         */
          // Done already in getMsgUnit() above
          //msgUnit.getQosData().addClientProperty("_summary", summary);
          this.requestBroker.publish(this.sessionInfo, msgUnit);
@@ -1316,7 +1329,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (this.publishDestinationHelper != null) {
             try {
-               sendMessage(summary, description, eventType, null, null);
+               sendMessage(summary, description, eventType, null, null, null);
             } catch (Throwable e) {
                e.printStackTrace();
             }
@@ -1345,7 +1358,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (this.publishDestinationHelper != null) {
             try {
-               sendMessage(summary, description, eventType, null, null);
+               sendMessage(summary, description, eventType, null, null, null);
             } catch (Throwable e) {
                e.printStackTrace();
             }
@@ -1439,7 +1452,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
-                  eventType, errorCode, sessionName);
+                  eventType, errorCode, sessionName, sessionInfo.getRemotePropertyArr());
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -1526,7 +1539,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (this.publishDestinationHelper != null) {
             sendMessage(summary, description,
-                    eventType, errorCode, sessionName);
+                    eventType, errorCode, sessionName, sessionInfo.getRemotePropertyArr());
          }
 
          if (this.jmxDestinationHelper != null) {
@@ -2092,7 +2105,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
 
          if (this.publishDestinationHelper != null) {
-            sendMessage(summary, description, eventType, errorCode, sessionName);
+            sendMessage(summary, description, eventType, errorCode, sessionName, null);
          }
 
          if (this.jmxDestinationHelper != null) {
