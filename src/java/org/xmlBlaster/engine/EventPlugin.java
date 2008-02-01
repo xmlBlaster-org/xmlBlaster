@@ -2105,7 +2105,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          }
 
          if (this.publishDestinationHelper != null) {
-            sendMessage(summary, description, eventType, errorCode, sessionName, null);
+            ClientProperty[] clientProperties = null;
+            if (newState == ConnectionStateEnum.ALIVE) {
+               SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
+               if (sessionInfo != null) {
+                  clientProperties = sessionInfo.getRemotePropertyArr();
+               }
+            }
+            sendMessage(summary, description, eventType, errorCode, sessionName, clientProperties);
          }
 
          if (this.jmxDestinationHelper != null) {
