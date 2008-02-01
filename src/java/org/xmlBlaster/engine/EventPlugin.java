@@ -302,18 +302,24 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */
    class PublishDestinationHelper {
       String destination;
-      String key, qos;
+      String key, qos, keyOid;
       String contentTemplate;
       public PublishDestinationHelper(String destination) throws XmlBlasterException {
          Map map = StringPairTokenizer.parseLineToProperties(destination);
-         if (map.containsKey("publish.key"))
+         if (map.containsKey("publish.key")) {
             this.key = (String) map.get("publish.key");
+            MsgKeyData msgKey = engineGlob.getMsgKeyFactory().readObject(this.key);
+            this.keyOid = msgKey.getOid();
+         }
          if (map.containsKey("publish.qos"))
             this.qos = (String) map.get("publish.qos");
          if (map.containsKey("publish.content"))
             this.contentTemplate = (String) map.get("publish.content");
          else
             this.contentTemplate = "$_{eventType}";
+      }
+      String getKeyOid() {
+         return this.keyOid;
       }
       MsgKeyData getPublishKey(String summary, String description,
             String eventType, String errorCode) throws XmlBlasterException {
@@ -1738,7 +1744,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       SubscriptionInfo subscriptionInfo = subscriptionEvent.getSubscriptionInfo();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
-      String oid = subscriptionInfo.getKeyOid();
+      String oid = subscriptionInfo.getKeyOid(); // is null for XPATH
+      String url = subscriptionInfo.getKeyData().getUrl();
+
+      // EXACT subscription recursion detection
+      if (this.publishDestinationHelper != null && oid != null && oid.equals(this.publishDestinationHelper.getKeyOid())) {
+         log.info("Ignoring subscribe event on topic '" + oid + "' from '" + sessionName.getRelativeName() + "' to avoid recursion");
+         return;
+      }
 
       // "/event/subscribe"
       String event = ContextNode.SEP + "event" + ContextNode.SEP + "subscribe";
@@ -1755,6 +1768,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             }
          }
       }
+      /*
+      if (found) {
+         if (subscriptionInfo.isQuery() && wouldMatcheOurSysEventOid) {
+            log.info("Ignoring XPATH subscribe event on topic '" + oid + "' from '" + sessionName.getRelativeName() + "' to avoid recursion");
+            return;
+         }
+      }
+      */
       if (!found) {
          if (this.clientSet == null) return;
          if (!this.clientSet.contains(foundEvent)) {
@@ -1773,7 +1794,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       try {
          String summary = "New subscription of client "
              + sessionInfo.getSessionName().getAbsoluteName()
-             + " on topic " + oid;
+             + " on topic " + url;
          String description = subscriptionInfo.toXml();
          String eventType = foundEvent;
          String errorCode = null;
@@ -1788,8 +1809,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                     eventType, errorCode, sessionName);
                msgUnit.getQosData().addClientProperty("_subscriptionId",
                      subscriptionInfo.getSubscriptionId());
-               msgUnit.getQosData().addClientProperty("_oid",
+               if (oid != null)
+                  msgUnit.getQosData().addClientProperty("_oid",
                      oid);
+               msgUnit.getQosData().addClientProperty("_url",
+                  url);
                msgUnit.getQosData().addClientProperty("_topicId",
                      subscriptionInfo.getTopicId());
                // Add all user specific client properties
@@ -1824,7 +1848,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       SubscriptionInfo subscriptionInfo = subscriptionEvent.getSubscriptionInfo();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       SessionName sessionName = sessionInfo.getSessionName();
-      String oid = subscriptionInfo.getKeyOid();
+      String oid = subscriptionInfo.getKeyOid(); // is null for XPATH
+      String url = subscriptionInfo.getKeyData().getUrl();
+
+      // EXACT subscription recursion detection
+      if (this.publishDestinationHelper != null && oid != null && oid.equals(this.publishDestinationHelper.getKeyOid())) {
+         log.info("Ignoring unSubscribe event on topic '" + oid + "' from '" + sessionName.getRelativeName() + "' to avoid recursion");
+         return;
+      }
 
       // "/event/unSubscribe"
       String event = ContextNode.SEP + "event" + ContextNode.SEP + "unSubscribe";
@@ -1859,7 +1890,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       try {
          String summary = "unSubscribe of client "
              + sessionInfo.getSessionName().getAbsoluteName()
-             + " on topic " + oid;
+             + " on topic " + url;
          String description = subscriptionInfo.toXml();
          String eventType = foundEvent;
          String errorCode = null;
@@ -1874,8 +1905,11 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                      eventType, errorCode, sessionName);
                msgUnit.getQosData().addClientProperty("_subscriptionId",
                      subscriptionInfo.getSubscriptionId());
-               msgUnit.getQosData().addClientProperty("_oid",
+               if (oid != null)
+                  msgUnit.getQosData().addClientProperty("_oid",
                      oid);
+               msgUnit.getQosData().addClientProperty("_url",
+                     url);
                msgUnit.getQosData().addClientProperty("_topicId",
                      subscriptionInfo.getTopicId());
                // Add all user specific client properties
