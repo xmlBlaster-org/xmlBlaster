@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16708 EventPlugin: Added recursion detection for subscribe/unSubscribe events
+          Added clientProperty '_url' for XPath use case
+
  o #16706 EventPlugin: Added client properties to event from SubscribeQos and UnSubscribeQos
 
  o #16702 Fixed MsgUnit - Qos XML markup: escape not allowed chars
