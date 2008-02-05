@@ -192,6 +192,15 @@ BEGIN
             ret := 2;
          END IF;
       END IF;
+      -- this is for characters lower than 13
+      -- pos := REGEXP_COUNT(tmp, '[:cntrl:]', 1, 'c');
+      -- position of first occurence of the regex expr.
+      pos := REGEXP_INSTR(tmp, '[[:cntrl:]]', 1, 1);
+      IF POS > 0 THEN
+         IF ret < 2 THEN
+	    ret := 2;
+	 END IF;
+      END IF;	    	
       pos := INSTR(tmp, '<', 1, 1);
       IF POS > 0 THEN 
          IF ret < 1 THEN
