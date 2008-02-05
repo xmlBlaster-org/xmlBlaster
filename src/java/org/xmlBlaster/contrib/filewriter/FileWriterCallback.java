@@ -47,8 +47,8 @@ public class FileWriterCallback implements I_Update, ContribConstants {
     * Creates a callback
     * @param dirName The name of the directory where to store the files.
     * @param tmpDirName the name of the directory where to store the temporary files.
-    * @param lockExtention The extention to use to lock the reading of the file. This is used if the
-    * entries have to be retrieved by the filepoller. Until such a file exists, the entry is not
+    * @param lockExtention The extension to use to lock the reading of the file. This is used if the
+    * entries have to be retrieved by the file poller. Until such a file exists, the entry is not
     * processed by the file poller.
     * @param overwrite if set to true it will overwrite existing files.
     * @throws Exception
