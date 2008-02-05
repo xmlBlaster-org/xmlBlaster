@@ -101,10 +101,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    }
 
 
-   public void init(I_Info info) throws Exception {
+   public void init(I_Info info_) throws Exception {
       log.info("init invoked");
-      this.info = info;
-      this.pool = (I_DbPool)info.getObject(DbWriter.DB_POOL_KEY);
+      this.info = info_;
+      this.pool = (I_DbPool)info_.getObject(DbWriter.DB_POOL_KEY);
       if (this.pool == null)
          throw new Exception(ME + ".init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
 
@@ -116,11 +116,11 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       this.info.put(I_DbSpecific.NEEDS_PUBLISHER_KEY, "false");
       boolean forceCreationAndInit = true;
       this.dbSpecific = ReplicationConverter.getDbSpecific(this.info, forceCreationAndInit); 
-      String mapperClass = info.get("replication.mapper.class", "org.xmlBlaster.contrib.replication.impl.DefaultMapper");
+      String mapperClass = info_.get("replication.mapper.class", "org.xmlBlaster.contrib.replication.impl.DefaultMapper");
       if (mapperClass.length() > 0) {
          ClassLoader cl = ReplicationConverter.class.getClassLoader();
          this.mapper = (I_Mapper)cl.loadClass(mapperClass).newInstance();
-         this.mapper.init(info);
+         this.mapper.init(info_);
          if (log.isLoggable(Level.FINE)) 
             log.fine(mapperClass + " created and initialized");
       }
@@ -137,31 +137,31 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       String tmpImportLocation = this.info.get("replication.importLocationChunks", this.importLocation + "/chunks");
       boolean overwriteDumpFiles = true;
       String lockExtention =  null;
-      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
+      this.keepDumpFiles = info_.getBoolean("replication.keepDumpFiles", false);
       this.callback = new FileWriterCallback(this.importLocation, tmpImportLocation, lockExtention, overwriteDumpFiles, this.keepDumpFiles);
-      this.info = info;
-      this.pool = (I_DbPool)info.getObject(DbWriter.DB_POOL_KEY);
+      this.info = info_;
+      this.pool = (I_DbPool)info_.getObject(DbWriter.DB_POOL_KEY);
       if (this.pool == null)
          throw new Exception(ME + ".init: the pool has not been configured, please check your '" + DbWriter.DB_POOL_KEY + "' configuration settings");
 
-      this.doDrop = info.getBoolean("replication.drops", true);
-      this.doCreate = info.getBoolean("replication.creates", true);
-      this.doAlter = info.getBoolean("replication.alters", true);
-      this.doStatement = info.getBoolean("replication.statements", true);
-      this.schemaToWipeout = info.get("replication.writer.schemaToWipeout", null);
+      this.doDrop = info_.getBoolean("replication.drops", true);
+      this.doCreate = info_.getBoolean("replication.creates", true);
+      this.doAlter = info_.getBoolean("replication.alters", true);
+      this.doStatement = info_.getBoolean("replication.statements", true);
+      this.schemaToWipeout = info_.get("replication.writer.schemaToWipeout", null);
       // if (this.doStatement)
       //    this.sqlTopic = this.info.get("replication.sqlTopic", null);
       String prePostStatementClass = this.info.get("dbWriter.prePostStatement.class", "");
       if (prePostStatementClass.length() > 0) {
          ClassLoader cl = ReplicationConverter.class.getClassLoader();
          this.prePostStatement = (I_PrePostStatement)cl.loadClass(prePostStatementClass).newInstance();
-         this.prePostStatement.init(info);
+         this.prePostStatement.init(info_);
          if (log.isLoggable(Level.FINE)) 
             log.fine(prePostStatementClass + " created and initialized");
       }
 
       String key = "replication.initialCmd";
-      String tmp = info.get(key, null);
+      String tmp = info_.get(key, null);
       this.hasInitialCmd = (tmp != null);
       // log.info(GlobalInfo.dump(info));
       
@@ -174,7 +174,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       if (parserClass.length() > 0) {
          ClassLoader cl = this.getClass().getClassLoader();
          this.parserForOldInUpdates = (I_Parser)cl.loadClass(parserClass).newInstance();
-         this.parserForOldInUpdates.init(info);
+         this.parserForOldInUpdates.init(info_);
          if (log.isLoggable(Level.FINE)) 
             log.fine(parserClass + " created and initialized");
       }
@@ -273,7 +273,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    }
 
    /**
-    * Checks wether an entry has already been processed, in which case it will not be processed anymore
+    * Checks weather an entry has already been processed, in which case it will not be processed anymore
     * @param dbInfo
     * @return
     */

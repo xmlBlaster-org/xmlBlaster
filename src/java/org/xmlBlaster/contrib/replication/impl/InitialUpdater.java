@@ -57,7 +57,6 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.qos.MsgQosData;
 
 public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionStateListener, I_ReplaceContent, ReplicationConstants, I_ReplSource {
 
@@ -104,10 +103,8 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       StringBuffer errors = new StringBuffer();
       long sleepTime = 0L;
       ConnectionInfo connInfo;
-      final String stringToCheck;
 
       public ExecuteListener(String stringToCheck, ConnectionInfo connInfo) {
-         this.stringToCheck = stringToCheck;
          this.connInfo = connInfo;
       }
       
@@ -135,7 +132,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
    class ExecutionThread extends Thread {
       
       private String replTopic;
-      private I_DbSpecific dbSpecific;
+      private I_DbSpecific dbSpec;
       private String initialFilesLocation;
 
       private List slaveNamesList;
@@ -153,7 +150,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
          this.slaveNamesList = new ArrayList();
          this.replManagerAddress = replManagerAddress;
          this.replTopic = replTopic;
-         this.dbSpecific = dbSpecific;
+         this.dbSpec = dbSpecific;
          this.initialFilesLocation = initialFilesLocation;
       }
       
@@ -167,18 +164,18 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
        * @return true if the entry has the correct version, false otherwise (in which case it
        * will not be added).
        */
-      public boolean add(String slaveName, String replManagerAddress, String version) {
+      public boolean add(String slaveName, String replManagerAddress_, String ver) {
          if (this.version == null)
-            this.version = version;
+            this.version = ver;
          else {
-            if (!this.version.equals(version)) {
+            if (!this.version.equals(ver)) {
                return false;
             }
          }
          if (this.replManagerAddress == null)
-            this.replManagerAddress = replManagerAddress;
+            this.replManagerAddress = replManagerAddress_;
          else {
-            if (!this.replManagerAddress.equals(replManagerAddress)) {
+            if (!this.replManagerAddress.equals(replManagerAddress_)) {
                return false;
             }
          }
@@ -193,7 +190,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       public void run() {
          String[] slaveNames = (String[])this.slaveNamesList.toArray(new String[this.slaveNamesList.size()]); 
          try {
-            this.dbSpecific.initiateUpdate(replTopic, this.replManagerAddress, slaveNames, this.version, this.initialFilesLocation);
+            this.dbSpec.initiateUpdate(replTopic, this.replManagerAddress, slaveNames, this.version, this.initialFilesLocation);
          }
          catch (Exception ex) {
             log.severe("An Exception occured when running intial update for '" + replTopic + "' for '" + this.replManagerAddress + "' as slave '" + SpecificDefault.toString(slaveNames) + "'");
@@ -253,9 +250,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     * @see I_DbSpecific#init(I_Info)
     * 
     */
-   public final void init(I_Info info) throws Exception {
+   public final void init(I_Info info_) throws Exception {
       log.info("going to initialize the resources");
-      this.info = info;
+      this.info = info_;
       this.replPrefix = SpecificDefault.getReplPrefix(this.info);
 
       this.initialCmdPath = this.info.get("replication.path", "${user.home}/tmp");
@@ -263,11 +260,11 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       this.initialCmd = this.info.get("replication.initialCmd", null);
       if (this.initialCmd != null && this.initialCmd.trim().length() < 1) // if emtpy
          this.initialCmd = null;
-      this.initialCmdPre = info.get("replication.initialCmdPre", null);
-      this.keepDumpFiles = info.getBoolean("replication.keepDumpFiles", false);
+      this.initialCmdPre = info_.get("replication.initialCmdPre", null);
+      this.keepDumpFiles = info_.getBoolean("replication.keepDumpFiles", false);
       // this.stringToCheck = info.get("replication.initial.stringToCheck", "rows exported");
-      this.stringToCheck = info.get("replication.initial.stringToCheck", null);
-      this.initialDataTopic = info.get("replication.initialDataTopic", "replication.initialData");
+      this.stringToCheck = info_.get("replication.initial.stringToCheck", null);
+      this.initialDataTopic = info_.get("replication.initialDataTopic", "replication.initialData");
       String currentVersion = this.info.get("replication.version", "0.0");
       // this is only needed on the master side
       this.info.put(SUPPORTED_VERSIONS, getSupportedVersions(currentVersion));
@@ -333,7 +330,9 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
     *           opeation itself will have '0', the subsequent associated INSERT
     *           operations will have an increasing number (it is the number of
     *           the message not the number of the associated INSERT operation).
-    * @param destination in case it is a ptp it is sent only to that destination, otherwise it is sent as a pub/sub
+    * @param destination in case it is a ptp it is sent only to that destination, 
+    *         otherwise it is sent as a pub/sub. This parameter also determines on
+    *         which topic to publish.
     * @return a uniqueId identifying this publish operation.
     * 
     * @throws Exception
@@ -362,7 +361,17 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       if (destination != null)
          map.put("_destination", destination);
       // and later put the part number inside
-      map.put(ContribConstants.TOPIC_NAME, this.initialDataTopic);
+      // this is implicit association: if a destination is null, then it is ment for everybody,
+      // i.e. it must be published on the replication topic, otherwise it is published on the
+      // initial update topic.
+      
+      if (destination != null)
+         map.put(ContribConstants.TOPIC_NAME, this.initialDataTopic);
+      else {
+         String topic = this.info.get("mom.topicName", null);
+         if (topic != null)
+            map.put(ContribConstants.TOPIC_NAME, topic);
+      }
 
       if (this.publisher == null) {
          log.warning("SpecificDefaut.publishCreate publisher is null, can not publish. Check your configuration");
@@ -391,7 +400,7 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       // in this case they are just decorators around I_ChangePublisher
       if (this.publisher == null) {
          if (shortFilename == null)
-            shortFilename = "no file (since no initial data)";
+            shortFilename = "noFileSinceNoInitialData";
          log.warning("The publisher has not been initialized, can not publish message for '" + shortFilename + "'");
          return;
       }
@@ -615,6 +624,20 @@ public class InitialUpdater implements I_Update, I_ContribPlugin, I_ConnectionSt
       return filename;
    }
 
+   /**
+    * It builds the name to return in case the version is different from the current version.
+    * If initialCmd has been defined as null, null is silenty returned.
+    * @param replPrefix_
+    * @param requestedVersion
+    * @return
+    */
+   public String buildFilename(String replPrefix_, String requestedVersion) {
+      if (initialCmd == null)
+         return null;
+      return VersionTransformerCache.buildFilename(replPrefix_, requestedVersion);
+   }
+
+   
    public final void initialCommandPre() throws Exception {
       if (this.initialCmdPre == null)
          return;

@@ -890,7 +890,7 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
     * several slaves.
     * Cancels an ongoing initialUpdate Request.
     */
-   public void cancelInitialUpdate() throws Exception {
+   public void cancelInitialUpdate(boolean async) throws Exception {
       if (this.status == STATUS_NORMAL)
          return;
       if (!this.initialized)
@@ -898,11 +898,24 @@ public class ReplSlave implements I_ReplSlave, ReplSlaveMBean, ReplicationConsta
       if (this.dbWatcherSessionName == null)
          throw new Exception("The DbWatcher Session Id is null, can not cancel");
 
-      (new Thread() {
-         public void run() {
-            cancelUpdateAsyncPart();
-         }
-      }).start();
+      if (async) {
+         (new Thread() {
+            public void run() {
+               cancelUpdateAsyncPart();
+            }
+         }).start();
+      }
+      else
+         cancelUpdateAsyncPart();
+   }
+
+   /**
+    * TODO fix this since it potentially could delete request from other slaves since the DbWatcher is serving
+    * several slaves.
+    * Cancels an ongoing initialUpdate Request.
+    */
+   public void cancelInitialUpdate() throws Exception {
+      cancelInitialUpdate(true);
    }
 
    /**

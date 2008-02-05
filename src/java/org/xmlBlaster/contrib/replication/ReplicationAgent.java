@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.contrib.GlobalInfo;
+import org.xmlBlaster.contrib.I_ChangePublisher;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.I_Update;
 import org.xmlBlaster.contrib.PropertiesInfo;
@@ -30,6 +31,7 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
+import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -290,6 +292,22 @@ public class ReplicationAgent {
          this.dbWriter.init(writerInfo);
       }
       this.dbWatcher = initializeDbWatcher(readerInfo, this.dbWriter);
+      boolean autoSub = readerInfo.getBoolean("_autoSubscribe", false);
+      if (autoSub) {
+         I_ChangePublisher publisher = (I_ChangePublisher)readerInfo.getObject("mom.publisher");
+         if (publisher != null) {
+            String slaveName = "client/" + writerInfo.get("mom.loginName", "DbWriter/session/1");
+            
+            String prefix = readerInfo.get("replication.prefix", "repl_");
+            String version = readerInfo.get("replication.version", "0.5");
+            String prefixWithVersion = prefix + ReplicationConstants.VERSION_TOKEN + version;
+            Thread.sleep(5000L);
+            ReplSourceEngine.sendInitReplMsg(publisher, new String[] { slaveName }, prefixWithVersion, null, null, null, true);
+         }
+         else {
+            log.warning("The publisher has not been initialized");
+         }
+      }
    }
    
 

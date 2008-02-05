@@ -161,8 +161,47 @@ public class ReplSourceEngine implements I_Update, ReplicationConstants, I_Repla
       attrs.put("_minReplKey", "" + minKey);
       attrs.put("_maxReplKey", "" + maxKey);
       attrs.put(SLAVE_NAME, SpecificDefault.toString(slaveSessionNames));
-      if (this.publisher != null)
-         this.publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
+      if (publisher != null)
+         publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
+      else
+         log.warning("request for sending initial response can not be done since no publisher configured");
+   }
+
+   /**
+    * Sending this message will reactivate the Dispatcher of the associated slave
+    * @param topic
+    * @param filename
+    * @param replManagerAddress
+    * @param slaveName
+    * @param minKey
+    * @param maxKey
+    * @throws Exception
+    */
+   public static void sendInitReplMsg(I_ChangePublisher publisher, 
+                                        String[] slaveSessionNames, 
+                                        String prefixWithVersion,
+                                        String cascadeSlaveSessionName,
+                                        String cascadeReplicationPrefix,
+                                        String realInitialFilesLocation,
+                                        boolean force) throws Exception {
+      HashMap attrs = new HashMap();
+      attrs.put("_destination", ReplManagerPlugin.SESSION_ID);
+      attrs.put("_command", "INITIATE_REPLICATION");
+      StringBuffer buf = new StringBuffer();
+      for (int i=0; i < slaveSessionNames.length; i++) {
+         if (i != 0)
+            buf.append(",");
+         buf.append(slaveSessionNames[i]);
+      }
+      attrs.put("_slaveSessionName", buf.toString());
+      attrs.put("_prefixWithVersion", prefixWithVersion);
+      attrs.put("_cascadeSlaveSessionName", cascadeSlaveSessionName);
+      attrs.put("_cascadeReplicationPrefix", cascadeReplicationPrefix);
+      attrs.put("_realInitialFilesLocation", realInitialFilesLocation);
+      if (force)
+         attrs.put("_force", "true");
+      if (publisher != null)
+         publisher.publish("", "INITIAL_DATA_RESPONSE".getBytes(), attrs);
       else
          log.warning("request for sending initial response can not be done since no publisher configured");
    }

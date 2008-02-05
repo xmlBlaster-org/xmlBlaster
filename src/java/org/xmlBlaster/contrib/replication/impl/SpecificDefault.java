@@ -1191,10 +1191,10 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
          String filename = null;
          String completeFilename = null;
          if (isRequestingCurrentVersion)
-            filename = this.initialUpdater.initialCommand(slaveNames, completeFilename, connInfo, requestedVersion);
-         else
-            filename = VersionTransformerCache.buildFilename(this.replPrefix, requestedVersion);
-         
+            filename = initialUpdater.initialCommand(slaveNames, completeFilename, connInfo, requestedVersion);
+         else {
+            filename = initialUpdater.buildFilename(replPrefix, requestedVersion);
+         }
          long maxKey = this.incrementReplKey(conn); 
          // if (!connInfo.isCommitted())
          conn.commit();

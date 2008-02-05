@@ -115,5 +115,5 @@ public interface I_ReplSlave extends I_ContribPlugin {
    /** Invoked by the ReplManagerPlugin when a deadMessage is published because an error */
    void onDeadLetter(Map qosClientProperties);
 
-
+   void cancelInitialUpdate(boolean async) throws Exception;
 }

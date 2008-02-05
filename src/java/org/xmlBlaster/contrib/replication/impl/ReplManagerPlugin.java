@@ -856,6 +856,30 @@ public class ReplManagerPlugin extends GlobalInfo
                log.warning("reactivateDestination encountered an exception '" + ex.getMessage());
             }
          }
+         else if ("INITIATE_REPLICATION".equals(request)) {
+            String slaveSessionName = updateQos.getClientProperty("_slaveSessionName", (String)null);
+            String prefixWithVersion = updateQos.getClientProperty("_prefixWithVersion", (String)null);
+            String cascadeSlaveSessionName = updateQos.getClientProperty("_cascadeSlaveSessionName", (String)null);
+            String cascadeReplicationPrefix = updateQos.getClientProperty("_cascadeReplicationPrefix", (String)null);
+            String realInitialFilesLocation = updateQos.getClientProperty("_realInitialFilesLocation", (String)null);
+            boolean force = updateQos.getClientProperty("_force", false);
+            if (force) {
+               I_ReplSlave slave = null;
+               try {
+                  synchronized (this.replSlaveMap) {
+                     slave = (I_ReplSlave)this.replSlaveMap.get(slaveSessionName);
+                  }
+                  if (slave != null)
+                     slave.cancelInitialUpdate(false);
+               }
+               catch (Throwable ex) {
+                  log.severe("Could not cancel initial update for slave '" + slave.getSessionName() + "'");
+                  ex.printStackTrace();
+               }
+            }
+            String ret = initiateReplication(slaveSessionName, prefixWithVersion, cascadeSlaveSessionName, cascadeReplicationPrefix, realInitialFilesLocation);
+            log.info(ret);
+         }
          return "OK";
       }
       catch (Throwable ex) {
@@ -1299,7 +1323,7 @@ public class ReplManagerPlugin extends GlobalInfo
       synchronized (this.replSlaveMap) {
           slave = (I_ReplSlave)this.replSlaveMap.get(relativeSessionName);
       }
-      
+
       if (slave != null) {
          Map clientProperties = e.getSubscriptionInfo().getSubscribeQosServer().getData().getClientProperties();
          try {
