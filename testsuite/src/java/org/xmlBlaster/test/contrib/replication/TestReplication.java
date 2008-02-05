@@ -72,7 +72,7 @@ public class TestReplication extends XMLTestCase {
       TestReplication test = new TestReplication();
       try {
          test.setUp();
-         test.testBigBlobs();
+         test.testNonAlphaCharOnTable();
          test.tearDown();
 
          test.setUp();
@@ -89,6 +89,10 @@ public class TestReplication extends XMLTestCase {
 
          test.setUp();
          test.testPerformAllOperationsOnTable();
+         test.tearDown();
+
+         test.setUp();
+         test.testBigBlobs();
          test.tearDown();
 
          // test.setUp();
@@ -141,11 +145,10 @@ public class TestReplication extends XMLTestCase {
     * @param readerInfo The info object for the reader (the dbWatcher).
     * @param writerInfo The info object for the writer (the DbWriter).
     */
-   private String setupProperties(I_Info readerInfo, I_Info writerInfo, boolean extraUser) {
-      String ret = null;
+   private void setupProperties(I_Info readerInfo, I_Info writerInfo, boolean extraUser) {
       if (readerInfo != null) {
-         ret = readerInfo.get("replication.prefix", "repl_");
-         setProp(readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/session/1", true);
+         setProp(readerInfo, "replication.prefix", "repl_", true);
+         setProp(readerInfo, "mom.loginName", "DbWatcherPlugin.testPoll/1", true);
          setProp(readerInfo, "mom.topicName", "testRepl", true);
          setProp(readerInfo, "changeDetector.groupColName", "repl_key", true);
          setProp(readerInfo, "alertScheduler.pollInterval", "1000", false);
@@ -159,23 +162,26 @@ public class TestReplication extends XMLTestCase {
          setProp(readerInfo, "replication.doBootstrap", "true", false);
 
          setProp(readerInfo, "xmlBlaster/useSessionMarker", "true", false);
-
+         setProp(readerInfo, "_autoSubscribe", "true", false);
+         setProp(readerInfo, "mom.dispatcherPlugin", "ReplManager,1.0", true);
       }
       if (writerInfo != null) {  // and here for the dbWriter ...
          // ---- Database settings -----
          if (extraUser)
-            setProp(writerInfo, "mom.loginName", "DbWriterExtra/session/1", true);
+            setProp(writerInfo, "mom.loginName", "DbWriterExtra/1", true);
          else
-            setProp(writerInfo, "mom.loginName", "DbWriter/session/1", true);
+            setProp(writerInfo, "mom.loginName", "DbWriter/1", true);
          // setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica", false);
 
          setProp(writerInfo, "replication.mapper.table.test_replication", "test_replication2", false);
          setProp(writerInfo, "replication.mapper.table.test1", "test1_replica", false);
          setProp(writerInfo, "replication.mapper.table.test2", "test2_replica", false);
          setProp(writerInfo, "replication.mapper.table.test3", "test3_replica", false);
+         /*
          String subscribeKey = System.getProperty("mom.subscribeKey", "<key oid='testRepl'/>");
          setProp(writerInfo, "mom.subscribeKey", subscribeKey, true);
          setProp(writerInfo, "mom.subscribeQos", "<qos><initialUpdate>false</initialUpdate><multiSubscribe>false</multiSubscribe><persistent>true</persistent></qos>", false);
+         */
          setProp(writerInfo, "dbWriter.writer.class", "org.xmlBlaster.contrib.replication.ReplicationWriter", false);
          // these are pure xmlBlaster specific properties
          setProp(writerInfo, "dispatch/callback/retries", "-1", true);
@@ -185,8 +191,9 @@ public class TestReplication extends XMLTestCase {
          // because there would be two XmlBlasterAccess having the same session name (and only one session is allowed)
          setProp(writerInfo, "dbWriter.shutdownMom", "true", true);
          setProp(writerInfo, "xmlBlaster/useSessionMarker", "true", false);
+         setProp(writerInfo, "mom.dispatcherPlugin", "ReplManager,1.0", true);
+         setProp(writerInfo, "replication.recreateTables", "true", true);
       }
-      return ret;
    }
 
    private I_DbSpecific getDbSpecific() {
@@ -213,7 +220,7 @@ public class TestReplication extends XMLTestCase {
       this.readerInfo = new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
       this.writerInfo = new PropertiesInfo((Properties)this.specificHelper.getProperties().clone());
       boolean extraUser = false;
-      this.replPrefix = setupProperties(this.readerInfo, this.writerInfo, extraUser);
+      setupProperties(this.readerInfo, this.writerInfo, extraUser);
       extraUser = true; // to make it easy to recognize by the session name
 
       // we use the writerInfo since this will not instantiate an publisher
@@ -297,6 +304,7 @@ public class TestReplication extends XMLTestCase {
    public final void testCreateAndInsert() throws Exception {
       log.info("Start");
 
+      interceptor.waitOnUpdate(sleepDelay, 1);
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
@@ -396,6 +404,7 @@ public class TestReplication extends XMLTestCase {
    public final void testPerformAllOperationsOnTable() {
 
       log.info("Start testPerformAllOperationsOnTable");
+      interceptor.waitOnUpdate(sleepDelay, 1);
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
@@ -625,6 +634,7 @@ public class TestReplication extends XMLTestCase {
     */
    public final void testNullEntriesOnTable() {
       log.info("Start testNullEntriesOnTable");
+      interceptor.waitOnUpdate(sleepDelay, 1);
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
@@ -650,7 +660,7 @@ public class TestReplication extends XMLTestCase {
                this.interceptor.clear();
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(20), age INTEGER, address VARCHAR(30))";
                pool.update(sql);
-               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 2);
                conn = pool.reserve();
                Statement st = conn.createStatement();
                ResultSet rs = null;
@@ -826,6 +836,7 @@ public class TestReplication extends XMLTestCase {
     */
    public final void testUntrimmedSpaces() {
       log.info("Start testUntrimmedSpaces");
+      interceptor.waitOnUpdate(sleepDelay, 1);
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
@@ -848,16 +859,19 @@ public class TestReplication extends XMLTestCase {
 
          {
             try { // we explicitly choose a table without pk (to test searches)
+               interceptor.waitOnUpdate(sleepDelay, 1);
                sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(30), age INTEGER, address VARCHAR(30))";
                pool.update(sql);
 
                // Thread.sleep(this.sleepDelay);
-               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 2);
                conn = pool.reserve();
+               conn.setAutoCommit(true);
                Statement st = conn.createStatement();
                ResultSet rs = null;
                try {
-                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  String sqlStat = "SELECT * from " + this.tableName2;
+                  rs = st.executeQuery(sqlStat);
                }
                catch (Exception e) {
                   e.printStackTrace();
@@ -885,6 +899,7 @@ public class TestReplication extends XMLTestCase {
                pool.update(sql);
                this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
+               conn.setAutoCommit(true);
                Statement st = conn.createStatement();
                ResultSet rs = null;
                try {
@@ -922,6 +937,7 @@ public class TestReplication extends XMLTestCase {
                pool.update(sql);
                this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
+               conn.setAutoCommit(true);
                Statement st = conn.createStatement();
                ResultSet rs = null;
                try {
@@ -959,6 +975,7 @@ public class TestReplication extends XMLTestCase {
                pool.update(sql);
                this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
+               conn.setAutoCommit(true);
                Statement st = conn.createStatement();
                ResultSet rs = null;
                try {
@@ -989,6 +1006,180 @@ public class TestReplication extends XMLTestCase {
                pool.update(sql);
                this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
+               conn.setAutoCommit(true);
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  assertTrue("Testing '" + sql + "'. It must have resulted in an exception but did not.", false);
+               }
+               catch (Exception e) {
+               }
+               finally {
+                  if (rs != null)
+                     rs.close();
+                  rs = null;
+               }
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DROP' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
+
+   /**
+    * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
+    *
+    */
+   public final void testNonAlphaCharOnTable() {
+      log.info("Start testNonAlphaCharOnTable");
+      I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String sql = null;
+         try {
+            boolean force = false;
+            String destination = null;
+            boolean forceSend = false;
+            TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+            tableToWatch.setActions("IDU");
+            getDbSpecific().addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
+         }
+
+         {
+            try { // we explicitly choose a table without pk (to test searches)
+               interceptor.clear();
+               sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(30), age INTEGER, address VARCHAR(30))";
+               pool.update(sql);
+
+               // Thread.sleep(this.sleepDelay);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 2);
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 3, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must be empty", false, rs.next());
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'CREATE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+
+         {
+            try {
+               this.interceptor.clear();
+               StringBuffer buf = new StringBuffer();
+               buf.append((char)12);
+               buf.append((char)13);
+               String txt = buf.toString();
+               sql = "INSERT INTO " + this.tableName + " (name, address) VALUES ('firstOne', '" + txt + "')";
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 3, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must not be empty", true, rs.next());
+               String name = rs.getString(1);
+               Object age = rs.getObject(2);
+               String addr = rs.getString(3);
+               assertEquals("Testing '" + sql + "' for the name of the entry", "firstOne", name);
+               assertNull("Testing '" + sql + "' for the age of the entry", age);
+               assertEquals("Testing '" + sql + "' for the address of the entry", txt, addr);
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'INSERT' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+
+         {
+            try {
+               this.interceptor.clear();
+               sql = "DELETE FROM " + this.tableName;
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 3, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must be empty", false, rs.next());
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DELETE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+         {
+            try {
+               this.interceptor.clear();
+               sql = "DROP TABLE " + this.tableName;
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
                Statement st = conn.createStatement();
                ResultSet rs = null;
                try {
@@ -1053,6 +1244,7 @@ public class TestReplication extends XMLTestCase {
     */
    public final void testBigBlobs() {
       log.info("Start testBigBlobs");
+      interceptor.waitOnUpdate(sleepDelay, 1);
       I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
       assertNotNull("pool must be instantiated", pool);
       Connection conn = null;
@@ -1080,6 +1272,7 @@ public class TestReplication extends XMLTestCase {
                pool.update(sql);
                this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
+               conn.setAutoCommit(true);
                Statement st = conn.createStatement();
                ResultSet rs = null;
                try {
@@ -1107,6 +1300,8 @@ public class TestReplication extends XMLTestCase {
          {
             try {
                this.interceptor.clear();
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
                sql = "INSERT INTO " + this.tableName + " (name, data) VALUES (?, ?)";
                PreparedStatement ps = conn.prepareStatement(sql);
 
@@ -1236,6 +1431,7 @@ public class TestReplication extends XMLTestCase {
                pool.update(sql);
                this.interceptor.waitOnUpdate(this.sleepDelay, 1);
                conn = pool.reserve();
+               conn.setAutoCommit(true);
                Statement st = conn.createStatement();
                ResultSet rs = null;
                try {
