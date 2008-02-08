@@ -387,7 +387,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       MsgUnit getMsgUnit(String summary, String description,
             String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
          String content = replaceTokens(
-            this.contentTemplate, summary, description, eventType, errorCode);
+            this.contentTemplate, summary, description, eventType, errorCode, sessionName);
          return new MsgUnit(
                getPublishKey(summary, description, eventType, errorCode),
                content.getBytes(),
@@ -414,7 +414,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       String getMessage(String summary, String description,
             String eventType, String errorCode, SessionName sessionName) throws XmlBlasterException {
          String content = replaceTokens(
-            this.contentTemplate, summary, description, eventType, errorCode);
+            this.contentTemplate, summary, description, eventType, errorCode, sessionName);
          return content;
 
       }
@@ -770,7 +770,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, sessionName, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -803,7 +803,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
 
          if (this.smtpDestinationHelper != null) {
             // Ignores contentTemplate and forces the XML as last argument
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, sessionName, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -921,13 +921,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * Replace some $_{} tokens.
     *
     * @param str The string to check and replace
-    * @param summary The value for a $_{summary}, can be null
-    * @param description The value for a $_{description}, can be null
-    * @param eventType The value for a $_{eventType}, can be null
-    * @param errorCode The value for a $_{errorCode}, can be null
+ * @param summary The value for a $_{summary}, can be null
+ * @param description The value for a $_{description}, can be null
+ * @param eventType The value for a $_{eventType}, can be null
+ * @param errorCode The value for a $_{errorCode}, can be null
+ * @param sessionName TODO
     * @return Resolved string
     */
-   protected String replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
+   protected String replaceTokens(String str, String summary, String description, String eventType, String errorCode, SessionName sessionName) {
       if (str == null || str.indexOf("$") == -1)
          return str;
       str = ReplaceVariable.replaceAll(str, "$_{datetime}",
@@ -939,6 +940,8 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       str = ReplaceVariable.replaceAll(str, "$_{id}", this.engineGlob.getId());  // "heron"
       str = ReplaceVariable.replaceAll(str, "$_{eventType}", (eventType==null)?"":eventType);
       str = ReplaceVariable.replaceAll(str, "$_{errorCode}", (errorCode==null)?"":errorCode);
+      str = ReplaceVariable.replaceAll(str, "$_{loginName}", (sessionName==null)?"":sessionName.getLoginName());
+      str = ReplaceVariable.replaceAll(str, "$_{pubSessionId}", (sessionName==null)?"":""+sessionName.getPublicSessionId());
       if (str.indexOf("$_{clientList}") != -1) { // To support backward compatibility with "userListEvent=true" __sys__UserList
          str = ReplaceVariable.replaceAll(str, "$_{clientList}", this.requestBroker.getClientList());
       }
@@ -1106,7 +1109,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          catch (Throwable e) {}
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, errorCode, false);
+            sendEmail(summary, description, eventType, errorCode, null, false);
          }
 
          /*
@@ -1141,7 +1144,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * there choose the 'Notifications[0]' tabulator and click the 'Subscribe' button.
     * Now you receive the configured events.
     * </p>
-    * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
+    * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode, SessionName sessionName) {
     */
    protected void sendJmxNotification(String summary, String description,
          String eventType, String errorCode, boolean forceSending) {
@@ -1168,7 +1171,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * Publishes a message with the current event occurred.
     * @param clientProperties Can be null
     * @param useEventTypeAsContent TODO
-    * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode) {
+    * @see #replaceTokens(String str, String summary, String description, String eventType, String errorCode, SessionName sessionName) {
     */
    protected void sendMessage(String summary, String description,
          String eventType, String errorCode, SessionName sessionName, ClientProperty[] clientProperties) {
@@ -1201,13 +1204,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
    /**
     * Sending email as configured with <code>destination.smtp</code>.
     * @param summary The email summary line to use, it is injected to the template as $_{summary}
-    * @param description The event description to send, it is injected as $_{description}
-    * @param eventType For example "logging/severe/*"
-    * @param forceSending If true send directly and ignore the timeout
+ * @param description The event description to send, it is injected as $_{description}
+ * @param eventType For example "logging/severe/*"
+ * @param sessionName TODO
+ * @param forceSending If true send directly and ignore the timeout
     * @see http://www.faqs.org/rfcs/rfc2822.html
     */
    protected void sendEmail(String summary, String description,
-            String eventType, String errorCode, boolean forceSending) {
+            String eventType, String errorCode, SessionName sessionName, boolean forceSending) {
       try {
          if (this.smtpDestinationHelper == null) return;
          if (!this.isActive) return;
@@ -1218,9 +1222,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (forceSending) {
             EmailData emailData = this.smtpDestinationHelper.createEmailData();
             emailData.setSubject(replaceTokens(
-                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
+                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode, sessionName));
             emailData.setContent(replaceTokens(
-                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
+                  this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode, sessionName));
             this.smtpDestinationHelper.smtpClient.sendEmail(emailData);
             return;
          }
@@ -1229,12 +1233,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             // Build the email, if timer is active append new logging to the content of the existing mail ...
             EmailData emailData = (this.currentEmailData == null) ? this.smtpDestinationHelper.createEmailData() : this.currentEmailData;
             emailData.setSubject(replaceTokens(
-                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode));
+                  this.smtpDestinationHelper.subjectTemplate, summary, description, eventType, errorCode, sessionName));
             String old = (emailData.getContent().length() == 0) ? "" :
                   emailData.getContent() + this.smtpDestinationHelper.contentSeparator;
             emailData.setContent(old
                   + replaceTokens(
-                        this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode));
+                        this.smtpDestinationHelper.contentTemplate, summary, description, eventType, errorCode, sessionName));
 
             // If no timer was active send immeditately (usually the first email)
             if (this.smtpTimeoutHandle == null) {
@@ -1324,7 +1328,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (eventType == null) return;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, null, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1353,7 +1357,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     */public void dispatchEvent(String summary, String description, String eventType) {
       try {
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, null, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1447,7 +1451,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, sessionName, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1534,7 +1538,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, sessionName, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1586,7 +1590,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * JMX
     */
    public String sendTestEmail() {
-      sendEmail("Test email", "Hello world :-) &<>?", "testEvent", null, true);
+      sendEmail("Test email", "Hello world :-) &<>?", "testEvent", null, null, true);
       synchronized(this.smtpDestinationMonitor) {
          if (this.smtpDestinationHelper != null)
             return "Send email from '" + this.smtpDestinationHelper.from + "' to '" + this.smtpDestinationHelper.to + "'";
@@ -1813,7 +1817,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, sessionName, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1909,7 +1913,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, sessionName, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -1993,7 +1997,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, null, false);
          }
 
          if (this.publishDestinationHelper != null) {
@@ -2101,7 +2105,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          String errorCode = null;
 
          if (this.smtpDestinationHelper != null) {
-            sendEmail(summary, description, eventType, null, false);
+            sendEmail(summary, description, eventType, null, sessionName, false);
          }
 
          if (this.publishDestinationHelper != null) {

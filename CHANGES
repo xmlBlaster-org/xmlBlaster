@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16720 EventPlugin: Added $_{loginName} and $_{pubSessionId} support
+
  o #16718 Replication: Strings containing control chars (ASCII < 13) are now base64 encoded
 
  o #16712 EventPlugin: Sending now ConnectQos-remoteProperty for callbackState events

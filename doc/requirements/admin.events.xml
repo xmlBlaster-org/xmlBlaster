@@ -649,6 +649,8 @@ $_{nodeId}
 $_{eventType}
 $_{errorCode}
 $_{versionInfo}
+$_{loginName}
+$_{pubSessionId}
 $_{xml}
       </code>
       <p>The <code>$_{xml}</code> creates a xml dump of the current situation, containing
