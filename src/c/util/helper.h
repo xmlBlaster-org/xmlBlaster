@@ -119,7 +119,7 @@ Dll_Export extern int64_t getTimestamp(void);   /* if no 'int64_t=long long' sup
 Dll_Export extern bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime); /* timespec forces pthread */
 Dll_Export extern void getCurrentTimeStr(char *timeStr, int bufSize);
 
-#if defined(__FreeBSD__) || defined(__MacOSX__)
+#if defined(__FreeBSD__) || defined(__MacOSX__) || defined(__hpux__)
 #include <wchar.h>
 #endif
 Dll_Export extern char **convertWcsArgv(wchar_t **argv_wcs, int argc);
