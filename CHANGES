@@ -3,6 +3,11 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+  
+ o #16722 Persistence queue/msgstore performance tuning
+	  Reduced query interaction to 1/3 on startup
+	   Cleanup for transient entries in one select on startup
+	   Reload of cached numOfEntries, numOfPersistenEntries and numOfBytes and numOfPersistentBytes is now done with one select
 
  o #16720 EventPlugin: Added $_{loginName} and $_{pubSessionId} support
 
