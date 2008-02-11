@@ -68,13 +68,15 @@ public class I_MapTest extends TestCase {
 
          String type = PLUGIN_TYPES[this.currImpl];
          StoragePluginManager pluginManager = this.glob.getStoragePluginManager();
+         // Overwrite JDBC settings from xmlBlaster.properties
          PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, "JDBC", "1.0");
          java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
          prop.put("tableNamePrefix", "TEST");
          prop.put("entriesTableName", "_entries");
          this.glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
 
-         pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
+         if (!"JDBC".equals(type))
+            pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
 
          MsgUnitStoreProperty storeProp = new MsgUnitStoreProperty(glob, "/node/test");
          StorageId queueId = new StorageId("msgUnitStore", "SomeMapId");
