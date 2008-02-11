@@ -668,7 +668,11 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    public String getTableNamePrefix() {
       return this.tableNamePrefix;
    }
-
+   
+   
+   public String getUserName() {
+      return this.user;
+   }
 
    /**
     * @return the prefix for the name of the columns in each DB table
@@ -821,7 +825,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          this.glob.getJdbcConnectionPoolTimer().addTimeoutListener(this, this.reconnectionTimeout, null);
 
          I_StorageProblemListener lst = this.storageProblemListener;
-         lst.storageUnavailable(oldStatus);
+         if (lst != null)
+            lst.storageUnavailable(oldStatus);
       }
    }
 

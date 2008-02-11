@@ -219,6 +219,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          // do the queue specific stuff like delete all volatile entries in
          // the persistent queue
          if (this.persistentStore != null) {
+            /*
+            Is now done globally in JdbcManagerCommonTable.java on startup once for DB
             try {
                if (log.isLoggable(Level.FINE)) log.fine("Initialize: Removing swapped entries from persistent store, numEntries=" + this.persistentStore.getNumOfEntries() + " numPersistentEntries=" + this.persistentStore.getNumOfPersistentEntries());
                this.persistentStore.removeTransient();
@@ -226,6 +228,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             catch (XmlBlasterException ex) {
                log.severe("could not remove transient entries (swapped entries) probably due to no connection to the DB, or the DB is down" + ex.getMessage());
             }
+            */
 
             // prefill cache (hack: works only for our JDBC queue which implements I_Queue as well)
             if (this.persistentStore instanceof org.xmlBlaster.util.queue.I_Queue) {

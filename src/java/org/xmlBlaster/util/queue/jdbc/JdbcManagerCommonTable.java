@@ -1178,6 +1178,27 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       if (log.isLoggable(Level.FINER)) log.finer("setUp");
       if (log.isLoggable(Level.FINE)) log.fine("Initializing the first time the pool");
       tablesCheckAndSetup(this.pool.isDbAdmin());
+      synchronized(JdbcManagerCommonTable.class) {
+         // Should be only done on startup for each database instance
+         // To have a real JVM singleton a static bool is not enough (ClassLoader)
+         // so we use System.properties
+         String key="xmlBlaster.init." + pool.getUrl()+":"+pool.getUserName()+":"+pool.getTableNamePrefix();
+         if (System.getProperty(key) == null) {
+            deleteAllTransient(null);
+            System.setProperty(key, "true");
+         }
+       }
+   }
+
+   /*
+    * String persistentAsChar = rs.getString(PERSISTENT);
+    */
+   private boolean isPersistent(String persistentAsChar) {
+      if (persistentAsChar != null) 
+         persistentAsChar = persistentAsChar.trim();
+      boolean persistent = false;
+      if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
+      return persistent;
    }
 
    private final ArrayList processResultSet(ResultSet rs, StorageId storageId,
@@ -1205,12 +1226,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (typeName != null) 
                typeName = typeName.trim();
             //this only to make ORACLE happy since it does not support BOOLEAN
-            String persistentAsChar = rs.getString(PERSISTENT);
-            if (persistentAsChar != null) 
-               persistentAsChar = persistentAsChar.trim();
-            boolean persistent = false;
-            if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
-
+            boolean persistent = isPersistent(rs.getString(PERSISTENT));
             long sizeInBytes = rs.getLong(SIZE_IN_BYTES);
             InputStream is = rs.getBinaryStream(BLOB);
             // byte[] blob = rs.getBytes(7); // preStatement.setObject(5, blob);
@@ -1359,7 +1375,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             return 0;
          }
 
-         String req = "delete from " + this.entriesTableName  + " where queueName='" + queueName + "' AND durable='F'";
+         String req = "";
+         if (queueName == null)
+            req = "delete from " + this.entriesTableName  + " where durable='F'";
+         else
+            req = "delete from " + this.entriesTableName  + " where queueName='" + queueName + "' AND durable='F'";
          return update(req);
       }
       catch (XmlBlasterException ex) {
@@ -1481,8 +1501,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          // process the result set. Give only back what asked for (and only delete that)
          ResultSet rs = query.rs;
 
-         int count = 0;
-         long amount = 0L;
          boolean doContinue = true;
          boolean stillEntriesInQueue = false;
 
@@ -1493,12 +1511,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             String typeName = rs.getString(TYPE_NAME);        // preStatement.setString(5, typeName);
             //boolean persistent = rs.getBoolean(PERSISTENT); // preStatement.setBoolean(4, persistent);
             //this only to make ORACLE happy since it does not support BOOLEAN
-            String persistentAsChar = rs.getString(PERSISTENT);
-            boolean persistent = false;
-            if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
-
+            boolean persistent = isPersistent(rs.getString(PERSISTENT));
             long sizeInBytes = rs.getLong(SIZE_IN_BYTES);
-            if (!isInsideRange(count, numOfEntries, amount, numOfBytes)) break;
+            if (!isInsideRange((int)ret.countEntries, numOfEntries, ret.countBytes, numOfBytes)) break;
             // byte[] blob = rs.getBytes(7); // preStatement.setObject(5, blob);
             InputStream is = rs.getBinaryStream(BLOB);
 
@@ -1507,14 +1522,15 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                if (log.isLoggable(Level.FINEST)) log.finest("dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
 //               ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
                ret.list.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId));
-               amount += sizeInBytes;
+               ret.countBytes += sizeInBytes;
+               if (persistent)
+                  ret.countPersistentBytes += sizeInBytes;
             }
             else doContinue = false;
-            count++;
+            ret.countEntries++;
+            if (persistent)
+               ret.countPersistentEntries++;
          }
-
-         ret.countBytes = amount;
-         ret.countEntries = count;
 
          // prepare for deleting (we don't use deleteEntries since we want
          // to use the same transaction (and the same connection)
@@ -1525,6 +1541,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                ret.countEntries--;
                I_Entry entryToDelete = (I_Entry)ret.list.remove(ret.list.size()-1);
                ret.countBytes -= entryToDelete.getSizeInBytes();
+               boolean persistent = entryToDelete.isPersistent();
+               if (persistent) {
+                  ret.countPersistentEntries--;
+                  ret.countPersistentBytes -= entryToDelete.getSizeInBytes();
+               }
                if (log.isLoggable(Level.FINE)) log.fine("takeLowest size to delete: "  + entryToDelete.getSizeInBytes());
             }
          }
@@ -2344,6 +2365,92 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
       }
 
+   }
+   
+   class EntryCount {
+      long numOfEntries = 0L;
+      long numOfPersistentEntries = 0L;
+      long numOfBytes = 0L;
+      long numOfPersistentBytes = 0L;
+      public String toString() {
+         return "numOfEntries=" + numOfEntries +
+         " numOfPersistentEntries=" + numOfPersistentEntries +
+         " numOfBytes=" + numOfBytes +
+         " numOfPersistentBytes=" + numOfPersistentBytes;
+      }
+   }
+
+   /**
+    * Gets the real number of entries. 
+    * That is it really makes a call to the DB to find out
+    * how big the size is.
+    */
+   public final EntryCount getNumOfAll(String queueName)
+      throws XmlBlasterException {
+      if (!this.isConnected) {
+         if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
+         return null;
+      }
+
+      String req = "select durable, count(byteSize), sum(byteSize) from " + this.entriesTableName +
+        " WHERE queueName='" + queueName + "' group by durable";
+      if (log.isLoggable(Level.FINE)) log.fine("Request: '" + req + "'");
+      PreparedQuery query = null;
+      boolean success = true;
+      try {
+         query = new PreparedQuery(pool, req, true, -1);
+         boolean ok = query.rs.next();
+         EntryCount entryCount = new EntryCount();
+         if (ok) {
+            long transientOfEntries = 0;
+            long transientOfBytes = 0;
+            boolean persistent = isPersistent(query.rs.getString(1));
+            if (persistent) {
+               entryCount.numOfPersistentEntries = query.rs.getLong(2);
+               entryCount.numOfPersistentBytes = query.rs.getLong(3);
+            }
+            else {
+               transientOfEntries = query.rs.getLong(2);
+               transientOfBytes = query.rs.getLong(3);
+            }
+            if (query.rs.next()) {
+               persistent = isPersistent(query.rs.getString(1));
+               if (persistent) {
+                  entryCount.numOfPersistentEntries = query.rs.getLong(2);
+                  entryCount.numOfPersistentBytes = query.rs.getLong(3);
+               }
+               else {
+                  transientOfEntries = query.rs.getLong(2);
+                  transientOfBytes = query.rs.getLong(3);
+               }
+            }
+            entryCount.numOfEntries = transientOfEntries + entryCount.numOfPersistentEntries;
+            entryCount.numOfBytes = transientOfBytes + entryCount.numOfPersistentBytes;
+         }
+         if (log.isLoggable(Level.FINE)) log.fine("Num=" + entryCount.toString());
+         return entryCount;
+      }
+      catch (XmlBlasterException ex) {
+         success = false;
+         throw ex;
+      }
+      catch (Throwable ex) {
+         success = false;
+         if (query != null) query.closeStatement();
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, "getNumOfAll"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfAll", "", ex); 
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfAll", "", ex); 
+      }
+      finally {
+         try {
+            if (query != null) 
+               query.close(success);
+         }
+         catch (Throwable ex1) {
+            log.severe("getNumOfAll exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
+      }
    }
 
 

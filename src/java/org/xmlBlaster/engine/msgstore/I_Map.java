@@ -87,12 +87,12 @@ public interface I_Map extends I_Storage, I_StorageProblemNotifier
     */
    I_MapEntry removeOldest() throws XmlBlasterException;
 
-   /**
+   /*
     * Removes all the transient entries (the ones which have the flag 'persistent'
     * set to false.
     * @return Number of entries erased
-    */
    int removeTransient() throws XmlBlasterException;
+    */
 
    /**
     * Delete all entries

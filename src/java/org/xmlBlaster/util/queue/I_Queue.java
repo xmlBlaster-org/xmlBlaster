@@ -386,8 +386,8 @@ public interface I_Queue extends I_Storage, I_StorageProblemNotifier
    /**
     * Removes all the transient entries (the ones which have the flag 'persistent'
     * set to false.
-    */
    int removeTransient() throws XmlBlasterException;
+    */
 
    /**
     * Remove all queue entries. 

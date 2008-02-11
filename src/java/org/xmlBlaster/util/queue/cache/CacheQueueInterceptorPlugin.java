@@ -316,6 +316,10 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          // do the queue specific stuff like delete all volatile entries in
          // the persistent queue
          if (isPersistenceAvailable()) {
+            /*
+            // not so performant but only called on init
+            //this.numOfBytes = -999L;
+            this.numOfBytes = getNumOfBytes_();
             try {
                this.persistentQueue.removeTransient();
             }
@@ -323,6 +327,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                log.severe(ME+"could not remove transient entries (swapped entries) probably due to no connection to the DB, or the DB is down");
                ex.printStackTrace();
             }
+            */
 
             setProperties(userData);
             // not used yet
