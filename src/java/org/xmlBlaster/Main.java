@@ -76,7 +76,11 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
    /**
     * Comma separate list of errorCodes which to an immediate System.exit(1);
     * Used by our default implementation of I_XmlBlasterExceptionHandler
+    * TODO: If you use JdbcManagerCommonTableDelegate.java you may NOT
+    * use ErrorCode.RESOURCE_DB_UNKNOWN as this will retry one time the operation!
+    * How to assure this if configured different???
     */
+   //private String panicErrorCodes = ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
    private String panicErrorCodes = ErrorCode.RESOURCE_DB_UNKNOWN.getErrorCode()+","+ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
 
    /**
@@ -184,8 +188,20 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener, I_Xml
         } catch(InterruptedException e) { log.warning("Caught exception during xmlBlaster/sleepOnStartup=" + sleepOnStartup + ": " + e.toString()); }
       }
 
+      boolean useJdbcManagerDelegate = glob.getProperty().get("xmlBlaster/useJdbcManagerDelegate", true);
+      if (useJdbcManagerDelegate) {
+         this.panicErrorCodes = ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
+      }
+      else {
+         this.panicErrorCodes = ErrorCode.RESOURCE_DB_UNKNOWN.getErrorCode()+","+ErrorCode.RESOURCE_DB_UNAVAILABLE.getErrorCode();
+      }
+
       this.panicErrorCodes = glob.getProperty().get("xmlBlaster/panicErrorCodes", this.panicErrorCodes);
       log.fine("Following errorCodes do an immediate exit: " + this.panicErrorCodes);
+      if (useJdbcManagerDelegate && this.panicErrorCodes.indexOf(ErrorCode.RESOURCE_DB_UNKNOWN.toString()) != -1)
+          log.severe("You can not use 'xmlBlaster/panicErrorCodes' " +
+        		  ErrorCode.RESOURCE_DB_UNKNOWN.toString() +
+        		  " with xmlBlaster/useJdbcManagerDelegate=true. This could result in DB-less operation with persistent entries handled as transient entries which are lost on restart");
 
       int runlevel = glob.getProperty().get("runlevel", RunlevelManager.RUNLEVEL_RUNNING);
       try {
