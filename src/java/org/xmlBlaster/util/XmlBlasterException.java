@@ -192,6 +192,10 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       }
       this.errorCodeEnum = (errorCodeEnum == null) ? ErrorCode.INTERNAL_UNKNOWN : errorCodeEnum;
       this.errorCodeStr = this.errorCodeEnum.getErrorCode();
+      
+      I_XmlBlasterExceptionHandler eh = exceptionHandler;
+      if (eh != null)
+         eh.newException(this);
    }
 
    public final Global getGlobal() {
