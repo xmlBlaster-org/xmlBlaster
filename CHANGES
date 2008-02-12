@@ -3,6 +3,21 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o #16729 Added database dead lock recovery, on deadlock retry once.
+          Added delegate for DB access to retry on dead lock situation (seldom case with SQLServer)
+          Globales Setting (xmlBlaster.properties) to have old behaviour:
+            xmlBlaster/useJdbcManagerDelegate=false
+          Jdbc specific setting (only if above is true, else ignored) in JdbcStorage[MicrosoftSQLServer]:
+            maxExceptionRetries=2
+            retrySleepMillis=0
+	  Performance tuning hint:
+            ALTER TABLE xb_entries DROP CONSTRAINT PK__XB_ENTRIES__76CBA758
+            ALTER TABLE xb_entries ADD CONSTRAINT PK_XB_DATAID PRIMARY KEY CLUSTERED (XB_dataId) ON [PRIMARY]
+            create index IX_QUEUENAME ON XB_ENTRIES (queueName)
+            create index IX_CB_QUEUE ON XB_ENTRIES (prio DESC, XB_dataId ASC)
+            create index IX_DURABLE ON XB_ENTRIES (durable)
+            create index IX_CB_QUEUE ON XB_ENTRIES (prio DESC, XB_dataId ASC)
   
  o #16722 Persistence queue/msgstore performance tuning
 	  Reduced query interaction to 1/3 on startup
