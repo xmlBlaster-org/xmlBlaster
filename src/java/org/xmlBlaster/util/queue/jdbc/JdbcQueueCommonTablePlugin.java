@@ -154,7 +154,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * text on the left side of the separator (in this case 'cb') tells which
     * kind of queue it is: for example a callback queue (cb) or a client queue.
     */
-   protected JdbcManagerCommonTable getJdbcQueueManagerCommonTable(PluginInfo pluginInfoXXX)
+   protected JdbcManagerCommonTable getJdbcQueueManagerCommonTable(PluginInfo pluginInfo)
       throws XmlBlasterException {
       String location = ME + "/type '" + pluginInfo.getType() + "' version '" + pluginInfo.getVersion() + "'";
       String managerName = pluginInfo.toString(); //  + "-" + pluginInfo.getTypeVersion();
@@ -167,7 +167,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
               if ( obj == null) {
                  JdbcConnectionPool pool = new JdbcConnectionPool();
                  pool.initialize(this.glob, pluginInfo.getParameters());
-                 manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName, this);
+            	 boolean useJdbcManagerDelegate = glob.get("xmlBlaster/useJdbcManagerDelegate", true, null, pluginInfo);
+                 manager = (useJdbcManagerDelegate) ?
+                     new JdbcManagerCommonTableDelegate(pool, this.glob.getEntryFactory(), managerName, this) :
+                     new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(), managerName, this);
                  pool.registerStorageProblemListener(manager);
                  manager.setUp();
                  if (log.isLoggable(Level.FINE)) log.fine("Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");

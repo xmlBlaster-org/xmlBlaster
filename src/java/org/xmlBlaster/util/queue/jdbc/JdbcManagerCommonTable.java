@@ -579,7 +579,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @throws XmlBlasterException if an error occurred when trying to get a connection or an SQLException
     *         occurred.
     */
-   public final boolean modifyEntry(String queueName, I_Entry entry)
+   public boolean modifyEntry(String queueName, I_Entry entry)
       throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering");
 
@@ -1622,6 +1622,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
     */
    public boolean[] deleteEntries(String queueName, long[] uniqueIds) throws XmlBlasterException {
+      /*
+       // JdbcManagerCommonTableDelegate.java specific handling
+	   ////// !!!!!!!!!!!!!! TEST ONLY on erase(): java javaclients.HelloWorldPublish -persistent true
+	   if (true)
+          //throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".TESTING ONLY!!!", ""); 
+          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".TESTING ONLY!!!", ""); 
+      */  
+      
       if (this.maxNumStatements > 0 && this.maxNumStatements < uniqueIds.length) {
          int rest = uniqueIds.length;
          int offset = 0;
@@ -2667,7 +2675,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
          // then it is a JdbcManagerCommontTable
          // then it is a JdbcManager
-         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, factory, "cleaner", null);
+    	 // AWARE: Used in Main.java as well
+    	 boolean useJdbcManagerDelegate = glob.get("xmlBlaster/useJdbcManagerDelegate", true, properties, pluginInfo); // pluginConfig
+         JdbcManagerCommonTable manager = (useJdbcManagerDelegate) ?
+        		 new JdbcManagerCommonTableDelegate(pool, factory, "cleaner", null) :
+        		 new JdbcManagerCommonTable(pool, factory, "cleaner", null);
          pool.registerStorageProblemListener(manager);
          manager.setUp();
          return manager;
