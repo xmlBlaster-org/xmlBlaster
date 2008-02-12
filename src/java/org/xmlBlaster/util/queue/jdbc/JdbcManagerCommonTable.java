@@ -1114,10 +1114,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
    /**
     * returns the amount of bytes currently in the specified queue
-    * TODO: Replace all four selects with one:
-    *  "select count(*), sum(byteSize), durable from XB_ENTRIES WHERE queueName='history_xmlBlaster_192_168_1_4_3412Hello' GROUP BY durable;"
     * @param tableName the name of the table in which to count
     * @return the current amount of bytes used in the table.
+    * @deprecated Use {@link #getNumOfAll(String)} 
     */
    public long getNumOfBytes(String queueName)
       throws XmlBlasterException {
@@ -2392,7 +2391,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return null;
       }
 
-      String req = "select durable, count(byteSize), sum(byteSize) from " + this.entriesTableName +
+      String req = "select durable, count(" + this.byteSizeColName + "), sum(" + this.byteSizeColName + ") from " + this.entriesTableName +
         " WHERE queueName='" + queueName + "' group by durable";
       if (log.isLoggable(Level.FINE)) log.fine("Request: '" + req + "'");
       PreparedQuery query = null;
@@ -2458,6 +2457,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * Gets the real number of entries. 
     * That is it really makes a call to the DB to find out
     * how big the size is.
+    * @deprecated Use {@link #getNumOfAll(String)} 
     */
    public final long getNumOfEntries(String queueName)
       throws XmlBlasterException {
@@ -2505,6 +2505,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * Gets the real number of persistent entries. 
     * That is it really makes a call to the DB to find out
     * how big the size is.
+    * @deprecated Use {@link #getNumOfAll(String)} 
     */
    public final long getNumOfPersistents(String queueName)
       throws XmlBlasterException {
@@ -2553,7 +2554,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * gets the real size of persistent entries, that is it really makes a call to the DB to find out
     * how big the size is.
     * <br />
-    * TODO: Replace all four selects with one:
+    * @deprecated Use {@link #getNumOfAll(String)} 
+    * Replaced all four selects with one:
     *  "select count(*), sum(byteSize), durable from XB_ENTRIES WHERE queueName='history_xmlBlaster_192_168_1_4_3412Hello' GROUP BY durable;"
     */
    public final long getSizeOfPersistents(String queueName)
