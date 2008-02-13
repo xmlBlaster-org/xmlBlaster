@@ -1,5 +1,7 @@
 FEATURES
 --------
+o Integrate Brents flash
+
 o Integrate XmlRpc v3 from Balázs
 
 o build deploy_war-only
