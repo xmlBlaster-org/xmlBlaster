@@ -142,7 +142,7 @@ public:
     * @throws Exception If an error occurs when writing / reading the files. This method tries
     * to clean up the destination file in case of an exception when writing.
     */
-   void putAllChunksTogether(std::string &fileName, long expectedChunks, const char *buf, long bufSize, bool isCompleteMsg);
+   void putAllChunksTogether(std::string &fileName, std::string &subDir, long expectedChunks, const char *buf, long bufSize, bool isCompleteMsg);
 
    /**
     * Deletes the specified file from the file system.

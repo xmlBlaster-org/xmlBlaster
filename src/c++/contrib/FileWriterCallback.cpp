@@ -23,6 +23,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 // #include <sys/stat.h>
 #include <fstream>
 
+static void create_directorys(const std::string &fnfull);
+static void add_fn_part(std::string &fnpath, const char *part);
+
 namespace org { namespace xmlBlaster { namespace contrib {
 
 using namespace std;
@@ -230,11 +233,22 @@ void FileWriterCallback::getChunkFilenames(std::string &fileName, std::string &s
 	}
 }
 
-void FileWriterCallback::putAllChunksTogether(std::string &fileName, long expectedChunks, const char *buf, long bufSize, bool isCompleteMsg) 
+void FileWriterCallback::putAllChunksTogether(std::string &fileName, std::string &subDir, long expectedChunks, const char *buf, long bufSize, bool isCompleteMsg) 
 {
 	log_.info(ME + "::putAllChunksTogether", "file='" + fileName + "' expectedChunks='" + lexical_cast<std::string>(expectedChunks) + "'");
-	std::string completeFileName(directory_);
-	completeFileName.append(FILE_SEP).append(fileName);
+	std::string completeFileName;(directory_);
+
+	if (subDir != "") {
+		completeFileName = directory_;
+		add_fn_part(completeFileName, subDir.c_str());
+		add_fn_part(completeFileName, fileName.c_str());
+		// check if directories exists, if not create, argument must include the filename
+		create_directorys(completeFileName);
+	}
+	else {
+		completeFileName = directory_;
+		completeFileName.append(FILE_SEP).append(fileName);
+	}
 	
 	if (!overwrite_) {
 		std::ofstream file(completeFileName.c_str(), ios::in | ios::binary);
@@ -362,6 +376,7 @@ std::string FileWriterCallback::update(const std::string&,
 	std::string filename("");
 	std::string exMsg("");
 	long chunkCount = 0;
+	std::string subDir;
 	bool isLastMsg = true;
 	std::string topic = updateKey.getOid();
 
@@ -382,6 +397,10 @@ std::string FileWriterCallback::update(const std::string&,
 			throw XmlBlasterException(USER_ILLEGALARGUMENT, location.c_str(), txt.c_str());
    	}
 	}
+	
+	iter = props.find("_subdir"); // or define Constants::SUBDIR_ATTR in Constants.h .cpp
+	if (iter != props.end())
+		subDir = ((*iter).second).getStringValue();
 	
 	iter = props.find(Constants::JMSX_GROUP_SEQ); 		
 	if (iter != props.end()) {
@@ -407,7 +426,7 @@ std::string FileWriterCallback::update(const std::string&,
 	bool isCompleteMsg = isLastMsg && chunkCount == 0L;
 	if (exMsg.length() < 1) { // no exception
 		if (isLastMsg)
-			putAllChunksTogether(filename, chunkCount, (const char*)content, contentSize, isCompleteMsg);
+			putAllChunksTogether(filename, subDir, chunkCount, (const char*)content, contentSize, isCompleteMsg);
 		else {
 			std::string sep(".");
 			storeChunk(tmpDirectory_, filename, chunkCount, sep, overwrite_, (const char*)content, contentSize);
@@ -429,6 +448,75 @@ std::string FileWriterCallback::update(const std::string&,
                        
 
 }}} // namespaces
+
+
+// #include <string>
+using namespace std;
+
+#ifdef _WIN32
+#	ifdef WIN32_LEAN_AND_MEAN
+#		undef WIN32_LEAN_AND_MEAN
+#	endif
+#	define WIN32_LEAN_AND_MEAN 1
+#	include <windows.h>
+#	define DIR_SEP '\\'
+#	define DIR_SEP_STR "\\"
+#	include <io.h>
+#else
+#	define DIR_SEP '/'
+#	define DIR_SEP_STR "/"
+#	include <unistd.h>
+#endif
+
+static void add_fn_part(string &fnpath, const char *part)
+{
+	int len = fnpath.size();
+	if (len) {
+		if (fnpath[len-1] != DIR_SEP) fnpath += DIR_SEP_STR;
+	}
+	fnpath += part;
+}
+
+static void create_directorys(const std::string &fnfull)
+{
+	char	*p,*pn,*buf;
+	int	part_len;
+	int   len = strlen(fnfull.c_str())+1;
+	char  *fn = new char[len];
+
+	strcpy(fn, fnfull.c_str());
+	buf = new char[len];
+	p = fn;
+
+#	ifdef _WIN32
+		if ( *(p+1) == ':' ) p += 2;
+#	endif
+
+	while ((pn = strchr(p,DIR_SEP)) != (char *)0) {
+
+		part_len = pn - fn;
+
+		if (!part_len) {
+			p = pn + 1;
+			continue;
+		}
+
+		strncpy(buf,fn, part_len + 1);
+		buf[part_len] = 0;
+
+		if (access(buf,4)) {
+#		ifdef _WIN32
+			CreateDirectory(buf,(LPSECURITY_ATTRIBUTES)0);
+#		else
+			mkdir(buf, (mode_t)0); /* umask setzt mode */
+#		endif
+		}
+		p = pn + 1;
+	}
+
+	delete [] fn;
+	delete [] buf;
+}
 
 
 #ifdef _XMLBLASTER_CLASSTEST
