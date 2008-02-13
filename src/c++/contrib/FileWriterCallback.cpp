@@ -454,11 +454,6 @@ std::string FileWriterCallback::update(const std::string&,
 using namespace std;
 
 #ifdef _WIN32
-#	ifdef WIN32_LEAN_AND_MEAN
-#		undef WIN32_LEAN_AND_MEAN
-#	endif
-#	define WIN32_LEAN_AND_MEAN 1
-#	include <windows.h>
 #	define DIR_SEP '\\'
 #	define DIR_SEP_STR "\\"
 #	include <io.h>
