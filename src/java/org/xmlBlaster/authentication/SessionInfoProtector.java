@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -266,26 +265,15 @@ public class SessionInfoProtector implements SessionInfoProtectorMBean /*I_Admin
    }
 
    public String clearRemotePropertiesStartingWith(String prefix) {
-      ClientPropertiesInfo info = this.sessionInfo.getRemoteProperties();
-      if (info == null || prefix == null) return "No remote properties found, nothing to clear";
-      synchronized (this.sessionInfo) {
-         ClientProperty[] arr = info.getClientPropertyArr();
-         int count = 0;
-         for (int i=0; i<arr.length; i++) {
-            if (arr[i].getName().startsWith(prefix)) {
-               info.getClientPropertyMap().remove(arr[i].getName());
-               count++;
-            }
-         }
-         return "Removed " + count + " remote properties which are starting with '"+prefix+"'";
-      }
+      if (this.sessionInfo.getRemoteProperties() == null || prefix == null) return "No remote properties found, nothing to clear";
+      int count = this.sessionInfo.clearRemoteProperties(prefix);
+      return "Removed " + count + " remote properties which are starting with '"+prefix+"'";
    }
 
    public String clearRemoteProperties() {
-      ClientPropertiesInfo info = this.sessionInfo.getRemoteProperties();
-      if (info == null) return "No remote properties found, nothing to clear";
-      this.sessionInfo.setRemoteProperties(null);
-      return "Removed " + info.getClientPropertyMap().size() + " remote properties";
+      if (this.sessionInfo.getRemoteProperties() == null) return "No remote properties found, nothing to clear";
+      int count = this.sessionInfo.clearRemoteProperties(null);
+      return "Removed " + count + " remote properties";
    }
 
    public String addRemoteProperty(String key, String value) {

@@ -1090,7 +1090,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    }
 
    /**
-    * Set porperties send by our client.
+    * Set properties send by our client.
     * @param remoteProperties The remoteProperties to set, pass null to reset.
     * The key is of type String and the value of type ClientProperty
     */
@@ -1102,7 +1102,34 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    }
 
    /**
-    * Update porperties send by our client.
+    * Clear remote properties.
+    * @param prefix if not null only keys starting with are removed
+    * @return number of removed entries
+    */
+   public synchronized int clearRemoteProperties(String prefix) {
+      if (prefix == null) {
+    	 int size = 0;
+    	 if (this.remoteProperties != null)
+            size = this.remoteProperties.getClientPropertyMap().size();
+         this.remoteProperties = null;
+         return size;
+      }
+      
+      ClientPropertiesInfo info = this.remoteProperties;
+      if (info == null || prefix == null) return 0;
+      ClientProperty[] arr = info.getClientPropertyArr();
+      int count = 0;
+      for (int i=0; i<arr.length; i++) {
+         if (arr[i].getName().startsWith(prefix)) {
+            info.getClientPropertyMap().remove(arr[i].getName());
+            count++;
+         }
+      }
+      return count;
+   }
+
+   /**
+    * Update properties send by our client.
     * @param remoteProperties The remoteProperties to set,
     * if a property exists its value is overwritten, passing null does nothing
     * The key is of type String and the value of type ClientProperty

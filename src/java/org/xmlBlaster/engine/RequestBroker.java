@@ -20,6 +20,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ReplaceVariable;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -44,6 +45,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.dispatch.DispatchStatistic;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
@@ -52,6 +54,7 @@ import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
@@ -799,6 +802,26 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             return new MsgUnit[0]; // get() with oid="__refresh" do only refresh the login session
          }
 
+         if (xmlKey.isRemoteProperties()) { // "__sys__remoteProperties"
+            // Example usage
+            //java javaclients.HelloWorldPublish -oid __sys__remoteProperties -connect/qos/clientProperty[__remoteProperties] true -connect/qos/clientProperty[myProperty] AAAAAA -session.name OTHER/1
+            //java javaclients.HelloWorldGet -clientProperty[__sessionName] OTHER/1 -oid __sys__remoteProperties
+            String sessionName = getQos.getData().getClientProperty("__sessionName", (String)null);
+            SessionInfo otherSessionInfo = (sessionName == null) ? sessionInfo : getAuthenticate().getSessionInfo(new SessionName(glob, sessionName));
+            //if (sessionName != null) getQos.getData().getClientProperties().remove("__sessionName");
+            String prefix = getQos.getData().getClientProperty("__prefix", (String)null);
+            //if (prefix != null) publishQos.getData().getClientProperties().remove("__prefix");
+            if (log.isLoggable(Level.FINE)) log.fine("Get " + xmlKey.getOid() + " prefix=" + prefix + " on session=" + otherSessionInfo.getSessionName().getRelativeName());
+            ClientProperty[] props = otherSessionInfo.getRemotePropertyArr();
+            GetReturnQosServer retQos = new GetReturnQosServer(glob, null, null);
+            for (int i=0; i<props.length; i++)
+               retQos.getData().getClientProperties().put(props[i].getName(), props[i]);
+            MsgUnit[] msgUnitArr = new MsgUnit[1];
+            GetKey gk = new GetKey(glob, xmlKey.getOid());
+            msgUnitArr[0] = new MsgUnit(gk.getData(), new byte[0], retQos.getData());
+            return msgUnitArr;
+          }
+
          if (xmlKey.isAdministrative()) {
             if (!glob.supportAdministrative())
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_ADMIN_UNAVAILABLE, ME, "Sorry administrative get() is not available, try to configure xmlBlaster.");
@@ -1460,13 +1483,31 @@ public final class RequestBroker extends NotificationBroadcasterSupport
          }
 
          if (msgKeyData.isRemoteProperties()) { // "__sys__remoteProperties"
-            if ("set".equals(msgUnit.getContentStr()))
-               sessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
+            // Create a remote property on connect and delete again on publish:
+            // java javaclients.HelloWorldPublish -oid __sys__remoteProperties
+            // -connect/qos/clientProperty[__remoteProperties] true -connect/qos/clientProperty[myProperty] 1234
+            // -content clear
+            String str = msgUnit.getContentStr().trim();
+            // clear sessionName="" prefix=""
+        	String[] cmdArr = ReplaceVariable.toArray(str, " ");
+        	String command = (cmdArr.length > 0) ? cmdArr[0] : "";
+            String sessionName = publishQos.getData().getClientProperty("__sessionName", (String)null);
+            SessionInfo otherSessionInfo = (sessionName == null) ? sessionInfo : getAuthenticate().getSessionInfo(new SessionName(glob, sessionName));
+            if (sessionName != null) publishQos.getData().getClientProperties().remove("__sessionName");
+            String prefix = publishQos.getData().getClientProperty("__prefix", (String)null);
+            if (prefix != null) publishQos.getData().getClientProperties().remove("__prefix");
+            if (log.isLoggable(Level.FINE)) log.fine("Processing " + msgKeyData.getOid() + " command=" + str + " on session=" + otherSessionInfo.getSessionName().getRelativeName());
+            if ("set".equals(command)) {
+               otherSessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
+            }
+            else if ("clear".equals(command)) {
+               otherSessionInfo.clearRemoteProperties(prefix);
+            }
             else // "merge"
-               sessionInfo.mergeRemoteProperties(publishQos.getData().getClientProperties());
+            	otherSessionInfo.mergeRemoteProperties(publishQos.getData().getClientProperties());
             I_RemotePropertiesListener[] arr = getRemotePropertiesListenerArr();
             for (int i=0; i<arr.length; i++)
-               arr[i].update(sessionInfo, publishQos.getData().getClientProperties());
+               arr[i].update(otherSessionInfo, publishQos.getData().getClientProperties());
             return Constants.RET_OK;
          }
 
