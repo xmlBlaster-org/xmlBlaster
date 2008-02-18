@@ -393,15 +393,15 @@ public final class ConnectQos
    //   return this.securityInterceptor;
    //}
 
-   /**
+   /*
     * Access the security interceptor to encrypt/decrypt.
     * @return I_MsgSecurityInterceptor
     * @deprecated No use for this
-    */
    //public void setSecurityInterceptor(I_MsgSecurityInterceptor securityInterceptor) {
    //   this.securityInterceptor = securityInterceptor;
    //}
-
+   */
+   
    /**
     * Sets a client property (an application specific property) to the
     * given value
