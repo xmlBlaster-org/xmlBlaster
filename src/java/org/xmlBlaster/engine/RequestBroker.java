@@ -808,6 +808,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             //java javaclients.HelloWorldGet -clientProperty[__sessionName] OTHER/1 -oid __sys__remoteProperties
             String sessionName = getQos.getData().getClientProperty("__sessionName", (String)null);
             SessionInfo otherSessionInfo = (sessionName == null) ? sessionInfo : getAuthenticate().getSessionInfo(new SessionName(glob, sessionName));
+            if (otherSessionInfo == null) {
+            	log.warning(xmlKey.getOid() + " failed, sessionName not known: " + sessionName);
+            	return new MsgUnit[0];
+            }
             //if (sessionName != null) getQos.getData().getClientProperties().remove("__sessionName");
             String prefix = getQos.getData().getClientProperty("__prefix", (String)null);
             //if (prefix != null) publishQos.getData().getClientProperties().remove("__prefix");
@@ -1493,6 +1497,10 @@ public final class RequestBroker extends NotificationBroadcasterSupport
         	String command = (cmdArr.length > 0) ? cmdArr[0] : "";
             String sessionName = publishQos.getData().getClientProperty("__sessionName", (String)null);
             SessionInfo otherSessionInfo = (sessionName == null) ? sessionInfo : getAuthenticate().getSessionInfo(new SessionName(glob, sessionName));
+            if (otherSessionInfo == null) {
+            	log.warning(msgKeyData.getOid() + " failed, sessionName not known: " + sessionName);
+            	return Constants.RET_WARN;
+            }
             if (sessionName != null) publishQos.getData().getClientProperties().remove("__sessionName");
             String prefix = publishQos.getData().getClientProperty("__prefix", (String)null);
             if (prefix != null) publishQos.getData().getClientProperties().remove("__prefix");
