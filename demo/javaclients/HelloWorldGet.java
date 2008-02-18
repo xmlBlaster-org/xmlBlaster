@@ -1,6 +1,8 @@
 // xmlBlaster/demo/javaclients/HelloWorldGet.java
 package javaclients;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.FileLocator;
@@ -77,6 +79,9 @@ public class HelloWorldGet
          long queryTimeout = glob.getProperty().get("query.timeout", 0L);
          boolean queryConsumable = glob.getProperty().get("query.consumable", true);
 
+         Map clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
+         Map connectQosClientPropertyMap = glob.getProperty().get("connect/qos/clientProperty", (Map)null);
+
          if (oid.length() < 1 && xpath.length() < 1) {
             log.warning("No -oid or -xpath given, we subscribe to oid='Hello'.");
             oid = "Hello";
@@ -103,6 +108,26 @@ public class HelloWorldGet
          log.info("   -query.timeout      " + queryTimeout);
          log.info("   -query.consumable   " + queryConsumable);
          log.info("   -saveToFile         " + saveToFile);
+         if (clientPropertyMap != null) {
+            Iterator it = clientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               log.info("   -clientProperty["+key+"]   " + clientPropertyMap.get(key).toString());
+            }
+         }
+         else {
+            log.info("   -clientProperty[]   ");
+         }
+         if (connectQosClientPropertyMap != null) {
+            Iterator it = connectQosClientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               log.info("   -connect/qos/clientProperty["+key+"]   " + connectQosClientPropertyMap.get(key).toString());
+            }
+         }
+         else {
+            log.info("   -connect/qos/clientProperty[]   ");
+         }
          log.info("For more info please read:");
          log.info("   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html");
 
@@ -111,6 +136,13 @@ public class HelloWorldGet
          // ConnectQos checks -session.name and -passwd from command line
          log.info("============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
+         if (connectQosClientPropertyMap != null) {
+            Iterator it = connectQosClientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               qos.addClientProperty(key, connectQosClientPropertyMap.get(key).toString());
+            }
+         }
          log.info("ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster
          log.info("Connect success as " + crq.toXml());
@@ -138,6 +170,15 @@ public class HelloWorldGet
             if (filterQuery.length() > 0) {
                AccessFilterQos filter = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
                gq.addAccessFilter(filter);
+            }
+            if (clientPropertyMap != null) {
+               Iterator it = clientPropertyMap.keySet().iterator();
+               while (it.hasNext()) {
+                  String key = (String)it.next();
+                  gq.addClientProperty(key, clientPropertyMap.get(key).toString());
+               }
+               //Example for a typed property:
+               //pq.getData().addClientProperty("ALONG", (new Long(12)));
             }
 
             log.info("GetKey=\n" + gk.toXml());
@@ -210,6 +251,7 @@ public class HelloWorldGet
          System.out.println(glob.usage());
          System.err.println("\nExample:");
          System.err.println("  java javaclients.HelloWorldGet -oid Hello -initialUpdate true\n");
+         System.err.println("  java javaclients.HelloWorldGet  -clientProperty[myString] Hello -clientProperty[correlationId] 100\n");
          System.exit(1);
       }
 
