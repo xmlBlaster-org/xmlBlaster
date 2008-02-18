@@ -1500,6 +1500,12 @@ public final class RequestBroker extends NotificationBroadcasterSupport
             if ("set".equals(command)) {
                otherSessionInfo.setRemoteProperties(publishQos.getData().getClientProperties());
             }
+            else if ("clearLastError".equals(command)) {
+               clearLastError();
+            }
+            else if ("clearLastWarning".equals(command)) {
+               clearLastWarning();
+            }
             else if ("clear".equals(command)) {
                otherSessionInfo.clearRemoteProperties(prefix);
             }
