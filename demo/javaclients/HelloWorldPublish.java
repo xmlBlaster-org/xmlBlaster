@@ -2,40 +2,39 @@
 package javaclients;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.PriorityEnum;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.qos.QosData;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.dispatch.I_PostSendListener;
 
 /**
  * This client connects to xmlBlaster and publishes a configurable amount of messages.
