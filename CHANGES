@@ -4,6 +4,14 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16738 Extended remoteProperty handling from clients (similar to existing jconsole functionality)
+          Create a remote property:
+            java javaclients.HelloWorldPublish -oid __sys__remoteProperties -connect/qos/clientProperty[__remoteProperties] true -connect/qos/clientProperty[myProperty] AAAAAA -session.name OTHER/1
+          Access it:
+            java javaclients.HelloWorldGet -clientProperty[__sessionName] OTHER/1 -oid __sys__remoteProperties
+          Destroy it:
+            java javaclients.HelloWorldPublish -oid __sys__remoteProperties -clientProperty[__sessionName] OTHER/1 -content clear
+
  o #16729 Added database dead lock recovery, on deadlock retry once.
           Added delegate for DB access to retry on dead lock situation (seldom case with SQLServer)
           Globales Setting (xmlBlaster.properties) to have old behaviour:
