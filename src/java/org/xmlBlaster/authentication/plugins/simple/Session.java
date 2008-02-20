@@ -1,5 +1,7 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
+import java.util.Map;
+
 import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.DataHolder;
 import org.xmlBlaster.authentication.plugins.I_Manager;
@@ -7,6 +9,7 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.SessionHolder;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 
@@ -35,18 +38,14 @@ public class Session implements I_Session {
       if (dummyUsr == null) dummyUsr = new Subject(secMgr.getGlobal());
    }
 
-
    /**
-    * Initialize the Session - in this case, it's a login. 
-    * <p/>
-    * @param String A xml-String containing the loginname, password, etc.
-    * @exception XmlBlasterException Thrown (in this case) if the user doesn't
-    *                                exist or the passwd is incorrect.
-    */
-   public String init(String xmlQos_literal) throws XmlBlasterException {
-      return init(new SecurityQos(secMgr.getGlobal(), xmlQos_literal));
+	* @see I_Session#init(ConnectQosServer, Map)
+	*/
+   public ConnectQosServer init(ConnectQosServer connectQos, Map map) throws XmlBlasterException {
+      //this.connectQos = connectQos;
+      return connectQos;
    }
-
+   
    /**
     * Initialize the Session for a login or connect call. 
     * <p/>

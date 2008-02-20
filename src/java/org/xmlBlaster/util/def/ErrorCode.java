@@ -414,6 +414,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_VERSION = new ErrorCode("user.version",
+	         "Your version is outdated, login to xmlBlaster failed.",
+	         new ResourceInfo[] {
+	         }
+	      );
+
    public static final ErrorCode USER_CONFIGURATION_MAXSESSION = new ErrorCode("user.configuration.maxSession",
          "Login to xmlBlaster failed due to maximum sessions of a subject reached.",
          new ResourceInfo[] {

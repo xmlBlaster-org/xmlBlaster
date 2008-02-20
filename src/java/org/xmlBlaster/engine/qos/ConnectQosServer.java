@@ -7,15 +7,14 @@ package org.xmlBlaster.engine.qos;
 
 import java.util.Properties;
 
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
-import org.xmlBlaster.engine.qos.AddressServer;
-import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -31,6 +30,15 @@ public final class ConnectQosServer
 {
    private final ConnectQosData connectQosData;
    private boolean bypassCredentialCheck = false;
+   /**
+    * defaults to false
+    * If true the pubSessionId<0 and pubSessionId>0 can have
+    * different maxSessions and clearSession specified
+    * TODO: make configurable from client side and in xmlBlaster.properties
+    * currently you can only manipulate it using a security plugin
+    * {@link I_Session#init(ConnectQosServer, java.util.Map)}
+    */
+   private boolean sessionLimitsPubSessionIdSpecific;
    private long persistenceUniqueId;
    /** The address information got from the protocol plugin. */
    private AddressServer addressServer;
@@ -133,6 +141,7 @@ public final class ConnectQosServer
     * If clearSessions is true, all old sessions of this user are discarded. 
     */
    public boolean clearSessions() {
+      // public boolean isSessionLimitsPubSessionIdSpecific()
       return this.connectQosData.getSessionQos().clearSessions();
    }
 
@@ -357,6 +366,14 @@ public final class ConnectQosServer
     */
    public String toXml() {
       return this.connectQosData.toXml();
+   }
+
+   public boolean isSessionLimitsPubSessionIdSpecific() {
+	  return sessionLimitsPubSessionIdSpecific;
+   }
+
+   public void setSessionLimitsPubSessionIdSpecific(boolean sessionLimitsPubSessionIdSpecific) {
+	  this.sessionLimitsPubSessionIdSpecific = sessionLimitsPubSessionIdSpecific;
    }
 }
 

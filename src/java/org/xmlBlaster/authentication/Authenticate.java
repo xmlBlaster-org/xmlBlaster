@@ -255,6 +255,7 @@ final public class Authenticate implements I_RunlevelListener
             }
             try {
                // Check password as we can't trust the public session ID
+               connectQos = info.getSecuritySession().init(connectQos, null);
                boolean ok = info.getSecuritySession().verify(connectQos.getSecurityQos());
                if (!ok)
                    throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED,
@@ -313,6 +314,7 @@ final public class Authenticate implements I_RunlevelListener
             throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "There is no security manager configured with the given connect QoS");
          }
          sessionCtx = securityMgr.reserveSession(secretSessionId);  // always creates a new I_Session instance
+         connectQos = sessionCtx.init(connectQos, null);
          if (connectQos.bypassCredentialCheck()) {
             // This happens when a session is auto created by a PtP message
             // Only ConnectQosServer (which is under control of the core) can set this flag
@@ -379,8 +381,8 @@ final public class Authenticate implements I_RunlevelListener
                   subjectInfo.setSubjectQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
             }
             // Check if client does a relogin and wants to destroy old sessions
-            if (connectQos.getSessionQos().clearSessions() == true && subjectInfo.getNumSessions() > 0) {
-               SessionInfo[] sessions = subjectInfo.getSessions();
+            if (connectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
+               SessionInfo[] sessions = subjectInfo.getSessionsToClear(connectQos);
                for (int i=0; i<sessions.length; i++ ) {
                   SessionInfo si = sessions[i];
                   log.warning("Destroying session '" + si.getSecretSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
@@ -518,6 +520,8 @@ final public class Authenticate implements I_RunlevelListener
          resetSessionInfo(sessionInfo, disconnectQos.deleteSubjectQueue(), forceShutdownEvenIfEntriesExist, true);
 
          if (disconnectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
+            //Specific deleting for pubSessionId< or >0 not yet implemented
+            //SessionInfo[] sessions = subjectInfo.getSessionsToClear(connectQos);
             SessionInfo[] sessions = subjectInfo.getSessions();
             for (int i=0; i<sessions.length; i++ ) {
                SessionInfo si = sessions[i];

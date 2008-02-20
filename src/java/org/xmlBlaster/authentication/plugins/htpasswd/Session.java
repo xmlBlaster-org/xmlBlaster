@@ -16,11 +16,13 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.SessionHolder;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -71,8 +73,8 @@ public class Session implements I_Session, I_Subject {
       this.htpasswd = new HtPasswd(this.glob);
    }
 
-   public String init( String securityQos_literal ) throws XmlBlasterException {
-      return init(new SecurityQos(this.glob, securityQos_literal));
+   public ConnectQosServer init(ConnectQosServer connectQos, Map map) throws XmlBlasterException {
+      return connectQos;
    }
 
    /**

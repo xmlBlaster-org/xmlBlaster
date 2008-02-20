@@ -157,7 +157,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       this.sessionInfoProtector = new SessionInfoProtector(this);
 
       //String prefix = glob.getLogPrefix();
-      subjectInfo.checkNumberOfSessions(connectQos.getData());
+      subjectInfo.checkNumberOfSessions(connectQos);
 
       synchronized (SessionInfo.class) {
          instanceId = instanceCounter;

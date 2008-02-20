@@ -8,50 +8,47 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.authentication;
 
 
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.authentication.plugins.I_Subject;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.qos.SessionQos;
-import org.xmlBlaster.util.qos.ConnectQosData;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.engine.cluster.ClusterNode;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.dispatch.DispatchStatistic;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
-import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
-import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
-import org.xmlBlaster.engine.admin.I_AdminSession;
-
-import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.util.error.MsgErrorInfo;
-import org.xmlBlaster.engine.MsgErrorHandler;
-
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Properties;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-//import EDU.oswego.cs.dl.util.concurrent.ReentrantLock;
-import org.xmlBlaster.util.ReentrantLock;
-
-import javax.management.NotificationBroadcasterSupport;
 import javax.management.AttributeChangeNotification;
 import javax.management.MBeanNotificationInfo;
+import javax.management.NotificationBroadcasterSupport;
+
+import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.engine.MsgErrorHandler;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.admin.I_AdminSession;
+import org.xmlBlaster.engine.cluster.ClusterNode;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
+import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.ReentrantLock;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
+import org.xmlBlaster.util.error.I_MsgErrorHandler;
+import org.xmlBlaster.util.error.MsgErrorInfo;
+import org.xmlBlaster.util.qos.SessionQos;
+import org.xmlBlaster.util.qos.address.AddressBase;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 
 /**
@@ -715,7 +712,28 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
          }
       }
       return this.sessionArrCache;
+   }
+   
+   /** @return true it publicSessionId is given by xmlBlaster server (if < 0) */
+   public final int getCountSessionsInternal() {
+	   int count = 0;
+	   SessionInfo[] arr = getSessions();
+	   for (int i=0; i<arr.length; i++) {
+		   if (arr[i].getSessionName().isPubSessionIdInternal())
+			   count++;
+	   }
+	   return count;
+   }
 
+   /** @return true it publicSessionId is given by user/client (if > 0) */
+   public final int getCountSessionsUser() {
+	   int count = 0;
+	   SessionInfo[] arr = getSessions();
+	   for (int i=0; i<arr.length; i++) {
+		   if (arr[i].getSessionName().isPubSessionIdUser())
+			   count++;
+	   }
+	   return count;
    }
 
    /**
@@ -787,14 +805,43 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    /**
     * @exception Throws XmlBlasterException if max. sessions is exhausted
     */
-   public final void checkNumberOfSessions(ConnectQosData qos) throws XmlBlasterException {
-      if (SessionQos.DEFAULT_maxSessions != qos.getSessionQos().getMaxSessions())
-         this.maxSessions = qos.getSessionQos().getMaxSessions();
+   public final void checkNumberOfSessions(ConnectQosServer qos) throws XmlBlasterException {
+      this.maxSessions = qos.getSessionQos().getMaxSessions();
 
-      if (getSessions().length >= this.maxSessions) {
+      int count = getSessions().length;
+      if (qos.isSessionLimitsPubSessionIdSpecific()) {
+    	  count = qos.getSessionName().isPubSessionIdInternal() ? getCountSessionsInternal() : getCountSessionsUser();
+      }
+      if (count >= this.maxSessions) {
          log.warning(ME+": Max sessions = " + this.maxSessions + " for user " + getLoginName() + "@" + qos.getSecurityQos().getClientIp() + " exhausted, login denied.");
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_MAXSESSION, ME, "Max sessions = " + this.maxSessions + " exhausted, login denied.");
       }
+   }
+   
+   /**
+    * Check if client does a re-login and wants to destroy old sessions.
+    * @return never null 
+    */
+   public SessionInfo[] getSessionsToClear(ConnectQosServer q) {
+      if (q.clearSessions() == true && getNumSessions() > 0) {
+         SessionInfo[] arr = getSessions();
+    	 if (q.isSessionLimitsPubSessionIdSpecific()) {
+            // Special case: only destroy pubSessionId<0 if we are also <0 and vice versa
+            boolean isInternal = q.getSessionQos().getSessionName().isPubSessionIdInternal();
+            ArrayList list = new ArrayList(arr.length);
+            for (int i=0; i<arr.length; i++) {
+    		    if (isInternal == arr[i].getSessionName().isPubSessionIdInternal())
+                   list.add(arr[i]);
+            }
+            log.warning("clearSessions for " + list.size() + " isInternal=" + isInternal + " sessions, max=" + getNumSessions() + " reached");
+            return (SessionInfo[])list.toArray(new SessionInfo[list.size()]);
+    	  }
+    	  else {
+              log.warning("clearSessions for " + arr.length + " sessions, max=" + getNumSessions() + " reached");
+    		  return arr;
+          }
+      }
+      return new SessionInfo[0];
    }
 
    /**

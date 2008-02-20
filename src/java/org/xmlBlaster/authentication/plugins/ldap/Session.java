@@ -7,10 +7,13 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.SessionHolder;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
+
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -46,8 +49,12 @@ public class Session implements I_Session, I_Subject {
       ldap = new LdapGateway(this.secMgr.getGlobal(), serverUrl, rootDN, rootPwd, loginFieldName);
    }
 
-   public String init(String xmlQoS_literal) throws XmlBlasterException {
-      return init(new SecurityQos(this.secMgr.getGlobal(), xmlQoS_literal));
+   /**
+	* @see I_Session#init(ConnectQosServer, Map)
+	*/
+   public ConnectQosServer init(ConnectQosServer connectQos, Map map) throws XmlBlasterException {
+      //this.connectQos = connectQos;
+      return connectQos;
    }
 
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {

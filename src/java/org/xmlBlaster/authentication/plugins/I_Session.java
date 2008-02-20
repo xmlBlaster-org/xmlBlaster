@@ -1,5 +1,8 @@
 package org.xmlBlaster.authentication.plugins;
 
+import java.util.Map;
+
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
@@ -8,7 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 public interface I_Session extends I_MsgSecurityInterceptor {
 
-   /**
+   /*
     * Initialize a new session. 
     * <br \>
     * E.g.: An implementation could include authentication etc.
@@ -16,12 +19,22 @@ public interface I_Session extends I_MsgSecurityInterceptor {
     * @param String A qos-literal. The meaning will be defined by the real implementation.
     * @return String Like the securityQos param, but the other direction.
     * @exception XmlBlasterException The initialization failed (key exchange, authentication ... failed)
+    * @deprecated This is never called, now #init(I_SecurityQos) is called
     */
-   public String init(String securityQos) throws XmlBlasterException;
-
+   //public String init(String securityQos) throws XmlBlasterException;
+	
+	/**
+	 * Initialize the session with useful information. 
+	 * <p> 
+	 * Is called before {@link #init(I_SecurityQos)} which does the authentication
+	 * @param connectQos The current login information
+	 * @param map Additional information, is currently null
+	 * @return the connectQos we got, can be manipulated
+	 */
+	public ConnectQosServer init(ConnectQosServer connectQos, Map map) throws XmlBlasterException;
 
    /**
-    * Initialize a new session. 
+    * Initialize a new session and do the credential check. 
     * <br \>
     * E.g.: An implementation could include authentication etc.
     * <p/>
@@ -45,7 +58,7 @@ public interface I_Session extends I_MsgSecurityInterceptor {
     * @return true If the credentials are OK<br />
     *         false If access is denied
     */
-   public boolean verify(I_SecurityQos securityQos);
+   public boolean verify(I_SecurityQos securityQos) throws XmlBlasterException;
 
    /**
     * Get the owner of this session.
