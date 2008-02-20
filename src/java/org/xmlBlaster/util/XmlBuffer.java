@@ -209,5 +209,5 @@ public class XmlBuffer {
                         buf.append(c);
             }
         }
-        }
+    }
 }
