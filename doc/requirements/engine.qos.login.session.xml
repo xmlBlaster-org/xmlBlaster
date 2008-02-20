@@ -46,7 +46,8 @@
       </p>
       <p>
       Interested parties can subscribe on Login/Logout events, to find out if
-      a client arrives or disappears (message oid="__sys__Login" or oid="__sys__Logout").
+      a client arrives or disappears. This needs to be configured
+      using the <a href="admin.events.html" target="others">admin.events plugin</a>.
       </p>
    </description>
 
