@@ -3,6 +3,19 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o #16744 Incompatible change of security plugin I_Session:
+          1) Added method 'public ConnectQosServer init(ConnectQosServer connectQos, Map map)'
+	  You need to add a dummy implementation if you use an own security plugin:
+            public ConnectQosServer init(ConnectQosServer connectQos, Map map) throws XmlBlasterException {
+              return connectQos;
+            }
+          2) Removed unused method public String init(String securityQos_literal)
+	  3) The method public boolean verify(I_SecurityQos securityQos) can now throw an XmlBlasterException
+
+          Session configuration in ConnectQos: maxSessions and clearSessions can now be
+	  controlled in a security plugin to behave for pubSessionId<0 and pubSessionId>0 differently.
+	  Remote configuration with ConnectQos is not yet implemented.
+	  See ConnectQosServer#setSessionLimitsPubSessionIdSpecific(boolean)
 
  o #16738 Extended remoteProperty handling from clients (similar to existing jconsole functionality)
           Create a remote property:
