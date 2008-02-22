@@ -242,6 +242,11 @@ void FileWriterCallback::putAllChunksTogether(std::string &fileName, std::string
                 completeFileName = directory_;
                 add_fn_part(completeFileName, subDir.c_str());
                 add_fn_part(completeFileName, fileName.c_str());
+#               ifdef _WIN32
+                for (int i = 0; i < completeFileName.size() ; i++ ) {
+                  if ( completeFileName[i] == '/' ) completeFileName[i] = '\\';
+                }
+#               endif
                 // check if directories exists, if not create, argument must include the filename
                 create_directorys(completeFileName);
         }
