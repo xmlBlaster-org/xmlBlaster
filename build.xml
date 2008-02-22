@@ -340,6 +340,27 @@ TODO
     <!-- compilerarg value="-Bdynamic"/ --> <!-- is default for CC -->
   </compiler>
 
+  <compiler id="aCC" name="aCC" if="use-aCC"> <!-- aCC: HP ANSI C++ B3910B A.03.77 (HPUX) -->
+      <!-- defined(__hpux__) is always defined -->
+      <!-- defined(__HP_aCC) is predefined for aCC -->
+      <!-- defined(__GNUG__) is defined for g++ -->
+      <compilerarg value="${CFLAGS}" if="CFLAGS" />  <!-- Will be quoted "", which does not allow to specify multiple args! -->
+      <compilerarg value="${CFLAGS2}" if="CFLAGS2" />
+      <compilerarg value="${CFLAGS3}" if="CFLAGS3" />
+  </compiler>
+
+  <!-- 
+    Standard Mac OS X PreProcessor defines:
+          _GLIBCXX_DEBUG=1
+          _GLIBCXX_DEBUG_PEDANTIC=1
+
+    plus custom defines:
+          COMPILE_SOCKET_PLUGIN=1
+          __macos__
+          __MacOSX__
+  -->
+
+
    <!-- =================================================================== -->
    <!-- Help on usage                                                       -->
    <!-- =================================================================== -->
