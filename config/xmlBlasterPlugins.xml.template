@@ -334,6 +334,18 @@
       </attribute>
    </plugin>
 
+   <!-- Get event when a clients susbcribe/unSubscribe on all topics, send to topic '__sys__Subscribe' -->
+   <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html -->
+   <plugin create='false' id='subscriptionSpecificEvents' className='org.xmlBlaster.engine.EventPlugin'>
+      <action do='LOAD' onStartupRunlevel='8' sequence='4'/>
+      <action do='STOP' onShutdownRunlevel='7' sequence='4'/>
+      <attribute id='eventTypes'>topic/*/event/subscribe,topic/*/event/unSubscribe</attribute>
+      <attribute id='destination.publish'>
+         "publish.key=<key oid='__sys__Subscribe'><__sys__internal/></key>",
+         "publish.qos=<qos><expiration lifeTime='0'/><topic destroyDelay='30000'><persistence relating='msgUnitStore' type='RAM'/><queue relating='history' type='RAM'/></topic></qos>"
+      </attribute>
+   </plugin>
+
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html -->
    <plugin create='false' id='StartupTasks' className='org.xmlBlaster.engine.StartupTasks'>
       <action do='LOAD' onStartupRunlevel='6' sequence='5'
