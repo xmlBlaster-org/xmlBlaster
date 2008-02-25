@@ -198,21 +198,25 @@ namespace org.xmlBlaster.util {
       public static void GetInfoProperties(Hashtable info) {
          if (info == null) return;
          info[CLIENTPROPERTY_REMOTEPROPERTIES] = "true";
-         info["version.OS"] = System.Environment.OSVersion.ToString();
-         info["version.net"] = System.Environment.Version.ToString();
+         info["version.OS"] = System.Environment.OSVersion.ToString(); // "Microsoft Windows CE 5.2.1238", "Microsoft Windows CE 5.1.195"
+         info["version.net"] = System.Environment.Version.ToString(); // "2.0.7045.0", "2.0.6129.0"
+         info["location"] = CultureInfo.CurrentCulture.ToString(); //"", "de-DE"
+         // screenSize "240x320", "240x240"
          try {
             //info["version.xmlBlasterC#"] = xb.GetVersion();
-            info["info.OEM"] = GetOemInfo();
+            info["info.OEM"] = GetOemInfo();  // "HERM200", "hp IPAQ hw6910"
             //info["logical.drive"] = Info.GetLogicalDrives();
             //info["machine.name"] = Info.MachineName;
-            info["platform.name"] = GetPlatformName();
+            info["platform.name"] = GetPlatformName(); // "PocketPC", "PocketPC"
          }
          catch (Exception) {
          }
       }
 
 #if (WINCE || Smartphone || PocketPC || WindowsCE || CF1)
-//#if XMLBLASTER_WINCE (was not activated, why? see PInvoke.cs)
+
+      
+      //#if XMLBLASTER_WINCE (was not activated, why? see PInvoke.cs)
       struct SYSTEMTIME {
           public void LoadDateTime(DateTime dateTime) {
               this.Year = (UInt16)dateTime.Year;
