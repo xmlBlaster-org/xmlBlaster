@@ -381,15 +381,17 @@ final public class Authenticate implements I_RunlevelListener
                   subjectInfo.setSubjectQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
             }
             // Check if client does a relogin and wants to destroy old sessions
-            if (connectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
+            if (connectQos.clearSessions() == true) {
                SessionInfo[] sessions = subjectInfo.getSessionsToClear(connectQos);
-               for (int i=0; i<sessions.length; i++ ) {
-                  SessionInfo si = sessions[i];
-                  log.warning("Destroying session '" + si.getSecretSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
-                  disconnect(si.getSecretSessionId(), (String)null);
+               if (sessions.length > 0) {
+	               for (int i=0; i<sessions.length; i++ ) {
+	                  SessionInfo si = sessions[i];
+	                  log.warning("Destroying session '" + si.getSecretSessionId() + "' of user '" + subjectInfo.getSubjectName() + "' as requested by client");
+	                  disconnect(si.getSecretSessionId(), (String)null);
+	               }
+	               // will create a new SubjectInfo instance (which should be OK)
+	               return connect(connectQos, secretSessionId);
                }
-               // will create a new SubjectInfo instance (which should be OK)
-               return connect(connectQos, secretSessionId);
             }
 
             if (log.isLoggable(Level.FINE)) log.fine("Creating sessionInfo for " + subjectInfo.getId());
