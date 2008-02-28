@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -438,6 +439,52 @@ public class AjaxServlet extends HttpServlet {
 		doGet(req, res);
 	}
 
+	public String getInfo(HttpServletRequest req) {
+		return getInfo(req, false, false);
+	} 
+
+	public String getInfo(HttpServletRequest req, boolean more, boolean all) {
+		StringBuffer buf = new StringBuffer(128);
+		buf.append("AjaxServlet.doGet(");
+		buf.append(req.getRemoteAddr());
+		
+		if (more) {
+			//req.getHeader("user-agent")
+			buf.append(", ").append("").append(req.getHeader("User-Agent"));
+			buf.append(", ").append("len=").append(req.getContentLength());
+			buf.append(", ").append("charset=").append(req.getCharacterEncoding());
+		}
+		
+		if (all) {
+			Enumeration en = req.getHeaderNames();
+			buf.append(", HEADER:");
+			while (en.hasMoreElements()) {
+				String key = (String)en.nextElement();
+				buf.append(", ").append(key).append("=");
+				buf.append(req.getHeader(key));
+			}
+			
+			en = req.getAttributeNames();
+			buf.append(", ATTR:");
+			while (en.hasMoreElements()) {
+				String key = (String)en.nextElement();
+				buf.append(", ").append(key).append("=");
+				buf.append(req.getAttribute(key));
+			}
+			
+			Cookie [] cookies = req.getCookies();
+			buf.append(", COOKIES:");
+			if (cookies != null) {
+				for (int i=0; i<cookies.length; i++)
+					buf.append(", ").append(cookies[i].getName()).append("=").append(cookies[i].getValue());
+			}	
+			
+			buf.append(", ").append("uri=").append(req.getRequestURI()); 
+		}
+		buf.append("): ");
+		return buf.toString();
+	}
+
 	/**
 	 * <pre>
 	 * ServletSessionTimeout according to specification:
@@ -465,18 +512,25 @@ public class AjaxServlet extends HttpServlet {
 	 */
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException,
 			IOException {
-		String host = req.getRemoteAddr();
-		String ME = "AjaxServlet.doGet(" + host + "): ";
+
+		String actionType = (String) req.getParameter("ActionType");
+		if (actionType == null) {
+			log(getInfo(req, true, true) + "Missing ActionType, ignoring request");
+			return;
+		}
+		
+		//String host = req.getRemoteAddr();
+		//String ME = "AjaxServlet.doGet(" + host + "): ";
 		//log.info("ENTERING DOGET ....");
 		boolean forceLoad = req.getParameter("forceLoad") != null;
 		if (forceLoad)
-			log(ME + "forceLoad=" + forceLoad);
+			log(getInfo(req) + "forceLoad=" + forceLoad);
 		boolean newBrowser = false;
 		if (req.getSession(false) == null) {
 			HttpSession session = req.getSession(true);
 			session.setMaxInactiveInterval(this.maxInactiveInterval);
 			newBrowser = true;
-			log(ME + "new browser arrived, charset=" + req.getCharacterEncoding());
+			log(getInfo(req, true, false) + "New browser arrived");
 		}
 
 		// set header field first
@@ -487,12 +541,6 @@ public class AjaxServlet extends HttpServlet {
 
 		try {
 			BlasterInstance blasterInstance = getBlasterInstance(req);
-
-			String actionType = (String) req.getParameter("ActionType");
-			if (actionType == null) {
-				log("Missing ActionType, ignoring request");
-				return;
-			}
 
 			// TODO: handle logout script to also destroy the session entry
 
@@ -551,14 +599,14 @@ public class AjaxServlet extends HttpServlet {
 							+ "</p>" + "  <p k='data'>" + data + "</p>" + " </s>" + "</sc>";
 				}
 				MsgUnit msgUnit = new MsgUnit("<key oid='" + topicId + "'/>", content, qos);
-				log.info(ME + "Sending request to " + topicId + ": " + content);
+				log.info(getInfo(req) + "Sending request to " + topicId + ": " + content);
 				MsgUnit[] msgUnitArr = blasterInstance.getXmlBlasterAccess().request(msgUnit,
 						timeout, maxEntries);
 				if (msgUnitArr.length > 0) {
 					String contentMime = msgUnitArr[0].getQosData().getClientProperty(
 							"contentMime", "image/jpeg");
 					res.setContentType(contentMime);
-					log.info(ME + "Returning request/reply image '" + contentMime + "' length="
+					log.info(getInfo(req) + "Returning request/reply image '" + contentMime + "' length="
 							+ msgUnitArr[0].getContent().length);
 					out = null;
 					ServletOutputStream binOut = res.getOutputStream();
@@ -594,12 +642,12 @@ public class AjaxServlet extends HttpServlet {
 							String tmp = blasterInstance.getStartupPos();
 							if (tmp.length() > 0) {
 								out.write(tmp);
-								log(ME + tmp);
+								log(getInfo(req) + tmp);
 							}
 						}
 					}
 				} else
-					log(ME + " Sending " + count + " received update messages to browser");
+					log(getInfo(req) + " Sending " + count + " received update messages to browser");
 				return;
 			}
 
@@ -607,7 +655,7 @@ public class AjaxServlet extends HttpServlet {
 				blasterInstance.plainGet(req, res, out);
 			}
 
-			// log(ME+"Ignoring identical");
+			// log(getInfo(req)+"Ignoring identical");
 		} catch (XmlBlasterException e) {
 			log.warning("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
 					+ e.toString());
