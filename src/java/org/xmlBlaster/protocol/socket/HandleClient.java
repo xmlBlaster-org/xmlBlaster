@@ -240,7 +240,12 @@ public class HandleClient extends SocketExecutor implements Runnable
 
                conQos.setAddressServer(this.driver.getAddressServer());
                setLoginName(conQos.getSessionName().getRelativeName());
-               Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
+               if (this.callCoreInSeparateThread) {
+                  Thread.currentThread().setName("XmlBlaster.HandleClient");
+               }
+               else {
+                  Thread.currentThread().setName("XmlBlaster.socket"+ (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
+               }
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
 
 
