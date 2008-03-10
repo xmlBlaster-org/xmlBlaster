@@ -139,7 +139,12 @@ public final class DispatchWorker implements Runnable
          // if (entriesWithNoDistributor.size() > 0) dispatchManager.handleWorkerException(entriesWithNoDistributor, throwable);
       }
       finally {
-         this.dispatchManager.setDispatchWorkerIsActive(false);
+         try {
+            this.dispatchManager.setDispatchWorkerIsActive(false);
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+         }
          entryList = null;
          shutdown();
       }
