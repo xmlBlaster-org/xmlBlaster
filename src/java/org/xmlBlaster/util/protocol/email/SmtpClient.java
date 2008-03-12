@@ -950,6 +950,33 @@ Some body text
    public int getSmtpConnectionTimeout() {
       return smtpConnectionTimeout;
    }
+
+   /**
+    * @return the asyncSendQueueSizeMax
+    */
+   public int getAsyncSendQueueSizeMax() {
+      return this.asyncSendQueueSizeMax;
+   }
+
+   // Not yet supported to change dynamically
+   //public void setAsyncSendQueueSizeMax(int asyncSendQueueSizeMax) {
+   //   this.asyncSendQueueSizeMax = asyncSendQueueSizeMax;
+   //}
+
+   /**
+    * @return the asyncSendQueueBlockOnOverflow
+    */
+   public boolean isAsyncSendQueueBlockOnOverflow() {
+      return this.asyncSendQueueBlockOnOverflow;
+   }
+
+   /**
+    * @param asyncSendQueueBlockOnOverflow the asyncSendQueueBlockOnOverflow to set
+    */
+   public void setAsyncSendQueueBlockOnOverflow(
+         boolean asyncSendQueueBlockOnOverflow) {
+      this.asyncSendQueueBlockOnOverflow = asyncSendQueueBlockOnOverflow;
+   }
 	
    //I don't think i can change this on an established connection
    //public void setSmtpConnectionTimeout(int smtpConnectionTimeout) {

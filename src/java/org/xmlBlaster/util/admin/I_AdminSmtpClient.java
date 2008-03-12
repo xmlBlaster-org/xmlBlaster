@@ -108,4 +108,19 @@ public interface I_AdminSmtpClient extends I_AdminUsage {
     * Socket connection timeout value in milliseconds. Default is infinite timeout.
     */
    public int getSmtpConnectionTimeout();
+   
+   public int getAsyncSendQueueSizeMax();
+
+   //Dynamic change is not supported
+   //public void setAsyncSendQueueSizeMax(int asyncSendQueueSizeMax);
+
+   /**
+    * @return the asyncSendQueueBlockOnOverflow
+    */
+   public boolean isAsyncSendQueueBlockOnOverflow();
+
+   /**
+    * @param asyncSendQueueBlockOnOverflow the asyncSendQueueBlockOnOverflow to set
+    */
+   public void setAsyncSendQueueBlockOnOverflow(boolean asyncSendQueueBlockOnOverflow);
 }
