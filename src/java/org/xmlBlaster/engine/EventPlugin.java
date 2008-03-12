@@ -218,11 +218,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
     * Helper class to send emails
     */
    class SmtpDestinationHelper {
-      SmtpClient smtpClient;
+      private SmtpClient smtpClient;
 
       String to, from, subjectTemplate, cc, bcc, contentTemplate, contentSeparator;
 
       long collectIntervall = Constants.DAY_IN_MILLIS / 2;
+      
+      private boolean sendAsync = true;
+      
+      //private boolean blockOnOverflow = false;
 
       public SmtpDestinationHelper(SmtpClient smtpClient, String destination)
             throws XmlBlasterException {
@@ -266,6 +270,16 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.bcc != null && this.bcc.trim().length() > 0)
             verifyInternetAddress(this.bcc);
 
+         if (map.containsKey("mail.sendAsync")) {
+            String tmp = (String) map.get("mail.sendAsync");
+            this.sendAsync = Boolean.valueOf(tmp.trim()).booleanValue();
+         }
+
+         //if (map.containsKey("mail.blockOnOverflow")) {
+         //   String tmp = (String) map.get("mail.blockOnOverflow");
+         //   this.blockOnOverflow = Boolean.valueOf(tmp.trim()).booleanValue();
+         //}
+
          if (map.containsKey("mail.collectMillis")) {
             String tmp = (String) map.get("mail.collectMillis");
             this.collectIntervall = Long.valueOf(tmp.trim()).longValue();
@@ -278,6 +292,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                "", "");
          emailData.setCc(this.cc);
          emailData.setBcc(this.bcc);
+         emailData.setSendAsync(this.sendAsync);
          // emailData.setExpiryTime(expiryTimestamp);
          // emailData.addAttachment(new AttachmentHolder(payloadFileName,
          // payloadMimetype, payload));

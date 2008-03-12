@@ -39,6 +39,9 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginInfo;
 
+import edu.emory.mathcs.backport.java.util.concurrent.ArrayBlockingQueue;
+import edu.emory.mathcs.backport.java.util.concurrent.BlockingQueue;
+
 /**
  * This class sends outgoing emails.
  * <p>
@@ -128,6 +131,42 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
    private Object mbeanHandle;
 
    public static final String OBJECTENTRY_KEY = SmtpClient.class.getName();
+   
+   private AsyncSender asyncSender;
+   private int asyncSendQueueSizeMax = 100;
+   private boolean asyncSendQueueBlockOnOverflow = false;
+   private BlockingQueue asyncSendQueue;
+   
+   /**
+    * Consumer pattern.
+    * The mail can be send asynchronously to decouple
+    * the sending thread from a blocking smtp server
+    * @author marcel
+    */
+   class AsyncSender implements Runnable {
+      private final SmtpClient smtpClient;
+      private final BlockingQueue queue;
+
+      AsyncSender(SmtpClient smtpClient, BlockingQueue q) {
+         this.smtpClient = smtpClient;
+         this.queue = q;
+      }
+
+      public void run() {
+         while (true) {
+            EmailData emailData = null;
+            try {
+               emailData = (EmailData)queue.take();
+               this.smtpClient.sendEmailSync(emailData);
+            } catch (XmlBlasterException ex) {
+               String dump = (emailData == null) ? "" : emailData.toXml(true);
+               log.severe("Sending asynchronously of mail failed:" + ex.toString() + "\n" + dump);
+            } catch (Throwable ex) {
+               ex.printStackTrace();
+            }
+         }
+      }
+   } // Consumer
    
    /**
     * @return Returns the user.
@@ -351,6 +390,20 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       this.session = Session.getDefaultInstance(props, this);
       this.isInitialized = true;
       
+      // Setup asynchronous sending thread for outgoing emails
+      this.asyncSendQueueSizeMax = glob.get("asyncSendQueueSizeMax",
+            this.asyncSendQueueSizeMax, null,
+            pluginConfig);
+      if (this.asyncSendQueueSizeMax > 0) {
+         this.asyncSendQueueBlockOnOverflow = glob.get("asyncSendQueueBlockOnOverflow",
+               this.asyncSendQueueBlockOnOverflow, null,
+               pluginConfig);
+         this.asyncSendQueue = new ArrayBlockingQueue(this.asyncSendQueueSizeMax);
+         this.asyncSender = new AsyncSender(this, this.asyncSendQueue);
+         Thread t = new Thread(this.asyncSender, getType() + "-AsyncSender");
+         t.start();
+      }
+      
       if (this.mbeanHandle == null) {
         // For JMX instanceName may not contain ","
         this.contextNode = new ContextNode(ContextNode.SERVICE_MARKER_TAG,
@@ -360,6 +413,36 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       }
 
       log.info("SMTP client to '" + this.xbUri.getUrlWithoutPassword() + "' is ready");
+   }
+   
+   public void sendEmailAsync(EmailData emailData) throws XmlBlasterException {
+      if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmailAsync(): Missing argument emailData");
+      AsyncSender as = this.asyncSender;
+      BlockingQueue queue = this.asyncSendQueue;
+      if (as == null || queue == null) {
+         throw new XmlBlasterException(glob,
+               ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "SmtpClient",
+               "Please configure asyncSendQueueSizeMax > 0 for sending emails asynchronously, the mail is lost: " + emailData.toXml(true));
+      }
+      try {
+         if (this.asyncSendQueueBlockOnOverflow)
+            queue.put(emailData);
+         else {
+            boolean added = queue.offer(emailData);
+            if (!added) {
+               throw new XmlBlasterException(glob,
+                     ErrorCode.RESOURCE_CONFIGURATION_CONNECT, "SmtpClient",
+                     "Can't send email, queueu overflow of asyncSendQueueSizeMax="+this.asyncSendQueueSizeMax+", there may be a problem with your Smtp server, the mail is lost: " + emailData.toXml(true));
+            }
+         }
+      } catch (XmlBlasterException ex) {
+         throw ex;
+      } catch (Throwable ex) {
+         ex.printStackTrace();
+         throw new XmlBlasterException(glob,
+               ErrorCode.INTERNAL_CONNECTIONFAILURE, "SmtpClient",
+               "Can't send email asynchronously, there may be a problem with your Smtp server, the mail is lost: " + emailData.toXml(true), ex);
+      }
    }
 
    /**
@@ -525,12 +608,22 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
       return "Send email from '" + from + "' to '" + to + "'";
    }
 
+   public void sendEmail(EmailData emailData) throws XmlBlasterException {
+      if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmail(): Missing argument emailData");
+      if (emailData.isSendAsync()) {
+         sendEmailAsync(emailData);
+      }
+      else {
+         sendEmailSync(emailData);
+      }
+   }
+
    /**
     * Send a mail.
     * @param emailData
     *        Container holding the message to send
     */
-   public void sendEmail(EmailData emailData) throws XmlBlasterException {
+   public void sendEmailSync(EmailData emailData) throws XmlBlasterException {
       if (emailData == null) throw new IllegalArgumentException("SmtpClient.sendEmail(): Missing argument emailData");
       try {
          MimeMessage message = new MimeMessage(getSession());

@@ -115,6 +115,25 @@ public class EmailData {
 
    /** Holding the relevant email meta info like a request identifier */
    public static final String MESSAGEID_EXTENSION = ".mid";
+   
+   public boolean sendAsync;
+
+   /**
+    * @return the sendAsync
+    */
+   public boolean isSendAsync() {
+      return this.sendAsync;
+   }
+
+   /**
+    * Set to true if you want to send the mail over a producer/consumer pattern
+    * from another thread.
+    * This is helpful to protect against blocking SMTP servers.
+    * @param sendAsync the sendAsync to set, defaults to false
+    */
+   public void setSendAsync(boolean sendAsync) {
+      this.sendAsync = sendAsync;
+   }
 
    /**
     * Create a simple message.
