@@ -154,6 +154,14 @@
     activate the <code>SmtpClient</code> plugin in <code>xmlBlasterPlugins.xml</code>.
     If you have a reasonable email provider you can configure it to 
     forward the mail as an SMS (my provider offers this feature).
+    <br />
+    The email is send asynchronously by another thread decoupled over a RAM based
+    producer/consumer queue. This is to protect the xmlBlaster core against
+    blocking or bad performing smtp servers.
+    You can change this to synchronous mail delivery with <code>mail.sendAsync=false</code>.
+    The configuration of the queue size is done as described in the requirement
+    <a href="protocol.email.html" target="others">protocol.email</a> with the <code>asyncSendQueueSizeMax</code>
+    parameter.
     </td>
  </tr>
  <tr>
@@ -632,6 +640,21 @@ java javaclients.simplereader.SimpleReaderGui -xpath "//key" -session.name sniff
             <td>43200000</td>
             <td>If given > 0 the mails after the first one will be collected the given milli seconds.
             It defaults to 12 hours.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>mail.sendAsync</td>
+            <td>true</td>
+            <td>
+             The email is send asynchronously by another thread decoupled over a RAM based
+             producer/consumer queue. This is to protect the xmlBlaster core against
+             blocking or bad performing smtp servers.
+             You can change this to synchronous mail delivery with <code>mail.sendAsync=false</code>.
+             The configuration of the queue size and overflow behaviour is done as described in the requirement
+             <a href="protocol.email.html" target="others">protocol.email</a> with the <code>asyncSendQueueSizeMax</code>
+             parameter.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>

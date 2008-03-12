@@ -3,6 +3,13 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o #16757 The EventPlugin now sends emails asynchronously from a separate thread decoupled
+          over a RAM based producer/consumer queue.
+	  This is to protect the xmlBlaster core against blocking or slow SMTP agents.
+	  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html (mail.sendAsync)
+	  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html (asyncSendQueueSizeMax)
+
  o #16744 Incompatible change of security plugin I_Session:
           1) Added method 'public ConnectQosServer init(ConnectQosServer connectQos, Map map)'
 	  You need to add a dummy implementation if you use an own security plugin:

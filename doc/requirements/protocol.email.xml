@@ -633,6 +633,22 @@ Click <a href="http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
+            <td>asyncSendQueueSizeMax</td>
+            <td>100</td>
+            <td>Mails can be marked to be send asynchronously from a separate thread decoupled with
+            a producer/consumer queue.
+            This decouples the sending code from the delivery to the SMTP server.<br />
+            If the SMTP server hangs or blocks the sending code can continue. Note that
+            the queue is RAM based only.<br />
+            If the queue overflows the email-message is dumped to the log file and is lost.
+            This behaviour on overflow can be changed by setting <i>asyncSendQueueBlockOnOverflow=true</i>.
+            <br />An email-message must be marked to be send asynchronously by
+            setting <code>emailData.setSendAsync(true)</code>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>mail.debug</td>
             <td>false</td>
             <td>Switches on/off the javamail lowlevel debugging.
