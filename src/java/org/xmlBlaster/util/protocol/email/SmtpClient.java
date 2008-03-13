@@ -159,8 +159,14 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
                emailData = (EmailData)queue.take();
                this.smtpClient.sendEmailSync(emailData);
             } catch (XmlBlasterException ex) {
-               String dump = (emailData == null) ? "" : emailData.toXml(true);
-               log.severe("Sending asynchronously of mail failed:" + ex.toString() + "\n" + dump);
+               // no log.severe or log.warning because of recursion
+               if (log.isLoggable(Level.INFO))
+                  log.info("Sending asynchronously of mail failed from=" + emailData.getFrom() + " to="
+                     + emailData.getRecipientsList() + ": " + ex.toString());
+               if (log.isLoggable(Level.FINE)) {
+                  String dump = (emailData == null) ? "" : emailData.toXml(true);
+                  log.info("Sending asynchronously of mail failed:" + ex.toString() + "\n" + dump);
+               }
             } catch (Throwable ex) {
                ex.printStackTrace();
             }
@@ -713,9 +719,11 @@ public class SmtpClient extends Authenticator implements I_Plugin, SmtpClientMBe
             message.setHeader(EmailData.EXPIRES_HEADER_RFC2156, MailUtil.dateTime(emailData.getExpiryTime()));
          }
 
-         //log.severe("DEBUG ONLY: Trying to send email" + emailData.toXml(true));
+         if (log.isLoggable(Level.FINE))
+            log.fine("Trying send email from=" + emailData.getFrom() + " to="
+               + emailData.getRecipientsList());
+         //if (log.isLoggable(Level.FINEST)) log.finest("Trying to send email" + emailData.toXml(true));
          send(message);
-         //log.severe("DEBUG ONLY: Successful send email" + emailData.toXml(true));
          if (log.isLoggable(Level.FINE))
             log.fine("Successful send email from=" + emailData.getFrom() + " to="
                   + emailData.getRecipientsList());
