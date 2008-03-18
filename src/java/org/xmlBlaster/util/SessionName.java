@@ -70,6 +70,13 @@ public final class SessionName implements java.io.Serializable
       this(glob, (NodeId)null, name);
    }
 
+   public SessionName(Global glob, NodeId nodeId, String subjectId, long pubSessionId) {
+	   this.glob = glob;
+	   this.nodeId = nodeId;
+	   this.subjectId = subjectId;
+	   this.pubSessionId = pubSessionId;
+   }
+
    /**
     * @param nodeId if not null it has precedence to the nodeId which is probably found in name
     * @param name Examples:
