@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o #16763 Force AjaxServlet to UTF-8 processing to support e.g. Umlauts
+
+ o #16762 Servlet 2.4 API copied from apache-tomcat-5.5.23/common/lib" servlet.jar
 
  o #16757 The EventPlugin now sends emails asynchronously from a separate thread decoupled
           over a RAM based producer/consumer queue.
