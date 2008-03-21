@@ -512,7 +512,7 @@ public class AjaxServlet extends HttpServlet {
 	 */
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException,
 			IOException {
-
+		req.setCharacterEncoding("UTF-8");
 		String actionType = (String) req.getParameter("ActionType");
 		if (actionType == null) {
 			log(getInfo(req, true, true) + "Missing ActionType, ignoring request");
