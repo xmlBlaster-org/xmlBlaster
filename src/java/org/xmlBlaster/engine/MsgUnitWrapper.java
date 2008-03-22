@@ -14,6 +14,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
@@ -229,8 +230,14 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     */
    public void incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
       if (isSwapped()) {
-         if (log.isLoggable(Level.FINE)) 
-            log.fine("incrementReferenceCounter: unexpected swapped message");
+         if (count > 0) {
+            log.severe("incrementReferenceCounter: unexpected swapped message when incrementing the counter");
+            Global.getStackTraceAsString(null);
+         }
+         else {
+            if (log.isLoggable(Level.FINE)) 
+               log.fine("incrementReferenceCounter: unexpected swapped message");
+         }
          return;
       }
       boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
