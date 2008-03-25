@@ -354,8 +354,16 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       CryptDataHolder ctyptDataHolder = new CryptDataHolder(action, msgUnitRaw, null);
       msgUnitRaw = sessionSecCtx.importMessage(ctyptDataHolder);
 
-      // Parse XML key and XML QoS
-      MsgUnit msgUnit = new MsgUnit(glob, msgUnitRaw.getKey(), msgUnitRaw.getContent(), msgUnitRaw.getQos(), action);
+      MsgUnit msgUnit = null;
+      try {
+    	  // Parse XML key and XML QoS
+    	  msgUnit = new MsgUnit(glob, msgUnitRaw.getKey(), msgUnitRaw.getContent(), msgUnitRaw.getQos(), action);
+      }
+      catch (XmlBlasterException e) {
+    	  // to log SaxParseException, all other exceptions are logged by AvailabilityChecker
+    	  if (!e.isInternal()) log.warning(e.getMessage() + ":\n" + msgUnitRaw.getKey() + "\n" + msgUnitRaw.getQos());
+    	  throw e;
+      }
       QosData qosData = msgUnit.getQosData();
 
       // Currently we have misused used the clientProperty to transport this information

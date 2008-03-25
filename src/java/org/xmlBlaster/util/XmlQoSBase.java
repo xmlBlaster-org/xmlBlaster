@@ -29,7 +29,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 public class XmlQoSBase extends SaxHandlerBase
 {
    private static Logger log = Logger.getLogger(XmlQoSBase.class.getName());
-   protected boolean inQos = false;     // parsing inside <qos> ? </qos>
+   protected boolean inQos;     // parsing inside <qos> ? </qos>
    protected ClientProperty clientProperty;
    protected final Set clientPropertyTagNames = new TreeSet();
    private int inClientProperty;
@@ -49,6 +49,15 @@ public class XmlQoSBase extends SaxHandlerBase
       super(glob);
       this.clientPropertyTagNames.add(ClientProperty.CLIENTPROPERTY_TAG); // "clientProperty"
       this.clientPropertyTagNames.add(ClientProperty.ATTRIBUTE_TAG); // "attribute"
+   }
+   
+   protected void init(String xmlLiteral) throws XmlBlasterException
+   {
+	  this.inQos = false;     // parsing inside <qos> ? </qos>
+	  this.clientProperty = null;
+	  this.inClientProperty = 0;
+	  if (this.cpCharacter != null) this.cpCharacter.setLength(0);
+      super.init(xmlLiteral);
    }
 
    /**
