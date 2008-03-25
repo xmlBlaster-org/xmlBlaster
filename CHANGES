@@ -3,6 +3,10 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o #16766 Bugfix: A SaxParseException of a message QoS left the MsgQosSaxParseFactory in inconstent state
+          and operation of xmlBlaster is broken as follow up parses can swallow QoS tags like <destination>
+
  o #16763 Force AjaxServlet to UTF-8 processing to support e.g. Umlauts
 
  o #16762 Servlet 2.4 API copied from apache-tomcat-5.5.23/common/lib" servlet.jar
