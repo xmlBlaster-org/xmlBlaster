@@ -1876,10 +1876,12 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       long numHistory = 0L;
       ArrayList notifyList = null;
 
-      if (this.dyingInProgress || isDead()) {
-         return null;
+      synchronized (this) {
+         if (this.dyingInProgress || isDead()) {
+            return null;
+         }
+         this.dyingInProgress = true;
       }
-      this.dyingInProgress = true;
 
       this.serverScope.unregisterMBean(this.mbeanHandle);
 
