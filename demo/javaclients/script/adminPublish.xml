@@ -7,19 +7,31 @@
 <xmlBlaster>
 
   <connect/>
+
+  <input message="Hit a key to pubish with RAM history queue # "/>
   <publish>
-     <key oid="Hello"><airport /></key><content></content>
+     <key oid="Hello"/>
+     <content>Hi</content>
+     <qos>
+        <topic>
+          <queue relating='history' type='RAM' version='1.0'/>
+        </topic>
+     </qos>
+  </publish>
+
+  <input message="Hit a key to publish administrative with CACHE history queue # "/>
+  <publish>
+     <key oid="Hello"><airport /></key>
      <qos>
         <priority>9</priority>
         <administrative/>
         <topic readonly='false' destroyDelay='-1' createDomEntry='true'>
-          <persistence relating='msgUnitStore' type='CACHE' version='1.0'
-                 maxEntriesCache='40' maxEntries='400' maxBytesCache='4000' maxBytes='40000' onOverflow='deadMessage'/>
           <queue relating='history' type='CACHE' version='1.0'
-                 maxEntriesCache='1000' maxEntries='1000' maxBytesCache='100000' maxBytes='100000' onOverflow='exception'/>
+                 maxEntriesCache='1009' maxEntries='1009' maxBytesCache='100000' maxBytes='100000'/>
         </topic>
      </qos>
   </publish>
+
   <disconnect />
 </xmlBlaster>
 
