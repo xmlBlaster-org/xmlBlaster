@@ -916,11 +916,16 @@ xsi:noNamespaceSchemaLocation='xmlBlasterPublish.xsd'
    public static void main(String[] args) {
       try {
          Global glob = new Global();
-         String[] tmp = new String[args.length-2];
+         if (args.length == 0) {
+            System.out.println("Usage: java org.xmlBlaster.client.script.XmlScriptInterpreter in.xml");
+            System.exit(1);
+         }
+         String[] tmp = (args.length > 1) ? new String[args.length-2] : new String[args.length-1];
          for (int i=0; i < tmp.length; i++) tmp[i] = args[i+2];
          
          glob.init(tmp);
-         FileOutputStream out = new FileOutputStream(args[1]);
+         //OutputStream out = (args.length > 1) ? new FileOutputStream(args[1]) : System.out;
+         OutputStream out = (args.length > 1) ? new FileOutputStream(args[1]) : new FileOutputStream("out.xml");
          XmlScriptInterpreter interpreter = new XmlScriptClient(glob, out);
          FileReader in = new FileReader(args[0]);
          interpreter.parse(in);
