@@ -1,0 +1,18 @@
+<!--
+   java javaclients.script.XmlScript -requestFile publishOneway.xml
+-->
+
+<xmlBlaster>
+  <connect/>
+  <input message="Press key to subscribe"/>
+  <subscribe><key queryType="XPATH">//airport</key><qos/></subscribe>
+  <input message="Press key to publish three oneway messages"/>
+  <publishOneway>
+    <message><key oid="topic_1"><airport /></key><content><![CDATA[Hi oneway < 1]]></content><qos/></message>
+    <message><key oid="topic_1"><airport /></key><content>Hi oneway &lt; 2</content></message>
+    <message><key oid="topic_1"><airport /></key><content>Hi oneway 3</content><qos><clientProperty name='myId'>Käse</clientProperty></qos></message>
+  </publishOneway>
+  <input message="Press key to disconnect"/>
+  <disconnect />
+</xmlBlaster>
+
