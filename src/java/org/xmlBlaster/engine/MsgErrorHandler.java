@@ -78,108 +78,111 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    public void handleError(I_MsgErrorInfo msgErrorInfo) {
       if (msgErrorInfo == null) return;
 
-      XmlBlasterException xmlBlasterException = msgErrorInfo.getXmlBlasterException();
-      ErrorCode errorCode = xmlBlasterException.getErrorCode();
-      String message = xmlBlasterException.getMessage();
-      MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
-      DispatchManager dispatchManager = (this.sessionInfo == null) ? null : this.sessionInfo.getDispatchManager();
-      I_Queue msgQueue = msgErrorInfo.getQueue();  // is null if entry is not yet in queue
+      String message = "";
+      long size = 0;
+      
+      try {
 
-      if (log.isLoggable(Level.FINER)) log.finer("Error handling started: " + msgErrorInfo.toString());
-
-      if (msgQueueEntries != null && msgQueueEntries.length > 0) {
-         // 1. Generate dead letters from passed messages
-         glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
-
-         if (msgQueue != null) {
-            // Remove the above published dead message from the queue
-            try {
-               if (log.isLoggable(Level.FINE)) log.fine("Removing " + msgQueueEntries.length + " dead messages from queue");
-               long removed = 0L;
-               boolean tmp[] = msgQueue.removeRandom(msgQueueEntries);
-               for (int i=0; i < tmp.length; i++) if (tmp[i]) removed++;
-               if (removed != msgQueueEntries.length) {
-                  log.warning("Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
-               }
-            }
-            catch (XmlBlasterException e) {
-               log.warning("Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
-            }
-         }
-      }
-
-      if (xmlBlasterException.isUser()) {
-         // The update() method from the client has thrown a ErrorCode.USER* error
-         if (log.isLoggable(Level.FINE)) log.fine("Error handlig for exception " + errorCode.toString() + " done");
-         return;
-      }
-
-      // 2. Generate dead letters if there are some entries in the queue
-      long size = (msgQueue == null) ? 0 : msgQueue.getNumOfEntries();
-      if (log.isLoggable(Level.FINE)) log.fine("Flushing " + size + " remaining message from queue");
-      if (size > 0) {
-         try {
-            QueuePropertyBase queueProperty = (QueuePropertyBase)msgQueue.getProperties();
-            if (queueProperty == null || queueProperty.onFailureDeadMessage()) {
-               while (msgQueue.getNumOfEntries() > 0L) {
-                  ArrayList list = msgQueue.peek(-1, MAX_BYTES);
-                  MsgQueueEntry[] msgArr = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
-                  if (msgArr.length > 0) {
-                     glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);
-                  }
-                  if (msgArr.length > 0) {
-                     msgQueue.removeRandom(msgArr);
+         XmlBlasterException xmlBlasterException = msgErrorInfo.getXmlBlasterException();
+         ErrorCode errorCode = xmlBlasterException.getErrorCode();
+         message = xmlBlasterException.getMessage();
+         MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
+         DispatchManager dispatchManager = (this.sessionInfo == null) ? null : this.sessionInfo.getDispatchManager();
+         I_Queue msgQueue = msgErrorInfo.getQueue();  // is null if entry is not yet in queue
+   
+         if (log.isLoggable(Level.FINER)) log.finer("Error handling started: " + msgErrorInfo.toString());
+   
+         if (msgQueueEntries != null && msgQueueEntries.length > 0) {
+            // 1. Generate dead letters from passed messages
+            glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
+   
+            if (msgQueue != null) {
+               // Remove the above published dead message from the queue
+               try {
+                  if (log.isLoggable(Level.FINE)) log.fine("Removing " + msgQueueEntries.length + " dead messages from queue");
+                  long removed = 0L;
+                  boolean tmp[] = msgQueue.removeRandom(msgQueueEntries);
+                  for (int i=0; i < tmp.length; i++) if (tmp[i]) removed++;
+                  if (removed != msgQueueEntries.length) {
+                     log.warning("Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
                   }
                }
-            }
-            else {
-               log.severe("PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADMESSAGE +
-                     "' is implemented, " + msgQueue.getNumOfEntries() + " messages are lost: " + message);
+               catch (XmlBlasterException e) {
+                  log.warning("Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
+               }
             }
          }
-         catch(Throwable e) {
-            e.printStackTrace();
-            log.severe("PANIC: givingUpDelivery failed, " + size +
-                           " messages are lost: " + message + ": " + e.toString());
+   
+         if (xmlBlasterException.isUser()) {
+            // The update() method from the client has thrown a ErrorCode.USER* error
+            if (log.isLoggable(Level.FINE)) log.fine("Error handlig for exception " + errorCode.toString() + " done");
+            return;
          }
-      }
-
-      // We do a auto logout if the callback is down
-      if (dispatchManager == null || dispatchManager.isDead()) {
-         if (log.isLoggable(Level.FINE)) log.fine("Doing error handling for dead connection state ...");
-
-         if (dispatchManager!=null) dispatchManager.shutdown();
-
-         // 3. Kill login session
-         if (this.sessionInfo != null && // if callback has been configured (async) 
-             sessionInfo.getConnectQos().getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
-            
+   
+         // 2. Generate dead letters if there are some entries in the queue
+         size = (msgQueue == null) ? 0 : msgQueue.getNumOfEntries();
+         if (log.isLoggable(Level.FINE)) log.fine("Flushing " + size + " remaining message from queue");
+         if (size > 0) {
             try {
-               //if (address == null || address.getOnExhaustKillSession()) {
-                  log.warning("Callback server is lost, killing login session of client " +
-                                ((msgQueue == null) ? "unknown" : msgQueue.getStorageId().toString()) +
-                                ": " + message);
-                  try {
-                     DisconnectQos disconnectQos = new DisconnectQos(glob);
-                     disconnectQos.deleteSubjectQueue(false);
-                     glob.getAuthenticate().disconnect(this.sessionInfo.getAddressServer(), 
-                                         this.sessionInfo.getSecretSessionId(), disconnectQos.toXml());
+               QueuePropertyBase queueProperty = (QueuePropertyBase)msgQueue.getProperties();
+               if (queueProperty == null || queueProperty.onFailureDeadMessage()) {
+                  while (msgQueue.getNumOfEntries() > 0L) {
+                     ArrayList list = msgQueue.peek(-1, MAX_BYTES);
+                     MsgQueueEntry[] msgArr = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
+                     if (msgArr.length > 0) {
+                        glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);
+                     }
+                     if (msgArr.length > 0) {
+                        msgQueue.removeRandom(msgArr);
+                     }
                   }
-                  catch (Throwable e) {
-                     log.severe("PANIC: givingUpDelivery error handling failed, " +
-                                    size + " messages are lost: " + message + ": " + e.toString());
-                  }
-               //}
-               //else {
-               //   log.error(ME, "PANIC: givingUpDelivery error handling failed, '" + address.getOnExhaust() +
-               //       "' is not supported, " + size + " messages are lost: " + message);
-               //}
+               }
+               else {
+                  log.severe("PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADMESSAGE +
+                        "' is implemented, " + msgQueue.getNumOfEntries() + " messages are lost: " + message);
+               }
             }
             catch(Throwable e) {
-               log.severe("PANIC: givingUpDelivery error handling failed, " + size +
+               e.printStackTrace();
+               log.severe("PANIC: givingUpDelivery failed, " + size +
                               " messages are lost: " + message + ": " + e.toString());
             }
          }
+   
+         // We do a auto logout if the callback is down
+         if (dispatchManager == null || dispatchManager.isDead()) {
+            if (log.isLoggable(Level.FINE)) log.fine("Doing error handling for dead connection state ...");
+   
+            if (dispatchManager!=null) dispatchManager.shutdown();
+   
+            // 3. Kill login session
+            if (this.sessionInfo != null && // if callback has been configured (async) 
+                sessionInfo.getConnectQos().getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
+               
+                     log.warning("Callback server is lost, killing login session of client " +
+                                   ((msgQueue == null) ? "unknown" : msgQueue.getStorageId().toString()) +
+                                   ": " + message);
+                     try {
+                        DisconnectQos disconnectQos = new DisconnectQos(glob);
+                        disconnectQos.deleteSubjectQueue(false);
+                        glob.getAuthenticate().disconnect(this.sessionInfo.getAddressServer(), 
+                                            this.sessionInfo.getSecretSessionId(), disconnectQos.toXml());
+                     }
+                     catch (XmlBlasterException e) {
+                        if (e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED))
+                           log.fine("disconnect after error handling handling failed, session is destroyed already: " + e.getMessage());
+                        else 
+                           log.warning("disconnect after error handling handling failed, session is destroyed already: " + e.getMessage());
+                     }
+                     catch (Throwable e) {
+                        log.severe("PANIC: disconnect during error handling failed " + e.toString());
+                     }
+            }
+         }
+      }
+      catch(Throwable e) {
+         e.printStackTrace();
+         log.severe("PANIC: handle error failed, " + size + " messages are lost: " + message);
       }
    }
 
