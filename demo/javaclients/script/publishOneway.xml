@@ -17,7 +17,7 @@
   <publishOneway>
     <message><key oid="topic_1"><airport /></key><content><![CDATA[Hi oneway < 1]]></content><qos/></message>
     <message><key oid="topic_1"><airport /></key><content>Hi oneway &lt; 2</content></message>
-    <message><key oid="topic_1"><airport /></key><content>Hi oneway 3</content><qos><clientProperty name='myId'>Kse</clientProperty></qos></message>
+    <message><key oid="topic_1"><airport /></key><content>Hi oneway 3</content><qos><clientProperty name='myId'>Käse</clientProperty></qos></message>
   </publishOneway>
   <input message="Press key to disconnect"/>
   <disconnect />
