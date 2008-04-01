@@ -1890,7 +1890,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          }
          else {
             if (!isUnconfigured()) {
-               if (isSoftErased()) {
+               if (isUnreferenced() || isSoftErased()) {
                   log.fine(ME+": In " + getStateStr() + " -> DEAD: this.topicEntry == null");
                }
                else {
