@@ -169,7 +169,8 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                                             this.sessionInfo.getSecretSessionId(), disconnectQos.toXml());
                      }
                      catch (XmlBlasterException e) {
-                        if (e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED))
+                        if (e.isErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED) ||
+                              e.isErrorCode(ErrorCode.USER_NOT_CONNECTED))
                            log.fine("disconnect after error handling handling failed, session is destroyed already: " + e.getMessage());
                         else 
                            log.warning("disconnect after error handling handling failed, session is destroyed already: " + e.getMessage());
