@@ -161,7 +161,8 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
             for (int i=0; i<subIds.length; i++) {
                receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subIds[i], null);
             }
-            dm.getQueue().clear();
+            //Can cause deadlock between CacheQueueInterceptor.clear sync and TopicHandler sync (see from toPolling or toAlive below) 
+            //dm.getQueue().clear();
             return false;
          }
          return true;
@@ -199,11 +200,6 @@ public class DropIfNotDeliverable implements I_Plugin, I_AccessFilter, I_Connect
          for (int i=0; i<subIds.length; i++) {
             receiver.unSubscribe(Constants.SUBSCRIPTIONID_URL_PREFIX+subIds[i], null);
          }
-      } catch (Throwable e) {
-         e.printStackTrace();
-      }
-      try {
-         dispatchManager.getQueue().clear();
       } catch (Throwable e) {
          e.printStackTrace();
       }
