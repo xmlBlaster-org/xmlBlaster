@@ -35,7 +35,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    private HandleClient handler;
    private CallbackAddress callbackAddress;
    //private boolean isFirstPing_hack = true;
-   private PluginInfo pluginInfo;
+   private PluginInfo pluginInfo; // remains null as we are loaded dynamically
 
    /**
     * Should not be instantiated by plugin loader.
@@ -204,6 +204,11 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       return this.handler != null && !this.handler.isShutdown();
    }
 
-
+   /**
+    * @return the pluginInfo: Always null as we are loaded dynamically!
+    */
+   public PluginInfo getPluginInfo() {
+      return this.pluginInfo;
+   }
 }
 

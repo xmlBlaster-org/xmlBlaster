@@ -199,14 +199,16 @@ public class HandleClient extends SocketExecutor implements Runnable
       }
       try {
          if (expectingResponse) {
-            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener);
+            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener, getMsgInfoParserClassName());
+            parser.setPluginConfig(callback.getPluginInfo()); // is usually null as it is loaded dynamically
             parser.addMessage(msgArr);
             Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
             if (log.isLoggable(Level.FINE)) log.fine("Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
-            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId, progressListener);
+            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId, progressListener, getMsgInfoParserClassName());
+            parser.setPluginConfig(callback.getPluginInfo());
             parser.addMessage(msgArr);
             requestAndBlockForReply(parser, SocketExecutor.ONEWAY, this.driver.useUdpForOneway());
             return null;
