@@ -1,5 +1,12 @@
 <!--
    java javaclients.script.XmlScript -requestFile publishOneway.xml
+
+  Example with xmlScipt used as socket protocol as well:
+  1. Switch on plugin 'socket_script' in xmlBlasterPlugins.xml
+  2. Start server with lot of logging:
+      java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -logging/org.xmlBlaster.util.protocol.RequestReplyExecutor FINEST -logging/org.xmlBlaster.util.protocol.socket.SocketExecutor FINEST -logging/org.xmlBlaster.util.xbformat.XbfParser FINEST
+  3. Start this script client: 
+      java javaclients.script.XmlScript -protocol socket_script -dispatch/callback/protocol socket_script -dispatch/connection/plugin/socket_script/port 7601 -session.name xmlscript/1 -requestFile publishOneway.xml
 -->
 
 <xmlBlaster>
@@ -10,9 +17,10 @@
   <publishOneway>
     <message><key oid="topic_1"><airport /></key><content><![CDATA[Hi oneway < 1]]></content><qos/></message>
     <message><key oid="topic_1"><airport /></key><content>Hi oneway &lt; 2</content></message>
-    <message><key oid="topic_1"><airport /></key><content>Hi oneway 3</content><qos><clientProperty name='myId'>Käse</clientProperty></qos></message>
+    <message><key oid="topic_1"><airport /></key><content>Hi oneway 3</content><qos><clientProperty name='myId'>Kse</clientProperty></qos></message>
   </publishOneway>
   <input message="Press key to disconnect"/>
   <disconnect />
+  <wait delay="500" />
 </xmlBlaster>
 
