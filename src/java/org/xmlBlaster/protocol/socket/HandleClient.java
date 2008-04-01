@@ -303,7 +303,7 @@ public class HandleClient extends SocketExecutor implements Runnable
             }
          }
          catch (Throwable e2) {
-            log.severe("Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
+            log.warning("Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
             shutdown();
          }
       }
