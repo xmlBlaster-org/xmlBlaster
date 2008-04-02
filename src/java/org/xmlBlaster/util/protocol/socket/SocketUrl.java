@@ -393,9 +393,9 @@ java javaclients.HelloWorldPublish -plugin/socket/SSL true -plugin/socket/keySto
                      log.info("SSL client socket trustStore="+url.getFile().toString());
                      firstTrust = false;
                   }
-                  else {
-                     log.warning("SSL client socket can't find trustStore=" + trustStore + " in xmlBlaster search pathes, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
-                  }
+               }
+               else {
+                  log.warning("SSL client socket can't find trustStore=" + trustStore + " in xmlBlaster search pathes, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL");
                }
             }
 
