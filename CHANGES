@@ -4,6 +4,16 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16783 Bugfix: SOCKET with XmlScript markup (instead of XBF) configures now correctly
+          from xmlBlaster.properties for callbacks and responses
+
+ o #16780 Bugfix: Topic life cycle
+          Changed topic creation state change to go directly to ALIVE on publish
+	  and not go over UNREFERENCED as this could trigger a DEAD inbetween
+	  if destroy delay is configured to 0 (or a small value)
+
+ o #16779 Bugfix: DropIfNotDeliverable mime plugin: Fixed possible dead lock situation
+
  o #16766 Bugfix: A SaxParseException of a message QoS left the MsgQosSaxParseFactory in inconstent state
           and operation of xmlBlaster is broken as follow up parses can swallow QoS tags like <destination>
 
