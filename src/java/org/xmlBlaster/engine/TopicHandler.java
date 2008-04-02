@@ -265,7 +265,7 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       startupHistoryQueue();
 
       if (isUnconfigured()) { // Startup of topic
-         if (!hasCacheEntries() && !hasExactSubscribers()) {
+         if (!hasCacheEntries() && !hasExactSubscribers() && publishQos.isAdministrative()) {
             toUnreferenced(true, publishQosServer.isFromPersistenceStore());
          }
          else {
