@@ -199,7 +199,8 @@ public class HandleClient extends SocketExecutor implements Runnable
       }
       try {
          if (expectingResponse) {
-            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, cbSessionId, progressListener, getMsgInfoParserClassName());
+            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, 
+                         cbSessionId, progressListener, getCbMsgInfoParserClassName());
             parser.setPluginConfig(callback.getPluginInfo()); // is usually null as it is loaded dynamically
             parser.addMessage(msgArr);
             Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
@@ -207,7 +208,8 @@ public class HandleClient extends SocketExecutor implements Runnable
             return (String[])response; // return the QoS
          }
          else {
-            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId, progressListener, getMsgInfoParserClassName());
+            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY,
+                  cbSessionId, progressListener, getCbMsgInfoParserClassName());
             parser.setPluginConfig(callback.getPluginInfo());
             parser.addMessage(msgArr);
             requestAndBlockForReply(parser, SocketExecutor.ONEWAY, this.driver.useUdpForOneway());
@@ -265,6 +267,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                   if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
                      if (log.isLoggable(Level.FINE)) log.fine(ME+": Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
                      this.callback = new CallbackSocketDriver(this.loginName, this);
+                     //this.callback.init(this.glob, cbArr[ii]); is done in connectLowLeve()
                      cbArr[ii].setCallbackDriver(this.callback);
                   }
                   else {
@@ -367,6 +370,13 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
          throw ex;
       }
+   }
+   
+   public String getCbMsgInfoParserClassName() {
+      if (this.callback != null)
+         return this.callback.getMsgInfoParserClassName();
+      else
+         return super.getCbMsgInfoParserClassName();
    }
 
    /**

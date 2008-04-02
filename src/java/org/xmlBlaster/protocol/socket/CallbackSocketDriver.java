@@ -5,18 +5,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.xbformat.I_ProgressListener;
+import org.xmlBlaster.util.xbformat.XbfParser;
 
 
 /**
@@ -36,6 +38,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    private CallbackAddress callbackAddress;
    //private boolean isFirstPing_hack = true;
    private PluginInfo pluginInfo; // remains null as we are loaded dynamically
+   private String msgInfoParserClassName;
 
    /**
     * Should not be instantiated by plugin loader.
@@ -118,6 +121,33 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       this.ME = "CallbackSocketDriver" + this.glob.getLogPrefixDashed();
       if (log.isLoggable(Level.FINER)) log.finer("init()");
       this.callbackAddress = callbackAddress;
+      
+      //if (this.pluginInfo == null) {
+         // Use configuration parameters from xmlBlaster.properties (to be able to change parserClass)
+         // even that we are instantiated directly (socket callback tunnel) and not by plugin manager
+         //CbProtocolPlugin[socket_script][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver,\
+         //compress/type=,\
+         //isNullTerminated=true,\
+         //parserClass=org.xmlBlaster.util.xbformat.XmlScriptParser
+         try {
+            this.msgInfoParserClassName = null; // reset
+            this.pluginInfo = ((org.xmlBlaster.engine.ServerScope)glob).getCbProtocolManager().getPluginInfo(this.callbackAddress.getType(), this.callbackAddress.getVersion());
+            if (this.pluginInfo != null) {
+               this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
+            }
+         }
+         catch (XmlBlasterException e) {
+            // Don't log if no configuration is found
+            if (e.isErrorCode(ErrorCode.RESOURCE_CONFIGURATION))
+               log.fine("No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
+            else
+               log.warning("No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
+         }
+         catch (Throwable e) {
+            e.printStackTrace();
+            log.warning("No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
+         }
+      //}
    }
 
    /**
@@ -205,10 +235,34 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    }
 
    /**
-    * @return the pluginInfo: Always null as we are loaded dynamically!
+    * @return the pluginInfo: 
+    * Always null as we are loaded dynamically!
     */
    public PluginInfo getPluginInfo() {
       return this.pluginInfo;
+   }
+
+   /**
+    * @return the callbackAddress
+    */
+   public CallbackAddress getCallbackAddress() {
+      return this.callbackAddress;
+   }
+   
+   /**
+    * Which parser to use.
+    * The SOCKET protocol uses as a default setting the XbfParser
+    * @return The class name of the parser, "org.xmlBlaster.util.xbformat.XbfParser"
+    */
+   public String getMsgInfoParserClassName() {
+      if (this.msgInfoParserClassName == null) {
+         synchronized (this) {
+            if (this.msgInfoParserClassName == null && this.callbackAddress != null) {
+               this.msgInfoParserClassName = this.callbackAddress.getEnv("parserClass", XbfParser.class.getName()).getValue();
+            }
+         }
+      }
+      return this.msgInfoParserClassName; // "org.xmlBlaster.util.xbformat.XbfParser"
    }
 }
 

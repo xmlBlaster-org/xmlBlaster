@@ -118,6 +118,10 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       return this.msgInfoParserClassName; // "org.xmlBlaster.util.xbformat.XbfParser"
    }
 
+   public String getCbMsgInfoParserClassName() {
+      return getMsgInfoParserClassName();
+   }
+
    /**
     * Set the given millis to protect against blocking socket on input stream read() operations
     * @param millis If <= 0 it is disabled
@@ -173,7 +177,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping() invocation ignored, we are shutdown.");
       try {
          String cbSessionId = "";
-         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener, msgInfoParserClassName);
+         MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.PING, cbSessionId, progressListener, getMsgInfoParserClassName());
          parser.addMessage(qos);
          Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, SocketUrl.SOCKET_TCP);
          if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + ((response == null) ? "null" : response.toString()));
@@ -193,7 +197,8 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
    protected void sendMessage(MsgInfo msgInfo, String requestId, MethodName methodName, boolean udp) throws XmlBlasterException, IOException {
       I_ProgressListener listener = this.progressListener;
       try {
-         byte[] msg = msgInfo.createRawMsg(this.msgInfoParserClassName);
+         // TODO: On server side the msgInfoParserClassName should be from CbSocketDriver configuration
+         byte[] msg = msgInfo.createRawMsg(getCbMsgInfoParserClassName());
          if (log.isLoggable(Level.FINEST)) log.finest("Sending TCP data [" + new String(msg) + "]");
          if (listener != null) {
             listener.progressWrite("", 0, msg.length);
