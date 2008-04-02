@@ -79,6 +79,10 @@ public class CbProtocolManager extends PluginManagerBase
       return getPlugin(driverType, "1.0");
    }
 
+   public PluginInfo getPluginInfo(String type, String version) throws XmlBlasterException {
+      return new PluginInfo(glob, this, type, version);
+   }
+
    /**
     * Return a specific plugin, every call will create a new plugin instance. 
     * <p/>
