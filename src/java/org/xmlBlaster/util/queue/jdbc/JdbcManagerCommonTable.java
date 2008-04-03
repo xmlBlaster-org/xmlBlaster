@@ -758,7 +758,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             ex1.printStackTrace();
          }
 //         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET
-         log.warning("Could not insert entry '" +
+         log.severe("Could not insert entry '" +
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(queueName, "addEntry"), ex)) {
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex); 
