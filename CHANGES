@@ -57,7 +57,7 @@ Changes for current svn
             maxExceptionRetries=2
             retrySleepMillis=0
 	  Performance tuning hint:
-            [ create index IX_DATAID ON XB_ENTRIES (XB_dataId) - improvment not tested]
+            [ create index IX_DATAID ON XB_ENTRIES (XB_dataId) - improvment not tested] (The primary key must remain a compound key of xb_dataId and queueName)
             create index IX_QUEUENAME ON XB_ENTRIES (queueName)
             create index IX_CB_QUEUE ON XB_ENTRIES (prio DESC, XB_dataId ASC)
             create index IX_DURABLE ON XB_ENTRIES (durable)
