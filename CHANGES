@@ -57,8 +57,7 @@ Changes for current svn
             maxExceptionRetries=2
             retrySleepMillis=0
 	  Performance tuning hint:
-            ALTER TABLE xb_entries DROP CONSTRAINT PK__XB_ENTRIES__76CBA758
-            ALTER TABLE xb_entries ADD CONSTRAINT PK_XB_DATAID PRIMARY KEY CLUSTERED (XB_dataId) ON [PRIMARY]
+            [ create index IX_DATAID ON XB_ENTRIES (XB_dataId) - improvment not tested]
             create index IX_QUEUENAME ON XB_ENTRIES (queueName)
             create index IX_CB_QUEUE ON XB_ENTRIES (prio DESC, XB_dataId ASC)
             create index IX_DURABLE ON XB_ENTRIES (durable)
