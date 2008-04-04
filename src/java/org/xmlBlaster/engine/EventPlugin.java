@@ -8,6 +8,7 @@ package org.xmlBlaster.engine;
 import gnu.regexp.RE;
 import gnu.regexp.REException;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.QueueEventHandler;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.StorageEventHandler;
@@ -891,6 +893,15 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
             ClientProperty[] props = sessionInfo.getRemotePropertyArr();
             for (int p=0; p<props.length; p++)
                buf.append(props[p].toXml("   ", "remoteProperty", true));
+            I_Queue sessionQueue = sessionInfo.getSessionQueue();
+            if (sessionQueue != null) {
+               buf.append("\n    <queue relating='callback'");
+               buf.append(" numOfEntries='").append(sessionQueue.getNumOfEntries()).append("'");
+               buf.append(" numOfBytes='").append(sessionQueue.getNumOfBytes()).append("'");
+               buf.append("/>");
+               //buf.append(sessionQueue.toXml("\n    "));
+            }
+            buf.append(sessionInfo.getDispatchStatistic().toXml("    "));
             buf.append("\n   ").append("</session>");
          }
          buf.append("\n  ").append("</client>");
@@ -2129,6 +2140,12 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                SessionInfo sessionInfo = this.requestBroker.getAuthenticate().getSessionInfo(sessionName);
                if (sessionInfo != null) {
                   clientProperties = sessionInfo.getRemotePropertyArr();
+                  ArrayList list = new ArrayList();
+                  for (int i=0; i<clientProperties.length; i++)
+                	  list.add(clientProperties[i]);
+                  list.add(new ClientProperty("_DispatchStatistic", 
+                		  dispatchManager.getDispatchStatistic().toXml(""), Constants.ENCODING_NONE));
+                  clientProperties = (ClientProperty[])list.toArray(new ClientProperty[list.size()]);
                }
             }
             sendMessage(summary, description, eventType, errorCode, sessionName, clientProperties);
