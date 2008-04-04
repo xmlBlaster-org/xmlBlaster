@@ -901,7 +901,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                buf.append("/>");
                //buf.append(sessionQueue.toXml("\n    "));
             }
-            buf.append(sessionInfo.getDispatchStatistic().toXml("    "));
+            buf.append(sessionInfo.getDispatchStatistic().toXml("   "));
             buf.append("\n   ").append("</session>");
          }
          buf.append("\n  ").append("</client>");
