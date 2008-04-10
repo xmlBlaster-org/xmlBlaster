@@ -1,0 +1,38 @@
+<!--
+# Name:      xmlBlasterPlugins.xml
+# Project:   xmlBlaster.org
+# Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+# Comment:   Plugins to load/unload on xmlBlaster startup/shutdown
+# See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+-->
+<xmlBlaster>
+
+   <!-- 
+      NOTE: For this cluster example we have switched off
+      all unnecessary plugins to avoid to much logging output
+   -->
+
+
+   <!--========== SubscriptionPersistencePlugin =============-->
+   <plugin create='true' id='subPersistence' className='org.xmlBlaster.engine.SessionPersistencePlugin'>
+      <action do='LOAD' onStartupRunlevel='4' sequence='10' />
+      <action do='STOP' onShutdownRunlevel='3' sequence='60'/>
+   </plugin>
+
+   <plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='1' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+      <!-- attribute id='port'>7607</attribute -->
+      <!-- attribute id='hostname'>localhost</attribute -->
+      <attribute id='compress/type'></attribute>  <!-- Default: no compression for python,php,perl access -->
+   </plugin>
+
+   <!-- The cluster manager must be started after the protocol plugins it wants to use for communication -->
+   <plugin create='true' id='cluster' className='org.xmlBlaster.engine.cluster.ClusterManager'>
+      <action do='LOAD' onStartupRunlevel='5' sequence='5' />
+      <action do='STOP' onShutdownRunlevel='4' sequence='5'/>   
+   </plugin>
+
+</xmlBlaster>
+
