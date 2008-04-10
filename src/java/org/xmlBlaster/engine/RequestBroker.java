@@ -1554,7 +1554,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                //if (!glob.getClusterManager().isReady())
                //   glob.getClusterManager().blockUntilReady();
                if (this.glob.isClusterManagerReady()) {
-                  if (publishQos.isPtp()) {  // is PtP message
+                  if (publishQos.isPtp()) {  // is PtP message, see req cluster.ptp
                      Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
                      for (int ii = 0; ii<destinationArr.length; ii++) {
                         if (log.isLoggable(Level.FINE)) log.fine("Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
@@ -1585,6 +1585,7 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                      }
                      */
                   }
+                  // Publish/Subscribe mode (or if PtP had no result)
                   else { // if (publishQos.isSubscribable()) {
                      try {
                         PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnit);
