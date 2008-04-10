@@ -29,8 +29,8 @@ import java.util.logging.Logger;
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
-import org.xmlBlaster.contrib.VersionTransformerCache;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
+import org.xmlBlaster.contrib.db.I_DbCreateInterceptor;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
@@ -47,7 +47,7 @@ import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 
-public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ {
+public abstract class SpecificDefault implements I_DbSpecific, I_DbCreateInterceptor {
    public final static boolean ROLLBACK_YES = true;
    public final static boolean ROLLBACK_NO = false;
    public final static boolean COMMIT_YES = true;
@@ -84,7 +84,9 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    private Set cancelledUpdates = new HashSet();
    
    protected boolean isDbWriteable = true;
-      
+   
+   protected boolean blockLoop = true;
+   
    class Replacer implements I_ReplaceVariable {
 
       private I_Info info;
@@ -607,6 +609,8 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
             doBootstrapIfNeeded();
          }
       }
+      
+      blockLoop = info.getBoolean("replication.blockLoop", false);
 
       this.initCount++;
    }
@@ -712,7 +716,7 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
    /**
     * @see I_DbSpecific#shutdown()
     */
-   public final synchronized void shutdown() throws Exception {
+   public final synchronized void shutdown() {
       this.initCount--;
       if (this.initCount > 0)
          return;
@@ -727,7 +731,13 @@ public abstract class SpecificDefault implements I_DbSpecific /*, I_ResultCb */ 
       }
 
       if (this.dbPool != null) {
-         this.dbPool.shutdown();
+         try {
+            this.dbPool.shutdown();
+         }
+         catch (Exception ex) {
+            log.severe("An exception occured when shutting down the SpecificDefault: " + ex.getMessage());
+            ex.printStackTrace();
+         }
       }
    }
 

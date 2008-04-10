@@ -230,5 +230,12 @@ public class SpecificPostgres extends SpecificDefault {
       throw new Exception("The method triggerExists is not implemented yet for the postgres implementation");
    }
 
+   /**
+    * @see org.xmlBlaster.contrib.db.I_DbCreateInterceptor#onCreateConnection(java.sql.Connection)
+    */
+   public void onCreateConnection(Connection conn) throws Exception {
+      throw new Exception(this.getClass().getName() + ".onCreateConnection not implemented");
+   }
+   
    
 }

@@ -5,7 +5,9 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.Map;
 import org.xmlBlaster.contrib.I_Info;
@@ -211,6 +213,14 @@ public class SpecificDB2 extends SpecificDefault {
       if (true)
          throw new IllegalStateException("not implemented");
       return false;
+   }
+   
+   
+   /**
+    * @see org.xmlBlaster.contrib.db.I_DbCreateInterceptor#onCreateConnection(java.sql.Connection)
+    */
+   public void onCreateConnection(Connection conn) throws Exception {
+      throw new Exception(this.getClass().getName() + ".onCreateConnection not implemented");
    }
    
 }

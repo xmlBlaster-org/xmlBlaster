@@ -5,6 +5,7 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.replication.impl;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
+import org.xmlBlaster.contrib.db.I_DbCreateInterceptor;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
@@ -242,6 +244,8 @@ public class SpecificOracle extends SpecificDefault {
       String dbName = "NULL"; // still unsure on how to retrieve this
                               // information on a correct way.
       StringBuffer buf = new StringBuffer();
+      boolean checkClientInfo = blockLoop;
+      
       buf.append("-- ---------------------------------------------------------------------------- \n");
       buf.append("-- This is the function which will be registered to the triggers.               \n");
       buf.append("-- It must not take any parameter.                                              \n");
@@ -280,19 +284,22 @@ public class SpecificOracle extends SpecificDefault {
       buf.append(" ON ").append(completeTableName).append("\n");
       buf.append("FOR EACH ROW\n");
       buf.append("DECLARE\n");
-      buf.append("   blobCont BLOB; \n");
-      buf.append("   oldCont CLOB; \n");
-      buf.append("   newCont CLOB;\n");
-      buf.append("   tmpCont CLOB;\n");
-      buf.append("   tmpNum  VARCHAR(255);\n");
-      buf.append("   oid     VARCHAR(50);\n");
-      buf.append("   replKey INTEGER;\n");
-      buf.append("   ret     VARCHAR(10);\n");
-      buf.append("   transId VARCHAR2(50);\n");
-      buf.append("   op      VARCHAR(15);\n");
-      buf.append("   longKey INTEGER;\n");
-      buf.append("   debug   INTEGER;\n");
-      buf.append("   fake    INTEGER;\n");
+      buf.append("   blobCont   BLOB; \n");
+      buf.append("   oldCont    CLOB; \n");
+      buf.append("   newCont    CLOB;\n");
+      buf.append("   tmpCont    CLOB;\n");
+      buf.append("   tmpNum     VARCHAR(255);\n");
+      buf.append("   oid        VARCHAR(50);\n");
+      buf.append("   replKey    INTEGER;\n");
+      buf.append("   ret        VARCHAR(10);\n");
+      buf.append("   transId    VARCHAR2(50);\n");
+      buf.append("   op         VARCHAR(15);\n");
+      buf.append("   longKey    INTEGER;\n");
+      buf.append("   debug      INTEGER;\n");
+      buf.append("   fake       INTEGER;\n");
+      if (checkClientInfo)
+         buf.append("   clientInfo VARCHAR2(100);\n");
+      
       buf.append("BEGIN\n");
       buf.append("\n");
       if (this.debug) {
@@ -305,9 +312,19 @@ public class SpecificOracle extends SpecificDefault {
          // buf.append("    ").append(this.replPrefix).append("debug('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
          // buf.append("    KG_WAKEUP.PG$DBGMESS('TRIGGER ON '").append(completeTableName).append("' invoked');\n");
       }
-      
+
       boolean containsLongs = checkIfContainsLongs(infoDescription);
       boolean isInsert = true; // optimizes: does not write NULL when insert
+
+      if (checkClientInfo)
+         buf.append("    dbms_application_info.read_client_info(clientInfo);\n");
+      
+      if (checkClientInfo) {
+         buf.append("IF clientInfo = 'REPLICATION' THEN\n");
+         buf.append("  RETURN;\n");
+         buf.append("END IF;\n");
+      }
+      
       buf.append("    IF INSERTING THEN\n");
       buf.append("       op := 'INSERT';\n");
       buf.append(createVariableSqlPart(infoDescription, "new", containsLongs, isInsert));
@@ -1013,6 +1030,21 @@ public class SpecificOracle extends SpecificDefault {
    
    public String getOwnSchema() {
       return this.ownSchema;
+   }
+
+   /**
+    * @see org.xmlBlaster.contrib.db.I_DbCreateInterceptor#onCreateConnection(java.sql.Connection)
+    */
+   public void onCreateConnection(Connection conn) throws Exception {
+      String sql = "{call dbms_application_info.set_client_info(?)}";
+         try {
+            CallableStatement st = conn.prepareCall(sql);
+            st.setString(1, "REPLICATION");
+            ResultSet rs = st.executeQuery();
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+         }
    }
    
 }

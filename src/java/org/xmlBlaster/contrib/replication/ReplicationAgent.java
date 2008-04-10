@@ -31,7 +31,6 @@ import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
 import org.xmlBlaster.contrib.dbwriter.DbWriter;
 import org.xmlBlaster.contrib.replication.I_DbSpecific;
 import org.xmlBlaster.contrib.replication.ReplicationConverter;
-import org.xmlBlaster.contrib.replication.impl.ReplManagerPlugin;
 import org.xmlBlaster.contrib.replication.impl.SpecificDefault;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
