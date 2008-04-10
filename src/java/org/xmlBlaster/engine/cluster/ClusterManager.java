@@ -402,6 +402,13 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          }
       }
 
+      if (clusterNode == null && destination.getDestination().isNodeIdExplicitlyGiven() &&
+            !glob.getId().equals(destination.getDestination().getNodeIdStr())) {
+         log.warning("PtP message '" + msgUnit.getLogId() +
+                        "' for destination " + destination.getDestination() +
+                        ": Explicitely given remote destination cluster node '"+destination.getDestination().getNodeIdStr()+"' not found");
+      }
+      
       if (clusterNode != null && destination.getDestination().isNodeIdExplicitlyGiven()) {
          if (log.isLoggable(Level.FINE)) log.fine("PtP message '" + msgUnit.getLogId() +
                         "' destination " + destination.getDestination() + " remote destination cluster node found");
