@@ -40,7 +40,7 @@
       <table border="1"> <!-- class="BORDER"> -->
         <tr>
           <th><a href="cluster.html">Pub/Sub routing mode</a><br />E.g. domain match <i>&lt;key domain='RUGBY_NEWS'/></i></th>
-          <th>PtP routing mode<br />Domain given, e.g. <i>&lt;destination>/node/heron/client/joe/session/1&lt;destination></i></th>
+          <th>PtP routing mode<br />Destination given, e.g. <i>&lt;destination>/node/heron/client/joe/session/1&lt;destination></i></th>
           <th>Comment</th>
           <th>Is routed?</th>
         </tr>
