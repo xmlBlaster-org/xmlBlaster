@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.DriverManager;
 
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -25,7 +26,6 @@ import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.util.pool.PoolManager;
 import org.xmlBlaster.util.pool.I_PoolManager;
 import org.xmlBlaster.util.pool.ResourceWrapper;
-import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -60,6 +60,8 @@ public class DbPool implements I_DbPool, I_PoolManager {
    private long resourceExhaustSleepGap;
    private final Object meetingPoint = new Object();
    private int initCount = 0;
+   private I_DbCreateInterceptor createInterceptor;
+   
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
     */
@@ -107,6 +109,20 @@ public class DbPool implements I_DbPool, I_PoolManager {
       initDrivers();
       this.poolManager = new PoolManager("DbPool", this, maxInstances, busyToIdle, idleToErase);
       this.initCount++;
+      String createInterceptorClass = info.get("db.createInterceptor.class", null);
+      if (createInterceptorClass != null) {
+         ClassLoader cl = this.getClass().getClassLoader();
+         try {
+            createInterceptor = (I_DbCreateInterceptor)cl.loadClass(createInterceptorClass).newInstance();
+            createInterceptor.init(info);
+            if (log.isLoggable(Level.FINE)) 
+               log.fine(createInterceptorClass + " created and initialized");
+         }
+         catch (Exception ex) {
+            throw new IllegalArgumentException(ex);
+         }
+      }
+      
    }
 
    public String getUser() {
@@ -206,6 +222,10 @@ public class DbPool implements I_DbPool, I_PoolManager {
             this.poolManager.destroy();
             this.poolManager = null;
          }
+         if (createInterceptor != null) {
+            createInterceptor.shutdown();
+            createInterceptor = null;
+         }
       }
    }
         
@@ -234,7 +254,21 @@ public class DbPool implements I_DbPool, I_PoolManager {
    */
    public Object toCreate(String instanceId) {
       try {
-         return DriverManager.getConnection (this.dbUrl, this.dbUser, this.dbPasswd);
+         Connection conn = DriverManager.getConnection (this.dbUrl, this.dbUser, this.dbPasswd);
+         if (createInterceptor != null)
+            createInterceptor.onCreateConnection(conn);
+         /*
+          * This code should work on jdk1.6 but tests with oracle and ojdbc6.jar where returning an
+          * empty list of allowed client infos.
+          *    
+         Properties props = conn.getClientInfo();
+         String[] keys = props.keySet().toArray(new String[props.size()]);
+         for (int i=0; i < props.size(); i++) {
+            log.severe("Property Info '" + keys[i] + "' contains value '" + props.getProperty(keys[i]));
+         }
+         conn.setClientInfo("ApplicationName", "repliTest");
+         */
+         return conn;
       }
       catch(Exception e) {
          throw new IllegalArgumentException(this.getClass().getName() + ": Couldn't open database connection dbUrl=" + this.dbUrl + " dbUser=" + this.dbUser + ": " + e.toString());
