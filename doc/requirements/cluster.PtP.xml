@@ -36,7 +36,7 @@
       is queued for 'client/joe/1' until this client logs in.
       </p>
       
-      <p>The following table shows the routing precedence for PtP versus Pub/Sub configured messages</p>
+      <p id="routingTable">The following table shows the routing precedence for PtP versus Pub/Sub configured messages</p>
       <table border="1"> <!-- class="BORDER"> -->
         <tr>
           <th><a href="cluster.html">Pub/Sub routing mode</a><br />E.g. domain match <i>&lt;key domain='RUGBY_NEWS'/></i></th>
