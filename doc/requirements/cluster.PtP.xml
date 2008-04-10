@@ -27,13 +27,75 @@
       allows us to route the message in a cluster environment.
       </p>
       <p>
-      If you destination address has an absolute name like '/node/heron/client/joe'
+      If your destination address has an absolute name like '/node/heron/client/joe'
       the local node and all direct neighbors are checked and if 'heron' is found the message is
       directly delivered. Otherwise the same routing rule as for Publish/Subscribe apply.
       For example a relative destination address 'client/joe/1' is routed similar
       to Publish/Subscribe by looking at the key-domain or other key attributes.
       If no routing matches the local node is chosen and the PtP message
       is queued for 'client/joe/1' until this client logs in.
+      </p>
+      
+      <p>The following table shows the routing precedence for PtP versus Pub/Sub configured messages</p>
+      <table border="1"> <!-- class="BORDER"> -->
+        <tr>
+          <th><a href="cluster.html">Pub/Sub routing mode</a><br />E.g. domain match <i>&lt;key domain='RUGBY_NEWS'/></i></th>
+          <th>PtP routing mode<br />Domain given, e.g. <i>&lt;destination>/node/heron/client/joe/session/1&lt;destination></i></th>
+          <th>Comment</th>
+          <th>Is routed?</th>
+        </tr>
+
+        <tr>
+          <td>No</td>
+          <td>Invalid: Destination given with absolute name
+             but destination cluster node is not known<br />
+              <i>/node/noexist/client/joe/session/1</i>
+          </td>
+          <td>Routing fails, message is locally handled</td>
+          <td>No</td>
+        </tr>
+
+        <tr>
+          <td>Yes</td>
+          <td>Invalid: Destination given with absolute name
+             but destination cluster node is not known<br />
+              <i>/node/noexist/client/joe/session/1</i>
+          </td>
+          <td>Forward to domain matched</td>
+          <td>Yes</td>
+        </tr>
+
+        <tr>
+          <td>No</td>
+          <td>Yes: Destination cluster node is known<br />
+              <i>/node/heron/client/joe/session/1</i>
+          </td>
+          <td>The message is routed to the PtP cluster destination <i>heron</i></td>
+          <td>Yes</td>
+        </tr>
+
+        <tr>
+          <td>Yes</td>
+          <td>Yes: Destination cluster node is known<br />
+              <i>/node/heron/client/joe/session/1</i>
+          </td>
+          <td>The message is routed to the PtP cluster destination <i>heron</i>,
+              the domain routing match is ignored</td>
+          <td>Yes</td>
+        </tr>
+
+        <tr>
+          <td>Yes</td>
+          <td>No: A relative name is given<br />
+              <i>client/joe/session/1</i>
+          </td>
+          <td>The domain match routes the message.</td>
+          <td>Yes</td>
+        </tr>
+      </table>
+
+      <p>To summarize: A PtP message with a valid destination cluster node given is routed
+      to this node, in all other cases the the routing configuration similar to publish/subscribe applies.
       </p>
    </description>
 
