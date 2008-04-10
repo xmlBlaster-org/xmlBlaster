@@ -14,7 +14,7 @@
 
 
    <!--
-   <plugin id='protocol:SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+   <plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
       <action do='LOAD' onStartupRunlevel='3' sequence='1' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
@@ -28,7 +28,7 @@
    </plugin>
 
    <!-- ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver -->
-   <plugin id='protocol:IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
+   <plugin id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
       <action do='LOAD' onStartupRunlevel='3' sequence='2'
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
