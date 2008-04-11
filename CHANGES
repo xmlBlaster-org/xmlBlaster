@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o #16803 Bugfix: Qos XML creation escaping properly illegal XML characters
+          StatusQosSaxFactory/DisconnectQosSaxFactory/QueuePropertyBase/QueryQosSaxFactory/MsgKeySaxFactory
 
  o #16783 Bugfix: SOCKET with XmlScript markup (instead of XBF) configures now correctly
           from xmlBlaster.properties for callbacks and responses
@@ -14,7 +16,7 @@ Changes for current svn
 
  o #16779 Bugfix: DropIfNotDeliverable mime plugin: Fixed possible dead lock situation
 
- o #16766 Bugfix: A SaxParseException of a message QoS left the MsgQosSaxParseFactory in inconstent state
+ o #16766 Bugfix: A SaxParseException of a message QoS left the MsgQosSaxFactory in inconstent state
           and operation of xmlBlaster is broken as follow up parses can swallow QoS tags like <destination>
 
  o #16763 Force AjaxServlet to UTF-8 processing to support e.g. Umlauts
