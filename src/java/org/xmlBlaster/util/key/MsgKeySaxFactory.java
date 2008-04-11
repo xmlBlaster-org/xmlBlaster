@@ -8,6 +8,7 @@ package org.xmlBlaster.util.key;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 
 import org.xml.sax.*;
@@ -184,17 +185,17 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final String writeObject(MsgKeyData msgKeyData, String extraOffset) {
-      StringBuffer sb = new StringBuffer(256);
+      XmlBuffer sb = new XmlBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<key oid='").append(msgKeyData.getOid()).append("'");
+      sb.append(offset).append("<key oid='").appendAttributeEscaped(msgKeyData.getOid()).append("'");
       if (msgKeyData.getContentMime() != null && !msgKeyData.getContentMime().equals(KeyData.CONTENTMIME_DEFAULT))
-         sb.append(" contentMime='").append(msgKeyData.getContentMime()).append("'");
+         sb.append(" contentMime='").appendAttributeEscaped(msgKeyData.getContentMime()).append("'");
       if (msgKeyData.getContentMimeExtended() != null && !msgKeyData.getContentMimeExtended().equals(KeyData.CONTENTMIMEEXTENDED_DEFAULT))
-         sb.append(" contentMimeExtended='").append(msgKeyData.getContentMimeExtended()).append("'");
+         sb.append(" contentMimeExtended='").appendAttributeEscaped(msgKeyData.getContentMimeExtended()).append("'");
       if (msgKeyData.getDomain() != null && msgKeyData.getDomain().length() > 0)
-         sb.append(" domain='").append(msgKeyData.getDomain()).append("'");
+         sb.append(" domain='").appendAttributeEscaped(msgKeyData.getDomain()).append("'");
       if (msgKeyData.getClientTags() != null) {
          sb.append(">");
          sb.append(offset).append(extraOffset).append(Constants.INDENT).append(msgKeyData.getClientTags());

@@ -292,13 +292,13 @@ public class Timestamp implements Comparable, java.io.Serializable
     */
    public final String toXml(String extraOffset, boolean literal)
    {
-      StringBuffer sb = new StringBuffer(200);
+      XmlBuffer sb = new XmlBuffer(200);
       String offset = "\n ";
       if (extraOffset != null)
          offset += extraOffset;
       if (literal) {
          sb.append(offset).append("<").append(tagName).append(" nanos='").append(getTimestamp()).append("'>");
-         sb.append(offset).append(" ").append(toString());
+         sb.append(offset).append(" ").appendEscaped(toString());
          sb.append(offset).append("</").append(tagName).append(">");
       }
       else {

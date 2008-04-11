@@ -373,19 +373,19 @@ public class EncodableData implements java.io.Serializable, Cloneable
       if (tmpTagName == null)
          tmpTagName = this.tagName;
       
-      StringBuffer sb = new StringBuffer(256);
+      XmlBuffer sb = new XmlBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<").append(tmpTagName);
       if (getName() != null) {
-         sb.append(" name='").append(getName()).append("'");
+         sb.append(" name='").appendAttributeEscaped(getName()).append("'");
       }
       if (getSize() >= 0) {
          sb.append(" size='").append(getSize()).append("'");
       }
       if (getType() != null) {
-         sb.append(" type='").append(getType()).append("'");
+         sb.append(" type='").appendAttributeEscaped(getType()).append("'");
       }
 
       if (forceReadable) {
@@ -406,7 +406,7 @@ public class EncodableData implements java.io.Serializable, Cloneable
             }
             else {
                sb.append(">");
-               sb.append(val);
+               sb.appendEscaped(val);
                sb.append("</").append(tmpTagName).append(">");
                return sb.toString();
             }
@@ -414,10 +414,10 @@ public class EncodableData implements java.io.Serializable, Cloneable
       }
       
       if (getEncoding() != null) {
-         sb.append(" encoding='").append(getEncoding()).append("'");
+         sb.append(" encoding='").appendAttributeEscaped(getEncoding()).append("'");
       }
       if (getCharset() != null) {
-         sb.append(" charset='").append(getCharset()).append("'");
+         sb.append(" charset='").appendAttributeEscaped(getCharset()).append("'");
       }
 
       String val = getValueRaw();
@@ -425,9 +425,14 @@ public class EncodableData implements java.io.Serializable, Cloneable
          sb.append("/>");
       else {
          sb.append(">");
-         if (this.forceCdata) sb.append("<![CDATA[");
-         sb.append(val);
-         if (this.forceCdata) sb.append("]]>");
+         if (this.forceCdata) {
+            sb.append("<![CDATA[");
+            sb.append(val);
+            sb.append("]]>");
+         }
+         else {
+            sb.appendEscaped(val);
+         }
          sb.append("</").append(tmpTagName).append(">");
       }
 

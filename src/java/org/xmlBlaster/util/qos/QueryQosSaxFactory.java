@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 
@@ -446,13 +447,13 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
    }
 
    public static final String writeObject_(QueryQosData queryQosData, String extraOffset, Properties props) {
-      StringBuffer sb = new StringBuffer(1024);
+      XmlBuffer sb = new XmlBuffer(1024);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<qos>"); // <!-- SubscribeQos, UnSubscribeQos, EraseQos, GetQos -->");
       if (queryQosData.getSubscriptionId() != null)
-         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='").append(queryQosData.getSubscriptionId()).append("'/>");
+         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='").appendAttributeEscaped(queryQosData.getSubscriptionId()).append("'/>");
 
       if (queryQosData.getForceDestroyProp().isModified()) {
          sb.append(offset).append(" <").append(MethodName.ERASE.getMethodName()).append(" forceDestroy='").append(queryQosData.getForceDestroy()).append("'/>");

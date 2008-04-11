@@ -10,6 +10,7 @@ import java.util.Properties;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 
 import org.xml.sax.Attributes;
@@ -133,7 +134,7 @@ public final class DisconnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBas
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public static final String toXml(DisconnectQosData data, String extraOffset, Properties props) {
-      StringBuffer sb = new StringBuffer(512);
+      XmlBuffer sb = new XmlBuffer(512);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;

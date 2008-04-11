@@ -15,6 +15,7 @@ import org.xml.sax.Attributes;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.property.PropBoolean;
@@ -1076,11 +1077,11 @@ public abstract class AddressBase implements Cloneable
     * @return The xml representation
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(1200);
+      XmlBuffer sb = new XmlBuffer(1200);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<").append(rootTag).append(" type='").append(getType()).append("'");
+      sb.append(offset).append("<").append(rootTag).append(" type='").appendAttributeEscaped(getType()).append("'");
       // For debugging only:
       //sb.append(" nodeId='").append(this.nodeId).append("'");
       //sb.append(" context='").append(this.context).append("'");
@@ -1088,13 +1089,13 @@ public abstract class AddressBase implements Cloneable
       //sb.append(" instanceName='").append(this.instanceName).append("'");
       //sb.append(" envPrefix='").append(this.envPrefix).append("'");
       if (this.version.isModified())
-          sb.append(" version='").append(getVersion()).append("'");
+          sb.append(" version='").appendAttributeEscaped(getVersion()).append("'");
       if (this.bootstrapHostname.isModified())
-          sb.append(" bootstrapHostname='").append(getBootstrapHostname()).append("'");
+          sb.append(" bootstrapHostname='").appendAttributeEscaped(getBootstrapHostname()).append("'");
       if (this.bootstrapPort.isModified())
           sb.append(" bootstrapPort='").append(getBootstrapPort()).append("'");
       if (this.sessionId.isModified())
-          sb.append(" sessionId='").append(getSecretSessionId()).append("'");
+          sb.append(" sessionId='").appendAttributeEscaped(getSecretSessionId()).append("'");
       if (this.pingInterval.isModified())
           sb.append(" pingInterval='").append(getPingInterval()).append("'");
       if (this.retries.isModified())
@@ -1108,7 +1109,7 @@ public abstract class AddressBase implements Cloneable
       if (this.useForSubjectQueue.isModified())
           sb.append(" useForSubjectQueue='").append(this.useForSubjectQueue.getValue()).append("'");
       if (this.dispatchPlugin.isModified())
-         sb.append(" dispatchPlugin='").append(this.dispatchPlugin.getValue()).append("'");
+         sb.append(" dispatchPlugin='").appendAttributeEscaped(this.dispatchPlugin.getValue()).append("'");
       if (this.stallOnPingTimeout.isModified())
          sb.append(" stallOnPingTimeout='").append(isStallOnPingTimeout()).append("'");
       
@@ -1125,13 +1126,13 @@ public abstract class AddressBase implements Cloneable
          sb.append("/>");
       }
       if (this.compressType.isModified())
-         sb.append(offset).append(" ").append("<compress type='").append(getCompressType()).append("' minSize='").append(getMinSize()).append("'/>");
+         sb.append(offset).append(" ").append("<compress type='").appendAttributeEscaped(getCompressType()).append("' minSize='").append(getMinSize()).append("'/>");
       if (this.ptpAllowed.isModified()) {
          if (this.ptpAllowed.getValue()) {
             sb.append(offset).append(" ").append("<ptp/>");
          }
          else {
-            sb.append(offset).append(" ").append("<ptp>").append(this.ptpAllowed).append("</ptp>");
+            sb.append(offset).append(" ").append("<ptp>").append(this.ptpAllowed.getValue()).append("</ptp>");
          }
       }
       if (this.pluginAttributes != null) {

@@ -7,10 +7,11 @@ Comment:   Holding filter address string and protocol string
 package org.xmlBlaster.util.qos;
 
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.mime.Query;
+
 import org.xml.sax.Attributes;
+import org.xmlBlaster.engine.mime.Query;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBuffer;
 
 
 /**
@@ -228,20 +229,20 @@ public abstract class QueryRefinementQos
     */
    public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer(300);
+      XmlBuffer sb = new XmlBuffer(300);
       String offset = "\n ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<" + this.tagName + " type='").append(getType()).append("'");
+      sb.append(offset).append("<").append(this.tagName).append(" type='").appendAttributeEscaped(getType()).append("'");
       if (!DEFAULT_version.equals(getVersion()))
-          sb.append(" version='").append(getVersion()).append("'");
+          sb.append(" version='").appendAttributeEscaped(getVersion()).append("'");
       sb.append(">");
       if (getQuery().toString().indexOf("<![CDATA[") >= 0)
-         sb.append(offset).append(" ").append(getQuery());
+         sb.append(offset).append(" ").append(getQuery().toString());
       else
-         sb.append(offset).append(" <![CDATA[").append(getQuery()).append("]]>");
-      sb.append(offset).append("</" + this.tagName + ">");
+         sb.append(offset).append(" <![CDATA[").append(getQuery().toString()).append("]]>");
+      sb.append(offset).append("</").append(this.tagName).append(">");
 
       return sb.toString();
    }

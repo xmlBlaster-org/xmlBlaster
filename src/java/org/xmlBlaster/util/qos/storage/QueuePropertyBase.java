@@ -8,6 +8,7 @@ package org.xmlBlaster.util.qos.storage;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -730,7 +731,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return The xml representation
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(256);
+      XmlBuffer sb = new XmlBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
@@ -742,11 +743,11 @@ public abstract class QueuePropertyBase implements Cloneable
       if (this.debug.isModified())
          sb.append(" debug='").append(getDebug()).append("'");
 
-      sb.append(" relating='").append(getRelating()).append("'");
+      sb.append(" relating='").appendAttributeEscaped(getRelating()).append("'");
       if (this.type.isModified())
-         sb.append(" type='").append(getType()).append("'");
+         sb.append(" type='").appendAttributeEscaped(getType()).append("'");
       if (this.version.isModified())
-         sb.append(" version='").append(getVersion()).append("'");
+         sb.append(" version='").appendAttributeEscaped(getVersion()).append("'");
       if (this.maxEntries.isModified())
          sb.append(" maxEntries='").append(getMaxEntries()).append("'");
       if (this.maxEntriesCache.isModified())
@@ -767,9 +768,9 @@ public abstract class QueuePropertyBase implements Cloneable
          sb.append(" reloadSwapBytes='").append(getReloadSwapBytes()).append("'");
       */
       if (this.onOverflow.isModified())
-         sb.append(" onOverflow='").append(getOnOverflow()).append("'");
+         sb.append(" onOverflow='").appendAttributeEscaped(getOnOverflow()).append("'");
       if (this.onFailure.isModified())
-         sb.append(" onFailure='").append(getOnFailure()).append("'");
+         sb.append(" onFailure='").appendAttributeEscaped(getOnFailure()).append("'");
 
       if (addressArr.length > 0 && addressArr[0] != null) {
          sb.append(">");

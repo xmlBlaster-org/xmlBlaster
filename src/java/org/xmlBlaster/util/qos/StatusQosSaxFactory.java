@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.RcvTimestamp;
@@ -250,7 +251,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
    }
 
    public static final String writeObject_(StatusQosData statusQosData, String extraOffset, Properties props) {
-      StringBuffer sb = new StringBuffer(180);
+      XmlBuffer sb = new XmlBuffer(180);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
@@ -258,13 +259,13 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
       if (!statusQosData.isOk() || statusQosData.hasStateInfo()) {
          sb.append(offset).append(" <state id='").append(statusQosData.getState());
          if (statusQosData.getStateInfo() != null)
-            sb.append("' info='").append(statusQosData.getStateInfo());
+            sb.append("' info='").appendAttributeEscaped(statusQosData.getStateInfo());
          sb.append("'/>");
       }
       if (statusQosData.getSubscriptionId() != null)
-         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='").append(statusQosData.getSubscriptionId()).append("'/>");
+         sb.append(offset).append(" <").append(MethodName.SUBSCRIBE.getMethodName()).append(" id='").appendAttributeEscaped(statusQosData.getSubscriptionId()).append("'/>");
       if (statusQosData.getKeyOid() != null)
-         sb.append(offset).append(" <key oid='").append(statusQosData.getKeyOid()).append("'/>");
+         sb.append(offset).append(" <key oid='").appendAttributeEscaped(statusQosData.getKeyOid()).append("'/>");
 
       if (statusQosData.getRcvTimestamp() != null)
          sb.append(statusQosData.getRcvTimestamp().toXml(extraOffset+Constants.INDENT, false));
