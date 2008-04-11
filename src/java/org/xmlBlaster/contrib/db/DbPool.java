@@ -119,7 +119,8 @@ public class DbPool implements I_DbPool, I_PoolManager {
                log.fine(createInterceptorClass + " created and initialized");
          }
          catch (Exception ex) {
-            throw new IllegalArgumentException(ex);
+            ex.printStackTrace();
+            throw new IllegalArgumentException(ex.toString());
          }
       }
       
