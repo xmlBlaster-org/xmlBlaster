@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o #16806 Added extended JMX access to cluster configuration without shutdown (transient changes only)
+          Changed to thread safe re-configuration during operation
+
  o #16803 Bugfix: Qos XML creation escaping properly illegal XML characters
           StatusQosSaxFactory/DisconnectQosSaxFactory/QueuePropertyBase/QueryQosSaxFactory/MsgKeySaxFactory
 
