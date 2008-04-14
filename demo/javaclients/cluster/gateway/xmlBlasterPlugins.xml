@@ -34,5 +34,15 @@
       <action do='STOP' onShutdownRunlevel='4' sequence='5'/>   
    </plugin>
 
+   <plugin create='true' id='Checkpoint' className='org.xmlBlaster.util.checkpoint.Checkpoint'>
+      <action do='LOAD' onStartupRunlevel='1' sequence='1'
+                           onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='0' sequence='1'/>
+      <!-- attribute id='filterClientPropertyKey'>wfguid</attribute -->
+      <attribute id='showAllMessages'>true</attribute>
+      <attribute id='xmlStyle'>false</attribute>
+      <attribute id='showAllClientProperties'>true</attribute>
+   </plugin>
+
 </xmlBlaster>
 

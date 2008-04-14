@@ -89,10 +89,9 @@ NOTE 4: The demo below has following setup.
 5. Add a subscriber at frodo:
 =============================
 
-   java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7503 -oid Hello -session.name subscriber/1 -domain all -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 
+   java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7503 -oid Hello -session.name subscriber/1 -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 
 
- This subscriber connects to 'frodo' (port 7503) and the subscribe
- with the domain "all" is forwarded to 'heron'.
+ This subscriber connects to 'frodo' (port 7503) and subscribes to topic "Hello"
 
  An arriving message from the avalon publisher has a Qos like this:
   <qos>
