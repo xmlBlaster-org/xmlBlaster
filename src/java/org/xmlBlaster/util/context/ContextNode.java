@@ -61,6 +61,10 @@ public final class ContextNode
    public final static String SYSPROP_MARKER_TAG = "sysprop";
    /** Use to mark logging settings */
    public final static String LOGGING_MARKER_TAG = "logging";
+   /** Use to mark a remote cluster node configuration */
+   public final static String CLUSTERCONF_MARKER_TAG = "nodeconf";
+   /** Use to mark a remote cluster node configuration */
+   public final static String CLUSTERMASTER_MARKER_TAG = "master";
 
    /** For XPath conforming query */
    public final static String SCHEMA_XPATH = "xpath";
