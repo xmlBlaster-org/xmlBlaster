@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+
+ o #16817 Checkpoint plugin: Added client side Checkpoint client.publish.ack (used for cluster tracing)
+
  o #16809 Added extended JMX access to cluster configuration without shutdown (transient changes only)
           Changed to thread safe re-configuration during operation
 
