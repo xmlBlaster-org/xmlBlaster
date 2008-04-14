@@ -147,6 +147,12 @@ public class EncodableData implements java.io.Serializable, Cloneable
       return this.value;
    }
 
+   public String getStringValue(String defaultValue) {
+      String value = getStringValue();
+      if (value == null) return defaultValue;
+      return value;
+   }
+
    /**
     * @return Can be null
     */
