@@ -31,7 +31,10 @@ public interface I_Checkpoint extends I_Plugin, CheckpointMBean {
     * For none oneway messages after the client has returned its ACK.
     */
    public static final int CP_UPDATE_ACK = 2;
-   public static final String[] CP_NAMES = { "publish.ack", "update.queue.add", "update.ack"};
+   
+   public static final int CP_CONNECTION_PUBLISH_ACK = 3;
+   
+   public static final String[] CP_NAMES = { "publish.ack", "update.queue.add", "update.ack", "client.publish.ack"};
 
    /**
     * A message is passing a checkpoint.

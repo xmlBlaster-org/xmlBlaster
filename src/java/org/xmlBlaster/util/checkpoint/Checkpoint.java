@@ -3,7 +3,6 @@
  */
 package org.xmlBlaster.util.checkpoint;
 
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -139,13 +138,9 @@ public class Checkpoint implements I_Checkpoint {
                append(buf, "topicId", msgUnit.getKeyOid());
                append(buf, "contentLen", ""+msgUnit.getContent().length);
                if (this.showAllClientProperties) {
-                  Iterator it = msgUnit.getQosData().getClientProperties()
-                        .keySet().iterator();
-                  while (it.hasNext()) {
-                     String key = (String) it.next();
-                     String value = msgUnit.getQosData().getClientProperty(key,
-                           "");
-                     append(buf, key, value);
+                  ClientProperty[] props = msgUnit.getQosData().getClientPropertyArr();
+                  for (int i=0; i<props.length; i++) {
+                     append(buf,  props[i].getName(), props[i].getStringValue(""));
                   }
                } else if (foundKey) {
                   for (int i=0; i<this.filterKeys.length; i++) {
@@ -160,6 +155,12 @@ public class Checkpoint implements I_Checkpoint {
                if (destination != null) {
                   append(buf, "destination", (this.cluster) ? destination
                         .getAbsoluteName() : destination.getRelativeName());
+               }
+               
+               if (context != null) {
+                  for (int i=0; i<context.length-1; i++) {
+                     append(buf,  context[i], context[++i]);
+                  }
                }
                //if (msgUnit.getQosData().getRcvTimestamp() != null)
                //   append(buf,"rcvTS", msgUnit.getQosData().getRcvTimestamp().toString());
