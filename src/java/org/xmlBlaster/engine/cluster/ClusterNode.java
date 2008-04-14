@@ -12,6 +12,7 @@ import org.xmlBlaster.engine.ServerScope;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -23,20 +24,20 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-import java.util.Iterator;
 
 /**
  * This class holds the informations about an xmlBlaster server instance (=cluster node).
  * <p />
  * It collects the node informations from NodeInfo.java, NodeDomainInfo.java and NodeStateInfo.java
  */
-public final class ClusterNode implements java.lang.Comparable, I_Callback, I_ConnectionStateListener
+public final class ClusterNode implements java.lang.Comparable, I_Callback, I_ConnectionStateListener, ClusterNodeMBean
 {
    private final String ME;
    private final ServerScope fatherGlob;
@@ -66,6 +67,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    /** Currently always true, needs to be configurable !!! TODO */
    private boolean isAllowed = true;
+   
+   private ContextNode contextNode;
+   /** My JMX registration */
+   private Object mbeanHandle;
 
    /**
     * Create an object holding all informations about a node
@@ -76,10 +81,16 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
       this.remoteGlob = this.fatherGlob.getClone(new String[0]);
       this.remoteGlob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, this.fatherGlob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope)); // Used e.g. by Pop3Driver
+      
       this.nodeInfo = new NodeInfo(this.remoteGlob, nodeId);
       this.state = new NodeStateInfo(this.remoteGlob);
       this.ME = "ClusterNode" + this.remoteGlob.getLogPrefixDashed() + "-" + "/node/" + getId() + "/";
-//!!!      addDomainInfo(new NodeDomainInfo());
+
+      this.contextNode = new ContextNode(ContextNode.CLUSTERCONF_MARKER_TAG,
+            getId(), this.fatherGlob.getClusterManager().getContextNode());
+      this.mbeanHandle = this.fatherGlob.registerMBean(this.contextNode, this);
+
+      //!!!      addDomainInfo(new NodeDomainInfo());
    }
 
    /**
@@ -189,6 +200,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    /**
     * Access the current nodeInfo of the node.
+    * This configures the connection string. 
     */
    public NodeInfo getNodeInfo() {
       return nodeInfo;
@@ -217,18 +229,58 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    /**
     * Access the filter rules to determine the master of a message.
-    * @return The map contains NodeDomainInfo objects, it is never null, please treat as read only.
+    * @return The map contains NodeDomainInfo objects, it is never null
+    * Please treat as read only or synchronize over the map
     */
-   public Map getDomainInfoMap() {
-      return domainInfoMap;
+   public NodeDomainInfo[] getNodeDomainInfos() {
+      synchronized (this.domainInfoMap) {
+         return (NodeDomainInfo[])this.domainInfoMap.values().toArray(new NodeDomainInfo[this.domainInfoMap.size()]);
+      }
    }
+
+   public String replace(NodeDomainInfo old, String xmlNew) {
+      try {
+         if (old == null || xmlNew == null) return "IllegalArgument";
+         
+         XmlBuffer sb = new XmlBuffer(xmlNew.length() + 128);
+         sb.append("<clusternode id='").appendAttributeEscaped(getId()).append("'>");
+         sb.append(xmlNew);
+         sb.append("</clusternode>");
+         
+         ClusterNode clusterNodeDummy = new ClusterNode(this.fatherGlob, getNodeId(), this.sessionInfo);
+         new NodeParser(this.fatherGlob, clusterNodeDummy, sb.toString());
+         NodeDomainInfo newOne = clusterNodeDummy.getNodeDomainInfos()[0];
+         
+         synchronized (this.domainInfoMap) {
+            old.shutdown(); // removes it from domainInfoMap
+            addNodeDomainInfo(newOne);
+         }
+   
+         return "Reconfigured to " + xmlNew + "\nPlease also change your configuration file to survive xmlBlaster restart";
+      }
+      catch (XmlBlasterException e) {
+         log.warning(e.getMessage());
+         return e.getMessage();
+      }
+   }
+   
+   //public void addNodeDomainInfo(String xml) {
+   //}
 
    /**
     * Set the filter rules to determine the master of a message.
     */
-   public void addDomainInfo(NodeDomainInfo domainInfo) {
+   public void addNodeDomainInfo(NodeDomainInfo domainInfo) {
       // How to avoid duplicates? key = domainInfo.getQuery() does not help because of subtags
-      this.domainInfoMap.put(""+domainInfo.getCount(), domainInfo);
+      synchronized (this.domainInfoMap) {
+         this.domainInfoMap.put(""+domainInfo.getCount(), domainInfo);
+      }
+   }
+
+   public void removeNodeDomainInfo(NodeDomainInfo domainInfo) {
+      synchronized (this.domainInfoMap) {
+         this.domainInfoMap.remove(""+domainInfo.getCount());
+      }
    }
 
    /**
@@ -283,10 +335,34 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * @return true if we are logged in or are polling for the node<br />
     *         false if the node should not be used
     */
-   public boolean isAllowed() throws XmlBlasterException {
+   public boolean isAllowed() {
       if (isLocalNode())
          return true;
       return isAllowed;
+   }
+   
+   public void setAllowed(boolean allowed) {
+      this.isAllowed = allowed;
+   }
+   
+   /**
+    * For JMX access. 
+    * @return
+    */
+   public String getConnectionStateStr() {
+      try {
+         int state = getConnectionState();
+         switch (state) {
+            case 0: return "ALIVE";
+            case 1: return "POLLING";
+            case 2: return "DEAD";
+            default: return "UNKNOWN";
+         }
+      }
+      catch (XmlBlasterException e) {
+         e.printStackTrace();
+         return "UNKNOWN";
+      }
    }
 
    /**
@@ -312,13 +388,6 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public boolean isLocalNode() {
       return getId().equals(this.fatherGlob.getId());
-   }
-
-   /**
-    * Set the connection status
-    */
-   public void setAvailable(boolean available) {
-      this.available = available;
    }
 
    /**
@@ -395,9 +464,27 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          return Constants.RET_FORWARD_ERROR;   // OK like this?
       return Constants.RET_OK;
    }
-
+   
    public void shutdown() {
+      Object mbean = this.mbeanHandle;
+      ServerScope serverScope = this.fatherGlob;
+      if (serverScope != null && mbean != null) {
+         this.mbeanHandle = null;
+         serverScope.unregisterMBean(mbean);
+      }
+      
+      NodeDomainInfo[] nodeDomainInfos = getNodeDomainInfos();
+      for (int i=0; i<nodeDomainInfos.length; i++) {
+         nodeDomainInfos[i].shutdown();
+      }
+
       resetXmlBlasterAccess(false);
+      
+      try {
+         this.fatherGlob.getClusterManager().removeClusterNode(this);
+      } catch (XmlBlasterException e) {
+         e.printStackTrace();
+      }
    }
 
    /**
@@ -412,20 +499,18 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * @param extraOffset indenting of tags for nice output
     */
    public final String toXml(String extraOffset, Properties props) {
-      StringBuffer sb = new StringBuffer(512);
+      XmlBuffer sb = new XmlBuffer(512);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<clusternode id='").append(getId()).append("'>");
+      sb.append(offset).append("<clusternode id='").appendAttributeEscaped(getId()).append("'>");
 
       sb.append(getNodeInfo().toXml(extraOffset + Constants.INDENT, props));
 
-      if (getDomainInfoMap() != null) {
-         Iterator it = getDomainInfoMap().values().iterator();
-         while (it.hasNext()) {
-            NodeDomainInfo info = (NodeDomainInfo)it.next();
-            sb.append(info.toXml(extraOffset + Constants.INDENT));
-         }
+      NodeDomainInfo[] infos = getNodeDomainInfos();
+      for (int i=0; i<infos.length; i++) {
+         NodeDomainInfo info = infos[i];
+         sb.append(info.toXml(extraOffset + Constants.INDENT, false));
       }
 
       sb.append(getNodeStateInfo().toXml(extraOffset + Constants.INDENT));
@@ -444,5 +529,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public org.xmlBlaster.util.Global getRemoteGlob() {
       return this.remoteGlob;
+   }
+
+   public ContextNode getContextNode() {
+      return contextNode;
    }
 }

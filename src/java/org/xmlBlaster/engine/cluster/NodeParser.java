@@ -125,6 +125,28 @@ public class NodeParser extends SaxHandlerBase
    }
 
    /**
+    * Constructor variant to only parse the &lt;master> part of the XML. 
+    * <pre>
+    *  &lt;clusternode id='heron.mycomp.com'>" +
+    *   &lt;master type='DomainToMaster' version='1.0'>\n" +
+    *    &lt;key queryType='DOMAIN' domain='RUGBY'/>\n" +
+    *   &lt;/master>\n" +
+    *  &lt;/clusternode>\n";
+    * </pre>
+    * @param glob
+    * @param clusterNode
+    * @param xml
+    * @throws XmlBlasterException
+    */
+   public NodeParser(ServerScope glob, ClusterNode clusterNode, String xml) throws XmlBlasterException {
+      this.glob = glob;
+      this.clusterManager = null;
+      this.sessionInfo = null;
+      this.tmpClusterNode = clusterNode;
+      init(xml);  // use SAX parser to parse it (is slow)
+   }
+
+   /**
     * Access the parsed ClusterNode object
     */
    public ClusterNode getClusterNode() {
@@ -152,10 +174,12 @@ public class NodeParser extends SaxHandlerBase
                      throw new RuntimeException("NodeParser: <clusternode> attribute 'id' is missing, ignoring message");
                   }
                   id = id.trim();
-                  tmpClusterNode = this.clusterManager.getClusterNode(id);
-                  if (tmpClusterNode == null) {
-                     tmpClusterNode = new ClusterNode(glob, new NodeId(id), sessionInfo);
-                     this.clusterManager.addClusterNode(tmpClusterNode);
+                  if (this.clusterManager != null) {
+                     tmpClusterNode = this.clusterManager.getClusterNode(id);
+                     if (tmpClusterNode == null) {
+                        tmpClusterNode = new ClusterNode(glob, new NodeId(id), sessionInfo);
+                        this.clusterManager.addClusterNode(tmpClusterNode);
+                     }
                   }
                }
                return;
@@ -172,7 +196,7 @@ public class NodeParser extends SaxHandlerBase
             inMaster = true;
             tmpMaster = new NodeDomainInfo(glob, tmpClusterNode);
             if (tmpMaster.startElement(uri, localName, name, character, attrs) == true) {
-               tmpClusterNode.addDomainInfo(tmpMaster);
+               tmpClusterNode.addNodeDomainInfo(tmpMaster);
             }
             else
                tmpMaster = null;
@@ -203,6 +227,8 @@ public class NodeParser extends SaxHandlerBase
             tmpNodeInfo.startElement(uri, localName, name, character, attrs);
             return;
          }
+         
+         // <info> is deprecated
          if (name.equalsIgnoreCase("info") || name.equalsIgnoreCase("connect")) {
             if (inClusternode != 1) return;
             inConnect = true;
@@ -307,6 +333,30 @@ public class NodeParser extends SaxHandlerBase
          m.init(glob, null);
 
          String xml =
+            "<clusternode id='heron.mycomp.com'>" +
+            "   <master type='DomainToMaster' version='0.9'>\n" +
+            "     <key queryType='DOMAIN' domain='RUGBY'/>\n" +
+            "     <key queryType='XPATH'>//STOCK</key>\n" +
+            "     <filter type='ContentLength'>\n" +
+            "       8000\n" +
+            "     </filter>\n" +
+            "     <filter type='ContainsChecker' version='7.1' xy='true'>\n" +
+            "       bug\n" +
+            "     </filter>\n" +
+            "     <someOtherPluginfilter>\n" +
+            "        <![CDATA[\n" +
+            "        ]]>\n" +
+            "     </someOtherPluginfilter>\n" +
+            "   </master>\n" +
+            "</clusternode>\n";
+
+         {
+            System.out.println("\nmaster message from client ...");
+            NodeParser nodeParser = new NodeParser(glob, new ClusterNode(glob, new NodeId("heron.mycomp.com"), null), xml);
+            System.out.println(nodeParser.getClusterNode().toXml());
+         }
+         
+         xml =
             "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +
             "   <connect><qos>\n" +
             "     <address type='IOR'>IOR:09456087000</address>\n" +
@@ -347,6 +397,7 @@ public class NodeParser extends SaxHandlerBase
             NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml, null);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
+
 
          xml =
             "<clusternode id='heron.mycomp.com'>\n" +

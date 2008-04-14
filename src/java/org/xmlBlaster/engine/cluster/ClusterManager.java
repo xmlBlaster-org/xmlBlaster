@@ -92,11 +92,11 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     * Map containing ClusterNode objects, the key is a 'node Id'
     * The entries are sorted to contain the local node as first entry.
     */
-   private Map clusterNodeMap;
-   private ClusterNode[] clusterNodesCache = new ClusterNode[0];
+   private Map clusterNodeMap = new TreeMap(new NodeComparator());
+   private ClusterNode[] clusterNodesCache;
 
    /** Info about myself */
-   private ClusterNode myClusterNode = null;
+   private ClusterNode myClusterNode;
 
    private boolean postInitialized = false;
 
@@ -210,13 +210,12 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
             ME, tmp); // is caught in RequestBroker.java
       }
 
-      this.clusterNodeMap = new TreeMap(new NodeComparator());
       this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(this.glob, this);
 
       if (this.glob.getNodeId() == null)
          log.severe("Node ID is still unknown, please set '-cluster.node.id' to a unique name.");
       else
-         initClusterNode();
+         initMyselfClusterNode();
 
       // Look for environment settings to configure startup clustering
       String[] env = { "cluster.node", "cluster.node.info", "cluster.node.master" };
@@ -301,7 +300,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
    /**
     * Initialize ClusterNode object, containing all informations about myself. 
     */
-   private void initClusterNode() throws XmlBlasterException {
+   private void initMyselfClusterNode() throws XmlBlasterException {
       this.myClusterNode = new ClusterNode(this.glob, this.glob.getNodeId(), this.sessionInfo);
       this.addClusterNode(this.myClusterNode);
 /*
@@ -603,36 +602,47 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          log.severe("Illegal argument in addClusterNode()");
          throw new IllegalArgumentException("Illegal argument in addClusterNode()");
       }
-      this.clusterNodesCache = null; // reset cache
-      this.clusterNodeMap.put(clusterNode.getId(), clusterNode);
+      synchronized (this.clusterNodeMap) {
+         this.clusterNodesCache = null; // reset cache
+         this.clusterNodeMap.put(clusterNode.getId(), clusterNode);
+      }
+   }
+
+   public final void removeClusterNode(ClusterNode clusterNode) {
+      if (clusterNode == null || clusterNode.getNodeId() == null) {
+         Thread.dumpStack();
+         log.severe("Illegal argument in addClusterNode()");
+         throw new IllegalArgumentException("Illegal argument in removeClusterNode()");
+      }
+      synchronized (this.clusterNodeMap) {
+         this.clusterNodesCache = null; // reset cache
+         this.clusterNodeMap.remove(clusterNode.getId());
+      }
    }
 
    /**
-    * Return the map containing all known cluster nodes. 
-    * @return never null, map contains ClusterNode objects, please treat as read only.
-    */
-   public Map getClusterNodeMap() {
-      return this.clusterNodeMap;
-   }
-
-   /**
-    * @return ClusterNode[] which is a snapshot copy of our map
+    * Return array containing all known cluster nodes. 
+    * @return ClusterNode[] which is a snapshot copy of our map, is never null
     */
    public ClusterNode[] getClusterNodes() {
       if (this.clusterNodesCache == null) {
-         if (this.clusterNodeMap == null) {
-            this.clusterNodesCache = new ClusterNode[0];
-         }
-         else {
-            this.clusterNodesCache = (ClusterNode[])this.clusterNodeMap.values().toArray(new ClusterNode[this.clusterNodeMap.size()]);
+         synchronized (this.clusterNodeMap) {
+            if (this.clusterNodeMap == null) {
+               this.clusterNodesCache = new ClusterNode[0];
+            }
+            else {
+               this.clusterNodesCache = (ClusterNode[])this.clusterNodeMap.values().toArray(new ClusterNode[this.clusterNodeMap.size()]);
+            }
          }
       }
       return this.clusterNodesCache;
    }
 
    public int getNumNodes() {
-      if (this.clusterNodeMap == null) return 1; // The caller is a single node
-      return this.clusterNodeMap.size();
+      synchronized (this.clusterNodeMap) {
+         if (this.clusterNodeMap == null) return 1; // The caller is a single node
+         return this.clusterNodeMap.size();
+      }
    }
 
    /**
@@ -683,8 +693,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     * @return The ClusterNode instance or null if unknown
     */
    public final ClusterNode getClusterNode(String id) {
-      if (this.clusterNodeMap == null) return null;
-      return (ClusterNode)this.clusterNodeMap.get(id);
+      synchronized (this.clusterNodeMap) {
+         if (this.clusterNodeMap == null) return null;
+         return (ClusterNode)this.clusterNodeMap.get(id);
+      }
    }
 
    /*
@@ -711,12 +723,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     * Here you can force to establish connections to all known cluster nodes.
     */
    private void initConnections() throws XmlBlasterException {
-      Iterator it = getClusterNodeMap().values().iterator();
-      // for each cluster node ...
-      while (it.hasNext()) {
-         ClusterNode clusterNode = (ClusterNode)it.next();
+      ClusterNode[] clusterNodes = getClusterNodes();
+      for (int i=0; i<clusterNodes.length; i++) {
          // force a connect (not allowed and local node are checked to do nothing) ...
-         clusterNode.getXmlBlasterAccess();    // should we check for Exception and proceed with other nodes ?
+         clusterNodes[i].getXmlBlasterAccess();    // should we check for Exception and proceed with other nodes ?
       }
    }
 
@@ -736,7 +746,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          return null;
       }
 
-      if (log.isLoggable(Level.FINER)) log.finer("Entering getConnection(" + msgUnit.getLogId() + "), testing " + getClusterNodeMap().size() + " known cluster nodes ...");
+      if (log.isLoggable(Level.FINER)) log.finer("Entering getConnection(" + msgUnit.getLogId() + "), testing " + getClusterNodes().length + " known cluster nodes ...");
 
       // e.g. unSubscribe(__subId:heron-55) shall be forwarded
       if (msgUnit.getQosData().isPublish() && msgUnit.getKeyData().isInternal()) {
@@ -764,11 +774,12 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          return null;
       }
 
-      Iterator it = getClusterNodeMap().values().iterator();
-      // for each cluster node ...
-      while (it.hasNext()) {
-         ClusterNode clusterNode = (ClusterNode)it.next();
-         if (clusterNode.getDomainInfoMap().size() < 1)
+      ClusterNode[] clusterNodes = getClusterNodes();
+      for (int ic=0; ic<clusterNodes.length; ic++) {
+         ClusterNode clusterNode = clusterNodes[ic];
+         NodeDomainInfo[] nodeDomainInfos = clusterNode.getNodeDomainInfos();
+
+         if (nodeDomainInfos.length < 1)
             continue;
          if (clusterNode.isAllowed() == false) {
             if (log.isLoggable(Level.FINE)) log.fine("Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
@@ -779,13 +790,12 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
                             msgUnit.getLogId() + "' has been there already");
             continue;
          }
-         Iterator domains = clusterNode.getDomainInfoMap().values().iterator();
-         if (log.isLoggable(Level.FINE)) log.fine("Testing " + clusterNode.getDomainInfoMap().size() + " domains rules of node " +
+         if (log.isLoggable(Level.FINE)) log.fine("Testing " + nodeDomainInfos.length + " domains rules of node " +
                                   clusterNode.getId() + " for " + msgUnit.getLogId());
-         numRulesFound += clusterNode.getDomainInfoMap().size();
+         numRulesFound += clusterNode.getNodeDomainInfos().length;
          // for each domain mapping rule ...
-         while (domains.hasNext()) {
-            NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)domains.next();
+         for (int i=0; i<nodeDomainInfos.length; i++) {
+            NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)nodeDomainInfos[i];
             I_MapMsgToMasterId domainMapper = this.mapMsgToMasterPluginManager.getMapMsgToMasterId(
                                  nodeDomainInfo.getType(), nodeDomainInfo.getVersion(), // "DomainToMaster", "1.0"
                                  msgUnit.getContentMime(), msgUnit.getContentMimeExtended());
@@ -860,13 +870,13 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
    }
 
    public void shutdown() {
-      if (this.clusterNodeMap != null && this.clusterNodeMap.size() > 0) {
+      synchronized (this.clusterNodeMap) {
          ClusterNode[] clusterNodes = getClusterNodes();
          for(int i=0; i<clusterNodes.length; i++) {
             clusterNodes[i].shutdown();
          }
          this.clusterNodesCache = null;
-         this.clusterNodeMap.clear();
+         this.clusterNodeMap.clear();  
       }
       if (this.glob != null)
          this.glob.unregisterMBean(this.mbeanHandle);
@@ -889,11 +899,9 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<clusterManager>");
-      if (this.clusterNodeMap != null && this.clusterNodeMap.size() > 0) {
-         ClusterNode[] clusterNodes = getClusterNodes();
-         for(int i=0; i<clusterNodes.length; i++) {
-            sb.append(clusterNodes[i].toXml(extraOffset + Constants.INDENT, (Properties)null));
-         }
+      ClusterNode[] clusterNodes = getClusterNodes();
+      for(int i=0; i<clusterNodes.length; i++) {
+         sb.append(clusterNodes[i].toXml(extraOffset + Constants.INDENT, (Properties)null));
       }
       sb.append(offset).append("</clusterManager>");
 
@@ -1009,7 +1017,9 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
    }
 
    public boolean isShutdown() {
-      return this.clusterNodeMap.size() == 0;
+      synchronized (this.clusterNodeMap) {
+         return this.clusterNodeMap.size() == 0;
+      }
    }
 
    /**
@@ -1035,6 +1045,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       sb.append("                       If not specified a unique name is chosen and displayed on command line.\n");
       sb.append("   ...                 See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html\n");
       return sb.toString();
+   }
+
+   public ContextNode getContextNode() {
+      return contextNode;
    }
 } // class ClusterManager
 

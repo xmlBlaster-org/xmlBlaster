@@ -10,11 +10,13 @@ package org.xmlBlaster.engine.cluster;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.def.Constants;
 
 import org.xml.sax.Attributes;
@@ -41,11 +43,11 @@ import java.util.ArrayList;
  * </pre>
  * to the real java implementation.
  */
-public final class NodeDomainInfo implements Comparable
+public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
 {
    /** Unique name for logging */
    private String ME = "NodeDomainInfo";
-   private final ServerScope glob;
+   private final ServerScope serverScope;
    private static Logger log = Logger.getLogger(NodeDomainInfo.class.getName());
    private final ClusterNode clusterNode;
 
@@ -76,22 +78,31 @@ public final class NodeDomainInfo implements Comparable
    protected ArrayList keyList = null;                      // To collect the <key> when sax parsing
    private QueryKeyData[] keyArr;
    private transient boolean inKey = false;
+   
+   private ContextNode contextNode;
+   /** My JMX registration */
+   private Object mbeanHandle;
+
 
    /**
     * Create a NodeDomainInfo belonging to the given cluster node. 
     * <p />
     * One instance of this is created for each &lt;master> tag
     */
-   public NodeDomainInfo(ServerScope glob, ClusterNode clusterNode) {
-      this.glob = glob;
+   public NodeDomainInfo(ServerScope glob, ClusterNode clusterNode) throws XmlBlasterException {
+      this.serverScope = glob;
 
       this.clusterNode = clusterNode;
-      this.ME = this.ME + "-" + this.glob.getId();
+      this.ME = this.ME + "-" + this.serverScope.getId();
 
       synchronized (NodeDomainInfo.class) {
          count = counter++;
       }
       version = glob.getProperty().get("cluster.domainMapper.version", DEFAULT_version);
+      
+      this.contextNode = new ContextNode(ContextNode.CLUSTERMASTER_MARKER_TAG,
+            ""+getCount(), clusterNode.getContextNode());
+      this.mbeanHandle = this.serverScope.registerMBean(this.contextNode, this);
    }
 
    /** Unique number (in this JVM) */
@@ -295,7 +306,7 @@ public final class NodeDomainInfo implements Comparable
       }
 
       if (inMaster == 1 && name.equalsIgnoreCase("filter")) {
-         tmpFilter = new AccessFilterQos(glob);
+         tmpFilter = new AccessFilterQos(serverScope);
          boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
          if (ok) {
             if (this.filterList == null) {
@@ -343,7 +354,7 @@ public final class NodeDomainInfo implements Comparable
          inKey = false;
          if (log.isLoggable(Level.FINE)) log.fine("Parsing filter xmlKey=" + character.toString());
          try {
-            tmpKey = glob.getQueryKeyFactory().readObject(character.toString()); // Parse it
+            tmpKey = serverScope.getQueryKeyFactory().readObject(character.toString()); // Parse it
             if (keyList == null) keyList = new ArrayList();
             keyList.add(tmpKey);
          }
@@ -360,12 +371,46 @@ public final class NodeDomainInfo implements Comparable
          return;
       }
    }
+   
+   /**
+    * The XML markup for JMX. 
+    */
+   public String getConfiguration() {
+      return toXml("", true);
+   }
+   
+   /**
+    * Reconfigure node routing via JMX (transient only). 
+    * Is not activated and not intensively tested
+    */
+   public String setConfiguration(String xml) {
+      return clusterNode.replace(this, xml);
+   }
+   
+   /**
+    * For JMX only. 
+    * @return
+    */
+   public String destroy() {
+      this.shutdown();
+      return "Configuration is destroyed.\nPlease also change your configuration file to survive xmlBlaster restart";
+   }
+   
+   public void shutdown() {
+      Object mbean = this.mbeanHandle;
+      ServerScope sc = this.serverScope;
+      if (sc != null && mbean != null) {
+         this.mbeanHandle = null;
+         sc.unregisterMBean(mbean);
+      }
+      clusterNode.removeNodeDomainInfo(this);
+   }
 
    /**
     * Dump state of this object into a XML ASCII string.
     */
    public final String toXml() {
-      return toXml((String)null);
+      return toXml((String)null, false);
    }
 
 
@@ -376,24 +421,24 @@ public final class NodeDomainInfo implements Comparable
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(300);
+   public final String toXml(String extraOffset, boolean forceAllAttributes) {
+      XmlBuffer sb = new XmlBuffer(300);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<master");
-      if (getStratum() > 0)
+      if (forceAllAttributes || getStratum() > 0)
          sb.append(" stratum='").append(getStratum()).append("'");
       if (getRefId() != null)
          sb.append(" refId='").append(getRefId()).append("'");
-      sb.append(" type='").append(getType()).append("'");
-      if (!DEFAULT_version.equals(getVersion()))
+      sb.append(" type='").appendAttributeEscaped(getType()).append("'");
+      if (forceAllAttributes || !DEFAULT_version.equals(getVersion()))
           sb.append(" version='").append(getVersion()).append("'");
-      if (DEFAULT_acceptDefault != getAcceptDefault())
+      if (forceAllAttributes || DEFAULT_acceptDefault != getAcceptDefault())
           sb.append(" acceptDefault='").append(getAcceptDefault()).append("'");
-      if (DEFAULT_acceptOtherDefault != getAcceptOtherDefault())
+      if (forceAllAttributes || DEFAULT_acceptOtherDefault != getAcceptOtherDefault())
           sb.append(" acceptOtherDefault='").append(getAcceptOtherDefault()).append("'");
-      if (RouteInfo.DEFAULT_dirtyRead != getDirtyRead())
+      if (forceAllAttributes || RouteInfo.DEFAULT_dirtyRead != getDirtyRead())
           sb.append(" dirtyRead='").append(getDirtyRead()).append("'");
       sb.append(">");
 

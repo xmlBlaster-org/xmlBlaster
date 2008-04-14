@@ -23,6 +23,15 @@ import org.xml.sax.Attributes;
  * This is a demo code only, we need to change it to handle
  * some performance index which is comparable between
  * different nodes.
+ * <pre>
+ * &lt;!-- Messages of type "__sys__cluster.node.master[heron]": -->
+ * &lt;state>
+ *   &lt;cpu id='0' idle='40'/>   &lt;!-- currently 60% load on first CPU -->
+ *   &lt;cpu id='1' idle='44'/>
+ *   &lt;ram free='12000'/>       &lt;!-- xmlBlaster server has 12 MB free memory -->
+ *   &lt;performance bogomips='1205.86' idleIndex='20'/>
+ * &lt;/master>
+ * </pre>
  */
 public class NodeStateInfo {
    private static Logger log = Logger.getLogger(NodeStateInfo.class.getName());

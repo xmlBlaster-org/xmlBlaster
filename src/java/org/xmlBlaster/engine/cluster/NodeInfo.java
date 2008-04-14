@@ -33,6 +33,13 @@ import org.xml.sax.SAXException;
  * xmlBlaster server instance (=cluster node). 
  * It is created by the NodeParser from xml markup of by
  * the ClusterManager (via ClusterNode) for our local node.
+ * <pre>
+ * &lt;!-- Messages of type "__sys__cluster.node.master[heron]": -->
+ * &lt;connect>
+ *   &lt;qos>
+ *   ...
+ *   &lt;/qos>
+ * &lt;/connect>
  */
 public final class NodeInfo
 {
