@@ -64,7 +64,7 @@ NOTE 4: The demo below has following setup.
 3. Start a client connecting to avalon:
 =======================================
 
-   java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7501 -numPublish 20 -session.name pubisher/2 -persistent true -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win"
+   java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7501 -numPublish 20 -session.name pubisher/2 -persistent true -oid Hello -domain frodoDomain -content "We win"
    
      (add -destination /node/heron/client/subscriber/session/1 for PtP)
 
@@ -86,16 +86,32 @@ NOTE 4: The demo below has following setup.
  tailed back message sent by pubisher/2
 
 
-5. Add a subscriber:
-====================
+5. Add a subscriber at frodo:
+=============================
 
-   java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7700 -oid PublishToSlave.RUGBY_NEWS -session.name subscriber/1 -domain RUGBY_NEWS -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 
+   java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7503 -oid Hello -session.name subscriber/1 -domain all -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 
 
- This subscriber connects to 'heron' (port 7600) which is the master of
- 'PublishToSlave.RUGBY_NEWS' messages.
- We use the login name 'subscriber' and force the
- public session id '1' to be able to reconnect to the same
- session on failure.
+ This subscriber connects to 'frodo' (port 7503) and the subscribe
+ with the domain "all" is forwarded to 'heron'.
+
+ An arriving message from the avalon publisher has a Qos like this:
+  <qos>
+  <subscribable/>
+  <sender>/node/avalon/client/pubisher/2</sender>
+  <subscribe id='__subId:client/subscriber/session/1-exact:Hello'/>
+  <expiration lifeTime='-1' forceDestroy='false'/>
+  <rcvTimestamp nanos='1208178261894000000'/>
+  <queue index='0' size='1'/>
+  <persistent/>
+  <forceUpdate/>
+  <route>
+   <node id='avalon' stratum='2' timestamp='1208178261869000000' dirtyRead='false'/>
+   <node id='heron' stratum='1' timestamp='1208178261887000000' dirtyRead='false'/>
+   <node id='frodo' stratum='0' timestamp='1208178261894000000' dirtyRead='false'/>
+  </route>
+  <isUpdate/>
+ </qos>
+
 
 
 NOTE: You can now play with this setup, for example
