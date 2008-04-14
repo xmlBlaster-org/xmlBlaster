@@ -39,6 +39,10 @@
       can publish or subscribe to any message in the cluster, and may send PtP messages
       to any other client.
       </p>
+      <b>It is important to understand that clustering is based on topics. The above picture
+      shows the physical connection of the cluster nodes. But in any node there may
+      be some topics defined to be the master and others to be slaves.
+      </b>
       
       <hr />
 
@@ -545,7 +549,7 @@ cluster.node[heron]=\
          <tr><td>content</td><td><pre>
 // Bilbo is master of RECIPIES and local clients,
 // but slave for everything else
-&lt;clusternode id='0'>
+&lt;clusternode id='bilbo'>
    &lt;master stratum='0'>
       &lt;key queryType='DOMAIN' domain=''/>
       &lt;key queryType='DOMAIN' domain='RECIPIES'/>
