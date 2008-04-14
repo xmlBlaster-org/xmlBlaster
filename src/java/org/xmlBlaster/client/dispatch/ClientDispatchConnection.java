@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.Constants;
@@ -22,7 +23,6 @@ import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
@@ -54,6 +54,7 @@ public final class ClientDispatchConnection extends DispatchConnection
    private final I_MsgSecurityInterceptor securityInterceptor;
    private String encryptedConnectQos;
    private ConnectReturnQos connectReturnQos;
+   private String[] checkPointContext;
    private MsgQueueEntry connectEntry;
 
    /**
@@ -178,8 +179,18 @@ public final class ClientDispatchConnection extends DispatchConnection
          }
       }
    }
+   
+   private void setCheckpointContext(ConnectReturnQos qr) {
+      if (qr == null) {
+         this.checkPointContext = null;
+         return;
+      }
+      this.checkPointContext = new String[] {"sessionName", qr.getSessionName().getAbsoluteName()};
+   }
 
    private void publish(MsgQueueEntry[] msgArr_) throws XmlBlasterException {
+      
+      I_Checkpoint cp = glob.getCheckpointPlugin();
 
       // Convert to PublishEntry
       MsgUnit[] msgArr = new MsgUnit[msgArr_.length];
@@ -208,6 +219,12 @@ public final class ClientDispatchConnection extends DispatchConnection
          this.driver.publishOneway(msgUnitRawArr);
          connectionsHandler.getDispatchStatistic().incrNumPublish(msgUnitRawArr.length);
          if (log.isLoggable(Level.FINE)) log.fine("Success, sent " + msgArr.length + " oneway publish messages.");
+         if (cp != null) {
+            for (int i=0; i<msgArr.length; i++) {
+               cp.passingBy(I_Checkpoint.CP_CONNECTION_PUBLISH_ACK, msgArr[i],
+                     null, this.checkPointContext);
+            }
+         }
          return;
       }
 
@@ -220,6 +237,12 @@ public final class ClientDispatchConnection extends DispatchConnection
 
       if (rawReturnVal != null) {
          for (int i=0; i<rawReturnVal.length; i++) {
+            if (cp != null) {
+               MsgQueuePublishEntry publishEntry = (MsgQueuePublishEntry)msgArr_[i];
+               cp.passingBy(I_Checkpoint.CP_CONNECTION_PUBLISH_ACK, publishEntry.getMsgUnit(),
+                        null, this.checkPointContext);
+            }
+            
             if (!msgArr_[i].wantReturnObj())
                continue;
 
@@ -444,6 +467,7 @@ public final class ClientDispatchConnection extends DispatchConnection
 
       try {
          this.connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
+         setCheckpointContext(this.connectReturnQos);
       }
       catch (XmlBlasterException e) {
          log.severe("Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
@@ -545,6 +569,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       this.connectReturnQos = null;
       try {
          this.connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
+         setCheckpointContext(this.connectReturnQos);
          if (this.connectEntry != null) {
             if (this.connectEntry.wantReturnObj()) {
                this.connectEntry.setReturnObj(this.connectReturnQos);
