@@ -323,7 +323,8 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
     * @return
     */
    public final boolean isClusterManagerReady() {
-      return (this.clusterManager != null && this.clusterManager.isReady());
+      ClusterManager cm = this.clusterManager;
+      return (cm != null && cm.isReady());
    }
 
    /**
