@@ -821,7 +821,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          }
          else {
             if (destination == null) {
-               log.info("No master found for message '" + msgUnit.getLogId() + "' mime='" +
+               log.info("No master found for " + msgUnit.getMethodName() + " message '" + msgUnit.getLogId() + "' mime='" +
                          msgUnit.getContentMime() + "' domain='" + msgUnit.getDomain() + "', using local node.");
             }
             else {
