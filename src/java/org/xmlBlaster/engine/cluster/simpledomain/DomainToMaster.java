@@ -153,34 +153,16 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                   return nodeDomainInfo;
                }
             }
-            // The following query checks are only useful for PtP messages if the XmlKey for each MsgUnit in a topic remains same!
          }
       }
-
-      /*
-      // Look if we can handle it simple ...
-      if (msgUnit.isDefaultDomain()) {
-         if (nodeDomainInfo.getClusterNode().isLocalNode()) {
-            if (nodeDomainInfo.getAcceptDefault()==true) {
-               // if no domain is specified and the local node accepts default messages -> local node is master
-               if (log.isLoggable(Level.FINE)) log.trace(ME, "Message oid='" + msgUnit.getKeyOid() + "' domain='" + xmlKey.getDomain() + "' is handled by local node");
-               log.warn(ME, "<filter> additional check is not implemented");
-               return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
-            }
-         }
-         else {
-            if (nodeDomainInfo.getAcceptOtherDefault()==true) {
-               log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgUnit.getKeyOid() + "' which accepts other default domains");
-               log.warn(ME, "<filter> additional check is not implemented");
-               return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
-            }
-         }
-      }
-      */
+      
+      // The following checks run for each MsgUnit key (not the immutable TopicHandler key)
 
       // Now check if we are master
-      XmlKey xmlKey = null;
+      XmlKey xmlKey = new XmlKey(glob, msgUnit.getKeyData());
       for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
+         QueryKeyData keyMapping = keyMappings[ii];
+         /*
          if (ii==0) {
             // Try to find the DOM parsed XmlKey object:
             TopicHandler topicHandler = this.glob.getTopicAccessor().access(msgUnit.getKeyOid());
@@ -196,14 +178,39 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                if (topicHandler != null) this.glob.getTopicAccessor().release(topicHandler);
             }
          }
+         */
+         
+         if (keyMapping.isDomain() && !msgUnit.hasDomain()) {
+            if (nodeDomainInfo.getClusterNode().isLocalNode()) {
+               if (nodeDomainInfo.getAcceptDefault()==true) {
+                  // if no domain is specified and the local node accepts default messages -> local node is master
+                  if (log.isLoggable(Level.FINE)) log.fine("Message oid='" + msgUnit.getKeyOid() + "' domain='" + xmlKey.getDomain() + "' is handled by local node");
+                  AccessFilterQos[] filterQos = keyMapping.getAccessFilterArr();
+                  if (filterQos != null && filterQos.length > 0) {
+                     log.warning("<filter> additional check is not implemented: " + keyMapping.toXml());
+                  }
+                  return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
+               }
+            }
+            else {
+               if (nodeDomainInfo.getAcceptOtherDefault()==true) {
+                  log.info("Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgUnit.getKeyOid() + "' which accepts other default domains");
+                  AccessFilterQos[] filterQos = keyMapping.getAccessFilterArr();
+                  if (filterQos != null && filterQos.length > 0) {
+                     log.warning("<filter> additional check is not implemented: " + keyMapping.toXml());
+                  }
+                  return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
+               }
+            }
+         }
          
          // TODO: If filter has a prepared query cache switched on,
          // we should go over the TopicHandlerAccessor to force single threaded match() access
-         if (xmlKey.match(keyMappings[ii])) {
+         if (xmlKey.match(keyMapping)) {
             if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeDomainInfo.getNodeId().getId() +
                            "' stratum=" + nodeDomainInfo.getStratum() + " for message '" + msgUnit.getLogId() +
                            "' domain='" + xmlKey.getDomain() + "'.");
-            AccessFilterQos[] filterQos = keyMappings[ii].getAccessFilterArr();
+            AccessFilterQos[] filterQos = keyMapping.getAccessFilterArr();
             if (filterQos != null && filterQos.length > 0) {
                if (log.isLoggable(Level.FINE)) log.fine("Found " + filterQos.length + " key specific filter rules in XmlKey ...");
                for (int jj=0; jj<filterQos.length; jj++) {
