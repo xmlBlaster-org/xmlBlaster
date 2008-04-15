@@ -4,7 +4,7 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
- o #      Clustering: Extended RoundRobin to properly handle domain routing with empty domain
+ o #16830 Clustering: Extended RoundRobin to properly handle domain routing with empty domain
           (support for acceptDefault and acceptOtherDefault)
 
  o #16804 Singleton approach to avoid race condition which could create two SessionInfo instances
