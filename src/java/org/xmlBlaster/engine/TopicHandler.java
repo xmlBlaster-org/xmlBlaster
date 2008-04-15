@@ -400,8 +400,8 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
    }
 
    /**
-    * Accessing the DOM parsed key of this message.
-    * @return Never null
+    * Accessing the DOM parsed key of this topic. 
+    * @return Never null, the first publish freezes its key markup for this topic (immutable)
     * @exception XmlBlasterException in state UNCONFIGURED or on DOM parse problems
     */
    public final XmlKey getXmlKey() throws XmlBlasterException {
