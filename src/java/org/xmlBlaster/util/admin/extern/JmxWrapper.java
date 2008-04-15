@@ -616,7 +616,7 @@ public class JmxWrapper
             ContextNode result = newRoot.mergeChildTree(childs[0]);
             if (log.isLoggable(Level.FINE)) log.fine("Renamed '" + oldName + "' to '" + result.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
             if (result != null) {
-               registerMBean(result, mbeanHandle.getMBean(), mbeanHandle);
+               registerMBean(result, mbeanHandle.getMBean(), mbeanHandle, true);
                this.mbeanMap.put(mbeanHandle.getObjectInstance().getObjectName().toString(), mbeanHandle);
             }
             else {
@@ -674,7 +674,7 @@ public class JmxWrapper
             ContextNode renamed = ContextNode.valueOf(tmp.toString());
             renamed.changeParentName(classNameToChange, instanceName);
             if (log.isLoggable(Level.FINE)) log.fine("Renamed '" + oldName + "' to '" + renamed.getAbsoluteName(ContextNode.SCHEMA_JMX) + "'");
-            registerMBean(renamed, mbeanHandle.getMBean(), mbeanHandle);
+            registerMBean(renamed, mbeanHandle.getMBean(), mbeanHandle, true);
             this.mbeanMap.put(mbeanHandle.getObjectInstance().getObjectName().toString(), mbeanHandle);
             count++;
          }
@@ -703,7 +703,7 @@ public class JmxWrapper
     *         during renaming operations.
     */
    public synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean) {
-           return registerMBean(contextNode, mbean, null);
+           return registerMBean(contextNode, mbean, null, false);
    }
 
    public static String getObjectNameLiteral(Global global, ContextNode contextNode) {
@@ -713,7 +713,7 @@ public class JmxWrapper
       return hierarchy;
    }
 
-   private synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean, JmxMBeanHandle mbeanHandle) {
+   private synchronized JmxMBeanHandle registerMBean(ContextNode contextNode, Object mbean, JmxMBeanHandle mbeanHandle, boolean isRename) {
       if (this.mbeanServer == null) return null;
       if (useJmx == 0) return null;
       if (contextNode == null) return null; // Remove? code below handles a null
@@ -738,7 +738,12 @@ public class JmxWrapper
       }
       catch (javax.management.InstanceAlreadyExistsException e) {
          if (objectName != null) {
-            log.warning("JMX entry exists already, we replace it with new one: " + e.toString());
+            if (isRename) {
+               if (log.isLoggable(Level.FINE)) log.fine("JMX entry exists already, we replace it with new one: " + e.toString());
+            }
+            else {
+               log.warning("JMX entry exists already, we replace it with new one: " + e.toString());
+            }
             // this.mbeanMap.remove(objectName.toString()); is done in unregisterMBean
             unregisterMBean(objectName);
             return registerMBean(contextNode, mbean);
