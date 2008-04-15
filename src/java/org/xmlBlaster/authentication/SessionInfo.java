@@ -85,7 +85,7 @@ import org.xmlBlaster.util.ReentrantLock;
 public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 {
    private String ME = "SessionInfo";
-   private final ContextNode contextNode;
+   private ContextNode contextNode;
    /** The cluster wide unique identifier of the session e.g. "/node/heron/client/joe/2" */
    private final SessionName sessionName;
    private SubjectInfo subjectInfo; // all client informations
@@ -96,10 +96,10 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    private ConnectQosServer connectQos;
    private Timeout expiryTimer;
    private Timestamp timerKey;
-   private final ServerScope glob;
+   private ServerScope glob;
    private static Logger log = Logger.getLogger(SessionInfo.class.getName());
    /** Do error recovery if message can't be delivered and we give it up */
-   private final MsgErrorHandler msgErrorHandler;
+   private MsgErrorHandler msgErrorHandler;
    /** manager for sending callback messages */
    private DispatchManager dispatchManager;
    /** Statistic about send/received messages, can be null if there is a DispatchManager around */
@@ -107,7 +107,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    private boolean isShutdown = false;
    /** Protects timerKey refresh */
    private final Object EXPIRY_TIMER_MONITOR = new Object();
-   private final SessionInfoProtector sessionInfoProtector;
+   private SessionInfoProtector sessionInfoProtector;
    /** My JMX registration */
    private JmxMBeanHandle mbeanHandle;
    /** To prevent noisy warnings */
@@ -140,14 +140,29 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    /** this is used for administrative gets (queries on callback queue) */
    private volatile QueueQueryPlugin queueQueryPlugin;
 
+   private boolean initialized;
+
    /**
     * Create this instance when a client did a login.
     * <p />
+    * You need to call init()!
+    */
+   SessionInfo(ServerScope glob, SessionName sessionName) {
+      this.glob = glob;
+      synchronized (SessionInfo.class) {
+         instanceId = instanceCounter;
+         instanceCounter--;
+      }
+      // client has specified its own publicSessionId (> 0)
+      this.sessionName = (sessionName.isPubSessionIdUser()) ? sessionName :
+         new SessionName(glob, sessionName, getInstanceId());
+   }
+   
+   /**
     * @param subjectInfo the SubjectInfo with the login informations for this client
     */
-   public SessionInfo(SubjectInfo subjectInfo, I_Session securityCtx, ConnectQosServer connectQos, ServerScope glob)
+   void init(SubjectInfo subjectInfo, I_Session securityCtx, ConnectQosServer connectQos)
           throws XmlBlasterException {
-      this.glob = glob;
 
       if (securityCtx==null) {
          String tmp = "SessionInfo(securityCtx==null); A correct security manager must be set.";
@@ -156,21 +171,8 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       }
       this.sessionInfoProtector = new SessionInfoProtector(this);
 
-      //String prefix = glob.getLogPrefix();
-      subjectInfo.checkNumberOfSessions(connectQos);
-
-      synchronized (SessionInfo.class) {
-         instanceId = instanceCounter;
-         instanceCounter--;
-      }
       //this.id = ((prefix.length() < 1) ? "client/" : (prefix+"/client/")) + subjectInfo.getLoginName() + "/" + getPublicSessionId();
 
-      if (connectQos.getSessionName().isPubSessionIdUser()) { // client has specified its own publicSessionId (> 0)
-         this.sessionName = connectQos.getSessionName();
-      }
-      else {
-         this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getInstanceId());
-      }
       this.contextNode = new ContextNode(ContextNode.SESSION_MARKER_TAG, ""+this.sessionName.getPublicSessionId(),
                                        subjectInfo.getContextNode());
       this.ME = this.instanceId + "-" + this.sessionName.getRelativeName();
@@ -225,6 +227,12 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
 
       // JMX register "client/joe/1"
       this.mbeanHandle = this.glob.registerMBean(this.contextNode, this.sessionInfoProtector);
+      
+      this.initialized = true;
+   }
+   
+   final boolean isInitialized() {
+      return this.initialized;
    }
 
    public final boolean isAlive() {
@@ -1108,8 +1116,8 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
     */
    public synchronized int clearRemoteProperties(String prefix) {
       if (prefix == null) {
-    	 int size = 0;
-    	 if (this.remoteProperties != null)
+         int size = 0;
+         if (this.remoteProperties != null)
             size = this.remoteProperties.getClientPropertyMap().size();
          this.remoteProperties = null;
          return size;

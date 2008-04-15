@@ -171,9 +171,10 @@ final public class Authenticate implements I_RunlevelListener
          subjectInfo = getOrCreateSubjectInfoByName(sessionName, false, subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
       }
 
-      SessionInfo sessionInfo = subjectInfo.getSession(sessionName);
-      if (sessionInfo == null) {
-         sessionInfo = new SessionInfo(subjectInfo, session, new ConnectQosServer(glob, connectQos.getData()), getGlobal());
+      ConnectQosServer connectQosServer = new ConnectQosServer(glob, connectQos.getData());
+      SessionInfo sessionInfo = subjectInfo.getOrCreateSessionInfo(sessionName, connectQosServer);
+      if (!sessionInfo.isInitialized()) {
+         sessionInfo.init(subjectInfo, session, connectQosServer);
       }
 
       return sessionInfo;
@@ -397,8 +398,12 @@ final public class Authenticate implements I_RunlevelListener
 
             if (log.isLoggable(Level.FINE)) log.fine("Creating sessionInfo for " + subjectInfo.getId());
 
-            sessionInfo = getSessionInfo(connectQos.getSessionName());
-            if (sessionInfo != null && !sessionInfo.isShutdown() && sessionInfo.getConnectQos().bypassCredentialCheck()) {
+            // A PtP with forceQueuing=true and a simultaneous connect of the same
+            // client: This code is thread safe with new SessionInfo() below
+            // to avoid duplicate SessionInfo
+            sessionInfo = getOrCreateSessionInfo(connectQos.getSessionName(), connectQos);
+            if (sessionInfo.isInitialized() &&
+                !sessionInfo.isShutdown() && sessionInfo.getConnectQos().bypassCredentialCheck()) {
                if (log.isLoggable(Level.FINE)) log.fine("connect: Reused session with had bypassCredentialCheck=true");
                String oldSecretSessionId = sessionInfo.getSecretSessionId();
                sessionInfo.setSecuritySession(sessionCtx);
@@ -416,7 +421,7 @@ final public class Authenticate implements I_RunlevelListener
             else {
                // Create the new sessionInfo instance
                if (log.isLoggable(Level.FINE)) log.fine("connect: sessionId='" + secretSessionId + "' connectQos='"  + connectQos.toXml() + "'");
-               sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
+               sessionInfo.init(subjectInfo, sessionCtx, connectQos);
                synchronized(this.sessionInfoMap) {
                   this.sessionInfoMap.put(secretSessionId, sessionInfo);
                }
@@ -670,8 +675,11 @@ final public class Authenticate implements I_RunlevelListener
     */
    private final SessionInfo getSessionInfo(String secretSessionId) {
       synchronized(this.sessionInfoMap) {
-         return (SessionInfo)this.sessionInfoMap.get(secretSessionId);
+         SessionInfo sessionInfo = (SessionInfo)this.sessionInfoMap.get(secretSessionId);
+         if (sessionInfo != null && sessionInfo.isInitialized())
+            return sessionInfo;
       }
+      return null;
    }
 
    /**
@@ -691,7 +699,25 @@ final public class Authenticate implements I_RunlevelListener
       if (subjectInfo == null) {
          return null;
       }
-      return subjectInfo.getSessionInfo(sessionName);
+      SessionInfo sessionInfo = subjectInfo.getSessionInfo(sessionName);
+      if (sessionInfo != null && sessionInfo.isInitialized())
+         return sessionInfo;
+      return null;
+   }
+
+   /**
+    * Blocks for existing SessionInfo until it is initialized.
+    * For new created SessionInfo you need to call sessionInfo.init() 
+    * @param sessionName
+    * @param connectQos
+    * @return
+    * @throws XmlBlasterException
+    */
+   private final SessionInfo getOrCreateSessionInfo(SessionName sessionName, ConnectQosServer connectQos) throws XmlBlasterException {
+      SubjectInfo subjectInfo = getSubjectInfoByName(sessionName);
+      if (subjectInfo == null)
+         throw new IllegalArgumentException("subjectInfo is null for " + sessionName.getAbsoluteName());
+      return subjectInfo.getOrCreateSessionInfo(sessionName, connectQos);
    }
 
    public boolean sessionExists(String secretSessionId) {

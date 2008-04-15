@@ -358,6 +358,46 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
       //boolean force = true;
       //this.subjectQueue.shutdown();
    }
+   
+   /**
+    * Blocks for existing SessionInfo until it is initialized.
+    * For new created SessionInfo you need to call sessionInfo.init() 
+    * @param sessionName
+    * @param connectQos
+    * @return
+    * @throws XmlBlasterException
+    */
+   SessionInfo getOrCreateSessionInfo(SessionName sessionName, ConnectQosServer connectQos) throws XmlBlasterException {
+      synchronized (this.sessionMap) {
+         SessionInfo sessionInfo = getSessionInfo(sessionName);
+         if (sessionInfo == null) {
+            checkNumberOfSessions(connectQos);
+            sessionInfo = new SessionInfo(glob, sessionName);
+            this.sessionMap.put(sessionInfo.getId(), sessionInfo);
+            this.sessionArrCache = null;
+            this.callbackAddressCache = null;
+         }
+         else {
+            final int MAX = 10000;
+            int i=0;
+            for (; i<MAX; i++) {
+               if (sessionInfo.isInitialized())
+                  break;
+               try {
+                  Thread.sleep(1L);
+               } catch (InterruptedException e) {
+                  e.printStackTrace();
+               }
+            }
+            if (i >= MAX) {
+               Thread.dumpStack();
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_CONNECTIONFAILURE, ME,
+                     "Connection for " + sessionName.getAbsoluteName() + " failed, timeout while waiting for concurrently created same session name");
+            }
+         }
+         return sessionInfo;
+      }
+   }
 
    /**
     * Find a session by its pubSessionId or return null if not found
@@ -716,24 +756,24 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    
    /** @return true it publicSessionId is given by xmlBlaster server (if < 0) */
    public final int getCountSessionsInternal() {
-	   int count = 0;
-	   SessionInfo[] arr = getSessions();
-	   for (int i=0; i<arr.length; i++) {
-		   if (arr[i].getSessionName().isPubSessionIdInternal())
-			   count++;
-	   }
-	   return count;
+           int count = 0;
+           SessionInfo[] arr = getSessions();
+           for (int i=0; i<arr.length; i++) {
+                   if (arr[i].getSessionName().isPubSessionIdInternal())
+                           count++;
+           }
+           return count;
    }
 
    /** @return true it publicSessionId is given by user/client (if > 0) */
    public final int getCountSessionsUser() {
-	   int count = 0;
-	   SessionInfo[] arr = getSessions();
-	   for (int i=0; i<arr.length; i++) {
-		   if (arr[i].getSessionName().isPubSessionIdUser())
-			   count++;
-	   }
-	   return count;
+           int count = 0;
+           SessionInfo[] arr = getSessions();
+           for (int i=0; i<arr.length; i++) {
+                   if (arr[i].getSessionName().isPubSessionIdUser())
+                           count++;
+           }
+           return count;
    }
 
    /**
@@ -806,11 +846,14 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * @exception Throws XmlBlasterException if max. sessions is exhausted
     */
    public final void checkNumberOfSessions(ConnectQosServer qos) throws XmlBlasterException {
-      this.maxSessions = qos.getSessionQos().getMaxSessions();
+      if (qos.isFromPersistenceRecovery())
+         return;
+      if (SessionQos.DEFAULT_maxSessions != qos.getSessionQos().getMaxSessions())
+         this.maxSessions = qos.getSessionQos().getMaxSessions();
 
       int count = getSessions().length;
       if (qos.isSessionLimitsPubSessionIdSpecific()) {
-    	  count = qos.getSessionName().isPubSessionIdInternal() ? getCountSessionsInternal() : getCountSessionsUser();
+          count = qos.getSessionName().isPubSessionIdInternal() ? getCountSessionsInternal() : getCountSessionsUser();
       }
       if (count >= this.maxSessions) {
          log.warning(ME+": Max sessions = " + this.maxSessions + " for user " + getLoginName() + "@" + qos.getSecurityQos().getClientIp() + " exhausted, login denied.");
@@ -825,20 +868,20 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
    public SessionInfo[] getSessionsToClear(ConnectQosServer q) {
       if (q.clearSessions() == true && getNumSessions() > 0) {
          SessionInfo[] arr = getSessions();
-    	 if (q.isSessionLimitsPubSessionIdSpecific()) {
+         if (q.isSessionLimitsPubSessionIdSpecific()) {
             // Special case: only destroy pubSessionId<0 if we are also <0 and vice versa
             boolean isInternal = q.getSessionQos().getSessionName().isPubSessionIdInternal();
             ArrayList list = new ArrayList(arr.length);
             for (int i=0; i<arr.length; i++) {
-    		    if (isInternal == arr[i].getSessionName().isPubSessionIdInternal())
+                    if (isInternal == arr[i].getSessionName().isPubSessionIdInternal())
                    list.add(arr[i]);
             }
             log.warning("clearSessions for " + list.size() + " isInternal=" + isInternal + " sessions, max=" + getNumSessions() + " reached");
             return (SessionInfo[])list.toArray(new SessionInfo[list.size()]);
-    	  }
-    	  else {
+          }
+          else {
               log.warning("clearSessions for " + arr.length + " sessions, max=" + getNumSessions() + " reached");
-    		  return arr;
+                  return arr;
           }
       }
       return new SessionInfo[0];
