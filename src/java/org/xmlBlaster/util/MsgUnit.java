@@ -269,7 +269,10 @@ public final class MsgUnit implements java.io.Serializable
    }
 
    public String getLogId() {
-      return getKeyOid() + "/" + getQosData().getRcvTimestamp();
+      if (getQosData().getRcvTimestamp() == null)
+         return getKeyOid();
+      else
+         return getKeyOid() + "/" + getQosData().getRcvTimestamp();
    }
 
    /**
@@ -286,6 +289,10 @@ public final class MsgUnit implements java.io.Serializable
       return (this.keyData != null) ? this.keyData.getContentMimeExtended() : null;
    }
 
+   public boolean hasDomain() {
+      return getDomain() != null;
+   }
+   
    /**
     * @return null if not known
     */
