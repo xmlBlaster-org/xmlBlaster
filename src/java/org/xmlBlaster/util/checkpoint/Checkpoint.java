@@ -6,6 +6,7 @@ package org.xmlBlaster.util.checkpoint;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
@@ -72,6 +73,8 @@ public class Checkpoint implements I_Checkpoint {
    private String ME = "Checkpoint";
 
    private Global glob;
+   
+   private ServerScope serverScope;
 
    private static Logger log = Logger.getLogger(Checkpoint.class.getName());
 
@@ -99,8 +102,6 @@ public class Checkpoint implements I_Checkpoint {
 
    /** If false show only messages marked by filterClientPropertyKey=wfguid */
    protected boolean showAllMessages;
-
-   protected boolean cluster;
 
    protected boolean xmlStyle = true;
 
@@ -149,11 +150,11 @@ public class Checkpoint implements I_Checkpoint {
                         append(buf, this.filterKeys[i], cp.getStringValue());
                   }
                }
-               append(buf, "sender", (this.cluster) ? msgUnit.getQosData()
+               append(buf, "sender", (isClusterEnvironment()) ? msgUnit.getQosData()
                      .getSender().getAbsoluteName() : msgUnit.getQosData()
                      .getSender().getRelativeName());
                if (destination != null) {
-                  append(buf, "destination", (this.cluster) ? destination
+                  append(buf, "destination", (isClusterEnvironment()) ? destination
                         .getAbsoluteName() : destination.getRelativeName());
                }
                
@@ -208,9 +209,9 @@ public class Checkpoint implements I_Checkpoint {
       this.pluginInfo = pluginInfo;
       this.glob = glob;
       this.ME = getType();
-      org.xmlBlaster.engine.ServerScope engineGlob = (org.xmlBlaster.engine.ServerScope) glob
+      this.serverScope = (org.xmlBlaster.engine.ServerScope) glob
             .getObjectEntry(Constants.OBJECT_ENTRY_ServerScope);
-      if (engineGlob == null)
+      if (this.serverScope == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN,
                ME + ".init",
                "could not retreive the ServerNodeScope. Am I really on the server side ?");
@@ -229,8 +230,6 @@ public class Checkpoint implements I_Checkpoint {
          loggers[i] = Logger.getLogger(loggerName);
          log.fine("Adding logger '" + loggerName + "'");
       }
-
-      this.cluster = engineGlob.isClusterManagerReady();
 
       // For JMX instanceName may not contain ","
       String vers = ("1.0".equals(getVersion())) ? "" : getVersion();
@@ -252,9 +251,13 @@ public class Checkpoint implements I_Checkpoint {
                ME + ".init", "init. Could'nt initialize the driver.", ex);
       }
 
-      engineGlob.setCheckpointPlugin(this);
+      this.serverScope.setCheckpointPlugin(this);
 
       log.info("Loaded " + getType() + " plugin for checkpoints '" + getCheckpointList() + "'");
+   }
+   
+   private final boolean isClusterEnvironment() {
+      return (this.serverScope != null && this.serverScope.isClusterManagerReady());
    }
 
    /*
