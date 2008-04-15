@@ -212,6 +212,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_TEMPORARY_UNAVAILABLE = new ErrorCode("resource.temporary.unavailable",
+         "The server has a temporary resource timeout, please try again.",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode RESOURCE_DB_UNAVAILABLE = new ErrorCode("resource.db.unavailable",
          "There is no connection to a backend database using JDBC",
          new ResourceInfo[] {
@@ -316,6 +322,13 @@ public final class ErrorCode implements java.io.Serializable
 
    public static final ErrorCode COMMUNICATION = new ErrorCode("communication",
          "This category is related to communication problems between client and server.",
+         new ResourceInfo[] {
+         }
+      );
+
+   // Is thrown by server but we want the client to behave like a communication problem (re-connect)
+   public static final ErrorCode COMMUNICATION_RESOURCE_TEMPORARY_UNAVAILABLE = new ErrorCode("communication.resource.temporary.unavailable",
+         "The server has a temporary resource timeout, please try again.",
          new ResourceInfo[] {
          }
       );
