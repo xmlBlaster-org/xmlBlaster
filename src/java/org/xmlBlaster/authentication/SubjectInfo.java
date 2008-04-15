@@ -391,8 +391,10 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
             }
             if (i >= MAX) {
                Thread.dumpStack();
-               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_CONNECTIONFAILURE, ME,
-                     "Connection for " + sessionName.getAbsoluteName() + " failed, timeout while waiting for concurrently created same session name");
+               XmlBlasterException ex = new XmlBlasterException(glob, ErrorCode.RESOURCE_TEMPORARY_UNAVAILABLE, ME,
+                     "Connection for " + sessionName.getAbsoluteName() + " failed, timeout while waiting for concurrently created same session name, please retry.");
+               // The client shall retry (behave like a communication exception)
+               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESOURCE_TEMPORARY_UNAVAILABLE, ME, "", ex);
             }
          }
          return sessionInfo;
