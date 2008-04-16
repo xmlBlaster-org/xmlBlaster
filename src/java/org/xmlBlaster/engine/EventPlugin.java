@@ -2144,7 +2144,9 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
                   for (int i=0; i<clientProperties.length; i++)
                 	  list.add(clientProperties[i]);
                   list.add(new ClientProperty("_DispatchStatistic", 
-                		  dispatchManager.getDispatchStatistic().toXml(""), Constants.ENCODING_NONE));
+                		  Constants.TYPE_STRING,
+                		  Constants.ENCODING_NONE,
+                		  dispatchManager.getDispatchStatistic().toXml("")));
                   clientProperties = (ClientProperty[])list.toArray(new ClientProperty[list.size()]);
                }
             }
