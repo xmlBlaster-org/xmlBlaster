@@ -185,13 +185,13 @@ public class XmlBuffer {
                 case '\0':
                     buf.append(NULL);
                     break;
-                /*
                 case '&':
                         buf.append(AMP);
                     break;
                 case '<':
                         buf.append(LT);
                     break;
+                /*
                 case '>':
                         buf.append(GT);
                     break;
