@@ -393,7 +393,7 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
     */
    public String destroy() {
       this.shutdown();
-      return "Configuration is destroyed.\nPlease also change your configuration file to survive xmlBlaster restart";
+      return "Configuration of '" + getId() + "' is destroyed.\nPlease also change your configuration file to survive xmlBlaster restart";
    }
    
    public void shutdown() {

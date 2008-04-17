@@ -195,6 +195,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                this.xmlBlasterConnection.disconnect(this.getNodeInfo().getDisconnectQos());
             else if (this.getNodeInfo().getDisconnectQos() != null)
                this.xmlBlasterConnection.disconnect(this.getNodeInfo().getDisconnectQos());
+            else
+               this.xmlBlasterConnection.leaveServer(null);
          this.xmlBlasterConnection = null;
       }
    }
@@ -464,6 +466,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       if (ret == null || ret.length() < 1)
          return Constants.RET_FORWARD_ERROR;   // OK like this?
       return Constants.RET_OK;
+   }
+   
+   /**
+    * For JMX only. 
+    * @return
+    */
+   public String destroy() {
+      this.shutdown();
+      return "Configuration of '" + getId() + "' is destroyed.\nPlease also change your configuration file to survive xmlBlaster restart";
    }
    
    public void shutdown() {

@@ -23,6 +23,8 @@ public interface NodeDomainInfoMBean {
    
    String getConfiguration();
    
+   String destroy();
+   
    //Not easy to type the complete XML string ...
-   //String setConfiguration(String xml);
+   String setConfiguration(String xml);
 }

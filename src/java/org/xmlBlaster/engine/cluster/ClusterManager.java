@@ -683,7 +683,9 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       try {
          // fills the info to ClusterManager
          new NodeParser(this.glob, this, xml, this.sessionInfo);
-         String msg = "New cluster node configuration parsed." + xml;
+         String msg = "New cluster node configuration parsed." +
+                      "\nPlease also change your configuration file to have same change on xmlBlaster restart\n"  +
+                      xml;
          log.info(msg);
          return msg;
       } catch (XmlBlasterException e) {

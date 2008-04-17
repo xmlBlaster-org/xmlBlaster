@@ -6,4 +6,5 @@ public interface ClusterNodeMBean {
    void setAllowed(boolean allowed);
    boolean isAvailable();
    boolean isLocalNode();
+   String destroy();
 }
