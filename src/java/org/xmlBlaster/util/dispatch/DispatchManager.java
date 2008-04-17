@@ -1066,7 +1066,6 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
             this.dispatchConnectionsHandler.shutdown();
             //this.dispatchConnectionsHandler = null;
          }
-         removeBurstModeTimer();
          //this.msgQueue = null;
          //this.failureListener = null;
          //this.securityInterceptor = null;
