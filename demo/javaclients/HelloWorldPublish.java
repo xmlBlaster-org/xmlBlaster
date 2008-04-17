@@ -315,7 +315,9 @@ public class HelloWorldPublish
             String currOid = org.xmlBlaster.util.ReplaceVariable.replaceAll(oid, "%counter", currCounter);
 
             if (interactive) {
-               Global.waitOnKeyboardHit("Hit a key to publish '" + currOid + "' #" + currCounter + "/" + numPublish);
+               char ret = (char)Global.waitOnKeyboardHit("Hit 'b' to break, hit other key to publish '" + currOid + "' #" + currCounter + "/" + numPublish);
+               if (ret == 'b')
+                  break;
             }
             else {
                if (sleep > 0 && i > 0) {
@@ -400,7 +402,7 @@ public class HelloWorldPublish
 
                log.info("#" + currCounter + "/" + numPublish +
                          ": Got status='" + prq.getState() +
-                         (prq.getData().hasStateInfo()?"' " + prq.getStateInfo():"") +
+                         (prq.getData().hasStateInfo()?"' '" + prq.getStateInfo():"") +
                          "' rcvTimestamp=" + prq.getRcvTimestamp() +
                          " for published message '" + prq.getKeyOid() + "'");
             }
@@ -408,24 +410,44 @@ public class HelloWorldPublish
          log.info("Elapsed since starting to publish: " + stopWatch.nice(numPublish));
 
          if (erase) {
+            char ret = 0;
             if (interactive) {
-               Global.waitOnKeyboardHit("Hit a key to erase");
+               ret = (char)Global.waitOnKeyboardHit("Hit 'e' to erase topic '"+oid+"', or any other key to keep the topic");
             }
 
-            EraseKey ek = new EraseKey(glob, oid);
-            if (domain != null) ek.setDomain(domain);
-            EraseQos eq = new EraseQos(glob);
-            eq.setForceDestroy(eraseForceDestroy);
-            if (log.isLoggable(Level.FINEST)) log.finest("Going to erase the topic: " + ek.toXml() + eq.toXml());
-            /*EraseReturnQos[] eraseArr =*/con.erase(ek, eq);
-            log.info("Erase success");
+            if (ret == 0 || ret == 'e') {
+               EraseKey ek = new EraseKey(glob, oid);
+               if (domain != null) ek.setDomain(domain);
+               EraseQos eq = new EraseQos(glob);
+               eq.setForceDestroy(eraseForceDestroy);
+               if (log.isLoggable(Level.FINEST)) log.finest("Going to erase the topic: " + ek.toXml() + eq.toXml());
+               /*EraseReturnQos[] eraseArr =*/con.erase(ek, eq);
+               log.info("Erase success");
+            }
          }
 
-         Global.waitOnKeyboardHit("Hit a key to exit");
+         char ret = 0;
+         if (interactive) {
+            boolean hasQueued = con.getQueue().getNumOfEntries() > 0;
+            while (ret != 'l' && ret != 'd')
+               ret = (char)Global.waitOnKeyboardHit("Hit 'l' to leave server, 'd' to disconnect" + (hasQueued ? "(and destroy client side entries)" : ""));
+         }
 
-         if (disconnect) {
+
+         if (ret == 0 || ret == 'd') {
             DisconnectQos dq = new DisconnectQos(glob);
+            dq.clearClientQueue(true);
             con.disconnect(dq);
+            log.info("Disconnected from server, all resources released");
+         }
+         else {
+            con.leaveServer(null);
+            ret = 0;
+            if (interactive) {
+               while (ret != 'q')
+                  ret = (char)Global.waitOnKeyboardHit("Hit 'q' to quit");
+            }
+            log.info("Left server, our server side session remains, bye");
          }
       }
       catch (XmlBlasterException e) {
