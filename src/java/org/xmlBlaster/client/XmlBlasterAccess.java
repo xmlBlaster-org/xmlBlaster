@@ -622,6 +622,40 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return shutdown(disconnectQos);
    }
 
+   /**
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#leaveServer(Map)
+    */
+   public void leaveServer(Map map) {
+      if (!this.isValid) return;
+      synchronized(this) {
+         this.isValid = false;
+         DisconnectQos disconnectQos = new DisconnectQos(glob);
+         disconnectQos.clearClientQueue(false);
+         disconnectQos.clearSessions(false);
+         disconnectQos.deleteSubjectQueue(false);
+         disconnectQos.setLeaveServer(true);
+         disconnectQos.shutdownCbServer(true);
+         disconnectQos.shutdownDispatcher(true);
+         shutdown(disconnectQos);
+         /*
+         if (this.cbServer != null) {
+            try {
+               this.cbServer.shutdown();
+            }
+            catch (XmlBlasterException ex) {
+               ex.printStackTrace();
+               log.severe(getLogId()+"could not leave the server properly: " + ex.getMessage());
+            }
+            this.cbServer = null;
+         }
+         if (this.dispatchManager != null) {
+            this.dispatchManager.shutdown();
+            //this.dispatchManager = null;
+         }
+         */
+      }
+   }
+
    private synchronized boolean shutdown(DisconnectQos disconnectQos) {
       if (this.disconnectInProgress) {
          log.warning(getLogId()+"Calling disconnect again is ignored, you are in shutdown progress already");
@@ -649,22 +683,22 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             }
          }
 
-         String[] subscriptionIdArr = this.updateDispatcher.getSubscriptionIds();
-         for (int ii=0; ii<subscriptionIdArr.length; ii++) {
-            String subscriptionId = subscriptionIdArr[ii];
-            UnSubscribeKey key = new UnSubscribeKey(glob, subscriptionId);
-            try {
-               unSubscribe(key, null);
-            }
-            catch(XmlBlasterException e) {
-               if (e.isCommunication()) {
-                  break;
+         if (!disconnectQos.isLeaveServer()) {
+            String[] subscriptionIdArr = this.updateDispatcher.getSubscriptionIds();
+            for (int ii=0; ii<subscriptionIdArr.length; ii++) {
+               String subscriptionId = subscriptionIdArr[ii];
+               UnSubscribeKey key = new UnSubscribeKey(glob, subscriptionId);
+               try {
+                  unSubscribe(key, null);
                }
-               log.warning(getLogId()+"Couldn't unsubscribe '" + subscriptionId + "' : " + e.getMessage());
+               catch(XmlBlasterException e) {
+                  if (e.isCommunication()) {
+                     break;
+                  }
+                  log.warning(getLogId()+"Couldn't unsubscribe '" + subscriptionId + "' : " + e.getMessage());
+               }
             }
          }
-         this.updateDispatcher.clear();
-
 
          // Now send the disconnect() to the server ...
          if (!disconnectQos.isLeaveServer() && this.clientQueue != null) {
@@ -707,6 +741,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
             log.warning(e.toString());
          }
       }
+
+      this.updateDispatcher.clear();
 
       if (this.secPlgn != null) {
          this.secPlgn = null;
@@ -1322,30 +1358,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public ConnectQos getConnectQos() {
       return this.connectQos;
-   }
-
-   /**
-    * @see org.xmlBlaster.client.I_XmlBlasterAccess#leaveServer(Map)
-    */
-   public void leaveServer(Map map) {
-      if (!this.isValid) return;
-      synchronized(this) {
-         this.isValid = false;
-         if (this.cbServer != null) {
-            try {
-               this.cbServer.shutdown();
-            }
-            catch (XmlBlasterException ex) {
-               ex.printStackTrace();
-               log.severe(getLogId()+"could not leave the server properly: " + ex.getMessage());
-            }
-            this.cbServer = null;
-         }
-         if (this.dispatchManager != null) {
-            //this.dispatchManager.shutdown();
-            //this.dispatchManager = null;
-         }
-      }
    }
 
    /**
