@@ -250,11 +250,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          initConnections();
    }
 
-   /**
+   /*
     * On xmlBlaster startup we need to wait for incoming messages until clusterManager is ready. 
     * NOTE: This should be resolved in future by the runlevel manager
     * @return false on timeout (manager was never ready)
-    */
    public boolean blockUntilReady() {
       if (this.postInitialized)
          return true;
@@ -266,6 +265,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       log.severe("Waited for " + (2000*10L) + " millis for cluster manager to be ready, giving up");
       return false;
    }
+    */
 
    public boolean isReady() {
       return this.postInitialized;
@@ -677,6 +677,20 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          nodes[i] = clusterNodes[i].getId();
       }
       return nodes;
+   }
+   
+   public String addClusterNode(String xml) {
+      try {
+         // fills the info to ClusterManager
+         new NodeParser(this.glob, this, xml, this.sessionInfo);
+         String msg = "New cluster node configuration parsed." + xml;
+         log.info(msg);
+         return msg;
+      } catch (XmlBlasterException e) {
+         String msg = "Parsing cluster node configuration failed\n" + e.getMessage() + xml;
+         log.warning(msg);
+         return msg;
+      }
    }
 
    /**

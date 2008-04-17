@@ -26,5 +26,7 @@ public interface ClusterManagerMBean extends I_AdminPlugin {
     */
    String[] getNodes();
    
+   String addClusterNode(String xml);
+   
    String toXml();
 }

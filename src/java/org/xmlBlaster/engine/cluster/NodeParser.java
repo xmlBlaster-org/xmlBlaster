@@ -113,7 +113,7 @@ public class NodeParser extends SaxHandlerBase
 
 
    /**
-    * Constructs the specialized quality of service object for a publish() call.
+    * Parses the XML markup of exactly one cluster node configuration. 
     * @param xml  The XML based ASCII string
     * @param sessionInfo The sessionInfo needs to be passed through to ClusterNode
     */
