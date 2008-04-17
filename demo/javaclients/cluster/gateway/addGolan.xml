@@ -1,0 +1,20 @@
+<!--
+You can dynamically add the 'golan' configuration for 'heron' over the jconsole:
+1) Start 'heron' and open the jconsole
+2) Go to MBeans -> org.xmlBlaster -> /node/heron/service/ClusterManager[cluster]
+   Chose Operations -> addClusterNode(p1)
+3) Copy&Paste this xml file into the field an click button 'addClusterNode'
+4) Now heron tries to connect to a 'golan' node as configured below
+Note: This configuration is transient, you need to add it to xmlBlaster.properties
+to be available after a 'heron' restart.
+-->
+<!-- cluster.node.master[golan]=\ -->
+<clusternode id='golan'>
+   <connect><qos>
+      <persistent/>
+      <address type='SOCKET'>socket://:7502</address>
+   </qos></connect>
+   <master type='DomainToMaster' stratum='1' dirtyRead='false'>
+      <key queryType='DOMAIN' domain='golanDomain'/>
+   </master>
+</clusternode>
