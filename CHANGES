@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16838 Java: Fixed xmlBlasterAccess.leaveServer() client side memory leak
+
  o #16830 Clustering: Extended RoundRobin to properly handle domain routing with empty domain
           (support for acceptDefault and acceptOtherDefault)
 
