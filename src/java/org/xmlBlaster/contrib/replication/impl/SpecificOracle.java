@@ -5,7 +5,6 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.contrib.replication.impl;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,7 +17,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
-import org.xmlBlaster.contrib.db.I_DbCreateInterceptor;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_AttributeTransformer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlColumn;
@@ -46,6 +44,7 @@ public class SpecificOracle extends SpecificDefault {
    private boolean wipeoutIndexes;
    private boolean wipeoutExIfConnected;
    private boolean createDropAlterDetection;
+   private boolean useOid;
    
    /**
     * Not doing anything.
@@ -72,6 +71,7 @@ public class SpecificOracle extends SpecificDefault {
       this.wipeoutSynonyms = this.info.getBoolean("replication.oracle.wipeoutSynonyms", true);
       this.wipeoutIndexes = this.info.getBoolean("replication.oracle.wipeoutIndexes", true);
       this.createDropAlterDetection = this.info.getBoolean("replication.createDropAlterDetection", true);
+      this.useOid = this.info.getBoolean("replication.oracle.useOid", true);
    }
    
    /**
@@ -117,14 +117,18 @@ public class SpecificOracle extends SpecificDefault {
     *           can be 'old' or 'new'
     * @return
     */
-   protected String createVariableSqlPart(SqlDescription description, String prefix, boolean containsLongs, boolean isInsert) {
+   protected String createVariableSqlPart(SqlDescription description, String prefix, boolean containsLongs, boolean isInsert, boolean useOid) {
       String newOldPrefix = ":"; // ":" on ora10 ?
       SqlColumn[] cols = description.getColumns();
       String contName = prefix + "Cont"; // will be newCont or oldCont
       StringBuffer buf = new StringBuffer();
       String tablePrefix = newOldPrefix + prefix;
       buf.append("       ").append(contName).append(" := NULL;\n");
-      buf.append("       oid := ROWIDTOCHAR(").append(tablePrefix).append(".rowid);\n");
+      if (useOid)
+         buf.append("       oid := ROWIDTOCHAR(").append(tablePrefix).append(".rowid);\n");
+      else
+         buf.append("       oid := NULL;\n");
+
       boolean isNew = "new".equals(prefix);
       if (isNew) {
          if (containsLongs)
@@ -327,15 +331,15 @@ public class SpecificOracle extends SpecificDefault {
       
       buf.append("    IF INSERTING THEN\n");
       buf.append("       op := 'INSERT';\n");
-      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs, isInsert));
+      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs, isInsert, useOid));
       isInsert = false; // now for update and delete
       buf.append("    ELSIF DELETING THEN\n");
       buf.append("       op := 'DELETE';\n");
-      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs, isInsert));
+      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs, isInsert, useOid));
       buf.append("    ELSE\n");
       buf.append("       op := 'UPDATE';\n");
-      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs, isInsert));
-      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs, isInsert));
+      buf.append(createVariableSqlPart(infoDescription, "old", containsLongs, isInsert, useOid));
+      buf.append(createVariableSqlPart(infoDescription, "new", containsLongs, isInsert, useOid));
       buf.append("    END IF;\n");
 
       String dbNameTmp = null;
@@ -741,6 +745,13 @@ public class SpecificOracle extends SpecificDefault {
             log.warning("The statement '" + testRequest + "' did not return any result, can not determine the number of connected users");
          }
       }
+      catch (SQLException ex) {
+         String txt = "Could not execute '" + testRequest + "' check the grants for your user " + schema + " " + ex.getMessage();
+         if (this.wipeoutExIfConnected)
+            throw new Exception(txt);
+         else
+            log.warning(txt);
+      }
       finally {
          if (st != null)
             st.close(); // this also closes the result set
@@ -1032,19 +1043,4 @@ public class SpecificOracle extends SpecificDefault {
       return this.ownSchema;
    }
 
-   /**
-    * @see org.xmlBlaster.contrib.db.I_DbCreateInterceptor#onCreateConnection(java.sql.Connection)
-    */
-   public void onCreateConnection(Connection conn) throws Exception {
-      String sql = "{call dbms_application_info.set_client_info(?)}";
-         try {
-            CallableStatement st = conn.prepareCall(sql);
-            st.setString(1, "REPLICATION");
-            ResultSet rs = st.executeQuery();
-         }
-         catch (Exception ex) {
-            ex.printStackTrace();
-         }
-   }
-   
 }

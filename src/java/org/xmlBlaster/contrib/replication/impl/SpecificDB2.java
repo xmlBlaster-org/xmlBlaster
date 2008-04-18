@@ -216,11 +216,4 @@ public class SpecificDB2 extends SpecificDefault {
    }
    
    
-   /**
-    * @see org.xmlBlaster.contrib.db.I_DbCreateInterceptor#onCreateConnection(java.sql.Connection)
-    */
-   public void onCreateConnection(Connection conn) throws Exception {
-      throw new Exception(this.getClass().getName() + ".onCreateConnection not implemented");
-   }
-   
 }

@@ -8,6 +8,8 @@ package org.xmlBlaster.contrib.dbwriter;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -47,6 +49,7 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
    private SqlColumn colDescription;
    private I_Info info; 
    boolean caseSensitive;
+   private boolean useReaderCharset;
 
    /** Please call init() */
    public SqlInfoParser() throws Exception {
@@ -80,6 +83,7 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
          this.transformerCache = new VersionTransformerCache();
          this.transformerCache.verifyTransformerName(this.xslTransformerName);
       }
+      this.useReaderCharset = this.info.getBoolean("useReaderCharset", false);
    }
 
    /**
@@ -118,7 +122,11 @@ public class SqlInfoParser extends XmlParserBase implements I_Parser {
          }
       }
       
-      InputSource inputSource = new InputSource(is);
+      InputSource inputSource = null;
+      if (useReaderCharset)
+         inputSource = new InputSource(new InputStreamReader(is));
+      else
+         inputSource = new InputSource(is);
       if (encoding != null)
          inputSource.setEncoding(encoding); // this only has an effect if the input source contains an InputStream an not
                                    // a character stream (Reader)

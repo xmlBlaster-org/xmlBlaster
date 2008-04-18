@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -68,6 +70,7 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
    private long messageSeq;
    private long newReplKey;
    private boolean sendUnchangedUpdates = true;
+   private boolean useReaderCharset;
    
    /**
     * Default constructor, you need to call <tt>init(info)</tt> thereafter. 
@@ -171,6 +174,8 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
          this.dbSpecific.addTriggersIfNeeded(force, null, forceSend);
       }
       // end of recreating the triggers (if neeed)
+      this.useReaderCharset = this.info.getBoolean("useReaderCharset", false);
+      
       
       this.oldReplKeyPropertyName = this.dbSpecific.getName() + ".oldReplKey";
       this.transSeqPropertyName = this.dbSpecific.getName() + ".transactionSequence";
@@ -234,6 +239,37 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       }
    }
    
+   
+   private final String getContent(ResultSet rs, int clobPos) throws Exception {
+      String content = null;
+      Clob clob = rs.getClob(clobPos);
+      if (clob != null) {
+         long length = clob.length();
+         if (length > Integer.MAX_VALUE)
+            throw new Exception("ReplicationConverter.addInfo: the content is too big ('" + length + "' bytes) to fit in one msg, can not process");
+
+         if (useReaderCharset) {
+            char[] cbuf = new char[(int)length];
+            clob.getCharacterStream().read(cbuf);
+            content = new String(cbuf);
+         }
+         else {
+            byte[] buf = new byte[(int)length];
+            clob.getAsciiStream().read(buf);
+            /*
+            if (debug) {
+               Map map = Charset.availableCharsets();
+               String[] keys = (String[])map.keySet().toArray(new String[map.size()]);
+               for (int i=0; i < keys.length; i++) {
+                  log.info("character set: '" + keys[i] + "' : " + new String(buf, (Charset)map.get(keys[i])));
+               }
+            }
+            */
+            content = new String(buf);
+         }
+      }
+      return content;
+   }
    
    
    /**
@@ -306,27 +342,9 @@ public class ReplicationConverter implements I_DataConverter, ReplicationConstan
       }
       
       // String newContent = rs.getString(9); // could be null
-      String newContent = null;
-      Clob clob = rs.getClob(9);
-      if (clob != null) {
-         long length = clob.length();
-         if (length > Integer.MAX_VALUE)
-            throw new Exception("ReplicationConverter.addInfo: the content is too big ('" + length + "' bytes) to fit in one msg, can not process");
-         byte[] buf = new byte[(int)length];
-         clob.getAsciiStream().read(buf);
-         newContent = new String(buf);
-      }
-      // String oldContent = rs.getString(10);
-      String oldContent = null;
-      clob = rs.getClob(10);
-      if (clob != null) {
-         long length = clob.length();
-         if (length > Integer.MAX_VALUE)
-            throw new Exception("ReplicationConverter.addInfo: the old content is too big ('" + length + "' bytes) to fit in one msg, can not process");
-         byte[] buf = new byte[(int)length];
-         clob.getAsciiStream().read(buf);
-         oldContent = new String(buf);
-      }
+      String newContent = getContent(rs, 9);
+      String oldContent = getContent(rs, 10);
+
       // check if it needs to read the new content explicitly, this is used for cases
       // where it was not possible to fill with meat in the synchronous PL/SQL part.
       if (newContent == null && (INSERT_ACTION.equals(action) || (UPDATE_ACTION.equals(action)))) {

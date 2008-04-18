@@ -4,6 +4,19 @@
 -- the replication with xmlBlaster for Postgres                                 
 -- ---------------------------------------------------------------------------- 
 
+ALTER TRIGGER ${replPrefix}altg_${schemaName} disable
+-- FLUSH (altered ${replPrefix}altg_${schemaName})                              
+ALTER TRIGGER ${replPrefix}crtg_${schemaName} disable
+-- FLUSH (altered ${replPrefix}crtg_${schemaName})                              
+ALTER TRIGGER ${replPrefix}drtg_${schemaName} disable
+-- FLUSH (altered ${replPrefix}drtg_${schemaName})                              
+DROP TRIGGER ${replPrefix}altg_${schemaName}
+-- FLUSH (dropped ${replPrefix}altg_${schemaName})                              
+DROP TRIGGER ${replPrefix}crtg_${schemaName}
+-- FLUSH (dropped ${replPrefix}crtg_${schemaName})                              
+DROP TRIGGER ${replPrefix}drtg_${schemaName}
+-- FLUSH (dropped ${replPrefix}drtg_${schemaName})                              
+
 DROP PROCEDURE ${replPrefix}debug
 -- FLUSH (dropped ${replPrefix}debug)                                           
 DROP TABLE ${replPrefix}debug_table

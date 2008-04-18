@@ -847,7 +847,7 @@ public class SqlDescription {
       catch (SQLException ex) {
          // unique constraint for Oracle: TODO implement also for other DB
          if (ex.getMessage().indexOf("ORA-00001") > -1) {
-            log.severe("Entry '" + row.toXml("", true, false, true) + "' exists already. Will ignore it an continue");
+            log.warning("Entry '" + row.toXml("", true, false, true) + "' exists already. Will ignore it an continue");
             return 0;
          }
          else {

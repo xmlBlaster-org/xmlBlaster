@@ -828,6 +828,11 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       log.info("'" + topic + "' dumped file '" + filename + "' on '" + this.importLocation + "' seq nr. '" + seqNumber + "' ex='" + exTxt + "'");
       
       if (isEof && !isException) {
+         final String key = I_InitialUpdateListener.INITIAL_UPDATE_LISTENER_KEY; 
+         I_InitialUpdateListener iuListener = (I_InitialUpdateListener)this.info.getObject(key);
+         if (iuListener != null)
+            iuListener.startInitialUpdate();
+         
          this.dbSpecific.initialCommandPre();
          if (this.hasInitialCmd) {
             String completeFilename = getCompleteFileName(filename);
@@ -848,6 +853,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
          }
          else
             log.info("since no 'replication.initialCmd' property defined, the initial command will not be executed (not either the wipeout of the schema)");
+
+         if (iuListener != null)
+            iuListener.stopInitialUpdate();
+         
       }
    }
 

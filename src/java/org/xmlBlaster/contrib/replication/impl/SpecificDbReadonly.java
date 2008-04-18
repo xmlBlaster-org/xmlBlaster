@@ -137,12 +137,4 @@ public class SpecificDbReadonly extends SpecificDefault {
       return true;
    }
    
-   /**
-    * @see org.xmlBlaster.contrib.db.I_DbCreateInterceptor#onCreateConnection(java.sql.Connection)
-    */
-   public void onCreateConnection(Connection conn) throws Exception {
-      throw new Exception(this.getClass().getName() + ".onCreateConnection not implemented");
-   }
-   
-   
 }

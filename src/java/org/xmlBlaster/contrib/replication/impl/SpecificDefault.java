@@ -24,13 +24,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LoggingMXBean;
 
 import org.xmlBlaster.contrib.GlobalInfo;
 import org.xmlBlaster.contrib.I_Info;
 import org.xmlBlaster.contrib.PropertiesInfo;
 import org.xmlBlaster.contrib.db.DbMetaHelper;
-import org.xmlBlaster.contrib.db.I_DbCreateInterceptor;
 import org.xmlBlaster.contrib.db.I_DbPool;
 import org.xmlBlaster.contrib.db.I_ResultCb;
 import org.xmlBlaster.contrib.dbwatcher.DbWatcher;
@@ -47,7 +48,7 @@ import org.xmlBlaster.contrib.replication.TableToWatchInfo;
 import org.xmlBlaster.util.I_ReplaceVariable;
 import org.xmlBlaster.util.ReplaceVariable;
 
-public abstract class SpecificDefault implements I_DbSpecific, I_DbCreateInterceptor {
+public abstract class SpecificDefault implements I_DbSpecific {
    public final static boolean ROLLBACK_YES = true;
    public final static boolean ROLLBACK_NO = false;
    public final static boolean COMMIT_YES = true;
@@ -790,7 +791,9 @@ public abstract class SpecificDefault implements I_DbSpecific, I_DbCreateInterce
          if (!tableToWatch.getStatus().equals(TableToWatchInfo.STATUS_OK) || force) {
             String createString = createTableTrigger(sqlInfo.getDescription(), tableToWatch);
             if (createString != null && createString.length() > 1) {
-               log.info("adding triggers to '" + table + "':\n\n" + createString);
+               log.info("adding trigger to '" + table + "'");
+               if (log.isLoggable(Level.FINE))
+                  log.fine(createString);
                st = conn.createStatement();
                st.executeUpdate(createString);
                st.close();

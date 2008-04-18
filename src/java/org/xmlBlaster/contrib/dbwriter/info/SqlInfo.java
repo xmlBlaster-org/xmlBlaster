@@ -9,6 +9,7 @@ package org.xmlBlaster.contrib.dbwriter.info;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Blob;
@@ -545,7 +546,20 @@ public class SqlInfo implements ReplicationConstants {
          return new ClientProperty(name, null, null, "" + time.getTime());
       }
       else {
-         return new ClientProperty(name, null, null, rs.getString(pos)); // e.g. oracle.sql.TIMESTAMP containing a byte[]
+         
+         if (val.getClass().getName().equals("oracle.sql.TIMESTAMP")) {
+            Method meth = val.getClass().getMethod("timestampValue", null);
+            Object obj = meth.invoke(val, null);
+            if (obj instanceof Timestamp) {
+               Timestamp ts = (Timestamp)obj;
+               return new ClientProperty(name, null, null, ts.toString());
+            }
+            else {
+               return new ClientProperty(name, null, null, rs.getString(pos)); // e.g. oracle.sql.TIMESTAMP containing a byte[]
+            }
+         }
+         else
+            return new ClientProperty(name, null, null, rs.getString(pos)); // e.g. oracle.sql.TIMESTAMP containing a byte[]
          //throw new Exception("The object '" + name + "' of type '" + val.getClass().getName() + "' can not be processed since this type is not implemented");
       }
    }

@@ -49,7 +49,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * 
  * @author <a href="mailto:michele@laghi.eu">Michele Laghi</a>
  */
-public class ReplicationAgent {
+public class ReplicationAgent implements I_InitialUpdateListener {
    
    private static Logger log = Logger.getLogger(ReplicationAgent.class.getName());
 
@@ -59,7 +59,11 @@ public class ReplicationAgent {
    private DbWatcher dbWatcher;
    private DbWriter dbWriter;
    // private static String replPrefix = "repl_";
-
+   private String slaveName;
+   private String[] cmdLineArgs;
+   private boolean hasDbWatcher;
+   private boolean stopWatcherOnIU;
+   
    public class OwnGlobalInfo extends GlobalInfo {
       
       private final static boolean ON_SERVER = false;
@@ -69,21 +73,33 @@ public class ReplicationAgent {
          put(ID, infoId);
       }
 
-      public OwnGlobalInfo(GlobalInfo globalInfo, I_Info additionalInfo, String infoId) throws Exception {
+      public OwnGlobalInfo(GlobalInfo globalInfo, I_Info additionalInfo, String infoId, I_InitialUpdateListener agent) throws Exception {
          super(globalInfo, additionalInfo, ON_SERVER);
          put(ID, infoId);
+         final String key = "org.xmlBlaster.util.Global";
+         if (getObject(key) == null)
+            putObject(key, globalInfo.getGlobal());
+         if (agent != null)
+            putObject(I_InitialUpdateListener.INITIAL_UPDATE_LISTENER_KEY, agent);
       }
 
       protected void doInit(Global global, PluginInfo pluginInfo) throws XmlBlasterException {
       }
       
-   }
+   } 
    
    private GlobalInfo createOwnGlobalInfo(Global global, I_Info additionalInfo, String infoId) throws Exception {
       return new OwnGlobalInfo(global, additionalInfo, infoId);
    }
    
    
+   public GlobalInfo prepare(String[] args) throws Exception {
+      cmdLineArgs = args;
+      Global global = new Global(cmdLineArgs);
+      GlobalInfo cfgInfo = createOwnGlobalInfo(global, null, "configuration");
+      stopWatcherOnIU = fillInfoWithCommandLine(cmdLineArgs, cfgInfo);
+      return cfgInfo;
+   }
    
    /**
     * Keys are the info objects and values are maps containing the used properties as key/value pairs.
@@ -93,11 +109,8 @@ public class ReplicationAgent {
          // I_Info cfgInfo = new PropertiesInfo(new Properties());
          
          ReplicationAgent agent = new ReplicationAgent();
-         Global global = new Global(args);
-         GlobalInfo cfgInfo = agent.createOwnGlobalInfo(global, null, "configuration");
-         
-         agent.fillInfoWithCommandLine(args, cfgInfo);
-         
+
+         GlobalInfo cfgInfo = agent.prepare(args);
          I_Info readerInfo = agent.createReaderInfo(cfgInfo);
          I_Info writerInfo = agent.createWriterInfo(cfgInfo);
          
@@ -209,7 +222,7 @@ public class ReplicationAgent {
          props.load(is);
          is.close();
       }
-      I_Info readerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props), "reader");
+      I_Info readerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props), "reader", null);
       Map defaultMap = getReaderDefaultMap(readerInfo);
       
       String[] keys = (String[])defaultMap.keySet().toArray(new String[defaultMap.size()]);
@@ -233,7 +246,11 @@ public class ReplicationAgent {
          props.load(is);
          is.close();
       }
-      I_Info writerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props), "writer");
+      
+      I_InitialUpdateListener listener = null;
+      if (stopWatcherOnIU)
+         listener = this;
+      I_Info writerInfo = new OwnGlobalInfo(cfgInfo, new PropertiesInfo(props), "writer", listener);
       
       Map defaultMap = getWriterDefaultMap(writerInfo);
       String[] keys = (String[])defaultMap.keySet().toArray(new String[defaultMap.size()]);
@@ -271,6 +288,28 @@ public class ReplicationAgent {
       }
    }
    
+   private void startDbWatcher(I_Info readerInfo) throws Exception {
+      if (readerInfo == null)
+         return;
+      this.dbWatcher = initializeDbWatcher(readerInfo, this.dbWriter);
+      boolean autoSub = false;
+      if (readerInfo != null)
+         autoSub = readerInfo.getBoolean("_autoSubscribe", false);
+      if (autoSub) {
+         I_ChangePublisher publisher = (I_ChangePublisher)readerInfo.getObject("mom.publisher");
+         if (publisher != null) {
+            
+            String prefix = readerInfo.get("replication.prefix", "repl_");
+            String version = readerInfo.get("replication.version", "0.5");
+            String prefixWithVersion = prefix + ReplicationConstants.VERSION_TOKEN + version;
+            Thread.sleep(5000L);
+            ReplSourceEngine.sendInitReplMsg(publisher, new String[] { slaveName }, prefixWithVersion, null, null, null, true);
+         }
+         else {
+            log.warning("The publisher has not been initialized");
+         }
+      }
+   }
    
    /**
     * Initializes the necessary stuff (encapsulated DbWatcher and DbWriter) and starts the DbWriter.
@@ -289,26 +328,25 @@ public class ReplicationAgent {
          GlobalInfo.setStrippedHostname(writerInfo, GlobalInfo.UPPER_CASE);
          this.dbWriter = new DbWriter();
          this.dbWriter.init(writerInfo);
+         slaveName = "client/" + writerInfo.get("mom.loginName", "DbWriter/session/1");
       }
-      this.dbWatcher = initializeDbWatcher(readerInfo, this.dbWriter);
-      boolean autoSub = readerInfo.getBoolean("_autoSubscribe", false);
-      if (autoSub) {
-         I_ChangePublisher publisher = (I_ChangePublisher)readerInfo.getObject("mom.publisher");
-         if (publisher != null) {
-            String slaveName = "client/" + writerInfo.get("mom.loginName", "DbWriter/session/1");
-            
-            String prefix = readerInfo.get("replication.prefix", "repl_");
-            String version = readerInfo.get("replication.version", "0.5");
-            String prefixWithVersion = prefix + ReplicationConstants.VERSION_TOKEN + version;
-            Thread.sleep(5000L);
-            ReplSourceEngine.sendInitReplMsg(publisher, new String[] { slaveName }, prefixWithVersion, null, null, null, true);
-         }
-         else {
-            log.warning("The publisher has not been initialized");
-         }
-      }
+      startDbWatcher(readerInfo);
    }
    
+   public void startInitialUpdate() throws Exception {
+      // we stop the dbWatcher if any
+      if (this.dbWatcher != null)
+         shutdownDbWatcher();
+   }
+   
+   public void stopInitialUpdate() throws Exception {
+      if (hasDbWatcher) {
+         GlobalInfo cfgInfo = prepare(cmdLineArgs);
+         I_Info readerInfo = createReaderInfo(cfgInfo);
+         startDbWatcher(readerInfo);
+         log.info("The DbWatcher has been successfully restarted");
+      }
+   }
 
    private static DbWatcher initializeDbWatcher(I_Info readerInfo, DbWriter dbWriter) throws Exception {
       DbWatcher dbWatcher = null;
@@ -375,6 +413,7 @@ public class ReplicationAgent {
    public void shutdown() {
       try {
          shutdownDbWatcher();
+         log.info("The DbWatcher has been shut down");
       }
       catch (Exception ex) {
          log.severe("An exception occured when shutting down the agent");
@@ -401,10 +440,11 @@ public class ReplicationAgent {
       return false;
    }
    
-   private void fillInfoWithCommandLine(String[] args, GlobalInfo cfgInfo) {
+   private boolean fillInfoWithCommandLine(String[] args, GlobalInfo cfgInfo) {
       String masterFilename = null;
       String slaveFilename = null;
       String isInteractiveTxt = "false";
+      String stopWatcherOnIUTxt = "false";
       
       for (int i=0; i < args.length; i++) {
          if (args[i].equalsIgnoreCase("-master")) {
@@ -425,11 +465,18 @@ public class ReplicationAgent {
             if (i < (args.length-1))
                isInteractiveTxt = args[i+1];
          }
+         if (args[i].equalsIgnoreCase("-stopWatcherOnIU")) {
+            if (i < (args.length-1))
+               stopWatcherOnIUTxt = args[i+1];
+         }
+         
       }
+      if (masterFilename != null)
+         hasDbWatcher = true;
       cfgInfo.put("masterFilename", masterFilename);
       cfgInfo.put("slaveFilename", slaveFilename);
       cfgInfo.put("interactive", isInteractiveTxt);
-      
+      return "true".equals(stopWatcherOnIUTxt);
    }
 
    private void displayHelp(I_Info readerInfo, I_Info writerInfo) throws Exception {

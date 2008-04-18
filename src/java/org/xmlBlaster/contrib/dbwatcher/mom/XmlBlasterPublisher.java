@@ -225,7 +225,11 @@ public class XmlBlasterPublisher implements
       
       Global globOrig = (Global)info.getObject("org.xmlBlaster.engine.Global");
       if (globOrig == null) {
-         this.glob = new Global();
+         globOrig = (Global)info.getObject("org.xmlBlaster.util.Global");
+         if (globOrig == null)
+            this.glob = new Global();
+         else
+            this.glob = globOrig;
       }
       else {
          if (globOrig instanceof org.xmlBlaster.engine.ServerScope) {
