@@ -2342,6 +2342,16 @@ public class Global implements Cloneable
       return map;
       */
    }
+   
+   /**
+    * Do some garbage collect attempts
+    */
+   public static void gc(int numGc, long sleep) {
+      for (int ii=0; ii<numGc; ii++) {
+         System.gc();
+         try { Thread.sleep(sleep); } catch( InterruptedException i) {}
+      }
+   }
 
   /**
    * Access a nice, human readable string with the current RAM memory situation.
