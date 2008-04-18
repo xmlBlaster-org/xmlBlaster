@@ -1591,6 +1591,9 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                         PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnit);
                         //Thread.currentThread().dumpStack();
                         if (ret != null) { // Message was forwarded to master cluster
+                            I_Checkpoint cp = glob.getCheckpointPlugin();
+                            if (cp != null)
+                               cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
                            publishReturnQos = ret.getPublishReturnQos();
                            if (ret.getNodeDomainInfo().getDirtyRead() == false) {
                               if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeDomainInfo().getId() + ", dirtyRead==false nothing more to do");
