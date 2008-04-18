@@ -18,3 +18,30 @@ to be available after a 'heron' restart.
       <key queryType='DOMAIN' domain='golanDomain'/>
    </master>
 </clusternode>
+
+
+<!-- 
+   <clusternode id='avalon'>
+      <connect><qos>
+         <persistent/>
+         <address type='SOCKET'>socket://:7501</address>
+      </qos></connect>
+      <master type='DomainToMaster' stratum='1' dirtyRead='false'>
+         <key queryType='DOMAIN' domain='avalonDomain'/>
+         <key queryType='DOMAIN' domain='avalonTransfer'/>
+         <key queryType='DOMAIN' domain='avalonNode'/>
+      </master>
+   </clusternode>
+-->
+
+<!--
+   <clusternode id='frodo'>
+      <connect><qos>
+         <persistent/>
+         <address type='SOCKET'>socket://:7503</address>
+      </qos></connect>
+      <master type='DomainToMaster' stratum='1' dirtyRead='false'>
+         <key queryType='DOMAIN' domain='frodoDomain'/>
+      </master>
+   </clusternode>
+-->

@@ -38,6 +38,9 @@ NOTE 4: The demo below has following setup.
    'avalon' is a slave to 'heron' for 'RUGBY_NEWS' messages.
    The publisher publishes to the slave and the subscriber
    subscribes from the master.
+   
+NOTE 5: You can monitor and control the cluster nodes with JMX (e.g. jconsole)
+   See: MBeans -> org.xmlBlaster -> /node/heron/service/ClusterManager
 
 
 2. Start avalon (the xmlBlaster slave node):
@@ -47,7 +50,7 @@ NOTE 4: The demo below has following setup.
 
  Optionally edit avalon.properties and change the IP variable to your host
   
-   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile avalon.properties -logging/org.xmlBlaster.engine.RequestBroker FINE
+   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile avalon.properties
 
  'avalon' listens now on socket port 7501.
  We have switched on logging of method calls in the 'core'
@@ -58,7 +61,7 @@ NOTE 4: The demo below has following setup.
  And frodo:
 
    cd xmlBlaster/demo/javaclients/cluster/socket
-   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile frodo.properties -logging/org.xmlBlaster.engine.RequestBroker FINE
+   java -Dcom.sun.management.jmxremote org.xmlBlaster.Main -propertyFile frodo.properties
 
 
 3. Start a client connecting to avalon:
