@@ -474,6 +474,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public String destroy() {
       this.shutdown();
+      log.warning("Configuration of '" + getId() + "' is destroyed. Please also change your configuration file to survive xmlBlaster restart");
       return "Configuration of '" + getId() + "' is destroyed.\nPlease also change your configuration file to survive xmlBlaster restart";
    }
    
