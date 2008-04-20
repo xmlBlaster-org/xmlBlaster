@@ -30,6 +30,40 @@ namespace org.xmlBlaster.contrib.service {
          this.propTOs = new List<PropTO>();
       }
 
+      public ServiceTO(ServiceTO service)
+      {
+         this.propTOs = new List<PropTO>();
+         if (service == null)
+         {
+            return;
+         }
+
+         PropTO pp = service.getProp(PropTO.KEY_TASKTYPE);
+         if (pp != null)
+            addProp(pp);
+
+         pp = service.getProp(PropTO.KEY_TASK);
+         if (pp != null)
+            addProp(pp);
+
+         pp = service.getProp(PropTO.KEY_RESULTENCODING);
+         if (pp != null)
+            addProp(pp);
+
+         pp = service.getProp(PropTO.KEY_RESULTMIME);
+         if (pp != null)
+            addProp(pp);
+
+         List<PropTO> pc = service.getProps();
+         foreach (PropTO p in pc)
+         {
+            if (p.GetKey().StartsWith(PropTO.KEY_BOUNCE))
+            {
+               this.propTOs.Add(p);
+            }
+         }
+      }
+
       public ServiceTO(List<PropTO> propTOs) {
          this.propTOs = (propTOs == null) ? new List<PropTO>() : propTOs;
       }
