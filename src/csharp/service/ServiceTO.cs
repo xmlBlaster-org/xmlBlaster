@@ -35,7 +35,11 @@ namespace org.xmlBlaster.contrib.service {
       }
 
       public List<PropTO> getProps() {
-         return (this.propTOs == null) ? new List<PropTO>() : this.propTOs;
+         if (this.propTOs == null)
+         {
+            this.propTOs = new List<PropTO>();
+         }
+         return this.propTOs;
       }
 
       public PropTO getProp(String key) {
@@ -50,6 +54,20 @@ namespace org.xmlBlaster.contrib.service {
          return null;
       }
 
+      /// <summary>
+      /// Access the raw property data
+      /// </summary>
+      /// <param name="key"></param>
+      /// <returns>Never null</returns>
+      public byte[] getPropValueBytes(String key)
+      {
+         PropTO propTO = getProp(key);
+         if (propTO == null)
+            return new byte[0];
+         byte[] val = propTO.getValueBytes();
+         return (val == null) ? new byte[0] : val;
+      }
+
       /**
        * Access the property value.
        * @param key
@@ -61,6 +79,15 @@ namespace org.xmlBlaster.contrib.service {
             return "";
          String val = propTO.GetValue();
          return (val == null) ? "" : val;
+      }
+
+      public String getPropValue(String key, String defaultValue)
+      {
+         PropTO propTO = getProp(key);
+         if (propTO == null)
+            return defaultValue;
+         String val = propTO.GetValue();
+         return (val == null) ? defaultValue : val;
       }
 
       public bool addProp(PropTO propTO) {
