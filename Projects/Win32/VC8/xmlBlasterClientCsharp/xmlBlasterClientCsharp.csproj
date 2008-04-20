@@ -1,14 +1,19 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{49B20501-B243-4C46-AB58-985F23DCB424}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>org.xmlBlaster.client</RootNamespace>
     <AssemblyName>xmlBlasterClientCsharp</AssemblyName>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -60,10 +65,13 @@
       <Link>util\FileLocator.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\src\csharp\util\Serialization.cs">
-      <Link>Serialization.cs</Link>
+      <Link>util\Serialization.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\src\csharp\util\Stuff.cs">
       <Link>util\Stuff.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\src\csharp\util\XmlBuffer.cs">
+      <Link>util\XmlBuffer.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\src\csharp\XmlBlasterAccess.cs">
       <Link>XmlBlasterAccess.cs</Link>
