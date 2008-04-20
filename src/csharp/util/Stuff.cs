@@ -126,6 +126,7 @@ namespace org.xmlBlaster.util {
        * Additionally the '\0' is escaped.
        * @param text
        * @return The escaped text is appended to the given StringBuffer.
+       * @deprecated Use XmlBuffer.cs!!!!
        */
       public static string EscapeXml(String text) {
          string ret = "";
