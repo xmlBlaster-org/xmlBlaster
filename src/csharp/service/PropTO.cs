@@ -209,11 +209,17 @@ namespace org.xmlBlaster.contrib.service {
                   // Expect subtags like "<A><B>Hello</B></A>"
                   string tmp = reader.ReadInnerXml();
                   tmp = tmp.Trim();
-                  if (tmp.StartsWith("<![CDATA[")) { // strip CDATA token
+                  if (tmp.StartsWith("<![CDATA["))
+                  { // strip CDATA token
                      tmp = tmp.Substring("<![CDATA[".Length);
-                     if (tmp.EndsWith("]]>")) {
+                     if (tmp.EndsWith("]]>"))
+                     {
                         tmp = tmp.Substring(0, tmp.Length - "]]>".Length);
                      }
+                  }
+                  else
+                  {
+                     tmp = org.xmlBlaster.util.XmlBuffer.UnEscape(tmp);
                   }
                   //XmlReader nestedReader = reader.ReadSubtree();
                   //tmp = reader.ReadString(); is empty if contains tags
@@ -221,7 +227,9 @@ namespace org.xmlBlaster.contrib.service {
                   prop.SetValue(tmp);
                }
                else {
-                  prop.SetValue(reader.ReadElementContentAsString());
+                  string val = reader.ReadElementContentAsString();
+                  val = org.xmlBlaster.util.XmlBuffer.UnEscape(val);
+                  prop.SetValue(val);
                }
 
                // Check if base64 encoded (this tag is a previous sibling before the content prop)
