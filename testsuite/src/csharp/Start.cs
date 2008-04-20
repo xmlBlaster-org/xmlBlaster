@@ -13,6 +13,7 @@ csc /unsafe /r:nunit.framework /t:library -debug+ -out:xmlBlasterClient.dll *.cs
 using System;
 using System.IO;
 using System.Collections;
+//using System.Xml;
 using org.xmlBlaster.client;
 using org.xmlBlaster.util;
 using org.xmlBlaster.contrib.service;
@@ -20,6 +21,10 @@ using org.xmlBlaster.contrib.service;
 public class Start {
    static void Main(string[] argv) {
       Console.WriteLine("Startup");
+
+      simpleServiceTest();
+
+      /*
 
       testStuff();
 
@@ -42,6 +47,19 @@ public class Start {
       //testNmea();
       //testXmlBlaster();
       testService();
+       */
+   }
+
+   public static void simpleServiceTest() {
+      string xml = "<s>"
+   + "<p k='serviceName'>track</p>"
+   + "<p k='result'>&lt;A&gt;&lt;B&gt;Hallo&amp;&lt;/B&gt;&lt;C /&gt;&lt;/A&gt;</p>"
+   + "</s>";
+      ServiceTO service = ServiceTO.parse(xml);
+
+      Console.WriteLine(service.getPropValue("result"));
+
+      Console.WriteLine("Done");
    }
 
    public class TestSer {
