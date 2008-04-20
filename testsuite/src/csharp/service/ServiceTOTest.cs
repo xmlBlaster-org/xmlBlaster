@@ -90,7 +90,7 @@ namespace org.xmlBlaster.contrib.service {
          Console.WriteLine("CheckToXml");
       }
 
-            [Test]
+      [Test]
       public void CheckBase64() {
          byte[] bytes = org.xmlBlaster.util.Serialization.StringToUTF8ByteArray("Hello");
          PropTO prop = new PropTO(PropTO.KEY_DATA, bytes);
@@ -102,15 +102,15 @@ namespace org.xmlBlaster.contrib.service {
       [Test]
       public void CheckToXmlParsing2() {
          string xmlService =
-         "<services>" +
-           "<service>" +
-             "<prop key=\"serviceName\">buddy</prop>" +
-             "<prop key=\"task\">getBuddyList</prop>" +
-             "<prop key=\"resultMime\">application/watchee.service.buddy.buddylist</prop>" +
-             "<prop key=\"resultEncoding\">base64</prop>" +
-             "<prop key=\"result\">PGJ1ZGR5bGlzdCBsb2dpbk5hbWU9ImpvZUBteWNvbXAuaW5mbyIgdHlwZT0iYWxsIj4KICA8YnVkZHk+CiAgICA8bG9naW5OYW1lPmphY2tAc29tZS5vcmc8L2xvZ2luTmFtZT4KICAgIDxhbGlhcz5qYWNrPC9hbGlhcz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9ImdwcyIgZGVzY3JpcHRpb249IlNob3cgbXkgcG9zaXRpb24iLz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9InhzbXMiIGRlc2NyaXB0aW9uPSJTZW5kL1JlY2VpdmUgbWFpbHMiLz4KICA8L2J1ZGR5Pgo8L2J1ZGR5bGlzdD4=</prop>" +
-           "</service>" +
-         "</services>";
+         "<sc>" +
+           "<s>" +
+             "<p k=\"serviceName\">buddy</p>" +
+             "<p k=\"task\">getBuddyList</p>" +
+             "<p k=\"resultMime\">application/watchee.service.buddy.buddylist</p>" +
+             "<p k=\"resultEncoding\">base64</p>" +
+             "<p k=\"result\">PGJ1ZGR5bGlzdCBsb2dpbk5hbWU9ImpvZUBteWNvbXAuaW5mbyIgdHlwZT0iYWxsIj4KICA8YnVkZHk+CiAgICA8bG9naW5OYW1lPmphY2tAc29tZS5vcmc8L2xvZ2luTmFtZT4KICAgIDxhbGlhcz5qYWNrPC9hbGlhcz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9ImdwcyIgZGVzY3JpcHRpb249IlNob3cgbXkgcG9zaXRpb24iLz4KICAgIDxwZXJtaXNzaW9uIG5hbWU9InhzbXMiIGRlc2NyaXB0aW9uPSJTZW5kL1JlY2VpdmUgbWFpbHMiLz4KICA8L2J1ZGR5Pgo8L2J1ZGR5bGlzdD4=</p>" +
+           "</s>" +
+         "</sc>";
          ServiceListTO serviceList = ServiceListTO.parseStr(xmlService);
          Assert.AreEqual(1, serviceList.getServices().Count);
          foreach (ServiceTO service in serviceList.getServices()) {
@@ -124,12 +124,12 @@ namespace org.xmlBlaster.contrib.service {
       [Test]
       public void CheckXmlParsing() {
          {
-            string xml = "<?xml version='1.0' encoding='utf-8'?>\r\n<service>"
-               + "<prop key='serviceName'>track</prop>"
-               + "<prop key='taskType'>named</prop>"
-               + "<prop key='task'>myStandardTrackIdQuery('Summer')</prop>"
-               + "<prop key='resultMime'>application/service-buddy</prop>"
-               + "</service>";
+            string xml = "<?xml version='1.0' encoding='utf-8'?>\r\n<s>"
+               + "<p k='serviceName'>track</p>"
+               + "<p k='taskType'>named</p>"
+               + "<p k='task'>myStandardTrackIdQuery('Summer')</p>"
+               + "<p k='resultMime'>application/service-buddy</p>"
+               + "</s>";
             ServiceTO service = ServiceTO.parse(xml);
             Assert.IsNotNull(service);
             Assert.AreEqual(4, service.getProps().Count);
@@ -141,12 +141,12 @@ namespace org.xmlBlaster.contrib.service {
 
          {
             string xml = "<?xml version='1.0' encoding='utf-8'?>\r\n"
-               + "<services><service>"
-               + "<prop key='serviceName'>track</prop>"
-               + "<prop key='taskType'>named</prop>"
-               + "<prop key='task'>myStandardTrackIdQuery('Summer')</prop>"
-               + "<prop key='resultMime'>application/watchee-service-buddy-</prop>"
-               + "</service></services>";
+               + "<sc><s>"
+               + "<p k='serviceName'>track</p>"
+               + "<p k='taskType'>named</p>"
+               + "<p k='task'>myStandardTrackIdQuery('Summer')</p>"
+               + "<p k='resultMime'>application/watchee-service-buddy-</p>"
+               + "</s></sc>";
             ServiceListTO serviceList = ServiceListTO.parseStr(xml);
             Assert.IsNotNull(serviceList);
             Assert.AreEqual(1, 1);
@@ -157,10 +157,10 @@ namespace org.xmlBlaster.contrib.service {
       [Test]
       public void CheckXmlSubtagsParsing() {
          {
-            string xml = "<service>"
-               + "<prop key='serviceName'>track</prop>"
-               + "<prop key='result'><A><B>Hallo</B><C /></A></prop>"
-               + "</service>";
+            string xml = "<s>"
+               + "<p k='serviceName'>track</p>"
+               + "<p k='result'><A><B>Hallo</B><C /></A></p>"
+               + "</s>";
             ServiceTO service = ServiceTO.parse(xml);
             Assert.IsNotNull(service);
             Assert.AreEqual(2, service.getProps().Count);
@@ -168,10 +168,21 @@ namespace org.xmlBlaster.contrib.service {
          }
 
          {
-            string xml = "<service>"
-               + "<prop key='serviceName'>track</prop>"
-               + "<prop key='result'><![CDATA[<A><B>Hallo</B><C /></A>]]></prop>"
-               + "</service>";
+            string xml = "<s>"
+               + "<p k='serviceName'>track</p>"
+               + "<p k='result'>&lt;A&gt;&lt;B&gt;Hallo&amp;&lt;/B&gt;&lt;C /&gt;&lt;/A&gt;</p>"
+               + "</s>";
+            ServiceTO service = ServiceTO.parse(xml);
+            Assert.IsNotNull(service);
+            Assert.AreEqual(2, service.getProps().Count);
+            Assert.AreEqual("<A><B>Hallo&</B><C /></A>", service.getPropValue(PropTO.KEY_RESULT));
+         }
+
+         {
+            string xml = "<s>"
+               + "<p k='serviceName'>track</p>"
+               + "<p k='result'><![CDATA[<A><B>Hallo</B><C /></A>]]></p>"
+               + "</s>";
             ServiceTO service = ServiceTO.parse(xml);
             Assert.IsNotNull(service);
             Assert.AreEqual(2, service.getProps().Count);
@@ -184,11 +195,11 @@ namespace org.xmlBlaster.contrib.service {
       [Test]
       public void CheckXmlBase64Parsing() {
          {
-            string xml = "<service>"
-               + "<prop key='serviceName'>track</prop>"
-               + "<prop key='resultEncoding'>base64</prop>"
-               + "<prop key='result'>QmxhPEJsYUJsYQ==</prop>"
-               + "</service>";
+            string xml = "<s>"
+               + "<p k='serviceName'>track</p>"
+               + "<p k='resultEncoding'>base64</p>"
+               + "<p k='result'>QmxhPEJsYUJsYQ==</p>"
+               + "</s>";
             ServiceTO service = ServiceTO.parse(xml);
             Assert.IsNotNull(service);
             Assert.AreEqual(3, service.getProps().Count);
