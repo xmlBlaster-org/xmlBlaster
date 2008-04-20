@@ -198,16 +198,28 @@ namespace org.xmlBlaster.util {
       public static void GetInfoProperties(Hashtable info) {
          if (info == null) return;
          info[CLIENTPROPERTY_REMOTEPROPERTIES] = "true";
-         info["version.OS"] = System.Environment.OSVersion.ToString(); // "Microsoft Windows CE 5.2.1238", "Microsoft Windows CE 5.1.195"
-         info["version.net"] = System.Environment.Version.ToString(); // "2.0.7045.0", "2.0.6129.0"
-         info["location"] = CultureInfo.CurrentCulture.ToString(); //"", "de-DE"
+         
+         // "Microsoft Windows CE 5.2.1238", "Microsoft Windows CE 5.1.195", "Microsoft Windows CE 4.21.1088"
+         info["version.OS"] = System.Environment.OSVersion.ToString();
+
+         // "2.0.7045.0", "2.0.6129.0", "2.0.7045.0"	
+         info["version.net"] = System.Environment.Version.ToString();
+         
+         //"", "de-DE", "en-US"	
+         info["location"] = CultureInfo.CurrentCulture.ToString();
+         
          // screenSize "240x320", "240x240"
          try {
             //info["version.xmlBlasterC#"] = xb.GetVersion();
-            info["info.OEM"] = GetOemInfo();  // "HERM200", "hp IPAQ hw6910"
+
+            // "HERM200", "hp IPAQ hw6910", "Microsoft DeviceEmulator"	
+            info["info.OEM"] = GetOemInfo();
+            
             //info["logical.drive"] = Info.GetLogicalDrives();
             //info["machine.name"] = Info.MachineName;
-            info["platform.name"] = GetPlatformName(); // "PocketPC", "PocketPC"
+
+            // "PocketPC", "PocketPC", "PocketPC"	
+            info["platform.name"] = GetPlatformName();
          }
          catch (Exception) {
          }
