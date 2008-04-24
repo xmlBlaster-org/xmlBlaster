@@ -201,7 +201,7 @@ public class PluginLoader {
          else if (mechanism.equals("ldap")) // xmlBlaster should run without xmlBlaster.properties
             s = "org.xmlBlaster.authentication.plugins.ldap.ClientPlugin";
          else
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Unknown security plugin '" + mechanism + "' with version '" + version + "' is rejected.");
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Unknown Security.Client.Plugin["+mechanism+"]["+version+"] from ConnectQos is rejected.");
       }
 
       StringTokenizer st = new StringTokenizer(s,",");
