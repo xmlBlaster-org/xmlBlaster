@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-        <name>xmlBlaster</name>
-        <comment></comment>
-        <projects>
-        </projects>
-        <buildSpec>
-                <buildCommand>
-                        <name>org.eclipse.jdt.core.javabuilder</name>
-                        <arguments>
-                        </arguments>
-                </buildCommand>
-        </buildSpec>
-        <natures>
-                <nature>org.eclipse.jdt.core.javanature</nature>
-        </natures>
-        <linkedResources>
-                <link>
-                        <name>classes.antLink</name>
-                        <type>2</type>
-                        <locationURI>XMLBLASTER_HOME/build.tmp/classes</locationURI>
-                </link>
-        </linkedResources>
+	<name>xmlBlaster</name>
+	<comment>Open Source Messaging Middleware http://www.xmlBlaster.org</comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
 </projectDescription>
