@@ -137,6 +137,8 @@ public class Checkpoint implements I_Checkpoint {
                StringBuffer buf = new StringBuffer(2048);
                append(buf, "cp", CP_NAMES[checkpoint]);
                append(buf, "topicId", msgUnit.getKeyOid());
+               if (serverScope!=null && serverScope.isClusterManagerReady() && msgUnit.getDomain() != null && msgUnit.getDomain().length() > 0)
+            	   append(buf, "domain", msgUnit.getDomain());
                append(buf, "contentLen", ""+msgUnit.getContent().length);
                if (this.showAllClientProperties) {
                   ClientProperty[] props = msgUnit.getQosData().getClientPropertyArr();
