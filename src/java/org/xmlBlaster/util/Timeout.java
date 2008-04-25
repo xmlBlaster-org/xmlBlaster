@@ -530,8 +530,8 @@ final class WeakObj implements I_Timeout {
       System.exit(1);
    }
 
-   public void finalize() {
-      super.finalize();
-      System.out.println("WeakObj is garbage collected");
-   }
+   //public void finalize() {
+   //   super.finalize();
+   //   System.out.println("WeakObj is garbage collected");
+   //}
 }
