@@ -5,24 +5,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.xmlBlaster.engine.*;
-import org.xmlBlaster.util.plugin.PluginManagerBase;
-import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.authentication.Authenticate;
-
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.StringTokenizer;
+import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.plugin.PluginManagerBase;
 
 /**
  * CbProtocolManager loads the callback protocol plugins like CORBA/RMI/XmlRpc. 
@@ -37,7 +27,6 @@ import java.util.StringTokenizer;
  */
 public class CbProtocolManager extends PluginManagerBase
 {
-   private final String ME;
    private final ServerScope glob;
    private static Logger log = Logger.getLogger(CbProtocolManager.class.getName());
    private static final String defaultPluginName = "org.xmlBlaster.protocol.corba.CallbackCorbaDriver";
@@ -47,7 +36,6 @@ public class CbProtocolManager extends PluginManagerBase
       super(glob);
       this.glob = glob;
 
-      this.ME = "CbProtocolManager" + this.glob.getLogPrefixDashed();
       if (log.isLoggable(Level.FINER)) log.finer("Constructor CbProtocolManager");
    }
 
