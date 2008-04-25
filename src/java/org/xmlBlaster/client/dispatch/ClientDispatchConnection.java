@@ -109,8 +109,9 @@ public final class ClientDispatchConnection extends DispatchConnection
     * Send the messages to xmlBlaster. 
     * @param msgArr The messages to send.
     *  msgArr[i].getReturnVal() will contain the returned QoS object or null for oneway operations
+    * @param isAsyncMode true if coming from queue
     */
-   public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException {
+   public void doSend(MsgQueueEntry[] msgArr_, boolean isAsyncMode) throws XmlBlasterException {
       if (msgArr_.length < 1) {
          return;
       }
@@ -151,6 +152,9 @@ public final class ClientDispatchConnection extends DispatchConnection
                erase(msgArr_[ii]);
             }
             else if (MethodName.CONNECT == msgArr_[ii].getMethodName()) {
+               if (isAsyncMode && isAlive()) {
+                  return; // Coming from queue but we are alive already
+               }
                connect(msgArr_[ii]);
                this.connectEntry = msgArr_[ii]; // remember it
             }
