@@ -98,7 +98,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
 	            if (log.isLoggable(Level.FINE))
 	               log.fine("recoverSessions: store in map session='" + sessionName.getAbsoluteName() + "' has secret sessionId='" + sessionId + "' and persistenceUniqueId=" + entry.getUniqueId());
 	            // if (log.isLoggable(Level.FINE)) log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
-	            ConnectReturnQosServer ret = this.global.getAuthenticate().connect(this.addressServer, qos);
+	            ConnectReturnQosServer ret = this.global.getAuthenticate().connect(qos);
 	            if (log.isLoggable(Level.FINEST))
 	               log.finest("recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
 	         }

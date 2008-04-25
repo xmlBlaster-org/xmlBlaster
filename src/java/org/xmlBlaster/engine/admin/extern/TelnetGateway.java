@@ -444,7 +444,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       ConnectQosServer connectQos = new ConnectQosServer(glob, clientConnectQos.getData());
       this.addressServer = new AddressServer(glob, "NATIVE", glob.getId(), (java.util.Properties)null);
       connectQos.setAddressServer(this.addressServer);
-      this.connectRetQos = glob.getAuthenticate().connect(this.addressServer, connectQos);
+      this.connectRetQos = glob.getAuthenticate().connect(connectQos);
       this.loginName = loginName;
       this.sessionId = connectRetQos.getSecretSessionId();
       isLogin = true;
