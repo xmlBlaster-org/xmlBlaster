@@ -154,8 +154,10 @@ trace intensity.
          <tr>
             <td>Checkpoints</td>
             <td>---</td>
-            <td>Currently we have three checkpoints:
-            "publish.ack", "update.queue.add", "update.ack".
+            <td>Currently we have three checkpoints:<br />
+            <i>"publish.ack", "update.queue.add", "update.ack"</i> and additionally 
+            <i>"client.publish.ack"</i> in cluster environments.
+            <br />
             In <code>logging.properties</code> you can choose the log level of each
             checkpoint individually: Choosing INFO dumps the logging output as described above,
             choosing FINEST dumps the complete message and choosing OFF dumps nothing for
