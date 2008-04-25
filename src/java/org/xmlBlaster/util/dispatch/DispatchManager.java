@@ -162,8 +162,13 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    }
 
    public void finalize() {
-      removeBurstModeTimer();
-      if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected");
+      try {
+         removeBurstModeTimer();
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected");
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    public I_Queue getQueue() {
@@ -184,9 +189,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       boolean ret = this.connectionStatusListeners.add(connectionStatusListener);
       if (fireInitial) {
          if (isDead())
-            connectionStatusListener.toAlive(this, ConnectionStateEnum.DEAD);
+            connectionStatusListener.toDead(this, ConnectionStateEnum.DEAD, "Initial call");
          else if (isPolling())
-            connectionStatusListener.toAlive(this, ConnectionStateEnum.POLLING);
+            connectionStatusListener.toPolling(this, ConnectionStateEnum.POLLING);
          else
             connectionStatusListener.toAlive(this, ConnectionStateEnum.ALIVE);
       }
