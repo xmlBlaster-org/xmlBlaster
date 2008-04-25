@@ -183,8 +183,9 @@ public class JdbcDriver implements I_Driver, I_Publish
       connectQos.addCallbackAddress(cbAddress);
       connectQos.loadClientPlugin("htpasswd", "1.0", loginName, passwd);
       connectQos.getSessionQos().setSessionTimeout(0L);
-
-      ConnectReturnQosServer returnQos = this.authenticate.connect(this.addressServer, new ConnectQosServer(glob, connectQos.getData()));
+      ConnectQosServer connectQosServer = new ConnectQosServer(glob, connectQos.getData());
+      connectQosServer.setAddressServer(this.addressServer);
+      ConnectReturnQosServer returnQos = this.authenticate.connect(connectQosServer);
       sessionId = returnQos.getSecretSessionId();
 
       log.info("Started successfully JDBC driver with loginName=" + loginName);

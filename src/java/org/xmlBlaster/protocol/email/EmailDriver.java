@@ -236,7 +236,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
             if (MethodName.CONNECT == receiver.getMethodName()) {
                ConnectQosServer conQos = new ConnectQosServer(this.glob, receiver.getQos());
                conQos.setAddressServer(getAddressServer());
-               ConnectReturnQosServer retQos = this.authenticate.connect(getAddressServer(), conQos);
+               ConnectReturnQosServer retQos = this.authenticate.connect(conQos);
                //As we are a singleton there is no need to remember the secretSessionId of this client
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
                executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);

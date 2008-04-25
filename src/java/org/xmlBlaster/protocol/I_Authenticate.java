@@ -38,7 +38,7 @@ public interface I_Authenticate
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
-   public ConnectReturnQosServer connect(AddressServer addressServer, ConnectQosServer qos) throws XmlBlasterException;
+   public ConnectReturnQosServer connect(ConnectQosServer qos) throws XmlBlasterException;
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
@@ -48,7 +48,7 @@ public interface I_Authenticate
    /*
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
-   public ConnectReturnQosServer connect(AddressServer addressServer, ConnectQosServer qos, String sessionId) throws XmlBlasterException;
+   public ConnectReturnQosServer connect(ConnectQosServer qos, String sessionId) throws XmlBlasterException;
 
    /*
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>

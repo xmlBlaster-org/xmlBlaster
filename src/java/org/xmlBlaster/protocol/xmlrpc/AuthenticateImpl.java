@@ -80,7 +80,7 @@ public class AuthenticateImpl
       }
          
 
-      ConnectReturnQosServer returnQos = authenticate.connect(this.addressServer, connectQos);
+      ConnectReturnQosServer returnQos = authenticate.connect(connectQos);
       return returnQos.getSecretSessionId();
    }
 

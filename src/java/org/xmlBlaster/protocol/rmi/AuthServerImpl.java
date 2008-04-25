@@ -100,8 +100,8 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       String returnValue = null;
       ConnectQosServer connectQos = new ConnectQosServer(glob, qos_literal);
       if (log.isLoggable(Level.FINER)) log.finer("Entering connect(qos=" + qos_literal + ")");
-
-      ConnectReturnQosServer returnQos = authenticate.connect(this.addressServer, connectQos);
+      connectQos.setAddressServer(this.addressServer);
+      ConnectReturnQosServer returnQos = authenticate.connect(connectQos);
       returnValue = returnQos.toXml();
 
       return returnValue;

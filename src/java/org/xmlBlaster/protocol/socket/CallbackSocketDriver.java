@@ -264,5 +264,9 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       }
       return this.msgInfoParserClassName; // "org.xmlBlaster.util.xbformat.XbfParser"
    }
+
+   public HandleClient getHandler() {
+      return handler;
+   }
 }
 

@@ -522,6 +522,18 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    public final void updateConnectQos(ConnectQosServer newConnectQos) throws XmlBlasterException {
       boolean wantsCallbacks = (newConnectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0);
 
+      // Remember persistent values:
+      newConnectQos.isFromPersistenceRecovery(this.connectQos.isFromPersistenceRecovery());
+      newConnectQos.setPersistenceUniqueId(this.connectQos.getPersistenceUniqueId());
+      if (this.connectQos.getData().isPersistent()) // otherwise persistent sessions could be made transient
+         newConnectQos.getData().setPersistent(true); // and would never be deleted from persistence.
+      this.connectQos = newConnectQos; // Replaces ConnectQosServer settings like bypassCredentialCheck
+
+      // "__remoteProperties"
+      if (newConnectQos.getData().getClientProperty(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, false)) {
+          mergeRemoteProperties(newConnectQos.getData().getClientProperties());
+      }
+
       CbQueueProperty cbQueueProperty = newConnectQos.getSessionCbQueueProperty();
       I_Queue sessionQueue = this.sessionQueue;
       if (sessionQueue != null) sessionQueue.setProperties(cbQueueProperty);
@@ -554,18 +566,6 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       else if (!wantsCallbacks && !hasCallback()) {
          if (log.isLoggable(Level.FINE)) log.fine(ME+": No callback exists and no callback is desired");
          // nothing to do
-      }
-
-      // Remember persistent values:
-      newConnectQos.isFromPersistenceRecovery(this.connectQos.isFromPersistenceRecovery());
-      newConnectQos.setPersistenceUniqueId(this.connectQos.getPersistenceUniqueId());
-      if (this.connectQos.getData().isPersistent()) // otherwise persistent sessions could be made transient
-         newConnectQos.getData().setPersistent(true); // and would never be deleted from persistence.
-      this.connectQos = newConnectQos; // Replaces ConnectQosServer settings like bypassCredentialCheck
-
-      // "__remoteProperties"
-      if (newConnectQos.getData().getClientProperty(Constants.CLIENTPROPERTY_REMOTEPROPERTIES, false)) {
-          mergeRemoteProperties(newConnectQos.getData().getClientProperties());
       }
    }
 

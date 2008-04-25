@@ -58,20 +58,21 @@ final public class AuthenticateProtector implements I_Authenticate
    }
 
    /** helper */
-   public final ConnectReturnQosServer connect(AddressServer addressServer, ConnectQosServer xmlQos) throws XmlBlasterException {
-      return connect(addressServer, xmlQos, null);
+   public final ConnectReturnQosServer connect(ConnectQosServer xmlQos) throws XmlBlasterException {
+      return connect(xmlQos, null);
    }
 
    /** helper */
-   public final ConnectReturnQosServer connect(AddressServer addressServer, ConnectQosServer xmlQos, String secretSessionId) throws XmlBlasterException {
+   public final ConnectReturnQosServer connect(ConnectQosServer xmlQos, String secretSessionId) throws XmlBlasterException {
 
       MsgUnit msgUnit = new MsgUnit(null, null, xmlQos.getData());
-      this.availabilityChecker.checkServerIsReady(xmlQos.getSessionName(), addressServer, msgUnit, MethodName.CONNECT);
+      this.availabilityChecker.checkServerIsReady(xmlQos.getSessionName(), xmlQos.getAddressServer(), msgUnit, MethodName.CONNECT);
 
       try {
          // serialize first to have a clone for security reasons (and to guarantee our Global)
          // Note: We throw away the ConnectQosServer facade and create a new one (no specific data enters the core)
-         ConnectReturnQosServer tmp = this.authenticate.connect(xmlQos.getClone(glob), secretSessionId);
+         ConnectQosServer clone = xmlQos.getClone(glob);
+         ConnectReturnQosServer tmp = this.authenticate.connect(clone, secretSessionId);
          return new ConnectReturnQosServer(glob, tmp.toXml());
       }
       catch (Throwable e) {

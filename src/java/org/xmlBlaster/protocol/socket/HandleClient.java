@@ -269,6 +269,9 @@ public class HandleClient extends SocketExecutor implements Runnable
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      //this.callback.init(this.glob, cbArr[ii]); is done in connectLowLeve()
                      cbArr[ii].setCallbackDriver(this.callback);
+                     if (driver.getAddressServer() != null) {
+                        driver.getAddressServer().setCallbackDriver(this.callback);
+                     }
                   }
                   else {
                      log.severe(ME+": Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
@@ -278,7 +281,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                   }
                }
 
-               ConnectReturnQosServer retQos = authenticate.connect(driver.getAddressServer(), conQos);
+               ConnectReturnQosServer retQos = authenticate.connect(conQos);
                this.secretSessionId = retQos.getSecretSessionId();
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
                executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
@@ -454,6 +457,9 @@ public class HandleClient extends SocketExecutor implements Runnable
    public String getSecretSessionId() {
       return this.secretSessionId;
    }
-
+   
+   public Socket getSocket() {
+      return this.sock;
+   }
 }
 
