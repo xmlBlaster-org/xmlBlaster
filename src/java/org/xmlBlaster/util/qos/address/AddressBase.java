@@ -295,10 +295,20 @@ public abstract class AddressBase implements Cloneable
    public String getEnvPrefix() {
       return this.envPrefix;
    }
+   
+   public boolean hasAttributeEnv(String key) {
+      if (this.pluginAttributes != null) {
+         Object val = this.pluginAttributes.get(key, (String)null);
+         if (val != null)
+            return true;
+      }
+      return false;
+   }
 
    /**
     * Plugins may query their properties here
     * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
+    * @return never null
     */
    public PropString getEnv(String key, String defaultValue) {
       PropString tmp = new PropString(key, this.pluginInfoParameters.getProperty(key,defaultValue));
@@ -316,6 +326,7 @@ public abstract class AddressBase implements Cloneable
    /**
     * Plugins may query their properties here
     * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
+    * @return never null
     */
    public PropInt getEnv(String key, int defaultValue) {
       String defaultStr = this.pluginInfoParameters.getProperty(key,""+defaultValue);
@@ -336,6 +347,7 @@ public abstract class AddressBase implements Cloneable
    /**
     * Plugins may query their properties here
     * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
+    * @return never null
     */
    public PropLong getEnv(String key, long defaultValue) {
       String defaultStr = this.pluginInfoParameters.getProperty(key,""+defaultValue);
@@ -356,6 +368,7 @@ public abstract class AddressBase implements Cloneable
    /**
     * Plugins may query their properties here
     * @param key  The property, e.g. "SOLingerTimeout" (WITHOUT any prefix like "plugin/socket/")
+    * @return never null
     */
    public PropBoolean getEnv(String key, boolean defaultValue) {
       String defaultStr = this.pluginInfoParameters.getProperty(key,""+defaultValue);
