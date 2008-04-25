@@ -338,8 +338,19 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
    }
 
    public void finalize() {
-      removeExpiryTimer();
-      if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected " + getSecretSessionId());
+      try {
+         removeExpiryTimer();
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected " + getSecretSessionId());
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
+      try {
+         super.finalize();
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    public boolean isShutdown() {

@@ -171,8 +171,13 @@ abstract public class DispatchConnection implements I_Timeout
          this.glob.getPingTimer().removeTimeoutListener(this.timerKey);
          this.timerKey = null;
       }
-
-      if (log.isLoggable(Level.FINE)) log.fine(ME + "finalize - garbage collected");
+      try {
+         super.finalize();
+         if (log.isLoggable(Level.FINE)) log.fine(ME + "finalize - garbage collected");
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    public final AddressBase getAddress() {
@@ -454,7 +459,7 @@ abstract public class DispatchConnection implements I_Timeout
          catch (Throwable e) {
             if (log.isLoggable(Level.FINE)) log.fine("Polling for remote connection failed:" + e.getMessage());
             if (e instanceof NullPointerException)
-            	e.printStackTrace();
+                e.printStackTrace();
             if (logInterval > 0 && (retryCounter % logInterval) == 0)
                log.warning("No connection established, " + address.getLogId() + " still seems to be down after " + (retryCounter+1) + " connection retries.");
             try { handleTransition(false, e); } catch(XmlBlasterException e2) { e.printStackTrace(); log.severe("PANIC: " + e.toString()); }
@@ -471,10 +476,10 @@ abstract public class DispatchConnection implements I_Timeout
    }
 
    private boolean isAuthenticationException(XmlBlasterException ex) {
-	   ErrorCode code = ex.getErrorCode();
-	   if (code == null)
-		   return false;
-	   return code.isOfType(ErrorCode.USER_SECURITY_AUTHENTICATION);
+           ErrorCode code = ex.getErrorCode();
+           if (code == null)
+                   return false;
+           return code.isOfType(ErrorCode.USER_SECURITY_AUTHENTICATION);
    }
    
    /**
@@ -496,15 +501,15 @@ abstract public class DispatchConnection implements I_Timeout
                                    glob.isServerSide() && !ex.isServerSide() ||
                                    !glob.isServerSide() && ex.isServerSide()) ? true : false;
       if (ex != null) {
-    	  if (isAuthenticationException(ex)) {
-    	      connectionsHandler.toDead(this, ex);
-    	      if (byDispatchConnectionsHandler) {
-    	         throw ex;
-    	      }
-    	      else {
-    	         // ping timer thread, no sense to throw an exception:
-    	      }
-    	  }
+          if (isAuthenticationException(ex)) {
+              connectionsHandler.toDead(this, ex);
+              if (byDispatchConnectionsHandler) {
+                 throw ex;
+              }
+              else {
+                 // ping timer thread, no sense to throw an exception:
+              }
+          }
          if (retry(ex)) {
             toReconnected = false;
          }

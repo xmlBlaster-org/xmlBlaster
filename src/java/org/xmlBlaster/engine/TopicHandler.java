@@ -373,10 +373,6 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return this.topicProperty.createDomEntry();
    }
 
-   public void finalize() {
-      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collect " + getId());
-   }
-
    public RequestBroker getRequestBroker() {
       return this.requestBroker;
    }
@@ -744,10 +740,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
          msgUnitWrapper.startExpiryTimer();
       }
       catch (XmlBlasterException e) {
-    	 if (e.isUser())
-      	   log.warning(ME+": "+e.getMessage());
-    	 else
-    	   log.severe(ME+": "+e.getMessage());
+         if (e.isUser())
+           log.warning(ME+": "+e.getMessage());
+         else
+           log.severe(ME+": "+e.getMessage());
          throw e;
       }
       catch (Throwable e) {

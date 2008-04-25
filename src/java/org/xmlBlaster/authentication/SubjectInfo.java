@@ -354,9 +354,20 @@ public final class SubjectInfo extends NotificationBroadcasterSupport /* impleme
     * Shutdown my queue
     */
    public void finalize() {
-      if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected");
-      //boolean force = true;
-      //this.subjectQueue.shutdown();
+      try {
+         if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected");
+         //boolean force = true;
+         //this.subjectQueue.shutdown();
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
+      try {
+         super.finalize();
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
    
    /**

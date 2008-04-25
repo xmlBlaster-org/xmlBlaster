@@ -176,10 +176,6 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "getEntries() is not implemented");
    }
 
-   public void finalize() {
-      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collected");
-   }
-
    /** For verbose logging */
    public StorageId getStorageId() {
       return storageId;

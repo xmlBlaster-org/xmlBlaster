@@ -294,10 +294,6 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       return this.cbClient;
    }
 
-   public void finalize() {
-      if (log.isLoggable(Level.FINE)) log.fine("Garbage Collected");
-   }
-
    /**
     * Sets the loginName and automatically the requestId as well
     */

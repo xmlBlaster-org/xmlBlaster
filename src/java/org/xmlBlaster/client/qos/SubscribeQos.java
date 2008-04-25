@@ -231,7 +231,7 @@ public final class SubscribeQos
     * Returns a deep clone, you can change savely all basic or immutable types
     * like boolean, String, int and also the ClientProperties and RouteInfo. 
     */
-   public Object clone() {
+   public Object clone() throws CloneNotSupportedException {
       SubscribeQos newOne = (SubscribeQos)super.clone();
       if (this.queryQosData != null) {
          newOne.queryQosData = (QueryQosData)this.queryQosData.clone();

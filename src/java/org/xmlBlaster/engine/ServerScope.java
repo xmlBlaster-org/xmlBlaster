@@ -94,6 +94,7 @@ public final class ServerScope extends org.xmlBlaster.util.Global implements I_R
    public void finalize() {
       if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
       shutdown();
+      //super.finalize(); as our shutdown calls super.shutdown
    }
 
    public void shutdown() {

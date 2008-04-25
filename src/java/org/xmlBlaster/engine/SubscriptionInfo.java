@@ -228,10 +228,6 @@ public final class SubscriptionInfo implements /*I_AdminSubscription,*/ Subscrip
       return querySub != null;
    }
 
-   protected void finalize() {
-      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collect " + uniqueKey);
-   }
-
    /**
     * @return Null if none configured
     */

@@ -169,6 +169,12 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       catch (Throwable e) {
          e.printStackTrace();
       }
+      try {
+         super.finalize();
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    public I_Queue getQueue() {

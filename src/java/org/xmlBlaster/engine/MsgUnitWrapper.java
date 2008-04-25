@@ -192,9 +192,24 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
     * Cleanup timer, it is a weak reference on us therefor it is a 'nice to have'. 
     */
    public void finalize() {
-      if (this.destroyTimer != null && this.timerKey != null) {
-         if (log.isLoggable(Level.FINE)) log.fine("finalize timerKey=" + this.timerKey);
-         this.destroyTimer.removeTimeoutListener(this.timerKey);
+      try {
+         Timeout dt = this.destroyTimer;
+         Timestamp tk = this.timerKey;
+         this.destroyTimer = null;
+         this.timerKey = null;
+         if (dt != null && tk != null) {
+            if (log.isLoggable(Level.FINE)) log.fine("finalize timerKey=" + tk);
+            dt.removeTimeoutListener(tk);
+         }
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
+      try {
+         super.finalize();
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
       }
    }
 

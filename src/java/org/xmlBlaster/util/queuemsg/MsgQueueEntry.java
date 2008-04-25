@@ -109,7 +109,13 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 
 
    public void finalize() {
-      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collect");
+      try {
+         super.finalize();
+         if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collect");
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    /**

@@ -117,10 +117,6 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       return true;
    }
 
-   public void finalize() {
-      if (log.isLoggable(Level.FINE)) log.fine("finalize - garbage collected");
-   }
-
    /**
     * @see I_Map#get(long)
     */

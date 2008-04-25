@@ -952,6 +952,9 @@ public class Global implements Cloneable
     * All other attributes are initialized as on startup.
     */
    protected Object clone() {
+      // We should not use a ctor for clones, but instead:
+      //Global newObject = (Global)super.clone();
+      // but our Global ctor uses counter++, so we nevertheless do it like this (breaking Object.clone javadoc that no ctor is called):
       Global g = new Global(Property.propsToArgs(this.property.getProperties()), false, false);
       if (this.contextNode != null) {
          g.setContextNode(new ContextNode(this.contextNode.getClassName(), this.contextNode.getInstanceName(), this.contextNode.getParent()));
@@ -1759,8 +1762,19 @@ public class Global implements Cloneable
    }
 
    public void finalize() {
-      if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
-      shutdown();
+      try {
+         if (log.isLoggable(Level.FINE)) log.fine("Entering finalize");
+         shutdown();
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
+      try {
+         super.finalize();
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
    public void shutdown() {

@@ -258,6 +258,12 @@ class PreparedQuery {
       catch(Throwable ex) {
          ex.printStackTrace();
       }
+      try {
+         super.finalize();
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+      }
    }
 
 }

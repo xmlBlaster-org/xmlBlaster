@@ -94,6 +94,7 @@ public final class TopicEntry implements I_MapEntry
    /*
    public void finalize() {
       this.glob.getLog("core").info(ME, "finalize: " + toXml());
+      super.finalize();
    }
    */
 
