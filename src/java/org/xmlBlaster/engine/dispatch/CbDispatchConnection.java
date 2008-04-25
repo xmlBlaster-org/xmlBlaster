@@ -202,7 +202,7 @@ public final class CbDispatchConnection extends DispatchConnection
     * The RETURN value is transferred in the msgArr[i].getReturnObj(), for oneway updates it is null
     * </p>
     */
-   public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException
+   public void doSend(MsgQueueEntry[] msgArr_, boolean isAsyncMode) throws XmlBlasterException
    {
       ArrayList oneways = null;
       ArrayList responders = null;

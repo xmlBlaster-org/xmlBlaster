@@ -68,6 +68,7 @@ public final class ConnectQosServer
       aClone.isFromPersistenceRecovery(isFromPersistenceRecovery());
       aClone.setPersistenceUniqueId(getPersistenceUniqueId());
       aClone.getSecurityQos ().setClientIp (getSecurityQos ().getClientIp());
+      aClone.setAddressServer(getAddressServer());
 
       return aClone;
    }

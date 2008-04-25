@@ -434,8 +434,9 @@ abstract public class DispatchConnectionsHandler
     * <p>
     * The RETURN value is transferred in the msgArr[i].getReturnObj(), for oneway updates it is null
     * </p>
+    * @param isAsyncMode true if coming from queue
     */
-   public void send(MsgQueueEntry[] msgArr) throws Throwable, XmlBlasterException
+   public void send(MsgQueueEntry[] msgArr, boolean isAsyncMode) throws Throwable, XmlBlasterException
    {
       if (isDead()) // if (conList.size() < 1)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Callback of " + msgArr.length + " messages '" + msgArr[0].getKeyOid() +
@@ -452,7 +453,7 @@ abstract public class DispatchConnectionsHandler
          if (log.isLoggable(Level.FINE)) log.fine(ME+": Trying cb# " + ii + " state=" + con.getState().toString() + " ...");
          if (con.isAlive()) {
             try {
-               con.send(msgArr);
+               con.send(msgArr, isAsyncMode);
                return;
             } catch(Throwable e) {
                ex = e;

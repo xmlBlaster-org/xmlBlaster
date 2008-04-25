@@ -202,8 +202,9 @@ abstract public class DispatchConnection implements I_Timeout
     * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content.
     * msgArr[i].getReturnObj() transports the returned string array from the client which is decrypted
     * if necessary, for oneway updates it is null
+    * @param isAsyncMode true if coming from queue
     */
-   abstract public void doSend(MsgQueueEntry[] msgArr_) throws XmlBlasterException;
+   abstract public void doSend(MsgQueueEntry[] msgArr_, boolean isAsyncMode) throws XmlBlasterException;
 
    /**
     * Should be overwritten by extending classes.
@@ -213,9 +214,10 @@ abstract public class DispatchConnection implements I_Timeout
    /**
     * Send the messages back to the client.
     * @param msgArr Should be a copy of the original, since we export it which changes/encrypts the content
+    * @param isAsyncMode true if coming from queue
     * @return The returned string from the client which is decrypted if necessary, for oneway updates it is null
     */
-   public void send(MsgQueueEntry[] msgArr) throws XmlBlasterException
+   public void send(MsgQueueEntry[] msgArr, boolean isAsyncMode) throws XmlBlasterException
    {
       if (log.isLoggable(Level.FINER)) log.finer(ME + "send(msgArr.length=" + msgArr.length + ")");
       if (msgArr == null || msgArr.length == 0) return; // assert
@@ -228,7 +230,7 @@ abstract public class DispatchConnection implements I_Timeout
       // Send the message ...
       try {
          long now = System.currentTimeMillis();
-         doSend(msgArr);
+         doSend(msgArr, isAsyncMode);
          this.connectionsHandler.getDispatchStatistic().setRoundTripDelay(System.currentTimeMillis() - now);
          handleTransition(true, null);
          return;

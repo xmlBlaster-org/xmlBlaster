@@ -67,7 +67,7 @@ public final class DispatchWorker implements Runnable
          
          if (log.isLoggable(Level.FINE)) log.fine("Sending now " + entries.length + " messages ...");
          
-         dispatchManager.getDispatchConnectionsHandler().send(entries); // entries are filled with return values
+         dispatchManager.getDispatchConnectionsHandler().send(entries, false); // entries are filled with return values
 
          /*ArrayList defaultEntries = */this.dispatchManager.filterDistributorEntries(entryList, null);
          if (log.isLoggable(Level.FINE)) log.fine("Commit of successful sending of " + entryList.size() + " messages done, current queue size is " + this.msgQueue.getNumOfEntries() + " '" + ((MsgQueueEntry)entryList.get(0)).getLogId() + "'");
@@ -111,7 +111,7 @@ public final class DispatchWorker implements Runnable
             
             if (log.isLoggable(Level.FINE)) log.fine("Sending now " + entries.length + " messages ..., current queue size is " + this.msgQueue.getNumOfEntries() + " '" + entries[0].getLogId() + "'");
             
-            dispatchManager.getDispatchConnectionsHandler().send(entries);
+            dispatchManager.getDispatchConnectionsHandler().send(entries, true);
 
             // Here an exception is thrown or
             // the RETURN value is transferred in the entries[i].getReturnObj(), for oneway updates it is null
