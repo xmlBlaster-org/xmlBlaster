@@ -41,7 +41,7 @@ import org.xmlBlaster.util.def.MethodName;
 public final class SubscribeQos
 {
    private final Global glob;
-   private final QueryQosData queryQosData;
+   private /*final*/ QueryQosData queryQosData;
 
    /**
     * Constructor for default qos (quality of service).
@@ -232,7 +232,11 @@ public final class SubscribeQos
     * like boolean, String, int and also the ClientProperties and RouteInfo. 
     */
    public Object clone() {
-      return new SubscribeQos(this.glob, (QueryQosData)this.queryQosData.clone());
+      SubscribeQos newOne = (SubscribeQos)super.clone();
+      if (this.queryQosData != null) {
+         newOne.queryQosData = (QueryQosData)this.queryQosData.clone();
+      }
+      return newOne;
    }
 
    /** For testing: java org.xmlBlaster.client.qos.SubscribeQos */
