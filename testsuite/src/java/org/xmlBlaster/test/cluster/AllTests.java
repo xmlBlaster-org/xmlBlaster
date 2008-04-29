@@ -16,6 +16,7 @@ public class AllTests {
    }
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster cluster tests");
+      suite.addTest(new TestSuite(org.xmlBlaster.test.cluster.NodeParserTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.cluster.PtPTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.cluster.PublishTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.cluster.SubscribeTest.class));
