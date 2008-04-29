@@ -94,7 +94,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
          log.info("Instantiated " + pluginMap.size() + " publish filter plugins");
       }
       else {
-         log.info("No plugins configured with 'MimePublishPlugin'");
+         if (log.isLoggable(Level.FINE)) log.fine("No plugins configured with 'MimePublishPlugin'");
       }
    }
 
