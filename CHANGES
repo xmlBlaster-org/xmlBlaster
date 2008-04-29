@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16885 Cluster code refactored
+ 
  o #16870 Cluster: Fixed parsing connect qos in cluster environment (supports now attributes)
           Renamed NodeInfo to NodeConnectQos
 
