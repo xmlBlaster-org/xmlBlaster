@@ -345,26 +345,42 @@ END ${replPrefix}base64_helper;
 
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_raw(msg RAW, res IN OUT NOCOPY CLOB)
    RETURN INTEGER AS
+     numBuilder INTEGER;
+     char1      SMALLINT;
+     char2      SMALLINT;
+     char3      SMALLINT;
+     char4      SMALLINT;
+     i          INTEGER;
+     len        INTEGER;
 -- divisible by 3 (to avoid '=' characters at end of chunks)                    
      source     RAW(32766); 
-     dest       RAW(32766); 
-     helper     RAW(2400);
-     str        VARCHAR(4000);
-     len        INTEGER;
-     increment  INTEGER;
-     offset     INTEGER;
+     zeros      SMALLINT;
+     ch         CHAR(10);
+     str        VARCHAR(${charWidthSmall});
 BEGIN
    source := msg;
-   dest := utl_encode.base64_encode(source);
-   offset := 1;
-   increment := 2400;
-   len := utl_raw.length(msg);
-
-   WHILE offset < len LOOP
-      helper := utl_raw.substr(dest, offset, increment);
-      offset := offset + increment;
-      str := utl_raw.cast_to_varchar2(utl_encode.base64_encode(helper));
-      dbms_lob.writeappend(res, length(str), str); 
+   WHILE utl_raw.length(source) > 0 LOOP
+      i := 1;
+      numBuilder := 0;
+      zeros := 0;
+      WHILE i <= 3 LOOP
+         IF i > utl_raw.length(source) THEN
+            numBuilder := numBuilder*256;
+            zeros := zeros + 1;
+         ELSE
+            ch := utl_raw.cast_to_varchar2(utl_raw.substr(source, i, 1));
+            numBuilder := numBuilder*256 + ASCII(ch);
+         END IF;
+         i := i + 1;
+      END LOOP;                                   
+      if utl_raw.length(source) > 3 THEN
+        source := utl_raw.substr(source, 4, utl_raw.length(source)-3);
+      ELSE
+        source := '';
+      END IF;
+      str := ${replPrefix}base64_helper(zeros, numBuilder);
+      len := LENGTH(str);
+      dbms_lob.writeappend(res, len, str);
    END LOOP;
    RETURN 0;
 END ${replPrefix}base64_enc_raw;
@@ -396,30 +412,41 @@ END ${replPrefix}base64_enc_raw_t;
 CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_vch(msg VARCHAR2, 
                                         res IN OUT NOCOPY CLOB)
    RETURN INTEGER AS
-     source RAW(32766); 
-     dest   RAW(32766); 
-     helper RAW(2400);
-     str   VARCHAR(4000);
-     increment INTEGER;
-     offset    INTEGER;
-     len       INTEGER;
-     rest      INTEGER;
+     numBuilder INTEGER;
+     char1 SMALLINT;
+     char2 SMALLINT;
+     char3 SMALLINT;
+     char4 SMALLINT;
+     i     INTEGER;
+-- divisible by 3 (to avoid '=' characters at end of chunks)                    
+     source VARCHAR2(32766); 
+     zeros SMALLINT;
+     ch    CHAR(2);
+     str   VARCHAR(${charWidthSmall});
+     fake  INTEGER;
 BEGIN
-   source := utl_raw.cast_to_raw(msg);
-   dest := utl_encode.base64_encode(source);
-   offset := 1;
-   increment := 2400;
-   len := utl_raw.length(dest);
-
-   WHILE offset < len LOOP
-      rest := len - offset;
-      IF increment > rest THEN 
-         increment := rest + 1;
-      END IF; 
-      helper := utl_raw.substr(dest, offset, increment);
-      offset := offset + increment;
-      str := utl_raw.cast_to_varchar2(helper);
-      dbms_lob.writeappend(res, length(str), str); 
+   source := msg;
+   WHILE LENGTHB(source) > 0 LOOP
+      i := 1;
+      numBuilder := 0;
+      zeros := 0;
+      WHILE i <= 3 LOOP
+         IF i > LENGTHB(source) THEN
+            numBuilder := numBuilder*256;
+            zeros := zeros + 1;
+         ELSE
+            ch := SUBSTRB(source, i, 1);
+            numBuilder := numBuilder*256 + ASCII(ch);
+         END IF;
+         i := i + 1;
+      END LOOP;                                   
+      if LENGTHB(source) > 3 THEN
+        source := SUBSTRB(source, 4, LENGTHB(source)-3);
+      ELSE
+        source := '';
+      END IF;
+      str := ${replPrefix}base64_helper(zeros, numBuilder);
+      dbms_lob.writeappend(res, length(str), str);
    END LOOP;
    RETURN 0;
 END ${replPrefix}base64_enc_vch;
@@ -453,18 +480,20 @@ CREATE OR REPLACE FUNCTION ${replPrefix}base64_enc_blob(msg BLOB,
    RETURN INTEGER AS
      len       INTEGER;
      offset    INTEGER;
-     outVar    VARCHAR2(4000);
-     inRaw     RAW(2400);
+     outRaw    RAW(32766);
      increment INTEGER;
+     fake      INTEGER;
 BEGIN
    offset := 1;
-   increment := 2400;
+   increment := 32766;
    len := dbms_lob.getlength(msg);
+
    WHILE offset < len LOOP
-      dbms_lob.read(msg, increment, offset, inRaw);
+      dbms_lob.read(msg, increment, offset, outRaw);
       offset := offset + increment;
-      outVar := utl_raw.cast_to_varchar2(utl_encode.base64_encode(inRaw));
-      dbms_lob.writeappend(res, length(outVar), outVar); 
+      -- the next line would be used for oracle from version 9 up.              
+      -- res := res || utl_raw.cast_to_varchar2(utl_encode.base64_encode(tmp)); 
+      fake := ${replPrefix}base64_enc_raw(outRaw, res);
    END LOOP;
    RETURN 0;
 END ${replPrefix}base64_enc_blob;

@@ -1,0 +1,7 @@
+TODO list for oracle SQL Part of replication:
+=============================================
+
+- Check if the raw methods are really used since they can not be referenced in triggers
+- write a more complete testsuite for base64 encoding
+- remove for example helper methods and check where the *_t methods are used
+
