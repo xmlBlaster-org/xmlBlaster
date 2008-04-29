@@ -4,6 +4,13 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16870 Cluster: Fixed parsing connect qos in cluster environment (supports now attributes)
+          Renamed NodeInfo to NodeConnectQos
+
+ o #16870 Java: Refactored protocol API connect(): removed explicit AddressServer argument (was redundant)
+          Fixed SessionInfo.updateConnectQos() so the new connectQos is available during processing
+	  Passing now isAsync mode flag to avoid looping connection if connectQos is from client queue
+
  o #16838 Java: Fixed xmlBlasterAccess.leaveServer() client side memory leak
 
  o #16830 Clustering: Extended RoundRobin to properly handle domain routing with empty domain
