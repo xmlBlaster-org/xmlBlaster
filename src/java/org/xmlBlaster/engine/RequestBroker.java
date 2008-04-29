@@ -1595,8 +1595,8 @@ public final class RequestBroker extends NotificationBroadcasterSupport
                             if (cp != null)
                                cp.passingBy(I_Checkpoint.CP_PUBLISH_ACK, msgUnit, null, null);
                            publishReturnQos = ret.getPublishReturnQos();
-                           if (ret.getNodeDomainInfo().getDirtyRead() == false) {
-                              if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeDomainInfo().getId() + ", dirtyRead==false nothing more to do");
+                           if (ret.getNodeMasterInfo().isDirtyRead() == false) {
+                              if (log.isLoggable(Level.FINE)) log.fine("Message " + msgKeyData.getOid() + " forwarded to master " + ret.getNodeMasterInfo().getId() + ", dirtyRead==false nothing more to do");
                               return publishReturnQos.toXml();
                            }
                            // else we publish it locally as well (dirty read!)
