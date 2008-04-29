@@ -4,20 +4,20 @@ package org.xmlBlaster.engine.cluster;
  * Jmx access to configure a cluster node &lt;master/> setup.  
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public interface NodeDomainInfoMBean {
+public interface NodeMasterInfoMBean {
    void setStratum(int stratum);
 
    int getStratum();
 
    void setAcceptDefault(boolean acceptDefault);
 
-   boolean getAcceptDefault();
+   boolean isAcceptDefault();
 
    void setAcceptOtherDefault(boolean acceptOtherDefault);
 
-   boolean getAcceptOtherDefault();
+   boolean isAcceptOtherDefault();
 
-   boolean getDirtyRead();
+   boolean isDirtyRead();
 
    void setDirtyRead(boolean dirtyRead);
    

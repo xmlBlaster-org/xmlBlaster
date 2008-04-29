@@ -13,7 +13,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.engine.cluster.I_LoadBalancer;
-import org.xmlBlaster.engine.cluster.NodeDomainInfo;
+import org.xmlBlaster.engine.cluster.NodeMasterInfo;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 
 import java.util.Set;
@@ -76,21 +76,21 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
    /**
     * We determine which xmlBlaster node to choose with a simple counter. 
     * <p />
-    * @param nodeDomainInfoSet A set containing NodeDomainInfo objects, the possible xmlBlaster nodes.
+    * @param nodeMasterInfoSet A set containing NodeMasterInfo objects, the possible xmlBlaster nodes.
     *                       Is never null, but may have a size of 0.
-    * @return The chosen nodeDomainInfo to handle the message or null to handle it locally
+    * @return The chosen nodeMasterInfo to handle the message or null to handle it locally
     * @see org.xmlBlaster.engine.cluster.I_LoadBalancer#getClusterNode(java.util.Set)
     */
-   public synchronized NodeDomainInfo getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException {
+   public synchronized NodeMasterInfo getClusterNode(Set nodeMasterInfoSet) throws XmlBlasterException {
 
-      // TODO: Change return to NodeDomainInfo[] if multiple fail over nodes exist !!!
+      // TODO: Change return to NodeMasterInfo[] if multiple fail over nodes exist !!!
       
-      if (nodeDomainInfoSet.size() == 0) {
-         log.warning("Empty nodeDomainInfoSet, using local node");
+      if (nodeMasterInfoSet.size() == 0) {
+         log.warning("Empty nodeMasterInfoSet, using local node");
          return null; // clusterManager.getMyClusterNode(); // handle locally
       }
 
-      if (counter >= nodeDomainInfoSet.size()) // counter is our RoundRobin approach
+      if (counter >= nodeMasterInfoSet.size()) // counter is our RoundRobin approach
          counter = 0;
 
       /*
@@ -109,12 +109,12 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
       // Step 1: Find out my stratum for this message (if i have one)
       // Check all rules to find my lowest stratum
       int myStratum = Integer.MAX_VALUE;
-      Iterator it = nodeDomainInfoSet.iterator();
+      Iterator it = nodeMasterInfoSet.iterator();
       while (it.hasNext()) {
-         NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)it.next();
-         if (nodeDomainInfo.getClusterNode().isLocalNode()) {
-            if (nodeDomainInfo.getStratum() < myStratum) {
-               myStratum = nodeDomainInfo.getStratum();
+         NodeMasterInfo nodeMasterInfo = (NodeMasterInfo)it.next();
+         if (nodeMasterInfo.getClusterNode().isLocalNode()) {
+            if (nodeMasterInfo.getStratum() < myStratum) {
+               myStratum = nodeMasterInfo.getStratum();
                break;
             }
          }
@@ -123,41 +123,41 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
       // Step 2: Take the node with the lowest stratum or myself
       // Aaheem, this is no round robin ... :-)
       // We know that the Set is sorted after available:stratum:nodeId
-      it = nodeDomainInfoSet.iterator();
+      it = nodeMasterInfoSet.iterator();
       while (it.hasNext()) {
-         NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)it.next();
-         if (myStratum <= nodeDomainInfo.getStratum()) {
+         NodeMasterInfo nodeMasterInfo = (NodeMasterInfo)it.next();
+         if (myStratum <= nodeMasterInfo.getStratum()) {
             // handle locally, no need to send to a worse or equal stratum
-            if (nodeDomainInfo.getStratum() > 0) {
-               log.warning("Selected myself as master node from a choice of " + nodeDomainInfoSet.size()
-                    + " nodes, but we are only stratum=" + nodeDomainInfo.getStratum() + ". The message is not routed further!");
+            if (nodeMasterInfo.getStratum() > 0) {
+               log.warning("Selected myself as master node from a choice of " + nodeMasterInfoSet.size()
+                    + " nodes, but we are only stratum=" + nodeMasterInfo.getStratum() + ". The message is not routed further!");
             }
             else {
-               if (log.isLoggable(Level.FINE)) log.fine("Selected myself as master node from a choice of " + nodeDomainInfoSet.size() + " nodes");
+               if (log.isLoggable(Level.FINE)) log.fine("Selected myself as master node from a choice of " + nodeMasterInfoSet.size() + " nodes");
             }
             return null; // handle locally: clusterManager.getMyClusterNode();
          }
 
          if (log.isLoggable(Level.FINE))
             log.fine("Selected master node id='" + 
-                     nodeDomainInfo.getClusterNode().getId() + "' from a choice of " + 
-                     nodeDomainInfoSet.size() + " nodes.  alive = " + 
-                     nodeDomainInfo.getClusterNode().isAlive() + ", polling = " +
-                     nodeDomainInfo.getClusterNode().isPolling());
+                     nodeMasterInfo.getClusterNode().getId() + "' from a choice of " + 
+                     nodeMasterInfoSet.size() + " nodes.  alive = " + 
+                     nodeMasterInfo.getClusterNode().isAlive() + ", polling = " +
+                     nodeMasterInfo.getClusterNode().isPolling());
 
-         return nodeDomainInfo;
+         return nodeMasterInfo;
       }
 
       /*
       // Step 2: Filter the possible nodes (round robin)
-      it = nodeDomainInfoSet.iterator();
+      it = nodeMasterInfoSet.iterator();
       int ii=0;
       while (it.hasNext()) {
          Object obj = it.next();
          if (ii == counter) {
-            NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)obj;
-            ClusterNode clusterNode = nodeDomainInfo.getClusterNode();
-            if (log.isLoggable(Level.FINE)) log.trace(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeDomainInfoSet.size() + " nodes");
+            NodeMasterInfo nodeMasterInfo = (NodeMasterInfo)obj;
+            ClusterNode clusterNode = nodeMasterInfo.getClusterNode();
+            if (log.isLoggable(Level.FINE)) log.trace(ME, "Selected master node id='" + clusterNode.getId() + "' from a choice of " + nodeMasterInfoSet.size() + " nodes");
             counter++;
             return clusterNode;
          }

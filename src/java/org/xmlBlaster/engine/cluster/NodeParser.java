@@ -58,7 +58,7 @@ import org.xml.sax.SAXException;
  *
  *
  *  &lt;!-- Messages of type "__sys__cluster.node.domainmapping:heron": -->
- *  &lt;!-- Parsed by NodeDomainInfo.java -->
+ *  &lt;!-- Parsed by NodeMasterInfo.java -->
  *
  *  &lt;master stratum='0' type='DomainToMaster'> <!-- Specify your plugin -->
  *     &lt;key queryType='DOMAIN' domain='RUGBY'/>
@@ -97,11 +97,11 @@ public class NodeParser extends SaxHandlerBase
 
    // "__sys__cluster.node:heron"
    private boolean inConnect = false; // parsing inside <info> or <connect> (info is deprecated) ?
-   private NodeInfo tmpNodeInfo = null;
+   private NodeConnectQos tmpNodeInfo = null;
 
    // "__sys__cluster.node.domainmapping:heron"
    private boolean inMaster = false; // parsing inside <master> ?
-   private NodeDomainInfo tmpMaster = null;
+   private NodeMasterInfo tmpMaster = null;
 
    // "__sys__cluster.node.state:heron"
    private boolean inState = false; // parsing inside <state> ?
@@ -150,7 +150,22 @@ public class NodeParser extends SaxHandlerBase
     * Access the parsed ClusterNode object
     */
    public ClusterNode getClusterNode() {
-      return tmpClusterNode;
+      return this.tmpClusterNode;
+   }
+   
+   /**
+    * Characters.
+    * The text between two tags, in the following example 'Hello':
+    * <key>Hello</key>
+    */
+   public void characters(char ch[], int start, int length) {
+      if (tmpNodeInfo != null) {
+         if (this.inConnect) {
+            this.tmpNodeInfo.characters(ch, start, length, this.character);
+            return;
+         }
+      }
+      super.characters(ch, start, length);
    }
 
    /**
@@ -175,10 +190,10 @@ public class NodeParser extends SaxHandlerBase
                   }
                   id = id.trim();
                   if (this.clusterManager != null) {
-                     tmpClusterNode = this.clusterManager.getClusterNode(id);
-                     if (tmpClusterNode == null) {
-                        tmpClusterNode = new ClusterNode(glob, new NodeId(id), sessionInfo);
-                        this.clusterManager.addClusterNode(tmpClusterNode);
+                     this.tmpClusterNode = this.clusterManager.getClusterNode(id);
+                     if (this.tmpClusterNode == null) {
+                        this.tmpClusterNode = new ClusterNode(glob, new NodeId(id), sessionInfo);
+                        this.clusterManager.addClusterNode(this.tmpClusterNode);
                      }
                   }
                }
@@ -194,9 +209,9 @@ public class NodeParser extends SaxHandlerBase
          if (!inConnect && name.equalsIgnoreCase("master")) {
             if (inClusternode != 1) return;
             inMaster = true;
-            tmpMaster = new NodeDomainInfo(glob, tmpClusterNode);
+            tmpMaster = new NodeMasterInfo(glob, this.tmpClusterNode);
             if (tmpMaster.startElement(uri, localName, name, character, attrs) == true) {
-               tmpClusterNode.addNodeDomainInfo(tmpMaster);
+               this.tmpClusterNode.addNodeMasterInfo(tmpMaster);
             }
             else
                tmpMaster = null;
@@ -213,7 +228,7 @@ public class NodeParser extends SaxHandlerBase
             inState = true;
             tmpState = new NodeStateInfo(glob);
             if (tmpState.startElement(uri, localName, name, character, attrs) == true)
-               tmpClusterNode.setNodeStateInfo(tmpState);
+               this.tmpClusterNode.setNodeStateInfo(tmpState);
             else {
                log.severe("Internal problem in <state> section");
                tmpState = null;
@@ -232,9 +247,9 @@ public class NodeParser extends SaxHandlerBase
          if (name.equalsIgnoreCase("info") || name.equalsIgnoreCase("connect")) {
             if (inClusternode != 1) return;
             inConnect = true;
-            tmpNodeInfo = new NodeInfo(tmpClusterNode.getRemoteGlob(), tmpClusterNode.getNodeId());
+            tmpNodeInfo = new NodeConnectQos(this.tmpClusterNode.getRemoteGlob(), this.tmpClusterNode.getNodeId());
             if (tmpNodeInfo.startElement(uri, localName, name, character, attrs) == true)
-               tmpClusterNode.setNodeInfo(tmpNodeInfo);
+               this.tmpClusterNode.setNodeInfo(tmpNodeInfo);
             else {
                log.severe("Internal problem in <"+name+"> section");
                tmpNodeInfo = null;
@@ -322,7 +337,7 @@ public class NodeParser extends SaxHandlerBase
    }
 
 
-   /** For testing: java org.xmlBlaster.engine.cluster.NodeParser */
+   /** For testing with JUnit: java org.xmlBlaster.test.cluster.NodeParserTest */
    public static void main(String[] args)
    {
       ServerScope glob = new ServerScope(args);
@@ -355,49 +370,6 @@ public class NodeParser extends SaxHandlerBase
             NodeParser nodeParser = new NodeParser(glob, new ClusterNode(glob, new NodeId("heron.mycomp.com"), null), xml);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
-         
-         xml =
-            "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +
-            "   <connect><qos>\n" +
-            "     <address type='IOR'>IOR:09456087000</address>\n" +
-            "     <address type='XMLRPC'>http://www.mycomp.com/XMLRPC/</address>\n" +
-            "     <callback type='RMI'>rmi://mycomp.com</callback>\n" +
-            "     <backupnode>\n" +
-            "        <clusternode id='bilbo.mycomp.com'/>\n" +
-            "        <clusternode id='aragon.mycomp.com'/>\n" +
-            "     </backupnode>\n" +
-            "   </qos></connect>\n" +
-            "   <disconnect/>\n" +
-            "   <master type='DomainToMaster' version='0.9'>\n" +
-            "     <key queryType='DOMAIN' domain='RUGBY'/>\n" +
-            "     <key queryType='XPATH'>//STOCK</key>\n" +
-            "     <filter type='ContentLength'>\n" +
-            "       8000\n" +
-            "     </filter>\n" +
-            "     <filter type='ContainsChecker' version='7.1' xy='true'>\n" +
-            "       bug\n" +
-            "     </filter>\n" +
-            "     <someOtherPluginfilter>\n" +
-            "        <![CDATA[\n" +
-            "        ]]>\n" +
-            "     </someOtherPluginfilter>\n" +
-            "   </master>\n" +
-            "   <master type='DomainToMaster' version='1.1'>\n" +
-            "     //RUGBY\n" +
-            "   </master>\n" +
-            "   <state>\n" +
-            "     <cpu id='0' idle='40'/>\n" +
-            "     <cpu id='1' idle='44'/>\n" +
-            "     <ram free='12000'/>\n" +
-            "   </state>\n" +
-            "</clusternode>\n";
-
-         {
-            System.out.println("\nFull Message from client ...");
-            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml, null);
-            System.out.println(nodeParser.getClusterNode().toXml());
-         }
-
 
          xml =
             "<clusternode id='heron.mycomp.com'>\n" +
@@ -417,14 +389,6 @@ public class NodeParser extends SaxHandlerBase
             NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml, null);
             System.out.println(nodeParser.getClusterNode().toXml());
          }
-         /*
-         xml = "<clusternode></clusternode>";
-         {
-            System.out.println("\nEmpty message from client ...");
-            NodeParser nodeParser = new NodeParser(glob, glob.getClusterManager(), xml);
-            System.out.println(nodeParser.getClusterNode().toXml());
-         }
-         */
       }
       catch(Throwable e) {
          e.printStackTrace();

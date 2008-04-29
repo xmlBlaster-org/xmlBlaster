@@ -41,7 +41,7 @@ import org.xml.sax.SAXException;
  *   &lt;/qos>
  * &lt;/connect>
  */
-public final class NodeInfo
+public final class NodeConnectQos
 {
    private final String ME;
    /** 
@@ -49,7 +49,7 @@ public final class NodeInfo
     * uses the specific settings from NodeInfo to connect to the remote node
     */
    private final org.xmlBlaster.util.Global remoteGlob;
-   private static Logger log = Logger.getLogger(NodeInfo.class.getName());
+   private static Logger log = Logger.getLogger(NodeConnectQos.class.getName());
 
    private NodeId nodeId;
    private long counter = 0L;
@@ -59,17 +59,9 @@ public final class NodeInfo
 
    private DisconnectQos disconnectQos;
 
-   /** @deprecated We now use ConnectQos */
-   private Address tmpAddress = null; // Helper for SAX parsing
-   /** @deprecated We now use ConnectQos */
-   private CallbackAddress tmpCbAddress = null; // Helper for SAX parsing
-
    private boolean nameService = false;
 
    private boolean inConnectQos = false;  // parsing inside <connect><qos> ?
-   private boolean inInfo = false;
-   private boolean inAddress = false; // parsing inside <address> ?
-   private boolean inCallback = false; // parsing inside <callback> ?
 
    /** A unique created session id delivered on callback in update() method */
    private String cbSessionId = null;
@@ -78,7 +70,7 @@ public final class NodeInfo
     * Holds the ConnectQos of a node. 
     * @param remoteGlob The global specific to this node instance. 
     */
-   public NodeInfo(Global remoteGlob, NodeId nodeId) throws XmlBlasterException {
+   public NodeConnectQos(Global remoteGlob, NodeId nodeId) throws XmlBlasterException {
       this.remoteGlob = remoteGlob;
 
       this.setNodeId(nodeId);
@@ -224,6 +216,20 @@ public final class NodeInfo
       data.getSessionQos().setSessionTimeout(0L); // session lasts forever
       data.getSessionQos().clearSessions(true);   // We only login once, kill other (older) sessions of myself!
    }
+   
+   /**
+    * Characters.
+    * The text between two tags, in the following example 'Hello':
+    * <key>Hello</key>
+    */
+   public void characters(char ch[], int start, int length, StringBuffer delegateCharacters) {
+      if (inConnectQos && this.connectQosSaxFactory != null) {
+         this.connectQosSaxFactory.characters(ch, start, length, delegateCharacters);
+      }
+      else {
+         log.severe("Unexpected call during xml parse: " + Global.getStackTraceAsString(null));         
+      }
+   }
 
    /**
     * Called for SAX master start tag
@@ -242,40 +248,6 @@ public final class NodeInfo
 
       if (inConnectQos) {
          this.connectQosSaxFactory.startElement(uri, localName, name, character, attrs);
-         return true;
-      }
-
-      //========= The rest is deprecated:
-
-      /*
-         "info" is deprecated as it only contains address specific informations
-         New is "connect" -> now we can specify all connection details
-      */
-      if (!inConnectQos && name.equalsIgnoreCase("info")) {
-         inInfo = true;
-         //this.connectQosData = new ConnectQosData(this.remoteGlob, this.nodeId);
-         return true;
-      }
-
-      if (inAddress) { // delegate internal tags
-         if (tmpAddress == null) return false;
-         tmpAddress.startElement(uri, localName, name, character, attrs);
-         return true;
-      }
-      if (inInfo && name.equalsIgnoreCase("address")) {
-         inAddress = true;
-         String type = (attrs != null) ? attrs.getValue("type") : null;
-         tmpAddress = new Address(this.remoteGlob, type, getId());
-         tmpAddress.startElement(uri, localName, name, character, attrs);
-         log.warning("Using <address> markup is deprecated, please use connectQos markup");
-         return true;
-      }
-
-      if (inInfo && name.equalsIgnoreCase("callback")) {
-         inCallback = true;
-         tmpCbAddress = new CallbackAddress(this.remoteGlob);
-         tmpCbAddress.startElement(uri, localName, name, character, attrs);
-         log.warning("Using <callback> markup is deprecated, please use connectQos markup");
          return true;
       }
 
@@ -302,45 +274,12 @@ public final class NodeInfo
             }
             return;
          }
-
-         //======== all the rest is deprecated:
-
-         if (inInfo && inAddress) { // delegate address internal tags
-            tmpAddress.endElement(uri, localName, name, character);
-            if (name.equalsIgnoreCase("address")) {
-               inAddress = false;
-               addAddress(tmpAddress);
-            }
-            return;
-         }
-
-         if (inInfo && inCallback) { // delegate address internal tags
-            tmpCbAddress.endElement(uri, localName, name, character);
-            if (name.equalsIgnoreCase("callback")) {
-               inCallback = false;
-               addCbAddress(tmpCbAddress);
-            }
-            return;
-         }
-
-         if (inInfo && name.equalsIgnoreCase("info")) {
-            ConnectQosData data = getConnectQosData();
-            if (!data.hasAddress()) {
-               log.severe("Can't connect to node '" + getId() + "', address is null");
-               throw new XmlBlasterException(this.remoteGlob, ErrorCode.USER_CONFIGURATION, ME,
-                         "Can't connect to node '" + getId() + "', address is null");
-            }
-            // TODO: Change this "/1" to use a SessionName instance:
-            data.setUserId(this.remoteGlob.getId() + "/1"); // the login name, e.g. "heron/1"
-            // The password is from the environment -passwd or more specific -passwd[heron]
-            postInitialize();
-         }
       }
       catch(XmlBlasterException e) {
          throw new SAXException("Cluster node configuration parse error", e);
       }
       finally {
-         character.setLength(0);
+         //character.setLength(0);
       }
       return;
    }

@@ -52,12 +52,12 @@ public interface I_MapMsgToMasterId
     * Find out who is the master of the provided message. 
     * <p />
     * Here you code your clustering logic.
-    * @param nodeDomainInfo The mapping rule to find the master
+    * @param nodeMasterInfo The mapping rule to find the master
     * @param msgUnit The message
-    * @return The nodeDomainInfo (same as you passed as parameter) it this is a possible master
+    * @return The nodeMasterInfo (same as you passed as parameter) it this is a possible master
     *         or null if not suitable.<br />
-    * You can access the master ClusterNode with <code>nodeDomainInfo.getClusterNode()</code> and the xmlBlasterConnection
-    * to the master node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterAccess()</code>
+    * You can access the master ClusterNode with <code>nodeMasterInfo.getClusterNode()</code> and the xmlBlasterConnection
+    * to the master node with <code>nodeMasterInfo.getClusterNode().getXmlBlasterAccess()</code>
     */
-   public NodeDomainInfo getMasterId(NodeDomainInfo nodeDomainInfo, MsgUnit msgUnit) throws XmlBlasterException;
+   public NodeMasterInfo getMasterId(NodeMasterInfo nodeMasterInfo, MsgUnit msgUnit) throws XmlBlasterException;
 }

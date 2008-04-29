@@ -14,13 +14,12 @@ import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.TopicHandler;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.cluster.ClusterManager;
-import org.xmlBlaster.engine.cluster.NodeDomainInfo;
+import org.xmlBlaster.engine.cluster.NodeMasterInfo;
 import org.xmlBlaster.engine.cluster.I_MapMsgToMasterId;
 import org.xmlBlaster.authentication.SessionInfo;
 
@@ -132,25 +131,25 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     * and the message is shorter 8000 bytes and the message content contains a token 'rugby'
     * the cluster node 'heron' is chosen as the master of the message.
     * @param msgUnit The message
-    * @return The nodeDomainInfo (same as you passed as parameter) it this is a possible master
+    * @return The nodeMasterInfo (same as you passed as parameter) it this is a possible master
     *         or null if not suitable.<br />
-    * You can access the master ClusterNode with <code>nodeDomainInfo.getClusterNode()</code> and the xmlBlasterConnection
-    * to the master node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterAccess()</code>
+    * You can access the master ClusterNode with <code>nodeMasterInfo.getClusterNode()</code> and the xmlBlasterConnection
+    * to the master node with <code>nodeMasterInfo.getClusterNode().getXmlBlasterAccess()</code>
     */
-   public NodeDomainInfo getMasterId(NodeDomainInfo nodeDomainInfo, MsgUnit msgUnit) throws XmlBlasterException {
+   public NodeMasterInfo getMasterId(NodeMasterInfo nodeMasterInfo, MsgUnit msgUnit) throws XmlBlasterException {
 
-      QueryKeyData[] keyMappings = nodeDomainInfo.getKeyMappings();  // These are the key based queries
+      QueryKeyData[] keyMappings = nodeMasterInfo.getKeyMappings();  // These are the key based queries
 
       if (msgUnit.getQosData() instanceof MsgQosData) {
          MsgQosData qos = (MsgQosData)msgUnit.getQosData();
          if (qos.isPtp()) {
             // We check the domain of each MsgUnit entry (PtP messages may use a static topic just for communication channel)
-            for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
+            for (int ii=0; ii<keyMappings.length; ii++) {
                if (keyMappings[ii].getDomain().equals("*") || keyMappings[ii].getDomain().equals(msgUnit.getKeyData().getDomain())) {
-                  if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeDomainInfo.getNodeId().getId() +
-                           "' stratum=" + nodeDomainInfo.getStratum() + " for PtP message '" + msgUnit.getLogId() +
+                  if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeMasterInfo.getNodeId().getId() +
+                           "' stratum=" + nodeMasterInfo.getStratum() + " for PtP message '" + msgUnit.getLogId() +
                            "' domain='" + msgUnit.getKeyData().getDomain() + "'.");
-                  return nodeDomainInfo;
+                  return nodeMasterInfo;
                }
             }
          }
@@ -160,7 +159,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
 
       // Now check if we are master
       XmlKey xmlKey = new XmlKey(glob, msgUnit.getKeyData());
-      for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
+      for (int ii=0; ii<keyMappings.length; ii++) {
          QueryKeyData keyMapping = keyMappings[ii];
          /*
          if (ii==0) {
@@ -181,25 +180,25 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
          */
          
          if (keyMapping.isDomain() && !msgUnit.hasDomain()) {
-            if (nodeDomainInfo.getClusterNode().isLocalNode()) {
-               if (nodeDomainInfo.getAcceptDefault()==true) {
+            if (nodeMasterInfo.getClusterNode().isLocalNode()) {
+               if (nodeMasterInfo.isAcceptDefault()==true) {
                   // if no domain is specified and the local node accepts default messages -> local node is master
                   if (log.isLoggable(Level.FINE)) log.fine("Message oid='" + msgUnit.getKeyOid() + "' domain='" + xmlKey.getDomain() + "' is handled by local node");
                   AccessFilterQos[] filterQos = keyMapping.getAccessFilterArr();
                   if (filterQos != null && filterQos.length > 0) {
                      log.warning("<filter> additional check is not implemented: " + keyMapping.toXml());
                   }
-                  return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
+                  return nodeMasterInfo; // Found the master nodeMasterInfo.getClusterNode(); 
                }
             }
             else {
-               if (nodeDomainInfo.getAcceptOtherDefault()==true) {
-                  log.info("Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgUnit.getKeyOid() + "' which accepts other default domains");
+               if (nodeMasterInfo.isAcceptOtherDefault()==true) {
+                  log.info("Found master='" + nodeMasterInfo.getNodeId().getId() + "' for message oid='" + msgUnit.getKeyOid() + "' which accepts other default domains");
                   AccessFilterQos[] filterQos = keyMapping.getAccessFilterArr();
                   if (filterQos != null && filterQos.length > 0) {
                      log.warning("<filter> additional check is not implemented: " + keyMapping.toXml());
                   }
-                  return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
+                  return nodeMasterInfo; // Found the master nodeMasterInfo.getClusterNode(); 
                }
             }
          }
@@ -207,8 +206,8 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
          // TODO: If filter has a prepared query cache switched on,
          // we should go over the TopicHandlerAccessor to force single threaded match() access
          if (xmlKey.match(keyMapping)) {
-            if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeDomainInfo.getNodeId().getId() +
-                           "' stratum=" + nodeDomainInfo.getStratum() + " for message '" + msgUnit.getLogId() +
+            if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeMasterInfo.getNodeId().getId() +
+                           "' stratum=" + nodeMasterInfo.getStratum() + " for message '" + msgUnit.getLogId() +
                            "' domain='" + xmlKey.getDomain() + "'.");
             AccessFilterQos[] filterQos = keyMapping.getAccessFilterArr();
             if (filterQos != null && filterQos.length > 0) {
@@ -223,40 +222,38 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                                  msgUnit.getContentStr() + "'");
                   SessionInfo sessionInfo = null; // TODO: Pass sessionInfo here
                   if (filter != null && filter.match(sessionInfo, msgUnit, filterQos[jj].getQuery())) {
-                     if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" +
-                                    nodeDomainInfo.getStratum() + " for message '" + msgUnit.getLogId() + "' with filter='" + filterQos[jj].getQuery() + "'.");
-                     return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
+                     if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeMasterInfo.getNodeId().getId() + "' stratum=" +
+                                    nodeMasterInfo.getStratum() + " for message '" + msgUnit.getLogId() + "' with filter='" + filterQos[jj].getQuery() + "'.");
+                     return nodeMasterInfo; // Found the master nodeMasterInfo.getClusterNode(); 
                   }
                }
             }
             else
-               return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
+               return nodeMasterInfo; // Found the master nodeMasterInfo.getClusterNode(); 
          }
       }
 
       // Check for user supplied filters <master><filter>... These are the filter based queries
-      AccessFilterQos[] filterQos = nodeDomainInfo.getAccessFilterArr();
-      if (filterQos != null && filterQos.length > 0) {
-         if (log.isLoggable(Level.FINE)) log.fine("Found " + filterQos.length + " global filter rules ...");
-         for (int jj=0; jj<filterQos.length; jj++) {
-            I_AccessFilter filter = glob.getRequestBroker().getAccessPluginManager().getAccessFilter(
-                                          filterQos[jj].getType(),
-                                          filterQos[jj].getVersion(), 
-                                          msgUnit.getContentMime(),
-                                          msgUnit.getContentMimeExtended());
-            if (log.isLoggable(Level.FINE)) log.fine("Checking filter='" + filterQos[jj].getQuery() + "' on message content='" +
-                           msgUnit.getContentStr() + "'");
-            SessionInfo sessionInfo = null; // TODO: Pass sessionInfo here
-            if (filter != null && filter.match(sessionInfo, msgUnit, filterQos[jj].getQuery())) {
-               if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() +
-                              " for message '" + msgUnit.getLogId() + "' with filter='" + filterQos[jj].getQuery() + "'.");
-               return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
-            }
+      AccessFilterQos[] filterQos = nodeMasterInfo.getAccessFilterArr();
+      if (log.isLoggable(Level.FINE)) log.fine("Found " + filterQos.length + " global filter rules ...");
+      for (int jj=0; jj<filterQos.length; jj++) {
+         I_AccessFilter filter = glob.getRequestBroker().getAccessPluginManager().getAccessFilter(
+                                       filterQos[jj].getType(),
+                                       filterQos[jj].getVersion(), 
+                                       msgUnit.getContentMime(),
+                                       msgUnit.getContentMimeExtended());
+         if (log.isLoggable(Level.FINE)) log.fine("Checking filter='" + filterQos[jj].getQuery() + "' on message content='" +
+                        msgUnit.getContentStr() + "'");
+         SessionInfo sessionInfo = null; // TODO: Pass sessionInfo here
+         if (filter != null && filter.match(sessionInfo, msgUnit, filterQos[jj].getQuery())) {
+            if (log.isLoggable(Level.FINE)) log.fine("Found master='" + nodeMasterInfo.getNodeId().getId() + "' stratum=" + nodeMasterInfo.getStratum() +
+                           " for message '" + msgUnit.getLogId() + "' with filter='" + filterQos[jj].getQuery() + "'.");
+            return nodeMasterInfo; // Found the master nodeMasterInfo.getClusterNode(); 
          }
       }
 
-      if (log.isLoggable(Level.FINE)) log.fine("Node '" + nodeDomainInfo.getId() + "' is not master for message '" +
-                     msgUnit.getKeyData().toXml() + "' with given rules=" + nodeDomainInfo.toXml());
+      if (log.isLoggable(Level.FINE)) log.fine("Node '" + nodeMasterInfo.getId() + "' is not master for message '" +
+                     msgUnit.getKeyData().toXml() + "' with given rules=" + nodeMasterInfo.toXml());
       // Another rule can still choose this node as a master
 
       return null; // This clusternode is not the master

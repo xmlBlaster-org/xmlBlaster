@@ -414,10 +414,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       }
       else {
          // Ask the plugin
-         NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit, destination);
-         if (nodeDomainInfo == null)
+         NodeMasterInfo nodeMasterInfo = getConnection(publisherSession, msgUnit, destination);
+         if (nodeMasterInfo == null)
             return null;
-         clusterNode =  nodeDomainInfo.getClusterNode();
+         clusterNode =  nodeMasterInfo.getClusterNode();
       }
 
       if (clusterNode.isLocalNode())
@@ -443,20 +443,20 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
     *         tailed back because cluster node is temporary not available. The message will
     *         be flushed on reconnect.<br />
     *         Otherwise the normal publish return value of the remote cluster node and the responsible
-    *         NodeDomainInfo instance.  
+    *         NodeMasterInfo instance.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
    public PublishRetQosWrapper forwardPublish(SessionInfo publisherSession, MsgUnit msgUnit) throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering forwardPublish(" + msgUnit.getLogId() + ")");
-      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
-      if (nodeDomainInfo == null)
+      NodeMasterInfo nodeMasterInfo = getConnection(publisherSession, msgUnit);
+      if (nodeMasterInfo == null)
          return null;
-      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
+      I_XmlBlasterAccess con =  nodeMasterInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null)
          return null;
 
       QosData publishQos = msgUnit.getQosData();
-      if (nodeDomainInfo.getDirtyRead() == true) {
+      if (nodeMasterInfo.isDirtyRead() == true) {
          // mark QoS of published message that we dirty read the message:
          RouteInfo[] ris = publishQos.getRouteNodes();
          if (ris == null || ris.length < 1) {
@@ -470,7 +470,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       // Set the new qos ...
       MsgUnit msgUnitShallowClone = new MsgUnit(msgUnit, null, null, publishQos);
 
-      return new PublishRetQosWrapper(nodeDomainInfo, con.publish(msgUnitShallowClone));
+      return new PublishRetQosWrapper(nodeMasterInfo, con.publish(msgUnitShallowClone));
    }
 
    /**
@@ -485,10 +485,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       if (log.isLoggable(Level.FINER)) log.finer("Entering forwardSubscribe(" + xmlKey.getOid() + ")");
 
       MsgUnit msgUnit = new MsgUnit(xmlKey, (byte[])null, subscribeQos.getData());
-      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
-      if (nodeDomainInfo == null)
+      NodeMasterInfo nodeMasterInfo = getConnection(publisherSession, msgUnit);
+      if (nodeMasterInfo == null)
          return null;
-      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
+      I_XmlBlasterAccess con =  nodeMasterInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null) {
          if (log.isLoggable(Level.FINE)) log.fine("forwardSubscribe - Nothing to forward");
          return null;
@@ -531,10 +531,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       if (log.isLoggable(Level.FINER)) log.finer("Entering forwardUnSubscribe(" + xmlKey.getOid() + ")");
 
       MsgUnit msgUnit = new MsgUnit(xmlKey, (byte[])null, unSubscribeQos.getData());
-      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
-      if (nodeDomainInfo == null)
+      NodeMasterInfo nodeMasterInfo = getConnection(publisherSession, msgUnit);
+      if (nodeMasterInfo == null)
          return null;
-      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
+      I_XmlBlasterAccess con =  nodeMasterInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null) {
          if (log.isLoggable(Level.FINE)) log.fine("forwardUnSubscribe - Nothing to forward");
          return null;
@@ -555,10 +555,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       if (log.isLoggable(Level.FINER)) log.finer("Entering forwardGet(" + xmlKey.getOid() + ")");
 
       MsgUnit msgUnit = new MsgUnit(xmlKey, new byte[0], getQos.getData());
-      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
-      if (nodeDomainInfo == null)
+      NodeMasterInfo nodeMasterInfo = getConnection(publisherSession, msgUnit);
+      if (nodeMasterInfo == null)
          return null;
-      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
+      I_XmlBlasterAccess con =  nodeMasterInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null) {
          if (log.isLoggable(Level.FINE)) log.fine("forwardGet - Nothing to forward");
          return null;
@@ -579,10 +579,10 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       if (log.isLoggable(Level.FINER)) log.finer("Entering forwardErase(" + xmlKey.getOid() + ")");
 
       MsgUnit msgUnit = new MsgUnit(xmlKey, new byte[0], eraseQos.getData());
-      NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
-      if (nodeDomainInfo == null)
+      NodeMasterInfo nodeMasterInfo = getConnection(publisherSession, msgUnit);
+      if (nodeMasterInfo == null)
          return null;
-      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
+      I_XmlBlasterAccess con =  nodeMasterInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null) {
          if (log.isLoggable(Level.FINE)) log.fine("forwardErase - Nothing to forward");
          return null;
@@ -746,16 +746,16 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       }
    }
 
-   public final NodeDomainInfo getConnection(SessionInfo publisherSession, MsgUnit msgUnit) throws XmlBlasterException {
+   public final NodeMasterInfo getConnection(SessionInfo publisherSession, MsgUnit msgUnit) throws XmlBlasterException {
       return getConnection(publisherSession, msgUnit, null);
    }
 
    /**
     * Get connection to the master node (or a node at a closer stratum to the master). 
     * @param destination For PtP, else null
-    * @return null if local node, otherwise access other node with <code>nodeDomainInfo.getClusterNode().getI_XmlBlasterAccess()</code>
+    * @return null if local node, otherwise access other node with <code>nodeMasterInfo.getClusterNode().getI_XmlBlasterAccess()</code>
     */
-   public final NodeDomainInfo getConnection(SessionInfo publisherSession, MsgUnit msgUnit, Destination destination) throws XmlBlasterException {
+   public final NodeMasterInfo getConnection(SessionInfo publisherSession, MsgUnit msgUnit, Destination destination) throws XmlBlasterException {
       if (!postInitialized) {
          // !!! we need proper run level initialization
          if (log.isLoggable(Level.FINE)) log.fine("Entering getConnection(" + msgUnit.getLogId() + "), but clustering is not ready, handling in local node");
@@ -779,8 +779,8 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       // NOTE: If no filters are used, the masterSet=f(msgUnit) could be cached for performance gain
       //       Cache implementation is currently missing
 
-      Set masterSet = new TreeSet(); // Contains the NodeDomainInfo objects which match this message
-                                     // Sorted by stratum (0 is the first entry) -> see NodeDomainInfo.compareTo
+      Set masterSet = new TreeSet(); // Contains the NodeMasterInfo objects which match this message
+                                     // Sorted by stratum (0 is the first entry) -> see NodeMasterInfo.compareTo
       int numRulesFound = 0;                             // For nicer logging of warnings
 
       QosData publishQos = msgUnit.getQosData();
@@ -793,9 +793,9 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       ClusterNode[] clusterNodes = getClusterNodes();
       for (int ic=0; ic<clusterNodes.length; ic++) {
          ClusterNode clusterNode = clusterNodes[ic];
-         NodeDomainInfo[] nodeDomainInfos = clusterNode.getNodeDomainInfos();
+         NodeMasterInfo[] nodeMasterInfos = clusterNode.getNodeMasterInfos();
 
-         if (nodeDomainInfos.length < 1)
+         if (nodeMasterInfos.length < 1)
             continue;
          if (clusterNode.isAllowed() == false) {
             if (log.isLoggable(Level.FINE)) log.fine("Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
@@ -806,26 +806,26 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
                             msgUnit.getLogId() + "' has been there already");
             continue;
          }
-         if (log.isLoggable(Level.FINE)) log.fine("Testing " + nodeDomainInfos.length + " domains rules of node " +
+         if (log.isLoggable(Level.FINE)) log.fine("Testing " + nodeMasterInfos.length + " domains rules of node " +
                                   clusterNode.getId() + " for " + msgUnit.getLogId());
-         numRulesFound += clusterNode.getNodeDomainInfos().length;
+         numRulesFound += clusterNode.getNodeMasterInfos().length;
          // for each domain mapping rule ...
-         for (int i=0; i<nodeDomainInfos.length; i++) {
-            NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)nodeDomainInfos[i];
+         for (int i=0; i<nodeMasterInfos.length; i++) {
+            NodeMasterInfo nodeMasterInfo = (NodeMasterInfo)nodeMasterInfos[i];
             I_MapMsgToMasterId domainMapper = this.mapMsgToMasterPluginManager.getMapMsgToMasterId(
-                                 nodeDomainInfo.getType(), nodeDomainInfo.getVersion(), // "DomainToMaster", "1.0"
+                                 nodeMasterInfo.getType(), nodeMasterInfo.getVersion(), // "DomainToMaster", "1.0"
                                  msgUnit.getContentMime(), msgUnit.getContentMimeExtended());
             if (domainMapper == null) {
-               log.warning("No domain mapping plugin type='" + nodeDomainInfo.getType() + "' version='" + nodeDomainInfo.getVersion() +
+               log.warning("No domain mapping plugin type='" + nodeMasterInfo.getType() + "' version='" + nodeMasterInfo.getVersion() +
                               "' found for message mime='" + msgUnit.getContentMime() + "' and '" + msgUnit.getContentMimeExtended() +
-                              "' ignoring rules " + nodeDomainInfo.toXml());
+                              "' ignoring rules " + nodeMasterInfo.toXml());
                continue;
             }
 
             // Now invoke the plugin to find out who is the master ...
-            nodeDomainInfo = domainMapper.getMasterId(nodeDomainInfo, msgUnit);
-            if (nodeDomainInfo != null) {
-               masterSet.add(nodeDomainInfo);
+            nodeMasterInfo = domainMapper.getMasterId(nodeMasterInfo, msgUnit);
+            if (nodeMasterInfo != null) {
+               masterSet.add(nodeMasterInfo);
                break; // found one
             }
          }
@@ -853,27 +853,27 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
                                       "' domain='" + msgUnit.getDomain() + "'");
       }
 
-      NodeDomainInfo nodeDomainInfo = loadBalancer.getClusterNode(masterSet); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
+      NodeMasterInfo nodeMasterInfo = loadBalancer.getClusterNode(masterSet); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
 
       /*
-      if (nodeDomainInfo == null) {
+      if (nodeMasterInfo == null) {
          log.error(ME, "Message '" + msgUnit.getLogId() + "' domain='" + msgUnit.getDomain() + "'" +
                    "has no master, message is lost (implementation to handle this case is missing)!");
          return null;
       }
       */
-      if (nodeDomainInfo == null || nodeDomainInfo.getClusterNode().isLocalNode()) {
+      if (nodeMasterInfo == null || nodeMasterInfo.getClusterNode().isLocalNode()) {
          if (log.isLoggable(Level.FINE)) log.fine("Using local node '" + getMyClusterNode().getId() + "' as master for message '"
                + msgUnit.getLogId() + "' domain='" + msgUnit.getDomain() + "'");
          if (log.isLoggable(Level.FINEST)) log.finest("Received message at master node: " + msgUnit.toXml());
          return null;
       }
       else {
-         if (log.isLoggable(Level.FINE)) log.fine("Using master node '" + nodeDomainInfo.getClusterNode().getId() + "' for message '"
+         if (log.isLoggable(Level.FINE)) log.fine("Using master node '" + nodeMasterInfo.getClusterNode().getId() + "' for message '"
                + msgUnit.getLogId() + "' domain='" + msgUnit.getDomain() + "'");
       }
 
-      return nodeDomainInfo;
+      return nodeMasterInfo;
    }
 
    public final I_XmlBlasterAccess getConnection(NodeId nodeId) {
@@ -962,8 +962,8 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
    {
 
       public final int compare(Object o1, Object o2) {
-         NodeDomainInfo id1 = (NodeDomainInfo)o1;
-         NodeDomainInfo id2 = (NodeDomainInfo)o2;
+         NodeMasterInfo id1 = (NodeMasterInfo)o1;
+         NodeMasterInfo id2 = (NodeMasterInfo)o2;
          //log.info("MasterNodeComparator", "Compare " + id1 + " to " + id2);
 
          if (id1.equals(id2))

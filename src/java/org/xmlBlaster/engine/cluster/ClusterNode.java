@@ -7,35 +7,38 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.engine.ServerScope;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBuffer;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionStateListener;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.qos.ConnectQosData;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBuffer;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.address.Address;
 
 /**
  * This class holds the informations about an xmlBlaster server instance (=cluster node).
  * <p />
- * It collects the node informations from NodeInfo.java, NodeDomainInfo.java and NodeStateInfo.java
+ * It collects the node informations from NodeInfo.java, NodeMasterInfo.java and NodeStateInfo.java
  */
 public final class ClusterNode implements java.lang.Comparable, I_Callback, I_ConnectionStateListener, ClusterNodeMBean
 {
@@ -53,7 +56,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    private boolean available;
 
    /** Holds address and backup informations */
-   private NodeInfo nodeInfo;
+   private NodeConnectQos nodeInfo;
 
    /** Holds performance informations for load balancing */
    private NodeStateInfo state;
@@ -61,9 +64,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * Hold mapping informations to map a message to a master node.
     * The key is the query string -> to avoid duplicate identical queries
-    * The value is an instance of NodeDomainInfo
+    * The value is an instance of NodeMasterInfo
     */
-   private Map domainInfoMap = new TreeMap();
+   private Map/*<String, NodeMasterInfo>*/ masterInfoMap = new TreeMap();
 
    /** Currently always true, needs to be configurable !!! TODO */
    private boolean isAllowed = true;
@@ -83,7 +86,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       this.remoteGlob.setCheckpointPlugin(this.fatherGlob.getCheckpointPlugin());
       this.remoteGlob.addObjectEntry(Constants.OBJECT_ENTRY_ServerScope, this.fatherGlob.getObjectEntry(Constants.OBJECT_ENTRY_ServerScope)); // Used e.g. by Pop3Driver
       
-      this.nodeInfo = new NodeInfo(this.remoteGlob, nodeId);
+      this.nodeInfo = new NodeConnectQos(this.remoteGlob, nodeId);
       this.state = new NodeStateInfo(this.remoteGlob);
       this.ME = "ClusterNode" + this.remoteGlob.getLogPrefixDashed() + "-" + "/node/" + getId() + "/";
 
@@ -91,7 +94,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             getId(), this.fatherGlob.getClusterManager().getContextNode());
       this.mbeanHandle = this.fatherGlob.registerMBean(this.contextNode, this);
 
-      //!!!      addDomainInfo(new NodeDomainInfo());
+      //!!!      addDomainInfo(new NodeMasterInfo());
    }
 
    /**
@@ -142,13 +145,70 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          return null;
 
       if (this.xmlBlasterConnection == null) { // Login to other cluster node ...
+         
+         ConnectQosData qos = getNodeInfo().getConnectQosData();
+         
+         ////// BjoernCluster: Reuse in a gateway the remote cluster node login's socket for our connection
+         // TODO: Only for protocol of types "socket*"
+         //!!!!!!!!! NOT POSSIBLE, WE ALLWAYS NEED AN INSTANCE FOR CLIENT SIDE QUEUEING
+         
+         // ConnectQosSaxFactory->ClientProperty.ATTRIBUTE_TAG
+         //<address type='SOCKET' sessionId='4e56890ghdFzj0' pingInterval='10000' retries='-1' delay='10000'>
+         //  <burstMode collectTime='400' maxEntries='20' maxBytes='-1' />
+         //  <ptp>true</ptp>
+         //  <attribute name='useRemoteLoginAsTunnel' type='boolean'>true</attribute>
+         //</address>
+         boolean useRemoteLoginAsTunnel = qos.getAddress().getEnv("useRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
+         if (useRemoteLoginAsTunnel) {
+            final String secretSessionId = null;
+            final SessionName sessionName = new SessionName(this.remoteGlob, "client/avalon/session/1");
+            SessionInfo myRemotePartnerLogin = this.fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
+            this.remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+            
+            DispatchManager mgr = myRemotePartnerLogin.getDispatchManager();
+            if (mgr != null) {
+               boolean fireInitial = true;
+                mgr.addConnectionStatusListener(new I_ConnectionStatusListener() {
+                   // The !remote! node has logged in (not our client connection)
+                   public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+                      SessionInfo myRemotePartnerLogin = fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
+                      if (myRemotePartnerLogin != null && myRemotePartnerLogin.getAddressServer() != null) {
+                         Object obj = myRemotePartnerLogin.getAddressServer().getCallbackDriver();
+                         if (obj != null && obj instanceof CallbackSocketDriver) {
+                            CallbackSocketDriver cbDriver = (CallbackSocketDriver)myRemotePartnerLogin.getAddressServer().getCallbackDriver();
+                            remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", cbDriver.getHandler());
+                         }
+                         else {
+                            remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+                         }
+                      }
+                      else {
+                         remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+                      }
+                   }
+                   public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+                      remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+                   }
+                   public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+                      remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+                   }
+                }, fireInitial);
+             }
+            /* done by fireInitial
+            if (myRemotePartnerLogin != null && myRemotePartnerLogin.getAddressServer() != null) {
+               Object obj = myRemotePartnerLogin.getAddressServer().getCallbackDriver();
+               if (obj != null && obj instanceof CallbackSocketDriver) {
+                  CallbackSocketDriver cbDriver = (CallbackSocketDriver)myRemotePartnerLogin.getAddressServer().getCallbackDriver();
+                  this.remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", cbDriver.getHandler());
+               }
+            }
+            */
+         }
 
          this.xmlBlasterConnection = this.remoteGlob.getXmlBlasterAccess();
          this.xmlBlasterConnection.setServerNodeId(getId());
          this.xmlBlasterConnection.registerConnectionListener(this);
 
-         ConnectQosData qos = getNodeInfo().getConnectQosData();
-         
          // fixed to be unique since 1.5.2
          boolean oldQueueNameBehavior = this.remoteGlob.getProperty().get("xmlBlaster/cluster/useLegacyClientQueueName", false);
          if (!oldQueueNameBehavior)
@@ -164,7 +224,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             }
             if (log.isLoggable(Level.FINEST)) log.finest("Connecting to other cluster node, ConnectQos=" + qos.toXml());
 
-            /*ConnectReturnQos retQos = */this.xmlBlasterConnection.connect(new ConnectQos(this.remoteGlob, qos), this);
+            ConnectQos connectQos = new ConnectQos(this.remoteGlob, qos);
+
+            /*ConnectReturnQos retQos = */this.xmlBlasterConnection.connect(connectQos, this);
          }
          catch(XmlBlasterException e) {
             if (e.isInternal()) {
@@ -205,14 +267,14 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * Access the current nodeInfo of the node.
     * This configures the connection string. 
     */
-   public NodeInfo getNodeInfo() {
+   public NodeConnectQos getNodeInfo() {
       return nodeInfo;
    }
 
    /**
     * Overwrite the current nodeInfo of the node.
     */
-   public void setNodeInfo(NodeInfo nodeInfo) {
+   public void setNodeInfo(NodeConnectQos nodeInfo) {
       this.nodeInfo = nodeInfo;
    }
 
@@ -232,16 +294,16 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
    /**
     * Access the filter rules to determine the master of a message.
-    * @return The map contains NodeDomainInfo objects, it is never null
+    * @return The map contains NodeMasterInfo objects, it is never null
     * Please treat as read only or synchronize over the map
     */
-   public NodeDomainInfo[] getNodeDomainInfos() {
-      synchronized (this.domainInfoMap) {
-         return (NodeDomainInfo[])this.domainInfoMap.values().toArray(new NodeDomainInfo[this.domainInfoMap.size()]);
+   public NodeMasterInfo[] getNodeMasterInfos() {
+      synchronized (this.masterInfoMap) {
+         return (NodeMasterInfo[])this.masterInfoMap.values().toArray(new NodeMasterInfo[this.masterInfoMap.size()]);
       }
    }
 
-   public String replace(NodeDomainInfo old, String xmlNew) {
+   public String replace(NodeMasterInfo old, String xmlNew) {
       try {
          if (old == null || xmlNew == null) return "IllegalArgument";
          
@@ -252,11 +314,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          
          ClusterNode clusterNodeDummy = new ClusterNode(this.fatherGlob, getNodeId(), this.sessionInfo);
          new NodeParser(this.fatherGlob, clusterNodeDummy, sb.toString());
-         NodeDomainInfo newOne = clusterNodeDummy.getNodeDomainInfos()[0];
+         NodeMasterInfo newOne = clusterNodeDummy.getNodeMasterInfos()[0];
          
-         synchronized (this.domainInfoMap) {
+         synchronized (this.masterInfoMap) {
             old.shutdown(); // removes it from domainInfoMap
-            addNodeDomainInfo(newOne);
+            addNodeMasterInfo(newOne);
          }
    
          return "Reconfigured to " + xmlNew + "\nPlease also change your configuration file to survive xmlBlaster restart";
@@ -267,22 +329,22 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       }
    }
    
-   //public void addNodeDomainInfo(String xml) {
+   //public void addNodeMasterInfo(String xml) {
    //}
 
    /**
     * Set the filter rules to determine the master of a message.
     */
-   public void addNodeDomainInfo(NodeDomainInfo domainInfo) {
+   public void addNodeMasterInfo(NodeMasterInfo domainInfo) {
       // How to avoid duplicates? key = domainInfo.getQuery() does not help because of subtags
-      synchronized (this.domainInfoMap) {
-         this.domainInfoMap.put(""+domainInfo.getCount(), domainInfo);
+      synchronized (this.masterInfoMap) {
+         this.masterInfoMap.put(""+domainInfo.getCount(), domainInfo);
       }
    }
 
-   public void removeNodeDomainInfo(NodeDomainInfo domainInfo) {
-      synchronized (this.domainInfoMap) {
-         this.domainInfoMap.remove(""+domainInfo.getCount());
+   public void removeNodeMasterInfo(NodeMasterInfo domainInfo) {
+      synchronized (this.masterInfoMap) {
+         this.masterInfoMap.remove(""+domainInfo.getCount());
       }
    }
 
@@ -486,9 +548,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          serverScope.unregisterMBean(mbean);
       }
       
-      NodeDomainInfo[] nodeDomainInfos = getNodeDomainInfos();
-      for (int i=0; i<nodeDomainInfos.length; i++) {
-         nodeDomainInfos[i].shutdown();
+      NodeMasterInfo[] nodeMasterInfos = getNodeMasterInfos();
+      for (int i=0; i<nodeMasterInfos.length; i++) {
+         nodeMasterInfos[i].shutdown();
       }
 
       resetXmlBlasterAccess(false);
@@ -520,9 +582,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
       sb.append(getNodeInfo().toXml(extraOffset + Constants.INDENT, props));
 
-      NodeDomainInfo[] infos = getNodeDomainInfos();
+      NodeMasterInfo[] infos = getNodeMasterInfos();
       for (int i=0; i<infos.length; i++) {
-         NodeDomainInfo info = infos[i];
+         NodeMasterInfo info = infos[i];
          sb.append(info.toXml(extraOffset + Constants.INDENT, false));
       }
 

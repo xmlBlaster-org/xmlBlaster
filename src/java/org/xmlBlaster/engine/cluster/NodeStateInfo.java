@@ -39,8 +39,8 @@ public class NodeStateInfo {
    /** Free RAM memory in kBytes, -1 if not known */
    private int freeRam = - 1;
 
-   /** Holds Cpu info objects */
-   private Map cpuMap = new TreeMap();
+   /** Holds Cpu info objects, the key is the 'id' */
+   private Map/*<String, Cpu>*/ cpuMap = new TreeMap();
 
    /** Average idle of all CPUs of the node, -1 if not known */
    private int avgCpuIdle = -1;

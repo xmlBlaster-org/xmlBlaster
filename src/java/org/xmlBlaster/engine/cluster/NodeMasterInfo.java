@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      NodeDomainInfo.java
+Name:      NodeMasterInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Mapping from domain informations to master id
@@ -43,21 +43,21 @@ import java.util.ArrayList;
  * </pre>
  * to the real java implementation.
  */
-public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
+public final class NodeMasterInfo implements Comparable, NodeMasterInfoMBean
 {
    /** Unique name for logging */
-   private String ME = "NodeDomainInfo";
+   private String ME = "NodeMasterInfo";
    private final ServerScope serverScope;
-   private static Logger log = Logger.getLogger(NodeDomainInfo.class.getName());
+   private static Logger log = Logger.getLogger(NodeMasterInfo.class.getName());
    private final ClusterNode clusterNode;
 
    private static int counter=0;
    private final int count;
 
    private int stratum = 0;
-   public final boolean DEFAULT_acceptDefault = true;
+   public static final boolean DEFAULT_acceptDefault = true;
    private boolean acceptDefault = DEFAULT_acceptDefault;
-   public final boolean DEFAULT_acceptOtherDefault = false;
+   public static final boolean DEFAULT_acceptOtherDefault = false;
    private boolean acceptOtherDefault = DEFAULT_acceptOtherDefault;
    private String refId = null;
    private String type = null;
@@ -73,10 +73,12 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
    private transient AccessFilterQos tmpFilter = null;
    protected ArrayList filterList = null;                   // To collect the <filter> when sax parsing
    protected transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
+   protected final transient AccessFilterQos[] filterArr0 = new AccessFilterQos[0];
 
    private transient QueryKeyData tmpKey = null;
    protected ArrayList keyList = null;                      // To collect the <key> when sax parsing
    private QueryKeyData[] keyArr;
+   private final transient QueryKeyData[] keyArr0 = new QueryKeyData[0];
    private transient boolean inKey = false;
    
    private ContextNode contextNode;
@@ -85,17 +87,17 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
 
 
    /**
-    * Create a NodeDomainInfo belonging to the given cluster node. 
+    * Create a NodeMasterInfo belonging to the given cluster node. 
     * <p />
     * One instance of this is created for each &lt;master> tag
     */
-   public NodeDomainInfo(ServerScope glob, ClusterNode clusterNode) throws XmlBlasterException {
+   public NodeMasterInfo(ServerScope glob, ClusterNode clusterNode) throws XmlBlasterException {
       this.serverScope = glob;
 
       this.clusterNode = clusterNode;
       this.ME = this.ME + "-" + this.serverScope.getId();
 
-      synchronized (NodeDomainInfo.class) {
+      synchronized (NodeMasterInfo.class) {
          count = counter++;
       }
       version = glob.getProperty().get("cluster.domainMapper.version", DEFAULT_version);
@@ -136,36 +138,34 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
 
    /**
     * Get the key based rules
+    * @return never null
     */
    public QueryKeyData[] getKeyMappings() {
-      if (this.keyArr != null || this.keyList == null || this.keyList.size() < 1)
+      if (this.keyArr != null || this.keyList == null || this.keyList.size() < 1) {
+         return (this.keyArr == null) ? keyArr0 : this.keyArr;
+      }
+
+      synchronized (this.keyList) {
+         this.keyArr = new QueryKeyData[this.keyList.size()];
+         this.keyList.toArray(this.keyArr);
          return this.keyArr;
-
-      this.keyArr = new QueryKeyData[this.keyList.size()];
-      this.keyList.toArray(this.keyArr);
-      return this.keyArr;
+      }
    }
 
    /**
-    * Set a key based rule
-    * @param keyArr e.g.<pre>
-    *            &lt;key domain='rugby'/>
+    * Access the cluster master filters
+    * @return never null but length == 0 if none is specified. 
     */
-   public void setKeyMappings(QueryKeyData[] keyArr){
-         this.keyArr = keyArr;
-   }
+   public final AccessFilterQos[] getAccessFilterArr() {
+      if (this.filterArr != null || this.filterList == null || this.filterList.size() < 1) {
+         return (this.filterArr == null) ? filterArr0 : this.filterArr;
+      }
 
-   /**
-    * Return the cluster master filters or null if none is specified. 
-    */
-   public final AccessFilterQos[] getAccessFilterArr()
-   {
-      if (this.filterArr != null || this.filterList == null || this.filterList.size() < 1)
+      synchronized (this.filterList) {
+         this.filterArr = new AccessFilterQos[filterList.size()];
+         this.filterList.toArray(filterArr);
          return this.filterArr;
-
-      this.filterArr = new AccessFilterQos[filterList.size()];
-      this.filterList.toArray(filterArr);
-      return this.filterArr;
+      }
    }
 
    /**
@@ -173,7 +173,7 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
     * @param 0 is the master, 1 is the direct slave, 2 is the slave of the slave ...
     */
    public void setStratum(int stratum) {
-      if (stratum < 0) throw new IllegalArgumentException("NodeDomainInfo: stratum can't be small zero");
+      if (stratum < 0) throw new IllegalArgumentException("NodeMasterInfo: stratum can't be small zero");
       this.stratum = stratum;
    }
 
@@ -233,7 +233,7 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
    /**
     * Are we master for messages with the default domain?
     */
-   public boolean getAcceptDefault() {
+   public boolean isAcceptDefault() {
       return this.acceptDefault;
    }
 
@@ -247,7 +247,7 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
    /**
     * Are we master for messages with default domain from other nodes?
     */
-   public boolean getAcceptOtherDefault() {
+   public boolean isAcceptOtherDefault() {
       return this.acceptOtherDefault;
    }
 
@@ -255,7 +255,7 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
     * @return true if cluster slaves cache forwarded publish messages
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.dirtyRead.html">The cluster.dirtyRead requirement</a>
     */
-   public boolean getDirtyRead() {
+   public boolean isDirtyRead() {
       return this.dirtyRead;
    }
 
@@ -405,7 +405,7 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
          this.mbeanHandle = null;
          sc.unregisterMBean(mbean);
       }
-      clusterNode.removeNodeDomainInfo(this);
+      clusterNode.removeNodeMasterInfo(this);
    }
 
    /**
@@ -436,20 +436,20 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
       sb.append(" type='").appendAttributeEscaped(getType()).append("'");
       if (forceAllAttributes || !DEFAULT_version.equals(getVersion()))
           sb.append(" version='").append(getVersion()).append("'");
-      if (forceAllAttributes || DEFAULT_acceptDefault != getAcceptDefault())
-          sb.append(" acceptDefault='").append(getAcceptDefault()).append("'");
-      if (forceAllAttributes || DEFAULT_acceptOtherDefault != getAcceptOtherDefault())
-          sb.append(" acceptOtherDefault='").append(getAcceptOtherDefault()).append("'");
-      if (forceAllAttributes || RouteInfo.DEFAULT_dirtyRead != getDirtyRead())
-          sb.append(" dirtyRead='").append(getDirtyRead()).append("'");
+      if (forceAllAttributes || DEFAULT_acceptDefault != isAcceptDefault())
+          sb.append(" acceptDefault='").append(isAcceptDefault()).append("'");
+      if (forceAllAttributes || DEFAULT_acceptOtherDefault != isAcceptOtherDefault())
+          sb.append(" acceptOtherDefault='").append(isAcceptOtherDefault()).append("'");
+      if (forceAllAttributes || RouteInfo.DEFAULT_dirtyRead != isDirtyRead())
+          sb.append(" dirtyRead='").append(isDirtyRead()).append("'");
       sb.append(">");
 
       QueryKeyData[] keyArr = getKeyMappings();
-      for (int ii=0; keyArr != null && ii<keyArr.length; ii++)
+      for (int ii=0; ii<keyArr.length; ii++)
          sb.append(keyArr[ii].toXml(extraOffset+Constants.INDENT));
 
       AccessFilterQos[] filterArr = getAccessFilterArr();
-      for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
+      for (int ii=0; ii<filterArr.length; ii++)
          sb.append(filterArr[ii].toXml(extraOffset+Constants.INDENT));
 
       sb.append(offset).append("</master>");
@@ -459,10 +459,10 @@ public final class NodeDomainInfo implements Comparable, NodeDomainInfoMBean
 
    /**
     * Enforced by interface Comparable, does sorting
-    * of NodeDomainInfo instances in a treeSet with stratum
+    * of NodeMasterInfo instances in a treeSet with stratum
     */
    public int compareTo(Object obj)  {
-      NodeDomainInfo a = (NodeDomainInfo)obj;
+      NodeMasterInfo a = (NodeMasterInfo)obj;
       
       try {
          if (getClusterNode().getConnectionState() != a.getClusterNode().getConnectionState())
