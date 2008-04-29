@@ -27,7 +27,6 @@ import org.xmlBlaster.contrib.dbwriter.I_Writer;
 import org.xmlBlaster.contrib.dbwriter.info.SqlInfo;
 import org.xmlBlaster.contrib.dbwriter.info.SqlRow;
 import org.xmlBlaster.contrib.filewriter.FileWriterCallback;
-import org.xmlBlaster.contrib.replication.impl.SearchableConfig;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 public class ReplicationDumper implements I_Writer, ReplicationConstants {

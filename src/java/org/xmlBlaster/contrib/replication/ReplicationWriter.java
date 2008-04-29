@@ -9,7 +9,9 @@ package org.xmlBlaster.contrib.replication;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -78,6 +80,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    private int sqlInfoCacheMaxSize;
    private boolean exceptionInTransaction;
    private Connection keptConnection; // we need to use the same connection within a transaction
+   private OutputStream debugOs;
    
    public ReplicationWriter() {
       this.sqlInfoCache = new HashMap();
@@ -93,6 +96,7 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       set.add("replication.mapper.class");
       set.add("replication.overwriteTables");
       set.add("replication.importLocation");
+      set.add("replication.debugFile");
       set.add("dbWriter.prePostStatement.class");
       PropertiesInfo.addSet(set, this.mapper.getUsedPropertyKeys());
       PropertiesInfo.addSet(set, this.pool.getUsedPropertyKeys());
@@ -181,6 +185,9 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       else
          log.severe("Couldn't initialize I_Parser, please configure 'parser.class'");
       this.nirvanaClient = this.info.getBoolean("replication.nirvanaClient", false);
+      String debugFileName = info.get("replication.debugFile", null);
+      if (debugFileName != null)
+         debugOs = new FileOutputStream(debugFileName);
    }
 
    public void shutdown() throws Exception {
@@ -203,6 +210,10 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
       if (this.parserForOldInUpdates != null) {
          this.parserForOldInUpdates.shutdown();
          this.parserForOldInUpdates = null;
+      }
+      if (debugOs != null) {
+         debugOs.close();
+         debugOs = null;
       }
    }
 
@@ -293,6 +304,14 @@ public class ReplicationWriter implements I_Writer, ReplicationConstants {
    
    
    public void store(SqlInfo dbInfo) throws Exception {
+      if (debugOs != null) {
+         try {
+            debugOs.write(dbInfo.toXml("", false, false, true).getBytes());
+         }
+         catch (Throwable ex) {
+            ex.printStackTrace();
+         }
+      }
       if (checkIfAlreadyProcessed(dbInfo)) {
          log.info("Entry '" + dbInfo.toString() + "' already processed, will ignore it");
          return;

@@ -29,7 +29,7 @@ public interface I_ReplSlave extends I_ContribPlugin {
    public final static String DBWATCHER_SESSION_NAME = ".dbWatcherSessionName";
    public final static String CASCADED_REPL_SLAVE = ".cascadedReplSlave";
    public final static String CASCADED_REPL_PREFIX = ".cascadedReplPrefix";
-   
+
    /**
     * Starts a replication
     * 
