@@ -21,6 +21,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.DatabaseMetaData;
+import java.sql.Statement;
 import java.util.Hashtable;
 
 import org.xmlBlaster.util.I_Timeout;
@@ -161,7 +162,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    
       if (log.isLoggable(Level.FINE)) log.fine("going to retreive a connection");
       try  {
-         conn = (Connection)this.connections.poll(delay);
+         conn = (Connection)this.connections.poll(delay); // Return and remove an item from channel only if one is available within msecs milliseconds.
          if (conn != null) { // assert code
             setInPool(conn, false);
             try {
@@ -767,6 +768,20 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          try {
             conn = get(waitTime);            
             if (conn == null) break;
+            // It is <b>strongly recommended</b> that an application explicitly 
+            // commits or rolls back an active transaction prior to calling the 
+            // <code>close</code> method.  If the <code>close</code> method is called
+            // and there is an active transaction, the results are implementation-defined.
+            if (getUrl().startsWith("jdbc:hsqldb:")) {
+               try { // HSQLDB only: http://www.hsqldb.org/web/hsqlDocsFrame.html
+                  Statement stmt = conn.createStatement();
+                  stmt.execute("SHUTDOWN"); // or shutdown=true to cleanup .lck file!
+                  stmt.close();
+               }
+               catch (Throwable e) {
+                  log.warning(e.toString());
+               }
+            }
             conn.close();
             if (log.isLoggable(Level.FINE)) log.fine("connection " + conn + " disconnected ( object address: " + conn + ")");
          }
@@ -1036,7 +1051,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       if (log.isLoggable(Level.FINER)) log.finer("unregisterManager, number of managers registered (still including this one): '" + this.managerCount + "'");
       if (manager == null) return;
       this.managerCount--;
-      if (this.managerCount == 0) shutdown();
+      if (this.managerCount < 1) shutdown();
    }
 
    /**
