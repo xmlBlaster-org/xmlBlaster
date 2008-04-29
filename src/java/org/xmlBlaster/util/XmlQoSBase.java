@@ -137,7 +137,7 @@ public class XmlQoSBase extends SaxHandlerBase
    }
    
    /**
-    * Characters.
+    * Characters standard SAX.
     * The text between two tags, in the following example 'Hello':
     * <key>Hello</key>
     */
@@ -149,6 +149,21 @@ public class XmlQoSBase extends SaxHandlerBase
          super.characters(ch, start, length);
       }
    }
+
+   /**
+    * Characters, when called from other sax parsing code
+    * The text between two tags, in the following example 'Hello':
+    * <key>Hello</key>
+    */
+   public void characters(char ch[], int start, int length, StringBuffer delegateCharacters) {
+      if (this.inClientProperty > 0) {
+         this.cpCharacter.append(ch, start, length);
+      }
+      else { 
+         delegateCharacters.append(ch, start, length);
+      }
+   }
+
 
    /**
     * Start element.
