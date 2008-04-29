@@ -200,7 +200,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * You can use loadClientPlugin() or setUserId() instead which loads the 
     * given/default security plugin and does a lookup in the environment.
     */
-   void setSecurityQos(I_SecurityQos securityQos) {
+   public void setSecurityQos(I_SecurityQos securityQos) {
       this.securityQos = securityQos;
       if (!this.sessionQos.isSessionNameModified()) {
          SessionName sessionName = new SessionName(glob, this.securityQos.getUserId()); // parse it and strip it if user has given an absolute name
