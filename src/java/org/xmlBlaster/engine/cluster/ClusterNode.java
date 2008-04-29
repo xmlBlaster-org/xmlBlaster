@@ -14,14 +14,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.authentication.plugins.htpasswd.SecurityQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
+import org.xmlBlaster.protocol.socket.SocketDriver;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
@@ -33,7 +40,12 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.qos.ConnectQosData;
+import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.address.Destination;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 
 /**
  * This class holds the informations about an xmlBlaster server instance (=cluster node).
@@ -164,6 +176,90 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             final SessionName sessionName = new SessionName(this.remoteGlob, "client/avalon/session/1");
             SessionInfo myRemotePartnerLogin = this.fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
             this.remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+            
+            if (myRemotePartnerLogin == null) {
+               // Create the temporary SessionInfo until the real client arrives
+               String[] args = new String[0]; //{ "-queue/connection/defaultPlugin", "RAM,1.0" };
+               Global glob = this.remoteGlob.getClone(args);
+               String type = "SOCKET";
+               String version = "1.0";
+               String rawAddress = "socket://:7607";
+               boolean found = false;
+               I_Driver[] drivers = this.fatherGlob.getPluginRegistry().getPluginsOfInterfaceI_Driver();//register(pluginInfo.getId(), plugin);//getProtocolPluginManager().getPlugin(type, version)
+               for (int i=0; i<drivers.length; i++) {
+                  if (drivers[i] instanceof SocketDriver) {
+                     SocketDriver sd = (SocketDriver)drivers[i];
+                     rawAddress = sd.getRawAddress();
+                     type = sd.getType();
+                     version = sd.getVersion();
+                     found = true;
+                  }
+               }
+               if (!found)
+                  log.severe("No socket protocol driver found");
+               // TODO: How to avoid configuring the password (pass a flag to Authenticate?)
+               // TODO: Currently we can only configure loginName/password based credentials
+               String xml = this.fatherGlob.get("cluster/securityService/"+sessionName.getLoginName(), "", null, null);
+               SecurityQos securityQos = new SecurityQos(glob, xml);
+               ConnectQos tmpQos = new ConnectQos(glob, sessionName.getRelativeName(), "");
+               
+               tmpQos.getData().setSecurityQos(securityQos);
+               tmpQos.setSessionName(sessionName);
+               ClientQueueProperty prop = new ClientQueueProperty(glob, null);
+               prop.setType("RAM");
+               Address address = new Address(glob);
+               address.setDelay(40000L);
+               address.setRetries(-1);
+               address.setPingInterval(20000L);
+               address.setType(type);
+               address.setVersion(version);
+               address.setRawAddress(rawAddress); // Address to find ourself
+               prop.setAddress(address);
+               tmpQos.addClientQueueProperty(prop);
+               CallbackAddress cbAddress = new CallbackAddress(glob);
+               cbAddress.setDelay(40000L);
+               cbAddress.setRetries(-1);
+               cbAddress.setPingInterval(40000L);
+               cbAddress.setDispatcherActive(false);
+               cbAddress.setType(type);
+               cbAddress.setVersion(version);
+               tmpQos.addCallbackAddress(cbAddress);
+               log.info("Creating temporary session " + sessionName.getRelativeName() + " until real cluster node arrives");
+               glob.getXmlBlasterAccess().connect(tmpQos, new I_Callback() {
+                  public String update(String cbSessionId, UpdateKey updateKey,
+                        byte[] content, UpdateQos updateQos)
+                        throws XmlBlasterException {
+                     return null;
+                  }
+               });
+               glob.getXmlBlasterAccess().leaveServer(null);
+               /*
+               ////// TODO: Does not create a DispatchManager !!!!!!!!!
+               
+               // Sending dummy PtP message to create the temporary SessionInfo until the real client arrives 
+               PublishKey pk = new PublishKey(this.fatherGlob, "__sys__ClusterDummy");
+               PublishQos pq = new PublishQos(this.fatherGlob);
+               pq.addClientProperty("dummyToCreateSession", true);
+               Destination destination = new Destination(this.fatherGlob, sessionName);
+               destination.forceQueuing(true);
+               pq.addDestination(destination);
+               TopicProperty tp = new TopicProperty(this.fatherGlob);
+               tp.setCreateDomEntry(false);
+               HistoryQueueProperty hp= new HistoryQueueProperty(this.fatherGlob, this.fatherGlob.getNodeId().getId());
+               hp.setMaxEntries(0);
+               hp.setMaxEntriesCache(0);
+               tp.setHistoryQueueProperty(hp);
+               pq.setTopicProperty(tp);
+               MsgUnit msgUnit = new MsgUnit(pk, "", pq);
+               this.fatherGlob.getRequestBroker().publish(this.fatherGlob.getRequestBroker().getInternalSessionInfo(), msgUnit);
+               */
+               myRemotePartnerLogin = this.fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
+               
+               if (myRemotePartnerLogin == null) {
+                  log.severe("Can't create session " + sessionName.getAbsoluteName());
+                  return null;
+               }
+            }
             
             DispatchManager mgr = myRemotePartnerLogin.getDispatchManager();
             if (mgr != null) {

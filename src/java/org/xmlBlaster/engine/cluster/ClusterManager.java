@@ -6,9 +6,44 @@ Comment:   Main manager class for clustering
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import java.util.logging.Logger;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.engine.ServerScope;
+import org.xmlBlaster.engine.qos.EraseQosServer;
+import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
+import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -16,43 +51,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
-import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
-import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.engine.qos.EraseQosServer;
-import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.client.key.GetKey;
-import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.key.EraseKey;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.I_XmlBlasterAccess;
-
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Iterator;
-import java.util.Comparator;
 
 /**
  * The manager instance for a cluster node. 
@@ -218,6 +218,7 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          initMyselfClusterNode();
 
       // Look for environment settings to configure startup clustering
+      String names = "";
       String[] env = { "cluster.node", "cluster.node.info", "cluster.node.master" };
       for (int ii=0; ii<env.length; ii++) {
          Map nodeMap = this.glob.getProperty().get(env[ii], (Map)null);
@@ -243,11 +244,8 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
       subscribe();
 
       if (log.isLoggable(Level.FINEST)) log.finest(toXml());
-      log.info("Initialized and ready");
+      log.info("Initialized and ready for " + getClusterNodes().length + " cluster nodes");
       postInitialized = true;
-
-      if (!lazyConnect)
-         initConnections();
    }
 
    /*
@@ -999,9 +997,22 @@ public final class ClusterManager implements I_RunlevelListener, I_Plugin, Clust
          return;
 
       if (to > from) { // startup
-         if (to == RunlevelManager.RUNLEVEL_STANDBY_POST) {
-            if (this.pluginInfo == null) { // Old style: Instantiate hard coded by RequestBroker.java
-               postInit(); // Assuming the protocol drivers are initialized to deliver their addresses, currently they are started at run level 3
+         if (to == RunlevelManager.RUNLEVEL_STANDBY_POST) { // 4
+            //if (this.pluginInfo == null) { // Old style: Instantiate hard coded by RequestBroker.java
+            //   postInit(); // Assuming the protocol drivers are initialized to deliver their addresses, currently they are started at run level 3
+            //}
+         }
+         else if (to == RunlevelManager.RUNLEVEL_RUNNING_PRE) { // 8
+            // Assuming we can do a fake login (for missing cluster nodes)
+            try {
+               if (!lazyConnect)
+                  initConnections();
+            }
+            catch (XmlBlasterException ex) {
+               throw ex;
+            }
+            catch (Throwable ex) {
+               throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize ClusterManager.", ex);
             }
          }
       }
