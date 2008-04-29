@@ -179,8 +179,7 @@ public class ClientEntryFactory implements I_EntryFactory
     */
    public void initialize(Global glob) {
       this.glob = glob;
-
-      log.info("successfully initialized");
+      if (log.isLoggable(Level.FINE)) log.fine("successfully initialized");
    }
 
    /**
