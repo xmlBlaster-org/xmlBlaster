@@ -5,6 +5,8 @@
  ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.contrib.replication;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -59,7 +61,8 @@ public class TestReplication extends XMLTestCase {
    private String replPrefix = "repl_";
    private long sleepDelay;
    private MsgInterceptor interceptor;
-
+   private int counter;
+   
    /**
     * Start the test.
     * <pre>
@@ -71,6 +74,15 @@ public class TestReplication extends XMLTestCase {
       // junit.swingui.TestRunner.run(TestReplication.class);
       TestReplication test = new TestReplication();
       try {
+         test.setUp();
+         test.testAllCharVarchar();
+         test.tearDown();
+
+         test.setUp();
+         test.testAllCharBlobs();
+         test.tearDown();
+
+         /*
          test.setUp();
          test.testNonAlphaCharOnTable();
          test.tearDown();
@@ -94,7 +106,8 @@ public class TestReplication extends XMLTestCase {
          test.setUp();
          test.testBigBlobs();
          test.tearDown();
-
+         */
+         
          // test.setUp();
          // test.testMultiTransaction();
          // test.tearDown();
@@ -115,6 +128,28 @@ public class TestReplication extends XMLTestCase {
       this.interceptor = new MsgInterceptor(new Global(), log, null, (I_Update)null);
    }
 
+   private final boolean compareBlobs(byte[] first, byte[] second, StringBuffer comments) {
+      boolean ret = true;
+      int nmax = 0;
+      if (first.length != second.length) {
+         ret = false;
+         if (comments != null)
+            comments.append("Wrong size: ").append(first.length).append(" and ").append(second.length).append("\n");
+         if (first.length > second.length)
+            nmax = second.length;
+         else
+            nmax = first.length; 
+      }
+      for (int i=0; i < nmax; i++) {
+         if (first[i] != second[i]) {
+            ret = false;
+            if (comments != null)
+               comments.append("item ").append(i).append(" wrong, is '").append(second[i]).append("' but should be '").append(first[i]).append("'\n");
+         }
+      }
+      return ret;
+   }
+   
    /**
     * Constructor for TestReplication.
     *
@@ -164,13 +199,22 @@ public class TestReplication extends XMLTestCase {
          setProp(readerInfo, "xmlBlaster/useSessionMarker", "true", false);
          setProp(readerInfo, "_autoSubscribe", "true", false);
          setProp(readerInfo, "mom.dispatcherPlugin", "ReplManager,1.0", true);
+         
+         // setProp(readerInfo, "db.createInterceptor.class", "org.xmlBlaster.contrib.replication.impl.SpecificOracle", true);
+         // setProp(readerInfo, "replication.blockLoop", "false", true);
+         
       }
       if (writerInfo != null) {  // and here for the dbWriter ...
          // ---- Database settings -----
-         if (extraUser)
-            setProp(writerInfo, "mom.loginName", "DbWriterExtra/1", true);
-         else
-            setProp(writerInfo, "mom.loginName", "DbWriter/1", true);
+         String userName = null;
+         if (extraUser) {
+            counter++;
+            userName = "DbWriterExtra" + counter;
+         }
+         else 
+            userName = "DbWriter";
+         
+         setProp(writerInfo, "mom.loginName", userName + "/1", true);
          // setProp(writerInfo, "replication.mapper.tables", "test_replication=test_replication2,test1=test1_replica,test2=test2_replica,test3=test3_replica", false);
 
          setProp(writerInfo, "replication.mapper.table.test_replication", "test_replication2", false);
@@ -193,6 +237,8 @@ public class TestReplication extends XMLTestCase {
          setProp(writerInfo, "xmlBlaster/useSessionMarker", "true", false);
          setProp(writerInfo, "mom.dispatcherPlugin", "ReplManager,1.0", true);
          setProp(writerInfo, "replication.recreateTables", "true", true);
+         setProp(writerInfo, "replication.debugFile", System.getProperty("java.io.tmpdir") + "/" + userName + ".dump", false);
+         
       }
    }
 
@@ -244,7 +290,12 @@ public class TestReplication extends XMLTestCase {
          if (this.sleepDelay < 0L)
             this.sleepDelay = 25000L;
          log.info("setUp: The sleep delay will be '" + this.sleepDelay + "' ms");
-         dbSpecific.cleanup(conn, doWarn);
+         try {
+            dbSpecific.cleanup(conn, doWarn);
+         }
+         catch (Exception e) {
+            e.printStackTrace();
+         }
          try {
             pool.update("DROP TABLE " + this.tableName);
          }
@@ -266,12 +317,22 @@ public class TestReplication extends XMLTestCase {
          boolean force = true;
          dbSpecific.bootstrap(conn, doWarn, force);
          dbSpecific.shutdown();
-         pool.shutdown();
-         pool = null;
          dbSpecific = null;
          tmpInfo = null;
       }
       catch (Exception ex) {
+         if (dbSpecific != null) {
+            try {
+               dbSpecific.shutdown();
+               dbSpecific = null;
+            }
+            catch (Exception e1) {
+            }
+         }
+         if (pool != null) {
+            pool.shutdown();
+            pool = null;
+         }
          if (conn != null && pool != null)
             pool.release(conn);
       }
@@ -1236,6 +1297,345 @@ public class TestReplication extends XMLTestCase {
             ex.printStackTrace();
          }
       }
+   }
+
+   /**
+    * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
+    *
+    */
+   public final void testAllCharBlobs() {
+      log.info("Start testAllCharBlobs");
+      interceptor.waitOnUpdate(sleepDelay, 1);
+      I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String sql = null;
+         try {
+            boolean force = false;
+            String destination = null;
+            boolean forceSend = false;
+            TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+            tableToWatch.setActions("IDU");
+            getDbSpecific().addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
+         }
+
+         {
+            try { // we explicitly choose a table without pk (to test searches)
+               this.interceptor.clear();
+               sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(30), data BLOB)";
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 2, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must be empty", false, rs.next());
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'CREATE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+
+         {
+            try {
+               this.interceptor.clear();
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
+               sql = "INSERT INTO " + this.tableName + " (name, data) VALUES (?, ?)";
+               PreparedStatement ps = conn.prepareStatement(sql);
+
+               ps.setString(1, "someName");
+               // byte[] blob = new byte[65536];
+               byte[] blob = new byte[70000];
+               // byte[] blob = new byte[512];
+               int length = blob.length;
+               for (int i=0; i < length; i++)
+                  blob[i] = (byte)i;
+               ByteArrayInputStream bais = new ByteArrayInputStream(blob);
+               ps.setBinaryStream(2, bais, length);
+               this.interceptor.setVerbosity(1);
+               ps.execute();
+               this.interceptor.waitOnUpdate(1000*this.sleepDelay, 1);
+               this.interceptor.setVerbosity(0);
+               bais.close();
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  rs.next();
+                  String name = rs.getString(1);
+                  assertEquals("comparing the name", "someName", name);
+
+                  InputStream is = rs.getBinaryStream(2);
+                  byte[] buf = new byte[1000];
+                  int val;
+                  int sum = 0;
+                  ByteArrayOutputStream baos = new ByteArrayOutputStream(length+128);
+                  while ( (val=is.read(buf)) > -1) {
+                     sum += val;
+                     baos.write(buf, 0, val);
+                  }
+                  byte[] blob1 = baos.toByteArray();
+                  is.close();
+                  assertEquals("Comparing the size of the blob: ", length, sum);
+                  assertEquals("Comparing the size of the blob (real compare): ", blob.length, blob1.length);
+                  boolean error = false;
+                  StringBuffer errBuf = new StringBuffer(1024);
+                  for (int i=0; i < blob1.length; i++) {
+                     if (blob1[i] != blob[i]) {
+                        error = true;
+                        String txt = "wrong entry at '" + i + "' is '" + blob1[i] + "' but should be '" + blob[i] + "'";
+                        errBuf.append(txt).append("\n");
+                        // assertTrue(txt, false);
+                     }
+                     if (error)
+                        assertTrue(errBuf.toString(), false);
+                  }
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'INSERT' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+         {
+            try {
+               this.interceptor.clear();
+               sql = "DROP TABLE " + this.tableName;
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  assertTrue("Testing '" + sql + "'. It must have resulted in an exception but did not.", false);
+               }
+               catch (Exception e) {
+               }
+               finally {
+                  if (rs != null)
+                     rs.close();
+                  rs = null;
+               }
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DROP' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+   }
+
+   /**
+    * Tests the same operations as already tested in TestSyncPart but with the complete Replication.
+    *
+    */
+   public final void testAllCharVarchar() {
+      log.info("Start testAllCharVarchar");
+      interceptor.waitOnUpdate(sleepDelay, 1);
+      I_DbPool pool = (I_DbPool)this.readerInfo.getObject("db.pool");
+      assertNotNull("pool must be instantiated", pool);
+      Connection conn = null;
+      try {
+         conn  = pool.reserve();
+         conn.setAutoCommit(true);
+         String sql = null;
+         try {
+            boolean force = false;
+            String destination = null;
+            boolean forceSend = false;
+            TableToWatchInfo tableToWatch = new TableToWatchInfo(null, this.specificHelper.getOwnSchema(pool), tableName);
+            tableToWatch.setActions("IDU");
+            getDbSpecific().addTableToWatch(tableToWatch, force, new String[] { destination }, forceSend);
+         }
+         catch (Exception ex) {
+            ex.printStackTrace();
+            assertTrue("Testing if addition of table '" + tableName + "' to tables to replicate (" + this.replPrefix + "tables) succeeded: An exception should not occur here", false);
+         }
+
+         {
+            try { // we explicitly choose a table without pk (to test searches)
+               this.interceptor.clear();
+               sql = "CREATE TABLE " + this.tableName + " (name VARCHAR(30), data VARCHAR(4000))";
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               assertEquals("Testing '" + sql + "' the number of columns returned", 2, rs.getMetaData().getColumnCount());
+               assertEquals("Testing '" + sql + "' the table must be empty", false, rs.next());
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'CREATE' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+
+         {
+            try {
+               this.interceptor.clear();
+               conn = pool.reserve();
+               conn.setAutoCommit(true);
+               sql = "INSERT INTO " + this.tableName + " (name, data) VALUES (?, ?)";
+               PreparedStatement ps = conn.prepareStatement(sql);
+
+               ps.setString(1, "someName");
+               byte[] blob = new byte[2000];
+               int length = blob.length;
+               for (int i=0; i < length; i++) {
+                  blob[i] = (byte)i;
+                  if (blob[i] == 0)
+                     blob[i] = 32;
+               }
+               
+               String inString = new String(blob);
+               ps.setString(2, inString);
+               ps.execute();
+               this.interceptor.waitOnUpdate(1000*this.sleepDelay, 1);
+               conn = pool.reserve();
+
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               String refString = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName);
+                  rs.next();
+                  String name = rs.getString(1);
+                  assertEquals("comparing the name", "someName", name);
+                  refString = rs.getString(2);
+                  assertEquals("Comparing the size of the blob: ", inString.length(), refString.length());
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               rs.close();
+               st.close();
+               
+               st = conn.createStatement();
+               rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  rs.next();
+                  String name = rs.getString(1);
+                  assertEquals("comparing the name", "someName", name);
+
+                  String outString = rs.getString(2);
+                  assertEquals("Comparing the size of the blob: ", refString.length(), outString.length());
+                  assertEquals("", refString, outString);
+               }
+               catch (Exception e) {
+                  e.printStackTrace();
+                  assertTrue("Testing '" + sql + "'. It resulted in an exception " + e.getMessage(), false);
+               }
+               rs.close();
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'INSERT' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+         {
+            try {
+               this.interceptor.clear();
+               sql = "DROP TABLE " + this.tableName;
+               pool.update(sql);
+               this.interceptor.waitOnUpdate(this.sleepDelay, 1);
+               conn = pool.reserve();
+               Statement st = conn.createStatement();
+               ResultSet rs = null;
+               try {
+                  rs = st.executeQuery("SELECT * from " + this.tableName2);
+                  assertTrue("Testing '" + sql + "'. It must have resulted in an exception but did not.", false);
+               }
+               catch (Exception e) {
+               }
+               finally {
+                  if (rs != null)
+                     rs.close();
+                  rs = null;
+               }
+               st.close();
+            }
+            catch (Exception e) {
+               e.printStackTrace();
+               assertTrue("Exception when testing operation 'DROP' should not have happened: " + e.getMessage(), false);
+            }
+            finally {
+               if (conn != null)
+                  pool.release(conn);
+            }
+         }
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();
+         assertTrue("an exception should not occur " + ex.getMessage(), false);
+      }
+      log.info("SUCCESS");
+      
    }
 
    /**

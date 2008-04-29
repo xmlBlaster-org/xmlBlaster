@@ -18,6 +18,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.ErrorCode;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.InterruptedException;
@@ -169,6 +170,14 @@ public class MsgInterceptor extends Assert implements I_Callback, I_StreamingCal
          catch (IOException ex) {
             throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_ILLEGALARGUMENT, "update", "update", ex);
          }
+      }
+      if (verbosity > 0 && is != null) {
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         int val = 0;
+         byte[] buf = new byte[1000];
+         while ( (val = is.read(buf)) > -1)
+            baos.write(buf, 0, val);
+         System.out.println(new String(baos.toByteArray()));
       }
       add(new Msg(null, null, new byte[0], null));
    }

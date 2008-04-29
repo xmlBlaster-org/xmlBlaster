@@ -294,7 +294,6 @@ public class TestDbBasics extends XMLTestCase implements I_ChangePublisher {
          conn  = pool.reserve();
          conn.setAutoCommit(true);
          String sql = null;
-
          { // test the test methods themselves first
              sql = "{? = call " + this.replPrefix + "test_blob(?,?,?,?)}";
              try {
