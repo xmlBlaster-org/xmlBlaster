@@ -152,9 +152,9 @@ public class Checkpoint implements I_Checkpoint {
                         append(buf, this.filterKeys[i], cp.getStringValue());
                   }
                }
-               append(buf, "sender", (isClusterEnvironment()) ? msgUnit.getQosData()
-                     .getSender().getAbsoluteName() : msgUnit.getQosData()
-                     .getSender().getRelativeName());
+               SessionName sender = msgUnit.getQosData().getSender();
+               if (sender != null)
+                  append(buf, "sender", (isClusterEnvironment()) ? sender.getAbsoluteName() : sender.getRelativeName());
                if (destination != null) {
                   append(buf, "destination", (isClusterEnvironment()) ? destination
                         .getAbsoluteName() : destination.getRelativeName());
