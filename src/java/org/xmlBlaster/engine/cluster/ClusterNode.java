@@ -18,17 +18,14 @@ import org.xmlBlaster.authentication.plugins.htpasswd.SecurityQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
 import org.xmlBlaster.protocol.socket.SocketDriver;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
@@ -40,12 +37,9 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.qos.ConnectQosData;
-import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
-import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 
 /**
  * This class holds the informations about an xmlBlaster server instance (=cluster node).
@@ -171,7 +165,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          //  <attribute name='useRemoteLoginAsTunnel' type='boolean'>true</attribute>
          //</address>
          boolean useRemoteLoginAsTunnel = qos.getAddress().getEnv("useRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
-         if (useRemoteLoginAsTunnel) {
+         if (useRemoteLoginAsTunnel) { // The cluster master tries to tunnel using the slaves connection
             final String secretSessionId = null;
             final SessionName sessionName = new SessionName(this.remoteGlob, "client/avalon/session/1");
             SessionInfo myRemotePartnerLogin = this.fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
@@ -214,6 +208,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                address.setType(type);
                address.setVersion(version);
                address.setRawAddress(rawAddress); // Address to find ourself
+               //address.addClientProperty(new ClientProperty("acceptRemoteLoginAsTunnel", "", "", ""+true));
                prop.setAddress(address);
                tmpQos.addClientQueueProperty(prop);
                CallbackAddress cbAddress = new CallbackAddress(glob);
@@ -223,6 +218,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                cbAddress.setDispatcherActive(false);
                cbAddress.setType(type);
                cbAddress.setVersion(version);
+               //cbAddress.addClientProperty(new ClientProperty("acceptRemoteLoginAsTunnel", "", "", ""+true));
                tmpQos.addCallbackAddress(cbAddress);
                log.info("Creating temporary session " + sessionName.getRelativeName() + " until real cluster node arrives");
                glob.getXmlBlasterAccess().connect(tmpQos, new I_Callback() {
@@ -299,6 +295,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                }
             }
             */
+         }
+         
+         boolean acceptRemoteLoginAsTunnel = qos.getAddress().getEnv("acceptRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
+         if (acceptRemoteLoginAsTunnel) { // The cluster slave accepts publish(), subscribe() etc callbacks
+            this.remoteGlob.addObjectEntry("ClusterManager[cluster]/I_Authenticate", this.fatherGlob.getAuthenticate());
+            this.remoteGlob.addObjectEntry("ClusterManager[cluster]/I_XmlBlaster", this.fatherGlob.getAuthenticate().getXmlBlaster());
          }
 
          this.xmlBlasterConnection = this.remoteGlob.getXmlBlasterAccess();
