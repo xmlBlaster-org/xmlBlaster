@@ -152,7 +152,7 @@ public final class ClientDispatchConnection extends DispatchConnection
                erase(msgArr_[ii]);
             }
             else if (MethodName.CONNECT == msgArr_[ii].getMethodName()) {
-               if (isAsyncMode && isAlive()) {
+               if (isAsyncMode && isAlive() && this.driver.isLoggedIn()) {
                   return; // Coming from queue but we are alive already
                }
                connect(msgArr_[ii]);
