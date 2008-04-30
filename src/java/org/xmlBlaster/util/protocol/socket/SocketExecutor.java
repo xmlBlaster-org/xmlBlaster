@@ -163,6 +163,10 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
    public final InputStream getInputStream() {
       return this.iStream;
    }
+   
+   public void setRunning(boolean run) {
+      this.running = run;
+   }
 
    /**
     * Ping to check if callback server (or server protocol) is alive.
@@ -199,7 +203,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       try {
          // TODO: On server side the msgInfoParserClassName should be from CbSocketDriver configuration
          byte[] msg = msgInfo.createRawMsg(getCbMsgInfoParserClassName());
-         if (log.isLoggable(Level.FINEST)) log.finest("Sending TCP data [" + new String(msg) + "]");
+         if (log.isLoggable(Level.FINEST)) log.finest("Sending TCP data of length " + msg.length + " >" + XbfParser.createLiteral(msg) + "<");
          if (listener != null) {
             listener.progressWrite("", 0, msg.length);
          }
