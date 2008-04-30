@@ -7,73 +7,72 @@ package org.xmlBlaster.client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.ArrayList;
-
-import java.util.logging.Logger;
+import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.xmlBlaster.util.FileDumper;
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.I_ReplaceContent;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.queue.I_Queue;
-import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.dispatch.DispatchManager;
-import org.xmlBlaster.util.dispatch.I_PostSendListener;
-import org.xmlBlaster.util.dispatch.DispatchStatistic;
-import org.xmlBlaster.util.error.I_MsgErrorHandler;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
-import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.TopicProperty;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
-import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.key.GetKey;
-import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UnSubscribeKey;
-import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
-import org.xmlBlaster.client.qos.EraseQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
+import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.jms.XBConnectionMetaData;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.util.FileDumper;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_ReplaceContent;
+import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timeout;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.admin.extern.JmxMBeanHandle;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.dispatch.DispatchManager;
+import org.xmlBlaster.util.dispatch.DispatchStatistic;
+import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
+import org.xmlBlaster.util.error.I_MsgErrorHandler;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
+import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
+import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queue.StorageId;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * This is the default implementation of the java client side remote access to xmlBlaster.
@@ -215,8 +214,13 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          MsgQueueEntry msgQueueEntry = entries[i];
          if (msgQueueEntry.getMethodName() == MethodName.CONNECT) {
             this.connectReturnQos = (ConnectReturnQos)msgQueueEntry.getReturnObj();
-            setContextNodeId(this.connectReturnQos.getServerInstanceId());
-            //break; Loop to the latest if any
+            if (this.connectReturnQos != null) {
+               setContextNodeId(this.connectReturnQos.getServerInstanceId());
+               // break; Loop to the latest if any
+            }
+            else {
+               log.severe("Expected connectReturnQos for " + msgQueueEntry.toXml() + " " + Global.getStackTraceAsString(null));
+            }
          }
       }
       I_PostSendListener l = this.postSendListener;
