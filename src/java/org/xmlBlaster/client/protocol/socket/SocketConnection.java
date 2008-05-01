@@ -427,8 +427,10 @@ public class SocketConnection implements I_XmlBlasterConnection
          this.cbReceiver.shutdownSocket();
       }
 
-      if (this.useRemoteLoginAsTunnel) // we don't own the socket
+      if (this.useRemoteLoginAsTunnel) { // we don't own the socket
+         this.sock = null;
          return;
+      }
 
       Socket sk = this.sock;
       if (sk != null) {
