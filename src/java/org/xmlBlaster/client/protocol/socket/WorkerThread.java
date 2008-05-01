@@ -48,8 +48,12 @@ public class WorkerThread extends Thread
    public void run() {
       try {
          if (log.isLoggable(Level.FINE)) log.fine("Starting worker thread, invoking client code with received message");
-         cbHandler.receiveReply(this.parser, SocketUrl.SOCKET_TCP);  // Parse the message and invoke callback to client code
-         if (log.isLoggable(Level.FINE)) log.fine("Worker thread done");
+         boolean processed = cbHandler.receiveReply(this.parser, SocketUrl.SOCKET_TCP);  // Parse the message and invoke callback to client code
+         if (!processed)
+            log.warning("Received message is not processed: " + this.parser.toLiteral());
+         else {
+            if (log.isLoggable(Level.FINE)) log.fine("Worker thread done");
+         }
       }
       catch (XmlBlasterException e) {
          log.severe(e.toString());

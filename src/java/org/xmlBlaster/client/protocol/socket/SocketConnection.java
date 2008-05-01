@@ -76,6 +76,8 @@ public class SocketConnection implements I_XmlBlasterConnection
 
    /** Placeholder for the progess listener in case the registration happens before the cbReceiver has been registered */
    private I_ProgressListener tmpProgressListener;
+   /** Cluster node re-uses conection from remote node */
+   boolean useRemoteLoginAsTunnel;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter.
@@ -154,11 +156,13 @@ public class SocketConnection implements I_XmlBlasterConnection
     * @see I_XmlBlasterConnection#connectLowlevel(Address)
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
-      if (isConnected())
+       if (isConnected())
          return;
 
-      // TODO: USE address for configurtation
+      // TODO: USE address for configuration
       this.clientAddress = address;
+      this.useRemoteLoginAsTunnel = this.clientAddress.getEnv("useRemoteLoginAsTunnel", false).getValue();
+
       if (this.pluginInfo != null)
          this.clientAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
 
@@ -178,37 +182,64 @@ public class SocketConnection implements I_XmlBlasterConnection
       // SSL support
       boolean ssl = this.clientAddress.getEnv("SSL", false).getValue();
       if (log.isLoggable(Level.FINE)) log.fine(clientAddress.getEnvLookupKey("SSL") + "=" + ssl);
-
+      
       try {
-         if (ssl) {
-            this.sock = this.socketUrl.createSocketSSL(this.localSocketUrl, this.clientAddress);
-         }
-         else {
-            if (this.localSocketUrl.isEnforced()) {
-               this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort(),
-                                   this.localSocketUrl.getInetAddress(), this.localSocketUrl.getPort());
+         Object obj = glob.getObjectEntry("ClusterManager[cluster]/HandleClient");
+         if (obj != null) {
+            if (obj instanceof org.xmlBlaster.protocol.socket.HandleClient) {
+               org.xmlBlaster.protocol.socket.HandleClient h = (org.xmlBlaster.protocol.socket.HandleClient)obj;
+               this.sock = h.getSocket();
+               // TODO: HandleClient.closeSocket() can set sock = null!
+               if (this.sock != null) {
+                  log.warning(getType() + (ssl ? " SSL" : "") +
+                     " client is reusing existing SOCKET '"+this.sock.getInetAddress().getHostAddress() + "' configured was '" +
+                     this.socketUrl.getUrl() +
+                     "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
+                     " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway +
+                     "', callback address is '" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort() + "'");
+               }
+               else {
+                  log.severe("Didn't expect null socket: " + Global.getStackTraceAsString(null));
+               }
             }
             else {
-               if (log.isLoggable(Level.FINE)) log.fine("Trying socket connection to " + socketUrl.getUrl() + " ...");
-               this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort());
+               // instance of dummy string: no HandleClient available, remote node has not yet connected
+               String str = "Connection to xmlBlaster server failed, no established socket to reuse found";
+               if (log.isLoggable(Level.FINE)) log.fine(str);
+               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str);
             }
          }
-
-         if (this.localSocketUrl.isEnforced()) {
-            log.info(getType() + (ssl ? " SSL" : "") +
-                  " client connected to '" + this.socketUrl.getUrl() +
-                  "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
-                  " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway +
-                  "', callback address is '" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort() + "'");
-         }
          else {
-            // SocketUrl constructor updates client address
-            this.localSocketUrl = new SocketUrl(glob, this.sock.getLocalAddress().getHostAddress(), this.sock.getLocalPort());
-            this.clientAddress.setRawAddress(this.socketUrl.getUrl());
-            log.info(getType() + (ssl ? " SSL" : "") +
-                  " client connected to '" + socketUrl.getUrl() +
-                  "', callback address is '" + this.localSocketUrl.getUrl() +
-                  "' useUdpForOneway=" + this.useUdpForOneway + " clientAddress='" + this.clientAddress.getRawAddress() + "'");
+            if (ssl) {
+               this.sock = this.socketUrl.createSocketSSL(this.localSocketUrl, this.clientAddress);
+            }
+            else {
+               if (this.localSocketUrl.isEnforced()) {
+                  this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort(),
+                                      this.localSocketUrl.getInetAddress(), this.localSocketUrl.getPort());
+               }
+               else {
+                  if (log.isLoggable(Level.FINE)) log.fine("Trying socket connection to " + socketUrl.getUrl() + " ...");
+                  this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort());
+               }
+            }
+   
+            if (this.localSocketUrl.isEnforced()) {
+               log.info(getType() + (ssl ? " SSL" : "") +
+                     " client connected to '" + this.socketUrl.getUrl() +
+                     "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
+                     " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway +
+                     "', callback address is '" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort() + "'");
+            }
+            else {
+               // SocketUrl constructor updates client address
+               this.localSocketUrl = new SocketUrl(glob, this.sock.getLocalAddress().getHostAddress(), this.sock.getLocalPort());
+               this.clientAddress.setRawAddress(this.socketUrl.getUrl());
+               log.info(getType() + (ssl ? " SSL" : "") +
+                     " client connected to '" + socketUrl.getUrl() +
+                     "', callback address is '" + this.localSocketUrl.getUrl() +
+                     "' useUdpForOneway=" + this.useUdpForOneway + " clientAddress='" + this.clientAddress.getRawAddress() + "'");
+            }
          }
 
          // start the socket sender and callback thread here
@@ -368,7 +399,7 @@ public class SocketConnection implements I_XmlBlasterConnection
          parser.addMessage((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE/*ONEWAY*/, SocketUrl.SOCKET_TCP);
-         getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
+         getCbReceiver().setRunning(false); // To avoid error messages as xmlBlaster closes the connection during disconnect()
          return true;
       }
       catch (XmlBlasterException e) {
@@ -395,6 +426,10 @@ public class SocketConnection implements I_XmlBlasterConnection
          this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
          this.cbReceiver.shutdownSocket();
       }
+
+      if (this.useRemoteLoginAsTunnel) // we don't own the socket
+         return;
+
       Socket sk = this.sock;
       if (sk != null) {
          try { sk.getInputStream().close();  } catch (IOException e) { log.fine("InputStream.close(): " + e.toString()); }
@@ -447,10 +482,13 @@ public class SocketConnection implements I_XmlBlasterConnection
    /**
     * Access handle of callback server.
     * <p />
-    * Returns the valid SocketCallbackImpl, opens the socket connection if not logged in.
+    * Returns the valid SocketCallbackImpl:SocketExecutor, opens the socket connection if not logged in.
     */
-   private final SocketCallbackImpl getCbReceiver() throws XmlBlasterException {
-      return this.cbReceiver;
+   private final SocketExecutor getCbReceiver() {
+      SocketCallbackImpl cbr = this.cbReceiver;
+      if (cbr != null)
+         return cbr.getSocketExecutor();
+      return null;
    }
 
    /**
@@ -627,8 +665,12 @@ public class SocketConnection implements I_XmlBlasterConnection
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String ping(String qos) throws XmlBlasterException {
-      SocketCallbackImpl receiver = getCbReceiver();
+      SocketExecutor receiver = getCbReceiver();
       if (receiver == null) {
+         //if (this.useRemoteLoginAsTunnel)
+         //   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "No connection tunnel");
+
+         
          return Constants.RET_OK; // fake a return for ping on startup
          /*
          // SocketCallbackImpl.java must be instantiated first
@@ -667,9 +709,9 @@ public class SocketConnection implements I_XmlBlasterConnection
     * @return The previously registered listener or 0
     */
    public I_ProgressListener registerProgressListener(I_ProgressListener listener) {
-      SocketCallbackImpl cbRec = this.cbReceiver;
+      SocketExecutor cbRec = getCbReceiver();
       if (cbRec != null)
-         return this.cbReceiver.registerProgressListener(listener);
+         return cbRec.registerProgressListener(listener);
       else {
          if (log.isLoggable(Level.FINE)) log.fine("The callback receiver is null, will be registered when the callback receiver is registered.");
          I_ProgressListener ret = this.tmpProgressListener;

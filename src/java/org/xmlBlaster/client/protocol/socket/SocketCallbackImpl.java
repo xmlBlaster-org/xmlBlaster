@@ -8,14 +8,21 @@ package org.xmlBlaster.client.protocol.socket;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+
+import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.engine.qos.AddressServer;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
@@ -49,7 +56,13 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    protected Socket sock;
 
    /** Stop the thread */
-   boolean running = false;
+   private boolean threadRunning = false;
+
+   /** For cluster environment only */
+   private boolean useRemoteLoginAsTunnel;
+   private SocketExecutor remoteLoginAsTunnelSocketExecutor;
+   private boolean acceptRemoteLoginAsTunnel;
+   private I_Authenticate authenticateCore;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter.
@@ -75,6 +88,15 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
       this.pluginInfo = pluginInfo;
    }
+   
+   public void setRunning(boolean run) {
+      super.setRunning(run);
+      this.threadRunning = run;
+   }
+   
+   public SocketExecutor getSocketExecutor() {
+      return (this.useRemoteLoginAsTunnel) ? this.remoteLoginAsTunnelSocketExecutor : this;
+   }
 
    /**
     * Initialize and start the callback server
@@ -90,8 +112,37 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
          this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
       setLoginName(loginName);
       setCbClient(cbClient); // access callback client in super class SocketExecutor:callback
+      
+      // The cluster slave accepts publish(), subscribe() etc callbacks
+      this.acceptRemoteLoginAsTunnel = this.callbackAddress.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
+      
+      ///// TODO Don't start thread!!!
+      // If we are a client XmlBlasterAccess reusing a remote login socket
+      this.useRemoteLoginAsTunnel = this.callbackAddress.getEnv("useRemoteLoginAsTunnel", false).getValue();
+      Object obj = glob.getObjectEntry("ClusterManager[cluster]/HandleClient");
+      if (obj != null) {
+         if (obj instanceof org.xmlBlaster.util.protocol.socket.SocketExecutor) {
+            this.remoteLoginAsTunnelSocketExecutor = (SocketExecutor)obj;
+         }
+         this.useRemoteLoginAsTunnel = true;
+         //if (obj instanceof org.xmlBlaster.protocol.socket.HandleClient) {
+         //   org.xmlBlaster.protocol.socket.HandleClient h = (org.xmlBlaster.protocol.socket.HandleClient)obj;
+         //}
+      }
 
-      if (this.running == false) {
+      // If we are server side and a client which receives publish(),subscribe()... from remote cluster node
+      obj = glob.getObjectEntry("ClusterManager[cluster]/I_Authenticate");
+      if (obj != null) {
+         setAuthenticateCore((I_Authenticate)obj);
+         log.severe("TODO: Handle I_Authenticate");
+      }
+      obj = glob.getObjectEntry("ClusterManager[cluster]/I_XmlBlaster");
+      if (obj != null) {
+         super.setXmlBlasterCore((I_XmlBlaster)obj);
+         log.severe("TODO: Handle I_XmlBlaster");
+      }
+      
+      if (this.threadRunning == false) {
          // Lookup SocketConnection instance in the NameService
          this.sockCon = (SocketConnection)glob.getObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection");
 
@@ -111,6 +162,13 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
             return ;
          }
 
+         ////////TODO!!!!!!!!
+         if (useRemoteLoginAsTunnel) {
+            log.warning("We use the remote socket connection to tunnel our communication");
+            if (this.remoteLoginAsTunnelSocketExecutor != null)
+               this.remoteLoginAsTunnelSocketExecutor.setRunning(true); // Fake that we are OK
+            return;
+         }
 
          try { // SocketExecutor
             super.initialize(this.sockCon.getGlobal(), this.callbackAddress, this.sock.getInputStream(), this.sock.getOutputStream());
@@ -144,7 +202,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
          this.callbackAddress.setRawAddress(this.socketUrl.getUrl());
          if (log.isLoggable(Level.FINE)) log.fine("Callback uri=" + this.socketUrl.getUrl());
 
-         this.running = true;
+         this.threadRunning = true;
          Thread t = new Thread(this, "XmlBlaster."+getType());
          t.setDaemon(true);
          int threadPrio = this.callbackAddress.getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
@@ -200,7 +258,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
       boolean multiThreaded = this.callbackAddress.getEnv("multiThreaded", true).getValue();
       if (log.isLoggable(Level.FINE)) log.fine("SOCKET multiThreaded=" + multiThreaded);
 
-      while(running) {
+      while(threadRunning) {
 
          try {
             // This method blocks until a message arrives
@@ -210,23 +268,66 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                break;
             }
             final MsgInfo receiver = msgInfoArr[0];
+            
+            //if (MethodName.CONNECT.equals(receiver.getMethodName())) 
+            //   log.info("Test: Got connectQos");
 
             if (log.isLoggable(Level.FINEST)) log.finest("Receiving message >" + receiver.toLiteral() + "<\n" + receiver.dump());
 
-            if (receiver.isInvoke() && multiThreaded) {
-               // Parse the message and invoke callback to client code in a separate thread
-               // to avoid dead lock when client does a e.g. publish() during this update()
-               WorkerThread t = new WorkerThread(glob, this, receiver);
-               // -dispatch/callback/plugin/socket/invokerThreadPrio 5
-               t.setPriority(this.callbackAddress.getEnv("invokerThreadPrio", Thread.NORM_PRIORITY).getValue());
-               t.start();
+            if (this.acceptRemoteLoginAsTunnel
+                  && receiver.isInvoke()
+                  && !MethodName.UPDATE.equals(receiver.getMethodName())
+                  && !MethodName.UPDATE_ONEWAY.equals(receiver.getMethodName())
+                  && !MethodName.EXCEPTION.equals(receiver.getMethodName())
+                  && !MethodName.PING.equals(receiver.getMethodName())) { 
+               log.warning("Received message TODO: Forward to cluster core: " + receiver.getMethodNameStr());
+               
+               //getSocketExecutor().getXmlBlasterCore().
+               if (MethodName.CONNECT == receiver.getMethodName()) {
+                  // TODO: crypt.importMessage(receiver.getQos()); see also ClientDispatchConnection.java:440
+                  Socket socket = this.sock;
+                  if (socket == null) return; // Is possible when EOF arrived inbetween
+                  ConnectQosServer conQos = new ConnectQosServer(glob, receiver.getQos());
+                  if (conQos.getSecurityQos() == null)
+                     throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");
+                  conQos.getSecurityQos().setClientIp (socket.getInetAddress().getHostAddress());
+                  conQos.setAddressServer(getAddressServer());
+                  ConnectReturnQosServer retQos = getAuthenticateCore().connect(conQos);
+                  receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
+                  executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
+               }
+               else if (MethodName.DISCONNECT == receiver.getMethodName()) {
+                  executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
+                  // Note: the disconnect will call over the CbInfo our shutdown as well
+                  // setting sessionId = null prevents that our shutdown calls disconnect() again.
+                  getAuthenticateCore().disconnect(getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
+                  shutdown();
+               }
+               else {
+                  boolean processed = receiveReply(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
+                  if (!processed)
+                     log.warning("Received message is not processed: " + receiver.toLiteral());
+               }
             }
             else {
-               receiveReply(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
-            }
-            if (MethodName.DISCONNECT == receiver.getMethodName() && receiver.isResponse()) {
-               if (log.isLoggable(Level.FINE)) log.fine("Terminating socket callback thread because of disconnect response");
-               running = false;
+               // Normal client operation
+               if (receiver.isInvoke() && multiThreaded) {
+                  // Parse the message and invoke callback to client code in a separate thread
+                  // to avoid dead lock when client does a e.g. publish() during this update()
+                  WorkerThread t = new WorkerThread(glob, this, receiver);
+                  // -dispatch/callback/plugin/socket/invokerThreadPrio 5
+                  t.setPriority(this.callbackAddress.getEnv("invokerThreadPrio", Thread.NORM_PRIORITY).getValue());
+                  t.start();
+               }
+               else {
+                  boolean processed = receiveReply(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
+                  if (!processed)
+                     log.warning("Received message is not processed: " + receiver.toLiteral());
+               }
+               if (MethodName.DISCONNECT == receiver.getMethodName() && receiver.isResponse()) {
+                  if (log.isLoggable(Level.FINE)) log.fine("Terminating socket callback thread because of disconnect response");
+                  threadRunning = false;
+               }
             }
          }
          catch(XmlBlasterException e) {
@@ -235,7 +336,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
          catch(Throwable e) {
             if (e instanceof NullPointerException)
                e.printStackTrace();
-            if (running == true) {
+            if (threadRunning == true) {
                if (e.toString().indexOf("javax.net.ssl") != -1) {
                   log.warning("Closing connection to server, please try debugging SSL with 'java -Djavax.net.debug=all ...': " + e.toString());
                }
@@ -274,17 +375,27 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
     */
    public synchronized void shutdownSocket() {
       if (log.isLoggable(Level.FINE)) log.fine("Entering shutdownSocket()");
-      this.running = false;
-      if (this.iStream != null) {
-         try {
-            this.iStream.close();
-            this.iStream = null;
-         } catch(IOException e) {
-            log.warning(e.toString());
+      this.threadRunning = false;
+      if (!this.useRemoteLoginAsTunnel) { // Do we own the socket?
+         if (this.iStream != null) {
+            try {
+               this.iStream.close();
+               //this.iStream = null; multi threading -> NPE danger
+            } catch(IOException e) {
+               log.warning(e.toString());
+            }
          }
       }
       clearResponseListenerMap();
       freePendingThreads();
+   }
+
+   public I_Authenticate getAuthenticateCore() {
+      return authenticateCore;
+   }
+
+   public void setAuthenticateCore(I_Authenticate authenticateImpl) {
+      this.authenticateCore = authenticateImpl;
    }
 } // class SocketCallbackImpl
 

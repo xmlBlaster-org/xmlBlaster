@@ -6,33 +6,35 @@ Comment:   Send/receive messages over outStream and inStream.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol;
 
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
-import org.xmlBlaster.util.context.ContextNode;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.def.ErrorCode;
+import java.util.logging.Logger;
+
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_ResponseListener;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.engine.qos.AddressServer;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
-
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 
 /**
  * Request/reply simulates a local method invocation.
@@ -61,10 +63,11 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    /** This is the client side */
    protected I_CallbackExtended cbClient;
    /** The singleton handle for this xmlBlaster server (the server side) */
-   protected I_XmlBlaster xmlBlasterImpl;
+   private I_XmlBlaster xmlBlasterImpl;
    /** A set containing LatchHolder instances */
    private final Set latchSet = new HashSet();
    protected AddressBase addressConfig;
+   protected AddressServer addressServer;
    /** A listener may register to receive send/receive progress informations */
    protected I_ProgressListener progressListener;
    protected int minSizeForCompression;
@@ -107,6 +110,31 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 
       this.addressConfig = addressConfig.getClone();
       this.ME = RequestReplyExecutor.class.getName() + ":" + addressConfig.getRawAddress();
+      
+      if (this.addressConfig instanceof AddressServer) {
+         this.addressServer = (AddressServer)this.addressConfig;
+      }
+      else {
+         boolean acceptRemoteLoginAsTunnel = this.addressConfig.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
+         if (acceptRemoteLoginAsTunnel) { // The cluster slave accepts publish(), subscribe() etc callbacks
+            // TODO: Use the addressServer from the SocketDriver
+            this.addressServer = new AddressServer(glob, getType(), glob.getId(), new Properties());
+            /*
+            I_Driver[] drivers = serverScope.getPluginRegistry().getPluginsOfInterfaceI_Driver();//register(pluginInfo.getId(), plugin);//getProtocolPluginManager().getPlugin(type, version)
+            for (int i=0; i<drivers.length; i++) {
+               if (drivers[i] instanceof SocketDriver) {
+                  SocketDriver sd = (SocketDriver)drivers[i];
+                  rawAddress = sd.getRawAddress();
+                  type = sd.getType();
+                  version = sd.getVersion();
+                  found = true;
+               }
+            }
+            if (!found)
+               log.severe("No socket protocol driver found");
+            */
+         }
+      }
 
       setMinSizeForCompression((int)this.addressConfig.getMinSize());
 
@@ -139,6 +167,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
 
       setUpdateResponseTimeout(addressConfig.getEnv("updateResponseTimeout", getDefaultUpdateResponseTimeout()).getValue());
       if (log.isLoggable(Level.FINE)) log.fine(this.addressConfig.getEnvLookupKey("updateResponseTimeout") + "=" + this.updateResponseTimeout);
+   }
+   
+   public AddressServer getAddressServer() {
+      return this.addressServer;
    }
 
    /**
@@ -289,6 +321,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    public final void setXmlBlasterCore(I_XmlBlaster xmlBlaster) {
       this.xmlBlasterImpl = xmlBlaster;
    }
+   
+   public final I_XmlBlaster getXmlBlasterCore() {
+      return this.xmlBlasterImpl;
+   }
 
    public final I_CallbackExtended getCbClient() {
       return this.cbClient;
@@ -395,13 +431,13 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                log.severe("Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
                return true;
             }
-            xmlBlasterImpl.publishOneway((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr);
+            xmlBlasterImpl.publishOneway(getAddressServer(), receiver.getSecretSessionId(), arr);
          }
          else if (MethodName.PUBLISH == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
-            String[] response = xmlBlasterImpl.publishArr((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr);
+            String[] response = xmlBlasterImpl.publishArr(getAddressServer(), receiver.getSecretSessionId(), arr);
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.UPDATE_ONEWAY == receiver.getMethodName()) {
@@ -454,7 +490,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            MsgUnitRaw[] response = xmlBlasterImpl.get((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
+            MsgUnitRaw[] response = xmlBlasterImpl.get(getAddressServer(), receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.PING == receiver.getMethodName()) {
@@ -465,7 +501,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
                return true;
             }
             if (xmlBlasterImpl != null) { // Server side: Forward ping to xmlBlaster core
-               String response = xmlBlasterImpl.ping((AddressServer)this.addressConfig, /*receiver.getSecretSessionId(),*/ (arr.length>0) ? arr[0].getQos() : "<qos/>");
+               String response = xmlBlasterImpl.ping(getAddressServer(), /*receiver.getSecretSessionId(),*/ (arr.length>0) ? arr[0].getQos() : "<qos/>");
                executeResponse(receiver, response, udp); // Constants.RET_OK="<qos><state id='OK'/></qos>" or current run level
             }
             else { // Client side: answer directly, not forwarded to client code
@@ -476,21 +512,21 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String response = xmlBlasterImpl.subscribe((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
+            String response = xmlBlasterImpl.subscribe(getAddressServer(), receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String[] response = xmlBlasterImpl.unSubscribe((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
+            String[] response = xmlBlasterImpl.unSubscribe(getAddressServer(), receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.ERASE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String[] response = xmlBlasterImpl.erase((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
+            String[] response = xmlBlasterImpl.erase(getAddressServer(), receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.CONNECT == receiver.getMethodName()) {

@@ -187,7 +187,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
          if (log.isLoggable(Level.FINE)) log.fine("Got ping response " + ((response == null) ? "null" : response.toString()));
          return (String)response; // return the QoS
       } catch (Throwable e) {
-         boolean weAreOnServerSide = this.xmlBlasterImpl != null;
+         boolean weAreOnServerSide = getXmlBlasterCore() != null; //// TODO !!!!!!!!!!!
          String txt = weAreOnServerSide ? "Callback ping failed" :  MethodName.PING.toString();
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, txt, e);
       }
