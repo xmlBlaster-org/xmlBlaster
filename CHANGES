@@ -1,65 +1,65 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
-The "#99999" numbers are Subversion revision numbers.
+The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
 
- o #16900 Updated to hsqldb_1_8_0_9
+ o r16900 Updated to hsqldb_1_8_0_9
 
- o #16897 First hack to tunnel callback of cluster master by re-using the slaves connection
+ o r16897 First hack to tunnel callback of cluster master by re-using the slaves connection
 
- o #16888 Java: Fixed hsqldb shutdown in JdbcConnectionPool.java to release .lck file
+ o r16888 Java: Fixed hsqldb shutdown in JdbcConnectionPool.java to release .lck file
           if (this.managerCount < 1) shutdown() to be discussed
 
- o #16885 Cluster code refactored
+ o r16885 Cluster code refactored
  
- o #16870 Cluster: Fixed parsing connect qos in cluster environment (supports now attributes)
+ o r16870 Cluster: Fixed parsing connect qos in cluster environment (supports now attributes)
           Renamed NodeInfo to NodeConnectQos
 
- o #16870 Java: Refactored protocol API connect(): removed explicit AddressServer argument (was redundant)
+ o r16870 Java: Refactored protocol API connect(): removed explicit AddressServer argument (was redundant)
           Fixed SessionInfo.updateConnectQos() so the new connectQos is available during processing
 	  Passing now isAsync mode flag to avoid looping connection if connectQos is from client queue
 
- o #16838 Java: Fixed xmlBlasterAccess.leaveServer() client side memory leak
+ o r16838 Java: Fixed xmlBlasterAccess.leaveServer() client side memory leak
 
- o #16830 Clustering: Extended RoundRobin to properly handle domain routing with empty domain
+ o r16830 Clustering: Extended RoundRobin to properly handle domain routing with empty domain
           (support for acceptDefault and acceptOtherDefault)
 
- o #16804 Singleton approach to avoid race condition which could create two SessionInfo instances
+ o r16804 Singleton approach to avoid race condition which could create two SessionInfo instances
           Avoid max number of sessions check when session is loaded from persistency during startup
 
- o #16817 Checkpoint plugin: Added client side Checkpoint client.publish.ack (used for cluster tracing)
+ o r16817 Checkpoint plugin: Added client side Checkpoint client.publish.ack (used for cluster tracing)
 
- o #16809 Added extended JMX access to cluster configuration without shutdown (transient changes only)
+ o r16809 Added extended JMX access to cluster configuration without shutdown (transient changes only)
           Changed to thread safe re-configuration during operation
 
- o #16803 Bugfix: Qos XML creation escaping properly illegal XML characters
+ o r16803 Bugfix: Qos XML creation escaping properly illegal XML characters
           StatusQosSaxFactory/DisconnectQosSaxFactory/QueuePropertyBase/QueryQosSaxFactory/MsgKeySaxFactory
 
- o #16783 Bugfix: SOCKET with XmlScript markup (instead of XBF) configures now correctly
+ o r16783 Bugfix: SOCKET with XmlScript markup (instead of XBF) configures now correctly
           from xmlBlaster.properties for callbacks and responses
 
- o #16780 Bugfix: Topic life cycle
+ o r16780 Bugfix: Topic life cycle
           Changed topic creation state change to go directly to ALIVE on publish
 	  and not go over UNREFERENCED as this could trigger a DEAD inbetween
 	  if destroy delay is configured to 0 (or a small value)
 
- o #16779 Bugfix: DropIfNotDeliverable mime plugin: Fixed possible dead lock situation
+ o r16779 Bugfix: DropIfNotDeliverable mime plugin: Fixed possible dead lock situation
 
- o #16766 Bugfix: A SaxParseException of a message QoS left the MsgQosSaxFactory in inconstent state
+ o r16766 Bugfix: A SaxParseException of a message QoS left the MsgQosSaxFactory in inconstent state
           and operation of xmlBlaster is broken as follow up parses can swallow QoS tags like <destination>
 
- o #16763 Force AjaxServlet to UTF-8 processing to support e.g. Umlauts
+ o r16763 Force AjaxServlet to UTF-8 processing to support e.g. Umlauts
 
- o #16762 Servlet 2.4 API copied from apache-tomcat-5.5.23/common/lib" servlet.jar
+ o r16762 Servlet 2.4 API copied from apache-tomcat-5.5.23/common/lib" servlet.jar
 
- o #16757 The EventPlugin now sends emails asynchronously from a separate thread decoupled
+ o r16757 The EventPlugin now sends emails asynchronously from a separate thread decoupled
           over a RAM based producer/consumer queue.
 	  This is to protect the xmlBlaster core against blocking or slow SMTP agents.
 	  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html (mail.sendAsync)
 	  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.email.html (asyncSendQueueSizeMax)
 
- o #16744 Incompatible change of security plugin I_Session:
+ o r16744 Incompatible change of security plugin I_Session:
           1) Added method 'public ConnectQosServer init(ConnectQosServer connectQos, Map map)'
 	  You need to add a dummy implementation if you use an own security plugin:
             public ConnectQosServer init(ConnectQosServer connectQos, Map map) throws XmlBlasterException {
@@ -73,7 +73,7 @@ Changes for current svn
 	  Remote configuration with ConnectQos is not yet implemented.
 	  See ConnectQosServer#setSessionLimitsPubSessionIdSpecific(boolean)
 
- o #16738 Extended remoteProperty handling from clients (similar to existing jconsole functionality)
+ o r16738 Extended remoteProperty handling from clients (similar to existing jconsole functionality)
           Create a remote property:
             java javaclients.HelloWorldPublish -oid __sys__remoteProperties -connect/qos/clientProperty[__remoteProperties] true -connect/qos/clientProperty[myProperty] AAAAAA -session.name OTHER/1
           Access it:
@@ -81,7 +81,7 @@ Changes for current svn
           Destroy it:
             java javaclients.HelloWorldPublish -oid __sys__remoteProperties -clientProperty[__sessionName] OTHER/1 -content clear
 
- o #16729 Added database dead lock recovery, on deadlock retry once.
+ o r16729 Added database dead lock recovery, on deadlock retry once.
           Added delegate for DB access to retry on dead lock situation (seldom case with SQLServer)
           Globales Setting (xmlBlaster.properties) to have old behaviour:
             xmlBlaster/useJdbcManagerDelegate=false
@@ -94,119 +94,119 @@ Changes for current svn
             create index IX_CB_QUEUE ON XB_ENTRIES (prio DESC, XB_dataId ASC)
             create index IX_DURABLE ON XB_ENTRIES (durable)
   
- o #16722 Persistence queue/msgstore performance tuning
+ o r16722 Persistence queue/msgstore performance tuning
 	  Reduced query interaction to 1/3 on startup
 	   Cleanup for transient entries in one select on startup
 	   Reload of cached numOfEntries, numOfPersistenEntries and numOfBytes and numOfPersistentBytes is now done with one select
 
- o #16720 EventPlugin: Added $_{loginName} and $_{pubSessionId} support
+ o r16720 EventPlugin: Added $_{loginName} and $_{pubSessionId} support
 
- o #16718 Replication: Strings containing control chars (ASCII < 13) are now base64 encoded
+ o r16718 Replication: Strings containing control chars (ASCII < 13) are now base64 encoded
 
- o #16712 EventPlugin: Sending now ConnectQos-remoteProperty for callbackState events
+ o r16712 EventPlugin: Sending now ConnectQos-remoteProperty for callbackState events
 
- o #16710 EventPlugin: Sending now ConnectQos-remoteProperty preparsed in Login/Logout event clientProperty
+ o r16710 EventPlugin: Sending now ConnectQos-remoteProperty preparsed in Login/Logout event clientProperty
 
- o #16708 EventPlugin: Added recursion detection for subscribe/unSubscribe events
+ o r16708 EventPlugin: Added recursion detection for subscribe/unSubscribe events
           Added clientProperty '_url' for XPath use case
 
- o #16706 EventPlugin: Added client properties to event from SubscribeQos and UnSubscribeQos
+ o r16706 EventPlugin: Added client properties to event from SubscribeQos and UnSubscribeQos
 
- o #16702 Fixed MsgUnit - Qos XML markup: escape not allowed chars
+ o r16702 Fixed MsgUnit - Qos XML markup: escape not allowed chars
 
- o #16693 Fixed XPath query multi threading bug, reported by John Horner 2008-01-12
+ o r16693 Fixed XPath query multi threading bug, reported by John Horner 2008-01-12
 
- o #16689 Added recursive flag to filewatcher (to scan directories recursively).
+ o r16689 Added recursive flag to filewatcher (to scan directories recursively).
 
- o #16676 C++ client library: Added ~ConnectQosData() because of crash on MacOSX
+ o r16676 C++ client library: Added ~ConnectQosData() because of crash on MacOSX
 
- o #16674 When an exception occurs in the update method it was converted to a COMMUNICATION
+ o r16674 When an exception occurs in the update method it was converted to a COMMUNICATION
           and the original information was lost: now it is passed as embedded.
 
- o #16660 Catching client side exceptions of type other than user.* and communication.*
+ o r16660 Catching client side exceptions of type other than user.* and communication.*
           and converting them to "user.update.internalError"
 
- o #16657 Fix to not shutdown xmlBlaster for severe client side exceptions during callback
+ o r16657 Fix to not shutdown xmlBlaster for severe client side exceptions during callback
           Problem could not occure for Java or C++ clients
 
- o #16654 Dead message generation: Now detecting 'isErrorHandled' specific for each
+ o r16654 Dead message generation: Now detecting 'isErrorHandled' specific for each
           queue instance (and not only for each MsgUnit).
 
- o #16652 C++ Implemented same I_PostSendEvent error handling as in Java
+ o r16652 C++ Implemented same I_PostSendEvent error handling as in Java
 
 
-Changes for 1.6.2 [2007-12-03] #16646 'Openroads'
+Changes for 1.6.2 [2007-12-03] r16646 'Openroads'
 =================================================
 
- o #16639 Implemented I_PostSendListener for java clients and server
+ o r16639 Implemented I_PostSendListener for java clients and server
           to get notification on *asynchronous* send messages from queue:
 	  1. postSend() delivers the ReturnQos
 	  2. sendingFailed() delivers the Exception
 	  Fixed java client: Now toDead() is called for all erroCodes despite communication
 	  The previous code called toDead() only for user exceptions.
 
- o #16630 C++ client now compiles with xerces 2.8 (64bit or 32bit)
+ o r16630 C++ client now compiles with xerces 2.8 (64bit or 32bit)
 
- o #16621 The FileWatcher and FileWriter can be managed by the HTML based replication monitor
+ o r16621 The FileWatcher and FileWriter can be managed by the HTML based replication monitor
           (similar to the database replication)
 
- o #16621 FileWatcher plugin for Java (supporting streaming mode for huge files)
+ o r16621 FileWatcher plugin for Java (supporting streaming mode for huge files)
 	  http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.filewatcher.html
 
- o #16614 FileWriter plugin for Java and C++ (supporting streaming mode)
+ o r16614 FileWriter plugin for Java and C++ (supporting streaming mode)
           http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.filewriter.html
           Note: Incompatible rename from Reveiver to FileWriter (attrib names changed as well)
 
- o #16601 Added Scheduler Plugin: it is now possible to define operations to be
+ o r16601 Added Scheduler Plugin: it is now possible to define operations to be
           scheduled. see 
 	  http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.scheduler.html
 
- o #16586 Added ServerScope (if any) object to Global when cloning Global
+ o r16586 Added ServerScope (if any) object to Global when cloning Global
 
- o #16582 Added streaming publisher (which chunks big messages into smaller chunks)
+ o r16582 Added streaming publisher (which chunks big messages into smaller chunks)
 
- o #16561 Memory leak fix for EventPlugin, it was introduced  about #16357 (EventPlugin notification when queue threshold is reached)
+ o r16561 Memory leak fix for EventPlugin, it was introduced  about r16357 (EventPlugin notification when queue threshold is reached)
 
- o #16532 Logging with XbFormatter: Changed to use ISO 8601 date and time for logging
+ o r16532 Logging with XbFormatter: Changed to use ISO 8601 date and time for logging
 
- o #16531 Added Checkpoint plugin to support tracing the message flow with customized log files
+ o r16531 Added Checkpoint plugin to support tracing the message flow with customized log files
           See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.checkpoint.html
 	  for usage details (and xmlBlasterPlugins.xml to activate it and logging.properties to configure amount of details logged).
           See javadoc of xmlBlaster/src/java/org/xmlBlaster/util/checkpoint/Checkpoint.java
 
- o #16528 Adjustable SmtpClient mail timeout (see xmlBlasterPlugins.xml example)
+ o r16528 Adjustable SmtpClient mail timeout (see xmlBlasterPlugins.xml example)
           <attribute id='mail.smtp.timeout'>3600000</attribute> <!-- socket IO: 1 h -->
           <attribute id='mail.smtp.connectiontimeout'>600000</attribute> <!-- 10 min -->
 
- o #16518 C++ Fixed putToQueue(): Now always if POLLING or other messages in queue
+ o r16518 C++ Fixed putToQueue(): Now always if POLLING or other messages in queue
 
- o #16510-#16514 C++ I_PostSendListener introduced
+ o r16510-r16514 C++ I_PostSendListener introduced
           You can now be notified after a message from client side tail back queue has
           been send to xmlBlaster (e.g. to access the real PublishReturnQos)
           See PublishDemo.cpp postSend() as an example
 
- o #16506 C++ Timestamp: Fix for time going backwards
+ o r16506 C++ Timestamp: Fix for time going backwards
 
- o #16500 C++ RamQueuePlugin: Fixed typo which prevented sending limited maxNumOfEntries
-   #16501 C++ ConnectionsHandler: Each tailback msg send from client queue is now instantly removed from queue (no bulk acks)
+ o r16500 C++ RamQueuePlugin: Fixed typo which prevented sending limited maxNumOfEntries
+   r16501 C++ ConnectionsHandler: Each tailback msg send from client queue is now instantly removed from queue (no bulk acks)
 
- o #16493 Dead lock fix between callback ping and reconnect thread (reported by Xavier)
+ o r16493 Dead lock fix between callback ping and reconnect thread (reported by Xavier)
  	  Now all threads enter the syncs hierarchical over the DispatchManager
  
- o #16471 contrib: incompatible interface change in I_ResultCb: needed to make alter table recreate the 
+ o r16471 contrib: incompatible interface change in I_ResultCb: needed to make alter table recreate the 
           trigger on the master side of a replication
 
- o #16469 removed double spanning of poll timer when going from ALIVE to POLLING
+ o r16469 removed double spanning of poll timer when going from ALIVE to POLLING
  
- o #16467 Replication: fixed in trigger timestamp is always using '.': was using locale punctuator
+ o r16467 Replication: fixed in trigger timestamp is always using '.': was using locale punctuator
           resulting in an exception on the writing side. Also made writer more tollerant (would 
           handle a comma now)
 
- o #16457 Continue loading sessions from persistence even if one fails (e.g. because of changed authentication)
+ o r16457 Continue loading sessions from persistence even if one fails (e.g. because of changed authentication)
           TODO: Implement generic approach to handle such sessions (security plugin should grant access if coming
           from persistent store).
 
- o #16449 JMX control
+ o r16449 JMX control
           - Added SessionInfo getCbQueueBytes() and getCbQueueBytesCache()
             These are the bytes of the refence objects only (not containing the message itself)
           - Fixed allowedToReconfigureTopicAndFixWrongLimits() typo at: if (currentMaxEntries > historyProps.getMaxEntries())
@@ -223,372 +223,372 @@ Changes for 1.6.2 [2007-12-03] #16646 'Openroads'
           leaks which probably weren't.
 
 
- o #16444 removed synchronized in CacheQueueInterceptorPlugin.clear since it caused a deadlock
+ o r16444 removed synchronized in CacheQueueInterceptorPlugin.clear since it caused a deadlock
           when clearing a callback queue and publishing messages at the same time
 
- o #16442 Fixed to avoid remote DNS hostname lookup if hostname given is raw IP
+ o r16442 Fixed to avoid remote DNS hostname lookup if hostname given is raw IP
           Added to avoid DNS localHostname lookup if localHostname given is raw IP
 
- o #16430 EventPlugin: Added missing support for wildcards in event type callbackState
+ o r16430 EventPlugin: Added missing support for wildcards in event type callbackState
           client/*/session/*/event/callbackState
 
- o #16416 Bugfix XmlScript over SOCKET: Fixed to use configured parser on callback ping
+ o r16416 Bugfix XmlScript over SOCKET: Fixed to use configured parser on callback ping
 
- o #16411 Bugfix: Fixed XmlScript over SOCKET handling for incoming EOF
+ o r16411 Bugfix: Fixed XmlScript over SOCKET handling for incoming EOF
           See http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#script
 
-Changes for 1.6.1 [2007-08-02] #16408
+Changes for 1.6.1 [2007-08-02] r16408
 =====================================
 
- o #16405 Bugfix: Added automatical conversion to from Global to ServerScope for native publish calls to RequestBroker
+ o r16405 Bugfix: Added automatical conversion to from Global to ServerScope for native publish calls to RequestBroker
           This had for example inpact when a EventPlugin configuration without a configured PublishQos was used.
 
- o #16404 Added DropIfNotDeliverable mime plugin: Drops messages if subscriber is in POLLING state
+ o r16404 Added DropIfNotDeliverable mime plugin: Drops messages if subscriber is in POLLING state
           See xmlBlaster/src/java/org/xmlBlaster/contrib/mime/DropIfNotDeliverable.java javadoc for details
 
- o #16400/16402 Performance fix: If more than ~1000 clients connect the login got very slow
+ o r16400/16402 Performance fix: If more than ~1000 clients connect the login got very slow
           This scales now to several thousand clients without performance degradation
 
- o #16387 C-client library: Fixed SIGSEG and memory leak when the system has no more threads available
+ o r16387 C-client library: Fixed SIGSEG and memory leak when the system has no more threads available
           Recovery of such a situation is now stable
 
 
-Changes for 1.6 [2007-07-25] #16384
+Changes for 1.6 [2007-07-25] r16384
 ===================================
 
- o #16378 Fixed cluster swapping which could lead to 'MethodName: The given methodName=msg_xml is unknown'
+ o r16378 Fixed cluster swapping which could lead to 'MethodName: The given methodName=msg_xml is unknown'
 
- o #16371 C++ extension: Added xmlBlasterAccess.receive(oid, maxEntries, timeout, consumable)
+ o r16371 C++ extension: Added xmlBlasterAccess.receive(oid, maxEntries, timeout, consumable)
           to peek/take messages from server side queues (history, subject and callback queue)
           see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html
 
- o #16359,16360 acceptWrongSenderAddress is now configurable using JMX/jconsole
+ o r16359,16360 acceptWrongSenderAddress is now configurable using JMX/jconsole
           see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html why you could need this
 
- o #16357 EventPlugin notification when queue threshold is reached
+ o r16357 EventPlugin notification when queue threshold is reached
 
- o #16339 Added jconsole/JMX support to increase on a running system the maxNumOfEntries and maxNumOfBytes
+ o r16339 Added jconsole/JMX support to increase on a running system the maxNumOfEntries and maxNumOfBytes
           of a map (msgUnitStore), the changes are persistently and durable after a xmlBlaster re-start.
 	  Added threshold alarm events (e.g. 90% full) for msgUnitStore, see
 	  http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html
 
- o #16332 fixed excessive CPU Usage due to short loops for logs in Execute (native cmd line invoker)
+ o r16332 fixed excessive CPU Usage due to short loops for logs in Execute (native cmd line invoker)
 
- o #16331 fixed hole which could generate a meat not found in postHandleNextMessages. Would only
+ o r16331 fixed hole which could generate a meat not found in postHandleNextMessages. Would only
           happen when using the I_MsgDispatchInterceptor plugin.
  
- o #16323 Added BlockingQueueWrapper: a wrapper around I_Queue to invoke blocking peeks
+ o r16323 Added BlockingQueueWrapper: a wrapper around I_Queue to invoke blocking peeks
 
- o #16315 Fixed JDBC ping for MSSQLServer
+ o r16315 Fixed JDBC ping for MSSQLServer
           Fixed performance bottleneck when RAM part of CacheQueue is full
 
- o #16312 C client library avoids DNS lookup if raw ip4 address given
+ o r16312 C client library avoids DNS lookup if raw ip4 address given
 
- o #16309 Added server timestamp (ISO, UTC, nano precision) to ConnectReturnQos:
+ o r16309 Added server timestamp (ISO, UTC, nano precision) to ConnectReturnQos:
           <clientProperty name='__rcvTimestampStr'>2007-07-09 10:36:38.189000005Z</clientProperty>
 
- o #16307 Extended C# client library for java like System.currentTimeMillis handling with C# DateTime
+ o r16307 Extended C# client library for java like System.currentTimeMillis handling with C# DateTime
 
- o #16292 ClientProperties of ConnectQos can now be copied to remoteProperties, see
+ o r16292 ClientProperties of ConnectQos can now be copied to remoteProperties, see
           See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html#remoteProperty
 
- o #16264 SocketUrl: changed the Exception to be a communication for cases where the host is temporarly 
+ o r16264 SocketUrl: changed the Exception to be a communication for cases where the host is temporarly 
           unavailable. If you have a positive SessionId it will go in polling (as opposed to before where 
           it went to dead)
 
- o #16283 Replication:
+ o r16283 Replication:
           Added property 'dbWriter.quoteColumnNames=false', set to true for DB2 host sinks (e.g. "COMMENT")
 
- o #16280 Replication:
+ o r16280 Replication:
           Bugfix in SqlRow.java to prevent double base64 encoded client properties for renamed columns
  
- o #16273 Added events for queue thresholds (subject- callback and history queues)
+ o r16273 Added events for queue thresholds (subject- callback and history queues)
 
- o #16263 Contrib: changed I_Info.putObject implementations when passing null they now
+ o r16263 Contrib: changed I_Info.putObject implementations when passing null they now
           remove the entry as specified in javadoc
 
- o #16256 Replication:
+ o r16256 Replication:
            writer now uses and passes a cloned row (SqlInfo does not change). 
            Invocation of I_PrePostStatement even for CREATE, ALTER and DROP.
            Added Attributes for descriptions created by metadata.
 
- o #16249 C client library, WINDOWS only: Bugfix: Added WSASetLastError(0)
+ o r16249 C client library, WINDOWS only: Bugfix: Added WSASetLastError(0)
 
- o #16243 Replication:
+ o r16243 Replication:
           Added configurable XSL transformation on DbWriter side, e.g. 'dbWriter.xslTransformerName=mydbtrans.xsl'
           Added readOnly flag when using SpecificReadonly
  
- o #16241 Replication: Added Oracle -> DB2 replication support
+ o r16241 Replication: Added Oracle -> DB2 replication support
 
- o #16235 Replication: fixed msg counting when sending multiple transactions in one message
+ o r16235 Replication: fixed msg counting when sending multiple transactions in one message
  
- o #16233 added reconfiguration of topic properties possible by re-sending an administrative
+ o r16233 added reconfiguration of topic properties possible by re-sending an administrative
           message
 
- o #16231 embedded XmlBlaster: fix when specifying an alternative properties file
+ o r16231 embedded XmlBlaster: fix when specifying an alternative properties file
 
- o #16230 Parsing of xmlBlasterPlugins.xml has been modified to allow re-use of same attribute
+ o r16230 Parsing of xmlBlasterPlugins.xml has been modified to allow re-use of same attribute
           parser
 
- o #16222 Replication: Added readonly variant on source database with classical DbWatcher approach
+ o r16222 Replication: Added readonly variant on source database with classical DbWatcher approach
           Added configurable 'dbinfo.url' to force another database for DBINFO table
 
- o #16207 Fixed replication loading of specific jdbc.drivers from specific properties files
+ o r16207 Fixed replication loading of specific jdbc.drivers from specific properties files
 
- o #16203 Fixed admin.event plugin to escape illegal XML entities like '&' in send notification
+ o r16203 Fixed admin.event plugin to escape illegal XML entities like '&' in send notification
   
- o #16195 Fixed PersistenceCachePlugin.getAll(I_EntryFilter) which could lead to duplicate intercept calls
+ o r16195 Fixed PersistenceCachePlugin.getAll(I_EntryFilter) which could lead to duplicate intercept calls
 
- o #16193 Fixed topicId lookup in checkConsistency()
+ o r16193 Fixed topicId lookup in checkConsistency()
 
- o #16187 Fixed cluster client queue to have unique storageId
+ o r16187 Fixed cluster client queue to have unique storageId
           Use -xmlBlaster/cluster/useLegacyClientQueueName true forces old behavior
 
- o #16185 Fixed using ServerScope in ConnectQos which used wrong ServerEntryFactor on client side
+ o r16185 Fixed using ServerScope in ConnectQos which used wrong ServerEntryFactor on client side
 
- o #16182 QueryQosData.java: Escape subscriptionId if it contains apos to avoid invalid XML
+ o r16182 QueryQosData.java: Escape subscriptionId if it contains apos to avoid invalid XML
 
- o #16181 ServerEntryFactory.java: Changed to ignore case of type during persistence recovery
+ o r16181 ServerEntryFactory.java: Changed to ignore case of type during persistence recovery
 
- o #16178 fix: failsave + authentication errors now kill the connection 
+ o r16178 fix: failsave + authentication errors now kill the connection 
           (they went in polling before)
 
- o #16170 EmbeddedXmlBlaster: changed the way the global is created since the
+ o r16170 EmbeddedXmlBlaster: changed the way the global is created since the
           embedded would otherwise use the default xmlBlaster.properties
 
- o #16168 Updated to ant-contrib/cpptasks from svn 2007-05-20
+ o r16168 Updated to ant-contrib/cpptasks from svn 2007-05-20
           To try to resolve C/C++ compilation/runtime problems with Windows crazy manifest approach
 
- o #16164 C++ client library: Fixed generatedSubscriptionId to escape ' quote to prevent malformed QoS XML
+ o r16164 C++ client library: Fixed generatedSubscriptionId to escape ' quote to prevent malformed QoS XML
 
- o #16145 added to get missing code to retrieve also props with no prefix (for example java.version) to Global 
+ o r16145 added to get missing code to retrieve also props with no prefix (for example java.version) to Global 
 
- o #16134 The setting 'java -DxmlBlaster/initClassName=mypackage.MyClass ...' allows to load
+ o r16134 The setting 'java -DxmlBlaster/initClassName=mypackage.MyClass ...' allows to load
           an initial class instance directly after Main(String[])
 
- o #16130 Extended SOCKET protocol plugin to immediately forward the EOF on client disconnect
+ o r16130 Extended SOCKET protocol plugin to immediately forward the EOF on client disconnect
           to support callback configurations with switched off pinging  (e.g. mobile phones with high cost GPRS/UMTS).
 
- o #16109 Added switch 
+ o r16109 Added switch 
             -xmlBlaster/jmx/support false
           or
             -xmlBlaster/jmx/createSecurityManager false
 	  to support embedded EJB3 jboss plugin without loosing JMX jconsole support
 
- o #16078 Update to HSQLDB 1.8.0.7 from September 2006
+ o r16078 Update to HSQLDB 1.8.0.7 from September 2006
 
- o #16075 The SOCKET connection transports the client side IP address to the security plugins
+ o r16075 The SOCKET connection transports the client side IP address to the security plugins
           Extension by Xavier Roques
 
-Changes for 1.5.1 [2007-02-26] #16061
+Changes for 1.5.1 [2007-02-26] r16061
 =====================================
 
- o #16059 Bugfix: The queue entry reference counting could lead to leaked msgUnit entries on I_Queue.clear() calls
+ o r16059 Bugfix: The queue entry reference counting could lead to leaked msgUnit entries on I_Queue.clear() calls
 
- o #16057 Removed invocation recorder, it was unused and deprecated
+ o r16057 Removed invocation recorder, it was unused and deprecated
 
- o #16051/#16053 Bugfix: Support for #15953 subscriptionId in cluster environment
+ o r16051/r16053 Bugfix: Support for r15953 subscriptionId in cluster environment
 
- o #16050 Prevent clients from using same login name as server cluster.node.id
+ o r16050 Prevent clients from using same login name as server cluster.node.id
 
- o #16045 C client library fix for Win32 and WinCE
+ o r16045 C client library fix for Win32 and WinCE
           You can now pass raw IP address without DNS lookup
 
- o #16022 Bugfix C client library
+ o r16022 Bugfix C client library
           The disconnect is not oneway (see protocol.socket specification),
 	  this bug was introduced in r15972 2007-02-07.
 	  Fixed memory leak for unexpected reveived messages (does not happen in normal operation).
 	  Increased max. waiting on pending update threads to 10 sec (during shutdown).
 
- o #16022 Bugfix The new SessionName '/session/' tag introduced a subtle bug which could lead
+ o r16022 Bugfix The new SessionName '/session/' tag introduced a subtle bug which could lead
           to failed reconnect on same session.
-	  This bug was introduced with revision #15523
+	  This bug was introduced with revision r15523
 
- o #16021 Bugfix & extension for administrative 'event/callbackState'
+ o r16021 Bugfix & extension for administrative 'event/callbackState'
           It now fires on the initial login a "ALIVE" or "POLLING" event
 	  The subjectId and/or the publicSessionId can now be a wildcard "*".
 	  The connect and disconnect event now support wildcarded subjectId.
           See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html
 
- o #15994 Added C and C++ project files for eclipse and VC++2005
+ o r15994 Added C and C++ project files for eclipse and VC++2005
           See xmlBlaster/src/c/README and xmlBlaster/src/c++/README
           See xmlBlaster/demo/socket/README and xmlBlaster/demo/c++/README
 
- o #15980 C++ client library: Partially added support for WINCE
+ o r15980 C++ client library: Partially added support for WINCE
           Porting to MSXML and fixing errno.h in omnithread is missing
 
- o #15967-#15972 Mac OSX c client library compilation patch
+ o r15967-r15972 Mac OSX c client library compilation patch
 
-Changes for 1.5 [2007-01-28] #15961
+Changes for 1.5 [2007-01-28] r15961
 ===================================
 
- o #15953 C++ and Java client library now create client side subscriptionId if
+ o r15953 C++ and Java client library now create client side subscriptionId if
           pubSessionId>0 and multiSubscribe=false (fail safe operation).
           Like this we avoid returning a temporary subscriptionId if a subscribe is queued
           on client side (during POLLING).
 
- o #15949 made volatile all variables which are used in a double checked locking idiom (should be 
+ o r15949 made volatile all variables which are used in a double checked locking idiom (should be 
           safe in new MEM Model as JDK 1.5) 
 
- o #15934 Fixed java client library for changing client side IP address
+ o r15934 Fixed java client library for changing client side IP address
           Reconnect is now supported.
           Security fix which allowed hijacking the callback address
 
- o #15930 Dead letter is now not containing <oid>...</oid> anymore
+ o r15930 Dead letter is now not containing <oid>...</oid> anymore
           Is send already QoS
 
- o #15906 Switched off dynamically loadable plugins as a default setting.
+ o r15906 Switched off dynamically loadable plugins as a default setting.
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html#dynamic
  
- o #15866 added the possibility to disable going to polling if a response timeout comes from a ping:
+ o r15866 added the possibility to disable going to polling if a response timeout comes from a ping:
           use dispatch/callback/stallOnPingTimeout=true or/and dispatch/connection/stallOnPingTimeout=true.
           This property is passed in the AddressBase
 
- o #15851 C# client: Csharp support extended
+ o r15851 C# client: Csharp support extended
           o Supporting C and C++ clients as unmanaged code on Windows CE and normal Windows
           o Supporting C# as managed code on Windows CE and normal Windows and Mono/Linux
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.windowsCE.html
 	  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.csharp.html
 
- o #15794 C++ client: Changed PublishReturnQos and SubscribeReturnQos in case of client side queueing
+ o r15794 C++ client: Changed PublishReturnQos and SubscribeReturnQos in case of client side queueing
           to be identical to java client behaviour:
 	  state id="OK"        (previously it was "QUEUED")
 	  state info="QUEUED   (previously it was "")
 	  See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html#return
 
- o #15750 C client: Full Windows CE port (including pthreads 2.7.0 and zlib 1.2.3)
+ o r15750 C client: Full Windows CE port (including pthreads 2.7.0 and zlib 1.2.3)
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.c.windowsCE.html
 
- o #15742 C client: First runnable Windows CE port (without pthreads)
+ o r15742 C client: First runnable Windows CE port (without pthreads)
           Added: -DWINCE compiler define
           Open: Is there any getenv() for Windows CE?, how to handle errno.h?
           Changed: -DDLL_BUILD to -D_WINDLL
           __FreeBSD__ code in helper.c is probably broken (needs testing)
 
- o #15735 dispatch statistics are cleaned up on the client side on reconnect also, this fixes a failing reconnect in case
+ o r15735 dispatch statistics are cleaned up on the client side on reconnect also, this fixes a failing reconnect in case
           the update had activities, the connection ping detected a stale connection and the update ping did not return.
 
- o #15733 Fixed introduced error when removing entries from queues where the
+ o r15733 Fixed introduced error when removing entries from queues where the
           metadata returned 0 for maxNumSequences.
 
- o #15727 C client: Finished port to VC8 with support for VC7 and VC6.
+ o r15727 C client: Finished port to VC8 with support for VC7 and VC6.
 
- o #15713 Cb ignores ping failure in case an update is blocking (no activity). On the client side
+ o r15713 Cb ignores ping failure in case an update is blocking (no activity). On the client side
           however an exception is thrown to allow a reconnect
 
- o #15697 C++ client: Added client side queue accessor to xmlBlasterAccess->getQueue()
+ o r15697 C++ client: Added client side queue accessor to xmlBlasterAccess->getQueue()
 
- o #15684 Fixed I_Queue.clear() of cache queue implementation
+ o r15684 Fixed I_Queue.clear() of cache queue implementation
           It only removed the entries in the cache but now
           it correctly removes the swapped out persistent messages as well
           TODO: Add a testcase
 
- o #15682 Added java.sql.Connection delegate DebugConnection.java
+ o r15682 Added java.sql.Connection delegate DebugConnection.java
           for advanced failure detection (contains assert code only)
 
- o #15644 Fixed htpasswd plugin for '*:<passwd>' entries.
-          This feature got lost during adding of authorization code (see #15446).
+ o r15644 Fixed htpasswd plugin for '*:<passwd>' entries.
+          This feature got lost during adding of authorization code (see r15446).
           Is now assured by testcase
  
- o #15643 Added experimental maxFetchSize to limit queries.
+ o r15643 Added experimental maxFetchSize to limit queries.
           Default to unlimited as before, example:
           QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,
                 persistentQueue=JDBC,transientQueue=RAM,maxFetchSize=100
 
- o #15629 Added I_StreamingCallback which can be passed to an XmlBlasterAccess.connect. You can 
+ o r15629 Added I_StreamingCallback which can be passed to an XmlBlasterAccess.connect. You can 
           thereby read messages in streaming mode. A client side update queue having the same
           cfg as the client queue can be optionally used.
  
-Changes for 1.4 [2006-10-22] #15612
+Changes for 1.4 [2006-10-22] r15612
 ===================================
 
- o #15591 FilePoller: Fixed file.delete() with a hack, it failed sometimes on Windows platforms
+ o r15591 FilePoller: Fixed file.delete() with a hack, it failed sometimes on Windows platforms
 
- o #15587 SQL92Filter plugin has as default now switched caching of prepared query off
+ o r15587 SQL92Filter plugin has as default now switched caching of prepared query off
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.sql92.html
 
- o #15582 Updated cup parser from 'CUP v0.10k Parser' to 'CUP v0.11a beta 20060608 Parser'
+ o r15582 Updated cup parser from 'CUP v0.10k Parser' to 'CUP v0.11a beta 20060608 Parser'
 
- o #15571 Changed I_SecurityQos interface to have exchangable SecurityQos for ldap,htpasswd,simple
+ o r15571 Changed I_SecurityQos interface to have exchangable SecurityQos for ldap,htpasswd,simple
           This allows changing the server side security plugin (from for example htpasswd to ldap)
           even if the client is not touched.
 
- o #15563 Bugfix: Thread/memory leak on clients with failed authentication
+ o r15563 Bugfix: Thread/memory leak on clients with failed authentication
           and not closing the socket
 
- o #15562 Bugfix: NPE during callback of oneway messages
+ o r15562 Bugfix: NPE during callback of oneway messages
 
- o #15557 Added switch -xmlBlaster/useSessionMarker (defaults to false)
+ o r15557 Added switch -xmlBlaster/useSessionMarker (defaults to false)
           To switch between old "client/joe/1" notation and new "client/joe/session/1" notation
 	  Default is again false to be backward compatible with older clients,
 	  should be changed to true on release 2.0
 
- o #15556 Fixed C++ client to handle 'joe/2' or 'joe/session/2' or 'client/joe/session/2' syntax
+ o r15556 Fixed C++ client to handle 'joe/2' or 'joe/session/2' or 'client/joe/session/2' syntax
 
- o #15549 Fixed the possible NPE in SocketConnection in case a client wants to use it directly. It can now read the cfg out of
+ o r15549 Fixed the possible NPE in SocketConnection in case a client wants to use it directly. It can now read the cfg out of
           the Global properties too, thanks to Oliver Fels. 
  
- o #15541 Fixed plugin load/unload/reload lifecycle, fixed plugin JMX re-registration
+ o r15541 Fixed plugin load/unload/reload lifecycle, fixed plugin JMX re-registration
 
- o #15534 Added support for dynamically loaded plugins, the jar file is send in the message content
+ o r15534 Added support for dynamically loaded plugins, the jar file is send in the message content
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html#dynamic
 
- o #15525 added cleanup of reads in dispatch statistics when an exception occurs when writing to the socket (normally by pings).
+ o r15525 added cleanup of reads in dispatch statistics when an exception occurs when writing to the socket (normally by pings).
           Without it clients would not reconnect if the exception occured when receiving messages.
 
- o #15524 Using now default XML parser of the virtual machine (usually no configuration
+ o r15524 Using now default XML parser of the virtual machine (usually no configuration
           is needed in xmlBlaster.properties anymore)
 
- o #15523 Changed default syntax from 'client/joe/1' to 'client/joe/session/1
+ o r15523 Changed default syntax from 'client/joe/1' to 'client/joe/session/1
           Passing old notation is still supported
 
- o #15522 Added default XML parser / XSL settings for IBM JDK 1.4 and IBM JDK 1.5
+ o r15522 Added default XML parser / XSL settings for IBM JDK 1.4 and IBM JDK 1.5
 
- o #15513 You can now send messages containing one plugin as in
+ o r15513 You can now send messages containing one plugin as in
           xmlBlasterPlugins.xml and this is dynamically added without
           xmlBlaster restart. Further configuration can be done over jconsole.
           Sending a jar file with plugin specific code is not yet implemented.
           Example:
             java javaclients.HelloWorldPublish -oid __sys__RunlevelManager -contentFile plugin.xml
 
- o #15511 Added support for runlevel plugin activation/deactivation from JMX / jconsole
+ o r15511 Added support for runlevel plugin activation/deactivation from JMX / jconsole
  
- o #15506 Fixed C client library cast for Solaris
+ o r15506 Fixed C client library cast for Solaris
 
 
-Changes for 1.3 [2006-09-10] #15505
+Changes for 1.3 [2006-09-10] r15505
 ===================================
 
- o #15504 Fixed NPE in CacheQueueInterceptorPlugin.removeQueueSizeListener() if queue is shutdown
+ o r15504 Fixed NPE in CacheQueueInterceptorPlugin.removeQueueSizeListener() if queue is shutdown
 
- o #15490 Fixed JMS_REPLY_TO = "__jms:JMSReplyTo" to contain new introduced "__jms:" prefix
+ o r15490 Fixed JMS_REPLY_TO = "__jms:JMSReplyTo" to contain new introduced "__jms:" prefix
 
- o #15488 Fixed QueueQueryPlugin / receive() to support multiple blocking clients on same queue instance
+ o r15488 Fixed QueueQueryPlugin / receive() to support multiple blocking clients on same queue instance
 
- o #15485 added to MINSTR token for currentTime to the DbWatcher TimestampDetector
+ o r15485 added to MINSTR token for currentTime to the DbWatcher TimestampDetector
 
- o #15465 receive() leaking threads fixed:
+ o r15465 receive() leaking threads fixed:
           The I_Queue implementations now fire changed() in shutdown as well
           allowing the blocking queue query threads to return.
           Before the receive() threads were leaked if the queue disappeared
           as a notify was never triggered
 
- o #15459 Bugfix receive(): Could deadlock because of synchronize declaration in CoreHandler
+ o r15459 Bugfix receive(): Could deadlock because of synchronize declaration in CoreHandler
 
- o #15446 htpassed plugin: Extended to support authorization on 'xpath:' and 'domain:' specific access
+ o r15446 htpassed plugin: Extended to support authorization on 'xpath:' and 'domain:' specific access
 
- o #15438 SOCKET protocol: Calling xmlBlaster core is now in a dispatched thread to support concurrent ping()
+ o r15438 SOCKET protocol: Calling xmlBlaster core is now in a dispatched thread to support concurrent ping()
           and other method invocations. Fixes for example long lasting subscribes and blocking gets.
 
- o #15419 added dispatch statistic to client dispatcher and added bypass of ping in case there is a writing- or
+ o r15419 added dispatch statistic to client dispatcher and added bypass of ping in case there is a writing- or
           reading activity on that dispatcher. This fixes ping failures due to ongoing write/read operations
 
- o #15413 XmlRpc callback: Fixed to throw COMMUNICATION exceptions on ping or updateOneway failures
+ o r15413 XmlRpc callback: Fixed to throw COMMUNICATION exceptions on ping or updateOneway failures
           and for update() exceptions thrown on server side
 
- o #15412 Prevent NPE if topicProperty is null
+ o r15412 Prevent NPE if topicProperty is null
 
- o #15397 -Fixed dump to file (added out.close())
+ o r15397 -Fixed dump to file (added out.close())
           -Nicer, human readable dump conforming to XmlScript markup
 	  -Added reference counting check, see I_AdminMap.checkConsistency() and I_AdminNode.checkConsistency()
 	  -Fixed to activate destroyTimeout setting when administrative or coming from persistence on startup
@@ -596,207 +596,207 @@ Changes for 1.3 [2006-09-10] #15505
 	  -Changed persistent messages to be transient for session callback queues with negative session ID
 	   as those wouldn't be found deterministic after restart
 
- o #15390 ConnectionPool now throws away Connection in case of an exception in the jdbc queue
+ o r15390 ConnectionPool now throws away Connection in case of an exception in the jdbc queue
 
- o #15381 C# client library: Added Csharp wrapper around xmlBlaster client C library (xmlBlaster/src/csharp/NativeC.cs)
+ o r15381 C# client library: Added Csharp wrapper around xmlBlaster client C library (xmlBlaster/src/csharp/NativeC.cs)
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.csharp.html
 
- o #15357 I_Entry.removed is now invoked outside synchronize in queues to avoid deadlock
+ o r15357 I_Entry.removed is now invoked outside synchronize in queues to avoid deadlock
 
- o #15348 Increased information density of server side logging (similar to good old org.jutils times)
+ o r15348 Increased information density of server side logging (similar to good old org.jutils times)
 
- o #153xx I_Queue implementation: the toDestroyed() callback is now outside any synchronized
+ o r153xx I_Queue implementation: the toDestroyed() callback is now outside any synchronized
 
- o #15337 Property.java: when retrieving someCtx* only someCtx's childs where returned, now the exact match is returned too.
+ o r15337 Property.java: when retrieving someCtx* only someCtx's childs where returned, now the exact match is returned too.
 
- o #15334 changed the threading pool of dispatcher since it was only using minimumPoolSize 
+ o r15334 changed the threading pool of dispatcher since it was only using minimumPoolSize 
 
- o #15326 Fixed spam prevention if client logs in after a PtP arrived in its callback queue (with forceQueueing=true)
+ o r15326 Fixed spam prevention if client logs in after a PtP arrived in its callback queue (with forceQueueing=true)
 
- o #15323 Changed server side behavior on COMMUNICATION exceptions thrown actively from client side
+ o r15323 Changed server side behavior on COMMUNICATION exceptions thrown actively from client side
           Accept now client side COMMUNICATION exception
 	  This should only be thrown by the client side low level protocol library on demand (e.g. on socket shutdownCbServer())
 
- o #15313 htpasswd plugin extension: Added primitive authorization support based on method name and topic oid
+ o r15313 htpasswd plugin extension: Added primitive authorization support based on method name and topic oid
           See: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html#authorization
 	  Changed to allow empty passwords (like "joe::") which grants access for joe
 
- o #15308 C client library: Removed pthread dependency when compiling single thread version with -DXB_NO_PTHREADS
+ o r15308 C client library: Removed pthread dependency when compiling single thread version with -DXB_NO_PTHREADS
 
- o #15294 Fix for XMLRPC protocol layer to transform all weired, client thrown exceptions into a "user.update.internalError"
+ o r15294 Fix for XMLRPC protocol layer to transform all weired, client thrown exceptions into a "user.update.internalError"
           instead of a "internal.unkown"
 
- o #15293 Fix for SOCKET protocol layer to transform all weired, client thrown exceptions into a "user.update.internalError"
+ o r15293 Fix for SOCKET protocol layer to transform all weired, client thrown exceptions into a "user.update.internalError"
           instead of a "internal.unkown". (Is correctly done by IOR protocol)
 
- o #15280, #15288-#15290 Bugfix in xmlBlaster server-core (TopicHandler)
+ o r15280, r15288-r15290 Bugfix in xmlBlaster server-core (TopicHandler)
           Major redesign to handle race conditions:
           All access to a TopicHandler instance is no single threaded and done over TopicAccessor
           All access over reference counting / weak references is done as 'dirty read'
           Fixed double TopicHandler unregister on erase(false)
 
- o #15261 JMX invocations: Fixed invocation with none-String arguments, see
+ o r15261 JMX invocations: Fixed invocation with none-String arguments, see
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.http.html#jmx
 
- o #15256 Fixed switching off erase notification, added test case
+ o r15256 Fixed switching off erase notification, added test case
           Thanks to Brad Clements for reporting
 
- o #15250 XmlRpc callback (server side): Fixed recognition of COMMUNICATION errorCode
+ o r15250 XmlRpc callback (server side): Fixed recognition of COMMUNICATION errorCode
           to avoid going to DEAD when callback server of client disappeared temporary
 
- o #15244 EventPlugin: Added fix to only send JMX events when configured
+ o r15244 EventPlugin: Added fix to only send JMX events when configured
 
- o #15234 Added java client side API methods for synchronous access:
+ o r15234 Added java client side API methods for synchronous access:
           Access xmlBlaster server side queues
             MsgUnit[] receive(String oid, int maxEntries, long timeout, boolean consumable)
           The synchrnous request/reply pattern
             MsgUnit[] request(MsgUnit msgUnit, long timeout, int maxEntries)
           See I_XmlBlasterAccess.java
 
- o #15220 Added possibility to configure to send XmlBlaster script markup over the SOCKET protocol layer
+ o r15220 Added possibility to configure to send XmlBlaster script markup over the SOCKET protocol layer
           with all benefits like tunneling back, compression and SSL
           See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html#script
           Fixed propress listener reporting in XbfParser.java
  
- o #15214 Email protocol now functional between cluster nodes, see example configuration
+ o r15214 Email protocol now functional between cluster nodes, see example configuration
           xmlBlaster/demo/javaclients/cluster/email/README
           
- o #15207 Bugfix Java: The Callback QoS could loose the callback address due to a bug in the ConnectQos parser
+ o r15207 Bugfix Java: The Callback QoS could loose the callback address due to a bug in the ConnectQos parser
           (e.g. when reloaded from persistence)
 
- o #15203 added ping qos to clientside ping (was ignored previously)
+ o r15203 added ping qos to clientside ping (was ignored previously)
  
- o #15192 Added simple jmx framework for contrib plugins with a first implementation TimestampChangeDetector.
+ o r15192 Added simple jmx framework for contrib plugins with a first implementation TimestampChangeDetector.
 
- o #15187 Fix to compile again for J2ME
+ o r15187 Fix to compile again for J2ME
 
- o #15170 Fixed NPE in TopicHandler (reported by David Kerry)
+ o r15170 Fixed NPE in TopicHandler (reported by David Kerry)
  
- o #15183 Added a swing console for arbitrary classes executions. Supports input and colored xmlBlaster
+ o r15183 Added a swing console for arbitrary classes executions. Supports input and colored xmlBlaster
           highlighting of logs
 
- o #15179 Replication: on exceptions the connection was not thrown away from the pool. This has now
+ o r15179 Replication: on exceptions the connection was not thrown away from the pool. This has now
           been fixed.
  
- o #15177 Fixed responseTimeout pingResponseTimeout and updateResponseTimeout when negative
+ o r15177 Fixed responseTimeout pingResponseTimeout and updateResponseTimeout when negative
  
- o #15158 Fixed serverTimestamp on status.html
+ o r15158 Fixed serverTimestamp on status.html
 
- o #15157 Bugfix disconnect(): Fixed clear session queue to be before shutdown
+ o r15157 Bugfix disconnect(): Fixed clear session queue to be before shutdown
 
- o #15144 Bugfix C++ Corba only
+ o r15144 Bugfix C++ Corba only
    closeSocket(s) added because of handle leak reported by James Cazier
 
- o #15139 Bugfix for ant XmlBlasterTask: Closing file output streams
+ o r15139 Bugfix for ant XmlBlasterTask: Closing file output streams
 
- o #15137 Bugfix killClient() does now properly destroy clients which have no session
+ o r15137 Bugfix killClient() does now properly destroy clients which have no session
    for example clients which came to live with a PtP message.
 
- o #15124 Added client property variant:
+ o r15124 Added client property variant:
     <clientProperty name='myText' type='String' encoding='base64' charset='windows-1252'>...
    to support base64 client properties of type String which are not UTF-8 encoded
 
- o #15093 Extended XmlScript with
+ o r15093 Extended XmlScript with
    <wait delay="60000" updates="4" message="Waiting for 4 updates (timeout is 1 min) ..."/>
    Like this XmlScript can be used with the request/reply pattern (useful as a ANT task)
 
- o #15055 RequestReplyExecutor.java returns now address.clone
+ o r15055 RequestReplyExecutor.java returns now address.clone
    TODO - pass specific address of client for authentication
 
- o #15047 Added xmlBlaster ant task
+ o r15047 Added xmlBlaster ant task
    This allows to access xmlBlaster from within ant with the xmlBlaster XML scripting language
    See: http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/contrib/ant/XmlBlasterTask.html
 
- o #15041 Patch from Balázs Póka which makes defensive cast to URLClassLoader
+ o r15041 Patch from Balázs Póka which makes defensive cast to URLClassLoader
    Allows Java WebStart and none standalone apps.
 
- o #15038 Big topic DOM: Changed default encoding from ISO-8859-1 to UTF-8
+ o r15038 Big topic DOM: Changed default encoding from ISO-8859-1 to UTF-8
    This is configurable with -xmlBlaster/topicDom/encoding for backward compatible behaviour
 
- o #15037 Bugfix TopicHandler (multi threading issue)
+ o r15037 Bugfix TopicHandler (multi threading issue)
    By Eugene Wu for topic going unintended into unreferenced for volatile messages
 
- o #15029 Corba xmlBlaster.idl testing 'wstring' instead of 'string'
+ o r15029 Corba xmlBlaster.idl testing 'wstring' instead of 'string'
    - Java client to java server works fine (encoding UTF-8, windows-1252 etc.)
    - Testing with mico 2.3.12 works fine only for 'string'
      The 'wstring' variant lost its QoS during connect()
      so we stay with 'string'
  
- o #15014 MX4J Adaptor could not find the necessary xsl in Windows. This issue is now fixed.
+ o r15014 MX4J Adaptor could not find the necessary xsl in Windows. This issue is now fixed.
 
- o #15006 Added 'domain' to erase event
+ o r15006 Added 'domain' to erase event
 
- o #15003 XPathFilter bugfix
+ o r15003 XPathFilter bugfix
     Does not throw exception anymore for not wellformed message content
 
- o #15002 Java client library methods added to I_XmlBlasterAccess
+ o r15002 Java client library methods added to I_XmlBlasterAccess
    - Added convenience method to send an administrative command to xmlBlaster
      String sendAdministrativeCommand(String command)
    - Added convenience method to switch callback dispatcher on/off
      void setCallbackDispatcherActive(boolean activate)
 
- o #14995 DbWatcher changes
+ o r14995 DbWatcher changes
    - Removed changeDetector.postUpdateStatement
    - Added converter.postStatement
    - Added changeDetector.ignoreExistingDataOnStartup
 
- o #14987,#14988 Refactored security framework - incompatible security interface change
+ o r14987,r14988 Refactored security framework - incompatible security interface change
    of interfaces I_Subject, I_Session, I_MsgSecurityInterceptor
    - isAuthorized is now a method of the I_Session instead of the I_Subject
    - isAuthorized gets now extended informations to be able to authorize on data instance level
    - importMessage() and exportMessage() have now extended arguments
 
- o #14985 Upgraded to jaxen-1.1-beta-8.jar from http://jaxen.org (2006-04-01)
+ o r14985 Upgraded to jaxen-1.1-beta-8.jar from http://jaxen.org (2006-04-01)
    Removed in xmlBlaster/lib/xpath: saxpath.jar jaxen-core.jar jaxen-dom.jar
    Added   xmlBlaster/lib/jaxen.jar
 
- o #14981 Extended MIME XPath filter:
+ o r14981 Extended MIME XPath filter:
    - Depending on the configuration the XPath can now query the QoS OR the message content
      The default is as before the message content
    - Optionally you can supply a XSL file name which is used to transform the message content (deprecated again)
    - The plugin type name is now dynamically determined to support multiple plugins
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html
 
- o #14976 FileLocator handle now http:// and ftp:// and file: schemas
+ o r14976 FileLocator handle now http:// and ftp:// and file: schemas
    to lookup configuration files
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html
 
- o #14974 Extended XPath filter FilePoller: Changed copyOnMove=true as default setting
+ o r14974 Extended XPath filter FilePoller: Changed copyOnMove=true as default setting
 
- o #14974 FilePoller: Changed copyOnMove=true as default setting
+ o r14974 FilePoller: Changed copyOnMove=true as default setting
 
- o #14973 FilePoller: Fix for case insensitive OS, Fix for failing renameTo
+ o r14973 FilePoller: Fix for case insensitive OS, Fix for failing renameTo
 
- o #14970 Added support for all JMX commands for our http/HTML native access, see requirement
+ o r14970 Added support for all JMX commands for our http/HTML native access, see requirement
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.http.html
 
- o #14956 changed repository structure for tags/branches and trunk and devorced it from other repositories.
+ o r14956 changed repository structure for tags/branches and trunk and devorced it from other repositories.
  
- o #14952 RemoteProperties changed: Now new sent properties merge with existing ones
+ o r14952 RemoteProperties changed: Now new sent properties merge with existing ones
    - setting 'msgUnit.content=set' will overwrite existing remoteProperties (behaves as old version)
 
 
-Changes for 1.2 [2006-03-13] #14936
+Changes for 1.2 [2006-03-13] r14936
 ===================================
 
- o #14921 The new JDK14 logging can now be controlled by telnet commands or JMX
+ o r14921 The new JDK14 logging can now be controlled by telnet commands or JMX
 
- o #14918 Administrative commands
+ o r14918 Administrative commands
    - Added telnet support for 'session' class specified
    - Fixed Message command access with arguments
 
- o #14916 Admin-commands: Removed deprecated getNumSubscriptions and getSubscriptionList
+ o r14916 Admin-commands: Removed deprecated getNumSubscriptions and getSubscriptionList
 
- o #14914 Refactored common CORBA classes to org.xmlBlaster.util package
+ o r14914 Refactored common CORBA classes to org.xmlBlaster.util package
 
- o #14909 Cluster fixes
+ o r14909 Cluster fixes
    - Setting retries=-1 as a default for remote cluster login
    - Default is now to not disconnect at the remote clusters during shutdown
      The old behavior can be forced by adding a <disconnect/> tag.
    - Bugfix to not forward the '__persistenceId' marker client property from subscribeQos to the remote node
    - Fixed cluster example: Added SubscriptionPersistencePlugin to xmlBlasterPlugins.xml
 
- o #14874 - #14876 Added XmlBlasterException hook to react customized on XmlBlasterExceptions
+ o r14874 - r14876 Added XmlBlasterException hook to react customized on XmlBlasterExceptions
    The default implementation (see Main.java) does an immediate exit of xmlBlaster for error codes 
    defined, for example "-xmlBlaster/panicErrorCodes resource.db.unknown,resource.db.unavailable"
    The exit does not shutdown with the RunlevelManager but kills the instance immediately.
@@ -804,342 +804,342 @@ Changes for 1.2 [2006-03-13] #14936
      java -Dorg.xmlBlaster.util.I_XmlBlasterExceptionHandler=MyHandler org.xmlBlaster.Main
    -Changed to load signal catcher already in HALTED_POST
 
- o #14867 Added SocketGetter to the contrib package.
+ o r14867 Added SocketGetter to the contrib package.
 
- o #14845 Removed jutils completely, if you have used org.jutils code in your clients
+ o r14845 Removed jutils completely, if you have used org.jutils code in your clients
    please port it, for some time you can download jutils.jar from
    http://www.xmlBlaster.org/jutils.jar
    The XML dump shows some timestamps now in ISO_8601 format.
 
- o #14840 Renamed engine.Global to engine.ServerScope
+ o r14840 Renamed engine.Global to engine.ServerScope
    This is an incompatible change which touches low level native plugins only
 
- o #14812 - #14839 Incompatible changes from jutils logging to java.util logging. 
+ o r14812 - r14839 Incompatible changes from jutils logging to java.util logging. 
    see helper script xmlBlaster/bin/convertJutilsToJavaLogging.sh
 
- o #14781 telnet access refactored, some access method names are changed, e.g.
+ o r14781 telnet access refactored, some access method names are changed, e.g.
    - getCbQueueEntries() -> getCallbackQueueEntries(String query)
    - "get topic/..." now access all I_AdminTopic methods
 
- o #14787 Consuming queue query
+ o r14787 Consuming queue query
    - added consuming query for subject queue
    - added consuming query for history queue (telnet access not yet finished)
    see http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.QueueQuery.html
 
- o #14780 Extended telnet features (requirement admin.telnet)
+ o r14780 Extended telnet features (requirement admin.telnet)
    - Added support to invoke operations without bean-get/set convention
    - Added support for setters with multiple arguments, separated by '&'
 
- o #14779 Extended EventPlugin (requirement admin.event)
+ o r14779 Extended EventPlugin (requirement admin.event)
    - Extended to support configurable event sources additionally to heartbeat
    - New, configurable jmx/publish/smtp content "$_{xml}"
 
- o #14779 EventPlugin admin.event
+ o r14779 EventPlugin admin.event
    - Extended to support configurable event sources additionally to heartbeat
    - New, configurable jmx/publish/smtp content "$_{xml}"
  
- o #14777 Incompatible change of return markup of telnet commands
+ o r14777 Incompatible change of return markup of telnet commands
    The returned string is now plain without key/qos markup for text/plain requests.
    Changed to lookup operation methods without set prefix
 
- o #14772 Added transient map to SessionInfo to hold remote, client side properties;
+ o r14772 Added transient map to SessionInfo to hold remote, client side properties;
     Extended EventPlugin to send remote, client side properties;
     Extended RequestBroker to capture topics of type '__sys__remoteProperties'
 
- o #14765 nested ClientProperties are now allowed in ClientProperties after fix in XmlQoSBase
+ o r14765 nested ClientProperties are now allowed in ClientProperties after fix in XmlQoSBase
 
- o #14756 email protocol:
+ o r14756 email protocol:
    Added switch for 'addExpiresHeader' and JMX accessor
    Fixed 'breakLongMessageIdLine' for max 72 char per line and added JMX accessor
 
- o #14743 added ENCODING_FORCE_PLAIN to allow nested xml inside a ClientProperty 
+ o r14743 added ENCODING_FORCE_PLAIN to allow nested xml inside a ClientProperty 
 
- o #14753 Added getPingRoundTripDelay() and getRoundTripDelay() for JMX or telnet observation
+ o r14753 Added getPingRoundTripDelay() and getRoundTripDelay() for JMX or telnet observation
 
- o #14751 email protocol
+ o r14751 email protocol
    Removed xmlBlaster specific expires header 'X-xmlBlaster-ExpiryDate:' but keeping 'Expires:'
    Changed <expires> tag to be fully ISO 8601 date time formatting compatible like '1997-07-16T19:20:30.678Z' and is always UTC
 
- o #14741 Removed trim() for string ClientProperties
+ o r14741 Removed trim() for string ClientProperties
 
- o #14733 Added EraseKey and EraseQos (as ClientProperty) send to cluster slaves on topic erases
+ o r14733 Added EraseKey and EraseQos (as ClientProperty) send to cluster slaves on topic erases
    so that slave knows the erase properties
    Reported by Jonathan Clark
 
- o #14729 Bugfix removed forceDestroy check to have a NotifySubscribersAboutErase if the boolean is set
+ o r14729 Bugfix removed forceDestroy check to have a NotifySubscribersAboutErase if the boolean is set
    to get erase events for cluster slaves (with erase done on master)
    by Jonathan Clark
 
  o "14720 changed signature of Global.getStackTraceAsString (allows an exception now)
 
- o #14716 replication: fix to check consistency of old replKey when initializing
+ o r14716 replication: fix to check consistency of old replKey when initializing
  
- o #14699 ReplaceVariable.java: changed ReplaceVariable to allow hits with attribute on second tag
+ o r14699 ReplaceVariable.java: changed ReplaceVariable to allow hits with attribute on second tag
  
- o #14696 Bugfix for XML XPath query of topics.
+ o r14696 Bugfix for XML XPath query of topics.
    Was introduced some month ago and affected missing attribute values under JDL 1.5 only
 
- o #14689 JMX Extended support to specify RMI server host/port,
+ o r14689 JMX Extended support to specify RMI server host/port,
    xmlBlaster/jmx/rmiserver/hostname and xmlBlaster/jmx/rmiserver/port 6011
 
- o #14686 in SessionInfo passing the correct dispatcher status flag when recreating the dispatcher
+ o r14686 in SessionInfo passing the correct dispatcher status flag when recreating the dispatcher
 
- o #14676 Email protocol: Added 'Expires: Fri, 27 Jan 2006 13:01:17 +0100 (CET)' header (RFChttp://www.faqs.org/rfcs/rfc2156.html)
+ o r14676 Email protocol: Added 'Expires: Fri, 27 Jan 2006 13:01:17 +0100 (CET)' header (RFChttp://www.faqs.org/rfcs/rfc2156.html)
 
- o #14668 Email protocol fix: Handling now CR LF which could be added for long lines to <expires> by MTA
+ o r14668 Email protocol fix: Handling now CR LF which could be added for long lines to <expires> by MTA
 
- o #14635 Added full JMX control for FilePollerPlugin 
+ o r14635 Added full JMX control for FilePollerPlugin 
  
- o #14632 EventPlugin: Check if client has a callback configured to avoid NPE
+ o r14632 EventPlugin: Check if client has a callback configured to avoid NPE
 
- o #14627 Removed outdated XML parser configuration for servlet (http and applet)
+ o r14627 Removed outdated XML parser configuration for servlet (http and applet)
 
 
-Changes for 1.1.1 [2006-01-16] #14622
+Changes for 1.1.1 [2006-01-16] r14622
 =====================================
 
- o #14632 EventPlugin added check for client callback to prevent NPE
+ o r14632 EventPlugin added check for client callback to prevent NPE
 
- o #14620 Bugfix potential memory leak (ClientSubscriptions.java):
+ o r14620 Bugfix potential memory leak (ClientSubscriptions.java):
    Added shutdown() for XPath subscriptions
 
- o #14613 Changed getNativeConnectArgs()
+ o r14613 Changed getNativeConnectArgs()
    It is not forcing CACHE,1.0 anymore as this is the default setting
 
- o #14612 Bugfix potential memory leak (SocketDriver.java):
+ o r14612 Bugfix potential memory leak (SocketDriver.java):
    Removed nulling of secretSessionId to prevent memory leak
 
- o #14611 Bugfix potential memory leak (SubscriptionInfo.java):
+ o r14611 Bugfix potential memory leak (SubscriptionInfo.java):
    In SubscriptionInfo fixed shutdown to prevent from JMX mbean memory leak
 
- o #14608 Bugfix potential memory leak (ContextNode.java):
+ o r14608 Bugfix potential memory leak (ContextNode.java):
    Added WeakReference for ContextNode childs to avoid memory leaks.
 
- o #14586 POP3 bugfix: Fixed single connection leak on startup, the Store was not closed
+ o r14586 POP3 bugfix: Fixed single connection leak on startup, the Store was not closed
 
- o #14579 SMTP/POP3 Url: Added handling for '@' in username or password
+ o r14579 SMTP/POP3 Url: Added handling for '@' in username or password
 
- o #14572 Removed missleading log.error for SOCKET protocol about missing response listener
+ o r14572 Removed missleading log.error for SOCKET protocol about missing response listener
 
- o #14565 Fixed deadlock with manually started RMI JMX and rmiregistry
+ o r14565 Fixed deadlock with manually started RMI JMX and rmiregistry
 
- o #14561 cluster bug fix necessary as ClusterManager is loaded as plugin since #14422
+ o r14561 cluster bug fix necessary as ClusterManager is loaded as plugin since r14422
 
- o #14545 Refactored naming convention for admin.events requirements
+ o r14545 Refactored naming convention for admin.events requirements
 
- o #14525 Reworked LowMemoryDetector to be more useful for admin.events.xml
+ o r14525 Reworked LowMemoryDetector to be more useful for admin.events.xml
 
- o #14486 Runlevel manager: Added create attribute <plugin id='SOCKET' create='true' ...>
+ o r14486 Runlevel manager: Added create attribute <plugin id='SOCKET' create='true' ...>
    The new create attribute allows to suppress loading a plugin from xmlBlasterPlugins.xml
 
- o #14486,#14500,#14501 Added extended support to send internal core events.
+ o r14486,r14500,r14501 Added extended support to send internal core events.
    Example: startupRunlevel.9,shutdownRunlevel.8 where the number
    is the runlevel you want to observe.
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.events.html
 
- o #14481 Added native plugin to trigger xmlBlaster internal events as emails
+ o r14481 Added native plugin to trigger xmlBlaster internal events as emails
    Currently log.error or/and log.warning, see EventPlugin in xmlBlasterPlugins.xml
 
- o #14438,#14439 C++-client library: size_t, int64_t cleanup
+ o r14438,r14439 C++-client library: size_t, int64_t cleanup
 
- o #14437 C-client library: size_t, int64_t cleanup
+ o r14437 C-client library: size_t, int64_t cleanup
 
- o #14436 Removed obsolete jndi-jdk1_3_1.jar
+ o r14436 Removed obsolete jndi-jdk1_3_1.jar
 
- o #14429 Email protocol
+ o r14429 Email protocol
    Bugfix for loop protection
    Changed configuration defaults to be human readable
    Changed holdbackExpireTimeout default to 20000 milli seconds
 
 
-Changes for 1.1 [2005-12-22] #14429 "Xmas release"
+Changes for 1.1 [2005-12-22] r14429 "Xmas release"
 ==================================================
 
- o #14422 Changed ClusterManager to be configured in xmlBlasterPlugins.xml
+ o r14422 Changed ClusterManager to be configured in xmlBlasterPlugins.xml
    Please update xmlBlasterPlugins.xml
    Removed the now obsolete '-cluster true' parameter.
    Changed protocol plugins to startup in runlevel 4 instead of 3
 
- o #14419 Fixed reflection code for JDK 1.5 in XML dom.write()
+ o r14419 Fixed reflection code for JDK 1.5 in XML dom.write()
 
- o #14412 C client library: Changed responseTimeout from one minute to unlimited
+ o r14412 C client library: Changed responseTimeout from one minute to unlimited
 
- o #14408 Removed parser.jar and jaxp.jar as we dropped support for JDK 1.3
+ o r14408 Removed parser.jar and jaxp.jar as we dropped support for JDK 1.3
    Removed collections.jar (needed for JDK 1.1)
 
- o #14379 added DbWriter: see http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwriter.html
+ o r14379 added DbWriter: see http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwriter.html
 
- o #14354 XmlBlaster native (jutils #14357) logging:
+ o r14354 XmlBlaster native (jutils r14357) logging:
    Added '-maxLogFileLines 50000 -maxLogFileCounter 9' configuration
 
- o #14338 Email protocol: Fixed memory leak for loop detection code
+ o r14338 Email protocol: Fixed memory leak for loop detection code
 
- o #14337 Changed to have unique JMX name to avoid conflict if multiple plugins are started
+ o r14337 Changed to have unique JMX name to avoid conflict if multiple plugins are started
    for SocketDriver, SmtpClient and Pop3Driver
 
- o #14336 Added JMX control for CorbaDriver and XmlRpcDriver
+ o r14336 Added JMX control for CorbaDriver and XmlRpcDriver
 
- o #14334 Email protocol: Ported to support multiple requests in one email
+ o r14334 Email protocol: Ported to support multiple requests in one email
 
- o #14329 Email protocol: Fixed multiple connection loop protection, added simple use case for manual GUI usage
+ o r14329 Email protocol: Fixed multiple connection loop protection, added simple use case for manual GUI usage
 
- o #14316 Added setSessionTimeout(long) for admin/JMX access
+ o r14316 Added setSessionTimeout(long) for admin/JMX access
 
- o #14307 Bugfix email protocol: Fixed authentication, host/port setting and inline content of SmtpClient.java
+ o r14307 Bugfix email protocol: Fixed authentication, host/port setting and inline content of SmtpClient.java
 
- o #14302 Email protocol: Introduced email expiry header 'X-xmlBlaster-ExpiryDate:2005-12-24 16:45:12'
+ o r14302 Email protocol: Introduced email expiry header 'X-xmlBlaster-ExpiryDate:2005-12-24 16:45:12'
  
- o #14295 BUGFIX: Fixed resetting of SaxParser state, could lead to buggy parsing if previous parse threw an exception
+ o r14295 BUGFIX: Fixed resetting of SaxParser state, could lead to buggy parsing if previous parse threw an exception
    Had no impact when accessing the server from our Java and C++ client library.
    Thanks to Cyrille for finding this bug
 
- o #14291 added a persistent java.util.Map as org.xmlBlaster.util.PersistentMap. Instances can also be
+ o r14291 added a persistent java.util.Map as org.xmlBlaster.util.PersistentMap. Instances can also be
    retrieved with java.util.Global.getPersistentMap(String) or with new PersistentMap(String).
 
- o #14264,#14268 Java/C++: Changed default setting of /burstMode/maxEntries from unlimited to 1
+ o r14264,r14268 Java/C++: Changed default setting of /burstMode/maxEntries from unlimited to 1
    Like this each message in the callback queue is send seperately if not
    otherwise configured.
 
- o #14251,#14267,#14319 USER_UPDATE_HOLDBACK (and COMMUNICATION_USER_HOLDBACK) introduced (for all protocols)
+ o r14251,r14267,r14319 USER_UPDATE_HOLDBACK (and COMMUNICATION_USER_HOLDBACK) introduced (for all protocols)
    You can throw this on client side in your update() method:
    Like this the server queues the message and sets the dispatcActive to false.
    You need to manually activate the dispatcher again. Will be changed again, use with care.
 
- o #14226 SOCKET&email Refactored Latch handling and added interruptInvocation()
+ o r14226 SOCKET&email Refactored Latch handling and added interruptInvocation()
    to be able to interrupt pending method calls (currently JMX exposed for email only)
 
- o #14196-#14298 Added DisconnectQos configurations:
+ o r14196-r14298 Added DisconnectQos configurations:
     dispatch/connection/shutdownDispatcher  true/fale
     dispatch/connection/shutdownCbServer    true/false
     dispatch/connection/leaveServer         true/false
 
- o #14192 ContextNode now uses StringPairTokenizer.parseLine() which handles quotes
+ o r14192 ContextNode now uses StringPairTokenizer.parseLine() which handles quotes
           and accepts empty instanceNames
  
- o #14191 Fixed ContextNode.addChild to update the parent link
+ o r14191 Fixed ContextNode.addChild to update the parent link
    Added ContextNode.mergeChildTree() and getChild() for easy lookup
    Removed Global from ContextNode constructor and valueOf() method
    Fixed JMX registration to have global unique entries (for example for Pop3Poller with a native client)
 
- o #14186 Changed DispachManager to fix a loop when using I_MsgInterceptor and in Polling Mode
+ o r14186 Changed DispachManager to fix a loop when using I_MsgInterceptor and in Polling Mode
 
- o #14180 Java client library: Added '-dispatch/connection/doSendConnect false'
+ o r14180 Java client library: Added '-dispatch/connection/doSendConnect false'
    for clients behind a firewall which can only receive callback messages, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html#doSendConnect
    
- o #14161 Enhancements
+ o r14161 Enhancements
    - Added lazy Smtp and Pop3 initialization
    - Fixed to not send initial ping to avoid deadlock (email protocol driver)
    - Added updateResponseTimeout to configure update() specific timeouts (SOCKET and email protocol)
    - Changed SmtpClient configuration to URL syntax
    - Added email store in Pop3Driver to hold emails until a bean registers interest for it (see holdbackExpireTimeout)
 
- o #14161 Added specific method invocation timeouts (for 'SOCKET' and 'email' protocol only)
+ o r14161 Added specific method invocation timeouts (for 'SOCKET' and 'email' protocol only)
    Fires if a method invocation does not return:
     responseTimeout         connect(), subscribe(), publish(), unSubscribe(), erase(), disconnect() and oneway variants
     updateResponseTimeout   update()
     pingResponseTimeout     ping() from client to server and vice versa
 
- o #14158 Removed global.isServer() as it was redundant with global.isServerSide()
+ o r14158 Removed global.isServer() as it was redundant with global.isServerSide()
 
- o #14139 HtmlMonitorPlugin.java
+ o r14139 HtmlMonitorPlugin.java
    Using byte[] instead of String due to failure at image loading.
    ReplaceVariables is used only for text-mime-types now.
  
- o #14135 
+ o r14135 
    Added method in JmxWrapper to invoke methods called from the HmlMonitorPlugin.
    This enables us to call MBean-methods from within a website which runs in the HtmlMonitorPlugin.
 
- o #14125 XmlBlasterAccess.java:
+ o r14125 XmlBlasterAccess.java:
    Changed getDispatchStatistic() to avoid potential deadlock if an update receives during connect
 
- o #14119 Java: Added possibility to initialize complete xmlBlaster client library
+ o r14119 Java: Added possibility to initialize complete xmlBlaster client library
    without sending a connect() to the xmlBlaster server (see XmlBlasterAccess).
 
- o #14087 Java SOCKET protocol:
+ o r14087 Java SOCKET protocol:
    Changed the default responseTimeout from one minute to 'forever'.
 
- o # TODO: C/C++ SOCKET protocol driver
+ o TODO: C/C++ SOCKET protocol driver
    Change the default responseTimeout from one minute to 'forever'.
 
- o #14081 Changed default communication protocol from IOR (Corba) to SOCKET
+ o r14081 Changed default communication protocol from IOR (Corba) to SOCKET
 
- o #14058 Functional email protocol driver with or without ZLIB compression 
+ o r14058 Functional email protocol driver with or without ZLIB compression 
 
- o #14050 http/j2me: Fixed possible IndexOutOfBound and NegativeArray exceptions in http servlet
+ o r14050 http/j2me: Fixed possible IndexOutOfBound and NegativeArray exceptions in http servlet
 
- o #14049 C++: Added possibility to add <attribute>s for protocol configuration to ConnectQos
+ o r14049 C++: Added possibility to add <attribute>s for protocol configuration to ConnectQos
 
- o #14045 Java: Added possibility to add <attribute>s for protocol configuration to ConnectQos
+ o r14045 Java: Added possibility to add <attribute>s for protocol configuration to ConnectQos
 
- o #14043 The QoS attributes are enforced to be case sensitive
+ o r14043 The QoS attributes are enforced to be case sensitive
 
- o #14041 changed LOCAL protocol: simplified and decoupled client from slave: now they can 
+ o r14041 changed LOCAL protocol: simplified and decoupled client from slave: now they can 
    start in random sequence
 
- o # Added C# (C sharp) XMLRPC client
+ o Added C# (C sharp) XMLRPC client
 
- o #14023 Added Macromedia Flash Player XMLRPC demo client (Cyrille)
+ o r14023 Added Macromedia Flash Player XMLRPC demo client (Cyrille)
    See xmlBlaster/demo/flash/xmrpc/README
 
- o #14039 Fixed ClientEvent to transport ConnectQos
+ o r14039 Fixed ClientEvent to transport ConnectQos
  
- o #14020 Extended XmlScripting with exception handling
+ o r14020 Extended XmlScripting with exception handling
 
- o #14007 Partly fix for expiry of volatile message timing out during publish processing
+ o r14007 Partly fix for expiry of volatile message timing out during publish processing
    This bug could led to NPE
  
- o #13977 Added usage help for JMX (jconsole)
+ o r13977 Added usage help for JMX (jconsole)
 
- o #13949 -xmlBlaster/jdk14loggingCapture defaults now to true
+ o r13949 -xmlBlaster/jdk14loggingCapture defaults now to true
    Like this als java.util.logging will be automatically redirected to our jutils logging
    This is for the server and the client library
 
- o #13929 Refactor SOCKET protocol classes to reuse code for EMAIL protocol driver
+ o r13929 Refactor SOCKET protocol classes to reuse code for EMAIL protocol driver
 
- o #13909 added contrib task in build.xml
+ o r13909 added contrib task in build.xml
 
 
-Changes for 1.0.7 [2005-10-26] #13887 "Xmas release patch 7"
+Changes for 1.0.7 [2005-10-26] r13887 "Xmas release patch 7"
 ============================================================
  
- o #13886 Added support for crimson XML parser if forced for JDK 1.5 (last JDK1.3 compatible change)
+ o r13886 Added support for crimson XML parser if forced for JDK 1.5 (last JDK1.3 compatible change)
 
- o #13880 Ported org.w3c.dom.ls.DOMImplementationLS JDK 1.5 dependency to reflection
+ o r13880 Ported org.w3c.dom.ls.DOMImplementationLS JDK 1.5 dependency to reflection
 
- o #13871 C++ client lib: Fixed missing initialization of progressListener_
+ o r13871 C++ client lib: Fixed missing initialization of progressListener_
 
- o #13870 and #13876 Suppress missleading exception when connection is DEAD but worker active
+ o r13870 and r13876 Suppress missleading exception when connection is DEAD but worker active
 
- o #13857 Extended Applet support (with real time callback) for more than one applet in same servlet-session.
+ o r13857 Extended Applet support (with real time callback) for more than one applet in same servlet-session.
 
- o #13845 Added JMX methods to clear or remove messages from callback queue
+ o r13845 Added JMX methods to clear or remove messages from callback queue
 
- o #13842 moved some classes in contrib packages
+ o r13842 moved some classes in contrib packages
 
- o #13825 Bugfix for 'no meat found'
+ o r13825 Bugfix for 'no meat found'
    This could lead to a looping callback message and subscriber not receiving msgs anymore.
    Removed misleading log.error in same context
    Reported by Marshall Shapiro 2005-10-10
 
- o #13824 Queue persistence entries are now recovered even if new data is available at the back
+ o r13824 Queue persistence entries are now recovered even if new data is available at the back
 
- o #13815 removed Global and made java logging to Execute
+ o r13815 removed Global and made java logging to Execute
 
- o #13805 Added applet ping method, extended example applet and docu
+ o r13805 Added applet ping method, extended example applet and docu
 
- o #13786 fixed bug on DbWatcher (TimestampChangeDetector) when number of digits changed it 
+ o r13786 fixed bug on DbWatcher (TimestampChangeDetector) when number of digits changed it 
    previously did not detect change.
   
- o #13764 Added constructors with no global to ClientProperties (other are deprecated)
+ o r13764 Added constructors with no global to ClientProperties (other are deprecated)
 
- o #13753 removed Global from EncodableData
+ o r13753 removed Global from EncodableData
 
- o #13750 added flag copyOnMove to file poller (allows archiving on remotely mounted file systems)
+ o r13750 added flag copyOnMove to file poller (allows archiving on remotely mounted file systems)
 
- o #13726,#13727 Removed jclark-omquery-xpath engine dependeny from xmlBlaster core for JDK >= 1.5
+ o r13726,r13727 Removed jclark-omquery-xpath engine dependeny from xmlBlaster core for JDK >= 1.5
 
- o #137187,#13718 Ported to use native XML parser when running with >= JDK 1.5
+ o r137187,r13718 Ported to use native XML parser when running with >= JDK 1.5
    But still uses crimson for JDK 1.2,1.3 and 1.4
    See
     http://www.xmlBlaster.org/FAQ.html#xml-parser
@@ -1150,35 +1150,35 @@ Changes for 1.0.7 [2005-10-26] #13887 "Xmas release patch 7"
      javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
      javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
 
- o #13713,#13714 C++ Fixed progress listener registration in offline mode
+ o r13713,r13714 C++ Fixed progress listener registration in offline mode
 
- o #13710 fixed an empty type attr in EncodableData is now a String. Parsing of 
+ o r13710 fixed an empty type attr in EncodableData is now a String. Parsing of 
    ClientProperty is now autoencoding on unencoded strings.
 
- o #13709 DbWatcher has changed the schema. Now the isSigned attribute is 'signed',
+ o r13709 DbWatcher has changed the schema. Now the isSigned attribute is 'signed',
    isReadOnly is 'readOnly' and isNullable is 'nullable'. The later is an integer.
    Added the parameter 'changeDetector.postUpdateStatement' to DbWatcher configuration.
 
- o #13702 Added memory heap observation, see '-xmlBlaster/jmx/observeLowMemory true' in
+ o r13702 Added memory heap observation, see '-xmlBlaster/jmx/observeLowMemory true' in
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
 
- o #13694 Sending JMX notifications on client login/logout and on log.error
+ o r13694 Sending JMX notifications on client login/logout and on log.error
 
 
-Changes for 1.0.6 [2005-08-10] #13689 "Xmas release patch 6"
+Changes for 1.0.6 [2005-08-10] r13689 "Xmas release patch 6"
 ============================================================
 
- o #13680 Added prevention of duplicate persistent subscribes in persistent storage
+ o r13680 Added prevention of duplicate persistent subscribes in persistent storage
 
- o #13677 Added I_Storage
+ o r13677 Added I_Storage
 
- o #13667-13669 Added embedded message dumper for persistent queue and persistent map implementation
+ o r13667-13669 Added embedded message dumper for persistent queue and persistent map implementation
  
- o #13667 JDBC persistence: Trimming columns 'type' and 'flag'
+ o r13667 JDBC persistence: Trimming columns 'type' and 'flag'
    After DB export -> import there could occur some white spaces
 
 
-Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
+Changes for 1.0.5 [2005-08-08] r13663 "Xmas release patch 5"
 ============================================================
 
  o NOTE: You need to remove the 'HtmlMonitorPlugin'
@@ -1187,42 +1187,42 @@ Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
 
  o Tested C and C++ client library with icc 9.0 (the new Intel C++ compiler release)
 
- o #13656 Bugifx Memoryleak for XPath unSubscribes
+ o r13656 Bugifx Memoryleak for XPath unSubscribes
    On XPath subscriptions which hit many topics the unSubscribe
    could lead to a memory leak in the server.
 
- o #13655 JMX: Fixed so that JMX queue names displayed are identical
+ o r13655 JMX: Fixed so that JMX queue names displayed are identical
    to the database name XB_ENTRIES.queueNames
 
- o #13649 Added JMX methods
+ o r13649 Added JMX methods
    - I_ProgressListener for SOCKET protocol plugin
    - Callback delivery states and statistics
    - Added client side queue dumping
 
- o #13638 Added JMX observation for SubscriptionInfo and the I_Map cache implementation
+ o r13638 Added JMX observation for SubscriptionInfo and the I_Map cache implementation
    Added javadoc for JMX methods, see for example I_AdminNode
 
- o #13635 Fixed Sql92Filter mime plugin bug reported by Nelson Silva
+ o r13635 Fixed Sql92Filter mime plugin bug reported by Nelson Silva
    <clientProperty name='canal' type='String'>teste2</clientProperty>
    Filtering failed when type='String' was specified
 
- o #13626 MS SQLServer 2005 support added
+ o r13626 MS SQLServer 2005 support added
    See xmlBlaster/config/xmlBlaster.properties.template
 
- o #13593 C client library
+ o r13593 C client library
    Added progress listener function pointer to access the number of read bytes on socket during receive
    Try C demo: Subscriber -session.name "SUB/1" -reportUpdateProgress true
 
- o #13588 JMX extended for hierarchical view in jconsole (ContextNode)
+ o r13588 JMX extended for hierarchical view in jconsole (ContextNode)
 
- o #13579,#13580 JMX control for Java clients to monitor and control the client side connection
+ o r13579,r13580 JMX control for Java clients to monitor and control the client side connection
 
- o #13575,#13577 Added message file dump operations for JMX
+ o r13575,r13577 Added message file dump operations for JMX
 
- o #13558 log4cplus port/bugfix to VC++ 2005
+ o r13558 log4cplus port/bugfix to VC++ 2005
    It crashed in strftime() because of unknown %q option
 
- o #13545-#13568 New native web based monitoring
+ o r13545-r13568 New native web based monitoring
    Start xmlBlaster and try in your browser:
      http://YOUR-IP:3412/status.html
    See
@@ -1231,14 +1231,14 @@ Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
    - Added file loader from CLASSPATH, global.getFromClasspath()
    - Added more administrative access methods
 
- o #13539 Added native plugin which delivers a simple HTML page
+ o r13539 Added native plugin which delivers a simple HTML page
    with the xmlBlaster status.
    The delivered page is configurable to show any administrative command.
 
- o #13525-13528 Added native http based xmlBlaster monitoring plugin
+ o r13525-13528 Added native http based xmlBlaster monitoring plugin
    (generic HTML design is still under construction)
 
- o #13524 adjusted Xerces-C++ build settings
+ o r13524 adjusted Xerces-C++ build settings
    Sax2Parser.h und Sax2Parser.cpp: fixed includes
    Use 
      xerces.include.dir
@@ -1247,28 +1247,28 @@ Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
    Xerces-C++ Library to be used for the C++ Part.
    XMLCPP_HOME and XMLCPP_VER is not supported anymore.
    
- o #13513 C++ client library
+ o r13513 C++ client library
    Added convenience method XmlBlasterAccess.setCallbackDispatcherActive(bool)
 
- o #13505 Changed C++ ConnectQos to be reference counted
+ o r13505 Changed C++ ConnectQos to be reference counted
    Added convenience method XmlBlasterAccess.sendAdministrativeCommand()
 
- o #13502 Bugfix C++ integration of C client library
+ o r13502 Bugfix C++ integration of C client library
    Return value of bool update(...) changed to XMLBLASTER_C_bool
    On Windows C++ bool is a 'char' and the C bool is a 'int'
    This mismatch left 3 bytes on the EAX register undefined and lead to wrong bool settings
    when passing a bool from C++ to C.
 
- o #13491,#13492 JMX Added jmxremote.jar to compile on JDK < 1.5
+ o r13491,r13492 JMX Added jmxremote.jar to compile on JDK < 1.5
 
  o Added administrative access methods, for example
    "numPublish", "numSubscribe" etc.
    Renamed "numUpdates" to "numUpdate"
 
- o #13477-#13482 Added JMX functionality
+ o r13477-r13482 Added JMX functionality
    for session, topic and queue handling
 
- o #13470,#13474 Extended query string syntax
+ o r13470,r13474 Extended query string syntax
    The constructors of
       GetKey(String,String)
       EraseKey(String,String)
@@ -1279,11 +1279,11 @@ Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
    or a query like "xpath://key", "domain:CLUSTER"
    Topic oid is now checked to not contain apostrophe ' or "
 
- o #13463 Bugfix user.security.authentication.accessdenied
+ o r13463 Bugfix user.security.authentication.accessdenied
    - Collecting new ConnectReturnQos after reconnect
    - Setting new instanceId on multiple connect() calls
 
- o #13462 Bugfix user.security.authentication.accessdenied
+ o r13462 Bugfix user.security.authentication.accessdenied
    Java client library now does another connect() if
    accessdenied is thrown from server.
    This can happen when a client session is destroyed in the
@@ -1292,23 +1292,23 @@ Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
    is buggy, the server always destroys the session and the client
    always reconnects which could lead to a loop.
 
- o #13461 Dispatcher change (java)
+ o r13461 Dispatcher change (java)
    Moved all protocol driver shutdown calls outside
    of synchronization blocks to avoid deadlocks
    if shutdown blocks and client wants to reconnect.
 
- o #13460 SOCKET protocol driver change (java)
+ o r13460 SOCKET protocol driver change (java)
    Moved all native socket close() calls outside
    of synchronization blocks.
    Like this a blocking system call won't deadlock
    the clients reconnect attempts.
    Changed to pass thru communication exceptions.
 
- o #13459 Bugfix SOCKET protocol driver
+ o r13459 Bugfix SOCKET protocol driver
    Catching now throwable to always ensure the release of invocation locks
    Otherwise a blocked thread could result
 
- o #13459 Bugfix SOCKET protocol fail safe reconnect: SO_LINGER changed from one minute to 0
+ o r13459 Bugfix SOCKET protocol fail safe reconnect: SO_LINGER changed from one minute to 0
    The java socket.close() could block in the kernel
    when the ethernet cable was plugged out.
    SO_LINGER>0: Try to send any unsent data on close(socket)
@@ -1316,12 +1316,12 @@ Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
    SO_LINGER=0: Discard remaining data on close() <-- Choose this to avoid blocking socket close() calls
    Default:     The kernel tries to send queued data even after close()
 
- o #13458 Bugfix SOCKET protocol fail safe reconnect
+ o r13458 Bugfix SOCKET protocol fail safe reconnect
    plugin/socket/responseTimeout callback exceptions are handled now as
    communication exception and trigger polling for client instead of
    creating dead messages.
 
- o #13449 C++ client library
+ o r13449 C++ client library
    - Cleanup of true/false string handling
    - Extended ConnectQos to handle "refreshSession", "reconnected" and "instanceId"
    - Bugfix Base64 clientProperty handling in ConnectQos SAX parsing
@@ -1340,32 +1340,32 @@ Changes for 1.0.5 [2005-08-08] #13663 "Xmas release patch 5"
      set xmlBlaster/invocationMutex/recursive=false for old behavior.
    - Cleanup of bool converter methods and "true"/"false" usage
      "1", "true" and "TRUE" are evaluated to true.
-   - Changed Timeout::addOrRefreshTimeoutListener() to ignore key<=0 (and #13465)
+   - Changed Timeout::addOrRefreshTimeoutListener() to ignore key<=0 (and r13465)
    - Bugfix for method Timeout::refreshTimeoutListener()
 
- o #13428-13432 ConnectReturnQos
+ o r13428-13432 ConnectReturnQos
    Added instanceId which is unique when restarting the server
 
- o #13427 Bugfix for reconnect (java client library)
+ o r13427 Bugfix for reconnect (java client library)
    Fixes for IOR and XMLRPC the reconnect behaviour
    if client session was killed by administrative task
 
- o #13409 Extended JMX support
+ o r13409 Extended JMX support
    Added 'build -DADD_JMXTOOLS=true ... dist' configuration
    to add jmxtools.jar to distribution (needed for HTMLAdaptor)
 
- o #13402 Extended JMX support
+ o r13402 Extended JMX support
    - Observe/change Logging
 
- o #13397 Added port for persistency in Firebird database
+ o r13397 Added port for persistency in Firebird database
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.firebird.html
    Donated by Chris Lau ckl_88@yahoo.ca under LGPL
 
 
-Changes for 1.0.4 [2005-07-04] #13388 "Xmas release patch 4"
+Changes for 1.0.4 [2005-07-04] r13388 "Xmas release patch 4"
 ============================================================
 
- o #13381 Added JMX support
+ o r13381 Added JMX support
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.jmx.html
    - New configuration parameters
    - Changed admin interface to support operations besides propertiy getter/setter
@@ -1380,353 +1380,353 @@ Changes for 1.0.4 [2005-07-04] #13388 "Xmas release patch 4"
    - CacheQueueInterceptorPlugin: Check for multiple shutdown added
    - CacheQueueInterceptorPlugin: JMX getters added
 
- o #13375 Bugfix FilePoller
-   Added fix #13316 again, it was lost during #13325 patch
+ o r13375 Bugfix FilePoller
+   Added fix r13316 again, it was lost during r13325 patch
 
- o #13354 Windows C/C++ pthread update to 2.5.0 (http://sourceware.org/pthreads-win32/)
+ o r13354 Windows C/C++ pthread update to 2.5.0 (http://sourceware.org/pthreads-win32/)
    Note: The library name has changed from pthreadVC.dll to pthreadVC2.dll
 
- o #13372 HelloWorldSubscribe
+ o r13372 HelloWorldSubscribe
    - Added some more configuration parameters
    - Added fail safe subscribe handling (without persistent subscription)
    - Added re-subscribe on erase
    - Added extended file dump capabilities with locking
 
 
-Changes for 1.0.3 [2005-05-16] #13349 "Xmas release patch 3"
+Changes for 1.0.3 [2005-05-16] r13349 "Xmas release patch 3"
 ============================================================
  
- o #13335 C and C++ client library
+ o r13335 C and C++ client library
    Port to Microsoft VC++ 8 Express 2005 beta2
 
- o #13338 Java SOCKET protocol (server side):
+ o r13338 Java SOCKET protocol (server side):
    Changed to avoid DNS host name lookup on connect which could lead
    to blocking for a missing DNS server (reverse lookup) until timeout occurred.
 
- o #13335 C++ client library
+ o r13335 C++ client library
    Removed needless comma after namespace declaration to compile with g++ 4.0
 
- o #13330 C++ client library
+ o r13330 C++ client library
    Forced to not put SubscribeQos into client side persistent queue (SQLite)
    even whith persisten=true, as we have not yet coded the retrieval (RAM based queueing only)
 
- o #13327 added pure regex to filepoller plugin.
+ o r13327 added pure regex to filepoller plugin.
 
- o #13323 Bugfix C++ client library
+ o r13323 Bugfix C++ client library
    Fixed reconnect when server was away and C++ ping hasn't yet detected it
 
- o #13322 finalized dispatcherActive property (#13300)
+ o r13322 finalized dispatcherActive property (r13300)
    Now it works on reconnect as well
 
- o #13319 Changed SOCKET timeout behaviour (Java/C/C++ clients)
+ o r13319 Changed SOCKET timeout behaviour (Java/C/C++ clients)
    Changed to throw COMMUNICATION_TIMEOUT instead of RESOURCE_EXHAUST
    when the method call with SOCKET blocks after the specified timeout.
    Like that the not delivered message is queued by default,
    before the exeception was thrown back to the client code.
 
- o #13316 Bugfix FilePoller
+ o r13316 Bugfix FilePoller
    Fixed session timeout after one day
    Fixed deadlock on xmlBlaster shutdown if FilePoller had problems
 
- o #13310 Bugfix cluster
+ o r13310 Bugfix cluster
    ClusterNode.getConnectionState() did not reliable tell the truth
    Thanks to Michael Lum
 
- o #13308 and #13313 and #13314 C++ client library
+ o r13308 and r13313 and r13314 C++ client library
    Added client side persistence code for subscribe() (deserialize is not finished)
    Added client side queueing for subscribe(), currently RAM based only
    Moved priority handling to QosData.cpp
 
- o #13300 Added dispatcherActive property to ConnectQos to support
+ o r13300 Added dispatcherActive property to ConnectQos to support
    inhibiting callbacks on login, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html#dispatcherActive
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html#dispatcherActiveExample
 
- o #13299 C++ client library
+ o r13299 C++ client library
    Fixed to send command line callback address property settings with ConnectQos
 
- o #13295 Added new server methods for administrative access:
+ o r13295 Added new server methods for administrative access:
     getServerTimestampMillis(): Access current server time in milli seconds
     getServerTimestamp(): Access current server time, e.g. "2005-03-21 11:18:12.622"
 
- o #13280 Removed outdated SOAP protocol plugins
+ o r13280 Removed outdated SOAP protocol plugins
 
-Changes for 1.0.2 [2005-02-24] #13271 "Xmas release patch 2"
+Changes for 1.0.2 [2005-02-24] r13271 "Xmas release patch 2"
 ============================================================
 
- o #13266 Bugfix for QosData.clone() which didn't deep clone the client property map
+ o r13266 Bugfix for QosData.clone() which didn't deep clone the client property map
    This could have impact on the reported sessionId for __sys__Login and __sys__Logout events.
 
- o #13267 __sys__Login and __sys__Logout events now return the public session id
+ o r13267 __sys__Login and __sys__Logout events now return the public session id
    in the "__publicSessionId" client property as a long and the cluster wide unique
    absoluteName with "__absoluteName". The old "__sessionId" is not supported anymore.
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.LoginLogoutEvent.html
 
- o #13263 build.xml for C/C++:
+ o r13263 build.xml for C/C++:
    Added CFLAGS and LDFLAGS so one can configure C/C++ compilation and linkage
    Remove /usr/lib path for library as it is default and prevented a /usr/lib64 path on 64 bit machines
 
- o #13261 C/C++ port to Xeon 64 bit, added CFLAGS and LDFLAGS to build.properties
+ o r13261 C/C++ port to Xeon 64 bit, added CFLAGS and LDFLAGS to build.properties
    (for example you can force 32 bit compilation on 64 bit machines with -m32 for g++)
 
- o #13257 Setting duplicateUpdates to deprecated, please use 'multiSubscribe'
+ o r13257 Setting duplicateUpdates to deprecated, please use 'multiSubscribe'
    as described in requirement
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
- o #13247 Removed bug from Persistent Sessions. When a session was initially persistent
+ o r13247 Removed bug from Persistent Sessions. When a session was initially persistent
    and reconnect was specified transient, a resource leak resulted.
 
- o #13237 C++ client library XmlBlasterAccess:
+ o r13237 C++ client library XmlBlasterAccess:
    Added getGlobal() and getCallback() accessors
    Added XmlBlasterAccessRef to support reference counted handling
 
- o #13236 C++ client library Global:
+ o r13236 C++ client library Global:
    Added GlobalRef to support reference counted handling
    Added createInstance() and destroyInstance() to handle multiple instances of Global
 
- o #13233 Added I_Map.remove(long uniqueId)
+ o r13233 Added I_Map.remove(long uniqueId)
 
- o #13230 Removed bug on persistent subscriptions. Recovered persistent subscriptions where
+ o r13230 Removed bug on persistent subscriptions. Recovered persistent subscriptions where
    not removed when unsubscribing or disconnecting.
 
 
-Changes for 1.0.1 [2005-02-08] #13220 "Xmas release patched"
+Changes for 1.0.1 [2005-02-08] r13220 "Xmas release patched"
 ============================================================
 
- o #13215 Passing AddressServer from each protocol plugin into the core to be able
+ o r13215 Passing AddressServer from each protocol plugin into the core to be able
    to do protocol specific decisions.
    Used for example with the AvailabilityChecker to allow LOCAL access for small runlevels
    and for future use for the Authentication/Authorization plugins to do IP specific decisions.
 
- o #13212-#13214 Added support to erase message instances but not the topic itself
+ o r13212-r13214 Added support to erase message instances but not the topic itself
    See http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.erase.html
 
- o #13202 StartupTasks plugin added
+ o r13202 StartupTasks plugin added
    See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html
 
- o #13187 Redirect xmlBlaster logging to JDK 1.4 java.util.logging framework
+ o r13187 Redirect xmlBlaster logging to JDK 1.4 java.util.logging framework
    See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.log.plugin.html#JDK14
 
- o #13180 cpptasks.jar - Updated cpp tasks (C/C++ compilation) to CVS version from 2005-02-03
+ o r13180 cpptasks.jar - Updated cpp tasks (C/C++ compilation) to CVS version from 2005-02-03
 
- o #13178 JavascriptCallback.java - Escape quotation marks in XML content as suggested by Paul Wujek Xp2 Telecom Inc.
+ o r13178 JavascriptCallback.java - Escape quotation marks in XML content as suggested by Paul Wujek Xp2 Telecom Inc.
 
- o #13174 Extended DeadMessageDumper:
+ o r13174 Extended DeadMessageDumper:
    Changed to create missing directory, now supports ${} replacement
    See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html
 
- o #13173 More detailed logging for mime XPathFilter plugin
+ o r13173 More detailed logging for mime XPathFilter plugin
  
- o #13168 C client library ported to HPUX 11.11 with gcc 3.4.3
+ o r13168 C client library ported to HPUX 11.11 with gcc 3.4.3
     cd xmlBlaster/demo/c/socket/bin
     gcc -g -o Publisher ../../../../build.tmp/objC/Publisher.o -L/home/ruff/xmlBlaster/lib -lxmlBlasterClientC  -L/usr/lib -lpthread
 
- o #13163 DbWatcher - Fixed INSERT reporting
+ o r13163 DbWatcher - Fixed INSERT reporting
 
- o #13161 DbWatcher - Fixed DROP message to contain correct colGroupValue
+ o r13161 DbWatcher - Fixed DROP message to contain correct colGroupValue
 
- o #13159 DbWatcher - Fixed NPE when no dataConverter is configured
+ o r13159 DbWatcher - Fixed NPE when no dataConverter is configured
 
- o #13157 Changed C++ compilation to use SOCKET protocol as default
+ o r13157 Changed C++ compilation to use SOCKET protocol as default
 
- o #13152 DbWatcher - TimestampChangeDetector.java: Ignoring DELETE detection as it
+ o r13152 DbWatcher - TimestampChangeDetector.java: Ignoring DELETE detection as it
    is detected only under seldom circumstances
 
- o #13142 DbWatcher - MD5ChangeDetector.java: Bugfix to do MD5 calculation on
+ o r13142 DbWatcher - MD5ChangeDetector.java: Bugfix to do MD5 calculation on
    resultSet.getString(i) instead of resultSet.getObject(i).
 
- o #13141 DbWatcher.java: Added NPE check in shutdown(), trimming config settings, using
+ o r13141 DbWatcher.java: Added NPE check in shutdown(), trimming config settings, using
    new select() variant.
 
- o #13140 Added NPE check in DbPool.java, added new select() variant in I_DbPool.java
+ o r13140 Added NPE check in DbPool.java, added new select() variant in I_DbPool.java
 
- o #13136 Bugfix SOCKET callback driver
+ o r13136 Bugfix SOCKET callback driver
    Bugfix for isAlive() detection, had impact on failsave reconnect behavior
    from xmlBlaster server callback to client. Happened only when both remained alive
    on temporary network interruption (or if callback address was same) and
    only if at least one partner is running on Windows.
 
- o #13127 added update with open transaction to DbPool
+ o r13127 added update with open transaction to DbPool
 
- o #13125 added autocommit and rollback to DbPool
+ o r13125 added autocommit and rollback to DbPool
 
- o #13121 added publish to the php xmlrpc demo library
+ o r13121 added publish to the php xmlrpc demo library
 
- o #13110 Added DbWatcher framework to poll for changes on databases
+ o r13110 Added DbWatcher framework to poll for changes on databases
    and report them as XML formatted messages, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwatcher.html
 
- o #13094 Added XmlBlasterJdk14LoggingHandler.java which redirects JDK 1.4
+ o r13094 Added XmlBlasterJdk14LoggingHandler.java which redirects JDK 1.4
    logging to our framework.
    This may be useful for native plugins which already use JDK 1.4 logging.
    Switch redirection off with '-xmlBlaster/jdk14loggingCapture false'
    The code is load by reflection to still support JDK 1.3 runtimes.
 
 
-Changes for 1.0 [2004-12-23] #13076 "Xmas release"
+Changes for 1.0 [2004-12-23] r13076 "Xmas release"
 ==================================================
 
- o #13070 Added compilation property 'build -Dneed.JDK.14=true ...' to activate
+ o r13070 Added compilation property 'build -Dneed.JDK.14=true ...' to activate
    code snippets which are not JDK 1.3 compatible.
 
 
-Changes for 1.RC4 [2004-12-19] #13059
+Changes for 1.RC4 [2004-12-19] r13059
 =====================================
 
  o Fixed release zip to run with JDK 1.3 without recompilation
 
- o #13057 Added SSL property 'findStoreInXmlBlasterSearchPath' to support keyStore/trustStore lookup in CLASSPATH
+ o r13057 Added SSL property 'findStoreInXmlBlasterSearchPath' to support keyStore/trustStore lookup in CLASSPATH
    Implemented for Java client side only.
    The feature is currently not activated to have JDK 1.3 compatibility, 
    please recompile xmlBlaster with 'build -Dneed.JDK.14=true clean all' to have it, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL2
 
  o C client library:
-   - #13048 Added XMLBLASTER_ prefix to LOG_INFO, LOG_WARN ... to avoid
+   - r13048 Added XMLBLASTER_ prefix to LOG_INFO, LOG_WARN ... to avoid
      namespace clash with syslog.h; Thanks to David Kerry
 
  o C++ client library:
-   - #13045 Bugfix for SAX parsing of ClientProperties: encoding of received message was ignored
+   - r13045 Bugfix for SAX parsing of ClientProperties: encoding of received message was ignored
 
- o #13043 SOCKET SSL communication: Added property 'needClientAuth' to support
+ o r13043 SOCKET SSL communication: Added property 'needClientAuth' to support
    authentication of connecting clients as well, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL2
 
- o #13038 jutils-logging Fixed synchronization gap when making log-backup files
+ o r13038 jutils-logging Fixed synchronization gap when making log-backup files
 
- o #13035 FilePoller final release
+ o r13035 FilePoller final release
 
- o #13033 Fixed xmlBlasterPlugins.xml SAX parse to
+ o r13033 Fixed xmlBlasterPlugins.xml SAX parse to
    - allow sub-tags as attribute value
    - support inner CDATA sections in attribute markup
 
 
-Changes for 1.RC3 [2004-12-08] #12997
+Changes for 1.RC3 [2004-12-08] r12997
 =====================================
 
- o #13013 Added filepoller plugin to retrieve and publish files from a directory
+ o r13013 Added filepoller plugin to retrieve and publish files from a directory
 
- o #13013 Added getter in Global for properties when mixed with plugin properties
+ o r13013 Added getter in Global for properties when mixed with plugin properties
 
- o #13013 Added I_PluginConfig interface 
+ o r13013 Added I_PluginConfig interface 
 
- o #12995 Changed subscription ID to be unique over time
+ o r12995 Changed subscription ID to be unique over time
 
- o #12988 Bugfix in script: CDATA in content are not passed through anymore and duplication of 
+ o r12988 Bugfix in script: CDATA in content are not passed through anymore and duplication of 
    content does not happen anymore 
 
  o C client library:
-   - #12985 Added XMLBLASTER_NO_RCSID switch for broken svnversion/rcsid workaround
+   - r12985 Added XMLBLASTER_NO_RCSID switch for broken svnversion/rcsid workaround
 
  o C++ client library:
-   - #12985 Added XMLBLASTER_NO_RCSID switch for broken svnversion/rcsid workaround
-   - #12985 Changed compilation workaround from "__sun" to "__SUNPRO_CC" as g++ on Sun does not need it
+   - r12985 Added XMLBLASTER_NO_RCSID switch for broken svnversion/rcsid workaround
+   - r12985 Changed compilation workaround from "__sun" to "__SUNPRO_CC" as g++ on Sun does not need it
 
 
-Changes for 1.RC2 [2004-12-01] #12978
+Changes for 1.RC2 [2004-12-01] r12978
 =====================================
 
- o #12963 better handling of possible interrupted exception in ConnectionPool
+ o r12963 better handling of possible interrupted exception in ConnectionPool
 
- o #12961 Added ConnectQos to xml server dump (without security parts)
+ o r12961 Added ConnectQos to xml server dump (without security parts)
 
- o #12960 Fixed delay of callback polling after a client reconnect
+ o r12960 Fixed delay of callback polling after a client reconnect
 
- o #12956 build.xml: JFlex and JavaCup are invoked only if files not up to date.
+ o r12956 build.xml: JFlex and JavaCup are invoked only if files not up to date.
 
- o #12954 Bugfix: Topic erase notification events could dead lock
+ o r12954 Bugfix: Topic erase notification events could dead lock
    when at the same time a subscriber callback delivery took place
 
- o #12950 it is now possible to send CDATA in content when using xmlBlaster script
+ o r12950 it is now possible to send CDATA in content when using xmlBlaster script
 
- o #12948 Bugfix: The combination of subscribe() and get() on the same topic with cluster=true failed
+ o r12948 Bugfix: The combination of subscribe() and get() on the same topic with cluster=true failed
    Thanks to Michal Masa xmasam@sgi.felk.cvut.cz
 
- o #12938 login- and logout events now return the public session id in the "__sessionId" client property as a long 
+ o r12938 login- and logout events now return the public session id in the "__sessionId" client property as a long 
  
- o #12936 Added subversion property "svn:eol-style=native" to resolve CRLF (Win) and LF (UNIX) problems
+ o r12936 Added subversion property "svn:eol-style=native" to resolve CRLF (Win) and LF (UNIX) problems
    Thanks to David Viner dviner@yahoo-inc.com
 
- o #12932 Bugfix: hierarchical sync sequence: TopicHandler, MsgUnitWrapper, MsgUnitCache to avoid deadlock
+ o r12932 Bugfix: hierarchical sync sequence: TopicHandler, MsgUnitWrapper, MsgUnitCache to avoid deadlock
 
- o #12930 util.Global now throws IllegalArgumentException if loading of Property instance fails
+ o r12930 util.Global now throws IllegalArgumentException if loading of Property instance fails
 
- o #12818 Extended multiSubscribe support
+ o r12818 Extended multiSubscribe support
    - Fixed multiSubscribe=false for XPath queries
    - Added support to reconfigure AccessFilter settings for existing subscriptions
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
    - C++ Xerces must be newer 2.4 (?), it must include xercesc/util/TransService.hpp
-   - #12958 duplicateUpdates defaults now to true to have identical behaviour for Java and C++
-   - #12937 FreeBSD port, support for BOOST added again, thanks to Viner, David <dviner@yahoo-inc.com>
-   - #12877 Added xerces initialization from main thread, as on Windows it crashed sometimes if initialized from callback thread
-   - #12871 Extended clientProperty API
-   - #12870 Added xerces XMLPlatformUtils::Initialize PanicHandler
-   - #12870 Added locale setting for xerces XMLPlatformUtils::Initialize, adjust with for example
+   - r12958 duplicateUpdates defaults now to true to have identical behaviour for Java and C++
+   - r12937 FreeBSD port, support for BOOST added again, thanks to Viner, David <dviner@yahoo-inc.com>
+   - r12877 Added xerces initialization from main thread, as on Windows it crashed sometimes if initialized from callback thread
+   - r12871 Extended clientProperty API
+   - r12870 Added xerces XMLPlatformUtils::Initialize PanicHandler
+   - r12870 Added locale setting for xerces XMLPlatformUtils::Initialize, adjust with for example
             - xmlBlaster/locale "de_DE.iso-8859-1" or "en_US.UTF-8"
-   - #12864 SOCKET driver: Removed obsolet mutex and obsolete thread
-   - #12846 Changed connection_==0 check to be thread safe, passing now logging states to C library
-   - #12823,#12825
+   - r12864 SOCKET driver: Removed obsolet mutex and obsolete thread
+   - r12846 Changed connection_==0 check to be thread safe, passing now logging states to C library
+   - r12823,r12825
       Added sax configuration usage help
       Added virtual destructor to avoid memory leak
       Fixed SAX parsing for encodings different to US-ASCII, changed default SAX encoding to "iso-8859-1"
       (Using "UTF-8" with our xmlKey and xmlQos has still problems with our std::string usage)
       Added configuration possibility for SAX parse encoding with '-xmlBlaster/encoding'
       Fixed error message for SAX parse errors
-   - #12820 Extending XmlBlasterException from std::exception to support catching by base class,
+   - r12820 Extending XmlBlasterException from std::exception to support catching by base class,
       added what() method, removed dummy stack trace output.
-   - #12799 Added leaveServer() method
+   - r12799 Added leaveServer() method
    See: http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/classorg_1_1xmlBlaster_1_1client_1_1XmlBlasterAccess.html#a28
 
  o C client library:
-   - #12919,#12927 FreeBSD port, thanks to Viner, David <dviner@yahoo-inc.com>
-   - #12852 Callback thread cleanup is now done detached
+   - r12919,r12927 FreeBSD port, thanks to Viner, David <dviner@yahoo-inc.com>
+   - r12852 Callback thread cleanup is now done detached
             the mode is adjustable with -plugin/socket/detachCbThread=true/false (false will do a pthread_join())
-   - #12845 Removed creating of two threads if UDP is switched off
-   - #12842 Added stop flag for immediate shutdown detection, added free(rawMsg) in EOF case
-   - #12828,#12861 Fixed multithreading bug on shutdown, now we can savely leave the server without disconnect()
-   - #12781 Added missing pthread_cond_destroy() and pthread_mutex_destroy()
-   - #12777 Memory leak fix for Udp return
-   - #12778 Memory leak fix for calling connect() multiple times
+   - r12845 Removed creating of two threads if UDP is switched off
+   - r12842 Added stop flag for immediate shutdown detection, added free(rawMsg) in EOF case
+   - r12828,r12861 Fixed multithreading bug on shutdown, now we can savely leave the server without disconnect()
+   - r12781 Added missing pthread_cond_destroy() and pthread_mutex_destroy()
+   - r12777 Memory leak fix for Udp return
+   - r12778 Memory leak fix for calling connect() multiple times
 
- o #12772-#12774 Added workaround for ActiveX bridge to transfer byte[]
+ o r12772-r12774 Added workaround for ActiveX bridge to transfer byte[]
    See: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4887461
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.activex.html
 
-Changes for 1.RC1 [2004-10-28] #12758
+Changes for 1.RC1 [2004-10-28] r12758
 =====================================
 
- o #12706,#12709 Added subversion revision number as exception text prefix, for example
-     ex.getMessage()="#12702 Can't load your plugin"
+ o r12706,r12709 Added subversion revision number as exception text prefix, for example
+     ex.getMessage()="r12702 Can't load your plugin"
 
- o #12703 Upgraded ANT from version 1.6.1 to version 1.6.2
+ o r12703 Upgraded ANT from version 1.6.1 to version 1.6.2
 
- o #12696 Added org.xmlBlaster.engine.DeadMessageDumper plugin to dump
+ o r12696 Added org.xmlBlaster.engine.DeadMessageDumper plugin to dump
    dead messages to hard disk, supports republishing (see javadoc)
 
- o #12689,#12690 Added '__deadMessageReason' ClientProperty to dead messages
+ o r12689,r12690 Added '__deadMessageReason' ClientProperty to dead messages
 
- o #12685,#12686 New server flag -xmlBlaster/acceptWrongSenderAddress/<subjectId>  true/false [false]
+ o r12685,r12686 New server flag -xmlBlaster/acceptWrongSenderAddress/<subjectId>  true/false [false]
    -xmlBlaster/acceptWrongSenderAddress/joe true
     Allows user 'joe' to send a wrong sender address in PublishQos
     Useful to resend dead messages with 'javaclients.script.XmlScript'
 
- o #12681 Checking subscription handle to be null to avoid IllegalArgumentException
+ o r12681 Checking subscription handle to be null to avoid IllegalArgumentException
    Thanks to aaron@mindwidgets.com
 
- o #12665 Java client library: fail safe mode
+ o r12665 Java client library: fail safe mode
    Remember public and secret sessionId on client side for reconnect attempts
    (For future enhancement of pubSessionId<0 and persistent sessions)
 
- o #12664 Java client library: Bugfix get() and async mode
+ o r12664 Java client library: Bugfix get() and async mode
    Catching get() requests in async mode and throw an exception
 
- o #12663 Java client library: Bugfix switch to sync mode
+ o r12663 Java client library: Bugfix switch to sync mode
    Added dispatchManager.trySyncMode(true) to force immediate sync mode
    after polling even for empty client queue
 
- o #12662 Java client library: FEATURE refreshSession
+ o r12662 Java client library: FEATURE refreshSession
    Added ConnectQos.refreshSession tag for automated client side session refresh
    Example: connectQos.setRefreshSession(true)
 
@@ -1824,12 +1824,12 @@ Changes for 1.RC1 [2004-10-28] #12758
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
-   - #12860 Timeout.cpp: Fixed shutdown with join(); Checking class state on method calls; Added catch(...) for error handling 
-   - #12858 Threading library: Added mode to start threads detached: start(bool detached)
-   - #12854 Changed from winsock.h to Winsock2.h to have SD_BOTH
-   - #12750 Upgrade to pthreads-dll-2004-06-22
-   - #12746 Windows flag '/YX' added for precompiled headers
-   - #12710 Added subversion revision number, see getXmlBlasterVersion()
+   - r12860 Timeout.cpp: Fixed shutdown with join(); Checking class state on method calls; Added catch(...) for error handling 
+   - r12858 Threading library: Added mode to start threads detached: start(bool detached)
+   - r12854 Changed from winsock.h to Winsock2.h to have SD_BOTH
+   - r12750 Upgrade to pthreads-dll-2004-06-22
+   - r12746 Windows flag '/YX' added for precompiled headers
+   - r12710 Added subversion revision number, see getXmlBlasterVersion()
    - Added zlib:stream compression support
    - Added C client API documentation with doxygen, see
      http://www.xmlblaster.org/xmlBlaster/doc/doxygen/c/html/index.html
@@ -1843,11 +1843,11 @@ Changes for 1.RC1 [2004-10-28] #12758
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
-   - #12858 Threading lib: Added mode to start threads detached: start(bool detached)
-   - #12755 "user.name" is used instead of "user" to find out the default user
-   - #12746 Windows flag '/YX' added for precompiled headers
-   - #12743 BUGIFX: lexical_cast from string (or char*) to bool is now handled on a special implementation
-   - #12711 Added subversion revision number, see Global::getRevisionNumber()
+   - r12858 Threading lib: Added mode to start threads detached: start(bool detached)
+   - r12755 "user.name" is used instead of "user" to find out the default user
+   - r12746 Windows flag '/YX' added for precompiled headers
+   - r12743 BUGIFX: lexical_cast from string (or char*) to bool is now handled on a special implementation
+   - r12711 Added subversion revision number, see Global::getRevisionNumber()
    - Fixed setting of XmlBlasterAccess::getServerNodeId()
    - Modified Log4Cplus logging:
      1. We are now forwarding all xmlBlaster.properties and command line settings to log4cplus,
