@@ -58,7 +58,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
    private I_XmlBlaster xmlBlasterImpl;
 
    /** The address configuration */
-   private AddressServer addressServer;
+   //private AddressServer addressServer;
 
    private PluginInfo pluginInfo;
 
@@ -162,9 +162,9 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
       return this.xmlBlasterImpl;
    }
 
-   AddressServer getAddressServer() {
-      return this.addressServer;
-   }
+   //AddressServer getAddressServer() {
+   //   return this.addressServer;
+   //}
 
    /**
     * Start xmlBlaster EMAIL access.
