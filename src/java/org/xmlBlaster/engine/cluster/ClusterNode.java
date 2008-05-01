@@ -267,6 +267,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                       if (myRemotePartnerLogin != null && myRemotePartnerLogin.getAddressServer() != null) {
                          Object obj = myRemotePartnerLogin.getAddressServer().getCallbackDriver();
                          if (obj != null && obj instanceof CallbackSocketDriver) {
+                            // cbDriver.callbackAddress: socket://192.168.1.20:8920
                             CallbackSocketDriver cbDriver = (CallbackSocketDriver)myRemotePartnerLogin.getAddressServer().getCallbackDriver();
                             remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", cbDriver.getHandler());
                          }
