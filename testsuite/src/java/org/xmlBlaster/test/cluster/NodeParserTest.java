@@ -18,10 +18,15 @@ import org.xmlBlaster.util.qos.address.Address;
 public class NodeParserTest extends TestCase {
    private static Logger log = Logger.getLogger(NodeParserTest.class.getName());
 
-   private ServerScope serverScope = new ServerScope();
+   private ServerScope serverScope;// = new ServerScope();
 
    public void setUp() {
+      serverScope = new ServerScope();
       serverScope.setUseCluster(true);
+   }
+
+   public void tearDown() {
+      serverScope.shutdown();
    }
 
    public void testParseConnectQos() {
