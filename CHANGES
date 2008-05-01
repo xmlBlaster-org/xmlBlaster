@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o #16900 Updated to hsqldb_1_8_0_9
+
  o #16897 First hack to tunnel callback of cluster master by re-using the slaves connection
 
  o #16888 Java: Fixed hsqldb shutdown in JdbcConnectionPool.java to release .lck file
