@@ -37,6 +37,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -187,10 +188,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                   log.severe("No socket protocol driver found");
                // TODO: How to avoid configuring the password (pass a flag to Authenticate?)
                // TODO: Currently we can only configure loginName/password based credentials
+               // cluster/securityService/avalon=<securityService type='htpasswd' version='1.0'><user>avalon</user><passwd>secret</passwd></securityService>
                String xml = this.fatherGlob.get("cluster/securityService/"+sessionName.getLoginName(), "", null, null);
                SecurityQos securityQos = new SecurityQos(glob, xml);
                ConnectQos tmpQos = new ConnectQos(glob, sessionName.getRelativeName(), "");
-               
+               //tmpQos.setPersistent(true); -> Fails on reconnect from persistence, bug not resolved
                tmpQos.getData().setSecurityQos(securityQos);
                tmpQos.setSessionName(sessionName);
                ClientQueueProperty prop = new ClientQueueProperty(glob, null);
@@ -201,6 +203,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                address.setPingInterval(20000L);
                address.setType(type);
                address.setVersion(version);
+               //address.addClientProperty(new ClientProperty("useRemoteLoginAsTunnel", true));
+               address.addClientProperty(new ClientProperty("acceptRemoteLoginAsTunnel", true));
                address.setRawAddress(rawAddress); // Address to find ourself
                //address.addClientProperty(new ClientProperty("acceptRemoteLoginAsTunnel", "", "", ""+true));
                prop.setAddress(address);
@@ -208,11 +212,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                CallbackAddress cbAddress = new CallbackAddress(glob);
                cbAddress.setDelay(40000L);
                cbAddress.setRetries(-1);
-               cbAddress.setPingInterval(40000L);
+               cbAddress.setPingInterval(20000L);
                cbAddress.setDispatcherActive(false);
                cbAddress.setType(type);
                cbAddress.setVersion(version);
-               //cbAddress.addClientProperty(new ClientProperty("acceptRemoteLoginAsTunnel", "", "", ""+true));
+               //cbAddress.addClientProperty(new ClientProperty("useRemoteLoginAsTunnel", true));
+               cbAddress.addClientProperty(new ClientProperty("acceptRemoteLoginAsTunnel", true));
                tmpQos.addCallbackAddress(cbAddress);
                log.info("Creating temporary session " + sessionName.getRelativeName() + " until real cluster node arrives");
                glob.getXmlBlasterAccess().connect(tmpQos, new I_Callback() {
