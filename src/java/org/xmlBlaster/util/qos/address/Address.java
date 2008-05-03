@@ -26,6 +26,8 @@ public class Address extends AddressBase
 {
    private static final String ME = "Address";
 
+   private transient CallbackAddress callbackAddress;
+   
    /**
     */
    public Address(Global glob) {
@@ -148,6 +150,14 @@ public class Address extends AddressBase
          e.printStackTrace();
          System.err.println("TestFailed: " + e.toString());
       }
+   }
+
+   public CallbackAddress getCallbackAddress() {
+      return callbackAddress;
+   }
+
+   public void setCallbackAddress(CallbackAddress callbackAddress) {
+      this.callbackAddress = callbackAddress;
    }
 }
 
