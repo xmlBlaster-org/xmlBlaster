@@ -500,6 +500,9 @@ abstract public class DispatchConnection implements I_Timeout
       this.physicalConnectionOk = (ex == null ||
                                    glob.isServerSide() && !ex.isServerSide() ||
                                    !glob.isServerSide() && ex.isServerSide()) ? true : false;
+      if (ex != null && ex.getErrorCode().isOfType(ErrorCode.COMMUNICATION_NOCONNECTION))
+         this.physicalConnectionOk = false;
+
       if (ex != null) {
           if (isAuthenticationException(ex)) {
               connectionsHandler.toDead(this, ex);
