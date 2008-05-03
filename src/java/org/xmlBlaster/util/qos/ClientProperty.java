@@ -8,6 +8,7 @@ package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * This class encapsulates one client property in a QoS. 
@@ -82,6 +83,11 @@ public final class ClientProperty extends EncodableData
     */
    public ClientProperty(String name, byte[] value) {
       super("clientProperty", name, value);
+      ME = "ClientProperty";
+   }
+
+   public ClientProperty(String name, boolean value) {
+      this(name, Constants.TYPE_BOOLEAN, Constants.ENCODING_NONE, ""+value);
       ME = "ClientProperty";
    }
 
