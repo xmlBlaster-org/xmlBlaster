@@ -377,7 +377,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                }
                else if (e.toString().indexOf("EOF") != -1) {
                   if (this.disconnectIsCalled)
-                     log.fine(toString() + ": Lost TCP connection after sending disconnect(): " + e.toString());
+                     if (log.isLoggable(Level.FINE)) log.fine(toString() + ": Lost TCP connection after sending disconnect(): " + e.toString());
                   else
                      log.warning(toString() + ": Lost TCP connection: " + e.toString());
                }

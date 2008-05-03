@@ -25,6 +25,7 @@ import org.xmlBlaster.util.protocol.socket.SocketUrl;
 
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.util.xbformat.MsgInfo;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
@@ -162,6 +163,8 @@ public class SocketConnection implements I_XmlBlasterConnection
       // TODO: USE address for configuration
       this.clientAddress = address;
       this.useRemoteLoginAsTunnel = this.clientAddress.getEnv("useRemoteLoginAsTunnel", false).getValue();
+      // The cluster slave accepts publish(), subscribe() etc callbacks
+      //this.acceptRemoteLoginAsTunnel = this.callbackAddress.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
 
       if (this.pluginInfo != null)
          this.clientAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
@@ -184,9 +187,9 @@ public class SocketConnection implements I_XmlBlasterConnection
       if (log.isLoggable(Level.FINE)) log.fine(clientAddress.getEnvLookupKey("SSL") + "=" + ssl);
       
       try {
-         Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.clientAddress.getSessionName()));
-         if (obj != null) {
-            if (obj instanceof org.xmlBlaster.protocol.socket.HandleClient) {
+         if (this.useRemoteLoginAsTunnel) {
+            Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.clientAddress.getSessionName()));
+            if (obj != null && obj instanceof org.xmlBlaster.protocol.socket.HandleClient) {
                org.xmlBlaster.protocol.socket.HandleClient h = (org.xmlBlaster.protocol.socket.HandleClient)obj;
                this.sock = h.getSocket();
                // TODO: HandleClient.closeSocket() can set sock = null!
@@ -199,7 +202,8 @@ public class SocketConnection implements I_XmlBlasterConnection
                      "', callback address is '" + this.sock.getLocalAddress().getHostAddress() + ":" + this.sock.getLocalPort() + "'");
                }
                else {
-                  log.severe("Didn't expect null socket: " + Global.getStackTraceAsString(null));
+                  log.severe("Didn't expect null socket for " + this.clientAddress.getSessionName() + ": " + Global.getStackTraceAsString(null));
+                  glob.removeObjectEntry(SocketExecutor.getGlobalKey(this.clientAddress.getSessionName()));
                }
             }
             else {
@@ -244,8 +248,11 @@ public class SocketConnection implements I_XmlBlasterConnection
 
          // start the socket sender and callback thread here
          if (this.cbReceiver != null) { // only the first time, not on reconnect
-            // NOTE: This address should come from the client !!!
-            org.xmlBlaster.util.qos.address.CallbackAddress cba = new org.xmlBlaster.util.qos.address.CallbackAddress(glob);
+            CallbackAddress cba = this.clientAddress.getCallbackAddress();
+            if (cba == null) {
+               log.severe("No callback address given " + Global.getStackTraceAsString(null));
+               cba = new org.xmlBlaster.util.qos.address.CallbackAddress(glob);
+            }
             this.cbReceiver.initialize(glob, getLoginName(), cba, this.cbClient);
          }
       }

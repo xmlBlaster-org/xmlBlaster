@@ -144,7 +144,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * @see org.xmlBlaster.client.I_XmlBlasterAccess
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener
     */
-   public I_XmlBlasterAccess getXmlBlasterAccess() throws XmlBlasterException {
+   public synchronized I_XmlBlasterAccess getXmlBlasterAccess() throws XmlBlasterException {
       if (isLocalNode())
          return null;
 
@@ -254,6 +254,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                          if (obj != null && obj instanceof CallbackSocketDriver) {
                             // cbDriver.callbackAddress: socket://192.168.1.20:8920
                             CallbackSocketDriver cbDriver = (CallbackSocketDriver)myRemotePartnerLogin.getAddressServer().getCallbackDriver();
+                            //log.severe("Register toAlive: CallbackSocketDriver.handler=" + cbDriver.getHandler());
                             remoteGlob.addObjectEntry(globalKey, cbDriver.getHandler());
                          }
                          else {

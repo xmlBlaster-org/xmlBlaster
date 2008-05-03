@@ -289,7 +289,9 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                      throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");
                   conQos.getSecurityQos().setClientIp (socket.getInetAddress().getHostAddress());
                   conQos.setAddressServer(getAddressServer());
+                  conQos.getAddressServer().setCallbackDriver(this);
                   ConnectReturnQosServer retQos = getAuthenticateCore().connect(conQos);
+                  // TODO: Register our socket for callbacks
                   receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
                   executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
                }

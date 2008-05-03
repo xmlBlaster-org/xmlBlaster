@@ -455,7 +455,7 @@ public final class ClientDispatchConnection extends DispatchConnection
       MsgQueueConnectEntry connectEntry = (MsgQueueConnectEntry)entry;
       this.sessionName = connectEntry.getConnectQosData().getSessionName();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         log.fine("TODO: Crypting msg with exportMessage() is not supported for connect() as the server currently can't handle encrypted ConnectQos (for SOCKET see HandleClient.java:234)");
+         if (log.isLoggable(Level.FINE)) log.fine("TODO: Crypting msg with exportMessage() is not supported for connect() as the server currently can't handle encrypted ConnectQos (for SOCKET see HandleClient.java:234)");
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, connectEntry.getConnectQosData().toXml()));
          this.encryptedConnectQos = securityInterceptor.exportMessage(dataHolder).getQos();
          if (log.isLoggable(Level.FINE)) log.fine("Exported/encrypted connect request.");

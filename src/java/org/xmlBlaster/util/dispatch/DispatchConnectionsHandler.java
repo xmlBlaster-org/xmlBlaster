@@ -31,7 +31,7 @@ import java.util.ArrayList;
  * One instance of this is used for each DispatchManager (one logical connection).
  * </p>
  * <pre>
- *    State chart of the 'logical connection':
+ *    State chart of the 'logical connection', initially UNDEF:
  *
  *      +<-----------------initialize()--------------+
  *      |                                            |
