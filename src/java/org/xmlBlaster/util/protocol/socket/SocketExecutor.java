@@ -12,7 +12,10 @@ import java.util.logging.Level;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.RequestReplyExecutor;
 import org.xmlBlaster.util.protocol.ZBlockInputStream;
 import org.xmlBlaster.util.protocol.ZBlockOutputStream;
@@ -168,6 +171,54 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       this.running = run;
    }
 
+
+   /**
+    * Updating multiple messages in one sweep, callback to client.
+    * <p />
+    * @param expectingResponse is WAIT_ON_RESPONSE or ONEWAY
+    * @return null if oneway
+    * @see org.xmlBlaster.engine.RequestBroker
+    */
+   public final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr,
+         boolean expectingResponse, boolean useUdpForOneway, PluginInfo callbackPluginInfo) throws XmlBlasterException
+   {
+      if (log.isLoggable(Level.FINER)) log.finer("Entering update: id=" + cbSessionId + " numSend=" + msgArr.length + " oneway=" + !expectingResponse);
+      if (!running)
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "update() invocation ignored, we are shutdown.");
+
+      if (msgArr == null || msgArr.length < 1) {
+         log.severe("The argument of method update() are invalid");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
+      }
+      try {
+         if (expectingResponse) {
+            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, 
+                         cbSessionId, progressListener, getCbMsgInfoParserClassName());
+            parser.setPluginConfig(callbackPluginInfo); // is usually null as it is loaded dynamically
+            parser.addMessage(msgArr);
+            Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
+            if (log.isLoggable(Level.FINE)) log.fine("Got update response " + response.toString());
+            return (String[])response; // return the QoS
+         }
+         else {
+            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY,
+                  cbSessionId, progressListener, getCbMsgInfoParserClassName());
+            parser.setPluginConfig(callbackPluginInfo);
+            parser.addMessage(msgArr);
+            requestAndBlockForReply(parser, SocketExecutor.ONEWAY, useUdpForOneway);
+            return null;
+         }
+      }
+      catch (XmlBlasterException e) {
+         throw XmlBlasterException.tranformCallbackException(e);
+      }
+      catch (IOException e1) {
+         if (log.isLoggable(Level.FINE)) log.fine("IO exception: " + e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+               "Callback of " + msgArr.length + " messages failed", e1);
+      }
+   }
+
    /**
     * Ping to check if callback server (or server protocol) is alive.
     * This ping checks the availability on the application level.
@@ -251,7 +302,7 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       }
    }
 
-
+   public void shutdown() {}
 
    public String getVersion() {
       return "1.0";
@@ -273,6 +324,10 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
 
    /* dummy to have a copy/paste functionality in jconsole */
    public void setUsageUrl(java.lang.String url) {
+   }
+   
+   public static String getGlobalKey(SessionName sessionName) {
+       return "ClusterManager[cluster]/SocketExecutor" + ((sessionName == null) ? "" : sessionName.getRelativeName(true));
    }
 }
 
