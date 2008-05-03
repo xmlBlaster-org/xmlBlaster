@@ -558,6 +558,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       for (int i=0; i<props.length; i++) {
          AddressBase[] adrs = props[i].getAddresses();
          for (int j=0; j<adrs.length; j++) {
+            adrs[j].setSessionName(getSessionName());
+            ((Address)adrs[j]).setCallbackAddress(getCurrentCallbackAddress());
             list.add(adrs[j]);
          }
       }
@@ -676,7 +678,9 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     */
    public CallbackAddress getCurrentCallbackAddress() {
       CbQueueProperty prop = getSessionCbQueueProperty(); // never null
-      return prop.getCurrentCallbackAddress();
+      CallbackAddress cbAddr = prop.getCurrentCallbackAddress();
+      cbAddr.setSessionName(getSessionName());
+      return cbAddr;
    }
 
    /**
