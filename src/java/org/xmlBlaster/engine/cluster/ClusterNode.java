@@ -146,10 +146,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          
          ConnectQosData qos = getNodeInfo().getConnectQosData();
          
-         ////// BjoernCluster: Reuse in a gateway the remote cluster node login's socket for our connection
-         // TODO: Only for protocol of types "socket*"
-         //!!!!!!!!! NOT POSSIBLE, WE ALLWAYS NEED AN INSTANCE FOR CLIENT SIDE QUEUEING
-         
+         // Reuse in a gateway the remote cluster node login's socket for our connection
+         // Only for protocol of types "socket*"
          // ConnectQosSaxFactory->ClientProperty.ATTRIBUTE_TAG
          //<address type='SOCKET' sessionId='4e56890ghdFzj0' pingInterval='10000' retries='-1' delay='10000'>
          //  <burstMode collectTime='400' maxEntries='20' maxBytes='-1' />
