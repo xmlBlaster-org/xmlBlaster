@@ -474,7 +474,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * Sends the current connectQos to xmlBlaster and stores the connectReturnQos.
     * @throws XmlBlasterException
     */
-   public void sendConnectQos() throws XmlBlasterException {
+   private void sendConnectQos() throws XmlBlasterException {
       MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos.getData());
       // Try to connect to xmlBlaster ...
       this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
@@ -482,6 +482,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    public boolean isConnected() {
+      if (this.dispatchManager != null) {
+         return this.connectReturnQos != null && !this.dispatchManager.getDispatchConnectionsHandler().isDead();
+      }
       return this.connectReturnQos != null;
    }
 
@@ -641,22 +644,6 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          disconnectQos.shutdownCbServer(true);
          disconnectQos.shutdownDispatcher(true);
          shutdown(disconnectQos);
-         /*
-         if (this.cbServer != null) {
-            try {
-               this.cbServer.shutdown();
-            }
-            catch (XmlBlasterException ex) {
-               ex.printStackTrace();
-               log.severe(getLogId()+"could not leave the server properly: " + ex.getMessage());
-            }
-            this.cbServer = null;
-         }
-         if (this.dispatchManager != null) {
-            this.dispatchManager.shutdown();
-            //this.dispatchManager = null;
-         }
-         */
       }
    }
 
@@ -728,7 +715,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (disconnectQos.shutdownDispatcher()) {
          if (this.dispatchManager != null) {
             this.dispatchManager.shutdown();
-            this.dispatchManager = null;
+            //this.dispatchManager = null;
          }
          if (this.clientQueue != null) {
             this.clientQueue.shutdown(); // added to make hsqldb shutdown
