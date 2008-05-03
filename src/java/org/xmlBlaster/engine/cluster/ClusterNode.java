@@ -131,16 +131,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * On first invocation we connect to the other xmlBlaster cluster node.
     * <p />
-    * The failsafe mode is switched on, you can configure it:
-    * <ul>
-    *   <li>delay[heron] defaults to 4000L</li>
-    *   <li>pingInterval[heron] defaults to 10 * 1000L</li>
-    *   <li>retries[heron] defaults to -1 == forever</li>
-    *   <li>queue/CACHE/maxEntries[heron] defaults to 100000</li>
-    *   <li>Security.Client.DefaultPlugin defaults to "htpasswd,1.0"
-    *   <li>name[heron] the login name defaults to our local node id</li>
-    *   <li>passwd[heron] defaults to secret</li>
-    * </ul>
+    * The failsafe mode is switched on, you can configure it with a connect qos markup.
     * @see org.xmlBlaster.client.I_XmlBlasterAccess
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener
     */
