@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.checkpoint.I_Checkpoint;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -56,6 +57,7 @@ public final class ClientDispatchConnection extends DispatchConnection
    private ConnectReturnQos connectReturnQos;
    private String[] checkPointContext;
    private MsgQueueEntry connectEntry;
+   private SessionName sessionName;
 
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -235,6 +237,10 @@ public final class ClientDispatchConnection extends DispatchConnection
       if (log.isLoggable(Level.FINE)) log.fine("Before publish " + msgArr.length + " acknowledged messages ...");
 
       String[] rawReturnVal = this.driver.publishArr(msgUnitRawArr);
+      if (rawReturnVal == null) {
+         String text = "driver.publishArr len= " + msgUnitRawArr.length + " returned null: " + ((msgUnitRawArr.length>0)?msgUnitRawArr[0].getKey():"");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
+      }
       connectionsHandler.getDispatchStatistic().incrNumPublish(rawReturnVal.length);
 
       if (log.isLoggable(Level.FINE)) log.fine("Success, sent " + msgArr.length + " acknowledged publish messages, return value #1 is '" + rawReturnVal[0] + "'");
@@ -447,6 +453,7 @@ public final class ClientDispatchConnection extends DispatchConnection
     */
    private void connect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueConnectEntry connectEntry = (MsgQueueConnectEntry)entry;
+      this.sessionName = connectEntry.getConnectQosData().getSessionName();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          log.fine("TODO: Crypting msg with exportMessage() is not supported for connect() as the server currently can't handle encrypted ConnectQos (for SOCKET see HandleClient.java:234)");
          CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, connectEntry.getConnectQosData().toXml()));
@@ -484,6 +491,7 @@ public final class ClientDispatchConnection extends DispatchConnection
          //ConnectQos connectQos = new ConnectQos(this.glob, this.connectReturnQos.getData());
          ConnectQosData connectQos = connectEntry.getConnectQosData();
          connectQos.setSessionName(this.connectReturnQos.getSessionName());
+         this.sessionName = this.connectReturnQos.getSessionName();
          connectQos.getSessionQos().setSecretSessionId(this.connectReturnQos.getSecretSessionId());
          if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
             CryptDataHolder dataHolder = new CryptDataHolder(MethodName.CONNECT, new MsgUnitRaw(null, (byte[])null, connectQos.toXml()));

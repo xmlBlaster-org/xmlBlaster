@@ -36,6 +36,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -166,10 +167,14 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          //</address>
          boolean useRemoteLoginAsTunnel = qos.getAddress().getEnv("useRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
          if (useRemoteLoginAsTunnel) { // The cluster master tries to tunnel using the slaves connection
+            final String globalKey = SocketExecutor.getGlobalKey(qos.getSessionName());
             final String secretSessionId = null;
-            final SessionName sessionName = new SessionName(this.remoteGlob, "client/avalon/session/1");
+            final int pubSessionId = 1;
+            // "client/avalon/session/1" (we are heron and want to re-use avalons connection)
+            // Dangerous Precond: The remote cluster logs in with subjectId==his-nodeId and pubSessionId=1 
+            final SessionName sessionName = new SessionName(this.remoteGlob, null, nodeInfo.getId(), pubSessionId);
             SessionInfo myRemotePartnerLogin = this.fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
-            this.remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+            this.remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
             
             if (myRemotePartnerLogin == null) {
                // Create the temporary SessionInfo until the real client arrives
@@ -229,26 +234,6 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                   }
                });
                glob.getXmlBlasterAccess().leaveServer(null);
-               /*
-               ////// TODO: Does not create a DispatchManager !!!!!!!!!
-               
-               // Sending dummy PtP message to create the temporary SessionInfo until the real client arrives 
-               PublishKey pk = new PublishKey(this.fatherGlob, "__sys__ClusterDummy");
-               PublishQos pq = new PublishQos(this.fatherGlob);
-               pq.addClientProperty("dummyToCreateSession", true);
-               Destination destination = new Destination(this.fatherGlob, sessionName);
-               destination.forceQueuing(true);
-               pq.addDestination(destination);
-               TopicProperty tp = new TopicProperty(this.fatherGlob);
-               tp.setCreateDomEntry(false);
-               HistoryQueueProperty hp= new HistoryQueueProperty(this.fatherGlob, this.fatherGlob.getNodeId().getId());
-               hp.setMaxEntries(0);
-               hp.setMaxEntriesCache(0);
-               tp.setHistoryQueueProperty(hp);
-               pq.setTopicProperty(tp);
-               MsgUnit msgUnit = new MsgUnit(pk, "", pq);
-               this.fatherGlob.getRequestBroker().publish(this.fatherGlob.getRequestBroker().getInternalSessionInfo(), msgUnit);
-               */
                myRemotePartnerLogin = this.fatherGlob.getRequestBroker().getAuthenticate(secretSessionId).getSessionInfo(sessionName);
                
                if (myRemotePartnerLogin == null) {
@@ -269,21 +254,21 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                          if (obj != null && obj instanceof CallbackSocketDriver) {
                             // cbDriver.callbackAddress: socket://192.168.1.20:8920
                             CallbackSocketDriver cbDriver = (CallbackSocketDriver)myRemotePartnerLogin.getAddressServer().getCallbackDriver();
-                            remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", cbDriver.getHandler());
+                            remoteGlob.addObjectEntry(globalKey, cbDriver.getHandler());
                          }
                          else {
-                            remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+                            remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                          }
                       }
                       else {
-                         remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+                         remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                       }
                    }
                    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
-                      remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+                      remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                    }
                    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
-                      remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", "dummyPlaceHolder");
+                      remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                    }
                 }, fireInitial);
              }
@@ -292,7 +277,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                Object obj = myRemotePartnerLogin.getAddressServer().getCallbackDriver();
                if (obj != null && obj instanceof CallbackSocketDriver) {
                   CallbackSocketDriver cbDriver = (CallbackSocketDriver)myRemotePartnerLogin.getAddressServer().getCallbackDriver();
-                  this.remoteGlob.addObjectEntry("ClusterManager[cluster]/HandleClient", cbDriver.getHandler());
+                  this.remoteGlob.addObjectEntry(globalKey, cbDriver.getHandler());
                }
             }
             */

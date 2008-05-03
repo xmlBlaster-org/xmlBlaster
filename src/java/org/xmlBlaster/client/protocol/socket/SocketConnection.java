@@ -184,7 +184,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       if (log.isLoggable(Level.FINE)) log.fine(clientAddress.getEnvLookupKey("SSL") + "=" + ssl);
       
       try {
-         Object obj = glob.getObjectEntry("ClusterManager[cluster]/HandleClient");
+         Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.clientAddress.getSessionName()));
          if (obj != null) {
             if (obj instanceof org.xmlBlaster.protocol.socket.HandleClient) {
                org.xmlBlaster.protocol.socket.HandleClient h = (org.xmlBlaster.protocol.socket.HandleClient)obj;

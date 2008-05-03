@@ -143,7 +143,7 @@ public class SocketCbConnection extends SocketExecutor
       try {
          shutdown();
       }
-      catch (XmlBlasterException ex) {
+      catch (Throwable ex) {
          log.severe("disconnect. Could not shutdown properly. " + ex.getMessage());
       }
    }
@@ -174,7 +174,7 @@ public class SocketCbConnection extends SocketExecutor
     * Shut down the callback server.
     * Is called by logout()
     */
-   public void shutdown() throws XmlBlasterException
+   public void shutdown()
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown of callback server");
       try { if (this.iStream != null) { this.iStream.close(); this.iStream=null; } } catch (IOException e) { log.warning(e.toString()); }

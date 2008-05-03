@@ -16,7 +16,6 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -120,6 +119,10 @@ public class HandleClient extends SocketExecutor implements Runnable
       }
       t.start();
    }
+   
+   public boolean useUdpForOneway() {
+      return (this.driver != null) ? this.driver.useUdpForOneway() : false;
+   }
 
    public String getType() {
       return this.driver.getType();
@@ -178,52 +181,6 @@ public class HandleClient extends SocketExecutor implements Runnable
       Socket sock = this.sock;
       try { if (sock != null) { sock.close(); this.sock=null; } } catch (IOException e) { log.warning(e.toString()); }
       if (log.isLoggable(Level.FINE)) log.fine("Closed socket for '" + loginName + "'.");
-   }
-
-   /**
-    * Updating multiple messages in one sweep, callback to client.
-    * <p />
-    * @param expectingResponse is WAIT_ON_RESPONSE or ONEWAY
-    * @return null if oneway
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
-   public final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr, boolean expectingResponse) throws XmlBlasterException
-   {
-      if (log.isLoggable(Level.FINER)) log.finer("Entering update: id=" + cbSessionId + " numSend=" + msgArr.length + " oneway=" + !expectingResponse);
-      if (!running)
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "update() invocation ignored, we are shutdown.");
-
-      if (msgArr == null || msgArr.length < 1) {
-         log.severe("The argument of method update() are invalid");
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
-      }
-      try {
-         if (expectingResponse) {
-            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE, 
-                         cbSessionId, progressListener, getCbMsgInfoParserClassName());
-            parser.setPluginConfig(callback.getPluginInfo()); // is usually null as it is loaded dynamically
-            parser.addMessage(msgArr);
-            Object response = requestAndBlockForReply(parser, SocketExecutor.WAIT_ON_RESPONSE, false);
-            if (log.isLoggable(Level.FINE)) log.fine("Got update response " + response.toString());
-            return (String[])response; // return the QoS
-         }
-         else {
-            MsgInfo parser = new MsgInfo(glob, MsgInfo.INVOKE_BYTE, MethodName.UPDATE_ONEWAY,
-                  cbSessionId, progressListener, getCbMsgInfoParserClassName());
-            parser.setPluginConfig(callback.getPluginInfo());
-            parser.addMessage(msgArr);
-            requestAndBlockForReply(parser, SocketExecutor.ONEWAY, this.driver.useUdpForOneway());
-            return null;
-         }
-      }
-      catch (XmlBlasterException e) {
-         throw XmlBlasterException.tranformCallbackException(e);
-      }
-      catch (IOException e1) {
-         if (log.isLoggable(Level.FINE)) log.fine("IO exception: " + e1.toString());
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-               "Callback of " + msgArr.length + " messages failed", e1);
-      }
    }
 
    public void handleMessage(MsgInfo receiver, boolean udp) {

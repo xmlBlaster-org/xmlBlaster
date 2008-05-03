@@ -15,6 +15,7 @@ import org.xml.sax.Attributes;
 import org.xmlBlaster.contrib.ClientPropertiesInfo;
 import org.xmlBlaster.util.EncodableData;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBuffer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
@@ -129,6 +130,8 @@ public abstract class AddressBase implements Cloneable
    /** Shall this session callback be used for subjectQueue messages as well? For &lt;callback> only */
    public static final boolean DEFAULT_useForSubjectQueue = true;
    protected PropBoolean useForSubjectQueue = new  PropBoolean(DEFAULT_useForSubjectQueue);
+   
+   protected SessionName sessionName;
 
    /**
     * Does client whish a dispatcher plugin. 
@@ -1187,6 +1190,18 @@ public abstract class AddressBase implements Cloneable
       text += "                       going in polling mode when a ping response timeout occurs. Default is false\n";
       // other settings like burstMode are in the derived classes
       return text;
+   }
+
+   /**
+    * 
+    * @return Can be null
+    */
+   public SessionName getSessionName() {
+      return sessionName;
+   }
+
+   public void setSessionName(SessionName sessionName) {
+      this.sessionName = sessionName;
    }
 }
 

@@ -34,18 +34,19 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    private Global glob = null;
    private static Logger log = Logger.getLogger(CallbackSocketDriver.class.getName());
    private String loginName;
-   private HandleClient handler;
+   private SocketExecutor handler;
    private CallbackAddress callbackAddress;
    //private boolean isFirstPing_hack = true;
    private PluginInfo pluginInfo; // remains null as we are loaded dynamically
    private String msgInfoParserClassName;
+   private boolean useUdpForOneway;
 
    /**
     * Should not be instantiated by plugin loader.
     */
    public CallbackSocketDriver() {
-      // System.err.println(ME + ": Empty Constructor!");
-      // (new Exception("")).printStackTrace();
+      //log.severe("Empty Ctor not expected");
+      //(new Exception("")).printStackTrace();
    }
 
    /**
@@ -56,6 +57,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       this.loginName = loginName;
       this.ME += "-" + this.loginName;
       this.handler = handler;
+      this.useUdpForOneway = handler.useUdpForOneway();
    }
 
    /**
@@ -148,6 +150,13 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
             log.warning("No socket protocol type '" + this.callbackAddress.getType() + "' configuration loaded: " + e.toString());
          }
       //}
+         
+      Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.callbackAddress.getSessionName()));
+      if (obj != null) {
+         if (obj instanceof org.xmlBlaster.util.protocol.socket.SocketExecutor) {
+            this.handler = (org.xmlBlaster.util.protocol.socket.SocketExecutor)obj;
+         }
+      }
    }
 
    /**
@@ -157,8 +166,9 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    public final String[] sendUpdate(MsgUnitRaw[] msgArr) throws XmlBlasterException {
       if (this.handler == null)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                  "SOCKET sendUpdate failed");
-      return this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, SocketExecutor.WAIT_ON_RESPONSE);
+                  "SOCKET sendUpdate failed, the handle is null");
+      return this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr,
+             SocketExecutor.WAIT_ON_RESPONSE, this.useUdpForOneway, getPluginInfo());
    }
 
    /**
@@ -169,7 +179,8 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       if (this.handler == null)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
                   "SOCKET sendUpdateOneway failed");
-      this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr, SocketExecutor.ONEWAY);
+      this.handler.sendUpdate(callbackAddress.getSecretSessionId(), msgArr,
+            SocketExecutor.ONEWAY, this.useUdpForOneway, getPluginInfo());
    }
 
    /**
@@ -264,8 +275,8 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       }
       return this.msgInfoParserClassName; // "org.xmlBlaster.util.xbformat.XbfParser"
    }
-
-   public HandleClient getHandler() {
+   
+   public SocketExecutor getHandler() {
       return handler;
    }
 }

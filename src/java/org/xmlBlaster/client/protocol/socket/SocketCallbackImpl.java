@@ -6,9 +6,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.protocol.socket;
 
 
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.Global;
@@ -16,20 +23,11 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.xbformat.MsgInfo;
-import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.client.protocol.I_CallbackServer;
-import org.xmlBlaster.engine.qos.AddressServer;
-import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
-
-import java.net.Socket;
-import java.net.SocketException;
-import java.io.IOException;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.xbformat.MsgInfo;
 
 
 /**
@@ -119,7 +117,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
       ///// TODO Don't start thread!!!
       // If we are a client XmlBlasterAccess reusing a remote login socket
       this.useRemoteLoginAsTunnel = this.callbackAddress.getEnv("useRemoteLoginAsTunnel", false).getValue();
-      Object obj = glob.getObjectEntry("ClusterManager[cluster]/HandleClient");
+      Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.callbackAddress.getSessionName())); //getAddressServer()
       if (obj != null) {
          if (obj instanceof org.xmlBlaster.util.protocol.socket.SocketExecutor) {
             this.remoteLoginAsTunnelSocketExecutor = (SocketExecutor)obj;
@@ -142,18 +140,18 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
          log.severe("TODO: Handle I_XmlBlaster");
       }
       
+      // Lookup SocketConnection instance in the NameService
+      this.sockCon = (SocketConnection)glob.getObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection");
+
+      if (this.sockCon == null) {
+         // SocketConnection.java must be instantiated first and registered to reuse the socket for callbacks
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+               "Sorry, creation of SOCKET callback handler is not possible if client connection is not of type 'SOCKET'");
+      }
+
+      this.sockCon.registerCbReceiver(this);
+
       if (this.threadRunning == false) {
-         // Lookup SocketConnection instance in the NameService
-         this.sockCon = (SocketConnection)glob.getObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection");
-
-         if (this.sockCon == null) {
-            // SocketConnection.java must be instantiated first and registered to reuse the socket for callbacks
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
-                  "Sorry, creation of SOCKET callback handler is not possible if client connection is not of type 'SOCKET'");
-         }
-
-         this.sockCon.registerCbReceiver(this);
-
          try {
             this.sock = this.sockCon.getSocket();
          }
@@ -280,7 +278,6 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                   && !MethodName.UPDATE_ONEWAY.equals(receiver.getMethodName())
                   && !MethodName.EXCEPTION.equals(receiver.getMethodName())
                   && !MethodName.PING.equals(receiver.getMethodName())) { 
-               log.warning("Received message TODO: Forward to cluster core: " + receiver.getMethodNameStr());
                
                //getSocketExecutor().getXmlBlasterCore().
                if (MethodName.CONNECT == receiver.getMethodName()) {
@@ -304,10 +301,21 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                   shutdown();
                }
                else {
+                  if (log.isLoggable(Level.FINE)) log.fine("Received tunneled message, forwarding now to xmlBlaster core: " + receiver.getMethodNameStr());
                   boolean processed = receiveReply(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
                   if (!processed)
                      log.warning("Received message is not processed: " + receiver.toLiteral());
                }
+            }
+            else if (this.acceptRemoteLoginAsTunnel
+                  && receiver.isResponse()
+                  && MethodName.UPDATE.equals(receiver.getMethodName())
+                  && MethodName.UPDATE_ONEWAY.equals(receiver.getMethodName()) // ONEWAY have no response, just do be complete
+            ) {
+               log.severe("UPDATE RESPONSE IS NOT YET IMPLEMENTED");               
+               boolean processed = receiveReply(receiver, SocketUrl.SOCKET_TCP);    // Parse the message and invoke actions in same thread
+               if (!processed)
+                  log.warning("Received message is not processed: " + receiver.toLiteral());
             }
             else {
                // Normal client operation
