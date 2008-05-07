@@ -135,3 +135,9 @@ java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/conn
 
 Subscribe to heron with avalon domain:
 java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7700 -oid Hello -session.name subscriberToHeron/1 -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -domain avalonDomain
+
+Debug heron remotely:
+java -Dcom.sun.management.jmxremote -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n org.xmlBlaster.Main -propertyFile heron.properties
+
+Debug avalon remotely:
+java -Dcom.sun.management.jmxremote -Xdebug -Xrunjdwp:transport=dt_socket,address=localhost:8002,server=y,suspend=n org.xmlBlaster.Main -propertyFile avalon.properties
