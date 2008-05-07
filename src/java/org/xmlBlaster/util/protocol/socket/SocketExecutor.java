@@ -218,6 +218,10 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
                "Callback of " + msgArr.length + " messages failed", e1);
       }
    }
+   
+   public boolean useUdpForOneway() { // overwritten in HandleClient
+      return false;
+   }
 
    /**
     * Ping to check if callback server (or server protocol) is alive.

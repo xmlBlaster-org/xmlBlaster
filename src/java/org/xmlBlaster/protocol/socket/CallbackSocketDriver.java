@@ -8,6 +8,7 @@ package org.xmlBlaster.protocol.socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -53,7 +54,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
     * This constructor is called when the callback shall be tunneled through by
     * the SAME SOCKET connection which the client already has established. 
     */
-   public CallbackSocketDriver(String loginName, HandleClient handler) {
+   public CallbackSocketDriver(String loginName, SocketExecutor handler) {
       this.loginName = loginName;
       this.ME += "-" + this.loginName;
       this.handler = handler;
@@ -151,12 +152,16 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
          }
       //}
          
-      Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.callbackAddress.getSessionName()));
-      if (obj != null) {
-         if (obj instanceof org.xmlBlaster.util.protocol.socket.SocketExecutor) {
-            this.handler = (org.xmlBlaster.util.protocol.socket.SocketExecutor)obj;
-         }
+      Object obj = this.callbackAddress.getCallbackDriver();
+      if (obj != null && obj instanceof SocketExecutor) { //SocketCallbackImpl
+         this.handler = (SocketExecutor)obj;
       }
+      //Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.callbackAddress.getSessionName()));
+      //if (obj != null) {
+      //   if (obj instanceof org.xmlBlaster.util.protocol.socket.SocketExecutor) {
+      //      this.handler = (org.xmlBlaster.util.protocol.socket.SocketExecutor)obj;
+      //   }
+      //}
    }
 
    /**

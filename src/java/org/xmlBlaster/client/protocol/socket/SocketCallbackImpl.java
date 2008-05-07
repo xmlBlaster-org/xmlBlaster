@@ -18,6 +18,7 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
+import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
@@ -93,7 +94,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    }
    
    public SocketExecutor getSocketExecutor() {
-      return (this.useRemoteLoginAsTunnel) ? this.remoteLoginAsTunnelSocketExecutor : this;
+      return (this.useRemoteLoginAsTunnel && this.remoteLoginAsTunnelSocketExecutor != null) ? this.remoteLoginAsTunnelSocketExecutor : this;
    }
 
    /**
@@ -109,7 +110,6 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
       if (this.pluginInfo != null)
          this.callbackAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
       setLoginName(loginName);
-      setCbClient(cbClient); // access callback client in super class SocketExecutor:callback
       
       // The cluster slave accepts publish(), subscribe() etc callbacks
       this.acceptRemoteLoginAsTunnel = this.callbackAddress.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
@@ -127,6 +127,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
          //   org.xmlBlaster.protocol.socket.HandleClient h = (org.xmlBlaster.protocol.socket.HandleClient)obj;
          //}
       }
+
+      getSocketExecutor().setCbClient(cbClient); // access callback client in super class SocketExecutor:callback
 
       // If we are server side and a client which receives publish(),subscribe()... from remote cluster node
       obj = glob.getObjectEntry("ClusterManager[cluster]/I_Authenticate");
@@ -289,10 +291,17 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                      throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");
                   conQos.getSecurityQos().setClientIp (socket.getInetAddress().getHostAddress());
                   conQos.setAddressServer(getAddressServer());
-                  conQos.getAddressServer().setCallbackDriver(this);
+                  Object callbackSocketDriver = new CallbackSocketDriver(conQos.getSessionName().getLoginName(), this);
+                  conQos.getAddressServer().setCallbackDriver(callbackSocketDriver);
+                  conQos.getData().getCurrentCallbackAddress().setCallbackDriver(callbackSocketDriver);
                   ConnectReturnQosServer retQos = getAuthenticateCore().connect(conQos);
                   // TODO: Register our socket for callbacks
                   receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
+                  
+                  // "ClusterManager[cluster]/SocketExecutorclientjoesession1"
+                  //final String globalKey = SocketExecutor.getGlobalKey(conQos.getSessionName());
+                  //serverScope.addObjectEntry(globalKey, this);
+                  
                   executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
                }
                else if (MethodName.DISCONNECT == receiver.getMethodName()) {
