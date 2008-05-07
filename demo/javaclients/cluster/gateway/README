@@ -125,3 +125,13 @@ Example for a C++ client:
 =========================
 
    PublishDemo -dispatch/connection/plugin/socket/port 7501 -numPublish 20 -session.name pubisher/2 -persistent true -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win" -destination client/subscriber/session/1
+
+
+Other examples:
+===============
+
+Publish to avalon without domain:
+java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7501 -numPublish 20 -session.name pubisher/3 -persistent true -oid Hello
+
+Subscribe to heron with avalon domain:
+java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7700 -oid Hello -session.name subscriberToHeron/1 -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -domain avalonDomain
