@@ -358,6 +358,13 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
       if (log.isLoggable(Level.FINER)) log.finer("Login event for client " + e.getSessionInfo().toString() + ", nothing to do");
    }
 
+   /**
+    * Invoked on successful client re-login (interface I_ClientListener)
+    */
+   public void sessionUpdated(ClientEvent e) throws XmlBlasterException
+   {
+      if (log.isLoggable(Level.FINER)) log.finer("Session update event for client " + e.getSessionInfo().toString() + ", nothing to do");
+   }
 
    public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {
    }

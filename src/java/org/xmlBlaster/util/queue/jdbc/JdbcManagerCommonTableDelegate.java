@@ -128,10 +128,10 @@ public class JdbcManagerCommonTableDelegate extends JdbcManagerCommonTable {
       throw new IllegalStateException("JdbcManagerCommonTableDelegate.addEntries() MAX_RETRIES=" + MAX_RETRIES);
    }
 
-   public boolean modifyEntry(String queueName, I_Entry entry) throws XmlBlasterException {
+   public long modifyEntry(String queueName, I_Entry entry, I_Entry oldEntry) throws XmlBlasterException {
       for (int i=0; i<MAX_RETRIES; i++) {
          try {
-            return super.modifyEntry(queueName, entry);
+            return super.modifyEntry(queueName, entry, oldEntry);
          }
          catch (XmlBlasterException e) {
             handleException(i, e);

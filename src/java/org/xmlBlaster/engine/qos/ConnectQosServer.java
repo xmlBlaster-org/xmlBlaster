@@ -112,6 +112,9 @@ public final class ConnectQosServer
       this.connectQosData.isFromPersistenceRecovery(fromPersistenceRecovery);
    }
 
+   /**
+    * @return 0 if not persisted
+    */
    public long getPersistenceUniqueId() {
       return this.persistenceUniqueId;
    }

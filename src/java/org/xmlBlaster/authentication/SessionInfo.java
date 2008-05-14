@@ -534,7 +534,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
       boolean wantsCallbacks = (newConnectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0);
 
       // Remember persistent values:
-      newConnectQos.isFromPersistenceRecovery(this.connectQos.isFromPersistenceRecovery());
+      //newConnectQos.isFromPersistenceRecovery(this.connectQos.isFromPersistenceRecovery());
       newConnectQos.setPersistenceUniqueId(this.connectQos.getPersistenceUniqueId());
       if (this.connectQos.getData().isPersistent()) // otherwise persistent sessions could be made transient
          newConnectQos.getData().setPersistent(true); // and would never be deleted from persistence.

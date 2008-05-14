@@ -192,7 +192,6 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                String xml = this.fatherGlob.get("cluster/securityService/"+sessionName.getLoginName(), "", null, null);
                SecurityQos securityQos = new SecurityQos(glob, xml);
                ConnectQos tmpQos = new ConnectQos(glob, sessionName.getRelativeName(), "");
-               //tmpQos.setPersistent(true); -> Fails on reconnect from persistence, bug not resolved
                tmpQos.getData().setSecurityQos(securityQos);
                tmpQos.setSessionName(sessionName);
                ClientQueueProperty prop = new ClientQueueProperty(glob, null);

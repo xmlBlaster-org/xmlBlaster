@@ -24,6 +24,11 @@ public interface I_ClientListener extends java.util.EventListener {
     public void sessionAdded(ClientEvent e) throws XmlBlasterException;
 
     /**
+     * Invoked on successful client login
+     */
+    public void sessionUpdated(ClientEvent e) throws XmlBlasterException;
+
+    /**
      * Invoked on first successful client login, when SubjectInfo is created
      */
     public void subjectAdded(ClientEvent e) throws XmlBlasterException;

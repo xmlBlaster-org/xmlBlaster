@@ -1074,33 +1074,39 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    /**
     * @see I_Map#change(I_MapEntry, I_ChangeCallback)
     */
-   public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
-      if (entry == null) return null;
+   public I_MapEntry change(I_MapEntry oldEntry, I_ChangeCallback callback) throws XmlBlasterException {
+      if (oldEntry == null) return null;
       synchronized(this) { // is this the correct synchronization ??
-         long oldSizeInBytes = entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
-         I_MapEntry newEntry = entry;
-         boolean oldIsPersistent = entry.isPersistent();
-         if (callback != null) newEntry = callback.changeEntry(entry);
-         if (newEntry == null) {
-            return entry;
-         }
-         if (oldSizeInBytes != newEntry.getSizeInBytes()) {
-            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has changed from '" + oldSizeInBytes + "' to '" + newEntry.getSizeInBytes() +"'. This is not allowed");
-         } 
+         oldEntry.getSizeInBytes(); // must be here since newEntry could reference same obj.
+         I_MapEntry newEntry = oldEntry;
+         boolean oldIsPersistent = oldEntry.isPersistent();
+         if (callback != null) newEntry = callback.changeEntry(oldEntry);
+         if (newEntry == null) return oldEntry;
 
-         I_MapEntry retEntry = this.transientStore.change(newEntry, null);
+         final I_MapEntry newEntryFinal = newEntry;
+         I_MapEntry retEntry = this.transientStore.change(oldEntry, new I_ChangeCallback() {
+            public final I_MapEntry changeEntry(I_MapEntry entry)
+                  throws XmlBlasterException {
+               return newEntryFinal;
+            }
+         });
          
          if (oldIsPersistent != retEntry.isPersistent()) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Changing of persistence flag of '" + entry.getLogId() + "' to persistent=" + retEntry.isPersistent() + " is not implemented");
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Changing of persistence flag of '" + oldEntry.getLogId() + "' to persistent=" + retEntry.isPersistent() + " is not implemented");
             // TODO: In case we changed the entry flag from persistent to transient it should be removed from the persistence.
          }
          
          if (newEntry.isPersistent()) {
             if (this.persistentStore != null && this.isConnected) {
-               retEntry = this.persistentStore.change(newEntry, null);
+               retEntry = this.persistentStore.change(oldEntry, new I_ChangeCallback() {
+                  public final I_MapEntry changeEntry(I_MapEntry entry)
+                        throws XmlBlasterException {
+                     return newEntryFinal;
+                  }
+               });
             }
             else {
-               if (log.isLoggable(Level.FINE)) log.fine("Can't update entry '" + entry.getLogId() + "' on persistence");
+               if (log.isLoggable(Level.FINE)) log.fine("Can't update entry '" + oldEntry.getLogId() + "' on persistence");
                //throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "Can't update entry '" + entry.getLogId() + "' on persistence");
             }
          }

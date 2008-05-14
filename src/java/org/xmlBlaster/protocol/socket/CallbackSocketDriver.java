@@ -8,7 +8,6 @@ package org.xmlBlaster.protocol.socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -213,14 +212,15 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       }
       */
       
-      if (this.handler == null)
+      SocketExecutor se = this.handler;
+      if (se == null)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                  "SOCKET callback ping failed");
+                  "SOCKET callback ping failed, handler is null");
       try {
-         return this.handler.ping(qos);
+         return se.ping(qos);
       } catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                     "SOCKET callback ping failed", e);
+                     "CallbackSocketDriver " + getType() + " callback ping failed", e);
       }
    }
 

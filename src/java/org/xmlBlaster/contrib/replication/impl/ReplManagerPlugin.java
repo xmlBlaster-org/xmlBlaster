@@ -98,6 +98,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -1234,6 +1235,14 @@ public class ReplManagerPlugin extends GlobalInfo
             this.replSlaveMap.put(sessionName, slave);
          }
       }
+   }
+
+   /**
+    * Invoked on successful client re-login (interface I_ClientListener)
+    */
+   public void sessionUpdated(ClientEvent e) throws XmlBlasterException
+   {
+      if (log.isLoggable(Level.FINER)) log.finer("Session update event for client " + e.getSessionInfo().toString() + ", nothing to do");
    }
 
    /**

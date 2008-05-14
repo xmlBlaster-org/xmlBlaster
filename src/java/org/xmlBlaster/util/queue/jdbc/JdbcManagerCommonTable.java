@@ -573,13 +573,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * modifies a row in the specified queue table
     * @param queueName The name of the queue on which to perform the operation
     * @param entry the object to be stored.
-    *
+    * @param oldEntry the old one
     * @return true on success
     *
     * @throws XmlBlasterException if an error occurred when trying to get a connection or an SQLException
     *         occurred.
     */
-   public boolean modifyEntry(String queueName, I_Entry entry)
+   public long modifyEntry(String queueName, I_Entry entry, I_Entry oldEntry)
       throws XmlBlasterException {
       if (log.isLoggable(Level.FINER)) log.finer("Entering");
 
@@ -592,7 +592,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       boolean success = true;
       PreparedStatement preStatement = null;
       Statement exStatement = null;
-      boolean ret = false;
 
       long dataId = entry.getUniqueId();
       int prio = entry.getPriority();
@@ -630,7 +629,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          int num = preStatement.executeUpdate();
          if (log.isLoggable(Level.FINE)) log.fine("Modified " + num + " entries, entryId='" + entry.getUniqueId() + "'");
-         ret = true;
+         if (oldEntry == null)
+            return entry.getSizeInBytes();
+         return entry.getSizeInBytes() - oldEntry.getSizeInBytes();
       }
       catch (Throwable ex) {
          success = false;
@@ -678,7 +679,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (conn != null) 
             this.pool.releaseConnection(conn, success);
       }
-      return ret;
    }
 
 

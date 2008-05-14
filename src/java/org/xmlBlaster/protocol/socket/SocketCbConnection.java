@@ -258,7 +258,7 @@ public class SocketCbConnection extends SocketExecutor
       catch (Throwable e) {
          if (log.isLoggable(Level.FINE)) log.fine("IO exception: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION,
-                   ME, "SOCKET callback ping failed", e);
+                   ME, getType() + " callback ping from server failed: " + e.toString());
       }
    }
 

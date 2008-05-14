@@ -17,7 +17,19 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
  * @author Marcel Ruff
  */
 public class ClientEvent extends java.util.EventObject {
+   private static final long serialVersionUID = -4613461343832833084L;
+   public final ConnectQosServer previousConnectQosServer;
    
+   /**
+    * Constructs a ClientEvent object.
+    *
+    * @param the client which does the login or logout
+    */
+   public ClientEvent(SubjectInfo subjectInfo) {
+       super(subjectInfo);
+       this.previousConnectQosServer = null;
+   }
+
    /**
     * Constructs a ClientEvent object.
     *
@@ -25,6 +37,12 @@ public class ClientEvent extends java.util.EventObject {
     */
    public ClientEvent(SessionInfo sessionInfo) {
        super(sessionInfo);
+       this.previousConnectQosServer = null;
+   }
+
+   public ClientEvent(ConnectQosServer previousConnectQosServer, SessionInfo sessionInfo) {
+      super(sessionInfo);
+      this.previousConnectQosServer = previousConnectQosServer;
    }
 
    /**
@@ -45,20 +63,19 @@ public class ClientEvent extends java.util.EventObject {
    }
 
    /**
-    * Constructs a ClientEvent object.
-    *
-    * @param the client which does the login or logout
-    */
-   public ClientEvent(SubjectInfo subjectInfo) {
-       super(subjectInfo);
-   }
-
-   /**
     * Returns the originator of the event.
     *
     * @return the client which does the login or logout
     */
    public SubjectInfo getSubjectInfo() {
        return (SubjectInfo)source;
+   }
+
+   /**
+    * Given for sessionUpdated() calls
+    * @return can be null
+    */
+   public ConnectQosServer getPreviousConnectQosServer() {
+      return previousConnectQosServer;
    }
 }

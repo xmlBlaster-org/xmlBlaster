@@ -470,11 +470,13 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     */
    public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
       synchronized(this.storage) {
-         long oldSizeInBytes = entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
+         entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
          I_MapEntry newEntry = entry; 
          if (callback != null) newEntry = callback.changeEntry(entry);
-         if (oldSizeInBytes != newEntry.getSizeInBytes()) {
-            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has changed from '" + oldSizeInBytes + "' to '" + newEntry.getSizeInBytes() +"'. This is not allowed");
+         if (newEntry == null) return entry;
+         if (newEntry.isPersistent() != entry.isPersistent()) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change",
+                  "changing  oldEntry.isPersistent=" + entry.isPersistent() + " to newEntry.isPersistent=" + newEntry.isPersistent() + "differs. This is not allowed");
          } 
          if (entry != newEntry) { // then they are not the same reference ...
             int tmp = remove(entry);

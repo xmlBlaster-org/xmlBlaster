@@ -13,7 +13,7 @@ public interface I_ChangeCallback
    /**
     * Callback invoked by I_Map.change inside the synchronization point.
     * @param entry the entry to modify.
-    * @return I_MapEntry the modified entry.
+    * @return I_MapEntry the modified entry, if null we return immediately (returning the given entry)
     * @throws XmlBlasterException if something has gone wrong and the change must be rolled back.
     */                             
    I_MapEntry changeEntry(I_MapEntry entry) throws XmlBlasterException;

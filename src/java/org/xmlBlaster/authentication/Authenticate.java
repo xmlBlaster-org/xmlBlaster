@@ -226,7 +226,7 @@ final public class Authenticate implements I_RunlevelListener
             SessionInfo info = getSessionInfo(secretSessionId);
             if (info != null) {  // authentication succeeded
 
-               info.updateConnectQos(connectQos);
+               updateConnectQos(info, connectQos);
 
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
                returnQos.getSessionQos().setSecretSessionId(secretSessionId);
@@ -274,8 +274,7 @@ final public class Authenticate implements I_RunlevelListener
                   connectQos.getSessionQos().setSecretSessionId(secretSessionId);
                }
 
-               // fireClientUpdateQosEvent(info, connectQos);
-               info.updateConnectQos(connectQos);
+               updateConnectQos(info, connectQos); // fires event
 
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
                returnQos.getSessionQos().setSessionName(info.getSessionName());
@@ -416,7 +415,7 @@ final public class Authenticate implements I_RunlevelListener
                   changeSecretSessionId(oldSecretSessionId, secretSessionId);
                   connectQos.getSessionQos().setSecretSessionId(secretSessionId);
                }
-               sessionInfo.updateConnectQos(connectQos);
+               updateConnectQos(sessionInfo, connectQos);
             }
             else {
                // Create the new sessionInfo instance
@@ -851,6 +850,30 @@ final public class Authenticate implements I_RunlevelListener
       }
       event = null;
    }
+   
+   private void updateConnectQos(SessionInfo sessionInfo, ConnectQosServer newConnectQos) throws XmlBlasterException {
+      ConnectQosServer previousConnectQosServer = sessionInfo.getConnectQos();
+      
+      sessionInfo.updateConnectQos(newConnectQos);
+      
+      try {
+         I_ClientListener[] clientListenerArr = getClientListenerArr();
+         if (clientListenerArr.length == 0) return;
+         ClientEvent event = new ClientEvent(previousConnectQosServer, sessionInfo);
+         for (int ii=0; ii<clientListenerArr.length; ii++) {
+            clientListenerArr[ii].sessionUpdated(event);
+         }
+         event = null;
+      }
+      catch (XmlBlasterException e) {
+         throw e;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         log.severe("updateConnectQos for " + sessionInfo.getId() + " failed: " + e.toString());
+      }
+   }
+
 
    /**
     * Use this method to check a clients authentication.

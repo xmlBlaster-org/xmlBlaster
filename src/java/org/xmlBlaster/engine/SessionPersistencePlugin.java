@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.qos.AddressServer;
@@ -202,7 +203,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             SessionName sessionName = new SessionName(this.global, entry.getSessionName());
             String sessionId = (String)sessionIds.get(sessionName.getAbsoluteName());
             if (sessionId == null) {
-               log.severe("The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "', removing persistent subscription " + entry.getLogId());
+               log.severe("The persistent session '" + sessionName.getAbsoluteName() + "' is not found, removing persistent subscription " + entry.getLogId());
                this.subscribeStore.remove(entry);
                continue;
                //throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".recoverSubscriptions", "The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "'");
@@ -324,9 +325,9 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    /**
     * A new session is added, checks if it shall be persisted.
     */
-   private void addSession(SessionInfo sessionInfo) throws XmlBlasterException {
+   private void addOrUpdateSession(final SessionInfo sessionInfo) throws XmlBlasterException {
 
-      ConnectQosData connectQosData = sessionInfo.getConnectQos().getData();
+      final ConnectQosData connectQosData = sessionInfo.getConnectQos().getData();
 
       // Is transient?
       if (connectQosData.getPersistentProp() == null || !connectQosData.getPersistentProp().getValue()) return;
@@ -339,11 +340,25 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       }
 
       // Persist it
-      long uniqueId = new Timestamp().getTimestamp();
-      SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size());
-      if (log.isLoggable(Level.FINE)) log.fine("addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
-      sessionInfo.setPersistenceUniqueId(uniqueId);
-      this.sessionStore.put(entry);
+      if (sessionInfo.getPersistenceUniqueId() == 0) {
+         long uniqueId = new Timestamp().getTimestamp(); // new session
+         SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size());
+         if (log.isLoggable(Level.FINE)) log.fine("addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
+         sessionInfo.setPersistenceUniqueId(uniqueId);
+         this.sessionStore.put(entry);
+      }
+      else {
+         // session exists? -> update
+         final long uniqueId = sessionInfo.getPersistenceUniqueId();
+         this.sessionStore.change(uniqueId, new I_ChangeCallback() {
+            public I_MapEntry changeEntry(I_MapEntry mapEntry)
+                  throws XmlBlasterException {
+               SessionEntry sessionEntry = new SessionEntry(connectQosData.toXml(), uniqueId, connectQosData.size());
+               if (log.isLoggable(Level.FINE)) log.fine("changeSession (persistent) for uniqueId: '" + sessionEntry.getUniqueId() + "'");
+               return sessionEntry;
+            }
+         });
+      }
    }
 
    /**
@@ -353,7 +368,30 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    public void sessionAdded(ClientEvent e) throws XmlBlasterException {
       if (!this.isOK) throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_UNAVAILABLE, ME + ".sessionAdded: invoked when plugin already shut down");
       SessionInfo sessionInfo = e.getSessionInfo();
-      addSession(sessionInfo);
+      addOrUpdateSession(sessionInfo);
+   }
+   
+   /**
+    * Invoked on successful client re-login (interface I_ClientListener)
+    */
+   public void sessionUpdated(ClientEvent e) throws XmlBlasterException
+   {
+      if (log.isLoggable(Level.FINER)) log.finer("Session update event for client " + e.getSessionInfo().toString());
+      ConnectQosServer previous = e.getPreviousConnectQosServer();
+      ConnectQosServer connectQos = e.getConnectQos();
+      if (previous == null || connectQos == null)
+         return;
+      if (connectQos.isFromPersistenceRecovery())
+         return;
+      if (e.getSessionInfo() == null)
+         return;
+      if (previous.getData().isPersistent() && !connectQos.getData().isPersistent()) {
+         log.warning("Ignoring change from persistence true to false for " + e.getSessionInfo().getId());
+      }
+      else {
+         // Update other qos property changes in persistence
+         this.addOrUpdateSession(e.getSessionInfo());
+      }
    }
 
    public void sessionRemoved(ClientEvent e) throws XmlBlasterException {
@@ -413,7 +451,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       if (!sessionInfo.getConnectQos().getData().isPersistent()) {
          sessionInfo.getConnectQos().getData().setPersistent(true);
-         this.addSession(sessionInfo);
+         this.addOrUpdateSession(sessionInfo);
       }
 
       // is it a remote connect ?

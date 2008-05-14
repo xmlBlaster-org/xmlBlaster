@@ -335,6 +335,7 @@ public class EmailDriver extends EmailExecutor implements I_Driver, I_ClientList
     * Implements I_ClientListener
     */
    public void sessionAdded(ClientEvent e) {}
+   public void sessionUpdated(ClientEvent e) {}
    public void subjectAdded(ClientEvent e) {}
    public void sessionPreRemoved(ClientEvent e) {
       CallbackAddress[] cba = e.getConnectQos().getSessionCbQueueProperty().getCallbackAddresses();

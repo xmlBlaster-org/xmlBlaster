@@ -1916,6 +1916,13 @@ public final class RequestBroker extends NotificationBroadcasterSupport
       if (log.isLoggable(Level.FINE)) log.fine(" client added:"+sessionInfo.getLoginName());
    }
 
+   /**
+    * Invoked on successful client re-login (interface I_ClientListener)
+    */
+   public void sessionUpdated(ClientEvent e) throws XmlBlasterException
+   {
+      if (log.isLoggable(Level.FINER)) log.finer("Session update event for client " + e.getSessionInfo().toString() + ", nothing to do");
+   }
 
    /**
     * Event invoked when client does a logout (interface I_ClientListener).

@@ -1493,6 +1493,14 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
       }
    }
 
+   /**
+    * Invoked on successful client re-login (interface I_ClientListener)
+    */
+   public void sessionUpdated(ClientEvent e) throws XmlBlasterException
+   {
+      if (log.isLoggable(Level.FINER)) log.finer("Session update event for client " + e.getSessionInfo().toString() + ", nothing to do");
+   }
+
    /* (non-Javadoc)
     * @see org.xmlBlaster.authentication.I_ClientListener#sessionPreRemoved(org.xmlBlaster.authentication.ClientEvent)
     */
