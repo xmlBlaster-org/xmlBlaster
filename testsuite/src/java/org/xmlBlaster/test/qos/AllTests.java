@@ -38,7 +38,6 @@ public class AllTests
       // So we currently switch off this test
       // suite.addTest(new TestSuite(org.xmlBlaster.test.qos.TestEmbeddedXmlBlaster.class));
       
-      suite.addTest(TestCorbaThreads.suite());
       suite.addTest(TestCallback.suite());
       suite.addTest(TestCallbackConfig.suite());
       suite.addTest(TestGet.suite());
@@ -72,6 +71,7 @@ public class AllTests
       suite.addTest(TestErase.suite());
       suite.addTest(TestUpdateClientException.suite());
       suite.addTest(TestClientProperty.suite());
+      suite.addTest(TestCorbaThreads.suite());
       return suite;
    }
 }
