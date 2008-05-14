@@ -4,6 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r16923 Bugfix: On reconnect update persistent session store with new ConnectQos
+          API change: Addd I_ClientListener#sessionUpdated(ClientEvent e) event to achieve this
+          Bugfix: I_Map#change() fixed to do the change in MapPlugin and PersistentPlugion
+          I_Map#change() supports now entries with different sizes
+
  o r16909 Java client library: Reject publish() etc. calls when state is DEAD
 
  o r16905 EmailDriver removed duplicate getAddressServer()
