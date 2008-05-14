@@ -34,12 +34,7 @@ NOTE 3: You can switch on specific logging to get a better idea what
    happens, typically this is a good choice:
    -logging/org.xmlBlaster.engine.RequestBroker FINER -logging/org.xmlBlaster.engine.cluster FINE -logging/org.xmlBlaster.client FINE
 
-NOTE 4: The demo below has following setup.
-   'avalon' is a slave to 'heron' for 'RUGBY_NEWS' messages.
-   The publisher publishes to the slave and the subscriber
-   subscribes from the master.
-   
-NOTE 5: You can monitor and control the cluster nodes with JMX (e.g. jconsole)
+NOTE 4: You can monitor and control the cluster nodes with JMX (e.g. jconsole)
    See: MBeans -> org.xmlBlaster -> /node/heron/service/ClusterManager
 
 
@@ -67,7 +62,7 @@ NOTE 5: You can monitor and control the cluster nodes with JMX (e.g. jconsole)
 3. Start a client connecting to avalon:
 =======================================
 
-   java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7501 -numPublish 20 -session.name pubisher/2 -persistent true -oid Hello -domain frodoDomain -content "We win"
+   java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7501 -numPublish 2000 -session.name pubisher/2 -persistent true -oid Hello -domain frodoDomain -content "We win"
    
      (add -destination /node/heron/client/subscriber/session/1 for PtP)
 
@@ -124,17 +119,23 @@ node to verify that no messages are lost.
 Example for a C++ client:
 =========================
 
-   PublishDemo -dispatch/connection/plugin/socket/port 7501 -numPublish 20 -session.name pubisher/2 -persistent true -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win" -destination client/subscriber/session/1
+   PublishDemo -dispatch/connection/plugin/socket/port 7501 -numPublish 2000 -session.name pubisher/2 -persistent true -oid PublishToSlave.RUGBY_NEWS -domain RUGBY_NEWS -content "We win" -destination client/subscriber/session/1
 
 
 Other examples:
 ===============
 
 Publish to avalon without domain:
-java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7501 -numPublish 20 -session.name pubisher/3 -persistent true -oid Hello
+java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7501 -numPublish 2000 -session.name pubisher/3 -persistent true -oid Hello
+
+Publish to heron without domain:
+java -Dcom.sun.management.jmxremote javaclients.HelloWorldPublish -dispatch/connection/plugin/socket/port 7700 -numPublish 2000 -session.name pubisherToHeron/2 -persistent true -oid Hello
 
 Subscribe to heron with avalon domain:
 java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7700 -oid Hello -session.name subscriberToHeron/1 -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -domain avalonDomain
+
+Subscribe to avalon with heronDomain:
+java -Dcom.sun.management.jmxremote javaclients.HelloWorldSubscribe -dispatch/connection/plugin/socket/port 7501 -oid Hello -session.name subscriberToAvalon/1 -persistentSubscribe true -multiSubscribe false -dispatch/callback/retries -1 -domain heronDomain
 
 Debug heron remotely:
 java -Dcom.sun.management.jmxremote -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n org.xmlBlaster.Main -propertyFile heron.properties
