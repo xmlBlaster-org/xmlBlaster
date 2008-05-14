@@ -219,6 +219,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                //cbAddress.addClientProperty(new ClientProperty("useRemoteLoginAsTunnel", true));
                cbAddress.addClientProperty(new ClientProperty("acceptRemoteLoginAsTunnel", true));
                tmpQos.addCallbackAddress(cbAddress);
+               tmpQos.setPersistent(true);
                log.info("Creating temporary session " + sessionName.getRelativeName() + " until real cluster node arrives");
                glob.getXmlBlasterAccess().connect(tmpQos, new I_Callback() {
                   public String update(String cbSessionId, UpdateKey updateKey,
