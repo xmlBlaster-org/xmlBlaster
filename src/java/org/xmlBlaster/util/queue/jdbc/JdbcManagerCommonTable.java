@@ -2391,12 +2391,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * Gets the real number of entries. 
     * That is it really makes a call to the DB to find out
     * how big the size is.
+    * @return never null
     */
    public final EntryCount getNumOfAll(String queueName)
       throws XmlBlasterException {
       if (!this.isConnected) {
          if (log.isLoggable(Level.FINE)) log.fine("Currently not possible. No connection to the DB");
-         return null;
+         return new EntryCount();
       }
 
       String req = "select durable, count(" + this.byteSizeColName + "), sum(" + this.byteSizeColName + ") from " + this.entriesTableName +
