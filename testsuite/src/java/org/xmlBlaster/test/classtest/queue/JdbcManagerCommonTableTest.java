@@ -124,14 +124,14 @@ public class JdbcManagerCommonTableTest extends TestCase {
          long oldNumOfBytes = this.manager.getNumOfBytes(queueName);
 
          entry.setPersistent(true);
-         this.manager.modifyEntry(queueName, entry);
+         this.manager.modifyEntry(queueName, entry, entry);
          long[] dataIds = new long[1];
          dataIds[0] = entry.getUniqueId();
          ArrayList tmp = this.manager.getEntries(storageId, dataIds);
          assertEquals(me + " modified entry is not correct ", true, ((DummyEntry)(tmp.get(0))).isPersistent());
 
          entry.setPersistent(false);
-         this.manager.modifyEntry(queueName, entry);
+         this.manager.modifyEntry(queueName, entry, entry);
          dataIds = new long[1];
          dataIds[0] = entry.getUniqueId();
          tmp = this.manager.getEntries(storageId, dataIds);
