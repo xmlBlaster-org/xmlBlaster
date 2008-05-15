@@ -5,15 +5,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * The default error recovery implementation for messages which are lost
@@ -24,17 +24,16 @@ import org.xmlBlaster.util.error.I_MsgErrorInfo;
 public final class ClientErrorHandler implements I_MsgErrorHandler
 {
    private final String ME;
-   private final Global glob;
+   //private final Global glob;
    private static Logger log = Logger.getLogger(ClientErrorHandler.class.getName());
-   private final I_XmlBlasterAccess xmlBlasterAccess;
+   //private final I_XmlBlasterAccess xmlBlasterAccess;
 
    /**
     */
    public ClientErrorHandler(Global glob, I_XmlBlasterAccess xmlBlasterAccess) {
-      this.ME = "ClientErrorHandler-" + xmlBlasterAccess.getId();
-      this.glob = glob;
-
-      this.xmlBlasterAccess = xmlBlasterAccess;
+      this.ME = xmlBlasterAccess.getId();
+      //this.glob = glob;
+      //this.xmlBlasterAccess = xmlBlasterAccess;
    }
 
    /**
@@ -59,7 +58,7 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
             shutdown = true;
          }
          else {
-            log.warning("Default error handling: Message '" + entries[i].getEmbeddedType() + "' '" +
+            log.warning(ME+": Default error handling: Message '" + entries[i].getEmbeddedType() + "' '" +
                        entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage() +
                        ". You can add your own client side error handler with I_XmlBlasterAccess.setClientErrorHandler() if desired.");
          }
@@ -75,7 +74,8 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
             return;
          }
       }
-
+      
+      log.severe(ex.getMessage());
       Thread.dumpStack();
       //if (xmlBlasterAccess.getQueue() != null)
       //   xmlBlasterAccess.getQueue().clear();
