@@ -475,15 +475,15 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
       if ((1 + map.getNumOfEntries()) > map.getMaxNumOfEntries())
          return new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME,
-                "Queue overflow (number of entries), " + getNumOfEntries() +
-                " entries are in queue, try increasing property '" +
+                "Storage overflow (number of entries), " + getNumOfEntries() +
+                " entries are in storage, try increasing property '" +
                 this.property.getPropName("maxEntries") + "' and '" +
                 this.property.getPropName("maxEntriesCache") + "', current settings are" + toXml(""));
 
       if ((mapEntry.getSizeInBytes() + map.getNumOfBytes()) > map.getMaxNumOfBytes())
          return new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,
-                "Queue overflow, " + getMaxNumOfBytes() +
-                " bytes are in queue, try increasing property '" + 
+                "Storage overflow, " + getMaxNumOfBytes() +
+                " bytes are in storage, try increasing property '" + 
                 this.property.getPropName("maxBytes") + "' and '" +
                 this.property.getPropName("maxBytesCache") + "', current settings are" + toXml(""));
 
