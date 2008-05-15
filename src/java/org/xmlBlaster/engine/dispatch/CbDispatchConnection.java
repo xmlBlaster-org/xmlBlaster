@@ -34,7 +34,6 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.xbformat.I_ProgressListener;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.authentication.plugins.CryptDataHolder;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 
