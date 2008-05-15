@@ -6,42 +6,37 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.util.queue.jdbc;
 
-import java.util.logging.Logger;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ThreadLister;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.Global;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-// import java.sql.BatchUpdateException;
-
-import java.util.Hashtable;
-
 import org.xmlBlaster.util.plugin.PluginInfo;
-import org.xmlBlaster.util.queue.QueuePluginManager;
-import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_EntryFilter;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Storage;
-import org.xmlBlaster.util.queue.I_EntryFactory;
-import org.xmlBlaster.util.queue.ReturnDataHolder;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.WeakHashMap;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.queue.ReturnDataHolder;
+import org.xmlBlaster.util.queue.StorageId;
 
 
 /**
