@@ -323,6 +323,10 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
    /** Call by DispatchConnectionsHandler on state transition */
    void toPolling(ConnectionStateEnum oldState) {
+      
+      if (isDead()) {
+         return;
+      }
 
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Switch from " + oldState + " to POLLING");
       if (this.toPollingTime <= this.toAliveTime) {
@@ -381,13 +385,17 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       if (oldState != ConnectionStateEnum.UNDEF)
          givingUpDelivery(ex);
    }
-
+   
    private void givingUpDelivery(XmlBlasterException ex) {
       if (log.isLoggable(Level.FINE)) log.fine(ME+": Entering givingUpDelivery(), state is " + this.dispatchConnectionsHandler.getState());
       removeBurstModeTimer();
 
-      // The error handler flushed the queue and does error handling with them
-      getMsgErrorHandler().handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
+      boolean userThread = this.dispatchConnectionsHandler.isUserThread();
+      if (!userThread) { // If the client user thread it will receive the exception and handle it self
+         // The error handler flushed the queue and does error handling with them
+         getMsgErrorHandler().handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, this, ex));
+      }
+      
       shutdown();
    }
    
@@ -442,6 +450,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       if (log.isLoggable(Level.FINER)) log.finer(ME+": Sync delivery failed connection state is " + this.dispatchConnectionsHandler.getState().toString() + ": " + throwable.toString());
 
       XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,ME,null,throwable);
+
+      if (isDead()) throw xmlBlasterException;
 
       if (xmlBlasterException.isUser()) {
          // Exception from remote client from update(), pass it to error handler and carry on ...?

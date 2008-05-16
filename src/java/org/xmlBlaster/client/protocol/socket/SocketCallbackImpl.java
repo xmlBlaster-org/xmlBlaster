@@ -386,6 +386,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
     * Shutdown callback only.
     */
    public synchronized void shutdown() {
+      super.shutdown();
       setCbClient(null); // reset callback client in super class SocketExecutor:callback
    }
 

@@ -144,6 +144,7 @@ public class HandleClient extends SocketExecutor implements Runnable
     * Close connection for one specific client
     */
    public void shutdown() {
+      super.shutdown();
       if (!running)
          return;
       synchronized (this) {
@@ -262,8 +263,9 @@ public class HandleClient extends SocketExecutor implements Runnable
             else
                log.warning("Can't handle publishOneway message, ignoring exception: " + e.toString());
 
-            if (e.getErrorCode().equals(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED) ||
-                  e.getErrorCode().equals(ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT)) {
+            if (e.isCleanupSession()) {
+            //if (e.getErrorCode().equals(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED) ||
+            //      e.getErrorCode().equals(ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT)) {
                shutdown(); // cleanup to avoid thread/memory leak for a client trying again an again
             }
          }
@@ -402,8 +404,6 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
       }
       finally {
-         driver.removeClient(this);
-         closeSocket();
          if (log.isLoggable(Level.FINE)) log.fine("Deleted thread for '" + loginName + "'.");
       }
    }

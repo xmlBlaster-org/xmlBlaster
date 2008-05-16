@@ -176,6 +176,7 @@ public class SocketCbConnection extends SocketExecutor
     */
    public void shutdown()
    {
+      super.shutdown();
       if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown of callback server");
       try { if (this.iStream != null) { this.iStream.close(); this.iStream=null; } } catch (IOException e) { log.warning(e.toString()); }
       try { if (this.oStream != null) { this.oStream.close(); this.oStream=null; } } catch (IOException e) { log.warning(e.toString()); }

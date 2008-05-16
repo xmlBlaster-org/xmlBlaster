@@ -96,6 +96,8 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    private final String logFormatLegacy;
    private final String logFormat;
    
+   private boolean cleanupSession;
+   
    static {
       String cname = null;
       try {
@@ -800,5 +802,13 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    public static void setExceptionHandler(
          I_XmlBlasterExceptionHandler exceptionHandler) {
       XmlBlasterException.exceptionHandler = exceptionHandler;
+   }
+
+   public boolean isCleanupSession() {
+      return cleanupSession;
+   }
+
+   public void setCleanupSession(boolean cleanupSession) {
+      this.cleanupSession = cleanupSession;
    }
 }

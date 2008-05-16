@@ -18,8 +18,10 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.IsoDateParser;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -306,6 +308,7 @@ final public class Authenticate implements I_RunlevelListener
       I_Manager securityMgr = null;
       SessionInfo sessionInfo = null;
 
+      // [4] Authenticate new client with password
       try {
          // Get suitable SecurityManager and context ...
          securityMgr = plgnLdr.getManager(connectQos.getClientPluginType(), connectQos.getClientPluginVersion());
@@ -373,6 +376,7 @@ final public class Authenticate implements I_RunlevelListener
          }
          */
 
+         // [5] New client is authenticated, create the SessioInfo
          boolean returnLocked = true;
          subjectInfo = getOrCreateSubjectInfoByName(connectQos.getSessionName(),
                                    returnLocked, sessionCtx.getSubject(), connectQos.getSubjectQueueProperty());
@@ -465,29 +469,53 @@ final public class Authenticate implements I_RunlevelListener
       catch (XmlBlasterException e) {
          String id = (sessionInfo != null) ? sessionInfo.getId() : ((subjectInfo != null) ? subjectInfo.getId() : "");
          log.warning("Connection for " + id + " failed: " + e.getMessage());
-         //e.printStackTrace(); Sometimes nice, often not - what to do?
-         try {
-            if (sessionInfo != null) sessionInfo.setTransportConnectFail(e);
-            disconnect(secretSessionId, (String)null); // cleanup
+         // e.g. by TestPersistentSession.java 
+         // persistence/session/maxEntriesCache=1
+         // persistence/session/maxEntries=2
+         if (!e.getErrorCode().isOfType(ErrorCode.USER_SECURITY_AUTHENTICATION)) {
+            // E.g. if sessionStore overflow: we don't want the client polling
+            //e.changeErrorCode(ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED);
+            e = new XmlBlasterException(e.getGlobal(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED,
+                  ME, "Access to xmlBlaster denied", e);
          }
-         catch (Throwable th) {
-            log.warning("Ignoring problems during cleanup of exception '" + e.getMessage() + "':" + th.getMessage());
-         }
+         e.setCleanupSession(true);
+         // cleanup delayed to give our throw return a chance to reach client before the socket is closed
+         // Too dangerous: The stale SessionInfo could be reaccessed during the sleep
+         // There for we do the delay in CallbackSocketDriver ...
+         //disconnectDelayed(secretSessionId, (String)null, 5000, e); // cleanup
+         disconnect(secretSessionId, (String)null);
          throw e;
       }
-      catch (Throwable e) {
-         e.printStackTrace();
-         log.severe("Internal error: Connect failed: " + e.getMessage());
-         try {
-            disconnect(secretSessionId, (String)null); // cleanup
-         }
-         catch (Throwable th) {
-            log.warning("Ignoring problems during cleanup of exception '" + e.getMessage() + "':" + th.getMessage());
-         }
-         throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);
+      catch (Throwable t) {
+         t.printStackTrace();
+         log.severe("Internal error: Connect failed: " + t.getMessage());
+         //disconnectDelayed(secretSessionId, (String)null, 10000, t); // cleanup
+         disconnect(secretSessionId, (String)null);
+         // E.g. if NPE: we don't want the client polling: Should we change to USER_SECURITY_AUTHENTICATION_ACCESSDENIED?
+         XmlBlasterException e = XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), t);
+         e.setCleanupSession(true);
+         throw e;
       }
    }
-
+   
+   /*
+    * Probably dangerous as the sessionInfo is visible and could be found
+    * by a reconnecting client and the it is suddenly destroyed after the delay
+   private void disconnectDelayed(final String secretSessionId, final String qos_literal, long delay, final Throwable reason) {
+      Timeout timeout = new Timeout("DisconnectTimer", true);
+      timeout.addTimeoutListener(new I_Timeout() {
+         public void timeout(Object userData) {
+            try {
+               disconnect(secretSessionId, qos_literal); // cleanup delayed to give our throw return a chance to reach client
+            }
+            catch (XmlBlasterException e) {
+               e.printStackTrace();
+               log.warning("Ignoring problems during cleanup of exception: " + e.getMessage() + ((reason==null) ? "" : (": " + reason.getMessage())));
+            }
+         }
+      }, delay, secretSessionId);
+   }
+    */
 
    public final /*synchronized*/ void disconnect(String secretSessionId, String qos_literal) throws XmlBlasterException {
       try {

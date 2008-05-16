@@ -51,6 +51,8 @@ abstract public class DispatchConnection implements I_Timeout
    protected final Global glob;
    private static Logger log = Logger.getLogger(DispatchConnection.class.getName());
 
+   public static final String PING_THREAD_NAME = "_xmlBlaster.timerThread";
+   
    protected DispatchConnectionsHandler connectionsHandler = null;
 
    /** For logging only */
@@ -416,33 +418,21 @@ abstract public class DispatchConnection implements I_Timeout
     *                 here it is "poll" or null
     */
    public final void timeout(Object userData) {
-      this.timerKey = null;
-
-      if (isDead())
-         return;
-
-      boolean isPing = (userData == null);
-
-      if (isPing) {
-         if (log.isLoggable(Level.FINE))
-            log.fine(ME + " timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
-         try {
-            /*String result = */ping("", false);
-         }
-         catch (XmlBlasterException e) {
-            if (isDead()) {
-               if (log.isLoggable(Level.FINE)) log.fine(ME + "We are shutdown already: " + e.toString());
-            }
-            else {
-               e.printStackTrace();
-               log.severe(ME + "PANIC: " + e.toString());
-            }
-         } // is handled in ping() itself
-      }
-      else { // reconnect polling
-         try {
-            if (log.isLoggable(Level.FINE)) log.fine(ME + "timeout -> Going to check if remote server is available again, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
-            reconnect(); // The ClientDispatchConnection may choose to ping only
+      
+      String origThreadName = Thread.currentThread().getName();
+      Thread.currentThread().setName(PING_THREAD_NAME);
+      
+      try {
+         this.timerKey = null;
+   
+         if (isDead())
+            return;
+   
+         boolean isPing = (userData == null);
+   
+         if (isPing) {
+            if (log.isLoggable(Level.FINE))
+               log.fine(ME + " timeout -> Going to ping remote server, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
             try {
                /*String result = */ping("", false);
             }
@@ -452,17 +442,40 @@ abstract public class DispatchConnection implements I_Timeout
                }
                else {
                   e.printStackTrace();
-                  log.severe(ME + "PANIC: " + e.toString()); // is handled in ping() itself
+                  log.severe(ME + "PANIC: " + e.toString());
+               }
+            } // is handled in ping() itself
+         }
+         else { // reconnect polling
+            try {
+               if (log.isLoggable(Level.FINE)) log.fine(ME + "timeout -> Going to check if remote server is available again, physicalConnectionOk=" + this.physicalConnectionOk + ", serverAcceptsRequests=" + this.serverAcceptsRequests + " ...");
+               reconnect(); // The ClientDispatchConnection may choose to ping only
+               try {
+                  /*String result = */ping("", false);
+               }
+               catch (XmlBlasterException e) {
+                  if (isDead()) {
+                     if (log.isLoggable(Level.FINE)) log.fine(ME + "We are shutdown already: " + e.toString());
+                  }
+                  else {
+                     e.printStackTrace();
+                     log.severe(ME + "PANIC: " + e.toString()); // is handled in ping() itself
+                  }
                }
             }
+            catch (Throwable e) {
+               if (log.isLoggable(Level.FINE)) log.fine("Polling for remote connection" + this.myId + " failed:" + e.getMessage());
+               if (e instanceof NullPointerException)
+                   e.printStackTrace();
+               if (logInterval > 0 && (retryCounter % logInterval) == 0)
+                  log.warning("No connection established, " + this.myId + address.getLogId() + " still seems to be down after " + (retryCounter+1) + " connection retries.");
+               try { handleTransition(false, e); } catch(XmlBlasterException e2) { e.printStackTrace(); log.severe("PANIC: " + e.toString()); }
+            }
          }
-         catch (Throwable e) {
-            if (log.isLoggable(Level.FINE)) log.fine("Polling for remote connection" + this.myId + " failed:" + e.getMessage());
-            if (e instanceof NullPointerException)
-                e.printStackTrace();
-            if (logInterval > 0 && (retryCounter % logInterval) == 0)
-               log.warning("No connection established, " + this.myId + address.getLogId() + " still seems to be down after " + (retryCounter+1) + " connection retries.");
-            try { handleTransition(false, e); } catch(XmlBlasterException e2) { e.printStackTrace(); log.severe("PANIC: " + e.toString()); }
+      }
+      finally {
+         if (origThreadName != null) {
+            Thread.currentThread().setName(origThreadName);
          }
       }
    }

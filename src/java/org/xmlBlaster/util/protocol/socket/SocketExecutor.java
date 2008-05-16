@@ -306,7 +306,9 @@ public abstract class SocketExecutor extends RequestReplyExecutor implements Soc
       }
    }
 
-   public void shutdown() {}
+   public void shutdown() {
+      super.shutdown();
+   }
 
    public String getVersion() {
       return "1.0";

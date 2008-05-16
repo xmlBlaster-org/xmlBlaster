@@ -43,6 +43,10 @@ public final class CbDispatchConnectionsHandler extends DispatchConnectionsHandl
       super(glob, dispatchManager);
       this.ME = "CbDispatchConnectionsHandler-" + dispatchManager.getQueue().getStorageId();
    }
+   
+   public boolean isUserThread() {
+      return false;
+   }
 
    /**
     * @return a new CbDispatchConnection instance which has its plugin loaded

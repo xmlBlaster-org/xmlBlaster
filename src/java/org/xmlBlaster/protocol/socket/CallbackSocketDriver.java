@@ -10,7 +10,9 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -238,8 +240,22 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
       if (CallbackSocketDriver.log != null) {
          if (log.isLoggable(Level.FINER)) log.finer("shutdown()");
       } 
-      if (this.handler != null) {
-         this.handler.shutdown();
+      final SocketExecutor se = this.handler;
+      if (se != null) {
+         // The core can not do it, it does not know the HandleClient instance
+         // it would be possible to pass the HandleClient with AddressServer to
+         // the core but this needs to be discussed
+         //this.handler.shutdown();
+         
+         // Give a Authenticate.connect exception to be delivered to the client
+         // or the client some chance to close the socket itself after disconnect
+         long delay = 5000; // 5 sec
+         new Timeout("CallbackSocketShutdownTimer", true).addTimeoutListener(new I_Timeout() {
+               public void timeout(Object userData) {
+                  se.shutdown();
+                  //handler = null;
+               }
+            }, delay, null);
       }
    }
    

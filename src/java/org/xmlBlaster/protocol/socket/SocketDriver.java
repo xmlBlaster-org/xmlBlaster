@@ -94,7 +94,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
    /** Remember all client connections */
    private Set handleClientSet = new HashSet();
 
-   private Map handleClientMap = new HashMap();
+   private Map/*<secretSessionId, HandleClient>*/ handleClientMap = new HashMap();
 
    /** The address configuration */
    private AddressServer addressServer;

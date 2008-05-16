@@ -343,6 +343,12 @@ abstract public class DispatchConnectionsHandler
    private final void updateState(XmlBlasterException ex) {
       ConnectionStateEnum oldState = this.state;
       ConnectionStateEnum tmp = ConnectionStateEnum.DEAD;
+      
+      if (oldState == ConnectionStateEnum.DEAD) {
+         log.warning("Ignoring state change as we are in DEAD: " + ((ex == null) ? "" : ex.getMessage()));
+         return;
+      }
+      
       if (log.isLoggable(Level.FINE)) log.fine(ME+": updateState() oldState="+oldState+" conList.size="+
             getCountDispatchConnection());
       DispatchConnection[] arr = getDispatchConnectionArr();
@@ -438,9 +444,9 @@ abstract public class DispatchConnectionsHandler
     */
    public void send(MsgQueueEntry[] msgArr, boolean isAsyncMode) throws Throwable, XmlBlasterException
    {
-      if (isDead()) // if (conList.size() < 1)
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Callback of " + msgArr.length + " messages '" + msgArr[0].getKeyOid() +
-            "' from [" + msgArr[0].getSender() + "] failed, no callback connection is available");
+      ///////////////if (isDead())
+      /////////////   throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Sending of " + msgArr.length + " messages '" + msgArr[0].getKeyOid() +
+      ////////////      "' from [" + msgArr[0].getSender() + "] failed, no connection is available");
 
       Throwable ex = null; // to remember exception
 
@@ -492,6 +498,8 @@ abstract public class DispatchConnectionsHandler
    public final DispatchStatistic getDispatchStatistic() {
       return this.statistic; 
    }
+   
+   abstract public boolean isUserThread();
 
    /**
     * Stop all callback drivers of this client.

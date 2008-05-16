@@ -701,6 +701,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       Latch latch;
       boolean latchIsInterrupted;
    }
+   
+   public void shutdown() {}
 
    /**
     * Interrupts a blocking request with a not returning reply.

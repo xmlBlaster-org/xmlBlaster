@@ -53,6 +53,10 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
       super(glob, dispatchManager);
       this.ME = "ClientDispatchConnectionsHandler-" + dispatchManager.getQueue().getStorageId();
    }
+   
+   public boolean isUserThread() {
+      return !DispatchConnection.PING_THREAD_NAME.equals(Thread.currentThread().getName());
+   }
 
    /**
     * @return a new ClientDispatchConnection instance which has its plugin loaded
