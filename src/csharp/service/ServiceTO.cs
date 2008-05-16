@@ -130,6 +130,15 @@ namespace org.xmlBlaster.contrib.service {
          return true;
       }
 
+      public PropTO setData(byte[] data)
+      {
+         PropTO dat = new PropTO(PropTO.KEY_DATA, data);
+         addProp(dat);
+         if (dat.isBase64Encoding())
+            addProp(new PropTO(PropTO.KEY_DATAENCODING, PropTO.ENCODING_BASE64));
+         return dat;
+      }
+
       public void setProps(List<PropTO> propTOs) {
          this.propTOs = propTOs;
       }
