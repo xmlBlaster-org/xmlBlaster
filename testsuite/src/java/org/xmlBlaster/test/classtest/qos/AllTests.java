@@ -19,6 +19,7 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.qos.MsgQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.qos.AddressBaseTest.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.qos.ConnectQosFactoryTest.class));
       suite.addTest(StatusQosFactoryTest.suite());
       suite.addTest(QueryQosFactoryTest.suite());
       return suite;
