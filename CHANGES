@@ -4,9 +4,12 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r16934 Bugfix: Closing socket on server side delayed to allow exception to reach the client
+          Bugfix: On Java client side avoid calling ClientErrorHandler when the thread is sync from client code
+
  o r16925 Bugfix: On reconnect update persistent session store with new ConnectQos
           API change: Addd I_ClientListener#sessionUpdated(ClientEvent e) event to achieve this
-          Bugfix: I_Map#change() fixed to do the change in MapPlugin and PersistentPlugion
+          Bugfix: I_Map#change() fixed to do the change in MapPlugin and PersistentPlugin
           I_Map#change() supports now entries with different sizes
 
  o r16909 Java client library: Reject publish() etc. calls when state is DEAD
