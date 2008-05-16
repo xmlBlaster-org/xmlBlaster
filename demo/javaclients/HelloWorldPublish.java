@@ -96,7 +96,7 @@ public class HelloWorldPublish
          boolean interactive = glob.getProperty().get("interactive", true);
          boolean oneway = glob.getProperty().get("oneway", false);
          long sleep = glob.getProperty().get("sleep", 1000L);
-         int numPublish = glob.getProperty().get("numPublish", 1);
+         int numPublish = glob.getProperty().get("numPublish", 2000);
          String oid = glob.getProperty().get("oid", "Hello");  // "HelloTopic_#%counter"
          String domain = glob.getProperty().get("domain", (String)null);
          String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo/></org.xmlBlaster>");
@@ -221,7 +221,7 @@ public class HelloWorldPublish
                public void reachedDead(ConnectionStateEnum oldState,
                                        I_XmlBlasterAccess connection) {
                   log.warning("I_ConnectionStateListener: Connection from " +
-                          connection.getGlobal().getId() + " to xmlBlaster is DEAD, doing exit.");
+                          connection.getGlobal().getId() + " to xmlBlaster is DEAD.");
                   //System.exit(1);
                }
             });
