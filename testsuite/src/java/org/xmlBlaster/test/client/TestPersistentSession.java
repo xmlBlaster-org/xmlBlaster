@@ -116,6 +116,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       this.serverGlobal = this.origGlobal.getClone(args);
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
       log.info("XmlBlaster is ready for testing on bootstrapPort " + serverPort);
+      
+      System.out.println("============== Connect/Disconnect for general/1 to cleanup first");
 
       try { // we just connect and disconnect to make sure all resources are really cleaned up
          Global tmpGlobal = this.origGlobal.getClone(null);
@@ -156,7 +158,9 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
           e.printStackTrace();
           fail("setUp() - login fail: " + e.toString());
       }
-      
+
+      System.out.println("============== Connect for general/1");
+
       try {
          I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess(); // Find orb
 
@@ -202,6 +206,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     * cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown() {
+      System.out.println("============== Entering tearDown(), test is finished");
       log.info("Entering tearDown(), test is finished");
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestPersistentSession-AGENT" +
@@ -210,6 +215,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
       I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       try {
+         System.out.println("============== tearDown(), erase: " + xmlKey);
          con.erase(xmlKey, qos);
 
          PropString defaultPlugin = new PropString("CACHE,1.0");
@@ -220,7 +226,10 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          log.severe("XmlBlasterException: " + e.getMessage());
       }
       finally {
+         System.out.println("============== tearDown(), disconnect");
          con.disconnect(null);
+         Util.delay(1000);
+         System.out.println("============== tearDown(), stopXmlBlaster");
          EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
          this.serverThread = null;
          // reset to default server bootstrapPort (necessary if other tests follow in the same JVM).
@@ -232,6 +241,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          con = null;
          Global.instance().shutdown();
       }
+      System.out.println("============== tearDown() done");
    }
 
    /**
@@ -295,11 +305,13 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                if (doStop) {
                   log.info("Stopping xmlBlaster, but continue with publishing ...");
                   EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+                  System.out.println("============== Stopped xmlBlaster, but continue with publishing");
                   this.serverThread = null;
                }
                else {
                   log.info("changing run level but continue with publishing ...");
                   this.serverThread.changeRunlevel(0, true);
+                  System.out.println("============== Changed run level to 0 but continue with publishing");
                }
             }
             if (i == numStart) {
@@ -308,11 +320,13 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                   // serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
                   serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
                   log.info("xmlBlaster started, waiting on tail back messsages");
+                  System.out.println("============== XmlBlaster started, waiting on two tail back messsages");
                }
                else {
                   log.info("changing runlevel again to runlevel 9. Expecting the previous published two messages ...");
                   this.serverThread.changeRunlevel(9, true);
                   log.info("xmlBlaster runlevel 9 reached, waiting on tail back messsages");
+                  System.out.println("============== Changed runlevel again to runlevel 9. Expecting the previous published two messages");
                }
                
                // Message-4 We need to wait until the client reconnected (reconnect interval)
@@ -375,10 +389,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                         " priority=" + updateQos.getPriority() +
                         " state=" + updateQos.getState() +
                         " content=" + cont);
-      log.info("further log for receiving update of a message cbSessionId=" + cbSessionId +
+      log.severe("update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions), further log for receiving update of a message cbSessionId=" + cbSessionId +
                      updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
-      log.severe("update: should never be invoked (msgInterceptors take care of it since they are passed on subscriptions)");
-
       return "OK";
    }
 
@@ -386,12 +398,14 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    public void testXPathInitialStop() {
       this.exactSubscription = false;
       this.initialUpdates = true;
+      System.out.println("============== testXPathInitialStop");
       persistentSession(true);
    }
 
    public void testXPathNoInitialStop() {
       this.exactSubscription = false;
       this.initialUpdates = false;
+      System.out.println("============== testXPathNoInitialStop");
       persistentSession(true);
    }
 
@@ -399,6 +413,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       this.persistent = true;
       this.exactSubscription = false;
       this.initialUpdates = true;
+      System.out.println("============== testXPathInitialRunlevelChange");
       persistentSession(false);
    }
 
@@ -444,6 +459,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
     *
     */
    public void testOverflow() {
+      System.out.println("============== testXPathNoInitialStop");
       // to change the configuration on server side (limit the queue sizes)
       tearDown();
       setup(true);
@@ -456,6 +472,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
          globals[4] = createConnection(this.origGlobal, "jonny/5", true, true);
       }
       finally {
+         Util.delay(2000);
          for (int i=0; i < globals.length; i++) {
             if (globals[i] != null) globals[i].getXmlBlasterAccess().disconnect(new DisconnectQos(globals[i]));
          }
@@ -493,6 +510,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       testSub.setUp();
       testSub.testOverflow();
       testSub.tearDown();
+
+      log.info("Main done");
    }
 }
 
