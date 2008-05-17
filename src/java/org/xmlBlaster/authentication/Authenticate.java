@@ -1030,7 +1030,9 @@ final public class Authenticate implements I_RunlevelListener
    }
 
    /**
-    * Helper method where protocol layers may report a lost connection.
+    * Helper method where protocol layers may report a lost connection (e.g. socket EOF).
+    * <p>
+    * The SessionInfo can than do an immediate ping() to trigger POLLING mode
     * @see I_Authenticate#connectionState(String, ConnectionStateEnum)
     */
    public void connectionState(String secretSessionId, ConnectionStateEnum state) {
