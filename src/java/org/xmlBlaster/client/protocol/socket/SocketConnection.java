@@ -79,6 +79,7 @@ public class SocketConnection implements I_XmlBlasterConnection
    private I_ProgressListener tmpProgressListener;
    /** Cluster node re-uses conection from remote node */
    boolean useRemoteLoginAsTunnel;
+   //boolean acceptRemoteLoginAsTunnel;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter.
@@ -164,7 +165,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       this.clientAddress = address;
       this.useRemoteLoginAsTunnel = this.clientAddress.getEnv("useRemoteLoginAsTunnel", false).getValue();
       // The cluster slave accepts publish(), subscribe() etc callbacks
-      //this.acceptRemoteLoginAsTunnel = this.callbackAddress.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
+      //this.acceptRemoteLoginAsTunnel = this.clientAddress.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
 
       if (this.pluginInfo != null)
          this.clientAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
