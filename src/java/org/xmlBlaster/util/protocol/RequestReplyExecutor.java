@@ -386,26 +386,32 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       }
       return (I_ResponseListener)this.responseListenerMap.get(requestId);
    }
+   
+   /**
+    * For logging only
+    * @return null if none found
+    */
+   public final String getPendingRequestList() {
+      synchronized (this.responseListenerMap) { // for iteration we need to sync
+         if (this.responseListenerMap.size() > 0) {
+            StringBuffer buf = new StringBuffer(256);
+            java .util.Iterator iterator = this.responseListenerMap.keySet().iterator();
+            while (iterator.hasNext()) {
+               if (buf.length() > 0) buf.append(", ");
+               String key = (String)iterator.next();
+               buf.append(key);
+            }
+            return buf.toString();
+         }
+      }
+      return null;
+   }
 
    public void clearResponseListenerMap() {
       try {
-         StringBuffer buf = null;
-         int size = 0;
-         synchronized (this.responseListenerMap) { // for iteration we need to sync
-            size = this.responseListenerMap.size();
-            if (size > 0) {
-               buf = new StringBuffer(256);
-               java .util.Iterator iterator = this.responseListenerMap.keySet().iterator();
-               while (iterator.hasNext()) {
-                  if (buf.length() > 0) buf.append(", ");
-                  String key = (String)iterator.next();
-                  buf.append(key);
-               }
-            }
-         }
-         if (size > 0) {
-            if (buf != null)
-               log.warning(ME+" There are " + size + " messages pending without a response, request IDs are '" + buf.toString() + "', we remove them now.");
+         String str = getPendingRequestList();
+         if (str != null) {
+            log.warning(ME+" There are " + this.responseListenerMap.size() + " messages pending without a response, request IDs are '" + str + "', we remove them now.");
             this.responseListenerMap.clear();
             this.responseListenerMapWasCleared = true;
          }
