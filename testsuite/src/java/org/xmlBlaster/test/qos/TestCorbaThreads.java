@@ -17,6 +17,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.protocol.corba.OrbInstanceFactory;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.XmlBlasterException;
 
 import org.omg.CORBA.ORB;
 import org.omg.PortableServer.POA;
@@ -200,6 +201,10 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    }
    public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) {
       if (log.isLoggable(Level.FINER)) log.finer("Receiving update of a message ...");
+   }
+
+   public void lostConnection(XmlBlasterException xmlBlasterException) {
+      if (log.isLoggable(Level.FINER)) log.finer("Lost connection ...");
    }
 
    /**
