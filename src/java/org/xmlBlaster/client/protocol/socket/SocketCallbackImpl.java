@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -24,6 +25,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.protocol.socket.SocketUrl;
@@ -61,13 +63,20 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    private boolean useRemoteLoginAsTunnel;
    private SocketExecutor remoteLoginAsTunnelSocketExecutor;
    private boolean acceptRemoteLoginAsTunnel;
+   private String secretSessionId; // only for acceptRemoteLoginAsTunnel
+   
    private I_Authenticate authenticateCore;
+   
+   private Thread callbackListenerThread;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter.
     * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
+    * <p>
+    * After polling -> alive NO new instance is created, but only initialize() is called
     */
    public SocketCallbackImpl() {
+      if (log.isLoggable(Level.FINEST)) log.finest("ctor");
    }
 
    /** Enforced by I_Plugin */
@@ -100,6 +109,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    /**
     * Initialize and start the callback server
     * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
+    * <p>
+    * Same SocketCallback instance is called several times by SocketConnection.connectLowLevel() (on polling->alive)
     */
    public synchronized final void initialize(Global glob, String loginName,
                             CallbackAddress callbackAddress, I_CallbackExtended cbClient) throws XmlBlasterException {
@@ -202,18 +213,18 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
          this.callbackAddress.setRawAddress(this.socketUrl.getUrl());
          if (log.isLoggable(Level.FINE)) log.fine("Callback uri=" + this.socketUrl.getUrl());
 
-         this.threadRunning = true;
-         Thread t = new Thread(this, "XmlBlaster."+getType());
-         t.setDaemon(true);
+         callbackListenerThread = new Thread(this, "XmlBlaster."+getType());
+         callbackListenerThread.setDaemon(true);
          int threadPrio = this.callbackAddress.getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
          try {
-            t.setPriority(threadPrio);
+            callbackListenerThread.setPriority(threadPrio);
             if (log.isLoggable(Level.FINE)) log.fine("-dispatch/callback/plugin/socket/threadPrio = " + threadPrio);
          }
          catch (IllegalArgumentException e) {
             log.warning("Your -dispatch/callback/plugin/socket/threadPrio " + threadPrio + " is out of range, we continue with default setting " + Thread.NORM_PRIORITY);
          }
-         t.start();
+         this.threadRunning = true;
+         callbackListenerThread.start();
       }
    }
 
@@ -258,7 +269,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
       boolean multiThreaded = this.callbackAddress.getEnv("multiThreaded", true).getValue();
       if (log.isLoggable(Level.FINE)) log.fine("SOCKET multiThreaded=" + multiThreaded);
 
-      while(threadRunning) {
+      while(threadRunning && this.callbackListenerThread == Thread.currentThread()) {
 
          try {
             // This method blocks until a message arrives
@@ -295,13 +306,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                   conQos.getAddressServer().setCallbackDriver(callbackSocketDriver);
                   conQos.getData().getCurrentCallbackAddress().setCallbackDriver(callbackSocketDriver);
                   ConnectReturnQosServer retQos = getAuthenticateCore().connect(conQos);
-                  // TODO: Register our socket for callbacks
+                  this.secretSessionId = retQos.getSecretSessionId();
                   receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-                  
-                  // "ClusterManager[cluster]/SocketExecutorclientjoesession1"
-                  //final String globalKey = SocketExecutor.getGlobalKey(conQos.getSessionName());
-                  //serverScope.addObjectEntry(globalKey, this);
-                  
                   executeResponse(receiver, retQos.toXml(), SocketUrl.SOCKET_TCP);
                }
                else if (MethodName.DISCONNECT == receiver.getMethodName()) {
@@ -375,9 +381,29 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                // Exceptions ends nowhere but terminates the thread
                
                // Notify client library  XmlBlasterAccess.java to go to polling
-               I_CallbackExtended cb = this.cbClient;
-               if (cb != null) {
-                  cb.lostConnection(XmlBlasterException.convert(this.glob, ME, "Lost socket connection", e));
+               try {
+                  I_CallbackExtended cb = this.cbClient;
+                  if (cb != null) {
+                     cb.lostConnection(XmlBlasterException.convert(this.glob, ME, "Lost socket connection", e));
+                  }
+               }
+               catch(Throwable xx) {
+                  xx.printStackTrace();
+               }
+               
+               if (this.acceptRemoteLoginAsTunnel) {
+                  try {
+                     AddressServer addr = this.addressServer;
+                     if (addr != null) {
+                        CallbackSocketDriver cbd = (CallbackSocketDriver)addr.getCallbackDriver();
+                        if (cbd != null) {
+                           cbd.shutdown(); // notify about lost connection
+                        }
+                     }
+                  }
+                  catch(Throwable xx) {
+                     xx.printStackTrace();
+                  }
                }
             }
          }
@@ -403,6 +429,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
     */
    public synchronized void shutdownSocket() {
       if (log.isLoggable(Level.FINE)) log.fine("Entering shutdownSocket()");
+      boolean needsCleanup = this.threadRunning; // good enough for all cases?
       this.threadRunning = false;
       if (!this.useRemoteLoginAsTunnel) { // Do we own the socket?
          if (this.iStream != null) {
@@ -416,6 +443,14 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
       }
       clearResponseListenerMap();
       freePendingThreads();
+      if (this.acceptRemoteLoginAsTunnel) {
+         if (needsCleanup) {
+            I_Authenticate a = getAuthenticateCore();
+            String s = this.secretSessionId;
+            if (a != null && s != null)
+               a.connectionState(s, ConnectionStateEnum.DEAD);
+         }
+      }
    }
 
    public I_Authenticate getAuthenticateCore() {
