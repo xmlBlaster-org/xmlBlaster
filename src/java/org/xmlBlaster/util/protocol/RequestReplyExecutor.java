@@ -109,7 +109,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       this.glob = (glob == null) ? Global.instance() : glob;
 
       this.addressConfig = addressConfig.getClone();
-      this.ME = RequestReplyExecutor.class.getName() + ":" + addressConfig.getRawAddress();
+      this.ME = addressConfig.getRawAddress() + "-" + addressConfig.getSessionName();
       
       if (this.addressConfig instanceof AddressServer) {
          this.addressServer = (AddressServer)this.addressConfig;
@@ -405,7 +405,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          }
          if (size > 0) {
             if (buf != null)
-               log.warning("There are " + size + " messages pending without a response, request IDs are '" + buf.toString() + "', we remove them now.");
+               log.warning(ME+" There are " + size + " messages pending without a response, request IDs are '" + buf.toString() + "', we remove them now.");
             this.responseListenerMap.clear();
             this.responseListenerMapWasCleared = true;
          }
