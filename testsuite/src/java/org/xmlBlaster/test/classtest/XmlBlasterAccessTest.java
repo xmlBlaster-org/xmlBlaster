@@ -15,6 +15,7 @@ import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.Address;
 
 /**
@@ -77,7 +78,7 @@ public class XmlBlasterAccessTest extends TestCase {
             fail("Not expected successful connect");
          }
          catch (XmlBlasterException e) {
-            if (e.isUser())
+            if (e.isErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD))
                log.info("Exception is OK if not connected: " + e.getErrorCode());
             else
                fail("testDefaultConnectWithoutServer failed: " + e.getMessage());
