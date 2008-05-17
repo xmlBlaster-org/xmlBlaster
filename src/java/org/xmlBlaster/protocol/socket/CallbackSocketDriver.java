@@ -237,7 +237,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    }
 
    public void shutdown() {
-      if (CallbackSocketDriver.log != null) {
+      if (log != null) {
          if (log.isLoggable(Level.FINER)) log.finer("shutdown()");
       } 
       final SocketExecutor se = this.handler;
