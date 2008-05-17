@@ -48,7 +48,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    private final String loginName = "TestCorbaThreads";
    private CorbaConnection corbaConnection = null;
    private I_CallbackServer cbServer = null;
-
+   private String[] args = { "-protocol", "IOR" };
 
    /**
     * Constructs the TestCorbaThreads object.
@@ -57,8 +57,7 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
     */
    public TestCorbaThreads(Global glob, String testName) {
        super(testName);
-       this.glob = glob;
-
+       this.glob = glob.getClone(args);
    }
 
    /**
@@ -88,7 +87,8 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 
    protected void setUp() {
       glob.init(Util.getOtherServerPorts(8116));
-      String[] args = { "-ProtocolPlugin[IOR][1.0]", "org.xmlBlaster.protocol.corba.CorbaDriver",
+      String[] args = { "-protocol", "IOR",
+                        "-ProtocolPlugin[IOR][1.0]", "org.xmlBlaster.protocol.corba.CorbaDriver",
                         "-CbProtocolPlugin[IOR][1.0]", "org.xmlBlaster.protocol.corba.CallbackCorbaDriver" };
       glob.init(args);
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
