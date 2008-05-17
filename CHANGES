@@ -14,6 +14,7 @@ Changes for current svn
 
  o r16934 Bugfix: Closing socket on server side delayed to allow exception to reach the client
           Bugfix: On Java client side avoid calling ClientErrorHandler when the thread is sync from client code
+          Throwing now COMMUNICATION_NOCONNECTION_DEAD instead of USER ErrorCode when no server and no fail save
 
  o r16925 Bugfix: On reconnect update persistent session store with new ConnectQos
           API change: Addd I_ClientListener#sessionUpdated(ClientEvent e) event to achieve this
