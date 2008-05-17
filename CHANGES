@@ -4,6 +4,10 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
+ o r16941  SOCKET Java client library:
+          Immediate notify socket EOF to Java client library,
+          now pingInterval=0 works as well (for none blocking cases)
+
  o r16934 Bugfix: Closing socket on server side delayed to allow exception to reach the client
           Bugfix: On Java client side avoid calling ClientErrorHandler when the thread is sync from client code
 
