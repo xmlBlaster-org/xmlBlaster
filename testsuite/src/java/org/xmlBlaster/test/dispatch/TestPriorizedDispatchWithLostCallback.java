@@ -274,6 +274,7 @@ public class TestPriorizedDispatchWithLostCallback extends TestCase
                   return "";
                }
                public I_ClientPlugin getSecurityPlugin() { return null; }
+               public void lostConnection(XmlBlasterException xmlBlasterException) {}
             }); // Establish new callback server
          }
          catch (Throwable e) {
