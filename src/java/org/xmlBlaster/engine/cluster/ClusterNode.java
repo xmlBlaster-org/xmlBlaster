@@ -20,6 +20,7 @@ import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.engine.ServerScope;
 import org.xmlBlaster.protocol.I_Driver;
@@ -145,7 +146,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
       if (this.xmlBlasterConnection == null) { // Login to other cluster node ...
          
-         ConnectQosData qos = getNodeInfo().getConnectQosData();
+         ConnectQosData connectQosData = getNodeInfo().getConnectQosData();
          
          // Reuse in a gateway the remote cluster node login's socket for our connection
          // Only for protocol of types "socket*"
@@ -155,9 +156,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          //  <ptp>true</ptp>
          //  <attribute name='useRemoteLoginAsTunnel' type='boolean'>true</attribute>
          //</address>
-         boolean useRemoteLoginAsTunnel = qos.getAddress().getEnv("useRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
+         boolean useRemoteLoginAsTunnel = connectQosData.getAddress().getEnv("useRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
          if (useRemoteLoginAsTunnel) { // The cluster master tries to tunnel using the slaves connection
-            final String globalKey = SocketExecutor.getGlobalKey(qos.getSessionName());
+            final String globalKey = SocketExecutor.getGlobalKey(connectQosData.getSessionName());
             final String secretSessionId = null;
             final int pubSessionId = 1;
             // "client/avalon/session/1" (we are heron and want to re-use avalons connection)
@@ -278,7 +279,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             */
          }
          
-         boolean acceptRemoteLoginAsTunnel = qos.getAddress().getEnv("acceptRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
+         boolean acceptRemoteLoginAsTunnel = connectQosData.getAddress().getEnv("acceptRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
          if (acceptRemoteLoginAsTunnel) { // The cluster slave accepts publish(), subscribe() etc callbacks
             this.remoteGlob.addObjectEntry("ClusterManager[cluster]/I_Authenticate", this.fatherGlob.getAuthenticate());
             this.remoteGlob.addObjectEntry("ClusterManager[cluster]/I_XmlBlaster", this.fatherGlob.getAuthenticate().getXmlBlaster());
@@ -291,21 +292,29 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // fixed to be unique since 1.5.2
          boolean oldQueueNameBehavior = this.remoteGlob.getProperty().get("xmlBlaster/cluster/useLegacyClientQueueName", false);
          if (!oldQueueNameBehavior)
-            this.xmlBlasterConnection.setStorageIdStr(getId()+qos.getSessionName().getRelativeName());
+            this.xmlBlasterConnection.setStorageIdStr(getId()+connectQosData.getSessionName().getRelativeName());
 
          try {
-            Address addr = qos.getAddress();
+            Address addr = connectQosData.getAddress();
             log.info("Trying to connect to node '" + getId() + "' on address '" + addr.getRawAddress() + "' using protocol=" + addr.getType());
 
             if (this.fatherGlob.getClusterManager().isLocalAddress(addr)) {
-               log.severe("We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());
+               log.severe("We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + connectQosData.toXml());
                return null;
             }
-            if (log.isLoggable(Level.FINEST)) log.finest("Connecting to other cluster node, ConnectQos=" + qos.toXml());
+            if (log.isLoggable(Level.FINEST)) log.finest("Connecting to other cluster node, ConnectQos=" + connectQosData.toXml());
 
-            ConnectQos connectQos = new ConnectQos(this.remoteGlob, qos);
+            ConnectQos connectQos = new ConnectQos(this.remoteGlob, connectQosData);
+            if (useRemoteLoginAsTunnel) {
+               // We switch off callback ping, it is not yet implemented to handle pings from remote
+               // We don't need those pings as the other side is responsible to take care on the socket connection
+               connectQos.getSessionCbQueueProperty().getCurrentCallbackAddress().setPingInterval(0L);
+               connectQos.getAddress().setPingInterval(0L);
+            }
 
-            /*ConnectReturnQos retQos = */this.xmlBlasterConnection.connect(connectQos, this);
+            ConnectReturnQos retQos = this.xmlBlasterConnection.connect(connectQos, this);
+            
+            if (log.isLoggable(Level.FINE)) log.fine("Connected to server " + retQos.getServerInstanceId());
          }
          catch(XmlBlasterException e) {
             if (e.isInternal()) {
