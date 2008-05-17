@@ -4,7 +4,11 @@ The "r99999" numbers are Subversion revision numbers.
 Changes for current svn
 =======================
 
- o r16941  SOCKET Java client library:
+ o r16955 SOCKET cluster: Protecting against multiple thread creation
+          Notify acceptRemoteLoginAsTunnel shutdown (to avoid pinging)
+          Invariant JMX cluster node name
+
+ o r16941 SOCKET Java client library:
           Immediate notify socket EOF to Java client library,
           now pingInterval=0 works as well (for none blocking cases)
 
