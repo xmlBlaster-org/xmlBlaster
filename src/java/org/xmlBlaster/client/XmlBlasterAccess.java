@@ -844,6 +844,10 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @param serverNodeId For example "/node/heron/instanceId/1233435" or "/node/heron"
     */
    private void setContextNodeId(String nodeId) {
+      // Not for cluster with given serverNodeId: It is invariant
+      if (this.serverNodeId != null)
+         nodeId = this.serverNodeId;
+      
       if (nodeId == null) return;
       if (nodeId.indexOf("/") == -1) nodeId = "/node/"+nodeId; // add CLUSTER_MARKER_TAG to e.g. "/node/avalon.mycomp.com"
 
