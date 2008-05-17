@@ -80,7 +80,7 @@ public class Timeout extends Thread {
    private static String ME = "Timeout";
 
    /** Sorted map */
-   private TreeMap map = null;
+   private TreeMap/*<Timestamp, Container>*/ map = null;
 
    /** Start/Stop the Timeout manager thread */
    private boolean running = true;
@@ -186,7 +186,8 @@ public class Timeout extends Thread {
             // System.out.println("useWeakReference=" + useWeakReference + "
             // callback=" + callback);
             if (callback != null) {
-               callback.timeout(container.getUserData());
+               final Object userData = container.getUserData();
+               callback.timeout(userData);
             }
             continue;
          }
