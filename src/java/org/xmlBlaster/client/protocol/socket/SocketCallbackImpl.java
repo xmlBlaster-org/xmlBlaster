@@ -366,12 +366,19 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                   log.severe("Closing connection to server: " + e.toString());
                }
                try {
+                  // calls our shutdownSocket() which does this.threadRunning = false
                   sockCon.shutdown();
                }
                catch (XmlBlasterException ex) {
                   log.severe("run() could not shutdown correctly. " + ex.getMessage());
                }
                // Exceptions ends nowhere but terminates the thread
+               
+               // Notify client library  XmlBlasterAccess.java to go to polling
+               I_CallbackExtended cb = this.cbClient;
+               if (cb != null) {
+                  cb.lostConnection(XmlBlasterException.convert(this.glob, ME, "Lost socket connection", e));
+               }
             }
          }
       }
@@ -391,7 +398,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
    }
 
    /**
-    * Shutdown SOCKET connection and callback, called by SocketConnection on problems
+    * Shutdown SOCKET connection and callback
+    * Called by SocketConnection.shutdown() on problems
     */
    public synchronized void shutdownSocket() {
       if (log.isLoggable(Level.FINE)) log.fine("Entering shutdownSocket()");

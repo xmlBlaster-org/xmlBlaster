@@ -1141,6 +1141,18 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       return erase(new EraseKey(glob, glob.getQueryKeyFactory().readObject(xmlKey)),
                        new EraseQos(glob, glob.getQueryQosFactory().readObject(qos)) );
    }
+   
+   /**
+    * For example called by SOCKET layer (SocketCallbackImpl.java) on EOF. 
+    * Does immediate ping to go to polling mode
+    * @param xmlBlasterException
+    * @see org.xmlBlaster.client.I_CallbackExtended#lostConnection(XmlBlasterException)
+    */
+   public void lostConnection(XmlBlasterException xmlBlasterException) {
+      if (log.isLoggable(Level.FINE)) log.fine("Communication layer lost connection: " + ((xmlBlasterException==null)?"":xmlBlasterException.toString()));
+      this.dispatchManager.pingCallbackServer(false);
+   }
+
 
    /**
     * This is the callback method invoked from xmlBlaster

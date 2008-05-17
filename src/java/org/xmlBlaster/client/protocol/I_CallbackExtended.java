@@ -53,5 +53,11 @@ public interface I_CallbackExtended extends I_Callback, I_CallbackRaw
     * The oneway variant without a return value or exception
     */
    public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQosLiteral);
+   
+   /**
+    * For example called by socket layer on EOF
+    * @param xmlBlasterException
+    */
+   public void lostConnection(XmlBlasterException xmlBlasterException);
 }
 
