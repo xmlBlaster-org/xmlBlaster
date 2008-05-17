@@ -66,7 +66,7 @@ abstract public class DispatchConnection implements I_Timeout
    protected ConnectionStateEnum state = ConnectionStateEnum.UNDEF;
 
    protected int retryCounter = 0;
-   private final long logEveryMillis; // 60000: every minute a log
+   private final long logEveryMillis; // Every hour (60000: every minute a log)
    private int logInterval = 10;
 
    /**
@@ -90,7 +90,7 @@ abstract public class DispatchConnection implements I_Timeout
       this.ME = "DispatchConnection-" + connectionsHandler.getDispatchManager().getQueue().getStorageId() + " ";
       this.glob = glob;
 
-      this.logEveryMillis = glob.getProperty().get("dispatch/logRetryEveryMillis", 60000L); // every minute a log
+      this.logEveryMillis = glob.getProperty().get("dispatch/logRetryEveryMillis", 3600000L); // every hour a log
       if (log.isLoggable(Level.FINE))
          log.fine("dispatch/logRetryEveryMillis=" + this.logEveryMillis);
       this.connectionsHandler = connectionsHandler;
