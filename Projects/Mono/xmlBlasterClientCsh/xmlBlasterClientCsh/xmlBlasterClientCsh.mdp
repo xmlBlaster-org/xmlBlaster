@@ -1,0 +1,43 @@
+<Project name="xmlBlasterClientCsh" fileversion="2.0" language="C#" clr-version="Net_2_0" ctype="DotNetProject">
+  <Configurations active="Debug">
+    <Configuration name="Debug" ctype="DotNetProjectConfiguration">
+      <Output directory="./bin/Debug" assemblyKeyFile="./" assembly="xmlBlasterClientCsh" />
+      <Build debugmode="True" target="Exe" />
+      <Execution runwithwarnings="True" consolepause="True" runtime="MsNet" clr-version="Net_2_0" />
+      <CodeGeneration compiler="Mcs" warninglevel="4" optimize="True" unsafecodeallowed="False" generateoverflowchecks="True" mainclass="" generatexmldocumentation="False" win32Icon="./" ctype="CSharpCompilerParameters" />
+    </Configuration>
+    <Configuration name="Release" ctype="DotNetProjectConfiguration">
+      <Output directory="./bin/Release" assembly="xmlBlasterClientCsh" />
+      <Build debugmode="False" target="Exe" />
+      <Execution runwithwarnings="True" consolepause="True" runtime="MsNet" clr-version="Net_2_0" />
+      <CodeGeneration compiler="Mcs" warninglevel="4" optimize="True" unsafecodeallowed="False" generateoverflowchecks="True" generatexmldocumentation="False" ctype="CSharpCompilerParameters" />
+    </Configuration>
+  </Configurations>
+  <Contents>
+    <File name="./Main.cs" subtype="Code" buildaction="Compile" />
+    <File name="./AssemblyInfo.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/XmlBlasterAccess.cs" subtype="Code" buildaction="Compile" />
+    <File name="./client" subtype="Directory" buildaction="Compile" />
+    <File name="./util" subtype="Directory" buildaction="Compile" />
+    <File name="../../../../src/csharp/util/FileLocator.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/util/Serialization.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/util/Stuff.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/util/XmlBuffer.cs" subtype="Code" buildaction="Compile" />
+    <File name="./service" subtype="Directory" buildaction="Compile" />
+    <File name="../../../../src/csharp/service/PropTO.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/service/ServiceListTO.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/service/ServiceTO.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/Qos.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/Key.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/util/I_Queue.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/util/I_QueueEntry.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/util/RamQueuePlugin.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/XmlBlasterAccessRaw.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/client/XbPinger.cs" subtype="Code" buildaction="Compile" />
+    <File name="../../../../src/csharp/client/XbPoller.cs" subtype="Code" buildaction="Compile" />
+  </Contents>
+  <References>
+    <ProjectReference type="Gac" localcopy="True" refto="System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+    <ProjectReference type="Gac" localcopy="True" refto="System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  </References>
+</Project>
