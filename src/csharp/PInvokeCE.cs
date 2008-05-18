@@ -787,7 +787,11 @@ namespace org.xmlBlaster.client
          this.connectionListener = connectionListener;
       }
 
+      private bool logInfoDone = false;
+
       public void logInfos(XmlBlasterLogLevel level) {
+         if (logInfoDone) return;
+         logInfoDone = true;
          // At this stage (constructor) no logListener can be here, so this
          // output will end up in the console
          logger(level, "", "xmlBlaster C client v" + GetVersion() 
