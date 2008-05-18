@@ -33,7 +33,7 @@ namespace org.xmlBlaster.util {
       public static type DeserializeStr<type>(string data) {
          XmlSerializer xs = new XmlSerializer(typeof(type));
          MemoryStream memoryStream = new MemoryStream(StringToUTF8ByteArray(data));
-         XmlTextWriter xmlTextWriter = new XmlTextWriter(memoryStream, Encoding.UTF8);
+         //XmlTextWriter xmlTextWriter = new XmlTextWriter(memoryStream, Encoding.UTF8);
          return (type)xs.Deserialize(memoryStream);
          /*
          XmlSerializer ser = new XmlSerializer(typeof(type), "");
