@@ -83,6 +83,29 @@ namespace org.xmlBlaster.util {
          return new DateTime(StartOfEpochUtc.Ticks + (milliEpoch * 10000), DateTimeKind.Utc);
       }
 
+      public static bool Get(Hashtable properties, string key, bool defaultValue)
+      {
+         if (properties == null || key == null) return defaultValue;
+         if (!properties.ContainsKey(key)) return defaultValue;
+         string value = (string)properties[key];
+         return Boolean.Parse(value);
+      }
+
+      public static long Get(Hashtable properties, string key, long defaultValue)
+      {
+         if (properties == null || key == null) return defaultValue;
+         if (!properties.ContainsKey(key)) return defaultValue;
+         string value = (string)properties[key];
+         return Int64.Parse(value);
+      }
+
+      public static string Get(Hashtable properties, string key, string defaultValue)
+      {
+         if (properties == null || key == null) return defaultValue;
+         if (!properties.ContainsKey(key)) return defaultValue;
+         return (string)properties[key];
+      }
+
       /*
       /// <summary>
       /// 
