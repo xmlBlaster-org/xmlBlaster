@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("xmlblaster.org")]
 [assembly: AssemblyProduct("xmlBlasterClientCsharp")]
-[assembly: AssemblyCopyright("Copyright © xmlblaster.org 2007")]
+[assembly: AssemblyCopyright("Copyright © xmlblaster.org 2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
