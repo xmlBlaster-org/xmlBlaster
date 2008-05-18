@@ -783,7 +783,7 @@ namespace org.xmlBlaster.client
        * @see org.xmlBlaster.client.I_XmlBlasterAccess#registerConnectionListener(I_ConnectionStateListener)
        */
       public void RegisterConnectionListener(I_ConnectionStateListener connectionListener) {
-         logger(XmlBlasterLogLevel.WARN, "", "~RegisterConnectionListener() is not implemented, TODO");
+         logger(XmlBlasterLogLevel.TRACE, "", "RegisterConnectionListener() is not implemented, TODO!!!");
          this.connectionListener = connectionListener;
       }
 
