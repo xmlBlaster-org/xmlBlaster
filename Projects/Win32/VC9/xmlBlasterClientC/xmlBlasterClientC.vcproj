@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(sqlite_include_dir)&quot;;&quot;$(zlib_include_dir)&quot;;&quot;$(XMLBLASTER_HOME)/src/c&quot;"
+				AdditionalIncludeDirectories=".;..\..\..\..\src\c"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;XMLBLASTERCLIENTC_EXPORTS;XMLBLASTER_ZLIB;XMLBLASTER_PERSISTENT_QUEUE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -68,7 +68,7 @@
 				AdditionalDependencies="zdll.lib sqlite.lib pthreadVC2.lib Ws2_32.lib"
 				OutputFile="$(OutDir)\$(ProjectName)D.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(zlib_lib_dir)&quot;;&quot;$(sqlite_lib_dir)&quot;;$(XMLBLASTER_HOME)/src/c/socket"
+				AdditionalLibraryDirectories=".;..\..\..\..\src\c\socket"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
