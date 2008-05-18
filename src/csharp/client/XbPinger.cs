@@ -59,7 +59,7 @@ namespace org.xmlBlaster.client
             this.thread = new Thread(this.Run);
             this.thread.Start();
          }
-         logger.OnLogging(XmlBlasterLogLevel.INFO, ME, "Start " + sleepMillis);
+         logger.OnLogging(XmlBlasterLogLevel.INFO, ME, "Start pingInterval=" + sleepMillis);
          return true;
       }
 
@@ -78,7 +78,7 @@ namespace org.xmlBlaster.client
       {
          try
          {
-            logger.OnLogging(XmlBlasterLogLevel.TRACE, ME, "working...");
+            //logger.OnLogging(XmlBlasterLogLevel.TRACE, ME, "working...");
             while (this.running)
             {
                try

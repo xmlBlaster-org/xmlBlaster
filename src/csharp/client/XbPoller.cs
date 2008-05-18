@@ -58,7 +58,7 @@ namespace org.xmlBlaster.client
             this.thread = new Thread(this.Run);
             this.thread.Start();
          }
-         logger.OnLogging(XmlBlasterLogLevel.INFO, ME, "Start " + sleepMillis);
+         logger.OnLogging(XmlBlasterLogLevel.INFO, ME, "Start pollInterval" + sleepMillis);
          return true;
       }
 
@@ -77,7 +77,7 @@ namespace org.xmlBlaster.client
       {
          try
          {
-            logger.OnLogging(XmlBlasterLogLevel.TRACE, ME, "working...");
+            //logger.OnLogging(XmlBlasterLogLevel.TRACE, ME, "working...");
             while (this.running)
             {
                try
@@ -97,7 +97,7 @@ namespace org.xmlBlaster.client
 
                Thread.Sleep(sleepMillis);
             }
-            logger.OnLogging(XmlBlasterLogLevel.INFO, ME, "terminating gracefully.");
+            logger.OnLogging(XmlBlasterLogLevel.TRACE, ME, "terminating gracefully.");
          }
          catch (Exception e2) {
             logger.OnLogging(XmlBlasterLogLevel.WARN, ME, "terminating abort: " + e2.ToString());
