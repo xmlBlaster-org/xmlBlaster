@@ -54,6 +54,8 @@ namespace org.xmlBlaster.client
 
       private volatile ConnectionStateEnum currentState = ConnectionStateEnum.UNDEF;
 
+      private I_GprsManager gprsManager;
+
       public XmlBlasterAccess()
       {
          this.delegateXb = CreateNative();
@@ -79,6 +81,11 @@ namespace org.xmlBlaster.client
          this.initializeCalled = true;
          if (properties == null) properties = new Hashtable();
          this.properties = properties;
+         if (this.properties.Contains("I_GprsManager"))
+         {
+            this.gprsManager = (I_GprsManager)this.properties["I_GprsManager"];
+            this.properties.Remove("I_GprsManager"); // we later expect strings only
+         }
          this.pingIntervalMillis = Stuff.Get(properties, "dispatch/connection/pingInterval", this.pingIntervalMillis);
          this.pollIntervalMillis = Stuff.Get(properties, "dispatch/connection/delay", this.pollIntervalMillis);
          this.pollOnInitialConnectFail = Stuff.Get(properties, "dispatch/connection/pollOnInitialConnectFail", this.pollOnInitialConnectFail);
@@ -427,6 +434,9 @@ namespace org.xmlBlaster.client
             this.delegateXb = null;
             old.LeaveServer();
          }
+
+         if (this.gprsManager != null)
+            this.gprsManager.Connect(false);
 
          this.delegateXb = CreateNative();
 
