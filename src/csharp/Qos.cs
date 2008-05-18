@@ -843,7 +843,7 @@ namespace org.xmlBlaster.client
       }
    }
 
-   internal class StatusQos : Qos
+   /*internal*/public class StatusQos : Qos
    {
       public StatusQos(string qos) : base(qos) { }
 
