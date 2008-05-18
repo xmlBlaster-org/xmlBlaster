@@ -27,11 +27,13 @@ namespace org.xmlBlaster.client
       private int sleepMillis;
       private Thread thread;
       private object locker = new object();
+      public static readonly int MIN_PING_MILLIS = 5000;
 
       public XbPinger(XmlBlasterAccess xbAccess, long sleepMillis, I_LoggingCallback listener)
       {
          this.xbAccess = xbAccess;
          this.sleepMillis = (int)sleepMillis;
+         if (this.sleepMillis < MIN_PING_MILLIS) this.sleepMillis = MIN_PING_MILLIS;
          this.logger = listener;
          this.running = false;
       }
