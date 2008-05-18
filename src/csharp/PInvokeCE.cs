@@ -152,8 +152,12 @@ namespace org.xmlBlaster.client
 #     elif XMLBLASTER_WINCE // xmlBlasterClientC-$(ARCHFAM).dll
       const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC-ARM.dll";
 #     else // XMLBLASTER_WIN32
-         const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC.dll";
-         //const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
+#        if DEBUG
+            const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientCD.dll";
+#        else
+            const string XMLBLASTER_C_LIBRARY = "xmlBlasterClientC.dll";
+            //const string XMLBLASTER_C_LIBRARY = "..\\..\\lib\\xmlBlasterClientC.dll";
+#        endif
 #     endif
 
       // Helper struct for DLL calls (struct does return empty IntPtr from DLL, why?
