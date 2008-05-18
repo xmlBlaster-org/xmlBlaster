@@ -65,6 +65,7 @@ namespace org.xmlBlaster.client
          native.RegisterConnectionListener(this);
          native.AddLoggingListener(this);
          native.AddCallbackProgressListener(this);
+         native.Initialize(this.properties);
          return native;
       }
 
@@ -81,7 +82,7 @@ namespace org.xmlBlaster.client
          this.pingIntervalMillis = Stuff.Get(properties, "dispatch/connection/pingInterval", this.pingIntervalMillis);
          this.pollIntervalMillis = Stuff.Get(properties, "dispatch/connection/delay", this.pollIntervalMillis);
          this.pollOnInitialConnectFail = Stuff.Get(properties, "dispatch/connection/pollOnInitialConnectFail", this.pollOnInitialConnectFail);
-         int retries = (int)Stuff.Get(properties, "dispatch/connection/retries", -1);
+         //int retries = (int)Stuff.Get(properties, "dispatch/connection/retries", -1);
          this.xbPinger = new XbPinger(this, this.pingIntervalMillis, this);
          this.xbPoller = new XbPoller(this, this.pollIntervalMillis, this);
          this.delegateXb.Initialize(this.properties);
