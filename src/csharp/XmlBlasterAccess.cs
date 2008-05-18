@@ -104,6 +104,19 @@ namespace org.xmlBlaster.client
             throw new XmlBlasterException("user.illegalargument", "XmlBlasterAccess is connection is DEAD");
       }
 
+      public bool IsValid()
+      {
+         try
+         {
+            this.CheckValid();
+            return true;
+         }
+         catch (Exception)
+         {
+            return false;
+         }
+      }
+
       public ConnectReturnQos Connect(string qos, I_Callback listener)
       {
          try
@@ -209,12 +222,7 @@ namespace org.xmlBlaster.client
 
       public bool IsConnected()
       {
-         try {
-            this.CheckValid();
-         }
-         catch (Exception) {
-            return false;
-         }
+         if (!this.IsValid()) return false;
          return this.delegateXb.IsConnected();
       }
 
@@ -339,7 +347,7 @@ namespace org.xmlBlaster.client
 
       private bool StartPolling()
       {
-         this.CheckValid();
+         if (!this.IsValid()) return false;
          //if (this.disconnectCalled) return false;
          if (this.pollIntervalMillis < 1L) return false;
          bool started = this.xbPoller.Start();
