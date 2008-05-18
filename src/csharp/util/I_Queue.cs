@@ -4,6 +4,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 using System.Text;
+using System.Collections;
 
 namespace org.xmlBlaster.util
 {
@@ -16,7 +17,7 @@ namespace org.xmlBlaster.util
        *                "update:/node/heron/client/joe/2", "history:<oid>", "client:joe/2"
        * @param userData For example a Properties object or a string[] args object passing the configuration data
        */
-      public void Initialize(Object /*StorageId*/ storageId, Hashtable properties);
+      void Initialize(object /*StorageId*/ storageId, Hashtable properties);
 
       /**
        * Puts one queue entry on top of the queue. 
@@ -30,7 +31,7 @@ namespace org.xmlBlaster.util
        * @see I_QueuePutListener#putPost(I_QueueEntry)
        * @see #put(I_QueueEntry[], bool)
        */
-      void put(I_QueueEntry queueEntry);
+      void Put(I_QueueEntry queueEntry);
 
       /**
        * Returns the first element in the queue
@@ -39,7 +40,7 @@ namespace org.xmlBlaster.util
        * @return I_QueueEntry the least element with respect to the given ordering or null if the queue is empty.
        * @throws XmlBlasterException if the underlying implementation gets an exception.
        */
-      I_QueueEntry peek();
+      I_QueueEntry Peek();
 
       /**
        * Returns maximum the first num element in the queue
@@ -58,7 +59,7 @@ namespace org.xmlBlaster.util
        * @return the size in bytes of the removed elements
        * @throws XmlBlasterException if the underlying implementation gets an exception.
        */
-      int remove();
+      int Remove();
 
       /**
        * Returns the number of elements having the persistent flag set in this queue.
@@ -67,7 +68,7 @@ namespace org.xmlBlaster.util
        * call to a DB which is temporarly not available) it will return -1.
        * @return int the number of elements currently in the queue
        */
-      long getNumOfPersistentEntries();
+      long GetNumOfPersistentEntries();
 
       /**
        * Returns the amount of bytes used by the persistent entries in the queue
@@ -76,13 +77,13 @@ namespace org.xmlBlaster.util
        * call to a DB which is temporarly not available) it will return -1.
        * @return The amount of bytes currently in the queue
        */
-      long getNumOfPersistentBytes();
+      long GetNumOfPersistentBytes();
 
       /**
        * Access the configured capacity (maximum bytes) for this queue
        * @return The maximum capacity for the queue in bytes
        */
-      long getMaxNumOfBytes();
+      long GetMaxNumOfBytes();
 
       /**
        * Removes all the transient entries (the ones which have the flag 'persistent'
@@ -94,12 +95,12 @@ namespace org.xmlBlaster.util
        * Remove all queue entries. 
        * @return The number of entries erased
        */
-      public long clear();
+      long Clear();
 
       /**
        * Shutdown the implementation, sync with data store, free resources.
        * Persistent entries will NOT be deleted.
        */
-      public void shutdown();
+      void Shutdown();
    }
 } // namespace

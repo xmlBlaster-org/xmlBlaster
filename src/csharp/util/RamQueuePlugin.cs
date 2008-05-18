@@ -10,13 +10,13 @@ namespace org.xmlBlaster.util
 {
    public class RamQueuePlugin : I_Queue
    {
-      private long sizeInBytes = 0L;
+      //private long sizeInBytes = 0L;
       private long persistentSizeInBytes = 0L;
       private long numOfPersistentEntries = 0L;
       private long maxNumOfBytes;
-      private Hashtable storage;
+      //private Hashtable storage;
 
-      public void Initialize(Object /*StorageId*/ storageId, Hashtable properties)
+      public void Initialize(object /*StorageId*/ storageId, Hashtable properties)
       {
          this.maxNumOfBytes = 10000000;
       }
@@ -27,10 +27,12 @@ namespace org.xmlBlaster.util
 
       public I_QueueEntry Peek()
       {
+         return null;
       }
 
       public int Remove()
       {
+         return 0;
       }
 
       public long GetNumOfPersistentEntries()
@@ -38,22 +40,22 @@ namespace org.xmlBlaster.util
          return this.numOfPersistentEntries;
       }
 
-      public long getNumOfPersistentBytes()
+      public long GetNumOfPersistentBytes()
       {
          return this.persistentSizeInBytes;
       }
 
-      public long getMaxNumOfBytes()
+      public long GetMaxNumOfBytes()
       {
-         return this.maxNumOfBytes
+         return this.maxNumOfBytes;
       }
 
-      public long clear()
+      public long Clear()
       {
          return 0;
       }
 
-      public void shutdown()
+      public void Shutdown()
       {
       }
    }
