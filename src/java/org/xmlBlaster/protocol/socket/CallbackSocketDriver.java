@@ -250,7 +250,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
          // Give a Authenticate.connect exception to be delivered to the client
          // or the client some chance to close the socket itself after disconnect
          long delay = 5000; // 5 sec
-         new Timeout("CallbackSocketShutdownTimer", true).addTimeoutListener(new I_Timeout() {
+         glob.getBurstModeTimer().addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   se.shutdown();
                   //handler = null;
