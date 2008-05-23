@@ -298,7 +298,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
             Address addr = connectQosData.getAddress();
             log.info("Trying to connect to node '" + getId() + "' on address '" + addr.getRawAddress() + "' using protocol=" + addr.getType());
 
-            if (this.fatherGlob.getClusterManager().isLocalAddress(addr)) {
+            // TODO: Check if physical IP:PORT is identical
+            if (this.fatherGlob.getClusterManager().getMyClusterNode().getId().equals(getId())) {
                log.severe("We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + connectQosData.toXml());
                return null;
             }
