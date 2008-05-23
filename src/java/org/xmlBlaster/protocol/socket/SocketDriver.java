@@ -398,6 +398,7 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          }
       }
 
+      super.setName("XmlBlaster.SocketDriver-"+getType()); // Thread name
       start(); // Start the listen thread
       while (!listenerReady) {
          try { Thread.sleep(10); } catch( InterruptedException i) {}
