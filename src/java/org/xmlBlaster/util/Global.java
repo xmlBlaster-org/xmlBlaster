@@ -43,6 +43,7 @@ import org.xmlBlaster.util.dispatch.DispatchWorkerPool;
 import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.client.dispatch.ClientDispatchConnectionsHandler;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
@@ -649,7 +650,7 @@ public class Global implements Cloneable
     public Level getLogLevel(String loggerName) throws XmlBlasterException {
        if (loggerName == null || loggerName.length() < 1)
           throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME, "Illegal loglevel syntax '" + loggerName + "'");
-       log.fine("Please implement me");
+       if (log != null) log.fine("Please implement me");
        return Level.INFO;
 
 /*
@@ -2017,7 +2018,7 @@ public class Global implements Cloneable
 
             System.out.println("Hit a key");
             try { System.in.read(); } catch(java.io.IOException e) {}
-            a.disconnect(null);
+            a.disconnect((DisconnectQos)null);
 
             System.out.println("All is shutdown: Hit a key");
             try { System.in.read(); } catch(java.io.IOException e) {}
