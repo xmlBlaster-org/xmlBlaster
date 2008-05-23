@@ -3,6 +3,7 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r16985 AjaxServlet: Banned browser IP adresses with jconsole
 
  o r16955 SOCKET cluster: Protecting against multiple thread creation
           Notify acceptRemoteLoginAsTunnel shutdown (to avoid pinging)
