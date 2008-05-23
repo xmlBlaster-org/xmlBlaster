@@ -64,6 +64,7 @@ import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.ClientProperty;
+import org.xmlBlaster.util.qos.DisconnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -422,11 +423,11 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                }
             }
             catch (XmlBlasterException e) {
-               if (isConnected()) disconnect(null);
+               if (isConnected()) disconnect((DisconnectQos)null);
                throw e;
             }
             catch (Throwable e) {
-               if (isConnected()) disconnect(null);
+               if (isConnected()) disconnect((DisconnectQos)null);
                throw XmlBlasterException.convert(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Connection failed", e);
             }
          }
@@ -603,6 +604,15 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    }
 
    /**
+    * @see org.xmlBlaster.client.XmlBlasterAccessMBean#disconnect(String)
+    */
+   public String disconnect(String disconnectQos) {
+	   DisconnectQosData dqd = new DisconnectQosData(this.glob, null, disconnectQos);
+	   boolean success = disconnect(new DisconnectQos(this.glob, dqd));
+	   return "Disconnect called, success=" + success;
+   }
+
+   /**
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
@@ -627,6 +637,14 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       }
 
       return shutdown(disconnectQos);
+   }
+
+   /**
+    * @see org.xmlBlaster.client.XmlBlasterAccessMBean#leaveServer()
+    */
+   public String leaveServer() {
+	   leaveServer(null);
+	   return "Clientlibrary is shutdown";
    }
 
    /**

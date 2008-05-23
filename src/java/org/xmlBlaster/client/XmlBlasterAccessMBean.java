@@ -199,5 +199,9 @@ public interface XmlBlasterAccessMBean {
     * @return For example "1.5.0"
     */
    public String getBuildJavaVersion();
+   
+   public String leaveServer();
+   
+   public String disconnect(String disconnectQos);
 }
 
