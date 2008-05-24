@@ -61,6 +61,9 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
    private I_Callback callback;
    private ConnectQosSaxFactory connectQosFactory;
    private DisconnectQosSaxFactory disconnectQosFactory;
+   
+   // Teh default is to re-throw only connect() exception
+   private boolean throwAllExceptions;
 
    /**
     * This constructor is the most generic one (more degrees of freedom)
@@ -241,9 +244,12 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
          // The exception has already a <exception> root tag
          writeResponse(null/*MethodName.EXCEPTION*/, e.toXml("    "));
          
-         // For connect excpetions we stop parsing
+         // For connect exceptions we stop parsing
          if (MethodName.CONNECT.equals(methodName))
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_STOP, ME, "Connection failed", e);
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_STOP, ME, e.toString(), e);
+         
+         if (this.throwAllExceptions)
+             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_STOP, ME, e.toString(), e);
          
          return true;
       }
@@ -352,5 +358,13 @@ public class XmlScriptClient extends XmlScriptInterpreter implements I_Callback 
 			return this.callback.update(cbSessionId, updateKey, content, updateQos);
 		}
 		return null;
+	}
+
+	public boolean isThrowAllExceptions() {
+		return throwAllExceptions;
+	}
+
+	public void setThrowAllExceptions(boolean throwAllExceptions) {
+		this.throwAllExceptions = throwAllExceptions;
 	}
 }
