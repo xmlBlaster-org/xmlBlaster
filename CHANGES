@@ -3,6 +3,11 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r AjaxServlet: Limit with MaxUserSessions (configurable via JMX)
+          Added internationalization of exceptions
+          e.g. put ajaxServlet_de.properties into the classpath of war
+          Fixed session cleanup for error cases
+
  o r16985 AjaxServlet: Banned browser IP adresses with jconsole
           Added exception return to browser
 
