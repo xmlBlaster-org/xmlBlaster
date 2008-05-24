@@ -9,5 +9,6 @@ public interface BlasterInstanceMBean {
 	String getClientInfo();
 	String shutdownAndBlockIP();
 	String getRemoteAddr();
+	boolean isAdmin();
 	boolean isShutdown();
 }

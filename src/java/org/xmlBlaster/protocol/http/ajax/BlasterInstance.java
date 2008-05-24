@@ -84,6 +84,8 @@ public class BlasterInstance implements I_Callback, BlasterInstanceMBean {
     private String clientInfo;
     
     private String remoteAddr;
+    
+    private boolean admin;
 
 	public BlasterInstance(AjaxServlet ajaxServlet, HttpServletRequest req) {
 		this.ajaxServlet = ajaxServlet;
@@ -420,5 +422,13 @@ public class BlasterInstance implements I_Callback, BlasterInstanceMBean {
 
 	public String getRemoteAddr() {
 		return remoteAddr;
+	}
+
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
 	}
 }

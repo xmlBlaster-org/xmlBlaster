@@ -88,7 +88,7 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 	/** We support additional admin sessions */
 	private int maxUserSessions = 10000;
 	
-	private int getProp(ServletConfig conf, String key, int def) {
+	private int getConfProp(String key, int def) {
 		try {
 			String tmp = props.getProperty(key);
 			if (tmp != null)
@@ -109,11 +109,11 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 			if (name != null && name.length() > 0)
 				props.setProperty(name, conf.getInitParameter(name));
 		}
-		this.maxInactiveInterval = getProp(conf,"maxInactiveInterval",this.maxInactiveInterval);
+		this.maxInactiveInterval = getConfProp("maxInactiveInterval",this.maxInactiveInterval);
 
 		this.blasterInstanceMap = new HashMap/*<String, BlasterInstance>*/();
 
-		this.maxUserSessions = getProp(conf,"maxUserSessions",this.maxUserSessions);
+		this.maxUserSessions = getConfProp("maxUserSessions",this.maxUserSessions);
 
 		this.blockedIPs = new TreeSet/*<String>*/();
 		
@@ -199,6 +199,16 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 		*/
 	}
 
+	/**
+	 * Support for internationalization of exceptions. 
+	 * Throw e.g. ajaxServlet_de.properties into the war CLASSPATH
+	 * @param request
+	 * @param key The key to lookup the text
+	 * @param defaultVal The text to take if not found
+	 * @param arg1 Can be null
+	 * @param arg2 Can be null
+	 * @return The localized text depending on the browser language
+	 */
 	private String getText(HttpServletRequest request, String key, String defaultVal, String arg1, String arg2) { 
 	    Locale locale = getLocale(request);
 	    ResourceBundle bundle = 
@@ -237,6 +247,27 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 	}
 
 	/**
+	 * Access a boolean parameter. 
+	 * @param req
+	 * @param key The URL key
+	 * @param def The default if not found
+	 * @return boolean support without value: "&admin&name=xy" will return true for admin
+	 */
+	public boolean getReqProp(HttpServletRequest req, String key, boolean def) {
+		try {
+			String tmp = req.getParameter(key);
+			if ("".equals(tmp))
+				return true; // boolean support without value: "&admin&name=xy"
+			if (tmp != null)
+				return Boolean.valueOf(tmp).booleanValue();
+		}
+		catch (Throwable e) {
+			return def;
+		}
+		return def;
+	}
+
+	/**
 	 * <pre>
 	 * ServletSessionTimeout according to specification:
 	 * The default timeout period for sessions is defined by the servlet container and
@@ -269,7 +300,7 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 		Throwable throwable = null;
 		BlasterInstance blasterInstance = null;
 		boolean newBrowser = false;
-		boolean forceLoad = req.getParameter("forceLoad") != null;
+		boolean forceLoad = getReqProp(req, "forceLoad", false);
 		try {
 			if (actionType == null) {
 				log(getInfo(req, true, true) + "Missing ActionType, ignoring request");
@@ -326,6 +357,8 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 		// xml header don't like empty response, so send at least "<void/>
 		//res.setContentType("text/xml; charset=UTF-8");
 			blasterInstance = getBlasterInstance(req);
+			boolean admin = getReqProp(req, "admin", false);
+			if (admin) blasterInstance.setAdmin(admin); // can be passed on connect()
 
 			if (actionType.equals("xmlScript")) {
 				String xmlScript64 = (String) req.getParameter("xmlScriptBase64");
@@ -555,7 +588,6 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 	 * @throws XmlBlasterException
 	 */
 	private BlasterInstance hasBlasterInstance(HttpServletRequest req) throws XmlBlasterException {
-		BlasterInstance blasterInstance = null;
 		synchronized (this.blasterInstanceMap) {
 			HttpSession session = req.getSession(false);
 			if (session == null) return null;
@@ -692,8 +724,8 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 	}
 	
 	public boolean maxUserSessionsReached(HttpServletRequest req) {
-		String admin = (String) req.getParameter("admin");
-		if (admin != null)
+		boolean admin = getReqProp(req, "admin", false);
+		if (admin)
 			return false;
 		return getNumBlasterInstances() >= getMaxUserSessions();
 	}
