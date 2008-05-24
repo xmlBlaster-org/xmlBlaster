@@ -167,14 +167,16 @@ public class BlasterInstance implements I_Callback, BlasterInstanceMBean {
 		});
 	}
 
-	public synchronized void execute(byte[] xmlScriptRaw, Writer out) throws XmlBlasterException,
+	public synchronized void execute(byte[] xmlScriptRaw, String xmlScript, Writer out) throws XmlBlasterException,
 			UnsupportedEncodingException, IOException {
-		String xmlScript = new String(xmlScriptRaw, "UTF-8");
+		if (xmlScript == null)
+		   xmlScript = new String(xmlScriptRaw, "UTF-8");
 		log.info(id + " Processing script: " + xmlScript);
 		java.io.Reader reader = new java.io.StringReader(xmlScript);
 		java.io.ByteArrayOutputStream outStream = new java.io.ByteArrayOutputStream();
 		XmlScriptClient interpreter = new XmlScriptClient(this.glob, this.xmlBlasterAccess, this,
 				null, outStream);
+		interpreter.setThrowAllExceptions(true);
 		interpreter.parse(reader);
 		byte[] bytes = outStream.toByteArray();
 		out.write(new String(bytes, "UTF-8"));

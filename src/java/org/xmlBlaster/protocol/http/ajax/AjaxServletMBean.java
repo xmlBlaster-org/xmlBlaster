@@ -9,4 +9,7 @@ public interface AjaxServletMBean {
 	String[] getBlockedIPs();
 
 	void clearBlockedIPs();
+	
+	int getMaxUserSessions();
+	void setMaxUserSessions(int maxUserSessions);
 }

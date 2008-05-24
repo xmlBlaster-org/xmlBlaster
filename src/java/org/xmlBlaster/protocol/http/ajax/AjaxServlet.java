@@ -10,13 +10,16 @@ package org.xmlBlaster.protocol.http.ajax;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
@@ -43,34 +46,6 @@ import org.xmlBlaster.util.def.ErrorCode;
 
 //Debug: $TOMCAT_HOME/bin/catalina.sh jpda start
 
-
-/**
- * Detect when a servlet session dies (with tomcat typically after one hour). 
- * Causes an object to be notified when it is bound to or unbound from a session.
- * The object is notified by an HttpSessionBindingEvent object.
- * This may be as a result of a servlet programmer explicitly unbinding an attribute from a session,
- * due to a session being invalidated, or due to a session timing out. 
- * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
- */
-class SessionTimeoutListener implements HttpSessionBindingListener {
-	private static Logger log = Logger.getLogger(SessionTimeoutListener.class.getName());
-
-	private BlasterInstance blasterInstance;
-
-	public SessionTimeoutListener(BlasterInstance blasterInstance) {
-		this.blasterInstance = blasterInstance;
-	}
-
-	public void valueBound(HttpSessionBindingEvent event) {
-		log.info("Session is bound: " + event.getSession().getId());
-	}
-
-	public void valueUnbound(HttpSessionBindingEvent event) {
-		log.info("Session is unbound: " + event.getSession().getId());
-		this.blasterInstance.shutdown();
-	}
-}
-
 /**
  * This servlet supports requests from a browser, it queries the topic given by
  * "gpsTopicId" configuration which needs to contain GPS coordinates (published
@@ -95,7 +70,7 @@ class SessionTimeoutListener implements HttpSessionBindingListener {
 public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 	private static final long serialVersionUID = -8094289301696678030L;
 
-	private static Logger log = Logger.getLogger(AjaxServlet.class.getName());
+	//private static Logger log = Logger.getLogger(AjaxServlet.class.getName());
 
 	private Properties props = new Properties();
 
@@ -109,6 +84,21 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 
 	/** key is the browser sessionId */
 	private Map/*<String, BlasterInstance>*/blasterInstanceMap;
+	
+	/** We support additional admin sessions */
+	private int maxUserSessions = 10000;
+	
+	private int getProp(ServletConfig conf, String key, int def) {
+		try {
+			String tmp = props.getProperty(key);
+			if (tmp != null)
+				return Integer.valueOf(tmp).intValue();
+		}
+		catch (Throwable e) {
+			return def;
+		}
+		return def;
+	}
 
 	public void init(ServletConfig conf) throws ServletException {
 		super.init(conf);
@@ -119,11 +109,12 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 			if (name != null && name.length() > 0)
 				props.setProperty(name, conf.getInitParameter(name));
 		}
-		String tmp = props.getProperty("maxInactiveInterval");
-		if (tmp != null)
-			this.maxInactiveInterval = Integer.valueOf(tmp).intValue();
+		this.maxInactiveInterval = getProp(conf,"maxInactiveInterval",this.maxInactiveInterval);
+
 		this.blasterInstanceMap = new HashMap/*<String, BlasterInstance>*/();
-		
+
+		this.maxUserSessions = getProp(conf,"maxUserSessions",this.maxUserSessions);
+
 		this.blockedIPs = new TreeSet/*<String>*/();
 		
         // JMX
@@ -136,6 +127,10 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 	    catch (XmlBlasterException e) {
 	       log("Ignoring problem during JMX session registration: " + e.toString());
 	    }
+	    
+	    //ServletContext ctx = getServletContext();
+	    //InputStream is = ctx.getResourceAsStream("/WEB-INF/errorText.txt");
+	    //String filename = getServletContext().getRealPath("/WEB-INF/appconfig.xml");
 	}
 
 	public void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException,
@@ -188,6 +183,58 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 		buf.append("): ");
 		return buf.toString();
 	}
+	
+	private Locale getLocale(HttpServletRequest request) {
+		//String client_encoding = request.getCharacterEncoding();
+		Locale default_locale = request.getLocale();
+		default_locale = default_locale == null ? Locale.US : default_locale;
+		return default_locale;
+		/* 
+		Enumeration en = request.getLocales();
+		ArrayList list = new ArrayList();
+		while(en.hasMoreElements()) {
+		  list.add(en.nextElement());
+		}
+		Locale[] enabled_locales = (Locale[]) list.toArray(new Locale[list.size()]);
+		*/
+	}
+
+	private String getText(HttpServletRequest request, String key, String defaultVal, String arg1, String arg2) { 
+	    Locale locale = getLocale(request);
+	    ResourceBundle bundle = 
+	         ResourceBundle.getBundle("ajaxServlet", locale);
+    	String bundleValue = bundle.getString(key);
+    	if (bundleValue == null) {
+    		if (arg1 != null)
+    			defaultVal = ReplaceVariable.replaceAll(defaultVal, "{0}", arg1);
+    		if (arg2 != null)
+    			defaultVal = ReplaceVariable.replaceAll(defaultVal, "{1}", arg2);
+    		return defaultVal;
+    	}
+	    if (arg1 == null && arg2 == null)
+	    	return bundleValue;
+	    Object[] args;
+	    if (arg1 != null && arg2 != null)
+	    	args = new Object[]{arg1, arg2};
+	    else
+	    	args = new Object[]{arg1};
+	    String result = MessageFormat.format(bundleValue, args);
+	    return result;
+	}
+
+	private void cleanupSession(HttpServletRequest req) {
+		try { 
+			BlasterInstance bi = hasBlasterInstance(req);
+			if (bi != null)
+				bi.shutdown();
+			
+			HttpSession session = req.getSession(false);
+			if (session != null)
+				session.invalidate();
+		} catch (Throwable e) {
+			log(e.toString());
+		}
+	}
 
 	/**
 	 * <pre>
@@ -216,52 +263,69 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 	 */
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException,
 			IOException {
-		req.setCharacterEncoding("UTF-8");
+		req.setCharacterEncoding("UTF-8"); // We know the browser sends UTF-8: tell the servlet engine
 		String actionType = (String) req.getParameter("ActionType");
-		if (actionType == null) {
-			log(getInfo(req, true, true) + "Missing ActionType, ignoring request");
-			return;
+		StringWriter out = new StringWriter();
+		Throwable throwable = null;
+		BlasterInstance blasterInstance = null;
+		boolean newBrowser = false;
+		boolean forceLoad = req.getParameter("forceLoad") != null;
+		try {
+			if (actionType == null) {
+				log(getInfo(req, true, true) + "Missing ActionType, ignoring request");
+				String msg = getText(req, "noActionType", "Invalid access", null, null);
+				cleanupSession(req);
+				throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT,
+						"AjaxServlet", msg);
+			}
+			
+			if (isBlockedIP(req.getRemoteAddr())) {
+				log(getInfo(req, true, true) + "Blocked IP " + req.getRemoteAddr() + ", ignoring request");
+				String msg = getText(req, "isBlocked", "Access is currently not allowed", null, null); 
+				cleanupSession(req);
+				throw new XmlBlasterException(Global.instance(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED,
+						"AjaxServlet", msg);
+			}
+	
+			//String host = req.getRemoteAddr();
+			//String ME = "AjaxServlet.doGet(" + host + "): ";
+			//log.info("ENTERING DOGET ....");
+			if (forceLoad)
+				log(getInfo(req) + "forceLoad=" + forceLoad);
+
+			if (req.getSession(false) == null) {
+				if (maxUserSessionsReached(req)) { // "?admin=true" will ignore this test
+					log(getInfo(req, true, true) + "Max user sessions = " + getMaxUserSessions() + " reached, please try again later");
+					String msg = getText(req, "maxUserSessionReached", "Max user sessions = {0} reached, please try again later",
+							""+getMaxUserSessions(), null); 
+					throw new XmlBlasterException(Global.instance(), ErrorCode.USER_CONFIGURATION_MAXSESSION,
+							"AjaxServlet", msg);
+				}
+				HttpSession session = req.getSession(true);
+				session.setMaxInactiveInterval(this.maxInactiveInterval);
+				newBrowser = true;
+				log(getInfo(req, true, false) + "New browser arrived");
+			}
+		/*
 		}
-		
-		if (isBlockedIP(req.getRemoteAddr())) {
-			log(getInfo(req, true, true) + "Blocked IP " + req.getRemoteAddr() + ", ignoring request");
+		catch (XmlBlasterException ex) {
 			res.setContentType("text/xml; charset=UTF-8");
 			PrintWriter backToBrowser = res.getWriter();
 			StringBuffer sb = new StringBuffer(512);
 			sb.append("<xmlBlasterResponse>");
-			XmlBlasterException ex = new XmlBlasterException(Global.instance(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED,
-					"AjaxServlet", "Access is currently not allowed");
 			sb.append(ex.toXml());
 			sb.append("</xmlBlasterResponse>");
 			backToBrowser.write(sb.toString());
 			backToBrowser.close();
 			return;
 		}
-		
-		//String host = req.getRemoteAddr();
-		//String ME = "AjaxServlet.doGet(" + host + "): ";
-		//log.info("ENTERING DOGET ....");
-		boolean forceLoad = req.getParameter("forceLoad") != null;
-		if (forceLoad)
-			log(getInfo(req) + "forceLoad=" + forceLoad);
-		boolean newBrowser = false;
-		if (req.getSession(false) == null) {
-			HttpSession session = req.getSession(true);
-			session.setMaxInactiveInterval(this.maxInactiveInterval);
-			newBrowser = true;
-			log(getInfo(req, true, false) + "New browser arrived");
-		}
+		*/
 
 		// set header field first
 		//res.setContentType("text/plain; charset=UTF-8");
 		// xml header don't like empty response, so send at least "<void/>
 		//res.setContentType("text/xml; charset=UTF-8");
-		StringWriter out = new StringWriter();
-		Throwable throwable = null;
-		try {
-			BlasterInstance blasterInstance = getBlasterInstance(req);
-
-			// TODO: handle logout script to also destroy the session entry
+			blasterInstance = getBlasterInstance(req);
 
 			if (actionType.equals("xmlScript")) {
 				String xmlScript64 = (String) req.getParameter("xmlScriptBase64");
@@ -269,22 +333,24 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 				byte[] raw = null;
 				if (xmlScript64 != null && xmlScriptPlain != null) {
 					String errTxt = "You can not set both 'xmlScriptBase64' and 'xmlScriptPlain'";
-					out.write(errTxt);
-					return;
+					throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, "AjaxServlet", errTxt);
 				}
+				String xmlScript = xmlScriptPlain;
 				if (xmlScript64 != null) {
 					// the url encoder has somewhere changed my + to blanks
 					// you must send this by invoking encodeURIComponent(txt) on the javascript side.
 					xmlScript64 = ReplaceVariable.replaceAll(xmlScript64, " ", "+");
 					raw = Base64.decode(xmlScript64);
+					xmlScript = new String(raw, "UTF-8");
 				} else if (xmlScriptPlain != null) {
 					raw = xmlScriptPlain.getBytes();
 				} else {
 					String errTxt = "You must choose one of 'xmlScriptBase64' and 'xmlScriptPlain' since you choosed 'xmlScript'";
-					out.write(errTxt);
-					return;
+					throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, "AjaxServlet", errTxt);
 				}
-				blasterInstance.execute(raw, out);
+				if (newBrowser && !xmlScript.contains("<connect"))
+					throw new XmlBlasterException(Global.instance(), ErrorCode.USER_ILLEGALARGUMENT, "AjaxServlet", "The first call must contain a connect markup");
+				blasterInstance.execute(raw, xmlScript, out);
 				return;
 			}
 
@@ -382,7 +448,6 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 		} catch (XmlBlasterException e) {
 			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
 					+ e.toString());
-			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": " + e.toString());
 			// if (newBrowser || forceLoad)
 			// out.write(blasterInstance.getStartupPos());
 			throwable = e;
@@ -390,11 +455,13 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": "
 							+ e.toString());
 			e.printStackTrace();
-			log("newBrowser=" + newBrowser + " forceLoad=" + forceLoad + ": " + e.toString());
 			throwable = e;
 		} finally {
 			if (out != null) {
+				//res.setContentType("text/xml");
+			    //res.setCharacterEncoding("UTF-8");
 				res.setContentType("text/xml; charset=UTF-8");
+				// For HTML: out.println("<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />");
 				PrintWriter backToBrowser = res.getWriter();
 				if (out.getBuffer().length() > 0)
 					log("Sending now '" + out.getBuffer().toString() + "'");
@@ -407,12 +474,21 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 						XmlBlasterException ex = (XmlBlasterException)throwable;
 						if (throwable instanceof XmlBlasterException) {
 							ex = (XmlBlasterException)throwable;
+							if (ex.isErrorCode(ErrorCode.INTERNAL_STOP)) { // XmlScript Sax Parser stopped
+								Throwable th = ex.getEmbeddedException();
+								if (th != null && th instanceof XmlBlasterException) {
+									ex = (XmlBlasterException)th;
+									//ex.changeErrorCode(((XmlBlasterException)th).getErrorCode());
+								}
+							}
 						}
 						else {
 							ex = new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_UNKNOWN, "AjaxServlet", "Unknown problem", throwable);
 						}
 						sb.append(ex.toXml());
 						sb.append("</xmlBlasterResponse>");
+						if (blasterInstance != null)
+							blasterInstance.shutdown();
 						/*
 						<xmlBlasterResponse>
 						  <exception errorCode='user.illegalArgument'>
@@ -470,6 +546,20 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 	public void removeBlasterInstance(String sessionId) {
 		synchronized (this.blasterInstanceMap) {
 			this.blasterInstanceMap.remove(sessionId);
+		}
+	}
+
+	/**
+	 * @param req
+	 * @return null if not known
+	 * @throws XmlBlasterException
+	 */
+	private BlasterInstance hasBlasterInstance(HttpServletRequest req) throws XmlBlasterException {
+		BlasterInstance blasterInstance = null;
+		synchronized (this.blasterInstanceMap) {
+			HttpSession session = req.getSession(false);
+			if (session == null) return null;
+			return (BlasterInstance) this.blasterInstanceMap.get(session.getId());
 		}
 	}
 
@@ -592,4 +682,47 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 			return (String[])this.blockedIPs.toArray(new String[this.blockedIPs.size()]);
 		}
 	}
+
+	public int getMaxUserSessions() {
+		return maxUserSessions;
+	}
+
+	public void setMaxUserSessions(int maxUserSessions) {
+		this.maxUserSessions = maxUserSessions;
+	}
+	
+	public boolean maxUserSessionsReached(HttpServletRequest req) {
+		String admin = (String) req.getParameter("admin");
+		if (admin != null)
+			return false;
+		return getNumBlasterInstances() >= getMaxUserSessions();
+	}
 }
+
+/**
+ * Detect when a servlet session dies (with tomcat typically after one hour). 
+ * Causes an object to be notified when it is bound to or unbound from a session.
+ * The object is notified by an HttpSessionBindingEvent object.
+ * This may be as a result of a servlet programmer explicitly unbinding an attribute from a session,
+ * due to a session being invalidated, or due to a session timing out. 
+ * @author Marcel Ruff xmlBlaster@marcelruff.info 2007
+ */
+class SessionTimeoutListener implements HttpSessionBindingListener {
+	private static Logger log = Logger.getLogger(SessionTimeoutListener.class.getName());
+
+	private BlasterInstance blasterInstance;
+
+	public SessionTimeoutListener(BlasterInstance blasterInstance) {
+		this.blasterInstance = blasterInstance;
+	}
+
+	public void valueBound(HttpSessionBindingEvent event) {
+		log.info("Session is bound: " + event.getSession().getId());
+	}
+
+	public void valueUnbound(HttpSessionBindingEvent event) {
+		log.info("Session is unbound: " + event.getSession().getId());
+		this.blasterInstance.shutdown();
+	}
+}
+
