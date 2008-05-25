@@ -190,7 +190,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
    public final void changeErrorCode(ErrorCode errorCodeEnum) {
       if (this.embeddedMessage == null || this.embeddedMessage.length() < 1) {
-         this.embeddedMessage = "Original erroCode=" + this.errorCodeStr;
+         this.embeddedMessage = "Original errorCode=" + this.errorCodeStr;
       }
       this.errorCodeEnum = (errorCodeEnum == null) ? ErrorCode.INTERNAL_UNKNOWN : errorCodeEnum;
       this.errorCodeStr = this.errorCodeEnum.getErrorCode();
