@@ -673,20 +673,27 @@ public class AjaxServlet extends HttpServlet implements AjaxServletMBean {
 					return one.getLastAccessedTimestamp().compareToIgnoreCase(two.getLastAccessedTimestamp());
             }
         });
+		int count = 0;
+		int countAdmin = 0;
 		for (int i=0; i<list.size(); i++) {
 			BlasterInstance bi = (BlasterInstance)list.get(i);
 			if (creationTimestamp)
-				log("Processing " + bi.getRelativeName() + " lastAccessed=" + bi.getLastAccessedTimestamp());
+				log("Processing " + bi.getRelativeName() + " lastAccessed=" + bi.getLastAccessedTimestamp() + " admin=" + bi.isAdmin());
 			else
-				log("Processing " + bi.getRelativeName() + " created=" + bi.getCreationTimestamp());
-			if ((list.size() - i) <= maxSessions) {
+				log("Processing " + bi.getRelativeName() + " created=" + bi.getCreationTimestamp() + " admin=" + bi.isAdmin());
+			if (bi.isAdmin()) {
+				countAdmin++;
+				continue; // don't remove admin accounts
+			}
+			if ((list.size() - count) <= maxSessions) {
 				log("Stopping now");
 				break;
 			}
+			count++;
 			bi.shutdown();
 		}
 		// TODO: How to transport notificationText back to browser??
-		return "Destroyed " + (list.size()-maxSessions) + " sessions";
+		return "Destroyed " + count + " sessions, current = " + getNumBlasterInstances() + " (" + countAdmin + " admin=true sessions where untouched)";
 	}
 	
 	public boolean isBlockedIP(String ip) {
