@@ -1142,7 +1142,7 @@ public class EventPlugin extends NotificationBroadcasterSupport implements
          if (this.publishDestinationHelper != null) {
             if (Logger.LOG_WARN == level) {
                // log.fine("Too dangerous as it could produce looping messages");
-               // e.g. [WARN  XmlBlaster.DispatchWorkerPool.heron-1 RequestBroker] Generating dead message 'callback:/node/heron/client/subscribe/1/NORM/1136329068010000002/__sys__Event' from publisher=/node/heron/client/__RequestBroker_internal[heron]/1 because delivery with queue 'null' failed: XmlBlasterException errorCode=[communication.noConnection.dead] serverSideException=true location=[SOCKET-HandleClient-subscribe/1] message=[#14515:14516M update() invocation ignored, we are shutdown. : Original erroCode=communication.noConnection] [See URL http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.listing.html#communication.noConnection.dead]
+               // e.g. [WARN  XmlBlaster.DispatchWorkerPool.heron-1 RequestBroker] Generating dead message 'callback:/node/heron/client/subscribe/1/NORM/1136329068010000002/__sys__Event' from publisher=/node/heron/client/__RequestBroker_internal[heron]/1 because delivery with queue 'null' failed: XmlBlasterException errorCode=[communication.noConnection.dead] serverSideException=true location=[SOCKET-HandleClient-subscribe/1] message=[#14515:14516M update() invocation ignored, we are shutdown. : Original errorCode=communication.noConnection] [See URL http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.listing.html#communication.noConnection.dead]
             }
             else {
                // if (Logger.LOG_ERROR == level)
