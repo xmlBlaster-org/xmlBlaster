@@ -227,9 +227,6 @@ public class HandleClient extends SocketExecutor implements Runnable
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      //this.callback.init(this.glob, cbArr[ii]); is done in connectLowLeve()
                      cbArr[ii].setCallbackDriver(this.callback);
-                     if (driver.getAddressServer() != null) {
-                        driver.getAddressServer().setCallbackDriver(this.callback);
-                     }
                   }
                   else {
                      log.severe(ME+": Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
