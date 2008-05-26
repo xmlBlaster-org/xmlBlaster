@@ -708,7 +708,10 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       boolean latchIsInterrupted;
    }
    
-   public void shutdown() {}
+   public void shutdown() {
+      //this.addressConfig.shutdown();
+      //this.addressServer.shutdown();
+   }
 
    /**
     * Interrupts a blocking request with a not returning reply.
