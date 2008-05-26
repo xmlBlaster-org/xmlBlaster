@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -112,12 +111,12 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
       this.ME = addressConfig.getRawAddress() + "-" + addressConfig.getSessionName();
       
       if (this.addressConfig instanceof AddressServer) {
-         this.addressServer = (AddressServer)this.addressConfig;
+         this.addressServer = (AddressServer)this.addressConfig; // downcast the clone
       }
       else {
          boolean acceptRemoteLoginAsTunnel = this.addressConfig.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
          if (acceptRemoteLoginAsTunnel) { // The cluster slave accepts publish(), subscribe() etc callbacks
-            // TODO: Use the addressServer from the SocketDriver
+            // TODO: Use a clone from addressServer from the SocketDriver
             this.addressServer = new AddressServer(glob, getType(), glob.getId(), new Properties());
             /*
             I_Driver[] drivers = serverScope.getPluginRegistry().getPluginsOfInterfaceI_Driver();//register(pluginInfo.getId(), plugin);//getProtocolPluginManager().getPlugin(type, version)

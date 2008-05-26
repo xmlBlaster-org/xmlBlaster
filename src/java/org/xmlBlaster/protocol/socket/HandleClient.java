@@ -85,6 +85,7 @@ public class HandleClient extends SocketExecutor implements Runnable
          }
       }
 
+      // Fills a clone to this.addressServer
       super.initialize(glob, driver.getAddressServer(), this.sock.getInputStream(), this.sock.getOutputStream());
       super.setXmlBlasterCore(driver.getXmlBlaster());
 
@@ -92,12 +93,12 @@ public class HandleClient extends SocketExecutor implements Runnable
 
       // You should not activate SoTimeout, as this timeouts if InputStream.read() blocks too long.
       // But we always block on input read() to receive update() messages.
-      setSoTimeout(driver.getAddressServer().getEnv("SoTimeout", 0L).getValue()); // switch off
+      setSoTimeout(getAddressServer().getEnv("SoTimeout", 0L).getValue()); // switch off
       this.sock.setSoTimeout((int)this.soTimeout);
-      if (log.isLoggable(Level.FINE)) log.fine(this.driver.getAddressServer().getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
+      if (log.isLoggable(Level.FINE)) log.fine(getAddressServer().getEnvLookupKey("SoTimeout") + "=" + this.soTimeout);
 
-      setSoLingerTimeout(driver.getAddressServer().getEnv("SoLingerTimeout", soLingerTimeout).getValue());
-      if (log.isLoggable(Level.FINE)) log.fine(this.driver.getAddressServer().getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
+      setSoLingerTimeout(getAddressServer().getEnv("SoLingerTimeout", soLingerTimeout).getValue());
+      if (log.isLoggable(Level.FINE)) log.fine(getAddressServer().getEnvLookupKey("SoLingerTimeout") + "=" + getSoLingerTimeout());
       if (getSoLingerTimeout() >= 0L) {
          // >0: Try to send any unsent data on close(socket) (The UNIX kernel waits very long and ignores the given time)
          // =0: Discard remaining data on close()  <-- CHOOSE THIS TO AVOID BLOCKING close() calls
@@ -106,10 +107,10 @@ public class HandleClient extends SocketExecutor implements Runnable
       else
          this.sock.setSoLinger(false, 0); // false: default handling, kernel tries to send queued data after close() (the 0 is ignored)
 
-      this.callCoreInSeparateThread = driver.getAddressServer().getEnv("callCoreInSeparateThread", callCoreInSeparateThread).getValue();
+      this.callCoreInSeparateThread = getAddressServer().getEnv("callCoreInSeparateThread", callCoreInSeparateThread).getValue();
 
       Thread t = new Thread(this, "XmlBlaster."+this.driver.getType() + (this.driver.isSSL()?".SSL":""));
-      int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
+      int threadPrio = getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
          t.setPriority(threadPrio);
          if (log.isLoggable(Level.FINE)) log.fine("-plugin/socket/threadPrio "+threadPrio);
@@ -200,7 +201,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                   throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "connect() without securityQos");
                conQos.getSecurityQos().setClientIp (socket.getInetAddress().getHostAddress());
 
-               conQos.setAddressServer(this.driver.getAddressServer());
+               conQos.setAddressServer(getAddressServer());
                setLoginName(conQos.getSessionName().getRelativeName());
                if (this.callCoreInSeparateThread) {
                   Thread.currentThread().setName("XmlBlaster.HandleClient");
@@ -218,8 +219,8 @@ public class HandleClient extends SocketExecutor implements Runnable
                for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
                   SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
                   SocketUrl remoteUrl = new SocketUrl(glob, socket.getInetAddress().getHostAddress(), socket.getPort());
-                  if (driver.getAddressServer() != null) {
-                     driver.getAddressServer().setRemoteAddress(remoteUrl);
+                  if (this.addressServer != null) {
+                     this.addressServer.setRemoteAddress(remoteUrl);
                   }
                   if (log.isLoggable(Level.FINE)) log.fine(ME+": remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
                   if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
@@ -227,6 +228,9 @@ public class HandleClient extends SocketExecutor implements Runnable
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      //this.callback.init(this.glob, cbArr[ii]); is done in connectLowLeve()
                      cbArr[ii].setCallbackDriver(this.callback);
+                     if (this.addressServer != null) {
+                    	this.addressServer.setCallbackDriver(this.callback);
+                     }
                   }
                   else {
                      log.severe(ME+": Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
@@ -247,7 +251,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                executeResponse(receiver, Constants.RET_OK, SocketUrl.SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
                // Note: the disconnect will call over the CbInfo our shutdown as well
                // setting sessionId = null prevents that our shutdown calls disconnect() again.
-               authenticate.disconnect(driver.getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
+               authenticate.disconnect(getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
                shutdown();
             }
          }
