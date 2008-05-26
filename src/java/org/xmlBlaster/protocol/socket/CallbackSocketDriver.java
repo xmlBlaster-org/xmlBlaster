@@ -12,7 +12,6 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
