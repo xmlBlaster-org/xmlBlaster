@@ -174,7 +174,8 @@ public abstract class AddressBase implements Cloneable
    public AddressBase getClone() {
       try {
          AddressBase s = (AddressBase)super.clone();
-          return s;
+         s.callbackDriver = null;
+         return s;
       } catch (CloneNotSupportedException e) {
           //This shouldn't happen because we implement Cloneable.
           throw new AssertionError();
@@ -1202,6 +1203,12 @@ public abstract class AddressBase implements Cloneable
 
    public void setSessionName(SessionName sessionName) {
       this.sessionName = sessionName;
+   }
+   
+   public void shutdown() {
+      this.callbackDriver = null;
+      this.sessionName = null;
+      this.pluginInfoParameters.clear();
    }
 }
 
