@@ -6,36 +6,38 @@ Comment:   Login for clients
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.xmlBlaster.authentication.plugins.CryptDataHolder;
-import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
-import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.engine.qos.DisconnectQosServer;
-import org.xmlBlaster.util.def.Constants;
-import org.xmlBlaster.util.def.MethodName;
-import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.IsoDateParser;
-import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.engine.XmlBlasterImpl;
+import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.engine.ServerScope;
-import org.xmlBlaster.engine.runlevel.RunlevelManager;
+import org.xmlBlaster.engine.XmlBlasterImpl;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
+import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
+import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
+import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import java.util.*;
+import org.xmlBlaster.util.IsoDateParser;
+import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 
 
 
