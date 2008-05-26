@@ -3,7 +3,10 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
- o r AjaxServlet: Limit with MaxUserSessions (configurable via JMX)
+ o r17004 Fixed SOCKET driver to work on AddressServer clone instead of on the
+          SocketDriver#addressServer singleton instance
+
+ o r17002 AjaxServlet: Limit with MaxUserSessions (configurable via JMX)
           Added internationalization of exceptions
           e.g. put ajaxServlet_de.properties into the classpath of war
           Fixed session cleanup for error cases

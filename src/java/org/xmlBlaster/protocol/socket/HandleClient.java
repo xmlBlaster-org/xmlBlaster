@@ -228,7 +228,7 @@ public class HandleClient extends SocketExecutor implements Runnable
                      this.callback = new CallbackSocketDriver(this.loginName, this);
                      //this.callback.init(this.glob, cbArr[ii]); is done in connectLowLeve()
                      cbArr[ii].setCallbackDriver(this.callback);
-                     if (this.addressServer != null) {
+                     if (this.addressServer != null) { // pass for "useRemoteLoginAsTunnel"
                     	this.addressServer.setCallbackDriver(this.callback);
                      }
                   }
