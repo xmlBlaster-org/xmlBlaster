@@ -57,8 +57,19 @@ TODO
 
 <project name="xmlBlaster" default="usage" basedir=".">
 
+   <!-- http://ant-contrib.sourceforge.net/tasks/tasks/index.html -->
+   <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+      <classpath>
+         <pathelement location="lib/ant/ant-contrib.jar" />
+      </classpath>
+   </taskdef>
+
    <!-- C++/C user guide: http://ant-contrib.sourceforge.net/cc.html -->
-   <taskdef resource="cpptasks.tasks"/> <!-- cc defineset compiler linker -->
+   <taskdef resource="cpptasks.tasks"> <!-- cc defineset compiler linker -->
+      <classpath>
+         <pathelement location="lib/ant/cpptasks.jar" /> <!-- not supported, use: ant -lib lib/ant/cpptasks.jar ... --> 
+      </classpath>
+   </taskdef>
    <typedef resource="cpptasks.types"/>
 
    <!-- Access environment variables, for example "env.XMLBLASTER_HOME" -->
@@ -471,6 +482,7 @@ TODO
       <echo message="   ${script} -Ddeprecation=on -Doptimize=on all"/>
       <echo message="   ${script} -DADD_CORBA=false -DADD_PROP=mystuff/xmlBlaster.properties -DADD_PLUGINPROPS=mystuff/xmlBlasterPlugins.xml -DADD_LOGGINGPROP=mystuff/logging.properties dist-client"/>
       <echo message="   ${script} -verbose cpp-lib"/>
+      <echo message="   ant -lib lib/ant/cpptasks.jar c  (run outside of build.sh/build.bat)"/>
       <echo message=""/>
       <echo message=""/>
    </target>
