@@ -472,7 +472,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
             try {
                I_CallbackExtended cbClientTmp = this.cbClient; // Remember to avoid synchronized block
                if (cbClientTmp == null) {
-                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No "+getType()+" callback driver is available, can't process the remote invocation.");
+                  throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No "+getType()+" callback driver is available, can't process the remote invocation for UPDATE");
                }
                MsgUnitRaw[] arr = receiver.getMessageArr();
                if (arr == null || arr.length < 1) {
@@ -501,7 +501,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          else if (MethodName.PING == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (this.cbClient == null && !glob.isServerSide()) {
-               XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No "+getType()+" callback driver is available, can't process the remote invocation.");
+               XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
                executeException(receiver, xmlBlasterException, udp);
                return true;
             }
