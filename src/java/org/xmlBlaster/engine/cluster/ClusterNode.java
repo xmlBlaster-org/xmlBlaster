@@ -191,6 +191,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                // TODO: Currently we can only configure loginName/password based credentials
                // cluster/securityService/avalon=<securityService type='htpasswd' version='1.0'><user>avalon</user><passwd>secret</passwd></securityService>
                String xml = this.fatherGlob.get("cluster/securityService/"+sessionName.getLoginName(), "", null, null);
+               if ("".equals(xml)) {
+                  log.severe("To bootstrap an initial session of " + sessionName.getLoginName() + " cluster slave you need to give his password like this (adjust the password and the type if necessary): " +
+                        "cluster/securityService/" + sessionName.getLoginName() + "=<securityService type='htpasswd' version='1.0'><user>" + sessionName.getLoginName() + "</user><passwd>secret</passwd></securityService>");
+                  return null;
+               }
                SecurityQos securityQos = new SecurityQos(glob, xml);
                ConnectQos tmpQos = new ConnectQos(glob, sessionName.getRelativeName(), "");
                tmpQos.getData().setSecurityQos(securityQos);
