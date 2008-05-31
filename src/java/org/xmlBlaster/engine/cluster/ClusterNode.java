@@ -254,21 +254,26 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
                          if (obj != null && obj instanceof CallbackSocketDriver) {
                             // cbDriver.callbackAddress: socket://192.168.1.20:8920
                             CallbackSocketDriver cbDriver = (CallbackSocketDriver)myRemotePartnerLogin.getAddressServer().getCallbackDriver();
+                            log.info("toAlive(" + sessionName.getAbsoluteName() + ")... found existing session to back-tunnel '" + getId() + "' on address '" + myRemotePartnerLogin.getAddressServer().getRawAddress() + "' protocol=" + myRemotePartnerLogin.getAddressServer().getType() + " cbDriver-Handler " + ((cbDriver.getHandler()==null)?"null":cbDriver.getHandler().getAddressServer().getRawAddress()));
                             //log.severe("Register toAlive: CallbackSocketDriver.handler=" + cbDriver.getHandler());
                             remoteGlob.addObjectEntry(globalKey, cbDriver.getHandler());
                          }
                          else {
+                            log.info("toAlive(" + sessionName.getAbsoluteName() + ")... no  CallbackSocketDriver to back-tunnel '" + getId() + "' found");
                             remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                          }
                       }
                       else {
+                         log.info("toAlive(" + sessionName.getAbsoluteName() + ")... no  session to back-tunnel '" + getId() + "' found");
                          remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                       }
                    }
                    public void toPolling(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
+                      log.warning("toPolling(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                    }
                    public void toDead(DispatchManager dispatchManager, ConnectionStateEnum oldState, String errorText) {
+                      log.severe("toDead(" + sessionName.getAbsoluteName() + ") for cluster back-tunnel ...");
                       remoteGlob.addObjectEntry(globalKey, "dummyPlaceHolder");
                    }
                 }, fireInitial);
