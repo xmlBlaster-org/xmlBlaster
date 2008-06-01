@@ -198,6 +198,7 @@ public final class SessionInfo implements I_Timeout, I_StorageSizeListener
          for (int i=0; i<cba.length; i++) {
             cba[i].setSessionName(this.sessionName);
             cba[i].addClientProperty(new ClientProperty("__ContextNode", "String", null, this.contextNode.getAbsoluteName()));
+            cba[i].setFromPersistenceRecovery(connectQos.isFromPersistenceRecovery());
          }
          this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,

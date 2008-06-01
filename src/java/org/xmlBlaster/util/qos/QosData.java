@@ -43,7 +43,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Marker if message comes from persistent store and is recovered after a server restart. 
     * NOTE: This information is for server side usage only and is NOT dumped to XML!
     */
-   private boolean fromPersistenceRecovery = false;
+   private transient boolean fromPersistenceRecovery = false;
 
    /** 
     * The receive timestamp (UTC time),
@@ -163,6 +163,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * NOTE: This information is not saved in to XML and is lost after a XML dump.
     */
    public void isFromPersistenceRecovery(boolean fromPersistenceRecovery) {
+      // AddressBase contains the same TODO: assure they are in sync or remove one
       this.fromPersistenceRecovery = fromPersistenceRecovery;
    }
 

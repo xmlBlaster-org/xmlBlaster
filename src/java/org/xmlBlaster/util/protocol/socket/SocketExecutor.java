@@ -9,6 +9,7 @@ package org.xmlBlaster.util.protocol.socket;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
+import org.xmlBlaster.client.protocol.socket.SocketCallbackImpl;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.Global;

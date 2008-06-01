@@ -54,6 +54,8 @@ public final class CbDispatchConnection extends DispatchConnection
    private String cbKey;
    private I_AdminSession session;
    private SessionName sessionName;
+   //private boolean acceptRemoteLoginAsTunnel;
+   private boolean useRemoteLoginAsTunnel;
 
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -68,6 +70,10 @@ public final class CbDispatchConnection extends DispatchConnection
       I_AdminSubject subject = serverScope.getAuthenticate().getSubjectInfoByName(sessionName);
       if (subject != null)
          this.session = subject.getSessionByPubSessionId(sessionName.getPublicSessionId());
+      
+      // This other side uses us as tunnel, we won't ping it
+      this.useRemoteLoginAsTunnel = address.getEnv("useRemoteLoginAsTunnel", false).getValue(); //"heron".equals(qos.getSessionName().getLoginName());
+      //this.acceptRemoteLoginAsTunnel = address.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
    }
 
    /**
@@ -370,11 +376,18 @@ public final class CbDispatchConnection extends DispatchConnection
     * @see org.xmlBlaster.util.dispatch.DispatchConnection#doPing(String)
     */
    public final String doPing(String data) throws XmlBlasterException {
+      if (this.useRemoteLoginAsTunnel) {
+         // We don't ping, the other side does not know what to do with it
+         // We are only guest and using the socket from the other cluster node
+         return Constants.RET_OK; // fake a return for ping
+      }
+
       String ret = this.cbDriver.ping(data);
       return (ret==null) ? "" : ret;
    }
 
    /**
+    * 
     * Nothing to do here
     */
    public final void resetConnection() {

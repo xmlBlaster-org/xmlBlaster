@@ -155,6 +155,12 @@ public abstract class AddressBase implements Cloneable
 
    /** The node id to which we want to connect */
    protected String nodeId;
+   
+   /**
+    * Marker if message comes from persistent store and is recovered after a server restart. 
+    * NOTE: This information is for server side usage only and is NOT dumped to XML!
+    */
+   protected transient boolean fromPersistenceRecovery = false;
 
    /**
     */
@@ -610,6 +616,10 @@ public abstract class AddressBase implements Cloneable
    // used by SOCKET as the same socket is used for callback tunneling
    private Object/*I_CallbackDriver*/ callbackDriver = null;
    public final void setCallbackDriver(Object/*I_CallbackDriver*/ callbackDriver) {
+      if (callbackDriver != null && !(callbackDriver instanceof org.xmlBlaster.protocol.socket.CallbackSocketDriver)) {
+         log.severe("Unexpected " + callbackDriver);
+         Thread.dumpStack(); //assert
+      }
       this.callbackDriver = callbackDriver;
    }
    public final Object getCallbackDriver() {
@@ -1209,6 +1219,15 @@ public abstract class AddressBase implements Cloneable
       this.callbackDriver = null;
       this.sessionName = null;
       this.pluginInfoParameters.clear();
+   }
+
+   public boolean isFromPersistenceRecovery() {
+      // QosData contains the same TODO: assure they are in sync or remove one
+      return fromPersistenceRecovery;
+   }
+
+   public void setFromPersistenceRecovery(boolean fromPersistenceRecovery) {
+      this.fromPersistenceRecovery = fromPersistenceRecovery;
    }
 }
 

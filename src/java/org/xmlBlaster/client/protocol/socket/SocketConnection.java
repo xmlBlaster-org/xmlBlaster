@@ -79,7 +79,6 @@ public class SocketConnection implements I_XmlBlasterConnection
    private I_ProgressListener tmpProgressListener;
    /** Cluster node re-uses conection from remote node */
    boolean useRemoteLoginAsTunnel;
-   //boolean acceptRemoteLoginAsTunnel;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter.
@@ -165,7 +164,6 @@ public class SocketConnection implements I_XmlBlasterConnection
       this.clientAddress = address;
       this.useRemoteLoginAsTunnel = this.clientAddress.getEnv("useRemoteLoginAsTunnel", false).getValue();
       // The cluster slave accepts publish(), subscribe() etc callbacks
-      //this.acceptRemoteLoginAsTunnel = this.clientAddress.getEnv("acceptRemoteLoginAsTunnel", false).getValue();
 
       if (this.pluginInfo != null)
          this.clientAddress.setPluginInfoParameters(this.pluginInfo.getParameters());
@@ -431,7 +429,9 @@ public class SocketConnection implements I_XmlBlasterConnection
    {
       if (log.isLoggable(Level.FINER)) log.finer("Entering shutdown of callback server");
       if (this.cbReceiver != null) {
-         this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
+         I_CallbackExtended cb = this.cbReceiver.getCbClient();
+         if (cb != null)
+            this.cbClient = cb; // remember for reconnects
          this.cbReceiver.shutdownSocket();
       }
 
@@ -484,7 +484,7 @@ public class SocketConnection implements I_XmlBlasterConnection
          this.cbReceiver.registerProgressListener(this.tmpProgressListener);
          this.tmpProgressListener = null;
       }
-      if (this.cbReceiver != null) {
+      if (this.cbReceiver != null && this.cbReceiver.getCbClient() != null) {
          this.cbClient = this.cbReceiver.getCbClient(); // remember for reconnects
       }
    }

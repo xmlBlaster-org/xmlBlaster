@@ -328,7 +328,8 @@ public class MsgInfo {
          }
          */
          Timestamp ts = new Timestamp();
-         this.requestId = prefix + ts.getTimestamp();
+         // TODO: getMethodNameStr for debugging only, can be removed again 2008-06-01
+         this.requestId = prefix + getMethodNameStr() + ts.getTimestamp();
       }
       return this.requestId;
    }

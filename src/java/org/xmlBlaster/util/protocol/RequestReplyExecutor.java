@@ -92,6 +92,7 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
    protected ContextNode contextNode;
 
    public RequestReplyExecutor() {
+      if (log.isLoggable(Level.FINER)) log.finer("ctor");
    }
 
    /**
@@ -501,6 +502,8 @@ public abstract class RequestReplyExecutor implements RequestReplyExecutorMBean
          else if (MethodName.PING == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (this.cbClient == null && !glob.isServerSide()) {
+               log.severe("We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
+               Thread.dumpStack();
                XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "We are on client side and no "+getType()+" callback driver is available, can't process the remote invocation " + receiver.getMethodName());
                executeException(receiver, xmlBlasterException, udp);
                return true;

@@ -44,6 +44,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
 
    /**
     * Should not be instantiated by plugin loader.
+    * A dummy could be created temporary by reflection?
     */
    public CallbackSocketDriver() {
       //log.severe("Empty Ctor not expected");
@@ -51,7 +52,11 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
    }
 
    /**
-    * This constructor is called when the callback shall be tunneled through by
+    * This constructor is called when
+    * <br />
+    * 1.on server side when the client arrives in HandleClient
+    * <br />
+    * 2.the callback shall be tunneled through by
     * the SAME SOCKET connection which the client already has established. 
     */
    public CallbackSocketDriver(String loginName, SocketExecutor handler) {
@@ -152,16 +157,12 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
          }
       //}
          
+      // Wrong code to be removed
       Object obj = this.callbackAddress.getCallbackDriver();
       if (obj != null && obj instanceof SocketExecutor) { //SocketCallbackImpl
+         Thread.dumpStack(); 
          this.handler = (SocketExecutor)obj;
       }
-      //Object obj = glob.getObjectEntry(SocketExecutor.getGlobalKey(this.callbackAddress.getSessionName()));
-      //if (obj != null) {
-      //   if (obj instanceof org.xmlBlaster.util.protocol.socket.SocketExecutor) {
-      //      this.handler = (org.xmlBlaster.util.protocol.socket.SocketExecutor)obj;
-      //   }
-      //}
    }
 
    /**

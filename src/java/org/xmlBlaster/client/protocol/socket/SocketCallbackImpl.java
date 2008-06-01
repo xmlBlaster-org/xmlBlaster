@@ -139,7 +139,8 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
          //}
       }
 
-      getSocketExecutor().setCbClient(cbClient); // access callback client in super class SocketExecutor:callback
+      if (cbClient != null)
+         getSocketExecutor().setCbClient(cbClient); // access callback client in super class SocketExecutor:callback
 
       // If we are server side and a client which receives publish(),subscribe()... from remote cluster node
       obj = glob.getObjectEntry("ClusterManager[cluster]/I_Authenticate");
@@ -420,7 +421,7 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
     */
    public synchronized void shutdown() {
       super.shutdown();
-      setCbClient(null); // reset callback client in super class SocketExecutor:callback
+      //setCbClient(null); NO, not sure if this is a good idea // reset callback client in super class SocketExecutor:callback
    }
 
    /**

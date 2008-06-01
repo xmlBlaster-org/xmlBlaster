@@ -137,8 +137,15 @@ abstract public class DispatchConnection implements I_Timeout
          if (ErrorCode.COMMUNICATION_FORCEASYNC.equals(e.getErrorCode())) {
             if (log.isLoggable(Level.FINE)) log.fine(ME + "initialize:" + e.getMessage());
          }
-         else
-            log.warning(ME + "initialize:" + e.getMessage());
+         else {
+            if (address.isFromPersistenceRecovery()) {
+               if (log.isLoggable(Level.FINE))
+                  log.fine(ME + "initialize:" + e.getMessage());
+            }
+            else {
+               log.warning(ME + "initialize:" + e.getMessage());
+            }
+         }
          if (retry(e)) {    // all types of ErrorCode.COMMUNICATION*
             handleTransition(true, e); // never returns (only if DEAD) - throws exception
          }
@@ -290,7 +297,7 @@ abstract public class DispatchConnection implements I_Timeout
          log.severe(ME + "Protocol driver is in state DEAD, ping failed");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "Protocol driver is in state DEAD, ping failed");
       }
-
+      
       data = (data==null)?"":data;
       boolean stalled = false;
       DispatchStatistic stats = this.connectionsHandler.getDispatchStatistic();
@@ -589,7 +596,7 @@ abstract public class DispatchConnection implements I_Timeout
             timerKey = null;
          }
 
-         if (toReconnected /*&& this.serverAcceptsRequests*/ && (isPolling() || isUndef())) {
+         if (toReconnected /*&& this.serverAcceptsRequests*/ && (isPolling() || isUndef()) && !this.address.isFromPersistenceRecovery()) {
             this.state = ConnectionStateEnum.ALIVE;
             retryCounter = 0; // success
             log.info("Connection '" + getAddress().getType() + "' transition " + oldState.toString() + " -> " + this.state.toString() + ": Success, " + ME + " connected.");
@@ -598,7 +605,9 @@ abstract public class DispatchConnection implements I_Timeout
             connectionsHandler.toAlive(this);
             return;
          }
-
+         
+         this.address.setFromPersistenceRecovery(false); // reset
+            
          if (this.address.getRetries() == -1 || retryCounter < this.address.getRetries()) {
             // poll for connection ...
             this.state = ConnectionStateEnum.POLLING;

@@ -184,6 +184,10 @@ public class CallbackAddress extends AddressBase
          System.out.println("TestFailed"+e.toString());
       }
    }
+
+   public void setFromPersistenceRecovery(boolean fromPersistenceRecovery) {
+      this.fromPersistenceRecovery = fromPersistenceRecovery;
+   }
 }
 
 
