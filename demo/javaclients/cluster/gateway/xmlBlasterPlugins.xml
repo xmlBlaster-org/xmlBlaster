@@ -18,7 +18,15 @@
       <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
       <!-- attribute id='port'>7607</attribute -->
       <!-- attribute id='hostname'>localhost</attribute -->
-      <attribute id='compress/type'></attribute>  <!-- Default: no compression for python,php,perl access -->
+   </plugin>
+
+   <plugin id='socket_z' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='1' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+      <attribute id='port'>3412</attribute>
+      <!-- attribute id='hostname'>localhost</attribute -->
+      <attribute id='compress/type'>zlib:stream</attribute>
    </plugin>
 
    <plugin create='true' id='cluster' className='org.xmlBlaster.engine.cluster.ClusterManager'>
