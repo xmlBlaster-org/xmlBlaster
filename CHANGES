@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r17010 Sessions from persistence on xmlBlaster startup go to POLLING directly
+          Cluster back tunnel now finds XmlBlasterAccess again after gateway restart
+
  o r17004 Fixed SOCKET driver to work on AddressServer clone instead of on the
           SocketDriver#addressServer singleton instance
 
