@@ -709,6 +709,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
             // replace "Microsoft SQL Server" to "MicrosoftSQLServer"
             // blanks are not allowed, thanks to zhang zhi wei
             mappingKey = ReplaceVariable.replaceAll(mappingKey, " ", "");
+            if (mappingKey.contains("Firebird")) {
+            	//Firebird2.1/WI-V2.1.0.17798Firebird2.1/tcp(computername)/P10
+            	mappingKey = "Firebird";
+            }
             if (log.isLoggable(Level.FINE)) 
                log.fine("parseMapping: the mapping will be done for the keyword (which is here is the DB product name)'" + mappingKey + "'");
          }
