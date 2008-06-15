@@ -2550,6 +2550,10 @@ public final class TopicHandler implements I_Timeout, TopicHandlerMBean //, I_Ch
       return this.serverScope.peekMessages(this.historyQueue, numOfEntries, "history");
    }
 
+   public long clearHistoryQueue() {
+      return this.historyQueue.clear();
+   }
+
    public String[] peekHistoryMessagesToFile(int numOfEntries, String path) throws Exception {
       try {
          return this.serverScope.peekQueueMessagesToFile(this.historyQueue, numOfEntries, path, "history");

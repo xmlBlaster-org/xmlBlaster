@@ -67,6 +67,8 @@ public interface I_AdminTopic extends I_AdminUsage {
     * @return Number of cached messages
     */
    public long getNumOfCacheEntries();
+   
+   public long clearHistoryQueue();
    /*
    public boolean isUndef();
    public boolean isUnconfigured();
