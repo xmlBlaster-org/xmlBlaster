@@ -53,6 +53,12 @@ public final class PublishQos
    private final Global glob;
    private final MsgQosData msgQosData;
 
+   public PublishQos(Global glob, String serialData) {
+      this.glob = (glob==null) ? Global.instance() : glob;
+      this.msgQosData = new MsgQosData(this.glob, this.glob.getMsgQosFactory(), serialData, MethodName.PUBLISH); 
+      this.msgQosData.setMethod(MethodName.PUBLISH);
+   }
+
    /**
     * Default constructor for transient messages.
     */
