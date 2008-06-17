@@ -164,7 +164,7 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    public void finalize() {
       try {
          removeBurstModeTimer();
-         if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected");
+         //if (log.isLoggable(Level.FINE)) log.fine(ME+": finalize - garbage collected");
       }
       catch (Throwable e) {
          e.printStackTrace();
