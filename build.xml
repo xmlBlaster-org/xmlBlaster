@@ -577,7 +577,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Determine the current subversion revision number                    -->
    <!-- =================================================================== -->
-   <target name="revisionnumber" description="Determines the svn revision number">
+   <target name="revisionnumber" unless="no-svn" description="Determines the svn revision number">
       <!--
       svnversion xmlBlaster svn://www.xmlBlaster.org/trunk/xmlBlaster
       12683:12702M
