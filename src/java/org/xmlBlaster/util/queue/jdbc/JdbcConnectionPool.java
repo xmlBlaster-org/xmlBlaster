@@ -8,7 +8,7 @@ Author:    michele@laghi.eu
 
 package org.xmlBlaster.util.queue.jdbc;
 
-import org.apache.commons.lang.Tokenizer;
+import org.apache.commons.lang.text.StrTokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.xmlBlaster.util.ReplaceVariable;
@@ -733,7 +733,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       
       this.mapping = new Hashtable();
       // StringTokenizer tokenizer = new StringTokenizer(mappingText, ",");
-      Tokenizer tokenizer = new Tokenizer(mappingText, ',', '"');
+      StrTokenizer tokenizer = new StrTokenizer(mappingText, ',', '"');
       XmlBlasterException ex = null;
       while (tokenizer.hasNext()) {
          String singleMapping = tokenizer.nextToken();

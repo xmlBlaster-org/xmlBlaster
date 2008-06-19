@@ -267,9 +267,9 @@ only the SNMP subagent module jax.jar is GPL only!
   Base64 encode/decode need for XmlBlasterApplet support, see
   xmlBlaster/src/java/org/xmlBlaster/client/protocol/http/applet
 
-33) commons-lang-2.0.jar
+33) commons-lang-2.4.jar
 ========================
-  http://jakarta.apache.org/commons/lang/index.html
+  2.4 from http://jakarta.apache.org/commons/lang/index.html
   commons-codec-2.0, built from cvs Nov, 18 2003
   different utilities (extention of java.util.*)
  
