@@ -406,6 +406,11 @@ public class SocketCallbackImpl extends SocketExecutor implements Runnable, I_Ca
                      xx.printStackTrace();
                   }
                }
+               
+               if (e instanceof IOException || e instanceof java.net.SocketException) {
+                  //2008-06-24 07:22:34.544 WARNING 14-XmlBlaster.SOCKET org.xmlBlaster.client.protocol.socket.SocketCallbackImpl run: Closing connection to server: java.net.SocketException: Socket closed
+            	   shutdownSocket(); // stop thread
+               }
             }
          }
       }
