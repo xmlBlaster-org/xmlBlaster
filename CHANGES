@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r17028 Cluster node client:
+          If cluster client sending of publish fails it is dumped and removed from connection queue
+
  o r17025 ClientErrorHandler: Changed default behaviour to only shutdown on internal problems
           for async message sending failures (before for all none communication errors)
 
