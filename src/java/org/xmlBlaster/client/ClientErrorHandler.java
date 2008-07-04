@@ -46,7 +46,10 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
 
       boolean shutdown = false;
       XmlBlasterException ex = msgErrorInfo.getXmlBlasterException();
-      if (!ex.isCommunication()) { // verify if this makes sense!
+      //user.security.authorization.notAuthorized
+      //if (!ex.isCommunication()) { // verify if this makes sense!
+      //if (ex.isInternal() || ex.isResource()) { // verify if this makes sense!
+      if (ex.isInternal()) { // verify if this makes sense!
          shutdown = true;
       }
 
