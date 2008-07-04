@@ -3,6 +3,9 @@ The "r99999" numbers are Subversion revision numbers.
 
 Changes for current svn
 =======================
+ o r17025 ClientErrorHandler: Changed default behaviour to only shutdown on internal problems
+          for async message sending failures (before for all none communication errors)
+
  o r17010 Sessions from persistence on xmlBlaster startup go to POLLING directly
           Cluster back tunnel now finds XmlBlasterAccess again after gateway restart
 
