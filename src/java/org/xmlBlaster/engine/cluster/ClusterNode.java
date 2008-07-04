@@ -18,6 +18,7 @@ import org.xmlBlaster.authentication.plugins.htpasswd.SecurityQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
@@ -27,6 +28,7 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.socket.CallbackSocketDriver;
 import org.xmlBlaster.protocol.socket.SocketDriver;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBuffer;
@@ -37,12 +39,14 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.util.dispatch.I_PostSendListener;
 import org.xmlBlaster.util.protocol.socket.SocketExecutor;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
 /**
  * This class holds the informations about an xmlBlaster server instance (=cluster node).
@@ -298,6 +302,32 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          this.xmlBlasterConnection = this.remoteGlob.getXmlBlasterAccess();
          this.xmlBlasterConnection.setServerNodeId(getId());
          this.xmlBlasterConnection.registerConnectionListener(this);
+         final XmlBlasterAccess xbAccess = (XmlBlasterAccess)this.xmlBlasterConnection;
+         this.xmlBlasterConnection.registerPostSendListener(new I_PostSendListener() {
+            public void postSend(MsgQueueEntry[] msgQueueEntries) {
+            	
+            }
+            // For example on user.security.authorization.notAuthorized
+            public boolean sendingFailed(MsgQueueEntry[] entries,
+					XmlBlasterException exception) {
+               try {
+                  for (int i=0; i<entries.length; i++) {
+                     MsgUnit msgUnit = entries[i].getMsgUnit();               
+                     String fn = xbAccess.getFileDumper().dumpMessage(msgUnit.getKeyData(), msgUnit.getContent(), msgUnit.getQosData());
+                     log.severe("Async sending of cluster message failed for " + msgUnit.getKeyOid() +", is dumped to " + fn + ": " + exception.getMessage());
+                  }
+               }
+               catch (Throwable e) {
+                  e.printStackTrace();
+                  for (int i=0; i<entries.length; i++)
+                     log.severe("Async sending of message failed for message " + entries[i].toXml() +"\nreason is: " + exception.getMessage());
+               }
+               
+               // If PtP send back to sender?
+               
+               return true; // Remove from connection queue! Now other messages can be delivered
+            }
+         });
 
          // fixed to be unique since 1.5.2
          boolean oldQueueNameBehavior = this.remoteGlob.getProperty().get("xmlBlaster/cluster/useLegacyClientQueueName", false);
